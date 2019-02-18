@@ -17,7 +17,9 @@ before_script:
   - cd build
   - cmake ..
 
-script: make && make test
+script: 
+  - export PATH="/usr/lib/postgresql/11/bin:$PATH"
+  - make && make test
 
 after_failure: ../test/scripts/print_fail.sh
 
