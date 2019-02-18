@@ -1,0 +1,417 @@
+﻿-- Tests for period data type.
+
+---------------------------------------------------- Statistics for the period type
+
+create table test_period(ir period);
+
+insert into test_period
+select period(timestamp '2000-01-01 00:00' + to_char(g*60, '999999999')::interval,
+	timestamp '2000-01-01 00:00' + to_char(g*60+600, '999999999')::interval)
+from generate_series(1,1E5) g;
+
+select * from test_period limit 10;
+
+vacuum analyze test_period;
+
+select *
+FROM pg_statistic
+WHERE starelid = ( select oid from pg_class 
+	where relname like 'test_period');
+
+------------------------------------------ THE REMAINING SHOULD BE ADAPTED FOR THE PERIOD TYPE
+
+--
+-- test input parser
+--
+-- negative tests; should fail
+select ''::period;
+select '-[2001-01-01,2001-02-01)'::period;
+select '[2001-01-01,2001-02-01) - '::period;
+select '(",2001-01-01)'::period;
+select '(,,2001-01-01)'::period;
+select '(),2001-01-01)'::period;
+select '(2001-01-01,))'::period;
+select '(],2001-01-01)'::period;
+select '(2001-01-01,])'::period;
+select '[2001-02-01,2001-01-01]'::period;
+select '  empty  '::period;
+select ' ( empty, empty )  '::period;
+
+-- should succeed
+select ' ( " 2001-01-01 " " 2001-01-01 ", " 2001-02-01 " " 2001-02-01 " )  '::period;
+select '(,2001-02-01)'::period;
+select '(2001-01-01,)'::period;
+select '[,2001-02-01]'::period;
+select '[2001-01-01,]'::period;
+select '(,)'::period;
+select '[ , ]'::period;
+select '["",""]'::period;
+select '[",",","]'::period;
+select '["\\","\\"]'::period;
+select '(\\,2001-01-01)'::period;
+select '((,2001-02-01)'::period;
+select '([,2001-02-01)'::period;
+select '(!,()'::period;
+select '(!,[)'::period;
+select '[2001-01-01,2001-01-01]'::period;
+
+-- these are allowed but normalize to empty:
+select '[2001-01-01,2001-01-01)'::period;
+select '(2001-01-01,2001-01-01]'::period;
+select '(2001-01-01,2001-01-01)'::period;
+
+--
+-- create some test data and test the operators
+--
+CREATE TABLE period_test (nr period);
+create index period_test_btree on period_test(nr);
+INSERT INTO period_test VALUES('[,)');
+INSERT INTO period_test VALUES('[3,]');
+INSERT INTO period_test VALUES('[, 5)');
+INSERT INTO period_test VALUES(period(1.1, 2.2));
+INSERT INTO period_test VALUES('empty');
+INSERT INTO period_test VALUES(period(1.7, 1.7, '[]'));
+SELECT nr, isempty(nr), lower(nr), upper(nr) FROM period_test;
+
+SELECT nr, lower_inc(nr), lower_inf(nr), upper_inc(nr), upper_inf(nr) FROM period_test;
+SELECT * FROM period_test WHERE period_contains(nr, period(1.9,1.91));
+SELECT * FROM period_test WHERE nr @> period(1.0,10000.1);
+SELECT * FROM period_test WHERE period_contained_by(period(-1e7,-10000.1), nr);
+SELECT * FROM period_test WHERE 1.9 <@ nr;
+select * from period_test where nr = 'empty';
+select * from period_test where nr = '(1.1, 2.2)';
+select * from period_test where nr = '[1.1, 2.2)';
+select * from period_test where nr < 'empty';
+select * from period_test where nr < period(-1000.0, -1000.0,'[]');
+select * from period_test where nr < period(0.0, 1.0,'[]');
+select * from period_test where nr < period(1000.0, 1001.0,'[]');
+select * from period_test where nr <= 'empty';
+select * from period_test where nr >= 'empty';
+select * from period_test where nr > 'empty';
+select * from period_test where nr > period(-1001.0, -1000.0,'[]');
+select * from period_test where nr > period(0.0, 1.0,'[]');
+select * from period_test where nr > period(1000.0, 1000.0,'[]');
+select period(2.0, 1.0);
+select period(2.0, 3.0) -|- period(3.0, 4.0);
+select period_adjacent(period(2.0, 3.0), period(3.1, 4.0));
+select period_adjacent(period(2.0, 3.0), period(3.1, null));
+select period(2.0, 3.0, '[]') -|- period(3.0, 4.0, '()');
+select period(1.0, 2.0) -|- period(2.0, 3.0,'[]');
+select period_adjacent(period(2.0, 3.0, '(]'), period(1.0, 2.0, '(]'));
+select period(1.1, 3.3) <@ period(0.1,10.1);
+select period(0.1, 10.1) <@ period(1.1,3.3);
+select period(1.1, 2.2) - period(2.0, 3.0);
+select period(1.1, 2.2) - period(2.2, 3.0);
+select period(1.1, 2.2,'[]') - period(2.0, 3.0);
+select period_minus(period(10.1,12.2,'[]'), period(110.0,120.2,'(]'));
+select period_minus(period(10.1,12.2,'[]'), period(0.0,120.2,'(]'));
+select period(4.5, 5.5, '[]') && period(5.5, 6.5);
+select period(1.0, 2.0) << period(3.0, 4.0);
+select period(1.0, 3.0,'[]') << period(3.0, 4.0,'[]');
+select period(1.0, 3.0,'()') << period(3.0, 4.0,'()');
+select period(1.0, 2.0) >> period(3.0, 4.0);
+select period(3.0, 70.0) &< period(6.6, 100.0);
+select period(1.1, 2.2) < period(1.0, 200.2);
+select period(1.1, 2.2) < period(1.1, 1.2);
+select period(1.0, 2.0) + period(2.0, 3.0);
+select period(1.0, 2.0) + period(1.5, 3.0);
+select period(1.0, 2.0) + period(2.5, 3.0); -- should fail
+select period_merge(period(1.0, 2.0), period(2.0, 3.0));
+select period_merge(period(1.0, 2.0), period(1.5, 3.0));
+select period_merge(period(1.0, 2.0), period(2.5, 3.0)); -- shouldn't fail
+select period(1.0, 2.0) * period(2.0, 3.0);
+select period(1.0, 2.0) * period(1.5, 3.0);
+select period(1.0, 2.0) * period(2.5, 3.0);
+
+create table period_test2(nr period);
+INSERT INTO period_test2 VALUES('[, 5)');
+INSERT INTO period_test2 VALUES(period(1.1, 2.2));
+INSERT INTO period_test2 VALUES(period(1.1, 2.2));
+INSERT INTO period_test2 VALUES(period(1.1, 2.2,'()'));
+INSERT INTO period_test2 VALUES('empty');
+
+select * from period_test2 where nr = 'empty'::period;
+select * from period_test2 where nr = period(1.1, 2.2);
+select * from period_test2 where nr = period(1.1, 2.3);
+
+set enable_nestloop=t;
+set enable_mergejoin=f;
+select * from period_test natural join period_test2 order by nr;
+
+set enable_nestloop=f;
+set enable_mergejoin=f;
+select * from period_test natural join period_test2 order by nr;
+
+set enable_nestloop=f;
+set enable_mergejoin=t;
+select * from period_test natural join period_test2 order by nr;
+
+set enable_nestloop to default;
+set enable_mergejoin to default;
+DROP TABLE period_test;
+DROP TABLE period_test2;
+
+-- test GiST index that's been built incrementally
+create table test_period_gist(ir int4period);
+create index test_period_gist_idx on test_period_gist using gist (ir);
+insert into test_period_gist select int4period(g, g+10) from generate_series(1,2000) g;
+insert into test_period_gist select 'empty'::int4period from generate_series(1,500) g;
+insert into test_period_gist select int4period(g, g+10000) from generate_series(1,1000) g;
+insert into test_period_gist select 'empty'::int4period from generate_series(1,500) g;
+insert into test_period_gist select int4period(NULL,g*10,'(]') from generate_series(1,100) g;
+insert into test_period_gist select int4period(g*10,NULL,'(]') from generate_series(1,100) g;
+insert into test_period_gist select int4period(g, g+10) from generate_series(1,2000) g;
+-- first, verify non-indexed results
+SET enable_seqscan    = t;
+SET enable_indexscan  = f;
+SET enable_bitmapscan = f;
+select count(*) from test_period_gist where ir @> 'empty'::int4period;
+select count(*) from test_period_gist where ir = int4period(10,20);
+select count(*) from test_period_gist where ir @> 10;
+select count(*) from test_period_gist where ir @> int4period(10,20);
+select count(*) from test_period_gist where ir && int4period(10,20);
+select count(*) from test_period_gist where ir <@ int4period(10,50);
+select count(*) from test_period_gist where ir << int4period(100,500);
+select count(*) from test_period_gist where ir >> int4period(100,500);
+select count(*) from test_period_gist where ir &< int4period(100,500);
+select count(*) from test_period_gist where ir &> int4period(100,500);
+select count(*) from test_period_gist where ir -|- int4period(100,500);
+
+-- now check same queries using index
+SET enable_seqscan    = f;
+SET enable_indexscan  = t;
+SET enable_bitmapscan = f;
+
+select count(*) from test_period_gist where ir @> 'empty'::int4period;
+select count(*) from test_period_gist where ir = int4period(10,20);
+select count(*) from test_period_gist where ir @> 10;
+select count(*) from test_period_gist where ir @> int4period(10,20);
+select count(*) from test_period_gist where ir && int4period(10,20);
+select count(*) from test_period_gist where ir <@ int4period(10,50);
+select count(*) from test_period_gist where ir << int4period(100,500);
+select count(*) from test_period_gist where ir >> int4period(100,500);
+select count(*) from test_period_gist where ir &< int4period(100,500);
+select count(*) from test_period_gist where ir &> int4period(100,500);
+select count(*) from test_period_gist where ir -|- int4period(100,500);
+
+-- now check same queries using a bulk-loaded index
+drop index test_period_gist_idx;
+create index test_period_gist_idx on test_period_gist using gist (ir);
+select count(*) from test_period_gist where ir @> 'empty'::int4period;
+
+select count(*) from test_period_gist where ir = int4period(10,20);
+select count(*) from test_period_gist where ir @> 10;
+select count(*) from test_period_gist where ir @> int4period(10,20);
+select count(*) from test_period_gist where ir && int4period(10,20);
+select count(*) from test_period_gist where ir <@ int4period(10,50);
+select count(*) from test_period_gist where ir << int4period(100,500);
+select count(*) from test_period_gist where ir >> int4period(100,500);
+select count(*) from test_period_gist where ir &< int4period(100,500);
+select count(*) from test_period_gist where ir &> int4period(100,500);
+select count(*) from test_period_gist where ir -|- int4period(100,500);
+
+-- test SP-GiST index that's been built incrementally
+create table test_period_spgist(ir int4period);
+create index test_period_spgist_idx on test_period_spgist using spgist (ir);
+insert into test_period_spgist select int4period(g, g+10) from generate_series(1,2000) g;
+insert into test_period_spgist select 'empty'::int4period from generate_series(1,500) g;
+insert into test_period_spgist select int4period(g, g+10000) from generate_series(1,1000) g;
+insert into test_period_spgist select 'empty'::int4period from generate_series(1,500) g;
+insert into test_period_spgist select int4period(NULL,g*10,'(]') from generate_series(1,100) g;
+insert into test_period_spgist select int4period(g*10,NULL,'(]') from generate_series(1,100) g;
+insert into test_period_spgist select int4period(g, g+10) from generate_series(1,2000) g;
+
+-- first, verify non-indexed results
+
+SET enable_seqscan    = t;
+SET enable_indexscan  = f;
+SET enable_bitmapscan = f;
+select count(*) from test_period_spgist where ir @> 'empty'::int4period;
+select count(*) from test_period_spgist where ir = int4period(10,20);
+select count(*) from test_period_spgist where ir @> 10;
+select count(*) from test_period_spgist where ir @> int4period(10,20);
+select count(*) from test_period_spgist where ir && int4period(10,20);
+select count(*) from test_period_spgist where ir <@ int4period(10,50);
+select count(*) from test_period_spgist where ir << int4period(100,500);
+select count(*) from test_period_spgist where ir >> int4period(100,500);
+select count(*) from test_period_spgist where ir &< int4period(100,500);
+select count(*) from test_period_spgist where ir &> int4period(100,500);
+select count(*) from test_period_spgist where ir -|- int4period(100,500);
+
+-- now check same queries using index
+SET enable_seqscan    = f;
+SET enable_indexscan  = t;
+SET enable_bitmapscan = f;
+
+select count(*) from test_period_spgist where ir @> 'empty'::int4period;
+select count(*) from test_period_spgist where ir = int4period(10,20);
+select count(*) from test_period_spgist where ir @> 10;
+select count(*) from test_period_spgist where ir @> int4period(10,20);
+select count(*) from test_period_spgist where ir && int4period(10,20);
+select count(*) from test_period_spgist where ir <@ int4period(10,50);
+select count(*) from test_period_spgist where ir << int4period(100,500);
+select count(*) from test_period_spgist where ir >> int4period(100,500);
+select count(*) from test_period_spgist where ir &< int4period(100,500);
+select count(*) from test_period_spgist where ir &> int4period(100,500);
+select count(*) from test_period_spgist where ir -|- int4period(100,500);
+
+-- now check same queries using a bulk-loaded index
+drop index test_period_spgist_idx;
+create index test_period_spgist_idx on test_period_spgist using spgist (ir);
+
+select count(*) from test_period_spgist where ir @> 'empty'::int4period;
+select count(*) from test_period_spgist where ir = int4period(10,20);
+select count(*) from test_period_spgist where ir @> 10;
+select count(*) from test_period_spgist where ir @> int4period(10,20);
+select count(*) from test_period_spgist where ir && int4period(10,20);
+select count(*) from test_period_spgist where ir <@ int4period(10,50);
+select count(*) from test_period_spgist where ir << int4period(100,500);
+select count(*) from test_period_spgist where ir >> int4period(100,500);
+select count(*) from test_period_spgist where ir &< int4period(100,500);
+select count(*) from test_period_spgist where ir &> int4period(100,500);
+select count(*) from test_period_spgist where ir -|- int4period(100,500);
+
+-- test index-only scans
+explain (costs off)
+select ir from test_period_spgist where ir -|- int4period(10,20) order by ir;
+select ir from test_period_spgist where ir -|- int4period(10,20) order by ir;
+
+RESET enable_seqscan;
+RESET enable_indexscan;
+RESET enable_bitmapscan;
+-- test elem <@ period operator
+create table test_period_elem(i int4);
+create index test_period_elem_idx on test_period_elem (i);
+insert into test_period_elem select i from generate_series(1,100) i;
+select count(*) from test_period_elem where i <@ int4period(10,50);
+
+drop table test_period_elem;
+--
+-- Btree_gist is not included by default, so to test exclusion
+-- constraints with period types, use singleton int periods for the "="
+-- portion of the constraint.
+--
+create table test_period_excl(
+  room int4period,
+  speaker int4period,
+  during period,
+  exclude using gist (room with =, during with &&),
+  exclude using gist (speaker with =, during with &&)
+);
+insert into test_period_excl
+  values(int4period(123, 123, '[]'), int4period(1, 1, '[]'), '[2010-01-02 10:00, 2010-01-02 11:00)');
+insert into test_period_excl
+  values(int4period(123, 123, '[]'), int4period(2, 2, '[]'), '[2010-01-02 11:00, 2010-01-02 12:00)');
+insert into test_period_excl
+  values(int4period(123, 123, '[]'), int4period(3, 3, '[]'), '[2010-01-02 10:10, 2010-01-02 11:00)');
+insert into test_period_excl
+  values(int4period(124, 124, '[]'), int4period(3, 3, '[]'), '[2010-01-02 10:10, 2010-01-02 11:10)');
+insert into test_period_excl
+  values(int4period(125, 125, '[]'), int4period(1, 1, '[]'), '[2010-01-02 10:10, 2010-01-02 11:00)');
+
+-- test bigint periods
+select int8period(10000000000::int8, 20000000000::int8,'(]');
+
+-- test tstz periods
+set timezone to '-08';
+select '[2010-01-01 01:00:00 -05, 2010-01-01 02:00:00 -08)'::tstzperiod;
+
+-- should fail
+select '[2010-01-01 01:00:00 -08, 2010-01-01 02:00:00 -05)'::tstzperiod;
+set timezone to default;
+--
+-- Test user-defined period of floats
+--
+select '[123.001, 5.e9)'::floatrange @> 888.882::float8;
+
+create table float8period_test(f8r float8period, i int);
+insert into float8period_test values(float8period(-100.00007, '1.111113e9'), 42);
+select * from float8period_test;
+
+drop table float8period_test;
+
+--
+-- Test polymorphic type system
+--
+create function anyarray_anyperiod_func(a anyarray, r anyperiod)
+  returns anyelement as 'select $1[1] + lower($2);' language sql;
+select anyarray_anyperiod_func(ARRAY[1,2], int4period(10,20));
+
+-- should fail
+select anyarray_anyperiod_func(ARRAY[1,2], period(10,20));
+drop function anyarray_anyperiod_func(anyarray, anyperiod);
+-- should fail
+create function bogus_func(anyelement)
+  returns anyperiod as 'select int4period(1,10)' language sql;
+-- should fail
+create function bogus_func(int)
+  returns anyperiod as 'select int4period(1,10)' language sql;
+create function period_add_bounds(anyperiod)
+  returns anyelement as 'select lower($1) + upper($1)' language sql;
+select period_add_bounds(int4period(1, 17));
+
+select period_add_bounds(period(1.0001, 123.123));
+ period_add_bounds 
+
+create function Periods_sql(q anyperiod, b anyarray, out c anyelement)
+  as $$ select upper($1) + $2[1] $$
+  language sql;
+select Periods_sql(int4period(1,10), ARRAY[2,20]);
+
+select Periods_sql(period(1,10), ARRAY[2,20]);  -- match failure
+
+--
+-- Arrays of periods
+--
+select ARRAY[period(1.1, 1.2), period(12.3, 155.5)];
+            array             
+
+create table i8r_array (f1 int, f2 int8period[]);
+insert into i8r_array values (42, array[int8period(1,10), int8period(2,20)]);
+select * from i8r_array;
+drop table i8r_array;
+--
+-- Ranges of arrays
+--
+create type arrayperiod as period (subtype=int4[]);
+select arrayperiod(ARRAY[1,2], ARRAY[2,1]);
+select arrayperiod(ARRAY[2,1], ARRAY[1,2]);  -- fail
+select array[1,1] <@ arrayperiod(array[1,2], array[2,1]);
+select array[1,3] <@ arrayperiod(array[1,2], array[2,1]);
+
+--
+-- Ranges of composites
+--
+create type two_ints as (a int, b int);
+create type two_ints_period as period (subtype = two_ints);
+-- with force_parallel_mode on, this exercises tqueue.c's period remapping
+select *, row_to_json(upper(t)) as u from
+  (values (two_ints_period(row(1,2), row(3,4))),
+          (two_ints_period(row(5,6), row(7,8)))) v(t);
+
+drop type two_ints cascade;
+NOTICE:  drop cascades to type two_ints_period
+--
+-- OUT/INOUT/TABLE functions
+--
+create function outparam_succeed(i anyperiod, out r anyperiod, out t text)
+  as $$ select $1, 'foo'::text $$ language sql;
+select * from outparam_succeed(int4period(1,2));
+
+create function inoutparam_succeed(out i anyelement, inout r anyperiod)
+  as $$ select upper($1), $1 $$ language sql;
+select * from inoutparam_succeed(int4period(1,2));
+
+create function table_succeed(i anyelement, r anyperiod) returns table(i anyelement, r anyperiod)
+  as $$ select $1, $2 $$ language sql;
+select * from table_succeed(123, int4period(1,11));
+
+-- should fail
+create function outparam_fail(i anyelement, out r anyperiod, out t text)
+  as $$ select '[1,10]', 'foo' $$ language sql;
+--should fail
+create function inoutparam_fail(inout i anyelement, out r anyperiod)
+  as $$ select $1, '[1,10]' $$ language sql;
+--should fail
+create function table_fail(i anyelement) returns table(i anyelement, r anyperiod)
+  as $$ select $1, '[1,10]' $$ language sql;
