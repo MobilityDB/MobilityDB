@@ -26,10 +26,6 @@ setup)
 	if [ ! -z "$POSTGIS" ]; then
 		POSTGIS=`basename $POSTGIS .so`
 		echo "shared_preload_libraries = '$POSTGIS'" >> $WORKDIR/db/postgresql.conf 
-	else
-		echo "Can't find postgis-2.x in $PGSODIR" | tee -a $WORKDIR/log/initdb.log
-		find /usr -name 'postgis-*.so' | tee -a $WORKDIR/log/initdb.log
-		exit 1
 	fi
 	echo "max_locks_per_transaction = 128" >> $WORKDIR/db/postgresql.conf
 	echo "timezone = 'UTC'" >> $WORKDIR/db/postgresql.conf
