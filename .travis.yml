@@ -19,3 +19,5 @@ before_script:
 
 script: make && make test
 
+after_failure: ../test/scripts/print_fail.sh
+
