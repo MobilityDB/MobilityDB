@@ -23,7 +23,6 @@ src/PeriodSelfuncs.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
-src/SkipListAggregation.c
 src/synchronize.c
 src/TemporalAnalyze.c
 src/Temporal.c
@@ -57,7 +56,6 @@ src/sql/07_ArithmeticOps.in.sql
 src/sql/08_BooleanOps.in.sql
 src/sql/09_ComparisonOps.in.sql
 src/sql/10_AggregateFuncs.in.sql
-src/sql/10_ZSkipListAggregation.in.sql
 src/sql/11_RelativePosOps.in.sql
 src/sql/11_WAggregateFuncs.in.sql
 src/sql/12_BoundBoxOps.in.sql
