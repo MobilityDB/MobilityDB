@@ -1,5 +1,15 @@
 #!/bin/bash
 
+
+for file in tmptest/db/postgresql.conf; do
+	echo "==========="
+	echo "file: $file"
+	echo "==========="
+	echo
+	cat $file
+	echo
+done
+
 for file in `find tmptest/log -type f`; do
 	echo "==========="
 	echo "file: $file"
