@@ -16,6 +16,9 @@ addons:
     - postgresql-11
     - postgis
     - liblwgeom-dev
+    - libpq-dev
+    - libpqtypes-dev
+    - postgresql-server-dev-11
 
 before_script:
   - mkdir build
