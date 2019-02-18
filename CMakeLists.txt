@@ -1,10 +1,74 @@
 cmake_minimum_required(VERSION 3.1) 
 project(MobilityDB VERSION 0.0.1)
 
+set(SRCS
+src/AggregateFuncs.c
+src/ArithmeticOps.c
+src/BooleanOps.c
+src/BoundBoxOps.c
+src/ComparisonOps.c
+src/DoubleN.c
+src/GenericOps.c
+src/indexesstat.c
+src/IndexGistTemporal.c
+src/IndexGistTime.c
+src/IndexGistTnumber.c
+src/IndexSpgistTemporal.c
+src/IndexSpgistTime.c
+src/IndexSpgistTnumber.c
+src/OidCache.c
+src/Parser.c
+src/Period.c
+src/PeriodSelfuncs.c
+src/PeriodSet.c
+src/Range.c
+src/RelativePosOps.c
+src/SkipListAggregation.c
+src/synchronize.c
+src/TemporalAnalyze.c
+src/Temporal.c
+src/TemporalI.c
+src/TemporalInst.c
+src/TemporalS.c
+src/TemporalSelfuncs.c
+src/TemporalSeq.c
+src/TemporalTypes.c
+src/TempSelFuncs.c
+src/TimeOps.c
+src/TimeSelfuncs.c
+src/TimestampSet.c
+src/TimeTypanalyze.c
+src/WAggregateFuncs.c
+)
+
+set(SQL
+src/sql/00_Catalog.in.sql
+src/sql/01_Period.in.sql
+src/sql/01_PeriodSet.in.sql
+src/sql/01_Range.in.sql
+src/sql/01_TimestampSet.in.sql
+src/sql/01_TimeTypesOps.in.sql
+src/sql/02_IndexGistTime.in.sql
+src/sql/02_IndexSPGistTime.in.sql
+src/sql/02_Temporal.in.sql
+src/sql/06_DoubleN.in.sql
+src/sql/06_TempSelFuncs.in.sql
+src/sql/07_ArithmeticOps.in.sql
+src/sql/08_BooleanOps.in.sql
+src/sql/09_ComparisonOps.in.sql
+src/sql/10_AggregateFuncs.in.sql
+src/sql/10_ZSkipListAggregation.in.sql
+src/sql/11_RelativePosOps.in.sql
+src/sql/11_WAggregateFuncs.in.sql
+src/sql/12_BoundBoxOps.in.sql
+src/sql/13_IndexGistTemporal.in.sql
+src/sql/13_IndexSPGistTemporal.in.sql
+src/sql/99_OpCache.in.sql
+)
+
 include(CTest)
 enable_testing()
 
-#find_package(PostgreSQL 11 REQUIRED) # the cmake PG module is beyond broken
 set(PG_REQUIRED_VERSION "PostgreSQL 11")
 
 find_program(PGCONFIG pg_config)
@@ -21,9 +85,6 @@ execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARI
 include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
 include_directories("include")
 
-#link_directories(${PostgreSQL_LIBRARY_DIRS})
-#link_directories(${PostgreSQL_EXTLIB_DIR})
-
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if(CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wno-misleading-indentation)
@@ -32,9 +93,6 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 string(TOLOWER ${CMAKE_PROJECT_NAME} LCNAME)
-
-file(GLOB SRCS "src/*.c")
-file(GLOB SQL "src/sql/*.in.sql")
 
 set(CONTROLIN "control.in")
 set(CONTROLOUT "${LCNAME}.control")
