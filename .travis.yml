@@ -14,8 +14,8 @@ addons:
       key_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
     packages:
     - postgresql-11
-	- postgis
-	- liblwgeom-dev
+    - postgis
+    - liblwgeom-dev
 
 before_script:
   - mkdir build
