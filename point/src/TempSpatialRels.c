@@ -685,29 +685,60 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	}
 	
 	/* Restrict to the buffered geometry */
+	TemporalInst *instants[2];
 	Datum geo_buffer = call_function2(buffer, geo, dist);
 	int count1;
 	TemporalSeq **atbuffer = tpointseq_at_geometry2(seq, geo_buffer, &count1);
+	if (atbuffer == NULL)
+	{
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		instants[0] = temporalinst_make(BoolGetDatum(false),
+			seq->period.lower, BOOLOID);
+		instants[1] = temporalinst_make(BoolGetDatum(false),
+			seq->period.upper, BOOLOID);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			seq->period.lower_inc, seq->period.upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		*count = 1;
+		return result;
+	}
+	
 	/* Get the periods during which the value is true */
 	Period **periods = palloc(sizeof(Period *) * count1);
 	for (int i = 0; i < count1; i++)
 		periods[i] = &atbuffer[i]->period;
-	PeriodSet *ps = periodset_from_periodarr_internal(periods, count1, false);
+	/* The period set must be normalized, i.e., last parameter must be true */
+	PeriodSet *ps = periodset_from_periodarr_internal(periods, count1, true);
 	for (int i = 0; i < count1; i++)
 		pfree(atbuffer[i]);
 	pfree(periods);
 	/* Get the periods during which the value is false */
-	TemporalS *minus = temporalseq_minus_periodset(seq, ps);
-	/* The original sequence will be split into 2 * count1 + 1 sequences
+	PeriodSet *minus = minus_period_periodset_internal(&seq->period, ps);
+	if (minus == NULL)
+	{
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		instants[0] = temporalinst_make(BoolGetDatum(true),
+			seq->period.lower, BOOLOID);
+		instants[1] = temporalinst_make(BoolGetDatum(true),
+			seq->period.upper, BOOLOID);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			seq->period.lower_inc, seq->period.upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		*count = 1;
+		return result;
+	}
+	
+	/* The original sequence will be split into ps->count + minus->count sequences
 		|----------------------|
+		      t     t     t
 			|---| |---| |---|
+		  f      f     f      f 
+		|---|   |-|   |-|    |-|
 	*/
-	*count = 2 * count1 + 1;
+	*count = ps->count + minus->count;
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * *count);
-	TemporalInst *instants[2];
 	Period *p1 = periodset_per_n(ps, 0);
-	TemporalSeq *seq1 = temporals_seq_n(minus, 0);
-	Period *p2 = &seq1->period;
+	Period *p2 = periodset_per_n(minus, 0);
 	bool truevalue = period_cmp_internal(p1, p2) < 0;
 	int j = 0, k = 0;
 	for (int i = 0; i < *count; i++)
@@ -724,8 +755,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 		}
 		else
 		{
-			seq1 = temporals_seq_n(minus, k);
-			p2 = &seq1->period;
+			p2 = periodset_per_n(minus, k);
 			instants[0] = temporalinst_make(BoolGetDatum(false), p2->lower, BOOLOID);
 			instants[1] = temporalinst_make(BoolGetDatum(false), p2->upper, BOOLOID);
 			result[i] = temporalseq_from_temporalinstarr(instants, 2, 
@@ -1340,29 +1370,6 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	return result;
 }
 
-static Temporal *
-tspatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum))
-{
-	Temporal *result = NULL;
-	if (temp1->type == TEMPORALINST)
-		result = (Temporal *)oper2_temporalinst_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2, operator, BOOLOID);
-	else if (temp1->type == TEMPORALI)
-		result = (Temporal *)oper2_temporali_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2, operator, BOOLOID);
-	else if (temp1->type == TEMPORALSEQ)
-		result = (Temporal *)oper2_temporalseq_temporalseq_crossdisc(
-			(TemporalSeq *)temp1, (TemporalSeq *)temp2, operator, BOOLOID);
-	else if (temp1->type == TEMPORALS)
-		result = (Temporal *)oper2_temporals_temporals_crossdisc(
-			(TemporalS *)temp1, (TemporalS *)temp2, operator, BOOLOID);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-	return result;
-}
-
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -1462,19 +1469,10 @@ tcontains_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_contains);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_contains, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1683,15 +1681,6 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum (*operator)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -1702,9 +1691,9 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, operator);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		operator, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1915,15 +1904,6 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
 	Datum (*operator)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
@@ -1934,9 +1914,9 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, operator);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		operator, BOOLOID);
 	
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2044,19 +2024,10 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_disjoint);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_disjoint, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2163,19 +2134,10 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_equals);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_equals, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2359,61 +2321,6 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
  
-PG_FUNCTION_INFO_V1(tintersects_tpoint_tpoint_old);
-
-PGDLLEXPORT Datum
-tintersects_tpoint_tpoint_old(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Datum (*operator)(Datum, Datum);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			operator = &geom_intersects3d;
-		else
-			operator = &geom_intersects2d;
-	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, operator);
-
-	pfree(sync1); pfree(sync2); 
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(tintersects_tpoint_tpoint);
 
 PGDLLEXPORT Datum
@@ -2558,19 +2465,10 @@ ttouches_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_touches);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_touches, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2678,19 +2576,10 @@ twithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
 
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_within);
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_within, BOOLOID);
 
-	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -3046,19 +2935,10 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-	
-	Temporal *result = tspatialrel_tpoint_tpoint(sync1, sync2, &geom_relate);
 
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		&geom_relate, BOOLOID);
+
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -3168,38 +3048,10 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-	
-	Temporal *result = NULL;
-	if (temp1->type == TEMPORALINST) 
-		result = (Temporal *)oper3_temporalinst_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2, pattern, 
-			&geom_relate_pattern, BOOLOID);
-	else if (temp1->type == TEMPORALI) 
-		result = (Temporal *)oper3_temporali_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2, pattern, 
-			&geom_relate_pattern, BOOLOID);
-	else if (temp1->type == TEMPORALSEQ) 
-		result = (Temporal *)oper3_temporalseq_temporalseq_crossdisc(
-			(TemporalSeq *)temp1, (TemporalSeq *)temp2, pattern, 
-			&geom_relate_pattern, BOOLOID);
-	else if (temp1->type == TEMPORALS) 
-		result = (Temporal *)oper3_temporals_temporals_crossdisc(
-			(TemporalS *)temp1, (TemporalS *)temp2, pattern, 
-			&geom_relate_pattern, BOOLOID);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper3_temporal_temporal_crossdisc(temp1, temp2, 
+		pattern, &geom_relate_pattern, BOOLOID);
+
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
