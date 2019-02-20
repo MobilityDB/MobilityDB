@@ -2222,7 +2222,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	int countinter = DatumGetInt32(call_function1(
-			LWGEOM_numgeometries_collection, intersections));
+		LWGEOM_numgeometries_collection, intersections));
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
 	double duration = (double)(inst2->t) - (double)(inst1->t);
@@ -2904,7 +2904,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Datum (*operator)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))
+		if (MOBDB_FLAGS_GET_Z(temp1->flags))
 			operator = &geom_distance3d;
 		else
 			operator = &geom_distance2d;

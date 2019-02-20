@@ -67,18 +67,8 @@ tand_tbool_tbool(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = oper2_temporal_temporal(sync1, sync2, &datum_and, BOOLOID);
-
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper2_temporal_temporal(temp1, temp2, 
+		&datum_and, BOOLOID, false);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -121,18 +111,8 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = oper2_temporal_temporal(sync1, sync2, &datum_or, BOOLOID);
-
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper2_temporal_temporal(temp1, temp2, 
+		&datum_or, BOOLOID, false);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
