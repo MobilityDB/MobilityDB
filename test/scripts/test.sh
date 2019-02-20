@@ -72,9 +72,9 @@ run_compare)
 	done
 	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
-		xzcat $TESTFILE | $PSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		xzcat $TESTFILE | $PSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	else
-		$PSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		$PSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	fi
 
 	if [ ! -z "$TEST_GENERATE" ]; then
