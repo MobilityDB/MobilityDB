@@ -46,7 +46,7 @@ setup)
 	;;
 
 create_ext)
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
 
 	if [ ! -z "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 | tee $WORKDIR/log/create_ext.log 
@@ -65,7 +65,11 @@ run_compare)
 	TESTNAME=$3
 	TESTFILE=$4
 	
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
+
+	while ! $PSQL -l; do
+		sleep 1
+	done
 	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
 		xzcat $TESTFILE | $PSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out
@@ -91,7 +95,12 @@ run_passfail)
 	TESTNAME=$3
 	TESTFILE=$4
 
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
+
+	while ! $PSQL -l; do
+		sleep 1
+	done
+	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
 		xzcat $TESTFILE | $FAILPSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out
 	else
