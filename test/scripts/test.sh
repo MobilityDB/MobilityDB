@@ -79,14 +79,14 @@ run_compare)
 
 	if [ ! -z "$TEST_GENERATE" ]; then
 		echo "TEST_GENERATE is on; assuming correct output"
-		gzip < $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out.gz
+		cat $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out
 		exit 0
 	else
 		echo 
 		echo "Differences"
 		echo "==========="
 		echo
-		zdiff -urdN $WORKDIR/out/$TESTNAME.out `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out.gz 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
+		diff -urdN $WORKDIR/out/$TESTNAME.out `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
 		exit $?
 	fi
 	;;

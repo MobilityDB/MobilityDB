@@ -1,0 +1,252 @@
+SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompointinst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT numInstants(tcount(inst)) FROM tbl_tgeompointinst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompointi;
+ numinstants 
+-------------
+         525
+(1 row)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tgeompointi;
+ numinstants 
+-------------
+         525
+(1 row)
+
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          68
+        1 |          51
+        2 |          37
+        3 |          72
+        4 |          47
+        5 |          44
+        6 |          56
+        7 |          48
+        8 |          54
+        9 |          49
+(10 rows)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          68
+        1 |          51
+        2 |          37
+        3 |          72
+        4 |          47
+        5 |          44
+        6 |          56
+        7 |          48
+        8 |          54
+        9 |          49
+(10 rows)
+
+SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompointseq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tgeompointseq;
+ numsequences 
+--------------
+          100
+(1 row)
+
+SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompointseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompointseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoints;
+ numsequences 
+--------------
+          501
+(1 row)
+
+SELECT numSequences(tcount(ts)) FROM tbl_tgeompoints;
+ numsequences 
+--------------
+          494
+(1 row)
+
+SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           37
+        1 |           44
+        2 |           55
+        3 |           62
+        4 |           67
+        5 |           38
+        6 |           46
+        7 |           41
+        8 |           52
+        9 |           54
+(10 rows)
+
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           37
+        1 |           44
+        2 |           55
+        3 |           62
+        4 |           67
+        5 |           38
+        6 |           46
+        7 |           41
+        8 |           52
+        9 |           54
+(10 rows)
+
+SELECT numInstants(tcount(inst)) FROM tbl_tgeogpointinst;
+ numinstants 
+-------------
+         100
+(1 row)
+
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpointinst GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          10
+        1 |          10
+        2 |          10
+        3 |          10
+        4 |          10
+        5 |          10
+        6 |          10
+        7 |          10
+        8 |          10
+        9 |          10
+(10 rows)
+
+SELECT numInstants(tcount(ti)) FROM tbl_tgeogpointi;
+ numinstants 
+-------------
+         583
+(1 row)
+
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpointi GROUP BY k%10 ORDER BY k%10;
+ ?column? | numinstants 
+----------+-------------
+        0 |          66
+        1 |          56
+        2 |          61
+        3 |          49
+        4 |          57
+        5 |          62
+        6 |          56
+        7 |          62
+        8 |          60
+        9 |          54
+(10 rows)
+
+SELECT numSequences(tcount(seq)) FROM tbl_tgeogpointseq;
+ numsequences 
+--------------
+          101
+(1 row)
+
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpointseq GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           10
+        1 |           10
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
+(10 rows)
+
+SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoints;
+ numsequences 
+--------------
+          543
+(1 row)
+
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoints GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           46
+        1 |           59
+        2 |           65
+        3 |           55
+        4 |           41
+        5 |           49
+        6 |           49
+        7 |           61
+        8 |           61
+        9 |           55
+(10 rows)
+
