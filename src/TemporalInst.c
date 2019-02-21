@@ -228,6 +228,7 @@ tintinst_as_tfloatinst(TemporalInst *inst)
 {
 	TemporalInst *result = temporalinst_copy(inst);
 	result->valuetypid = FLOAT8OID;
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
 	Datum *value_ptr = temporalinst_value_ptr(result);
 	*value_ptr = Float8GetDatum((double)DatumGetInt32(temporalinst_value(inst)));
 	return result;

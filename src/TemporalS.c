@@ -542,20 +542,35 @@ temporals_read(StringInfo buf, Oid valuetypid)
 TemporalS *
 tints_as_tfloats(TemporalS *ts)
 {
-	TemporalS *result = temporals_copy(ts);
-	result->valuetypid = FLOAT8OID;
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return tintseq_as_tfloatseq(temporals_seq_n(ts, 0));
+
+	/* General case */
+	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	int *countseqs = palloc0(sizeof(int) * ts->count);
+	int totalseqs = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(result, i);
-		seq->valuetypid = FLOAT8OID;
-		for (int j = 0; j < seq->count; j++)
-		{
-			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			inst->valuetypid = FLOAT8OID;
-			Datum *value_ptr = temporalinst_value_ptr(inst);
-			*value_ptr = Float8GetDatum((double)DatumGetInt32(temporalinst_value(inst)));
-		}
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		sequences[i] = tintseq_as_tfloatseq1(seq, &countseqs[i]);
+		totalseqs += countseqs[i];
 	}
+	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		for (int j = 0; j < countseqs[i]; j ++)
+			allseqs[k++] = sequences[i][j];
+		if (countseqs[i] != 0)
+			pfree(sequences[i]);
+	}
+	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
+		totalseqs, true);	
+	pfree(sequences); pfree(countseqs);
+	for (int i = 0; i < totalseqs; i++)
+		pfree(allseqs[i]);
+	 pfree(allseqs); 
 	return result;
 }
 

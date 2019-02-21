@@ -2328,7 +2328,6 @@ tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
 		inst1 = inst2;
 		lower_inc = true;
 	}
-
 	if (totalseqs == 0)
 	{
 		pfree(countseqs);

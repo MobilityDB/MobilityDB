@@ -130,7 +130,7 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
-		&datum_add, valuetypid, false);
+		&datum_add, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -184,7 +184,7 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
-		&datum_sub, valuetypid, false);
+		&datum_sub, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -239,8 +239,11 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
-		&datum_mult, valuetypid, crossings);
+	Temporal *result = crossings ?
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_mult, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_mult, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -307,8 +310,11 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
-		&datum_div, valuetypid, crossings);
+	Temporal *result = crossings ?
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_div, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_div, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

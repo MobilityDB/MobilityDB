@@ -329,7 +329,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else
 		operator = &geog_distance;
 	Temporal *result = sync_oper2_temporal_temporal(temp1, temp2,
-		operator, FLOAT8OID, true);
+		operator, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
