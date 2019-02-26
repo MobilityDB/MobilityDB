@@ -205,15 +205,19 @@ temporalinst_read(StringInfo buf, Oid valuetypid)
 	return temporalinst_make(value, t, valuetypid);
 }
 
+/*****************************************************************************
+ * Intersection function
+ *****************************************************************************/
+
 bool
-synchronize_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
 	/* Test whether the two temporal values overlap on time */
 	if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
 		return false;
-	*sync1 = temporalinst_copy(inst1);
-	*sync2 = temporalinst_copy(inst2);
+	*inter1 = temporalinst_copy(inst1);
+	*inter2 = temporalinst_copy(inst2);
 	return true;
 }
 

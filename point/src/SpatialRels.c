@@ -190,7 +190,7 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
  * in order to return NULL if it is not the case.
  *****************************************************************************/
 
-/* Temporal rel geo */
+/* Temporal spatialrel geo */
 
 static bool
 spatialrel_tpointinst_geo(TemporalInst *inst, Datum geo, 
@@ -253,7 +253,7 @@ spatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 
 /*****************************************************************************/
 
-/* Temporal rel Temporal */
+/* Temporal spatialrel Temporal */
 
 static bool
 spatialrel_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2, 
@@ -346,7 +346,7 @@ spatialrel_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
  * Generic ternary functions
  *****************************************************************************/
 
-/* Temporal rel Geo */
+/* Temporal spatialrel Geo */
 
 static bool
 spatialrel3_tpointinst_geo(TemporalInst *inst, Datum geo, Datum param,
@@ -408,7 +408,7 @@ spatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
 
 /*****************************************************************************/
 
-/* Temporal rel Temporal */
+/* Temporal spatialrel Temporal */
 
 static bool
 spatialrel3_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2, Datum param,
@@ -660,7 +660,7 @@ relate2_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2)
 
 /*****************************************************************************
  * Dispatch functions
- * It is supposed that the temporal values havee been synchronized before and
+ * It is supposed that the temporal values have been intersected before and
  * therefore they are both of the same duration.
  *****************************************************************************/
 
@@ -873,16 +873,16 @@ contains_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_contains);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_contains);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -988,16 +988,16 @@ containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_containsproperly);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_containsproperly);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1121,9 +1121,9 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -1139,8 +1139,8 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, operator);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, operator);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1264,9 +1264,9 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -1282,8 +1282,8 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, operator);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, operator);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1389,16 +1389,16 @@ crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_crosses);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_crosses);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1504,16 +1504,16 @@ disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_disjoint);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_disjoint);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1619,16 +1619,16 @@ equals_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_equals);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_equals);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1748,9 +1748,9 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -1765,8 +1765,8 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, operator);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, operator);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1872,16 +1872,16 @@ overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_overlaps);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_overlaps);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -1987,16 +1987,16 @@ touches_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_touches);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_touches);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -2102,16 +2102,16 @@ within_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	bool result = spatialrel_tpoint_tpoint(sync1, sync2, &geom_within);
-	pfree(sync1); pfree(sync2); 
+	bool result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_within);
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -2234,9 +2234,9 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2258,23 +2258,23 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("Operation not supported")));
 
 	bool result = false;
-	if (sync1->type == TEMPORALINST) 
+	if (inter1->type == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst(
-			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, operator);
-	else if (sync1->type == TEMPORALI) 
+			(TemporalInst *)inter1, (TemporalInst *)inter2, dist, operator);
+	else if (inter1->type == TEMPORALI) 
 		result = spatialrel3_tpointi_tpointi(
-			(TemporalI *)sync1, (TemporalI *)sync2, dist, operator);
-	else if (sync1->type == TEMPORALSEQ) 
+			(TemporalI *)inter1, (TemporalI *)inter2, dist, operator);
+	else if (inter1->type == TEMPORALSEQ) 
 		result = dwithin_tpointseq_tpointseq(
-			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, operator);
-	else if (sync1->type == TEMPORALS) 
+			(TemporalSeq *)inter1, (TemporalSeq *)inter2, dist, operator);
+	else if (inter1->type == TEMPORALS) 
 		result = dwithin_tpoints_tpoints(
-			(TemporalS *)sync1, (TemporalS *)sync2, dist, operator);
+			(TemporalS *)inter1, (TemporalS *)inter2, dist, operator);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	pfree(sync1); pfree(sync2); 
+	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -2401,9 +2401,9 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2411,21 +2411,21 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	
 	Temporal *result = NULL;
-	if (sync1->type == TEMPORALINST)
+	if (inter1->type == TEMPORALINST)
 		result = (Temporal *)relate2_tpointinst_tpointinst(
-			(TemporalInst *)sync1, (TemporalInst *)sync2);
-	else if (sync1->type == TEMPORALI)
+			(TemporalInst *)inter1, (TemporalInst *)inter2);
+	else if (inter1->type == TEMPORALI)
 		result = (Temporal *)relate2_tpointi_tpointi(
-			(TemporalI *)sync1, (TemporalI *)sync2);			
-	else if (sync1->type == TEMPORALSEQ)
+			(TemporalI *)inter1, (TemporalI *)inter2);			
+	else if (inter1->type == TEMPORALSEQ)
 		result = (Temporal *)relate2_tpointseq_tpointseq(
-			(TemporalSeq *)sync1, (TemporalSeq *)sync2);
+			(TemporalSeq *)inter1, (TemporalSeq *)inter2);
 	/* The function is not defined for TEMPORALS */
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	pfree(sync1); pfree(sync2); 
+	pfree(inter1); pfree(inter2); 
     PG_FREE_IF_COPY(temp1, 0);
     PG_FREE_IF_COPY(temp2, 1);
     if (result == NULL)
@@ -2534,18 +2534,18 @@ relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
+	Temporal *inter1, *inter2;
+	/* Returns false if the temporal points do not intersect in time */
+	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
 
-	bool result = spatialrel3_tpoint_tpoint(sync1, sync2, pattern, &geom_relate_pattern);
+	bool result = spatialrel3_tpoint_tpoint(inter1, inter2, pattern, &geom_relate_pattern);
 
-	pfree(sync1); pfree(sync2); 
+	pfree(inter1); pfree(inter2); 
     PG_FREE_IF_COPY(temp1, 0);
     PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);

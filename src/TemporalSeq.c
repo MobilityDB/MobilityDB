@@ -711,41 +711,41 @@ temporalseq_find_timestamp(TemporalSeq *seq, TimestampTz t)
 }
 
 /*****************************************************************************
- * Synchronize functions
+ * Intersection functions
  *****************************************************************************/
-
+ 
 /* 
- * Synchronize a TemporalSeq and a TemporalInst values. 
+ * Intersection of a TemporalSeq and a TemporalInst values. 
  */
 
 bool
-synchronize_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
 	TemporalInst *inst1 = temporalseq_at_timestamp(seq, inst->t);
 	if (inst1 == NULL)
 		return false;
 	
-	*sync1 = inst1;
-	*sync2 = temporalinst_copy(inst1);
+	*inter1 = inst1;
+	*inter2 = temporalinst_copy(inst1);
 	return true;
 }
 
 bool
-synchronize_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
-	return synchronize_temporalseq_temporalinst(seq, inst, sync2, sync1);
+	return intersection_temporalseq_temporalinst(seq, inst, inter2, inter1);
 }
 
 /* 
- * Synchronize a TemporalSeq and a TemporalI values. Each value keeps  
+ * Intersection of a TemporalSeq and a TemporalI values. Each value keeps  
  * the instants in the intersection of their time spans.
  */
 
 bool
-synchronize_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
-	TemporalI **sync1, TemporalI **sync2)
+intersection_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+	TemporalI **inter1, TemporalI **inter2)
 {
 	/* Test whether the bounding timespan of the two temporal values overlap */
 	Period p;
@@ -773,8 +773,8 @@ synchronize_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 		return false;
 	}
 	
-	*sync1 = temporali_from_temporalinstarr(instants1, k);
-	*sync2 = temporali_from_temporalinstarr(instants2, k);
+	*inter1 = temporali_from_temporalinstarr(instants1, k);
+	*inter2 = temporali_from_temporalinstarr(instants2, k);
 	
 	for (int i = 0; i < k; i++) 
 		pfree(instants1[i]);
@@ -784,18 +784,38 @@ synchronize_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 }
 
 bool
-synchronize_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
-	TemporalI **sync1, TemporalI **sync2)
+intersection_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
+	TemporalI **inter1, TemporalI **inter2)
 {
-	return synchronize_temporalseq_temporali(seq, ti, sync2, sync1);
+	return intersection_temporalseq_temporali(seq, ti, inter2, inter1);
 }
 
 /* 
+ * Intersection two TemporalSeq values. 
+ */
+
+bool
+intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+	TemporalSeq **inter1, TemporalSeq **inter2)
+{
+	/* Test whether the bounding timespan of the two temporal values overlap */
+	Period *inter = intersection_period_period_internal(&seq1->period, 
+		&seq2->period);
+	if (inter == NULL)
+		return false;
+	
+	*inter1 = temporalseq_at_period(seq1, inter);
+	*inter2 = temporalseq_at_period(seq2, inter);
+	
+	return true;
+}
+
+/*****************************************************************************
  * Synchronize two TemporalSeq values. The values are split into (redundant)
  * segments defined over the same set of instants covering the intersection
  * of their time spans. Depending on the value of the argument crossings,
  * potential crossings between successive pair of instants are added.
- */
+ *****************************************************************************/
 
 bool
 temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1,
@@ -836,92 +856,73 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		return true;
 	}
 	
-	int n1 = temporalseq_find_timestamp(seq1, inter->lower);
-	int n2 = temporalseq_find_timestamp(seq2, inter->lower);
-	/* The lower bound of the intersection may be exclusive */
-	if (n1 == -1) n1 = 0;
-	if (n2 == -1) n2 = 0;
-	int count = (seq1->count - n1 + seq2->count - n2) * 2;
+	/* 
+	 * General case 
+	 * seq1 =  ... *      *   *   *       *>
+	 * seq2 =        <*               *      * ...
+	 * sync1 =       <X C * C * C X C X C *>
+	 * sync1 =       <* C X C X C * C * C X>
+	 * where X are values added for synchronization and C are values added
+	 * for the crossings
+	 */
+	TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
+	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
+	TemporalInst *tofreeinst = NULL;
+	int i = 0, j = 0, k = 0, l = 0;
+	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
+	{
+		inst1 = temporalseq_at_timestamp(seq1, inter->lower);
+		tofreeinst = inst1;
+		i = temporalseq_find_timestamp(seq1, inter->lower);
+	}
+	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
+	{
+		inst2 = temporalseq_at_timestamp(seq2, inter->lower);
+		tofreeinst = inst2;
+		j = temporalseq_find_timestamp(seq2, inter->lower);
+	}
+	int count = (seq1->count - i + seq2->count - j) * 2;
 	TemporalInst **instants1 = palloc(sizeof(TemporalInst *) * count);
 	TemporalInst **instants2 = palloc(sizeof(TemporalInst *) * count);
 	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count * 2);
-	int i = n1, j = n2, k = 0, l = 0;
-	TemporalInst *inst1 = temporalseq_inst_n(seq1, i);
-	TemporalInst *inst2 = temporalseq_inst_n(seq2, j);
-	TemporalInst *next1, *next2, *cross1, *cross2;
-	while (i < seq1->count && j < seq2->count)
+	if (tofreeinst != NULL)
+		tofree[l++] = tofreeinst;
+	while (i < seq1->count && j < seq2->count &&
+		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
+		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
 	{
-		if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
+		int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+		if (cmp == 0)
 		{
-			/* If not the first instant add potential crossing before adding
-			   the new instants */
-			if (crossings && k > 0 && 
-				temporalseq_add_crossing(instants1[k-1], inst1,
-					instants2[k-1], inst2, &cross1, &cross2))
-			{
-				instants1[k] = cross1; instants2[k++] = cross2;
-				tofree[l++] = cross1; tofree[l++] = cross2; 
-			}
-			instants1[k] = inst1; instants2[k++] = inst2;
-			if (i == seq1->count-1 || j == seq2->count-1)
-				break;
-			next1 = temporalseq_inst_n(seq1, i+1);
-			next2 = temporalseq_inst_n(seq2, j+1);
+			i++; j++;
 		}
-		else if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
+		else if (cmp < 0)
 		{
-			next1 = temporalseq_inst_n(seq1, i+1);
-			inst1 = temporalseq_at_timestamp1(inst1, next1, inst2->t);
-			tofree[l++] = inst1;
-			/* If not the first instant add potential crossing before adding
-			   the new instants */
-			if (crossings && k > 0 && 
-				temporalseq_add_crossing(instants1[k-1], inst1,
-					instants2[k-1], inst2, &cross1, &cross2))
-			{
-				instants1[k] = cross1; instants2[k++] = cross2;
-				tofree[l++] = cross1; tofree[l++] = cross2; 
-			}
-			instants1[k] = inst1; instants2[k++] = inst2;
-			if (j == seq2->count-1)
-				break;
-			next2 = temporalseq_inst_n(seq2, j+1);
+			i++;
+			inst2 = temporalseq_at_timestamp(seq2, inst1->t);
+			tofree[l++] = inst2;
 		}
 		else 
 		{
-			next2 = temporalseq_inst_n(seq2, j+1);
-			inst2 = temporalseq_at_timestamp1(inst2, next2, inst1->t);
-			tofree[l++] = inst2;
-			/* If not the first instant add potential crossing before adding
-			   the new instants */
-			if (crossings && k > 0 && 
-				temporalseq_add_crossing(instants1[k-1], inst1,
-					instants2[k-1], inst2, &cross1, &cross2))
-			{
-				instants1[k] = cross1; instants2[k++] = cross2;
-				tofree[l++] = cross1; tofree[l++] = cross2; 
-			}
-			instants1[k] = inst1; instants2[k++] = inst2;
-			if (i == seq1->count-1)
-				break;
-			next1 = temporalseq_inst_n(seq1, i+1);
-		}
-		if (timestamp_cmp_internal(next1->t, next2->t) < 0)
-		{
-			i++;
-			inst1 = next1;
-		}
-		else if (timestamp_cmp_internal(next2->t, next1->t) < 0)
-		{
 			j++;
-			inst2 = next2;
+			inst1 = temporalseq_at_timestamp(seq1, inst2->t);
+			tofree[l++] = inst1;
 		}
-		else
+		/* If not the first instant add potential crossing before adding
+		   the new instants */
+		TemporalInst *cross1, *cross2;
+		if (crossings && k > 0 && 
+			temporalseq_add_crossing(instants1[k-1], inst1,
+				instants2[k-1], inst2, &cross1, &cross2))
 		{
-			i++; j++;
-			inst1 = next1;
-			inst2 = next2;
+			instants1[k] = cross1; instants2[k++] = cross2;
+			tofree[l++] = cross1; tofree[l++] = cross2; 
 		}
+		instants1[k] = inst1; instants2[k++] = inst2;
+		if (i == seq1->count || j == seq2->count)
+			break;
+		inst1 = temporalseq_inst_n(seq1, i);
+		inst2 = temporalseq_inst_n(seq2, j);
 	}
 	if (k == 0)
 	{
@@ -994,7 +995,7 @@ tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	double min = Min(d1, d2);
 	double max = Max(d1, d2);
 	double fraction = min + (max - min)/2;
-	if (fraction <= 0.0 || fraction >= 1.0)
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		/* Minimum/maximum occurs out of the period */
 		return false;
 
@@ -1029,7 +1030,7 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		return false;
 
 	double fraction = (x3 - x1) / denum;
-	if (fraction <= 0.0 || fraction >= 1.0)
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		/* Intersection occurs out of the period */
 		return false;
 
@@ -1106,7 +1107,7 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 
 		fraction = (f1 + f2 + f3 + f4) / denum;
 	}
-	if (fraction <= 0.0 || fraction >= 1.0)
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		return false;
 	double duration = (double)(end1->t) - (double)(start1->t);
 	*t = (double)(start1->t) + (duration * fraction);

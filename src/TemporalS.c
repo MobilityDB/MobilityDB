@@ -263,39 +263,39 @@ temporals_copy(TemporalS *ts)
 }
 
 /*****************************************************************************
- * Synchronize functions
+ * Intersection functions
  *****************************************************************************/
 
 /* 
- * Synchronize a TemporalSeq and a TemporalInst values. 
+ * Intersection of a TemporalSeq and a TemporalInst values. 
  */
 bool
-synchronize_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
 	TemporalInst *inst1 = temporals_at_timestamp(ts, inst->t);
 	if (inst1 == NULL)
 		return false;
 	
-	*sync1 = inst1;
-	*sync2 = temporalinst_copy(inst1);
+	*inter1 = inst1;
+	*inter2 = temporalinst_copy(inst1);
 	return true;
 }
 
 bool
-synchronize_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
-	return synchronize_temporals_temporalinst(ts, inst, sync2, sync1);
+	return intersection_temporals_temporalinst(ts, inst, inter2, inter1);
 }
 
 /* 
- * Synchronize a TemporalS and a TemporalI values. Each value keeps the instants 
+ * Intersection of a TemporalS and a TemporalI values. Each value keeps the instants 
  * in the intersection of their time spans.
  */
 bool
-synchronize_temporals_temporali(TemporalS *ts, TemporalI *ti, 
-	TemporalI **sync1, TemporalI **sync2)
+intersection_temporals_temporali(TemporalS *ts, TemporalI *ti, 
+	TemporalI **inter1, TemporalI **inter2)
 {
 	/* Test whether the bounding timespan of the two temporal values overlap */
 	Period p1, p2;
@@ -331,8 +331,8 @@ synchronize_temporals_temporali(TemporalS *ts, TemporalI *ti,
 		return false;
 	}
 	
-	*sync1 = temporali_from_temporalinstarr(instants1, k);
-	*sync2 = temporali_from_temporalinstarr(instants2, k);	
+	*inter1 = temporali_from_temporalinstarr(instants1, k);
+	*inter2 = temporali_from_temporalinstarr(instants2, k);	
 	for (int i = 0; i < k; i++) 
 		pfree(instants1[i]);
 	pfree(instants1); pfree(instants2); 
@@ -341,11 +341,121 @@ synchronize_temporals_temporali(TemporalS *ts, TemporalI *ti,
 
 
 bool
-synchronize_temporali_temporals(TemporalI *ti, TemporalS *ts,
-	TemporalI **sync1, TemporalI **sync2)
+intersection_temporali_temporals(TemporalI *ti, TemporalS *ts,
+	TemporalI **inter1, TemporalI **inter2)
 {
-	return synchronize_temporals_temporali(ts, ti, sync2, sync1);
+	return intersection_temporals_temporali(ts, ti, inter2, inter1);
 }
+
+/* 
+ * Intersection of a TemporalS and a TemporalSeq values. 
+ */
+
+bool
+intersection_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
+	TemporalS **inter1, TemporalS **inter2)
+{
+	/* Test whether the bounding timespan of the two temporal values overlap */
+	Period p;
+	temporals_timespan(&p, ts);
+	if (!overlaps_period_period_internal(&seq->period, &p))
+		return false;
+
+	*inter1 = temporals_at_period(ts, &seq->period);
+
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq1 = temporals_seq_n(ts, i);
+		TemporalSeq *interseq =	temporalseq_at_period(seq1, &seq->period);
+		if (interseq != NULL)
+			sequences[k++] = interseq;
+		if (timestamp_cmp_internal(seq->period.upper, seq1->period.upper) < 0 ||
+			(timestamp_cmp_internal(seq->period.upper, seq1->period.upper) == 0 &&
+			(seq->period.upper_inc == seq->period.lower_inc || 
+			(!seq->period.upper_inc && seq->period.lower_inc))))
+			break;
+	}
+	if (k == 0)
+	{
+		pfree(sequences); 
+		return false;
+	}
+	
+	*inter2 = temporals_from_temporalseqarr(sequences, k, false);
+	for (int i = 0; i < k; i++) 
+		pfree(sequences[i]);
+	pfree(sequences); 
+	return true;
+}
+
+bool
+intersection_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+	TemporalS **inter1, TemporalS **inter2)
+{
+	return intersection_temporals_temporalseq(ts, seq, inter2, inter1);
+}
+
+/* 
+ * Intersection two TemporalS values. 
+ */
+
+bool
+intersection_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+	TemporalS **inter1, TemporalS **inter2)
+{
+	/* Test whether the bounding timespan of the two temporal values overlap */
+	Period p1, p2;
+	temporals_timespan(&p1, ts1);
+	temporals_timespan(&p2, ts2);
+	if (!overlaps_period_period_internal(&p1, &p2))
+		return false;
+	
+	TemporalSeq **sequences1 = palloc(sizeof(TemporalSeq *) * 
+		(ts1->count + ts2->count));
+	TemporalSeq **sequences2 = palloc(sizeof(TemporalSeq *) * 
+		(ts1->count + ts2->count));
+	int i = 0, j = 0, k = 0;
+	while (i < ts1->count && j < ts2->count)
+	{
+		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
+		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
+		TemporalSeq *interseq1, *interseq2;
+		if (intersection_temporalseq_temporalseq(seq1, seq2, 
+			&interseq1, &interseq2))
+		{
+			sequences1[k] = interseq1;
+			sequences2[k++] = interseq2;
+		}
+		if (period_eq_internal(&seq1->period, &seq2->period))
+		{
+			i++; j++;
+		}
+		else if (period_lt_internal(&seq1->period, &seq2->period))
+			i++; 
+		else 
+			j++;
+	}
+	if (k == 0)
+	{
+		pfree(sequences1); pfree(sequences2); 
+		return false;
+	}
+	
+	*inter1 = temporals_from_temporalseqarr(sequences1, k, false);
+	*inter2 = temporals_from_temporalseqarr(sequences2, k, false);
+	for (int i = 0; i < k; i++) 
+	{
+		pfree(sequences1[i]); pfree(sequences2[i]);
+	}
+	pfree(sequences1); pfree(sequences2); 
+	return true;
+}
+
+/*****************************************************************************
+ * Synchronize functions
+ *****************************************************************************/
 
 /* 
  * Synchronize a TemporalS and a TemporalSeq values. The values are split into

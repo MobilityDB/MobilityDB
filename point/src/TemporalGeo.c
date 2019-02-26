@@ -2703,21 +2703,6 @@ NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
 	return temporali_inst_n(ti, number);
 }
 
-/* This function assumes that the temporal points are synchronized */
-static TemporalInst *
-NAI_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalI *dist = oper2_temporali_temporali(ti1, ti2, operator, 
-		FLOAT8OID);
-	TemporalI *mindist = temporali_at_min(dist);
-	TimestampTz t = temporali_start_timestamp(mindist);
-	TemporalInst *result = temporali_at_timestamp(ti1, t);
-	pfree(dist); pfree(mindist);
-	return result;
-}
-
 /*****************************************************************************/
 
 static TemporalInst *
@@ -2776,21 +2761,6 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 	return result;
 }
 
-/* This function assumes that the temporal points are synchronized */
-static TemporalInst *
-NAI_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalSeq *dist = oper2_temporalseq_temporalseq(seq1, seq2, 
-		operator, FLOAT8OID);
-	TemporalS *mindist = temporalseq_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
-	TemporalInst *result = temporalseq_at_timestamp(seq1, t);
-	pfree(dist); pfree(mindist);
-	return result;
-}
-
 /*****************************************************************************/
 
 static TemporalInst *
@@ -2819,21 +2789,6 @@ NAI_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
 	}
 	TemporalInst *result = temporalinst_make(minpoint, t, 
 		ts->valuetypid);
-	return result;
-}
-
-/* This function assumes that the temporal points are synchronized */
-static TemporalInst *
-NAI_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalS *dist = oper2_temporals_temporals(ts1, ts2, operator, 
-		FLOAT8OID);
-	TemporalS *mindist = temporals_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
-	TemporalInst *result = temporals_at_timestamp(ts1, t);
-	pfree(dist); pfree(mindist);
 	return result;
 }
 
@@ -2891,15 +2846,6 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, true))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
 	Datum (*operator)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -2914,23 +2860,16 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	Temporal *result;
-	if (sync1->type == TEMPORALINST) 
-		result = (Temporal *)temporalinst_copy((TemporalInst *)sync1);
-	else if (sync1->type == TEMPORALI) 
-		result = (Temporal *)NAI_tpointi_tpointi((TemporalI *)sync1, 
-			(TemporalI *)sync2, operator);
-	else if (sync1->type == TEMPORALSEQ) 
-		result = (Temporal *)NAI_tpointseq_tpointseq((TemporalSeq *)sync1, 
-			(TemporalSeq *)sync2, operator);
-	else if (sync1->type == TEMPORALS) 
-		result = (Temporal *)NAI_tpoints_tpoints((TemporalS *)sync1, 
-			(TemporalS *)sync2, operator);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
-	pfree(sync1); pfree(sync2);
+	TemporalInst *result = NULL;
+	Temporal *dist = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		operator, FLOAT8OID);
+	if (dist != NULL)
+	{
+		Temporal *mindist = temporal_at_min_internal(dist);
+		TimestampTz t = temporal_start_timestamp_internal(mindist);
+		result = temporal_at_timestamp_internal(temp1, t);
+		pfree(dist); pfree(mindist);		
+	}
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -3047,54 +2986,6 @@ NAD_tpoint_geometry(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* These functions suppose that the temporal values overlap in time */
-
-static double
-NAD_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2,
-	Datum (*operator)(Datum, Datum))
-{
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2 = temporalinst_value(inst2);
-	return DatumGetFloat8(operator(value1, value2));
-}
-
-static double
-NAD_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalI *dist = oper2_temporali_temporali(ti1, ti2, operator, 
-		FLOAT8OID);
-	double result = DatumGetFloat8(temporali_min_value(dist));
-	pfree(dist);
-	return result;
-}
-
-static double
-NAD_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalSeq *dist = oper2_temporalseq_temporalseq(seq1, seq2, operator, 
-		FLOAT8OID);
-	double result = DatumGetFloat8(temporalseq_min_value(dist));
-	pfree(dist);
-	return result;
-}
-
-static double
-NAD_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
-	Datum (*operator)(Datum, Datum))
-{
-	/* Compute the distance */
-	TemporalS *dist = oper2_temporals_temporals(ts1, ts2, operator, 
-		FLOAT8OID);
-	double result = DatumGetFloat8(temporals_min_value(dist));
-	pfree(dist);
-	return result;
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
 
@@ -3118,15 +3009,6 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, true))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-	
 	Datum (*operator)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -3141,24 +3023,17 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	double result;
-	if (sync1->type == TEMPORALINST)
-		result = NAD_tpointinst_tpointinst((TemporalInst *)sync1, 
-			(TemporalInst *)sync2, operator);
-	else if (sync1->type == TEMPORALI)
-		result = NAD_tpointi_tpointi((TemporalI *)sync1,
-			(TemporalI *)sync2, operator);
-	else if (sync1->type == TEMPORALSEQ)
-		result = NAD_tpointseq_tpointseq((TemporalSeq *)sync1,
-			(TemporalSeq *)sync2, operator);
-	else if (sync1->type == TEMPORALS)
-		result = NAD_tpoints_tpoints((TemporalS *)sync1,
-			(TemporalS *)sync2, operator);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	Temporal *dist = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
+		operator, FLOAT8OID);
+	if (dist == NULL)
+	{
+		PG_FREE_IF_COPY(temp1, 0);
+		PG_FREE_IF_COPY(temp2, 1);
+		PG_RETURN_NULL();
+	}
 
-	pfree(sync1); pfree(sync2);
+	double result = DatumGetFloat8(temporal_min_value_internal(dist));
+	pfree(dist);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_FLOAT8(result);
@@ -3290,7 +3165,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	TemporalI *dist = oper2_temporali_temporali(ti1, ti2, operator, 
 		FLOAT8OID);
 	Datum minvalue = temporali_min_value(dist);
-	TemporalI *mindistance = temporali_at_value(dist, minvalue, dist->valuetypid);
+	TemporalI *mindistance = temporali_at_value(dist, minvalue, FLOAT8OID);
 	TimestampTz t = temporali_start_timestamp(mindistance);
 	TemporalInst *inst1 = temporali_at_timestamp(ti1, t);
 	TemporalInst *inst2 = temporali_at_timestamp(ti2, t);

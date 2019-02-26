@@ -671,7 +671,7 @@ oper4_temporal_temporal(Temporal *temp1, Temporal *temp2,
  * This should be ensured by the calling function. 
  *****************************************************************************/
 
-void
+static void
 oper2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,
@@ -746,7 +746,7 @@ oper2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	/* If the crossing is at the end instant */	
 	if (crosstime == end1->t)
 	{
-		/* Compute the operator beteen the start and end instants */
+		/* Compute the operator at the start and end instants */
 		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
 		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
@@ -890,7 +890,7 @@ oper2_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2,
 
 /*****************************************************************************/
 
-void
+static void
 oper3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, 
@@ -1251,7 +1251,7 @@ oper4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value,
 
 /*****************************************************************************/
 
-void
+static void
 oper4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,

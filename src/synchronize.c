@@ -1,7 +1,8 @@
 /*****************************************************************************
  *
  * Synchronize.c
- *	  Functions that synchronize temporal types and lift the operators.
+ *	  Functions that synchronize two temporal values and apply an operator in
+ *    single pass.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -276,28 +277,38 @@ sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		return result;
 	}
 	
-	/* General case */
-	int count = (seq1->count + seq2->count);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst *prev1, *prev2;
+	/* 
+	 * General case 
+	 * seq1 =  ... *      *   *   *       *>
+	 * seq2 =        <*           *   *      * ...
+	 * result =      <X I X I X I * I X I X>
+	 * where *, X, and I are values computed, respectively at common points, 
+	 * synchronization points, and intermediate points
+	 */
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
+	TemporalInst *tofreeinst = NULL;
 	int i = 0, j = 0, k = 0, l = 0;
 	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
 	{
 		inst1 = temporalseq_at_timestamp(seq1, inter->lower);
-		tofree[l++] = inst1;
+		tofreeinst = inst1;
 		i = temporalseq_find_timestamp(seq1, inter->lower);
 	}
 	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
 	{
 		inst2 = temporalseq_at_timestamp(seq2, inter->lower);
-		tofree[l++] = inst2;
+		tofreeinst = inst2;
 		j = temporalseq_find_timestamp(seq2, inter->lower);
 	}
-	Datum cross1, cross2, value;
-	TimestampTz crosstime;
+	int count = (seq1->count - i + seq2->count - j) * 2;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
+	if (tofreeinst != NULL)
+		tofree[l++] = tofreeinst;
+	TemporalInst *prev1, *prev2;
+	Datum inter1, inter2, value;
+	TimestampTz intertime;
 	while (i < seq1->count && j < seq2->count &&
 		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
 		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
@@ -319,16 +330,16 @@ sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			inst1 = temporalseq_at_timestamp(seq1, inst2->t);
 			tofree[l++] = inst1;
 		}
-		/* If not the first instant compute the operator on the potential crossing 
-		   before adding the new instants */
+		/* If not the first instant compute the operator on the potential
+		   intermediate point before adding the new instants */
 		if (interpoint != NULL && k > 0 && 
-			interpoint(prev1, inst1, prev2, inst2, &crosstime))
+			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
-			cross1 = temporalseq_value_at_timestamp1(prev1, inst1, crosstime);
-			cross2 = temporalseq_value_at_timestamp1(prev2, inst2, crosstime);
-			value = operator(cross1, cross2);
-			instants[k++] = temporalinst_make(value, crosstime, valuetypid);
-			FREE_DATUM(cross1, seq1->valuetypid); FREE_DATUM(cross2, seq2->valuetypid);
+			inter1 = temporalseq_value_at_timestamp1(prev1, inst1, intertime);
+			inter2 = temporalseq_value_at_timestamp1(prev2, inst2, intertime);
+			value = operator(inter1, inter2);
+			instants[k++] = temporalinst_make(value, intertime, valuetypid);
+			FREE_DATUM(inter1, seq1->valuetypid); FREE_DATUM(inter2, seq2->valuetypid);
 			FREE_DATUM(value, valuetypid);
 		}
 		value = operator(temporalinst_value(inst1), temporalinst_value(inst2));
@@ -357,9 +368,12 @@ sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
    TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
 		inter->lower_inc, inter->upper_inc, false);
 	
-	for (int i = 0; i < l; i++) 
+	for (int i = 0; i < k; i++)
+		pfree(instants[i]); 
+	pfree(instants);
+	for (int i = 0; i < l; i++)
 		pfree(tofree[i]);
-	pfree(instants); pfree(tofree); pfree(inter);
+	pfree(tofree); pfree(inter);
 
 	return result; 
 }
@@ -812,29 +826,39 @@ sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		FREE_DATUM(value, valuetypid); pfree(inst);
 		return result;
 	}
-	
-	/* General case */
-	int count = (seq1->count + seq2->count);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst *prev1, *prev2;
+
+	/* 
+	 * General case 
+	 * seq1 =  ... *      *   *   *       *>
+	 * seq2 =        <*           *   *      * ...
+	 * result =      <X I X I X I * I X I X>
+	 * where *, X, and I are values computed, respectively at common points, 
+	 * synchronization points, and intermediate points
+	 */
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
+	TemporalInst *tofreeinst = NULL;
 	int i = 0, j = 0, k = 0, l = 0;
 	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
 	{
 		inst1 = temporalseq_at_timestamp(seq1, inter->lower);
-		tofree[l++] = inst1;
+		tofreeinst = inst1;
 		i = temporalseq_find_timestamp(seq1, inter->lower);
 	}
 	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
 	{
 		inst2 = temporalseq_at_timestamp(seq2, inter->lower);
-		tofree[l++] = inst2;
+		tofreeinst = inst2;
 		j = temporalseq_find_timestamp(seq2, inter->lower);
 	}
-	Datum cross1, cross2, value;
-	TimestampTz crosstime;
+	int count = (seq1->count - i + seq2->count - j) * 2;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
+	if (tofreeinst != NULL)
+		tofree[l++] = tofreeinst;
+	TemporalInst *prev1, *prev2;
+	Datum inter1, inter2, value;
+	TimestampTz intertime;
 	while (i < seq1->count && j < seq2->count &&
 		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
 		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
@@ -856,16 +880,16 @@ sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			inst1 = temporalseq_at_timestamp(seq1, inst2->t);
 			tofree[l++] = inst1;
 		}
-		/* If not the first instant compute the operator on the potential crossing 
-		   before adding the new instants */
+		/* If not the first instant compute the operator on the potential
+		   intermediate point before adding the new instants */
 		if (interpoint != NULL && k > 0 && 
-			interpoint(prev1, inst1, prev2, inst2, &crosstime))
+			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
-			cross1 = temporalseq_value_at_timestamp1(prev1, inst1, crosstime);
-			cross2 = temporalseq_value_at_timestamp1(prev2, inst2, crosstime);
-			value = operator(cross1, cross2, param);
-			instants[k++] = temporalinst_make(value, crosstime, valuetypid);
-			FREE_DATUM(cross1, seq1->valuetypid); FREE_DATUM(cross2, seq2->valuetypid);
+			inter1 = temporalseq_value_at_timestamp1(prev1, inst1, intertime);
+			inter2 = temporalseq_value_at_timestamp1(prev2, inst2, intertime);
+			value = operator(inter1, inter2, param);
+			instants[k++] = temporalinst_make(value, intertime, valuetypid);
+			FREE_DATUM(inter1, seq1->valuetypid); FREE_DATUM(inter2, seq2->valuetypid);
 			FREE_DATUM(value, valuetypid);
 		}
 		value = operator(temporalinst_value(inst1), temporalinst_value(inst2), param);
@@ -893,9 +917,12 @@ sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
 		inter->lower_inc, inter->upper_inc, false);
 	
+	for (int i = 0; i < k; i++)
+		pfree(instants[i]); 
+	pfree(instants);
 	for (int i = 0; i < l; i++) 
 		pfree(tofree[i]);
-	pfree(instants); pfree(tofree); pfree(inter);
+	pfree(tofree); pfree(inter);
 
 	return result; 
 }
@@ -1355,28 +1382,38 @@ sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		return result;
 	}
 	
-	/* General case */
-	int count = (seq1->count + seq2->count);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
-	TemporalInst *prev1, *prev2;
+	/* 
+	 * General case 
+	 * seq1 =  ... *      *   *   *       *>
+	 * seq2 =        <*           *   *      * ...
+	 * result =      <X I X I X I * I X I X>
+	 * where *, X, and I are values computed, respectively at common points, 
+	 * synchronization points, and intermediate points
+	 */
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
+	TemporalInst *tofreeinst = NULL;
 	int i = 0, j = 0, k = 0, l = 0;
 	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
 	{
 		inst1 = temporalseq_at_timestamp(seq1, inter->lower);
-		tofree[l++] = inst1;
+		tofreeinst = inst1;
 		i = temporalseq_find_timestamp(seq1, inter->lower);
 	}
 	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
 	{
 		inst2 = temporalseq_at_timestamp(seq2, inter->lower);
-		tofree[l++] = inst2;
+		tofreeinst = inst2;
 		j = temporalseq_find_timestamp(seq2, inter->lower);
 	}
-	Datum cross1, cross2, value;
-	TimestampTz crosstime;
+	int count = (seq1->count - i + seq2->count - j) * 2;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	TemporalInst **tofree = palloc(sizeof(TemporalInst *) * count);
+	if (tofreeinst != NULL)
+		tofree[l++] = tofreeinst;
+	TemporalInst *prev1, *prev2;
+	Datum inter1, inter2, value;
+	TimestampTz intertime;
 	while (i < seq1->count && j < seq2->count &&
 		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
 		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
@@ -1398,16 +1435,16 @@ sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			inst1 = temporalseq_at_timestamp(seq1, inst2->t);
 			tofree[l++] = inst1;
 		}
-		/* If not the first instant compute the operator on the potential crossing 
-		   before adding the new instants */
+		/* If not the first instant compute the operator on the potential
+		   intermediate point before adding the new instants */
 		if (interpoint != NULL && k > 0 && 
-			interpoint(prev1, inst1, prev2, inst2, &crosstime))
+			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
-			cross1 = temporalseq_value_at_timestamp1(prev1, inst1, crosstime);
-			cross2 = temporalseq_value_at_timestamp1(prev2, inst2, crosstime);
-			value = operator(cross1, cross2, seq1->valuetypid, seq2->valuetypid);
-			instants[k++] = temporalinst_make(value, crosstime, valuetypid);
-			FREE_DATUM(cross1, seq1->valuetypid); FREE_DATUM(cross2, seq2->valuetypid);
+			inter1 = temporalseq_value_at_timestamp1(prev1, inst1, intertime);
+			inter2 = temporalseq_value_at_timestamp1(prev2, inst2, intertime);
+			value = operator(inter1, inter2, seq1->valuetypid, seq2->valuetypid);
+			instants[k++] = temporalinst_make(value, intertime, valuetypid);
+			FREE_DATUM(inter1, seq1->valuetypid); FREE_DATUM(inter2, seq2->valuetypid);
 			FREE_DATUM(value, valuetypid);
 		}
 		value = operator(temporalinst_value(inst1), temporalinst_value(inst2), 
@@ -1437,9 +1474,12 @@ sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
    TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
 		inter->lower_inc, inter->upper_inc, false);
 	
+	for (int i = 0; i < k; i++)
+		pfree(instants[i]); 
+	pfree(instants);
 	for (int i = 0; i < l; i++) 
 		pfree(tofree[i]);
-	pfree(instants); pfree(tofree); pfree(inter);
+	pfree(tofree); pfree(inter);
 
 	return result; 
 }
@@ -1632,6 +1672,124 @@ sync_oper4_temporal_temporal(Temporal *temp1, Temporal *temp2,
  * TemporalSeq and <Type>
  *****************************************************************************/
 
+static int
+sync_oper2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
+	TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,
+	Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	Datum startvalue1 = temporalinst_value(start1);
+	Datum endvalue1 = temporalinst_value(end1);
+	Datum startvalue2 = temporalinst_value(start2);
+	Datum endvalue2 = temporalinst_value(end2);
+	Datum startvalue = operator(startvalue1, startvalue2);
+	TemporalInst *instants[2];
+	
+	/* Both segments are constant */
+	if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
+		datum_eq(startvalue2, endvalue2, start2->valuetypid))
+	{
+		/* Compute the operator at the start instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	/* Determine whether there is a crossing */
+	TimestampTz crosstime;
+	bool cross = temporalseq_intersect_at_timestamp(start1, end1, 
+		start2, end2, &crosstime);
+	
+	/* If there is no crossing */	
+	if (!cross)
+	{
+		/* Compute the operator at the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]); 
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	Datum endvalue = operator(endvalue1, endvalue2);
+	int k = 0;
+	/* If the crossing is at the start instant */	
+	if (crosstime == start1->t)
+	{
+		if (lower_inc)
+		{
+			/* Compute the operator at the start instant */
+			instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}		
+		/* Compute the operator between the start and end instants */
+		instants[0] = temporalinst_make(endvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			false, upper_inc, false);			
+		pfree(instants[0]); pfree(instants[1]); 
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If the crossing is at the end instant */	
+	if (crosstime == end1->t)
+	{
+		/* Compute the operator beteen the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, false, false);
+		pfree(instants[0]); pfree(instants[1]);
+		if (upper_inc)
+		{
+			/* Compute the operator at the end instant */
+			instants[0] = temporalinst_make(endvalue, end1->t, valuetypid);
+			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If there is a crossing at the middle */
+	instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+	instants[1] = temporalinst_make(startvalue, crosstime, valuetypid);
+	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		lower_inc, false, false);		
+	pfree(instants[0]); pfree(instants[1]);
+	/* Find the values at the local minimum/maximum */
+	Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
+	Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
+	Datum crossvalue = operator(cross1, cross2);
+	instants[0] = temporalinst_make(crossvalue, crosstime, valuetypid);
+	result[1] = temporalseq_from_temporalinstarr(instants, 1,
+		true, true, false);
+	pfree(instants[0]); 
+	instants[0] = temporalinst_make(endvalue, crosstime, valuetypid);
+	instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+	result[2] = temporalseq_from_temporalinstarr(instants, 2,
+		false, upper_inc, false);
+	pfree(instants[0]); pfree(instants[1]);
+	FREE_DATUM(startvalue, valuetypid); 
+	FREE_DATUM(endvalue, valuetypid); 
+	FREE_DATUM(cross1, start1->valuetypid); 
+	FREE_DATUM(cross2, start1->valuetypid); 
+	FREE_DATUM(crossvalue, valuetypid); 
+	return 3;
+}
+
 TemporalSeq **
 sync_oper2_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*operator)(Datum, Datum), Datum valuetypid, int *count)
@@ -1707,9 +1865,8 @@ sync_oper2_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *se
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq;
-		oper2_temporalseq_temporalseq_crossdisc1(&result[k], start1, end1, 
-			start2, end2, lower_inc, upper_inc, operator, valuetypid, &countseq);
+		int countseq = sync_oper2_temporalseq_temporalseq_crossdisc1(&result[k], 
+			start1, end1, start2, end2, lower_inc, upper_inc, operator, valuetypid);
 		/* The previous step has added between one and three sequences */
 		k += countseq;
 		start1 = end1;
@@ -1924,6 +2081,125 @@ sync_oper2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * TemporalSeq and <Type>
  *****************************************************************************/
 
+static int
+sync_oper3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
+	TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, 
+	bool lower_inc, bool upper_inc, Datum param,
+	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid)
+{
+	Datum startvalue1 = temporalinst_value(start1);
+	Datum endvalue1 = temporalinst_value(end1);
+	Datum startvalue2 = temporalinst_value(start2);
+	Datum endvalue2 = temporalinst_value(end2);
+	Datum startvalue = operator(startvalue1, startvalue2, param);
+	TemporalInst *instants[2];
+	
+	/* Both segments are constant */
+	if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
+		datum_eq(startvalue2, endvalue2, start2->valuetypid))
+	{
+		/* Compute the operator at the start instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	/* Determine whether there is a crossing */
+	TimestampTz crosstime;
+	bool cross = temporalseq_intersect_at_timestamp(start1, end1, 
+		start2, end2, &crosstime);
+	
+	/* If there is no crossing */	
+	if (!cross)
+	{
+		/* Compute the operator at the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	Datum endvalue = operator(endvalue1, endvalue2, param);
+	int k = 0;
+	/* If the crossing is at the start instant */	
+	if (crosstime == start1->t)
+	{
+		if (lower_inc)
+		{
+			/* Compute the operator at the start and end instants */
+			instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+			result[0] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}
+		/* Compute the operator between the start and end instants */
+		instants[0] = temporalinst_make(endvalue, end1->t, valuetypid);
+		instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			false, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If the crossing is at the end instant */	
+	if (crosstime == end1->t)
+	{
+		/* Compute the operator at the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, false, false);
+		pfree(instants[0]); pfree(instants[1]);
+		if (upper_inc)
+		{
+			/* Compute the operator at the end instant */
+			instants[0] = temporalinst_make(endvalue, end1->t, valuetypid);
+			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If there is a crossing at the middle */
+	instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+	instants[1] = temporalinst_make(startvalue, crosstime, valuetypid);
+	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		lower_inc, false, false);
+	pfree(instants[0]); pfree(instants[1]);
+	/* Find the values at the local minimum/maximum */
+	Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
+	Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
+	Datum crossvalue = operator(cross1, cross2, param);
+	instants[0] = temporalinst_make(crossvalue, crosstime, valuetypid);
+	result[1] = temporalseq_from_temporalinstarr(instants, 1,
+		true, true, false);
+	pfree(instants[0]); 
+	instants[0] = temporalinst_make(endvalue, crosstime, valuetypid);
+	instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+	result[2] = temporalseq_from_temporalinstarr(instants, 2,
+		false, upper_inc, false);
+	pfree(instants[0]); pfree(instants[1]);
+	FREE_DATUM(startvalue, valuetypid); 
+	FREE_DATUM(endvalue, valuetypid); 
+	FREE_DATUM(cross1, start1->valuetypid); 
+	FREE_DATUM(cross2, start1->valuetypid); 
+	FREE_DATUM(crossvalue, valuetypid); 
+	return 3;
+}
+
 TemporalSeq **
 sync_oper3_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, int *count)
@@ -1999,9 +2275,8 @@ sync_oper3_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *se
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq;
-		oper3_temporalseq_temporalseq_crossdisc1(&result[k], start1, end1, 
-			start2, end2, lower_inc, upper_inc, param, operator, valuetypid, &countseq);
+		int countseq = sync_oper3_temporalseq_temporalseq_crossdisc1(&result[k],
+			start1, end1, start2, end2, lower_inc, upper_inc, param, operator, valuetypid);
 		/* The previous step has added between one and three sequences */
 		k += countseq;
 		start1 = end1;
@@ -2224,6 +2499,127 @@ sync_oper3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * TemporalSeq and <Type>
  *****************************************************************************/
 
+static int
+sync_oper4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
+	TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,
+	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid)
+{
+	Datum startvalue1 = temporalinst_value(start1);
+	Datum endvalue1 = temporalinst_value(end1);
+	Datum startvalue2 = temporalinst_value(start2);
+	Datum endvalue2 = temporalinst_value(end2);
+	Datum startvalue = operator(startvalue1, startvalue2, 
+		start1->valuetypid, start2->valuetypid);
+	TemporalInst *instants[2];
+
+	/* Both segments are constant */
+	if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
+		datum_eq(startvalue2, endvalue2, start2->valuetypid))
+	{
+		/* Compute the operator at the start instant */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2, 
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]);
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	/* Determine whether there is a crossing */
+	TimestampTz crosstime;
+	bool cross = temporalseq_intersect_at_timestamp(start1, end1, 
+		start2, end2, &crosstime);
+	
+	/* If there is no crossing */	
+	if (!cross)
+	{
+		/* Compute the operator at the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, false);
+		pfree(instants[0]); pfree(instants[1]); 
+		FREE_DATUM(startvalue, valuetypid); 
+		return 1;
+	}
+
+	Datum endvalue = operator(endvalue1, endvalue2, 
+			start1->valuetypid, start2->valuetypid);
+	int k = 0;
+	/* If the crossing is at the start instant */	
+	if (crosstime == start1->t)
+	{
+		if (lower_inc)
+		{
+			/* Compute the operator at the start and end instants */
+			instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}
+		/* Compute the operator between the start and end instants */
+		instants[0] = temporalinst_make(endvalue, end1->t, valuetypid);
+		instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			false, upper_inc, false);			
+		pfree(instants[0]); pfree(instants[1]); 
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If the crossing is at the end instant */	
+	if (crosstime == end1->t)
+	{
+		/* Compute the operator at the start and end instants */
+		instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+		instants[1] = temporalinst_make(startvalue, end1->t, valuetypid);
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, false, false);
+		pfree(instants[0]); pfree(instants[1]);
+		if (upper_inc)
+		{
+			/* Compute the operator at the end instant */
+			instants[0] = temporalinst_make(endvalue, end1->t, valuetypid);
+			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				true, true, false);
+			pfree(instants[0]);
+		}		
+		FREE_DATUM(startvalue, valuetypid); 
+		FREE_DATUM(endvalue, valuetypid); 
+		return k;
+	}
+
+	/* If there is a crossing at the middle */
+	instants[0] = temporalinst_make(startvalue, start1->t, valuetypid);
+	instants[1] = temporalinst_make(startvalue, crosstime, valuetypid);
+	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		lower_inc, false, false);		
+	pfree(instants[0]); pfree(instants[1]);
+	/* Find the values at the local minimum/maximum */
+	Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
+	Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
+	Datum crossvalue = operator(cross1, cross2, 
+			start1->valuetypid, start2->valuetypid);
+	instants[0] = temporalinst_make(crossvalue, crosstime, valuetypid);
+	result[1] = temporalseq_from_temporalinstarr(instants, 1,
+		true, true, false);
+	pfree(instants[0]); 
+	instants[0] = temporalinst_make(endvalue, crosstime, valuetypid);
+	instants[1] = temporalinst_make(endvalue, end1->t, valuetypid);
+	result[2] = temporalseq_from_temporalinstarr(instants, 2,
+		false, upper_inc, false);
+	pfree(instants[0]); pfree(instants[1]);
+	FREE_DATUM(startvalue, valuetypid); 
+	FREE_DATUM(endvalue, valuetypid); 
+	FREE_DATUM(cross1, start1->valuetypid); 
+	FREE_DATUM(cross2, start1->valuetypid); 
+	FREE_DATUM(crossvalue, valuetypid); 
+	return 3;
+}
+
 TemporalSeq **
 sync_oper4_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, int *count)
@@ -2299,9 +2695,8 @@ sync_oper4_temporalseq_temporalseq_crossdisc2(TemporalSeq *seq1, TemporalSeq *se
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq;
-		oper4_temporalseq_temporalseq_crossdisc1(&result[k], start1, end1, 
-			start2, end2, lower_inc, upper_inc, operator, valuetypid, &countseq);
+		int countseq = sync_oper4_temporalseq_temporalseq_crossdisc1(&result[k], 
+			start1, end1, start2, end2, lower_inc, upper_inc, operator, valuetypid);
 		/* The previous step has added between one and three sequences */
 		k += countseq;
 		start1 = end1;
