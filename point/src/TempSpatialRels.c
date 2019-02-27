@@ -2813,11 +2813,11 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 	Temporal *result = NULL;
 	if (sync1->type == TEMPORALINST)
-		result = (Temporal *)oper3_temporalinst_temporalinst(
+		result = (Temporal *)sync_oper3_temporalinst_temporalinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, operator, 
 			BOOLOID);
 	else if (sync1->type == TEMPORALI)
-		result = (Temporal *)oper3_temporali_temporali(
+		result = (Temporal *)sync_oper3_temporali_temporali(
 			(TemporalI *)sync1, (TemporalI *)sync2, dist, operator, 
 			BOOLOID);
 	else if (sync1->type == TEMPORALSEQ)

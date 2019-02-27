@@ -1737,13 +1737,15 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 		base_to_box(&box2, value, valuetypid);
 		if (!contains_box_box_internal(&box1, &box2))
 		{
+			Temporal *result;
+			if (temp->type == TEMPORALSEQ)
+				result = (Temporal *)temporals_from_temporalseqarr(
+					(TemporalSeq **)&temp, 1, false);
+			else
+				result = temporal_copy(temp);
 			PG_FREE_IF_COPY(temp, 0);
 			FREE_DATUM(value, valuetypid);
-			if (temp->type == TEMPORALSEQ)
-				PG_RETURN_POINTER(temporals_from_temporalseqarr(
-					(TemporalSeq **)&temp, 1, false));
-			else
-				PG_RETURN_POINTER(temporal_copy(temp));
+			PG_RETURN_POINTER(result);
 		}
 	}
 
@@ -1905,9 +1907,10 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 	range_to_box(&box2, range, rangetypid);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
+		Temporal *result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(range, 1);
-		PG_RETURN_POINTER(temporal_copy(temp));
+		PG_RETURN_POINTER(result);
 	}
 
 	Temporal *result;
@@ -2172,7 +2175,11 @@ temporal_minus_timestamp(PG_FUNCTION_ARGS)
 	Period p;
 	temporal_timespan_internal(&p, temp);
 	if (!contains_period_timestamp_internal(&p, t))
-		PG_RETURN_POINTER(temporal_copy(temp));
+	{
+		Temporal *result = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_RETURN_POINTER(result);
+	}
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
@@ -2282,7 +2289,11 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 	temporal_timespan_internal(&p1, temp);
 	Period *p2 = timestampset_bbox(ts);
 	if (!overlaps_period_period_internal(&p1, p2))
-		PG_RETURN_POINTER(temporal_copy(temp));
+	{
+		Temporal *result = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_RETURN_POINTER(result);
+	}
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
@@ -2359,8 +2370,12 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 	Period p1;
 	temporal_timespan_internal(&p1, temp);
 	if (!overlaps_period_period_internal(p, &p1))
-		PG_RETURN_POINTER(temporal_copy(temp));
-
+	{
+		Temporal *result = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_RETURN_POINTER(result);
+	}
+	
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_period(
@@ -2438,7 +2453,11 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 	temporal_timespan_internal(&p1, temp);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
-		PG_RETURN_POINTER(temporal_copy(temp));
+	{
+		Temporal *result;
+		PG_FREE_IF_COPY(temp, 0);
+		PG_RETURN_POINTER(result);
+	}
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
