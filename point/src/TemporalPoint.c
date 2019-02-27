@@ -720,20 +720,28 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box2, value))
 	{
+		Temporal *result;
+		if (temp->type == TEMPORALSEQ)
+			result = (Temporal *)temporals_from_temporalseqarr(
+				(TemporalSeq **)&temp, 1, false);
+		else
+			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(value, 1);
-		PG_RETURN_POINTER(temporal_copy(temp));
+		PG_RETURN_POINTER(result);
 	}
 	temporal_bbox(&box1, temp);
 	if (!contains_gbox_gbox_internal(&box1, &box2))
 	{
+		Temporal *result;
+		if (temp->type == TEMPORALSEQ)
+			result = (Temporal *)temporals_from_temporalseqarr(
+				(TemporalSeq **)&temp, 1, false);
+		else
+			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(value, 1);
-		if (temp->type == TEMPORALSEQ)
-			PG_RETURN_POINTER(temporals_from_temporalseqarr(
-				(TemporalSeq **)&temp, 1, false));
-		else
-			PG_RETURN_POINTER(temporal_copy(temp));
+		PG_RETURN_POINTER(result);
 	}
 
 	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
