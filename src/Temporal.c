@@ -2454,7 +2454,7 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
 	{
-		Temporal *result;
+		Temporal *result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_RETURN_POINTER(result);
 	}
