@@ -10,25 +10,25 @@ SELECT asEWKT(temp) FROM tbl_tgeogpoint;
 SELECT asEWKT(temp) FROM tbl_tgeompoint3D;
 SELECT asEWKT(temp) FROM tbl_tgeogpoint3D;
 
-SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10;
+SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10 ORDER BY k%10;
 
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10;
+SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10 ORDER BY k%10;
 
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10;
+SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10 ORDER BY k%10;
 
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10;
+SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10 ORDER BY k%10;
 
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint;

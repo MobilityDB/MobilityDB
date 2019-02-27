@@ -120,35 +120,6 @@ add_temporal_base(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(add_temporal_temporal_old);
-
-PGDLLEXPORT Datum
-add_temporal_temporal_old(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time 
-	   No crossings added */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_temporal(sync1, sync2, 
-		&datum_add, valuetypid);
-	pfree(sync1); pfree(sync2); 
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(add_temporal_temporal);
 
 PGDLLEXPORT Datum
@@ -159,7 +130,7 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
-		&datum_add, valuetypid, false);
+		&datum_add, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -210,21 +181,10 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return NULL if the temporal points do not intersect in time 
-	   No crossings added */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_temporal(sync1, sync2, 
-		&datum_sub, valuetypid);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal(temp1, temp2,
+		&datum_sub, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -275,23 +235,15 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
 	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-			MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-	/* Return NULL if the temporal points do not intersect in time 
-	   Crossings are added if both arguments are continuous */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, crossings))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
+		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_temporal(sync1, sync2, 
-		&datum_mult, valuetypid);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = crossings ?
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_mult, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_mult, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -354,23 +306,15 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
 	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-	/* Return NULL if the temporal points do not intersect in time 
-	   Crossings are added if at least one of the arguments is continuous */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, crossings))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_temporal(sync1, sync2, 
-		&datum_div, valuetypid);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = crossings ?
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_div, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
+		sync_oper4_temporal_temporal(temp1, temp2,
+			&datum_div, valuetypid, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

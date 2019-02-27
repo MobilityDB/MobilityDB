@@ -224,41 +224,41 @@ tnumberi_floatrange(TemporalI *ti)
 }
 
 /*****************************************************************************
- * Synchronize functions
+ * Intersection functions
  *****************************************************************************/
 
 /* 
- * Synchronize a TemporalI and a TemporalInst values. 
+ * Intersection of a TemporalI and a TemporalInst values. 
  */
 
 bool
-synchronize_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
 	TemporalInst *inst1 = temporali_at_timestamp(ti, inst->t);
 	if (inst1 == NULL)
 		return false;
 	
-	*sync1 = inst1;
-	*sync2 = temporalinst_copy(inst1);
+	*inter1 = inst1;
+	*inter2 = temporalinst_copy(inst1);
 	return true;
 }
 
 bool
-synchronize_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
-	TemporalInst **sync1, TemporalInst **sync2)
+intersection_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
+	TemporalInst **inter1, TemporalInst **inter2)
 {
-	return synchronize_temporali_temporalinst(ti, inst, sync2, sync1);
+	return intersection_temporali_temporalinst(ti, inst, inter2, inter1);
 }
 
 /* 
- * Synchronize two TemporalI values. Each value keeps the instants 
+ * Intersection two TemporalI values. Each value keeps the instants 
  * in the intersection of their time spans.
  */
 
 bool
-synchronize_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	TemporalI **sync1, TemporalI **sync2)
+intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+	TemporalI **inter1, TemporalI **inter2)
 {
 	/* Test whether the bounding timespan of the two temporal values overlap */
 	Period p1, p2;
@@ -292,8 +292,8 @@ synchronize_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 		return false;
 	}
 	
-	*sync1 = temporali_from_temporalinstarr(instants1, k);
-	*sync2 = temporali_from_temporalinstarr(instants2, k);
+	*inter1 = temporali_from_temporalinstarr(instants1, k);
+	*inter2 = temporali_from_temporalinstarr(instants2, k);
 	
 	pfree(instants1); pfree(instants2); 
 

@@ -46,7 +46,7 @@ setup)
 	;;
 
 create_ext)
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
 
 	if [ ! -z "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee $WORKDIR/log/create_ext.log 
@@ -65,24 +65,28 @@ run_compare)
 	TESTNAME=$3
 	TESTFILE=$4
 	
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
+
+	while ! $PSQL -l; do
+		sleep 1
+	done
 	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
-		xzcat $TESTFILE | $PSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		xzcat $TESTFILE | $PSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	else
-		$PSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		$PSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	fi
 
 	if [ ! -z "$TEST_GENERATE" ]; then
 		echo "TEST_GENERATE is on; assuming correct output"
-		gzip < $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out.gz
+		cat $WORKDIR/out/$TESTNAME.out > `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out
 		exit 0
 	else
 		echo 
 		echo "Differences"
 		echo "==========="
 		echo
-		zdiff -urdN $WORKDIR/out/$TESTNAME.out `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out.gz 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
+		diff -urdN $WORKDIR/out/$TESTNAME.out `dirname $TESTFILE`/../expected/`basename $TESTFILE .sql`.out 2>&1 | tee $WORKDIR/out/$TESTNAME.diff
 		exit $?
 	fi
 	;;
@@ -91,11 +95,16 @@ run_passfail)
 	TESTNAME=$3
 	TESTFILE=$4
 
-	$PGCTL restart
+	$PGCTL status || $PGCTL start
+
+	while ! $PSQL -l; do
+		sleep 1
+	done
+	
 	if [ ${TESTFILE: -3} == ".xz" ]; then
-		xzcat $TESTFILE | $FAILPSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		xzcat $TESTFILE | $FAILPSQL 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	else
-		$FAILPSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out
+		$FAILPSQL < $TESTFILE 2>&1 | tee $WORKDIR/out/$TESTNAME.out > /dev/null
 	fi
 	exit $?
 	;;

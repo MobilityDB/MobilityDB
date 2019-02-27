@@ -492,8 +492,10 @@ extern int gbox_cmp_internal(const GBOX *g1, const GBOX *g2);
 extern char dump_toupper(int in);
 extern Temporal *temporal_copy(Temporal *temp);
 extern Temporal *pg_getarg_temporal(Temporal *temp);
+extern bool intersection_temporal_temporal(Temporal *temp1, Temporal *temp2, 
+	Temporal **inter1, Temporal **inter2);
 extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2, 
-	Temporal **sync1, Temporal **sync2, bool crossings);
+	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern RangeType *tnumber_floatrange(Temporal *temp);
 extern const char *temporal_type_name(uint8_t type);
 extern bool temporal_type_from_string(const char *str, uint8_t *type);
@@ -549,6 +551,8 @@ extern Datum temporal_always_equals(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
 extern Datum tempdisc_get_values_internal(Temporal *temp);
+extern Datum temporal_min_value_internal(Temporal *temp);
+extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 
 /* Restriction Functions */
 
@@ -578,6 +582,8 @@ extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_temporal(PG_FUNCTION_ARGS);
  
+extern Temporal *temporal_at_min_internal(Temporal *temp);
+extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
 extern void temporal_timespan_internal(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void temporal_bbox(void *box, const Temporal *temp);
@@ -609,8 +615,11 @@ extern RangeType *tnumberinst_floatrange(TemporalInst *inst);
 char *temporalinst_to_string(TemporalInst *inst, char *(*value_out)(Oid, Datum));
 extern void temporalinst_write(TemporalInst *inst, StringInfo buf);
 extern TemporalInst *temporalinst_read(StringInfo buf, Oid valuetypid);
-extern bool synchronize_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	TemporalInst **sync1, TemporalInst **sync2);
+
+/* Intersection function */
+
+extern bool intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+	TemporalInst **inter1, TemporalInst **inter2);
 	
 /* Cast functions */
 
@@ -685,16 +694,19 @@ extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
 extern int temporali_find_timestamp(TemporalI *ti, TimestampTz t);
 extern int temporalinstarr_find_timestamp(TemporalInst **array, int from, 
 	int count, TimestampTz t);
-TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
+extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
 	int count);
 extern TemporalI *temporali_copy(TemporalI *ti);
-extern bool synchronize_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
-	TemporalInst **sync1, TemporalInst **sync2);
-extern bool synchronize_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
-	TemporalInst **sync1, TemporalInst **sync2);
-extern bool synchronize_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	TemporalI **sync1, TemporalI **sync2);
-RangeType *tnumberi_floatrange(TemporalI *ti);
+extern RangeType *tnumberi_floatrange(TemporalI *ti);
+
+/* Intersection functions */
+
+extern bool intersection_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
+	TemporalInst **inter1, TemporalInst **inter2);
+extern bool intersection_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
+	TemporalInst **inter1, TemporalInst **inter2);
+extern bool intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+	TemporalI **inter1, TemporalI **inter2);
 
 /* Input/output functions */
 
@@ -795,22 +807,35 @@ extern Datum temporalseq_value_at_timestamp1(TemporalInst *inst1,
 	TemporalInst *inst2, TimestampTz t);
 extern TemporalSeq **temporalseqarr_normalize(TemporalSeq **sequences, int count, 
 	int *newcount);
-extern bool synchronize_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
-	TemporalInst **sync1, TemporalInst **sync2);
-extern bool synchronize_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
-	TemporalInst **sync1, TemporalInst **sync2);	
-extern bool synchronize_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
-	TemporalI **sync1, TemporalI **sync2);
-extern bool synchronize_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
-	TemporalI **sync1, TemporalI **sync2);
-extern bool temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *inst2, 
-	TemporalInst *next1, TemporalInst *next2, 
+
+/* Intersection functions */
+
+extern bool intersection_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
+	TemporalInst **inter1, TemporalInst **inter2);
+extern bool intersection_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
+	TemporalInst **inter1, TemporalInst **inter2);	
+extern bool intersection_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+	TemporalI **inter1, TemporalI **inter2);
+extern bool intersection_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
+	TemporalI **inter1, TemporalI **inter2);
+extern bool intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
+	TemporalSeq **inter1, TemporalSeq **inter2);
+
+/* Synchronize functions */
+
+extern bool temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1, 
+	TemporalInst *inst2, TemporalInst *next2, 
 	TemporalInst **cross1, TemporalInst **cross2);
-extern bool temporalseq_add_crossing_new(TemporalInst *inst1, TemporalInst *inst2, 
-	TemporalInst *next1, TemporalInst *next2, 
-	Datum *cross1, Datum *cross2, TimestampTz *t);
 extern bool synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
-	TemporalSeq **sync1, TemporalSeq **sync2, bool crossings);
+	TemporalSeq **sync1, TemporalSeq **sync2, bool interpoint);
+
+extern bool tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
+// To put it in TempDistance.c ?
+extern bool tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
+extern bool tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
 extern bool temporalseq_intersect_at_timestamp(TemporalInst *start1, 
 	TemporalInst *end1, TemporalInst *start2, TemporalInst *end2, TimestampTz *inter);
 extern RangeType *tnumberseq_floatrange(TemporalSeq *seq);
@@ -823,7 +848,8 @@ extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 
 /* Cast functions */
 
-extern TemporalSeq *tintseq_as_tfloatseq(TemporalSeq *seq);
+extern TemporalSeq **tintseq_as_tfloatseq1(TemporalSeq *seq, int *count);
+extern TemporalS *tintseq_as_tfloatseq(TemporalSeq *seq);
 extern TemporalSeq *tfloatseq_as_tintseq(TemporalSeq *seq);
 
 /* Transformation functions */
@@ -953,6 +979,29 @@ extern bool temporalseqarr_find_timestamp(TemporalSeq **array, int from,
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern PeriodSet *temporals_intersection_temporals(TemporalS *ts1, TemporalS *ts2);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
+extern double temporals_duration_time(TemporalS *ts);
+extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
+extern RangeType *tnumbers_floatrange(TemporalS *ts);
+
+/* Intersection functions */
+
+extern bool intersection_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
+	TemporalInst **inter1, TemporalInst **inter2);
+extern bool intersection_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
+	TemporalInst **inter1, TemporalInst **inter2);
+extern bool intersection_temporals_temporali(TemporalS *ts, TemporalI *ti, 
+	TemporalI **inter1, TemporalI **inter2);
+extern bool intersection_temporali_temporals(TemporalI *ti, TemporalS *ts,
+	TemporalI **inter1, TemporalI **inter2);
+extern bool intersection_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
+	TemporalS **inter1, TemporalS **inter2);
+extern bool intersection_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts, 
+	TemporalS **inter1, TemporalS **inter2);
+extern bool intersection_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+	TemporalS **inter1, TemporalS **inter2);
+
+/* Synchronize functions */
+
 extern bool synchronize_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	TemporalInst **sync1, TemporalInst **sync2);
 extern bool synchronize_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
@@ -962,14 +1011,11 @@ extern bool synchronize_temporals_temporali(TemporalS *ts, TemporalI *ti,
 extern bool synchronize_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	TemporalI **sync1, TemporalI **sync2);
 extern bool synchronize_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	TemporalS **sync1, TemporalS **sync2, bool crossings);
+	TemporalS **sync1, TemporalS **sync2, bool interpoint);
 extern bool synchronize_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts, 
-	TemporalS **sync1, TemporalS **sync2, bool crossings);
+	TemporalS **sync1, TemporalS **sync2, bool interpoint);
 extern bool synchronize_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	TemporalS **sync1, TemporalS **sync2, bool crossings);
-extern double temporals_duration_time(TemporalS *ts);
-extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
-extern RangeType *tnumbers_floatrange(TemporalS *ts);
+	TemporalS **sync1, TemporalS **sync2, bool interpoint);
 
 /* Input/output functions */
 
@@ -1188,9 +1234,9 @@ extern AggregateState *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, Aggreg
 extern AggregateState *temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
 	AggregateState *state2,	Datum (*operator)(Datum, Datum));
 extern AggregateState *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool crossings);
+	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool interpoint);
 extern AggregateState *temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*operator)(Datum, Datum), bool crossings);
+	AggregateState *state2,	Datum (*operator)(Datum, Datum), bool interpoint);
 	
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
@@ -1481,7 +1527,8 @@ sync_oper2_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalSeq *
 sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalInst *
 sync_oper2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
@@ -1496,17 +1543,21 @@ sync_oper2_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalS *
 sync_oper2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper2_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum (*operator)(Datum, Datum), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_oper2_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_oper2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
@@ -1552,20 +1603,29 @@ sync_oper3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalSeq *
 sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, bool crossings);
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, bool crossings);
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, bool crossings);
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, bool crossings);
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_oper3_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid, bool crossings);
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
+
+extern Temporal *
+sync_oper3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
+	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 
 /*****************************************************************************/
 
@@ -1595,7 +1655,8 @@ sync_oper4_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalSeq *
 sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalInst *
 sync_oper4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
@@ -1610,17 +1671,21 @@ sync_oper4_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalS *
 sync_oper4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper4_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_oper4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_oper4_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid, bool crossings);
+	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 	
 extern Temporal *
 sync_oper4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
@@ -1707,20 +1772,11 @@ extern Temporal *oper4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 
 /*****************************************************************************/
 
-extern void oper2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
-	TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,
-	Datum (*operator)(Datum, Datum), Oid valuetypid, int *count);
 extern TemporalS *oper2_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, 
 	TemporalSeq *seq2, Datum (*operator)(Datum, Datum), Oid valuetypid);
 extern TemporalS *oper2_temporals_temporals_crossdisc(TemporalS *ts1, 
 	TemporalS *ts2, Datum (*operator)(Datum, Datum), Oid valuetypid);
 
-extern void oper3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
-	TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, 
-	bool lower_inc, bool upper_inc, Datum param,
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, int *count);
 extern TemporalS *oper3_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalS *oper3_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
@@ -1732,10 +1788,6 @@ extern TemporalS *oper4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value
 extern TemporalS *oper4_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
-extern void oper4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
-	TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid, int *count);
 extern TemporalS *oper4_temporals_base_crossdisc(TemporalS *ts, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);

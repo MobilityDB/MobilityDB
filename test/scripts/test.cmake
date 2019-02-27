@@ -1,4 +1,4 @@
-
+set(CTEST_PARALLEL_LEVEL 1)
 add_test(
 	NAME setup
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test

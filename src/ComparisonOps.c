@@ -47,45 +47,6 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	return result;
 }
 
-static Temporal *
-tcomp_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum, Oid, Oid))
-{
-	Temporal *result = NULL;
-	if (temp1->type == TEMPORALINST) 
-		result = (Temporal *)oper4_temporalinst_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2, operator, BOOLOID);
-	else if (temp1->type == TEMPORALI) 
-		result = (Temporal *)oper4_temporali_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2,	operator, BOOLOID);
-	else if (temp1->type == TEMPORALSEQ) 
-	{
-		bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-			MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-		result = continuous ?
-			/* Result is a TemporalS */
-			(Temporal *)oper4_temporalseq_temporalseq_crossdisc(
-				(TemporalSeq *)temp1, (TemporalSeq *)temp2, operator, BOOLOID) :
-			/* Result is a TemporalSeq */
-			(Temporal *)oper4_temporalseq_temporalseq(
-				(TemporalSeq *)temp1, (TemporalSeq *)temp2, operator, BOOLOID);
-	}
-	else if (temp1->type == TEMPORALS)
-	{
-		bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-			MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-		result = continuous ?
-			(Temporal *)oper4_temporals_temporals_crossdisc(
-				(TemporalS *)temp1, (TemporalS *)temp2, operator, BOOLOID) :
-			(Temporal *)oper4_temporals_temporals(
-				(TemporalS *)temp1, (TemporalS *)temp2, operator, BOOLOID);
-	}
-    else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-	return result;
-}
-
 /*****************************************************************************
  * Temporal eq
  *****************************************************************************/
@@ -115,32 +76,6 @@ teq_temporal_base(PG_FUNCTION_ARGS)
 	Temporal *result = tcomp_temporal_base(temp, value, datumtypid,
 		&datum2_eq2, false);
 	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(teq_temporal_temporal_old);
-
-PGDLLEXPORT Datum
-teq_temporal_temporal_old(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_eq2);
-	pfree(sync1); pfree(sync2); 
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -199,18 +134,8 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_ne2);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal_crossdisc(temp1, temp2, 
+		&datum2_ne2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -257,18 +182,8 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_lt2);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal_crossdisc(temp1, temp2, 
+		&datum2_lt2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -315,18 +230,8 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_le2);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal_crossdisc(temp1, temp2, 
+		&datum2_le2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -373,18 +278,8 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_gt2);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal_crossdisc(temp1, temp2, 
+		&datum2_gt2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -431,18 +326,8 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *sync1, *sync2;
-	/* Return false if the temporal points do not intersect in time
-	   The last parameter crossing must be set to false */
-	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		PG_RETURN_NULL();
-	}
-
-	Temporal *result = tcomp_temporal_temporal(sync1, sync2, &datum2_ge2);
-	pfree(sync1); pfree(sync2); 
+	Temporal *result = sync_oper4_temporal_temporal_crossdisc(temp1, temp2, 
+		&datum2_ge2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

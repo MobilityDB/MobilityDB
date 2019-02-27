@@ -3052,6 +3052,8 @@ minus_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet *ts2)
 		else
 			j++;
 	}
+	if(k == 0)
+		return NULL ;
 	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
 	pfree(times);
 	return result;	
@@ -3067,6 +3069,8 @@ minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *result = minus_timestampset_timestampset_internal(ts1, ts2);
 	PG_FREE_IF_COPY(ts1, 0);
 	PG_FREE_IF_COPY(ts2, 1);
+	if(! result)
+		PG_RETURN_NULL() ;
 	PG_RETURN_POINTER(result);
 }
 
@@ -3757,6 +3761,8 @@ minus_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 		return NULL;
 	}
 	
+	if(totalpers == 0)
+		return NULL ;
 	k = 0;
 	Period **allpers = palloc(sizeof(Period *) * totalpers);
 	for (int i = 0; i < ps1->count; i++)
@@ -3785,6 +3791,8 @@ minus_periodset_periodset(PG_FUNCTION_ARGS)
 	PeriodSet *result = minus_periodset_periodset_internal(ps1, ps2);
 	PG_FREE_IF_COPY(ps1, 0);
 	PG_FREE_IF_COPY(ps2, 1);
+	if(! result)
+		PG_RETURN_NULL() ;
 	PG_RETURN_POINTER(result);
 }
 
