@@ -2642,16 +2642,18 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box2, gs))
 	{
+		Temporal* copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(temporal_copy(temp));
+		PG_RETURN_POINTER(copy);
 	}
 	temporal_bbox(&box1, temp);
 	if (!overlaps_gbox_gbox_internal(&box1, &box2))
 	{
+		Temporal* copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(temporal_copy(temp));
+		PG_RETURN_POINTER(copy);
 	}
 
 	Temporal *result;
