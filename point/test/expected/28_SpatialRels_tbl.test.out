@@ -100,7 +100,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE coveredby(t1.temp, t2.temp);
  count 
 -------
-    75
+    76
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -163,7 +163,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE disjoint(t1.temp, t2.temp);
  count 
 -------
-   604
+   602
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -331,7 +331,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-    75
+    77
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
