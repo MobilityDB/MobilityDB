@@ -93,15 +93,15 @@ WHERE atGeometry(temp, g) IS NOT NULL AND atGeometry(temp, g) != temp LIMIT 10;
 SELECT minusGeometry(temp, g) FROM tbl_tgeompoint, tbl_geomcollection
 WHERE minusGeometry(temp, g) IS NOT NULL AND minusGeometry(temp, g) != temp LIMIT 10;
 
-SELECT temporal_round(azimuth(seq), 14) FROM tbl_tgeompointseq LIMIT 10;
-SELECT temporal_round(azimuth(ts), 14) FROM tbl_tgeompoints LIMIT 10;
-SELECT temporal_round(azimuth(seq), 14) FROM tbl_tgeogpointseq LIMIT 10;
-SELECT temporal_round(azimuth(ts), 14) FROM tbl_tgeogpoints LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeompointseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeompoints LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeogpointseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeogpoints LIMIT 10;
 
-SELECT temporal_round(azimuth(seq), 14) FROM tbl_tgeompoint3Dseq LIMIT 10;
-SELECT temporal_round(azimuth(ts), 14) FROM tbl_tgeompoint3Ds LIMIT 10;
-SELECT temporal_round(azimuth(seq), 14) FROM tbl_tgeogpoint3Dseq LIMIT 10;
-SELECT temporal_round(azimuth(ts), 14) FROM tbl_tgeogpoint3Ds LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeompoint3Dseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeompoint3Ds LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeogpoint3Dseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeogpoint3Ds LIMIT 10;
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
