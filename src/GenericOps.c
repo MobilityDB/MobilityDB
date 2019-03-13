@@ -986,7 +986,14 @@ sync_oper2_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 			operator, valuetypid, interpoint);
 		if (seq != NULL)
 			sequences[k++] = seq;
-		int cmp = period_cmp_internal(&seq1->period, &seq2->period);
+		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+		if (cmp == 0)
+		{
+			if (!seq1->period.upper_inc && seq2->period.upper_inc)
+				cmp = -1;
+			else if (seq1->period.upper_inc && !seq2->period.upper_inc)
+				cmp = 1;
+		}
 		if (cmp == 0)
 		{
 			i++; j++;
@@ -1535,7 +1542,14 @@ sync_oper3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 			param, operator, valuetypid, interpoint);
 		if (seq != NULL)
 			sequences[k++] = seq;
-		int cmp = period_cmp_internal(&seq1->period, &seq2->period);
+		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+		if (cmp == 0)
+		{
+			if (!seq1->period.upper_inc && seq2->period.upper_inc)
+				cmp = -1;
+			else if (seq1->period.upper_inc && !seq2->period.upper_inc)
+				cmp = 1;
+		}
 		if (cmp == 0)
 		{
 			i++; j++;
@@ -2083,7 +2097,7 @@ sync_oper4_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * 
 		(ts1->count + ts2->count));
 	int i = 0, j = 0, k = 0;
-	while (i < ts1->count || j < ts2->count)
+	while (i < ts1->count && j < ts2->count)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
