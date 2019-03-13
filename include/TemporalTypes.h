@@ -1408,7 +1408,7 @@ extern bool overlaps_box_period_internal(BOX *box, Period *p);
 extern bool same_box_period_internal(BOX *box, Period *p);
 
 extern void base_to_box(BOX *box, Datum value, Oid valuetypid);
-extern void range_to_box(BOX *box, RangeType *r, Oid rangetypid);
+extern void range_to_box(BOX *box, RangeType *r);
 extern void timestamp_to_box(BOX *box, TimestampTz t);
 extern void timestampset_to_box(BOX *box, TimestampSet *ts);
 extern void period_to_box(BOX *box, Period *p);
@@ -1421,8 +1421,8 @@ extern Datum range_period_to_box(PG_FUNCTION_ARGS);
 
 extern BOX *base_timestamp_to_box_internal(Datum value, TimestampTz t, Oid valuetypid);
 extern BOX *base_period_to_box_internal(Datum value, Period *p, Oid valuetypid);
-extern BOX *range_timestamp_to_box_internal(RangeType *range, TimestampTz t, Oid rangetypid);
-extern BOX *range_period_to_box_internal(RangeType *range, Period *p, Oid rangetypid);
+extern BOX *range_timestamp_to_box_internal(RangeType *range, TimestampTz t);
+extern BOX *range_period_to_box_internal(RangeType *range, Period *p);
 
 extern Datum overlaps_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_timestampset_temporal(PG_FUNCTION_ARGS);

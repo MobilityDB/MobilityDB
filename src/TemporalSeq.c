@@ -2384,7 +2384,8 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 /*
  * Restriction to the range.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before.
+ * This function assumes a bounding box test has been done before and thus the
+ * bounding box and the range overlaps.
  */
 TemporalSeq **
 tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, int *count)
@@ -2442,7 +2443,8 @@ tnumberseq_at_range(TemporalSeq *seq, RangeType *range)
 /*
  * Restriction to the complement of a range.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before. 
+ * This function assumes a bounding box test has been done before and thus the
+ * bounding box and the range overlaps. 
  */
 TemporalSeq **
 tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
@@ -2450,10 +2452,8 @@ tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		*count = 0;
+		return NULL;
 	}
 
 	/*

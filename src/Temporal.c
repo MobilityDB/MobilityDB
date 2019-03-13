@@ -1854,12 +1854,11 @@ tnumber_at_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	
 	/* Bounding box test */
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1899,12 +1898,11 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	
 	/* Bounding box test */
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
 		Temporal *result = temporal_copy(temp);
