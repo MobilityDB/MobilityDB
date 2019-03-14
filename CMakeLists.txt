@@ -23,7 +23,6 @@ src/PeriodSelfuncs.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
-src/synchronize.c
 src/TemporalAnalyze.c
 src/Temporal.c
 src/TemporalI.c

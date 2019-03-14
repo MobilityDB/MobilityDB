@@ -177,7 +177,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		RangeType *range = PG_GETARG_RANGE_P(1);
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
-		range_to_box(&query, range, subtype);
+		range_to_box(&query, range);
 		PG_FREE_IF_COPY(range, 1);
 	}
 	else if (subtype == TIMESTAMPTZOID)

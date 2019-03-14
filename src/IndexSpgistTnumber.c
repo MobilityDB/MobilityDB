@@ -452,7 +452,7 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 				in->scankeys[i].sk_argument, subtype);
 		else if (subtype == type_oid(T_INTRANGE) || subtype == type_oid(T_FLOATRANGE))
 			range_to_box(&queries[i],
-				DatumGetRangeTypeP(in->scankeys[i].sk_argument), subtype);
+				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == TIMESTAMPTZOID)
 			timestamp_to_box(&queries[i],
 				DatumGetTimestamp(in->scankeys[i].sk_argument));
@@ -597,7 +597,7 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		else if (subtype == type_oid(T_INTRANGE) || subtype == type_oid(T_FLOATRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			range_to_box(&query, range, subtype);									  
+			range_to_box(&query, range);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == TIMESTAMPTZOID)

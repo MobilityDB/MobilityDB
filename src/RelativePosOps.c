@@ -168,9 +168,8 @@ left_range_temporal(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = left_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -185,9 +184,8 @@ overleft_range_temporal(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = overleft_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -202,9 +200,8 @@ right_range_temporal(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = right_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -219,9 +216,8 @@ overright_range_temporal(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = overright_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -665,10 +661,9 @@ left_temporal_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = left_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -682,10 +677,9 @@ overleft_temporal_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = overleft_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -699,10 +693,9 @@ right_temporal_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = right_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -716,10 +709,9 @@ overright_temporal_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = overright_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);

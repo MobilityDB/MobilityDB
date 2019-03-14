@@ -3164,7 +3164,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	Datum (*operator)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalI *dist = oper2_temporali_temporali(ti1, ti2, operator, 
+	TemporalI *dist = sync_oper2_temporali_temporali(ti1, ti2, operator, 
 		FLOAT8OID);
 	Datum minvalue = temporali_min_value(dist);
 	TemporalI *mindistance = temporali_at_value(dist, minvalue, FLOAT8OID);
@@ -3182,8 +3182,8 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*operator)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalSeq *dist = oper2_temporalseq_temporalseq(seq1, seq2, 
-		operator, FLOAT8OID);
+	TemporalSeq *dist = sync_oper2_temporalseq_temporalseq(seq1, seq2, 
+		operator, FLOAT8OID, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
 	/* Make a copy of the sequences with inclusive bounds */
@@ -3207,8 +3207,8 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 	Datum (*operator)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalS *dist = oper2_temporals_temporals(ts1, ts2, operator, 
-		FLOAT8OID);
+	TemporalS *dist = sync_oper2_temporals_temporals(ts1, ts2, operator, 
+		FLOAT8OID, NULL);
 	TemporalS *mindist = temporals_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
 	TemporalInst *inst1 = temporals_at_timestamp(ts1, t);

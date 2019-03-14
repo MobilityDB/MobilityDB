@@ -1432,7 +1432,8 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count,
 
 /*
  * Restriction to a range.
- * This function assumes a bounding box test has been done before.
+ * This function assumes a bounding box test has been done before and thus the
+ * bounding box and the range overlaps.
  */
 TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
@@ -1445,12 +1446,19 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
+	BOX box1, box2;
+	range_to_box(&box2, range);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_at_range2(seq, range, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		/* Bounding box test */
+		temporalseq_bbox(&box1, seq);
+		if (overlaps_box_box_internal(&box1, &box2))
+		{
+			sequences[i] = tnumberseq_at_range2(seq, range, 
+				&countseqs[i]);
+			totalseqs += countseqs[i];
+		}
 	}
 	if (totalseqs == 0)
 	{
@@ -1478,7 +1486,8 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 
 /*
  * Restriction to minus range.
- * This function assumes a bounding box test has been done before.
+ * This function assumes a bounding box test has been done before and thus the
+ * bounding box and the range overlaps.
  */
 TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
@@ -1491,12 +1500,28 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 	TemporalSeq ***sequences = palloc(sizeof(TemporalS *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
+	BOX box1, box2;
+	range_to_box(&box2, range);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_minus_range1(seq, range, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		/* Bounding box test */
+		temporalseq_bbox(&box1, seq);
+		if (overlaps_box_box_internal(&box1, &box2))
+		{
+			sequences[i] = tnumberseq_minus_range1(seq, range, 
+				&countseqs[i]);
+			totalseqs += countseqs[i];
+		}
+		else
+		{
+			TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+			result[0] = temporalseq_copy(seq);
+			sequences[i] = result;
+			countseqs[i] = 1;
+			totalseqs += countseqs[i];
+		}
+		
 	}
 	if (totalseqs == 0)
 	{
@@ -1541,11 +1566,19 @@ tnumbers_at_ranges(TemporalS *ts, RangeType **ranges, int count)
 	{
 		sequences[i] = palloc(sizeof(TemporalSeq *) * count);
 		countseqs[i] = palloc0(sizeof(int) * count);
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		BOX box1, box2;
+		temporalseq_bbox(&box1, seq);
 		for (int j = 0; j < count; j ++)
 		{
-			sequences[i][j] = tnumberseq_at_range2(temporals_seq_n(ts, i), 
-				ranges[j], &(countseqs[i][j]));
-			totalseqs += countseqs[i][j];
+			/* Bounding box test */
+			range_to_box(&box2, ranges[j]);
+			if (overlaps_box_box_internal(&box1, &box2))
+			{
+				sequences[i][j] = tnumberseq_at_range2(seq, 
+					ranges[j], &(countseqs[i][j]));
+				totalseqs += countseqs[i][j];
+			}
 		}
 	}
 	if (totalseqs == 0)

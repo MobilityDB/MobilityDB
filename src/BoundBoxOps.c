@@ -412,14 +412,14 @@ base_to_box(BOX *box, Datum value, Oid valuetypid)
 /* Transform a range to a box (internal function only) */
 
 void
-range_to_box(BOX *box, RangeType *range, Oid rangetypid)
+range_to_box(BOX *box, RangeType *range)
 {
-	if (rangetypid == type_oid(T_INTRANGE))
+	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->low.x = (double)(DatumGetInt32(lower_datum(range)));
 		box->high.x = (double)(DatumGetInt32(upper_datum(range)));
 	}
-	else if (rangetypid == type_oid(T_FLOATRANGE))
+	else if (range->rangetypid == type_oid(T_FLOATRANGE))
 	{
 		box->low.x = DatumGetFloat8(lower_datum(range));
 		box->high.x = DatumGetFloat8(upper_datum(range));
@@ -555,15 +555,15 @@ base_period_to_box(PG_FUNCTION_ARGS)
 /* Transform a range and a timestamptz to a box */
 
 BOX *
-range_timestamp_to_box_internal(RangeType *range, TimestampTz t, Oid rangetypid)
+range_timestamp_to_box_internal(RangeType *range, TimestampTz t)
 {
 	BOX *result = palloc(sizeof(BOX));
-	if (rangetypid == type_oid(T_INTRANGE))
+	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		result->low.x = (double)(DatumGetInt32(lower_datum(range)));
 		result->high.x = (double)(DatumGetInt32(upper_datum(range)));
 	}
-	else if (rangetypid == type_oid(T_FLOATRANGE))
+	else if (range->rangetypid == type_oid(T_FLOATRANGE))
 	{
 		result->low.x = DatumGetFloat8(lower_datum(range));
 		result->high.x = DatumGetFloat8(upper_datum(range));
@@ -583,8 +583,7 @@ range_timestamp_to_box(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	Oid rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX *result = range_timestamp_to_box_internal(range, t, rangetypid);
+	BOX *result = range_timestamp_to_box_internal(range, t);
 	PG_FREE_IF_COPY(range, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
@@ -594,15 +593,15 @@ range_timestamp_to_box(PG_FUNCTION_ARGS)
 /* Transform a range and a period to a box */
 
 BOX *
-range_period_to_box_internal(RangeType *range, Period *p, Oid rangetypid)
+range_period_to_box_internal(RangeType *range, Period *p)
 {
 	BOX *result = palloc(sizeof(BOX));
-	if (rangetypid == type_oid(T_INTRANGE))
+	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		result->low.x = (double)(DatumGetInt32(lower_datum(range)));
 		result->high.x = (double)(DatumGetInt32(upper_datum(range)));
 	}
-	else if (rangetypid == type_oid(T_FLOATRANGE))
+	else if (range->rangetypid == type_oid(T_FLOATRANGE))
 	{
 		result->low.x = DatumGetFloat8(lower_datum(range));
 		result->high.x = DatumGetFloat8(upper_datum(range));
@@ -623,8 +622,7 @@ range_period_to_box(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	Oid rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX *result = range_period_to_box_internal(range, p, rangetypid);
+	BOX *result = range_period_to_box_internal(range, p);
 	PG_FREE_IF_COPY(range, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
@@ -1258,9 +1256,8 @@ overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = overlaps_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -1307,10 +1304,9 @@ overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = overlaps_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -1374,9 +1370,8 @@ contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = contains_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -1423,10 +1418,9 @@ contains_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = contains_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -1490,9 +1484,8 @@ contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = contained_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -1539,10 +1532,9 @@ contained_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = contained_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
@@ -1606,9 +1598,8 @@ same_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	BOX box1, box2;
-	range_to_box(&box1, range, rangetypid);
+	range_to_box(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = same_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(range, 0);
@@ -1655,10 +1646,9 @@ same_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Oid	rangetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	BOX box1, box2;
 	temporal_bbox(&box1, temp);
-	range_to_box(&box2, range, rangetypid);
+	range_to_box(&box2, range);
 	bool result = same_box_box_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
