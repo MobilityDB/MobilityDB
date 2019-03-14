@@ -3484,7 +3484,7 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 	if (memcmp(box1, box2, bboxsize))
 		return false;
 	
-	/* Since we ensure a unique canonical representation of temporal types
+	/* Since we ensure a unique normal representation of temporal types
 	   we can use memory comparison which is faster than comparing one by
 	   one all composing sequences */
 	/* Pointer to the offset array */

@@ -696,7 +696,7 @@ temporalinst_le(TemporalInst *inst1, TemporalInst *inst2)
 bool
 temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 {
-	/* Since we ensure a unique canonical representation of temporal types
+	/* Since we ensure a unique normal representation of temporal types
 	   we can use memory comparison which is faster than comparing the
 	   individual components */
 	/* Total size */

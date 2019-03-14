@@ -1544,7 +1544,7 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 	if (memcmp(box1, box2, bboxsize))
 		return false;
 	
-	/* Since we ensure a unique canonical representation of temporal types
+	/* Since we ensure a unique normal representation of temporal types
 	   we can use memory comparison which is faster than comparing one by
 	   one all composing sequences */
 	/* Total size minus size of the bounding box */
