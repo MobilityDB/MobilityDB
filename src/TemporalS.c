@@ -1170,6 +1170,16 @@ temporals_timestamps(TemporalS *ts)
 bool
 temporals_ever_equals(TemporalS *ts, Datum value)
 {
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporals_bbox(&box1, ts);
+		base_to_box(&box2, value, ts->valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return false;
+	}
+
 	for (int i = 0; i < ts->count; i++) 
 		if (temporalseq_ever_equals(temporals_seq_n(ts, i), value))
 			return true;
@@ -1181,6 +1191,18 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 bool
 temporals_always_equals(TemporalS *ts, Datum value)
 {
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporals_bbox(&box1, ts);
+		base_to_box(&box2, value, ts->valuetypid);
+		if (same_box_box_internal(&box1, &box2))
+			return true;
+		else
+			return false;
+	}
+
 	for (int i = 0; i < ts->count; i++) 
 		if (!temporalseq_always_equals(temporals_seq_n(ts, i), value))
 			return false;
@@ -1251,6 +1273,16 @@ temporals_continuous_time_internal(TemporalS *ts)
 TemporalS *
 temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
 {
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporals_bbox(&box1, ts);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return NULL;
+	}
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_at_value(temporals_seq_n(ts, 0), value, valuetypid);
@@ -1295,6 +1327,16 @@ temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
 TemporalS *
 temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid)
 {
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporals_bbox(&box1, ts);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return temporals_copy(ts);
+	}
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_minus_value(temporals_seq_n(ts, 0), value, valuetypid);
@@ -1432,12 +1474,17 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count,
 
 /*
  * Restriction to a range.
- * This function assumes a bounding box test has been done before and thus the
- * bounding box and the range overlaps.
  */
 TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporals_bbox(&box1, ts);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+		return NULL;
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tnumberseq_at_range(temporals_seq_n(ts, 0), range);
@@ -1446,19 +1493,12 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
-	BOX box1, box2;
-	range_to_box(&box2, range);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		/* Bounding box test */
-		temporalseq_bbox(&box1, seq);
-		if (overlaps_box_box_internal(&box1, &box2))
-		{
-			sequences[i] = tnumberseq_at_range2(seq, range, 
-				&countseqs[i]);
-			totalseqs += countseqs[i];
-		}
+		sequences[i] = tnumberseq_at_range2(seq, range, 
+			&countseqs[i]);
+		totalseqs += countseqs[i];
 	}
 	if (totalseqs == 0)
 	{
@@ -1485,13 +1525,18 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 }
 
 /*
- * Restriction to minus range.
- * This function assumes a bounding box test has been done before and thus the
- * bounding box and the range overlaps.
+ * Restriction to the complement of range.
  */
 TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporals_bbox(&box1, ts);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+		return temporals_copy(ts);
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return tnumberseq_minus_range(temporals_seq_n(ts, 0), range);
@@ -1500,28 +1545,11 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 	TemporalSeq ***sequences = palloc(sizeof(TemporalS *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
-	BOX box1, box2;
-	range_to_box(&box2, range);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		/* Bounding box test */
-		temporalseq_bbox(&box1, seq);
-		if (overlaps_box_box_internal(&box1, &box2))
-		{
-			sequences[i] = tnumberseq_minus_range1(seq, range, 
-				&countseqs[i]);
-			totalseqs += countseqs[i];
-		}
-		else
-		{
-			TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-			result[0] = temporalseq_copy(seq);
-			sequences[i] = result;
-			countseqs[i] = 1;
-			totalseqs += countseqs[i];
-		}
-		
+		sequences[i] = tnumberseq_minus_range1(seq, range, 
+			&countseqs[i]);
 	}
 	if (totalseqs == 0)
 	{
@@ -1750,11 +1778,16 @@ temporals_minus_max(TemporalS *ts)
 
 /*
  * Restriction to a timestamp.
- * This function assumes a bounding box test has been done before.
  */
 TemporalInst *
 temporals_at_timestamp(TemporalS *ts, TimestampTz t)
 {
+	/* Bounding box test */
+	Period p;
+	temporals_timespan(&p, ts);
+	if (!contains_period_timestamp_internal(&p, t))
+		return NULL;
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_at_timestamp(temporals_seq_n(ts, 0), t);
@@ -1769,11 +1802,16 @@ temporals_at_timestamp(TemporalS *ts, TimestampTz t)
 
 /*
  * Restriction to the complement of a timestamp.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 {
+	/* Bounding box test */
+	Period p;
+	temporals_timespan(&p, ts);
+	if (!contains_period_timestamp_internal(&p, t))
+		return temporals_copy(ts);
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_minus_timestamp(temporals_seq_n(ts, 0), t);
@@ -1820,11 +1858,17 @@ temporals_value_at_timestamp(TemporalS *ts, TimestampTz t, Datum *result)
 
 /*
  * Restriction to a timestampset.
- * This function assumes a bounding box test has been done before.
  */
 TemporalI *
 temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 {
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts1);
+	Period *p2 = timestampset_bbox(ts2);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return NULL;
+
 	/* Singleton sequence set */
 	if (ts1->count == 1)
 		return temporalseq_at_timestampset(temporals_seq_n(ts1, 0), ts2);
@@ -1862,11 +1906,17 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 
 /*
  * Restriction to the complement of a timestampset.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_minus_timestampset(TemporalS *ts1, TimestampSet *ts2)
 {
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts1);
+	Period *p2 = timestampset_bbox(ts2);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return temporals_copy(ts1);
+
 	/* Singleton sequence set */
 	if (ts1->count == 1)
 		return temporalseq_minus_timestampset(temporals_seq_n(ts1, 0), ts2);
@@ -1907,11 +1957,16 @@ temporals_minus_timestampset(TemporalS *ts1, TimestampSet *ts2)
 
 /*
  * Restriction to a period.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_at_period(TemporalS *ts, Period *period)
 {
+	/* Bounding box test */
+	Period p;
+	temporals_timespan(&p, ts);
+	if (!overlaps_period_period_internal(&p, period))
+		return NULL;
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
@@ -1956,11 +2011,16 @@ temporals_at_period(TemporalS *ts, Period *period)
 
 /*
  * Restriction to the complement of a period.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_minus_period(TemporalS *ts, Period *period)
 {
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts);
+	if (!overlaps_period_period_internal(&p1, period))
+		return temporals_copy(ts);
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_minus_period(temporals_seq_n(ts, 0), period);
@@ -1979,11 +2039,17 @@ temporals_minus_period(TemporalS *ts, Period *period)
 
 /*
  * Restriction to a periodset.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 {
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return NULL;
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_at_periodset(temporals_seq_n(ts, 0), ps);
@@ -2024,11 +2090,17 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 
 /*
  * Restriction to the complement of a period set.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 {
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return temporals_copy(ts);
+
 	/* Singleton sequence set */
 	if (ts->count == 1)
 		return temporalseq_minus_periodset(temporals_seq_n(ts, 0), ps);

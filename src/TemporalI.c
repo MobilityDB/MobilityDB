@@ -659,6 +659,16 @@ temporali_timestamps(TemporalI *ti)
 bool
 temporali_ever_equals(TemporalI *ti, Datum value)
 {
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporali_bbox(&box1, ti);
+		base_to_box(&box2, value, ti->valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return false;
+	}
+
 	for (int i = 0; i < ti->count; i++) 
 	{
 		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
@@ -673,6 +683,18 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 bool
 temporali_always_equals(TemporalI *ti, Datum value)
 {
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporali_bbox(&box1, ti);
+		base_to_box(&box2, value, ti->valuetypid);
+		if (same_box_box_internal(&box1, &box2))
+			return true;
+		else
+			return false;
+	}
+
 	for (int i = 0; i < ti->count; i++) 
 	{
 		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
@@ -707,6 +729,16 @@ temporali_shift(TemporalI *ti, Interval *interval)
 TemporalI *
 temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 {
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporali_bbox(&box1, ti);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return NULL;
+	}
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
@@ -737,6 +769,16 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 TemporalI *
 temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
 {
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporali_bbox(&box1, ti);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return temporali_copy(ti);
+	}
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
@@ -847,12 +889,18 @@ temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
 	return result;
 }
 
-/* Restriction to the range.
-   This function assumes a bounding box test has been done before.  */
+/* Restriction to a range. */
 
 TemporalI *
 tnumberi_at_range(TemporalI *ti, RangeType *range)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporali_bbox(&box1, ti);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+		return NULL;
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 		return temporali_copy(ti);
@@ -885,6 +933,13 @@ tnumberi_at_range(TemporalI *ti, RangeType *range)
 TemporalI *
 tnumberi_minus_range(TemporalI *ti, RangeType *range)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporali_bbox(&box1, ti);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+		return temporali_copy(ti);
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 		return NULL;

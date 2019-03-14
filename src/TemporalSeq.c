@@ -1645,6 +1645,16 @@ tempcontseq_ever_equals1(TemporalInst *inst1, TemporalInst *inst2,
 bool
 temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 {
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporalseq_bbox(&box1, seq);
+		base_to_box(&box2, value, seq->valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+			return false;
+	}
+
 	if (!MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
 	{
 		for (int i = 0; i < seq->count; i++) 
@@ -1676,7 +1686,19 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 bool
 temporalseq_always_equals(TemporalSeq *seq, Datum value)
 {
-	/* The following test assumes that the sequence is in canonical form */
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporalseq_bbox(&box1, seq);
+		base_to_box(&box2, value, seq->valuetypid);
+		if (same_box_box_internal(&box1, &box2))
+			return true;
+		else
+			return false;
+	}
+
+	/* The following test assumes that the sequence is in normal form */
 	if (seq->count > 2)
 		return false;
 	for (int i = 0; i < seq->count; i++) 
@@ -1892,12 +1914,27 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	return result;
 }
 
-/* Restriction to a value.
-   This function is called for each sequence of a TemporalS. */
+/* 
+   Restriction to a value.
+   This function is called for each sequence of a TemporalS. 
+*/
 
 TemporalSeq **
 temporalseq_at_value2(TemporalSeq *seq, Datum value, Oid valuetypid, int *count)
 {
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporalseq_bbox(&box1, seq);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+		{
+			*count = 0;
+			return NULL;			
+		}
+	}
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
@@ -2027,13 +2064,30 @@ tempcontseq_minus_value1(TemporalSeq **result,
 	return;
 }
 
-/* Restriction to the complement of a value.
-   This function is called for each sequence of a TemporalS. */
+/* 
+   Restriction to the complement of a value.
+   This function is called for each sequence of a TemporalS. 
+*/
 
 TemporalSeq **
 temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid, 
 	int *count)
 {
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		BOX box1, box2;
+		temporalseq_bbox(&box1, seq);
+		base_to_box(&box2, value, valuetypid);
+		if (!contains_box_box_internal(&box1, &box2))
+		{
+			TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+			result[0] = temporalseq_copy(seq);
+			*count = 1;
+			return result;
+		}
+	}
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
@@ -2384,12 +2438,20 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 /*
  * Restriction to the range.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before and thus the
- * bounding box and the range overlaps.
  */
 TemporalSeq **
 tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, int *count)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporalseq_bbox(&box1, seq);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+	{
+		*count = 0;
+		return NULL;
+	}
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
@@ -2443,12 +2505,22 @@ tnumberseq_at_range(TemporalSeq *seq, RangeType *range)
 /*
  * Restriction to the complement of a range.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before and thus the
- * bounding box and the range overlaps. 
  */
 TemporalSeq **
 tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
 {
+	/* Bounding box test */
+	BOX box1, box2;
+	temporalseq_bbox(&box1, seq);
+	range_to_box(&box2, range);
+	if (!overlaps_box_box_internal(&box1, &box2))
+	{
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		result[0] = temporalseq_copy(seq);
+		*count = 1;
+		return result;
+	}
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
@@ -2902,11 +2974,14 @@ temporalseq_minus_timestamp1(TemporalSeq **result,
 
 /*
  * Restriction to the complement of a timestamp.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporalseq_minus_timestamp(TemporalSeq *seq, TimestampTz t)
 {
+	/* Bounding box test */
+	if (!contains_period_timestamp_internal(&seq->period, t))
+		return temporals_from_temporalseqarr(&seq, 1, false);
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 		return NULL;
@@ -2969,11 +3044,20 @@ temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts)
 /*
  * Restriction to the complement of a timestampset.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before.
  */
 TemporalSeq **
 temporalseq_minus_timestampset1(TemporalSeq *seq, TimestampSet *ts, int *count)
 {
+	/* Bounding box test */
+	Period *p = timestampset_bbox(ts);
+	if (!overlaps_period_period_internal(&seq->period, p))
+	{
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		result[0] = temporalseq_copy(seq);
+		*count = 1;
+		return result;
+	}
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
@@ -3125,22 +3209,21 @@ temporalseq_minus_period(TemporalSeq *seq, Period *period)
 /*
  * Restriction to a periodset.
  * This function is called for each sequence of a TemporalS.
- * This function assumes a bounding box test has been done before.
  */
 
 TemporalSeq **
 temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 {
+	/* Bounding box test */
+	Period p1;
+	temporalseq_timespan(&p1, seq);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return NULL;
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_at_periodset(inst, ps);
-		if (inst1 == NULL)
-		{
-			*count = 0;
-			return NULL;			
-		}
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
 		*count = 1;
@@ -3184,11 +3267,17 @@ temporalseq_at_periodset(TemporalSeq *seq, PeriodSet *ps)
 
 /*
  * Restriction to the complement of a periodset.
- * This function assumes a bounding box test has been done before.
  */
 TemporalS *
 temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 {
+	/* Bounding box test */
+	Period p1;
+	temporalseq_timespan(&p1, seq);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return temporals_from_temporalseqarr(&seq, 1, false);
+
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
