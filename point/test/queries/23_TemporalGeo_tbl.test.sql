@@ -1,34 +1,18 @@
 ﻿-------------------------------------------------------------------------------
 
-SELECT astext(temp) FROM tbl_tgeompoint;
-SELECT astext(temp) FROM tbl_tgeogpoint;
-SELECT astext(temp) FROM tbl_tgeompoint3D;
-SELECT astext(temp) FROM tbl_tgeogpoint3D;
+SELECT astext(temp) FROM tbl_tgeompoint LIMIT 10;
+SELECT astext(temp) FROM tbl_tgeogpoint LIMIT 10;
+SELECT astext(temp) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT astext(temp) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT k%90, astext(array_agg(g ORDER BY k)) FROM tbl_geogcollection3D GROUP BY k%90 ORDER BY k%90 LIMIT 10;
+SELECT k%90, astext(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D GROUP BY k%90 ORDER BY k%90 LIMIT 10;
 
-SELECT asEWKT(temp) FROM tbl_tgeompoint;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint;
-SELECT asEWKT(temp) FROM tbl_tgeompoint3D;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint3D;
-
-SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10 ORDER BY k%10;
-
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geomcollection3D GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(g)) FROM tbl_geogcollection3D GROUP BY k%10 ORDER BY k%10;
-
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, astext(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10 ORDER BY k%10;
-
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeompoint3D GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, asEWKT(array_agg(temp)) FROM tbl_tgeogpoint3D GROUP BY k%10 ORDER BY k%10;
+SELECT asEWKT(temp) FROM tbl_tgeompoint LIMIT 10;
+SELECT asEWKT(temp) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asEWKT(temp) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asEWKT(temp) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT k%90, asEWKT(array_agg(g ORDER BY k)) FROM tbl_geogcollection3D GROUP BY k%90 ORDER BY k%90 LIMIT 10;
+SELECT k%90, asEWKT(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D GROUP BY k%90 ORDER BY k%90 LIMIT 10;
 
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint;
@@ -78,46 +62,46 @@ SELECT ST_AsText(transform_gk(ST_MakeLine(ST_MakePoint(13.43593,52.41721),ST_Mak
 SELECT ST_AsText(transform_gk(ST_MakeLine(ARRAY[ST_MakePoint(13.43593,52.41721),ST_MakePoint(13.43593,52.41723)])));
 
 /*****************************************************************************/
-SELECT tgeogpoint(temp) FROM tbl_tgeompoint;
-SELECT tgeompoint(temp) FROM tbl_tgeogpoint;
-SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D;
-SELECT tgeompoint(temp) FROM tbl_tgeogpoint3D;
+SELECT tgeogpoint(temp) FROM tbl_tgeompoint LIMIT 10;
+SELECT tgeompoint(temp) FROM tbl_tgeogpoint LIMIT 10;
+SELECT tgeogpoint(temp) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT tgeompoint(temp) FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT temp::tgeogpoint FROM tbl_tgeompoint;
-SELECT temp::tgeompoint FROM tbl_tgeogpoint;
-SELECT temp::tgeogpoint FROM tbl_tgeompoint3D;
-SELECT temp::tgeompoint FROM tbl_tgeogpoint3D;
+SELECT temp::tgeogpoint FROM tbl_tgeompoint LIMIT 10;
+SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
+SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
+SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT synctrajectory(seq) FROM tbl_tgeompointseq;
-SELECT synctrajectory(ts) FROM tbl_tgeompoints;
-SELECT synctrajectory(seq) FROM tbl_tgeompoint3Dseq;
-SELECT synctrajectory(ts) FROM tbl_tgeompoint3Ds;
+SELECT synctrajectory(seq) FROM tbl_tgeompointseq LIMIT 10;
+SELECT synctrajectory(ts) FROM tbl_tgeompoints LIMIT 10;
+SELECT synctrajectory(seq) FROM tbl_tgeompoint3Dseq LIMIT 10;
+SELECT synctrajectory(ts) FROM tbl_tgeompoint3Ds LIMIT 10;
 
-SELECT synctrajectorypers(seq) FROM tbl_tgeompointseq;
-SELECT synctrajectorypers(ts) FROM tbl_tgeompoints;
-SELECT synctrajectorypers(seq) FROM tbl_tgeompoint3Dseq;
-SELECT synctrajectorypers(ts) FROM tbl_tgeompoint3Ds;
+SELECT synctrajectorypers(seq) FROM tbl_tgeompointseq LIMIT 10;
+SELECT synctrajectorypers(ts) FROM tbl_tgeompoints LIMIT 10;
+SELECT synctrajectorypers(seq) FROM tbl_tgeompoint3Dseq LIMIT 10;
+SELECT synctrajectorypers(ts) FROM tbl_tgeompoint3Ds LIMIT 10;
 
-SELECT trajectory(temp) FROM tbl_tgeompoint;
-SELECT trajectory(temp) FROM tbl_tgeogpoint;
-SELECT trajectory(temp) FROM tbl_tgeompoint3D;
-SELECT trajectory(temp) FROM tbl_tgeogpoint3D;
+SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
+SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
+SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;
+SELECT trajectory(temp) FROM tbl_tgeogpoint3D ORDER BY k LIMIT 10 ;
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection
-WHERE atGeometry(temp, g) IS NOT NULL;
+SELECT atGeometry(temp, g) FROM tbl_tgeompoint, tbl_geomcollection
+WHERE atGeometry(temp, g) IS NOT NULL AND atGeometry(temp, g) != temp LIMIT 10;
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection
-WHERE minusGeometry(temp, g) IS NOT NULL;
+SELECT minusGeometry(temp, g) FROM tbl_tgeompoint, tbl_geomcollection
+WHERE minusGeometry(temp, g) IS NOT NULL AND minusGeometry(temp, g) != temp LIMIT 10;
 
-SELECT azimuth(seq) FROM tbl_tgeompointseq;
-SELECT azimuth(ts) FROM tbl_tgeompoints;
-SELECT azimuth(seq) FROM tbl_tgeogpointseq;
-SELECT azimuth(ts) FROM tbl_tgeogpoints;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeompointseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeompoints LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeogpointseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeogpoints LIMIT 10;
 
-SELECT azimuth(seq) FROM tbl_tgeompoint3Dseq;
-SELECT azimuth(ts) FROM tbl_tgeompoint3Ds;
-SELECT azimuth(seq) FROM tbl_tgeogpoint3Dseq;
-SELECT azimuth(ts) FROM tbl_tgeogpoint3Ds;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeompoint3Dseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeompoint3Ds LIMIT 10;
+SELECT temporal_round(azimuth(seq), 13) FROM tbl_tgeogpoint3Dseq LIMIT 10;
+SELECT temporal_round(azimuth(ts), 13) FROM tbl_tgeogpoint3Ds LIMIT 10;
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
@@ -157,31 +141,31 @@ WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
 
 --------------------------------------------------------
 
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint;
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint3D;
+SELECT st_astext(temp::geometry) FROM tbl_tgeompoint LIMIT 10;
+SELECT st_astext(temp::geometry) FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT temp::geometry FROM tbl_tgeompoint;
-SELECT temp::geometry FROM tbl_tgeompoint3D;
+SELECT temp::geometry FROM tbl_tgeompoint LIMIT 10;
+SELECT temp::geometry FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint;
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint3D;
+SELECT st_astext(temp::geography) FROM tbl_tgeogpoint LIMIT 10;
+SELECT st_astext(temp::geography) FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT temp::geography FROM tbl_tgeogpoint;
-SELECT temp::geography FROM tbl_tgeogpoint3D;
+SELECT temp::geography FROM tbl_tgeogpoint LIMIT 10;
+SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint;
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D;
+SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
+SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
 SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
 
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint;
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D;
+SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
+SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint;
-SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D;
+SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint LIMIT 10;
+SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 

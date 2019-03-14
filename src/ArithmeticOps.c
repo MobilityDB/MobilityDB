@@ -84,6 +84,22 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 		errmsg("Operation not supported")));
 }
 
+/* Round to n decimal places */
+
+static Datum
+datum_round(Datum l, Datum r, Oid typel, Oid typer) {
+	Assert(typel == FLOAT8OID && typer == INT4OID) ;
+	double x = DatumGetFloat8(l) ;
+	int n = DatumGetInt32(r) ;
+	// using strings for truncating. not efficient but I don't know how to do it correctly numerically...
+	char pattern[16] ;
+	char str[128] ;
+	sprintf(pattern, "%%.%df", n) ;
+	sprintf(str, pattern, x) ;
+	double x2 = strtod(str, NULL) ;
+	return Float8GetDatum(x2) ;
+}
+
 /*****************************************************************************
  * Temporal addition
  *****************************************************************************/
@@ -323,3 +339,23 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+
+PG_FUNCTION_INFO_V1(round_temporal);
+
+PGDLLEXPORT Datum
+round_temporal(PG_FUNCTION_ARGS)
+{
+	//Datum value = PG_GETARG_DATUM(1);
+	int digits = PG_GETARG_INT32(1) ;
+	//Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	//double d = datum_double(value, datumtypid);
+
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+
+	Temporal *result;
+	result = oper4_temporal_base(Int32GetDatum(digits), temp,
+								 &datum_round, INT4OID, FLOAT8OID, false);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}

@@ -1,26 +1,24 @@
 language: c
 
-dist: stretch
+dist: xenial
 
 compiler:
   - gcc
-  - clang
 
-addons:
-  apt:
-    sources:
-    - pgdg
-    - sourceline: 'deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main'
-      key_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
-    packages:
-    - postgresql-11
-	- postgis
-	- liblwgeom-dev
+before_install:
+  - echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
+  - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install -y postgresql-11 postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-11 libproj-dev postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
 
 before_script:
   - mkdir build
   - cd build
   - cmake ..
 
-script: make && make test
+script: 
+  - export PATH="/usr/lib/postgresql/11/bin:$PATH"
+  - make && make test
+
+after_failure: ../test/scripts/print_fail.sh
 
