@@ -1244,38 +1244,46 @@ SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE atRange(temp, i) IS NOT NULL;
  count 
 -------
-  3162
+  2786
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange 
 WHERE atRange(temp, f) IS NOT NULL;
  count 
 -------
-  4815
+  4814
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE minusRange(temp, i) IS NOT NULL;
  count 
 -------
-  9846
+  9823
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange
 WHERE minusRange(temp, f) IS NOT NULL;
  count 
 -------
-  9866
+  9855
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, 
 ( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
 WHERE atRanges(temp, valuearr) IS NOT NULL;
-ERROR:  Invalid sequence for temporal sequence set
+ count 
+-------
+   100
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tfloat, 
 ( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
 WHERE atRanges(temp, valuearr) IS NOT NULL;
-ERROR:  Invalid sequence for temporal sequence set
+ count 
+-------
+    99
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tint,
 ( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
 WHERE minusRanges(temp, valuearr) IS NOT NULL;
