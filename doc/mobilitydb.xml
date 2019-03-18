@@ -22,7 +22,7 @@
   <chapter id ="introduction">
     <title>Introduction</title>
 
-    <para>MobilityDB is an extension of PostgreSQL<footnote><ulink url="http://postgresql.org" /></footnote> and PostGIS<footnote><ulink url="http://postgis.net" /></footnote> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
+    <para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
 
     <para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname> and <varname>tgeography</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
     
@@ -608,11 +608,11 @@ CREATE TABLE Fligth(FlightNo integer, Route tgeogpoint(Sequence,PointZ,4326));
         </listitem>
 
         <listitem>
-          <para>The <varname>box</varname> type provided by PostgreSQL for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value extent is defined in the <inlineequation>x</inlineequation> dimension and the temporal extent in the <inlineequation>y</inlineequation> dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
+          <para>The <varname>box</varname> type provided by PostgreSQL for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value extent is defined in the X dimension and the temporal extent in the Y dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
         </listitem>
 
         <listitem>
-          <para>The <varname>gbox</varname> type provided by PostGIS for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the <inlineequation>x</inlineequation>, <inlineequation>y</inlineequation>, and <inlineequation>z</inlineequation> dimensions, and the temporal extent in the <inlineequation>m</inlineequation> dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
+          <para>The <varname>gbox</varname> type provided by PostGIS for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the temporal extent in the M dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
         </listitem>
       </itemizedlist>
     </para>
@@ -2101,7 +2101,7 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',18052>
       <sect2>
         <title>Comparison Operators</title>
 
-        <para>The traditional comparison operators are the only ones that require that the left and right arguments be identical, that is, of the same duration and the same base type. Excepted the equality and inequality, the other comparison operators (<varname>&lt;=</varname> and so on) are not useful in the real world but allow B-tree indexes to be constructed on temporal types. For temporal instant values, they compare first the timestamps and only if those are equal, compare the value(s). For temporal values with sequence duration, they compare the first <inlineequation>n</inlineequation> instants, where <inlineequation>n</inlineequation> is the minimum of the number of composing instants of both values. For temporal set values, they compare the first <inlineequation>n</inlineequation> unit values, where <inlineequation>n</inlineequation> is the minimum of the number of composing unit values of both temporal set values.</para>
+        <para>The traditional comparison operators are the only ones that require that the left and right arguments be identical, that is, of the same duration and the same base type. Excepted the equality and inequality, the other comparison operators (<varname>&lt;=</varname> and so on) are not useful in the real world but allow B-tree indexes to be constructed on temporal types. For temporal instant values, they compare first the timestamps and only if those are equal, compare the value(s). For temporal values with sequence duration, they compare the first N instants, where N is the minimum of the number of composing instants of both values. For temporal set values, they compare the first N unit values, where N is the minimum of the number of composing unit values of both temporal set values.</para>
 
         <para>The equality and inequality operators consider the normal forms of the temporal types as shown next.
           <programlisting>
@@ -2379,7 +2379,7 @@ SELECT ~ tbool '[true@2012-01-03, true@2012-01-05)';
         <title>Bounding Box Operators</title>
         <para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in Section <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>gbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
 
-        <para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the <inlineequation>x</inlineequation> coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the <inlineequation>y</inlineequation> coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the <inlineequation>z</inlineequation> coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types. The operators for the value dimension of the <varname>tint</varname> and <varname>tfloat</varname> types are given next.</para>
+        <para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types. The operators for the value dimension of the <varname>tint</varname> and <varname>tfloat</varname> types are given next.</para>
 
         <itemizedlist>
           <listitem>
@@ -3113,9 +3113,9 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
 
       <sect2>
         <title>Aggregate Functions for Temporal Types</title>
-        <para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant <inlineequation>t</inlineequation> in the union of the temporal extents of the values to aggregate.</para>
+        <para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant t in the union of the temporal extents of the values to aggregate.</para>
 
-        <para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available or reporting objects (for example, number of cars in an area). For Boolean types, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>. For numeric types, two types of temporal aggregate functions are available. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval <inlineequation>w</inlineequation>, compute the value of the function at an instant <inlineequation>t</inlineequation> by considering the values during the interval [<inlineequation>t</inlineequation>-<inlineequation>w</inlineequation>, <inlineequation>t</inlineequation>]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful. For temporal text, the functions Finally, for temporal points the function <varname>tcentroid</varname>, generalizes the corresponding function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para>
+        <para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available or reporting objects (for example, number of cars in an area). For Boolean types, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>. For numeric types, two types of temporal aggregate functions are available. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful. For temporal text, the functions Finally, for temporal points the function <varname>tcentroid</varname>, generalizes the corresponding function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para>
      
         <para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in Section <xref linkend="examples_temporal_types" />.</para>
         <itemizedlist>
@@ -3393,10 +3393,10 @@ WHERE intersects(T.Trip, R.Geom);
     <para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
          <orderedlist>
           <listitem>
-            <para>number of dimensions of the values, <inlineequation>n</inlineequation>-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
+            <para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
           </listitem>
           <listitem>
-            <para><inlineequation>n</inlineequation>-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
+            <para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
           </listitem>
         </orderedlist>
     </para>
@@ -3467,7 +3467,7 @@ WHERE intersects(T.Trip, R.Geom);
 
   <chapter id="representative_queries">
     <title>Representative Queries</title>
-    <para>In order to show the expressiveness of the extension we give in this section a set of representative queries based on the BerlinMOD<footnote><para><ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html" /></para></footnote> benchmark for moving object databases. For this we use the following tables.
+    <para>In order to show the expressiveness of the extension we give in this section a set of representative queries based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases. For this we use the following tables.
       <programlisting>
 CREATE TABLE Cars (
     CarId integer PRIMARY KEY,
@@ -3515,7 +3515,7 @@ CREATE VIEW Periods1 AS SELECT * FROM Periods LIMIT 10;
       </programlisting>
     Table <varname>Cars</varname> stores static information about the cars while the information about their trips is stored in table <varname>Trips</varname>. Tables <varname>Points</varname>, <varname>Regions</varname>, <varname>Instants</varname>, and <varname>Periods</varname> define locations and times used for expressing query conditions with respect to the trips. The tables have indexes on traditional, spatial, temporal, or spatio-temporal attributes. The five views defined select a subset of the rows from the corresponding tables.</para>
 
-    <para>We discuss next four categories of queries: range queries, distance queries, temporal aggregate queries, and nearest-neighbor queries<footnote><para>A web interface to explore the temporal types on a database containing the BerlinMOD benchmark data generated at scale 0.005 is available at the address <ulink url="http://demo.mobilitydb.eu/" />.</para></footnote>.</para>
+    <para>We discuss next four categories of queries: range queries, distance queries, temporal aggregate queries, and nearest-neighbor queries<footnote><para>A web interface to explore the temporal types on a database containing the BerlinMOD benchmark data generated at scale 0.005 is available at the address <ulink url="http://demo.mobilitydb.eu/">here</ulink>.</para></footnote>.</para>
 
     <sect1>
       <title>Range Queries</title>
@@ -3599,7 +3599,7 @@ GROUP BY T.CarId, P.PointId;
           </listitem>
 
           <listitem>
-            <para>Window temporal aggregate queries (also known as cumulative queries), which, given a time interval <inlineequation>w</inlineequation>, compute the value of the aggregate at a time instant <inlineequation>t</inlineequation> from the values during the time period [<inlineequation>t</inlineequation>-<inlineequation>w</inlineequation>, <inlineequation>t</inlineequation>].</para>
+            <para>Window temporal aggregate queries (also known as cumulative queries), which, given a time interval w, compute the value of the aggregate at a time instant t from the values during the time period [t-w, t].</para>
           </listitem>
 
           <listitem>
@@ -3764,15 +3764,15 @@ ORDER BY T1.CarId, T2.CarId, Position;
       <para>There are three common types of nearest-neighbor queries in spatial databases.
         <itemizedlist>
           <listitem>
-            <para><inlineequation>k</inlineequation>-nearest-neighbor (kNN) queries find the <inlineequation>k</inlineequation> nearest points to a given point.</para>
+            <para>k-nearest-neighbor (kNN) queries find the k nearest points to a given point.</para>
           </listitem>
 
           <listitem>
-            <para>Reverse <inlineequation>k</inlineequation>-nearest-neighbor (RkNN) queries find the points that have a given point among their <inlineequation>k</inlineequation> nearest-neighbors.</para>
+            <para>Reverse k-nearest-neighbor (RkNN) queries find the points that have a given point among their k nearest-neighbors.</para>
           </listitem>
 
           <listitem>
-            <para>Given two sets of points <inlineequation>P</inlineequation> and <inlineequation>Q</inlineequation>, aggregate nearest-neighbor (ANN) queries find the points from <inlineequation>P</inlineequation> that have minimum aggregated distance to all points from <inlineequation>Q</inlineequation>.</para>
+            <para>Given two sets of points P and Q, aggregate nearest-neighbor (ANN) queries find the points from P that have minimum aggregated distance to all points from Q.</para>
           </listitem>
         </itemizedlist>
       </para>
@@ -3918,7 +3918,7 @@ ORDER BY S1.GroupId, S1.PointId;
     </orderedlist>
     </para>
     
-    <para>We describe next how MobilityDB implements the network-based model for temporal points. This implementation is based on pgRouting<footnote><ulink url="https://pgrouting.org/" /></footnote>, an extension of PostgreSQL and PostGIS to provide geospatial routing functionality. pgRouting represents transportation networks as nodes and edges and loads all corresponding attributes to relational tables. It provides functionality for network analysis, such as shortest path (Dijkstra Algorithm, A* Algorithm, Johnson's Algorithm, Floyd-Warshall Algorithm), k-shortest path, traveling sales person, etc. The routing functionality is based on the &ldquo;edge cost&rdquo;, which can be dynamically calculated and modified from clients using SQL expressions. Its value can also come from multiple fields or tables.</para>
+    <para>We describe next how MobilityDB implements the network-based model for temporal points. This implementation is based on <ulink url="https://pgrouting.org/">pgRouting</ulink>, an extension of PostgreSQL and PostGIS to provide geospatial routing functionality. pgRouting represents transportation networks as nodes and edges and loads all corresponding attributes to relational tables. It provides functionality for network analysis, such as shortest path (Dijkstra Algorithm, A* Algorithm, Johnson's Algorithm, Floyd-Warshall Algorithm), k-shortest path, traveling sales person, etc. The routing functionality is based on the &ldquo;edge cost&rdquo;, which can be dynamically calculated and modified from clients using SQL expressions. Its value can also come from multiple fields or tables.</para>
     
     <para>MobilityDB provides the following network-based static types: <varname>npoint</varname>, <varname>nsegment</varname>, and <varname>nregion</varname>. From, these static types the following temporal types are built:  <varname>tnpoint</varname>, <varname>tnsegment</varname>, and <varname>tnregion</varname>.</para>
 
@@ -3941,7 +3941,7 @@ ORDER BY S1.GroupId, S1.PointId;
         <title>Network Points, Network Segments, Network Regions</title>
         <para>The network-based static model is based on three types <varname>npoint</varname>, <varname>nsegment</varname>, and <varname>nregion</varname> described next.</para>
 
-        <para>A <varname>npoint</varname> (short for network point) denotes a network-based point represented by a single network position. It is a couple <varname>(rid,pos)</varname>, with <varname>rid</varname> is an <varname>integer</varname> value that denotes the route identifier on which the object is located and <varname>pos</varname> is a <varname>float</varname> value in the range <inlineequation>[0,1]</inlineequation> that denotes the relative position. The value <varname>pos = 0</varname> denotes the starting position of route, while the value <varname>pos = 1</varname> denotes the ending position of route. The road distance between <varname>npos</varname> and the starting position of route rid is computed by <inlineequation><varname>pos</varname> × <varname>len</varname></inlineequation>, where <varname>len</varname> is the route length. Examples of <varname>npoint</varname> values is as follows:
+        <para>A <varname>npoint</varname> (short for network point) denotes a network-based point represented by a single network position. It is a couple <varname>(rid,pos)</varname>, with <varname>rid</varname> is an <varname>integer</varname> value that denotes the route identifier on which the object is located and <varname>pos</varname> is a <varname>float</varname> value in the range [0,1] that denotes the relative position. The value <varname>pos = 0</varname> denotes the starting position of route, while the value <varname>pos = 1</varname> denotes the ending position of route. The road distance between <varname>npos</varname> and the starting position of route rid is computed by <varname>pos x len</varname>, where <varname>len</varname> is the route length. Examples of <varname>npoint</varname> values is as follows:
         <programlisting>
 SELECT npoint '(1,0.5)';
 -- Erroneous network point
@@ -3955,7 +3955,7 @@ SELECT npoint(2,0.5);
           </programlisting>
         </para>
 
-        <para>A <varname>nsegment</varname> (short for network segment) is a pair of network positions on the same route. It is a triple <varname>(rid,pos1,pos2)</varname>, with <varname>rid</varname> is an <varname>integer</varname> value that denotes the route identifier on which the object is located and and <varname>pos1</varname> and <varname>pos2</varname> are <varname>float</varname> values in the range <inlineequation>[0,1]</inlineequation> such that <inlineequation><varname>pos1</varname> &lt;= <varname>pos2</varname></inlineequation>. In case <inlineequation><varname>pos1</varname> = 0</inlineequation> and <inlineequation><varname>pos2</varname> = 1</inlineequation> the network segment is equivalent to the entire route. In case <inlineequation><varname>pos1</varname> = <varname>pos2</varname></inlineequation> the network segment is equivalent to a network point. Examples of <varname>nsegment</varname> values is as follows:
+        <para>A <varname>nsegment</varname> (short for network segment) is a pair of network positions on the same route. It is a triple <varname>(rid,pos1,pos2)</varname>, with <varname>rid</varname> is an <varname>integer</varname> value that denotes the route identifier on which the object is located and and <varname>pos1</varname> and <varname>pos2</varname> are <varname>float</varname> values in the range [0,1] such that <varname>pos1 &lt;= pos2</varname>. In case <varname>pos1 = 0</varname> and <varname>pos2 = 1</varname> the network segment is equivalent to the entire route. In case <varname>pos1 = pos2</varname> the network segment is equivalent to a network point. Examples of <varname>nsegment</varname> values is as follows:
         <programlisting>
 SELECT nsegment '(1,0.5,0.6)';
 -- Point network segment
@@ -3970,7 +3970,7 @@ SELECT nsegment '(1,0.5,0.4)';
         </programlisting>
         </para>
 
-        <para>The <varname>nsegment</varname> type has a constructor function that accepts three arguments: one integer argument for the route identifier, and two optional float argument for the relative positions. If no relative positions are given, the whole route is assumed, that is <inlineequation><varname>pos1</varname> = 0</inlineequation> and <inlineequation><varname>pos2</varname> = 1</inlineequation>. If only one relative position is given, a single point is assumed, that is <inlineequation><varname>pos1</varname> = <varname>pos2</varname></inlineequation>. Examples of network segments defined with the constructor functions are as follows:
+        <para>The <varname>nsegment</varname> type has a constructor function that accepts three arguments: one integer argument for the route identifier, and two optional float argument for the relative positions. If no relative positions are given, the whole route is assumed, that is <varname>pos1 = 0</varname> and <varname>pos2 = 1</varname>. If only one relative position is given, a single point is assumed, that is <varname>pos1 = pos2</varname>. Examples of network segments defined with the constructor functions are as follows:
           <programlisting>
 SELECT nsegment(2,0.5,0.7);
 -- "(2,0.5,0.7)"
@@ -4026,7 +4026,7 @@ SELECT nregion '{(1, 0.5, 0.6), (1, 0.5, 0.6)}';
               <para><varname>nstatic</varname> represents any network-based static type, that is, <varname>npoint</varname>, <varname>nsegment</varname>, or <varname>nregion</varname>,</para>
             </listitem>
             <listitem>
-              <para><varname>relpos</varname> represents a <varname>float</varname> value in the range <inlineequation>[0,1]</inlineequation>.</para>
+              <para><varname>relpos</varname> represents a <varname>float</varname> value in the range [0,1].</para>
             </listitem>
           </itemizedlist>
         </para>
@@ -4176,6 +4176,7 @@ SELECT distance(period '[2011-01-01, 2011-01-05)');
 
     <sect1 id="network_based_temporal_points">
       <title>Network-Based Temporal Points</title>
+      <para>We use the static points for defining temporal points.</para>
  
 
 
