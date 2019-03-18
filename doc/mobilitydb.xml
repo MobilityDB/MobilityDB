@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
+<!ENTITY geography_support
+"<inlinemediaobject>
+   <imageobject><imagedata fileref='images/internet.png' /></imageobject>
+ </inlinemediaobject>
+">
+ 
+<!ENTITY Z_support
+"<inlinemediaobject>
+   <imageobject><imagedata fileref='images/cube.png' /></imageobject>
+ </inlinemediaobject>
+">
+]>
 <book lang="en">
   <bookinfo>
     <title>MobilityDB Manual</title>
@@ -1518,26 +1530,11 @@ SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)
 
       <sect2>
         <title>Spatial Functions</title>
-        <para>In the following functions we specify with the symbol
-        <inlinemediaobject>
-          <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-        </inlinemediaobject>
-        that the function supports 3D points and with the symbol
-        <inlinemediaobject>
-         <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-        </inlinemediaobject>
-        that the function is available for geographies.</para>
+        <para>In the following functions we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
         <itemizedlist>
           <listitem>
-            <para><varname>asText</varname>: Well-Known Text (WKT) representation
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-              </inlinemediaobject>
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-              </inlinemediaobject>
-            </para>
+            <para><varname>asText</varname>: Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
             <para>Signature: <varname>asText({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
             <programlisting>
 SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
@@ -1548,14 +1545,7 @@ SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
           </listitem>
 
             <listitem>
-            <para><varname>asEWKT</varname>: Extended Well-Known Text (WKT) representation
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-              </inlinemediaobject>
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-              </inlinemediaobject>
-            </para>
+            <para><varname>asEWKT</varname>: Extended Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
               <para>Signature: <varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
               <programlisting>
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
@@ -1566,14 +1556,7 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
             </listitem>
 
             <listitem>
-              <para><varname>SRID</varname>: Spatial reference identifier
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>SRID</varname>: Spatial reference identifier &Z_support; &geography_support;</para>
               <para>Signature: <varname>SRID(tpoint): integer</varname></para>
               <programlisting>
 SELECT SRID(tgeompoint 'Point(0 0)@2012-01-01');
@@ -1582,14 +1565,7 @@ SELECT SRID(tgeompoint 'Point(0 0)@2012-01-01');
             </listitem>
 
             <listitem>
-              <para><varname>setSRID</varname>: Set the spatial reference identifier
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>setSRID</varname>: Set the spatial reference identifier &Z_support; &geography_support;</para>
               <para>Signature: <varname>setSRID(tpoint): integer</varname></para>
               <programlisting>
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)', 4326));
@@ -1598,11 +1574,7 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)
              </listitem>
 
             <listitem>
-              <para><varname>transform</varname>: Transform to a different spatial reference
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>transform</varname>: Transform to a different spatial reference &Z_support;</para>
               <para>Signature: <varname>transform(tgeompoint, integer): integer</varname></para>
               <programlisting>
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
@@ -1611,14 +1583,7 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 381
             </listitem>
 
             <listitem>
-              <para><varname>length</varname>: Length traversed by the temporal point
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>length</varname>: Length traversed by the temporal point &Z_support; &geography_support;</para>
               <para>Signature: <varname>length({tpointseq, tpoints}): float</varname></para>
               <programlisting>
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
@@ -1628,14 +1593,7 @@ Point(0 0 0)@2000-01-03]');
             </listitem>
 
             <listitem>
-              <para><varname>cumulativeLength</varname>: Cumulative length traversed by the temporal point
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>cumulativeLength</varname>: Cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
               <para>Signature: <varname>cumulativeLength({tpointseq, tpoints}): tfloatseq</varname></para>
               <programlisting>
 SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
@@ -1647,14 +1605,7 @@ SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
             </listitem>
 
             <listitem>
-              <para><varname>speed</varname>: Speed of the temporal point in units per second
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>speed</varname>: Speed of the temporal point in units per second &Z_support; &geography_support;</para>
               <para>Signature: <varname>speed({tpointseq, tpoints}): tfloats</varname></para>
               <programlisting>
 SELECT speed(tgeompoints(ARRAY[tgeompoint
@@ -1667,14 +1618,7 @@ SELECT speed(tgeompoints(ARRAY[tgeompoint
             </listitem>
 
             <listitem>
-              <para><varname>gbox</varname>: Construct the bounding box from a geometry/geography and a time type
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>gbox</varname>: Construct the bounding box from a geometry/geography and a time type &Z_support; &geography_support;</para>
               <para>Signature: <varname>gbox(geo, time): gbox</varname></para>
               <programlisting>
 SELECT gbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
@@ -1686,14 +1630,7 @@ SELECT gbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05
             </listitem>
 
             <listitem>
-              <para><varname>expandSpatial</varname>: Expand the bounding box of the temporal point by a float value
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>expandSpatial</varname>: Expand the bounding box of the temporal point by a float value &Z_support; &geography_support;</para>
               <para>Signature: <varname>expandSpatial(tpoint, float): gbox</varname></para>
               <programlisting>
 SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
@@ -1703,14 +1640,7 @@ SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01
             </listitem>
 
             <listitem>
-              <para><varname>expandTemporal</varname>: Expand the bounding box of the temporal point by a time interval
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>expandTemporal</varname>: Expand the bounding box of the temporal point by a time interval &Z_support; &geography_support;</para>
               <para>Signature: <varname>expandSpatial(tpoint, interval): gbox</varname></para>
               <programlisting>
 SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
@@ -1720,11 +1650,7 @@ SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-0
             </listitem>
 
             <listitem>
-              <para><varname>twCentroid</varname>: Time-weighted centroid
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>twCentroid</varname>: Time-weighted centroid &Z_support;</para>
               <para>Signature: <varname>twCentroid({tgeompointseq, tgeompoints}): point</varname></para>
               <programlisting>
 SELECT st_astext(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
@@ -1734,14 +1660,7 @@ SELECT st_astext(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@
             </listitem>
 
             <listitem>
-              <para><varname>azimuth</varname>: Temporal azimuth
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>azimuth</varname>: Temporal azimuth &Z_support; &geography_support;</para>
               <para>Signature: <varname>azimuth({tpointseq, tpoints}): {tfloatseq, tfloats}</varname></para>
               <programlisting>
 SELECT azimuth(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
@@ -1751,11 +1670,7 @@ Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}');
             </listitem>
 
             <listitem>
-              <para><varname>nearestApproachInstant</varname>: First instant of the first temporal point at which the two arguments are at the nearest distance. Notice that the resulting instant may be at an exclusive bound.
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>nearestApproachInstant</varname>: First instant of the first temporal point at which the two arguments are at the nearest distance. Notice that the resulting instant may be at an exclusive bound. &Z_support;</para>
               <para>Signature: <varname>nearestApproachInstant(tgeompoint, {geometry, tgeompoint}): tgeompoint</varname></para>
               <programlisting>
 SELECT asText(nearestApproachInstant(
@@ -1777,11 +1692,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012
             </listitem>
 
             <listitem>
-              <para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments &Z_support;</para>
               <para>Signature: <varname>nearestApproachDistance({geometry, tgeompoint}, {geometry, tgeompoint}): float</varname></para>
               <programlisting>
 SELECT nearestApproachDistance(
@@ -1803,11 +1714,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012
             </listitem>
 
             <listitem>
-              <para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments &Z_support;</para>
               <para>Signature: <varname>shortestLine({geometry, tgeompoint}, {geometry, tgeompoint}): geometry</varname></para>
               <programlisting>
 SELECT ST_AsText(shortestLine(
@@ -2737,14 +2644,7 @@ tgeompoint '[Point(2 0)@2012-01-02, Point(1 1)@2012-01-04, Point(2 2)@2012-01-06
           </listitem>
 
           <listitem>
-            <para><varname>&lt;-&gt;</varname>: Distance
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-              </inlinemediaobject>
-              <inlinemediaobject>
-                <imageobject><imagedata fileref='images/internet.png' /></imageobject>
-              </inlinemediaobject>
-            </para>
+            <para><varname>&lt;-&gt;</varname>: Distance &Z_support; &geography_support;</para>
             <para>Signature: <varname>{point, tpoint} &lt;-&gt; {point, tpoint}: tfloat</varname></para>
             <programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)' &lt;-&gt; geometry 'Point(0 1)';
@@ -2905,11 +2805,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
             </listitem>
 
             <listitem>
-              <para><varname>intersects</varname>: May intersect
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>intersects</varname>: May intersect &Z_support;</para>
             <para>Signature: <varname>intersects({geo, tpoint}, {geo, tpoint}): boolean</varname></para>
               <programlisting>
 SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',28023>tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
@@ -2950,11 +2846,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-03)');
             </listitem>
 
             <listitem>
-              <para><varname>dwithin</varname>: May be at distance within
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>dwithin</varname>: May be at distance within &Z_support;</para>
             <para>Signature: <varname>dwithin({geo, tpoint}, {geo, tpoint}, double): boolean</varname></para>
               <programlisting>
 SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
@@ -3042,11 +2934,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
             </listitem>
 
             <listitem>
-              <para><varname>tintersects</varname>: Temporal intersects
-                <inlinemediaobject>
-                  <imageobject><imagedata fileref='images/cube.png' /></imageobject>
-                </inlinemediaobject>
-              </para>
+              <para><varname>tintersects</varname>: Temporal intersects &Z_support;</para>
             <para>Signature: <varname>tintersects({geo, tpoint}, {geo, tpoint}): tbool</varname></para>
               <programlisting>
 SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
