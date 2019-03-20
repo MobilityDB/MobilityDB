@@ -1258,14 +1258,14 @@ SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE minusRange(temp, i) IS NOT NULL;
  count 
 -------
-  9823
+  7590
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange
 WHERE minusRange(temp, f) IS NOT NULL;
  count 
 -------
-  9855
+  7551
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, 

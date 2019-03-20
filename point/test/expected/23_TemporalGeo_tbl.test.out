@@ -774,7 +774,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   658
+    83
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
@@ -788,7 +788,7 @@ SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   664
+    89
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
@@ -802,7 +802,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   679
+   104
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D
@@ -816,7 +816,7 @@ SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   677
+   102
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
@@ -830,7 +830,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
  count 
 -------
-   679
+   104
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
@@ -844,7 +844,7 @@ SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
  count 
 -------
-   677
+   102
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection
