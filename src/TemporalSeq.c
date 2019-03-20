@@ -3218,6 +3218,7 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 	Period p1;
 	temporalseq_timespan(&p1, seq);
 	Period *p2 = periodset_bbox(ps);
+	*count = 0 ;
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
 
@@ -3243,7 +3244,6 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 	if (k == 0)
 	{
 		pfree(result);
-		*count = 0;
 		return NULL;
 	}
 	*count = k;
