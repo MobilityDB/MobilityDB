@@ -2,6 +2,10 @@ language: c
 
 dist: xenial
 
+env:
+  - WITH_POSTGIS=0
+  - WITH_POSTGIS=1
+
 compiler:
   - gcc
 
@@ -14,7 +18,7 @@ before_install:
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake -DWITH_POSTGIS=$WITH_POSTGIS ..
 
 script: 
   - export PATH="/usr/lib/postgresql/11/bin:$PATH"
