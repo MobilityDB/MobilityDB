@@ -13,7 +13,6 @@
 #include "TemporalTypes.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
-#include "TemporalNPoint.h"
 #endif
 
 #ifdef PG_MODULE_MAGIC
@@ -72,8 +71,7 @@ type_is_continuous(Oid type)
 		type == type_oid(T_DOUBLE3)	 || type == type_oid(T_DOUBLE4))
 		return true;
 #ifdef WITH_POSTGIS
-	if (type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) || 
-		type == type_oid(T_NPOINT))
+	if (type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY)) 
 		return true;
 #endif
 	return false;
@@ -98,8 +96,6 @@ type_byval_fast(Oid type)
 #ifdef WITH_POSTGIS
 	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
 		return false;
-    if (type == type_oid(T_NPOINT))
-        return false;
 #endif
 	ereport(WARNING, (errcode(ERRCODE_WARNING), 
 		errmsg("Using slow get_typbyval function for unknown data type")));
@@ -133,8 +129,6 @@ get_typlen_fast(Oid type)
 #ifdef WITH_POSTGIS
 	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
 		return -1;
-	if (type == type_oid(T_NPOINT))
-		return 16;
 #endif
 	ereport(WARNING, (errcode(ERRCODE_WARNING), 
 		errmsg("Using slow get_typlen function for unknown data type")));
@@ -668,8 +662,6 @@ datum_eq(Datum l, Datum r, Oid type)
 			return true;
 		return false;
 	}
-	else if (type == type_oid(T_NPOINT))
-        return eq_npoint_npoint_internal(DatumGetNpoint(l), DatumGetNpoint(r));
 #endif
 
 	List *lst = list_make1(makeString("="));
@@ -702,8 +694,6 @@ datum_lt(Datum l, Datum r, Oid type)
 		return DatumGetBool(call_function2(lwgeom_lt, l, r));
 	else if (type == type_oid(T_GEOGRAPHY))
 		return DatumGetBool(call_function2(geography_lt, l, r));
-	else if (type == type_oid(T_NPOINT))
-		return lt_npoint_npoint(DatumGetNpoint(l), DatumGetNpoint(r));
 #endif
 	
 	/* All supported temporal types should have been considered before */
@@ -764,8 +754,6 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 		return DatumGetBool(call_function2(lwgeom_eq, l, r));	
 	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
 		return DatumGetBool(call_function2(geography_eq, l, r));
-	else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
-		return eq_npoint_npoint_internal(DatumGetNpoint(l), DatumGetNpoint(r));
 #endif
 
 	List *lst = list_make1(makeString("="));
@@ -802,8 +790,6 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 		return DatumGetBool(call_function2(lwgeom_lt, l, r));	
 	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
 		return DatumGetBool(call_function2(geography_lt, l, r));
-	else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
-		return lt_npoint_npoint(DatumGetNpoint(l), DatumGetNpoint(r));
 #endif
 	
 	List *lst = list_make1(makeString("<")); 
@@ -901,7 +887,6 @@ temporal_oid_from_base(Oid valuetypid)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOMETRY)) return type_oid(T_TGEOMPOINT);
 	if (valuetypid == type_oid(T_GEOGRAPHY)) return type_oid(T_TGEOGPOINT);
-	if (valuetypid == type_oid(T_NPOINT)) return type_oid(T_TNPOINT);
 #endif			
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
 }
@@ -930,7 +915,6 @@ base_oid_from_temporal(Oid temptypid)
 #ifdef WITH_POSTGIS
 	if (temptypid == type_oid(T_TGEOMPOINT)) return type_oid(T_GEOMETRY);
 	if (temptypid == type_oid(T_TGEOGPOINT)) return type_oid(T_GEOGRAPHY);
-	if (temptypid == type_oid(T_TNPOINT)) return type_oid(T_NPOINT);
 #endif			
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
 }
@@ -953,7 +937,6 @@ temporal_oid(Oid temptypid)
 #ifdef WITH_POSTGIS
 		|| temptypid == type_oid(T_TGEOMPOINT)
 		|| temptypid == type_oid(T_TGEOGPOINT)
-		|| temptypid == type_oid(T_TNPOINT)
 #endif
 		)
 		return true;

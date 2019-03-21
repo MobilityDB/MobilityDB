@@ -14,7 +14,6 @@
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
-#include "TemporalNPoint.h"
 #endif
 
 /*****************************************************************************
@@ -257,15 +256,6 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 		fabs(d1c-d2c) <= EPSILON && fabs(d1d-d2d) <= EPSILON);
 }
 
-static bool
-npoint_collinear(Datum value1, Datum value2, Datum value3,
-	TimestampTz t1, TimestampTz t2, TimestampTz t3)
-{
-	npoint *np1 = DatumGetNpoint(value1);
-	npoint *np2 = DatumGetNpoint(value2);
-	npoint *np3 = DatumGetNpoint(value3);
-	return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3);
-}
 #endif
 
 static bool
@@ -291,8 +281,6 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	if (valuetypid == type_oid(T_DOUBLE4))
 		return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2), 
 			DatumGetDouble4P(value3), t1, t2, t3);
-	if (valuetypid == type_oid(T_NPOINT))
-		return npoint_collinear(value1, value2, value3, t1, t2, t3);
 #endif
 	return false;
 }
@@ -338,14 +326,6 @@ temporalinst_collinear(TemporalInst *inst1, TemporalInst *inst2,
 		double4 *x2 = DatumGetDouble4P(temporalinst_value(inst2));
 		double4 *x3 = DatumGetDouble4P(temporalinst_value(inst3));
 		return double4_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
-	}
-	if (valuetypid == type_oid(T_NPOINT))
-	{
-		npoint *np1 = DatumGetNpoint(temporalinst_value(inst1));
-		npoint *np2 = DatumGetNpoint(temporalinst_value(inst2));
-		npoint *np3 = DatumGetNpoint(temporalinst_value(inst3));
-		return float_collinear(np1->pos, np2->pos, np3->pos, 
-			inst1->t, inst2->t, inst3->t);
 	}
 #endif
 	return false;
@@ -1165,8 +1145,6 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
 		return result;
 	}
-	if (start1->valuetypid == type_oid(T_NPOINT))
-		return tnpointseq_intersect_at_timestamp(start1, end1, start2, end2, false, false, inter);
 #endif
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 		errmsg("Operation not supported")));
@@ -1816,18 +1794,6 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(value2));
 		if (fraction == 0 || fraction == 1)
 			return false;
-	}
-	else if (value1typid == type_oid(T_NPOINT))
-	{
-		npoint *np1 = DatumGetNpoint(value1);
-		npoint *np2 = DatumGetNpoint(value2);
-		npoint *np = DatumGetNpoint(value);
-		if ((np->rid != np1->rid) ||
-		   (np->pos < np1->pos && np->pos < np2->pos) ||
-		   (np->pos > np1->pos && np->pos > np2->pos))
-			return false;
-
-		fraction = (np->pos - np1->pos) / (np2->pos - np1->pos);
 	}
 #endif
 	else
@@ -2831,14 +2797,6 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point)); 
 		/* Cannot pfree(DatumGetPointer(point1)); */
 		return result;
-	}
-	if (valuetypid == type_oid(T_NPOINT))
-	{
-		npoint *np1 = DatumGetNpoint(value1);
-		npoint *np2 = DatumGetNpoint(value2);
-		double pos = np1->pos + (np2->pos - np1->pos) * ratio;
-		npoint *result = npoint_constructor_internal(np1->rid, pos);
-		return PointerGetDatum(result);
 	}
 #endif
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 

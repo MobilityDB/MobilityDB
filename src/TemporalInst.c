@@ -14,7 +14,6 @@
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
-#include "TemporalNPoint.h"
 #endif
 
 /*****************************************************************************
@@ -751,8 +750,6 @@ temporalinst_hash(TemporalInst *inst)
 	else if (inst->valuetypid == type_oid(T_GEOMETRY) || 
 		inst->valuetypid == type_oid(T_GEOGRAPHY))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-	// if (inst->valuetypid == type_oid(T_NPOINT))
-		// return type_oid(T_NPOINT);
 #endif
 	else 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
