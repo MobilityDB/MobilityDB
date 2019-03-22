@@ -523,10 +523,10 @@ tgeompoints_transform_internal(TemporalS *ts, Datum srid)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tgeompoint_transform);
+PG_FUNCTION_INFO_V1(tpoint_transform);
 
 PGDLLEXPORT Datum
-tgeompoint_transform(PG_FUNCTION_ARGS)
+tpoint_transform(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
