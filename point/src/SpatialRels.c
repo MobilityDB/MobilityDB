@@ -484,9 +484,9 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 			Datum trajseq1 = tpointseq_trajectory(seq1);
-			for (int j = 0; i < ts2->count; j++)
+			for (int j = 0; j < ts2->count; j++)
 			{
-				TemporalSeq *seq2 = temporals_seq_n(ts2, i);
+				TemporalSeq *seq2 = temporals_seq_n(ts2, j);
 				Datum trajseq2 = tpointseq_trajectory(seq2);
 				result |= DatumGetBool(operator(trajseq1, trajseq2, param));
 			}
