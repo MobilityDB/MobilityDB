@@ -1108,7 +1108,7 @@ sync_oper3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid)
 {
 	/* Test whether the two temporal values overlap on time */
-	if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
+	if (timestamp_cmp_internal(inst1->t, inst2->t) != 0)
 		return NULL;
 	Datum value = operator(temporalinst_value(inst1), temporalinst_value(inst2),
 		param);
@@ -1664,7 +1664,7 @@ sync_oper4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
 	/* Test whether the two temporal values overlap on time */
-	if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
+	if (timestamp_cmp_internal(inst1->t, inst2->t) != 0)
 		return NULL;
 	Datum value = operator(temporalinst_value(inst1), temporalinst_value(inst2),
 		inst1->valuetypid, inst2->valuetypid);
