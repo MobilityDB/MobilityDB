@@ -1574,8 +1574,8 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)
              </listitem>
 
             <listitem>
-              <para><varname>transform</varname>: Transform to a different spatial reference &Z_support;</para>
-              <para>Signature: <varname>transform(tgeompoint, integer): integer</varname></para>
+              <para><varname>transform</varname>: Transform to a different spatial reference &Z_support; &geography_support;</para>
+              <para>Signature: <varname>transform(tpoint, integer): tpoint</varname></para>
               <programlisting>
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
 -- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
