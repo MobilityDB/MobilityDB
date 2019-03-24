@@ -2322,9 +2322,15 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 		{
 			mindist = dist;
 			minpoint = point;
-			double fraction = DatumGetFloat8(call_function2(
-				LWGEOM_line_locate_point, traj, minpoint));
-			t = inst1->t + (inst2->t - inst1->t) * fraction;
+			GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
+			if (gserialized_get_type(gstraj) == POINTTYPE)
+				t = inst1->t;
+			else
+			{
+				double fraction = DatumGetFloat8(call_function2(
+					LWGEOM_line_locate_point, traj, minpoint));
+				t = inst1->t + (inst2->t - inst1->t) * fraction;
+			}
 		}
 		else
 			pfree(DatumGetPointer(point)); 			
@@ -2369,6 +2375,36 @@ NAI_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
 }
 
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(NAI_geometry_tpoint);
+
+PGDLLEXPORT Datum
+NAI_geometry_tpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+
+	Temporal *result;
+	if (temp->type == TEMPORALINST) 
+		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
+	else if (temp->type == TEMPORALI) 
+		result = (Temporal *)NAI_tpointi_geometry((TemporalI *)temp, 
+			PointerGetDatum(gs), hasz);
+	else if (temp->type == TEMPORALSEQ) 
+		result = (Temporal *)NAI_tpointseq_geometry((TemporalSeq *)temp, 
+			PointerGetDatum(gs), hasz);
+	else if (temp->type == TEMPORALS) 
+		result = (Temporal *)NAI_tpoints_geometry((TemporalS *)temp,
+			PointerGetDatum(gs), hasz);
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
+	
+	PG_FREE_IF_COPY(gs, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
 
 PG_FUNCTION_INFO_V1(NAI_tpoint_geometry);
 

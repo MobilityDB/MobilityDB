@@ -180,6 +180,10 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
 	AS 'MODULE_PATHNAME', 'tpoint_minus_geometry'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
+CREATE FUNCTION NearestApproachInstant(geometry, tgeompoint)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'NAI_geometry_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION NearestApproachInstant(tgeompoint, geometry)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'NAI_tpoint_geometry'
