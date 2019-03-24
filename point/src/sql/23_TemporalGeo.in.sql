@@ -114,16 +114,6 @@ CREATE FUNCTION tgeogpoint(tgeompoint)
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
 
-CREATE FUNCTION synctrajectory(tgeompoint)
-	RETURNS geometry[]
-	AS 'MODULE_PATHNAME', 'tgeompoint_synctrajectory'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION synctrajectorypers(tgeompoint)
-	RETURNS period[]
-	AS 'MODULE_PATHNAME', 'tgeompoint_synctrajectorypers'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
 	AS 'MODULE_PATHNAME', 'tgeompoint_trajectory'

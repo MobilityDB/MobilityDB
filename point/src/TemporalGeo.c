@@ -729,424 +729,6 @@ tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Find pairs of segments that intersect using a sweepline algorithm 
- * It is supposed that the periods are continuous in both time and space 
- *****************************************************************************/
-
-static double2 **
-tgeompointseq_intersections(TemporalInst **instants, int count, 
-	int *countinter)
-{
-	Oid valuetypid = instants[0]->valuetypid;
-	bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
-	POINT3DZ *points = palloc(sizeof(POINT3DZ) * count);
-	/* xranges is an array of double3 where for each segment x and y keep 
-	 * the minimum and maximum value of x and z keeps the segment number. A
-	 * segment i is a pair (instants[i-1], instants[i]) */
-	double3 **xranges = palloc(sizeof(double3 *) * (count - 1));
-	/* result is an array of double2 where x and y keep the segment number of 
-	 * two segments that intersect. This array is expanded dynamically since 
-	 * the number of intersections can be exponential. */
-	double2 **result = palloc(sizeof(double2 *) * count);
-	if (hasz) /* 3D */
-		points[0] = datum_get_point3dz(temporalinst_value(instants[0]));
-	else
-	{
-		POINT2D point2D = datum_get_point2d(temporalinst_value(instants[0]));
-		points[0].x = point2D.x;
-		points[0].y = point2D.y;
-	}
-	for (int i = 1; i < count; i++)
-	{
-		if (hasz) /* 3D */
-			points[i] = datum_get_point3dz(temporalinst_value(instants[i]));
-		else
-		{
-			POINT2D point2D = datum_get_point2d(temporalinst_value(instants[i]));
-			points[i].x = point2D.x;
-			points[i].y = point2D.y;
-		}
-		xranges[i-1] = double3_construct(
-			Min(points[i-1].x, points[i].x),
-			Max(points[i-1].x, points[i].x), i - 1);
-	}
-	double3_sort(xranges, count - 1);
-	int k = 0;
-	for (int i = 0; i < count - 1; i++)
-	{
-		for (int j = i+1; j < count - 1; j++)
-		{
-			/* If the segments overlap on x */
-			if (xranges[j]->a <= xranges[i]->b)
-			{
-				int seg1 = xranges[i]->c;
-				int seg2 = xranges[j]->c;
-				/* If the segments are consecutive */
-				if (abs(seg1 - seg2) == 1)
-				{
-					/* If the segments overlap on y */
-					bool yoverlaps = 
-						points[seg1].y <= points[seg2+1].y &&
-						points[seg2].y <= points[seg1+1].y;
-					bool zoverlaps = false;
-					if (hasz)
-						zoverlaps = 
-							points[seg1].z <= points[seg2+1].z &&
-							points[seg2].z <= points[seg1+1].z;
-					if (!yoverlaps || (hasz && !zoverlaps))
-						continue;
-					/* Candidate for intersection */
-				}
-				/* Candidate for intersection */
-				Datum traj1 = tgeompointseq_trajectory1(instants[seg1], instants[seg1+1]);
-				Datum traj2 = tgeompointseq_trajectory1(instants[seg2], instants[seg2+1]);
-				Datum inter = call_function2(intersection, traj1, traj2);
-				GSERIALIZED *gsinter = (GSERIALIZED *)PG_DETOAST_DATUM(inter);
-				int intertype = gserialized_get_type(gsinter);
-				bool isempty = gserialized_is_empty(gsinter);
-				POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
- 				pfree(DatumGetPointer(inter));
-				pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
-				/* If the segments do not intersect or
-				 * the segments are consecutive and intersect in a point or
-				 * the segments intersect in a point and there is a single 
-				 * stationary segment between them */ 
-				if (isempty ||
-					(abs(seg1 - seg2) == 1 && intertype == POINTTYPE) ||
-					(abs(seg1 - seg2) == 2 && intertype == POINTTYPE &&
-						datum_eq(temporalinst_value(instants[Min(seg1,seg2)+1]),
-							temporalinst_value(instants[Min(seg1,seg2)+2]), valuetypid))
-					)
-				{
-					continue;
-				}
-				/* Output seg1 and seg2 in reverse order */
-				result[k++] = double2_construct(Max((double)seg1, (double)seg2),
-					Min((double)seg1, (double)seg2));
-				if (k % count == 0)
-				{
-					/* Expand array of the result */
-					double2 **tempresult = palloc(sizeof(double2 *) * (k + count));
-					memcpy(tempresult, result, sizeof(double2 *) * k);
-					pfree(result);
-					result = tempresult;
-				}
-			}
-			else
-				break;
-		}
-	}
-	/* Sort the intersections to get the earliest intersecting segment at the
-	 * beginning */
-	double2_sort(result, k);
-	
-	for (int i = 1; i < count-1; i++)
-		pfree(xranges[i]);
-	pfree(xranges); 
-	pfree(points); 
-	
-	*countinter = k;
-	return result;
-}
-
-/*****************************************************************************
- * Synchronized trajectory of a tgeompointseq.
- * This function is called by the constructor of a temporalseq
- * The function returns an array of geometries ordered by time where each 
- * geometry does not have self-intersections. There are two output arguments: 
- * trajpers is a pointer to the array of instants corresponding to the geometries, 
- * and trajcount is a pointer the number of elements in both arrays 
- *****************************************************************************/
- 
-/* Compute the synchronized trajectory of an array of instants */
-
-/* The tgeompointseq_make_synctrajectory function finds and reports the pairs
- * of intersecting segments in the list of instants of a trajectory. It uses a
- * sweepline to find these intersections in a time a bit higher than n logn. 
- * This algorithm is a variation of Algorithm 2.1 in "BENTLEY, Algorithms for
- * Reporting and Counting Geometric Intersections, 1979". The main idea of the 
- * algorithm is that two segments can only intersect, if their x-ranges intersect. 
- * It works as follows:
- * 1) Extract from every segment its x-range [min(p1.x, p2.x), max(p1.x, p2.x)]
- * 2) Sort the ranges increasingly by their first component, the min x.
- * 3) Iteratively intersect every x-range with the ranges after it, until it 
- *    doesn't overlap.
- * 4) For the x-ranges that overlap, compute the actual intersection of their 
- *    spatial lines, and report the pairs that indeed intersect, except the 
- *    cases mentioned above.
-*/  
-
-static Datum *
-tgeompointseq_make_synctrajectory(TemporalInst **instants, int count,
-	bool lower_inc, bool upper_inc, Period ***trajpers, int *trajcount)
-{
-	Datum *result = palloc(sizeof(Datum) * count);
-	Period **pers = palloc(sizeof(Period *) * count);
-	Datum *points = palloc(sizeof(Datum) * count);
-	for (int i = 0; i < count; i++)
-		points[i] = temporalinst_value(instants[i]);
-	/* Special case when the input instants array has a single instant */
-	if (count == 1)
-	{
-		result[0] = temporalinst_value_copy(instants[0]);
-		pers[0] = period_make(instants[0]->t, instants[0]->t, true, true);
-		pfree(points);
-		*trajpers = pers;
-		*trajcount = 1;
-		return result;
-	}
-
-	/* Compute the synchronized trajectory of the sequence */	
-	Datum *uniquepoints = palloc(sizeof(Datum) * count);
-	int countinter;
-	double2 **intersections = tgeompointseq_intersections(instants, count, 
-		&countinter);
-	int countresult = 0, start = 0, curr = 0;
-	while (curr < countinter)
-	{
-		/* Construct trajectory from start to intersections[0]->a; */
-		bool lower_inc1 = (start == 0) ? lower_inc : true;
-		bool upper_inc1 = (((int)intersections[0]->a) == count - 1) ? 
-			upper_inc : false;
-		pers[countresult] = period_make(instants[start]->t,
-			instants[((int)intersections[0]->a)]->t, lower_inc1, upper_inc1);
-		int k = start, i = 0;
-		uniquepoints[0] = points[start];
-		for (k = start + 1; k <= intersections[0]->a; ++k)
-		{
-			if (!call_function2(lwgeom_eq, points[k], uniquepoints[i]))
-				uniquepoints[++i] = points[k];
-		}
-		if (i == 0)
-		{
-			result[countresult++] = PointerGetDatum(gserialized_copy(
-				(GSERIALIZED *) PG_DETOAST_DATUM(uniquepoints[0])));
-		}
-		else
-		{
-			ArrayType *array = datumarr_to_array(uniquepoints, i + 1, 
-				type_oid(T_GEOMETRY));
-			result[countresult++] = call_function1(LWGEOM_makeline_garray,
-				PointerGetDatum(array));
-			pfree(array);
-		}
-
-		/* Save the initial segment of the next trajectory */
-		start = intersections[0]->a;
-		/* Remove from intersections all entries that overlap the range
-		   from start to intersections[0]->a - 1 */
-		int j = 0;
-		for (int i = 0; i < countinter; i++)
-		{
-			if (intersections[i]->a >= start && intersections[i]->b >= start)
-			{
-				intersections[j] = intersections[i];
-				intersections[j++]->b = intersections[i]->b;
-			}					
-			else
-				pfree(intersections[i]);
-		}
-		countinter = j;
-	}
-
-	/* Construct trajectory from start to end of instants */
-	bool lower_inc1 = (start == 0) ? lower_inc : true;
-	pers[countresult] = period_make(instants[start]->t,
-		instants[count - 1]->t, lower_inc1, upper_inc);
-
-	int k = start, i = 0;
-	uniquepoints[0] = points[start];
-	for (k = start+1; k < count;++k)
-	{
-		if (!call_function2(lwgeom_eq, points[k], uniquepoints[i]))
-			uniquepoints[++i] = points[k];
-	}
-
-	if (i == 0)
-	{
-		result[countresult++] = PointerGetDatum(gserialized_copy(
-			(GSERIALIZED *) PG_DETOAST_DATUM(uniquepoints[0])));
-	}
-	else
-	{
-		ArrayType *array = datumarr_to_array(uniquepoints, i + 1, 
-			type_oid(T_GEOMETRY));
-		result[countresult++] = call_function1(LWGEOM_makeline_garray,
-			PointerGetDatum(array));
-		pfree(array);
-	}
-	pfree(uniquepoints);
-	pfree(points);
-	for (int i = 0; i < countinter; i++)
-		pfree(intersections[i]);
-	pfree(intersections);
-		
-	*trajpers = pers;
-	*trajcount = countresult;
-	return result;
-}
-
-/* Get the synchronized trajectory of a tgeompointseq */
-
-static Datum *
-tgeompointseq_synctrajectory1(TemporalSeq *seq, Period ***periods, int *count)
-{
-	TemporalInst **instants = temporalseq_instants(seq);
-	Period **pers;
-	Datum *result = tgeompointseq_make_synctrajectory(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, &pers, count);
-	pfree(instants);
-	*periods = pers;
-	return result;
-}
-	
-static ArrayType *
-tgeompointseq_synctrajectory(TemporalSeq *seq)
-{
-	int count;
-	Period **pers;
-	Datum *trajs = tgeompointseq_synctrajectory1(seq, &pers, &count);
-	ArrayType *result = datumarr_to_array(trajs, count, type_oid(T_GEOMETRY));
-	for (int i = 0; i < count; i ++)
-	{
-		pfree(pers[i]); pfree(DatumGetPointer(trajs[i]));
-	}
-	pfree(pers); pfree(trajs);
-	return result;
-}
-
-static ArrayType *
-tgeompoints_synctrajectory(TemporalS *ts)
-{
-	Datum **trajs = palloc(sizeof(Datum *) * ts->count);
-	int *counttrajs = palloc0(sizeof(int) * ts->count);
-	int totaltrajs = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int count;
-		Period **pers;
-		trajs[i] = tgeompointseq_synctrajectory1(seq, &pers, &count);
-		counttrajs[i] = count;
-		totaltrajs += count;
-		for (int i = 0; i < count; i ++)
-			pfree(pers[i]);
-		pfree(pers); 
-	}
-	Datum *alltrajs = palloc(sizeof(Datum) * totaltrajs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < counttrajs[i]; j++)
-			alltrajs[k++] = trajs[i][j];
-		if (trajs[i] != NULL)
-			pfree(trajs[i]);
-	}
-	ArrayType *result = datumarr_to_array(alltrajs, totaltrajs,
-		type_oid(T_GEOMETRY));
-		
-	for (int i = 0; i < totaltrajs; i ++)
-		pfree(DatumGetPointer(alltrajs[i]));
-	pfree(alltrajs); 
-	pfree(trajs); pfree(counttrajs);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tgeompoint_synctrajectory);
-
-PGDLLEXPORT Datum
-tgeompoint_synctrajectory(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->type != TEMPORALSEQ && temp->type != TEMPORALS)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Input values must be of type temporal sequence (set)")));
-	}
-
-	ArrayType *result;
-	if (temp->type == TEMPORALSEQ)
-		result = tgeompointseq_synctrajectory((TemporalSeq *)temp);
-	else 
-		result = tgeompoints_synctrajectory((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-static ArrayType *
-tgeompointseq_synctrajectorypers(TemporalSeq *seq)
-{
-	int count;
-	Period **pers;
-	Datum *trajs = tgeompointseq_synctrajectory1(seq, &pers, &count);
-	ArrayType *result = periodarr_to_array(pers, count);
-	for (int i = 0; i < count; i ++)
-	{
-		pfree(pers[i]); pfree(DatumGetPointer(trajs[i]));
-	}
-	pfree(pers); pfree(trajs);
-	return result;
-}
-
-static ArrayType *
-tgeompoints_synctrajectorypers(TemporalS *ts)
-{
-	Period ***periods = palloc(sizeof(Period **) * ts->count);
-	int *countperiods = palloc0(sizeof(int) * ts->count);
-	int totalperiods = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int count;
-		Datum *trajs = tgeompointseq_synctrajectory1(seq, &periods[i], &count);
-		countperiods[i] = count;
-		totalperiods += count;
-		for (int i = 0; i < count; i ++)
-			pfree(DatumGetPointer(trajs[i]));
-		pfree(trajs);
-	}
-	Period **allperiods = palloc(sizeof(Period *) * totalperiods);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countperiods[i]; j++)
-			allperiods[k++] = periods[i][j];
-		if (periods[i] != NULL)
-			pfree(periods[i]);
-	}
-	ArrayType *result = periodarr_to_array(allperiods, totalperiods);
-	for (int i = 0; i < totalperiods; i ++)
-		pfree(allperiods[i]);
-	pfree(allperiods);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tgeompoint_synctrajectorypers);
-
-PGDLLEXPORT Datum
-tgeompoint_synctrajectorypers(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->type != TEMPORALSEQ && temp->type != TEMPORALS)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Input values must be of type temporal sequence (set)")));
-	}
-
-	ArrayType *result;
-	if (temp->type == TEMPORALSEQ)
-		result = tgeompointseq_synctrajectorypers((TemporalSeq *)temp);
-	else 
-		result = tgeompoints_synctrajectorypers((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
-}
-
-/*****************************************************************************
  * Trajectory functions.
  *****************************************************************************/
  
@@ -2710,25 +2292,29 @@ NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
 static TemporalInst *
 NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 {
-	int count;
-	Period **pers;
-	Datum *trajs = tgeompointseq_synctrajectory1(seq, &pers, &count);
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+		return temporalinst_copy(temporalseq_inst_n(seq, 0));
+
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
-	int number = 0; /* keep compiler quiet */
-	for (int i = 0; i < count; i++)
+	TimestampTz t = 0; /* keep compiler quiet */
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	for (int i = 0; i < seq->count-1; i++)
 	{
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
+		Datum traj = tgeompointseq_trajectory1(inst1, inst2);
 		Datum point;
-		double dist = 0.0;
+		double dist;
 		if (hasz)
 		{
-			point = call_function2(LWGEOM_closestpoint3d, trajs[i], geom);
+			point = call_function2(LWGEOM_closestpoint3d, traj, geom);
 			dist = DatumGetFloat8(call_function2(distance3d,
 				point, geom));
 		}
 		else
 		{
-			point = call_function2(LWGEOM_closestpoint, trajs[i], geom);
+			point = call_function2(LWGEOM_closestpoint, traj, geom);
 			dist = DatumGetFloat8(call_function2(distance,
 				point, geom));
 		}
@@ -2736,30 +2322,18 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 		{
 			mindist = dist;
 			minpoint = point;
-			number = i;
+			double fraction = DatumGetFloat8(call_function2(
+				LWGEOM_line_locate_point, traj, minpoint));
+			t = inst1->t + (inst2->t - inst1->t) * fraction;
 		}
+		else
+			pfree(DatumGetPointer(point)); 			
+		inst1 = inst2;
+		pfree(DatumGetPointer(traj)); 
 	}
-	TimestampTz t;
-	GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(trajs[number]);
-	if (gserialized_get_type(gstraj) == POINTTYPE)
-	{
-		t = pers[number]->lower;
-	}
-	else
-	{
-		double fraction = DatumGetFloat8(call_function2(
-			LWGEOM_line_locate_point, trajs[number], minpoint));
-		double delta = (pers[number]->upper - pers[number]->lower) * fraction;
-		t = pers[number]->lower + delta;
-	}
-	POSTGIS_FREE_IF_COPY_P(gstraj, DatumGetPointer(trajs[number]));
 	TemporalInst *result = temporalinst_make(minpoint, t, 
 		seq->valuetypid);
-	for (int i = 0; i < count; i++)
-	{
-		pfree(pers[i]); pfree(DatumGetPointer(trajs[i]));
-	}
-	pfree(pers); pfree(trajs);
+	pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
 
@@ -2863,8 +2437,8 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("Operation not supported")));
 
 	TemporalInst *result = NULL;
-	Temporal *dist = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
-		operator, FLOAT8OID);
+	Temporal *dist = sync_oper2_temporal_temporal(temp1, temp2,
+		operator, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
 	if (dist != NULL)
 	{
 		Temporal *mindist = temporal_at_min_internal(dist);
