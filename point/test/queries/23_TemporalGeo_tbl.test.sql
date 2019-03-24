@@ -72,16 +72,6 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
 SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT synctrajectory(seq) FROM tbl_tgeompointseq LIMIT 10;
-SELECT synctrajectory(ts) FROM tbl_tgeompoints LIMIT 10;
-SELECT synctrajectory(seq) FROM tbl_tgeompoint3Dseq LIMIT 10;
-SELECT synctrajectory(ts) FROM tbl_tgeompoint3Ds LIMIT 10;
-
-SELECT synctrajectorypers(seq) FROM tbl_tgeompointseq LIMIT 10;
-SELECT synctrajectorypers(ts) FROM tbl_tgeompoints LIMIT 10;
-SELECT synctrajectorypers(seq) FROM tbl_tgeompoint3Dseq LIMIT 10;
-SELECT synctrajectorypers(ts) FROM tbl_tgeompoint3Ds LIMIT 10;
-
 SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;
