@@ -13,8 +13,7 @@
  *		relate (with 2 and 3 arguments)
  * The following relationships are supported for geographies
  *     covers, coveredby, intersects, dwithin
- * Only dwithin and intersects accept a GEOMETRYCOLLECTION as argument and
- * support 3D geometries.
+ * Only dwithin and intersects support 3D geometries.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -228,25 +227,8 @@ spatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 	Datum (*operator)(Datum, Datum), bool invert)
 {
 	Datum traj = tpoints_trajectory(ts);
-	GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
-	int trajtype = gserialized_get_type(gstraj);
-	if (trajtype != COLLECTIONTYPE)
-	{
-		bool result = invert ? DatumGetBool(operator(geo, traj)) :
-			DatumGetBool(operator(traj, geo));
-		pfree(DatumGetPointer(traj));
-		return result;
-	}
-	
-	/* It is necessary to loop over the sequences if the trajectory 
-	   is a GEOMETRYCOLLECTION containing points and linestrings since
-	   this is not allowed for the spatial relationships in PostGIS */
-	bool result = false;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		result &= spatialrel_tpointseq_geo(seq, geo, operator, invert);
-	}
+	bool result = invert ? DatumGetBool(operator(geo, traj)) :
+		DatumGetBool(operator(traj, geo));
 	pfree(DatumGetPointer(traj));
 	return result;
 }
@@ -290,55 +272,8 @@ spatialrel_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 {
 	Datum traj1 = tpoints_trajectory(ts1);
 	Datum traj2 = tpoints_trajectory(ts2);
-	GSERIALIZED *gstraj1 = (GSERIALIZED *)DatumGetPointer(traj1);
-	GSERIALIZED *gstraj2 = (GSERIALIZED *)DatumGetPointer(traj2);
-	int trajtype1 = gserialized_get_type(gstraj1);
-	int trajtype2 = gserialized_get_type(gstraj2);
-	bool result;
-	if (trajtype1 != COLLECTIONTYPE && trajtype2 != COLLECTIONTYPE)
-		result = DatumGetBool(operator(traj1, traj2));
-	
-	/* It is necessary to loop over the sequences if the trajectory 
-	   is a GEOMETRYCOLLECTION containing points and linestrings since
-	   this is not allowed for the spatial relationships in PostGIS */
-	else if (trajtype1 == COLLECTIONTYPE && trajtype2 != COLLECTIONTYPE)
-	{
-		result = false;
-		for (int i = 0; i < ts1->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts1, i);
-			Datum trajseq = tpointseq_trajectory(seq);
-			result |= DatumGetBool(operator(trajseq, traj2));
-		}
-	}
-	else if (trajtype1 != COLLECTIONTYPE && trajtype2 == COLLECTIONTYPE)
-	{
-		result = false;
-		for (int i = 0; i < ts2->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts2, i);
-			Datum trajseq = tpointseq_trajectory(seq);
-			result |= DatumGetBool(operator(traj1, trajseq));
-		}
-	}
-	else
-	{
-		result = false;
-		for (int i = 0; i < ts1->count; i++)
-		{
-			TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-			Datum trajseq1 = tpointseq_trajectory(seq1);
-			for (int j = 0; j < ts2->count; j++)
-			{
-				TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-				Datum trajseq2 = tpointseq_trajectory(seq2);
-				result |= DatumGetBool(operator(trajseq1, trajseq2));
-			}
-		}
-	}
-	
+	bool result = DatumGetBool(operator(traj1, traj2));
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
-	
 	return result;
 }
 
@@ -383,25 +318,8 @@ spatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), bool invert)
 {
 	Datum traj = tpoints_trajectory(ts);
-	GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
-	int trajtype = gserialized_get_type(gstraj);
-	if (trajtype != COLLECTIONTYPE)
-	{
-		bool result = invert ? DatumGetBool(operator(geo, traj, param)) :
-			DatumGetBool(operator(traj, geo, param));
-		pfree(DatumGetPointer(traj));
-		return result;
-	}
-	
-	/* It is necessary to loop over the sequences if the trajectory 
-	   is a GEOMETRYCOLLECTION containing points and linestrings since
-	   this is not allowed for the spatial relationships in PostGIS */
-	bool result = false;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		result &= spatialrel3_tpointseq_geo(seq, geo, param, operator, invert);
-	}
+	bool result = invert ? DatumGetBool(operator(geo, traj, param)) :
+		DatumGetBool(operator(traj, geo, param));
 	pfree(DatumGetPointer(traj));
 	return result;
 }
@@ -445,56 +363,8 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
 {
 	Datum traj1 = tpoints_trajectory(ts1);
 	Datum traj2 = tpoints_trajectory(ts2);
-	GSERIALIZED *gstraj1 = (GSERIALIZED *)DatumGetPointer(traj1);
-	GSERIALIZED *gstraj2 = (GSERIALIZED *)DatumGetPointer(traj2);
-	int trajtype1 = gserialized_get_type(gstraj1);
-	int trajtype2 = gserialized_get_type(gstraj2);
-	bool result;
-	if (trajtype1 != COLLECTIONTYPE && trajtype2 != COLLECTIONTYPE)
-	{
-		result = DatumGetBool(operator(traj1, traj2, param));
-	}
-	/* It is necessary to loop over the sequences if the trajectory 
-	   is a GEOMETRYCOLLECTION containing points and linestrings since
-	   this is not allowed for the spatial relationships in PostGIS */
-	else if (trajtype1 == COLLECTIONTYPE && trajtype2 != COLLECTIONTYPE)
-	{
-		result = false;
-		for (int i = 0; i < ts1->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts1, i);
-			Datum trajseq = tpointseq_trajectory(seq);
-			result |= DatumGetBool(operator(trajseq, traj2, param));
-		}
-	}
-	else if (trajtype1 != COLLECTIONTYPE && trajtype2 == COLLECTIONTYPE)
-	{
-		result = false;
-		for (int i = 0; i < ts2->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts2, i);
-			Datum trajseq = tpointseq_trajectory(seq);
-			result |= DatumGetBool(operator(traj1, trajseq, param));
-		}
-	}
-	else
-	{
-		result = false;
-		for (int i = 0; i < ts1->count; i++)
-		{
-			TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-			Datum trajseq1 = tpointseq_trajectory(seq1);
-			for (int j = 0; j < ts2->count; j++)
-			{
-				TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-				Datum trajseq2 = tpointseq_trajectory(seq2);
-				result |= DatumGetBool(operator(trajseq1, trajseq2, param));
-			}
-		}
-	}
-	
+	bool result = DatumGetBool(operator(traj1, traj2, param));
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
-
 	return result;
 }
 
@@ -658,6 +528,28 @@ relate2_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2)
 	return result;
 }
 
+/*****************************************************************************/
+
+/* TemporalS relate <Type> */
+
+static text *
+relate2_tpoints_geo(TemporalS *ts, Datum geo, bool invert)
+{
+	Datum traj = tpoints_trajectory(ts);
+	text *result = invert ? DatumGetTextP(geom_relate(geo, traj)) :
+		DatumGetTextP(geom_relate(traj, geo));
+	return result;
+}
+
+static text *
+relate2_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2)
+{
+	Datum traj1 = tpoints_trajectory(ts1);
+	Datum traj2 = tpoints_trajectory(ts2);
+	text *result = DatumGetTextP(geom_relate(traj1, traj2));
+	return result;
+}
+
 /*****************************************************************************
  * Dispatch functions
  * It is supposed that the temporal values have been intersected before and
@@ -766,7 +658,8 @@ relate2_tpoint_geo(Temporal *temp, Datum geo, bool invert)
 		result = relate2_tpointi_geo((TemporalI *)temp, geo, invert);
 	else if (temp->type == TEMPORALSEQ)
 		result = relate2_tpointseq_geo((TemporalSeq *)temp, geo, invert);
-	/* The function is not defined for TEMPORALS */
+	else if (temp->type == TEMPORALS)
+		result = relate2_tpoints_geo((TemporalS *)temp, geo, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -784,13 +677,6 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -821,13 +707,6 @@ contains_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -899,13 +778,6 @@ containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -936,13 +808,6 @@ containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1014,13 +879,6 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1060,13 +918,6 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1157,13 +1008,6 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1203,13 +1047,6 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1300,13 +1137,6 @@ crosses_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1337,13 +1167,6 @@ crosses_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1415,13 +1238,6 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1452,13 +1268,6 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1530,13 +1339,6 @@ equals_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1567,13 +1369,6 @@ equals_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1783,13 +1578,6 @@ overlaps_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1820,13 +1608,6 @@ overlaps_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1898,13 +1679,6 @@ touches_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1935,13 +1709,6 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2013,13 +1780,6 @@ within_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2050,13 +1810,6 @@ within_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2283,10 +2036,6 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Temporal relate
- * This function is not defined for temporal points of sequence set duration
- * since their trajectory may be a GEOMETRYCOLLECTION composed of lines and 
- * points. Currently in PostGIS the relate operation do not accept a
- * GEOMETRYCOLLECTION although it accepts a MULTIPOINT or a MULTILINESTRING.
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(relate_geo_tpoint);
@@ -2296,20 +2045,6 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (temp->type == TEMPORALS)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The relate operator cannot accept temporal points of sequence set duration")));
-	}
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2344,13 +2079,6 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The relate operator cannot accept temporal points of sequence set duration")));
-	}
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
 	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
@@ -2421,7 +2149,9 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else if (inter1->type == TEMPORALSEQ)
 		result = (Temporal *)relate2_tpointseq_tpointseq(
 			(TemporalSeq *)inter1, (TemporalSeq *)inter2);
-	/* The function is not defined for TEMPORALS */
+	else if (inter1->type == TEMPORALS)
+		result = (Temporal *)relate2_tpoints_tpoints(
+			(TemporalS *)inter1, (TemporalS *)inter2);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2445,13 +2175,6 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	Datum pattern = PG_GETARG_DATUM(2);
 	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
 	{
@@ -2483,13 +2206,6 @@ relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum pattern = PG_GETARG_DATUM(2);
-	if (gserialized_get_type(gs) == COLLECTIONTYPE)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometries of type GEOMETRYCOLLECTION are not accepted")));
-	}
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
