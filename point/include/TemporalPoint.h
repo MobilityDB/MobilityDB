@@ -148,9 +148,6 @@ extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
 
 /* Trajectory functions */
 
-extern Datum tgeompoint_synctrajectory(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_synctrajectorypers(PG_FUNCTION_ARGS);
-
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
@@ -180,6 +177,7 @@ extern TemporalSeq **tpointseq_at_geometry2(TemporalSeq *seq, Datum geo, int *co
 
 /* Nearest approach functions */
 
+extern Datum NAI_geometry_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geometry(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 

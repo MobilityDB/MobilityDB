@@ -1,4 +1,10 @@
 set(CTEST_PARALLEL_LEVEL 1)
+
+add_test(
+	NAME build
+	COMMAND "${CMAKE_COMMAND}" --build ${CMAKE_BINARY_DIR}
+)
+
 add_test(
 	NAME setup
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test

@@ -484,9 +484,9 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 			Datum trajseq1 = tpointseq_trajectory(seq1);
-			for (int j = 0; i < ts2->count; j++)
+			for (int j = 0; j < ts2->count; j++)
 			{
-				TemporalSeq *seq2 = temporals_seq_n(ts2, i);
+				TemporalSeq *seq2 = temporals_seq_n(ts2, j);
 				Datum trajseq2 = tpointseq_trajectory(seq2);
 				result |= DatumGetBool(operator(trajseq1, trajseq2, param));
 			}
@@ -500,7 +500,7 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
 
 /*****************************************************************************
  * Generic dwithin functions when both temporal points are moving
- * The functions suppose that the temporal points overlap in time
+ * The functions suppose that the temporal points are synchronized
  * TODO ARE THESE FUNCTIONS CORRECT ????
  *****************************************************************************/
 
@@ -2234,9 +2234,10 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Temporal *inter1, *inter2;
-	/* Returns false if the temporal points do not intersect in time */
-	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
+	Temporal *sync1, *sync2;
+	/* Returns false if the temporal points do not intersect in time 
+	 * The last parameter crossing must be set to false */
+	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, false))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2258,23 +2259,23 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("Operation not supported")));
 
 	bool result = false;
-	if (inter1->type == TEMPORALINST) 
+	if (sync1->type == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst(
-			(TemporalInst *)inter1, (TemporalInst *)inter2, dist, operator);
-	else if (inter1->type == TEMPORALI) 
+			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, operator);
+	else if (sync1->type == TEMPORALI) 
 		result = spatialrel3_tpointi_tpointi(
-			(TemporalI *)inter1, (TemporalI *)inter2, dist, operator);
-	else if (inter1->type == TEMPORALSEQ) 
+			(TemporalI *)sync1, (TemporalI *)sync2, dist, operator);
+	else if (sync1->type == TEMPORALSEQ) 
 		result = dwithin_tpointseq_tpointseq(
-			(TemporalSeq *)inter1, (TemporalSeq *)inter2, dist, operator);
-	else if (inter1->type == TEMPORALS) 
+			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, operator);
+	else if (sync1->type == TEMPORALS) 
 		result = dwithin_tpoints_tpoints(
-			(TemporalS *)inter1, (TemporalS *)inter2, dist, operator);
+			(TemporalS *)sync1, (TemporalS *)sync2, dist, operator);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
-	pfree(inter1); pfree(inter2); 
+	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);

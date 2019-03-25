@@ -48,9 +48,6 @@ const char *_type_names[] =
 	"geography",
 	"tgeompoint",
 	"tgeogpoint",
-	"npoint",
-	"nregion",
-	"tnpoint",
 #endif
 };
 

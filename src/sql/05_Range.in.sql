@@ -40,15 +40,7 @@ CREATE FUNCTION range_left(intrange, integer)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_left_elem'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_left(intrange, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_left_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_left(integer, intrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_left_range'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_left(float, intrange)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'elem_left_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -61,19 +53,7 @@ CREATE OPERATOR << (
 );
 CREATE OPERATOR << (
 	PROCEDURE = range_left,
-	LEFTARG = intrange, RIGHTARG = float,
-	COMMUTATOR = >>,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR << (
-	PROCEDURE = range_left,
 	LEFTARG = integer, RIGHTARG = intrange,
-	COMMUTATOR = >>,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR << (
-	PROCEDURE = range_left,
-	LEFTARG = float, RIGHTARG = intrange,
 	COMMUTATOR = >>,
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
@@ -82,15 +62,7 @@ CREATE FUNCTION range_right(intrange, integer)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_right_elem'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_right(intrange, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_right_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_right(integer, intrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_right_range'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_right(float, intrange)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'elem_right_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -103,19 +75,7 @@ CREATE OPERATOR >> (
 );
 CREATE OPERATOR >> (
 	PROCEDURE = range_right,
-	LEFTARG = intrange, RIGHTARG = float,
-	COMMUTATOR = <<,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR >> (
-	PROCEDURE = range_right,
 	LEFTARG = integer, RIGHTARG = intrange,
-	COMMUTATOR = <<,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR >> (
-	PROCEDURE = range_right,
-	LEFTARG = float, RIGHTARG = intrange,
 	COMMUTATOR = <<,
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
@@ -124,15 +84,7 @@ CREATE FUNCTION range_overleft(intrange, integer)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_overleft_elem'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overleft(intrange, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_overleft_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overleft(integer, intrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_overleft_range'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overleft(float, intrange)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'elem_overleft_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -144,17 +96,7 @@ CREATE OPERATOR &< (
 );
 CREATE OPERATOR &< (
 	PROCEDURE = range_overleft,
-	LEFTARG = intrange, RIGHTARG = float,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR &< (
-	PROCEDURE = range_overleft,
 	LEFTARG = integer, RIGHTARG = intrange,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR &< (
-	PROCEDURE = range_overleft,
-	LEFTARG = float, RIGHTARG = intrange,
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
 
@@ -162,15 +104,7 @@ CREATE FUNCTION range_overright(intrange, integer)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_overright_elem'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overright(intrange, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_overright_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overright(integer, intrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_overright_range'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overright(float, intrange)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'elem_overright_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -182,17 +116,7 @@ CREATE OPERATOR &> (
 );
 CREATE OPERATOR &> (
 	PROCEDURE = range_overright,
-	LEFTARG = intrange, RIGHTARG = float,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR &> (
-	PROCEDURE = range_overright,
 	LEFTARG = integer, RIGHTARG = intrange,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR &> (
-	PROCEDURE = range_overright,
-	LEFTARG = float, RIGHTARG = intrange,
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
 
@@ -200,15 +124,7 @@ CREATE FUNCTION range_adjacent(intrange, integer)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_adjacent_elem'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_adjacent(intrange, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_adjacent_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_adjacent(integer, intrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_adjacent_range'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_adjacent(float, intrange)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'elem_adjacent_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -221,36 +137,16 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
 	PROCEDURE = range_adjacent,
-	LEFTARG = intrange, RIGHTARG = float,
-	COMMUTATOR = -|-,
-	RESTRICT = contsel, JOIN = contjoinsel
-);
-CREATE OPERATOR -|- (
-	PROCEDURE = range_adjacent,
 	LEFTARG = integer, RIGHTARG = intrange,
-	COMMUTATOR = -|-,
-	RESTRICT = contsel, JOIN = contjoinsel
-);
-CREATE OPERATOR -|- (
-	PROCEDURE = range_adjacent,
-	LEFTARG = float, RIGHTARG = intrange,
 	COMMUTATOR = -|-,
 	RESTRICT = contsel, JOIN = contjoinsel
 );
 
 /******************************************************************************/
 
-CREATE FUNCTION range_left(floatrange, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_left_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_left(floatrange, float)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_left_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_left(integer, floatrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_left_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_left(float, floatrange)
 	RETURNS boolean
@@ -259,19 +155,7 @@ CREATE FUNCTION range_left(float, floatrange)
 	
 CREATE OPERATOR << (
 	PROCEDURE = range_left,
-	LEFTARG = floatrange, RIGHTARG = integer,
-	COMMUTATOR = >>,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR << (
-	PROCEDURE = range_left,
 	LEFTARG = floatrange, RIGHTARG = float,
-	COMMUTATOR = >>,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR << (
-	PROCEDURE = range_left,
-	LEFTARG = integer, RIGHTARG = floatrange,
 	COMMUTATOR = >>,
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
@@ -282,17 +166,9 @@ CREATE OPERATOR << (
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
 
-CREATE FUNCTION range_right(floatrange, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_right_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_right(floatrange, float)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_right_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_right(integer, floatrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_right_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_right(float, floatrange)
 	RETURNS boolean
@@ -301,19 +177,7 @@ CREATE FUNCTION range_right(float, floatrange)
 
 CREATE OPERATOR >> (
 	PROCEDURE = range_right,
-	LEFTARG = floatrange, RIGHTARG = integer,
-	COMMUTATOR = <<,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR >> (
-	PROCEDURE = range_right,
 	LEFTARG = floatrange, RIGHTARG = float,
-	COMMUTATOR = <<,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR >> (
-	PROCEDURE = range_right,
-	LEFTARG = integer, RIGHTARG = floatrange,
 	COMMUTATOR = <<,
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
@@ -324,17 +188,9 @@ CREATE OPERATOR >> (
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
 
-CREATE FUNCTION range_overleft(floatrange, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_overleft_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overleft(floatrange, float)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_overleft_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overleft(integer, floatrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_overleft_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overleft(float, floatrange)
 	RETURNS boolean
@@ -343,17 +199,7 @@ CREATE FUNCTION range_overleft(float, floatrange)
 
 CREATE OPERATOR &< (
 	PROCEDURE = range_overleft,
-	LEFTARG = floatrange, RIGHTARG = integer,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR &< (
-	PROCEDURE = range_overleft,
 	LEFTARG = floatrange, RIGHTARG = float,
-	RESTRICT = rangesel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR &< (
-	PROCEDURE = range_overleft,
-	LEFTARG = integer, RIGHTARG = floatrange,
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &< (
@@ -362,17 +208,9 @@ CREATE OPERATOR &< (
 	RESTRICT = rangesel, JOIN = scalarltjoinsel
 );
 
-CREATE FUNCTION range_overright(floatrange, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_overright_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overright(floatrange, float)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_overright_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_overright(integer, floatrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_overright_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_overright(float, floatrange)
 	RETURNS boolean
@@ -381,17 +219,7 @@ CREATE FUNCTION range_overright(float, floatrange)
 
 CREATE OPERATOR &> (
 	PROCEDURE = range_overright,
-	LEFTARG = floatrange, RIGHTARG = integer,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR &> (
-	PROCEDURE = range_overright,
 	LEFTARG = floatrange, RIGHTARG = float,
-	RESTRICT = rangesel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR &> (
-	PROCEDURE = range_overright,
-	LEFTARG = integer, RIGHTARG = floatrange,
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR &> (
@@ -400,17 +228,9 @@ CREATE OPERATOR &> (
 	RESTRICT = rangesel, JOIN = scalargtjoinsel
 );
 
-CREATE FUNCTION range_adjacent(floatrange, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'range_adjacent_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_adjacent(floatrange, float)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'range_adjacent_elem'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION range_adjacent(integer, floatrange)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'elem_adjacent_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION range_adjacent(float, floatrange)
 	RETURNS boolean
@@ -419,19 +239,7 @@ CREATE FUNCTION range_adjacent(float, floatrange)
 
 CREATE OPERATOR -|- (
 	PROCEDURE = range_adjacent,
-	LEFTARG = floatrange, RIGHTARG = integer,
-	COMMUTATOR = -|-,
-	RESTRICT = contsel, JOIN = contjoinsel
-);
-CREATE OPERATOR -|- (
-	PROCEDURE = range_adjacent,
 	LEFTARG = floatrange, RIGHTARG = float,
-	COMMUTATOR = -|-,
-	RESTRICT = contsel, JOIN = contjoinsel
-);
-CREATE OPERATOR -|- (
-	PROCEDURE = range_adjacent,
-	LEFTARG = integer, RIGHTARG = floatrange,
 	COMMUTATOR = -|-,
 	RESTRICT = contsel, JOIN = contjoinsel
 );

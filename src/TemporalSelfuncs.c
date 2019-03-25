@@ -1708,8 +1708,7 @@ relative_temporal_sel_internal(PlannerInfo *root, VariableStatData vardata,
 		vardata.vartype == type_oid(T_TFLOAT) ||
 		vardata.vartype == type_oid(T_TTEXT) ||
 		vardata.vartype == type_oid(T_TGEOGPOINT) ||
-		vardata.vartype == type_oid(T_TGEOMPOINT) ||
-		vardata.vartype == type_oid(T_TNPOINT))
+		vardata.vartype == type_oid(T_TGEOMPOINT)) 
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
@@ -1723,8 +1722,7 @@ relative_temporal_sel_internal(PlannerInfo *root, VariableStatData vardata,
 		vardata.vartype == type_oid(T_TFLOAT) ||
 		vardata.vartype == type_oid(T_TBOOL) ||
 		vardata.vartype == type_oid(T_TGEOGPOINT) ||
-		vardata.vartype == type_oid(T_TGEOMPOINT) ||
-		vardata.vartype == type_oid(T_TNPOINT))
+		vardata.vartype == type_oid(T_TGEOMPOINT)) 
 	{
 		Oid op = (Oid) 0;
 
@@ -1756,8 +1754,7 @@ relative_temporal_sel_internal(PlannerInfo *root, VariableStatData vardata,
 		vardata.vartype == type_oid(T_TFLOAT) ||
 		vardata.vartype == type_oid(T_TTEXT) ||
 		vardata.vartype == type_oid(T_TGEOGPOINT) ||
-		vardata.vartype == type_oid(T_TGEOMPOINT) ||
-		vardata.vartype == type_oid(T_TNPOINT)	)
+		vardata.vartype == type_oid(T_TGEOMPOINT)) 
 	{
 		Oid op = (Oid) 0;
 		if (!isgt && !iseq) 
@@ -2575,8 +2572,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 			consttype == type_oid(T_TFLOAT) ||
 			consttype == type_oid(T_TTEXT) ||
 			consttype == type_oid(T_TGEOGPOINT) ||
-			consttype == type_oid(T_TGEOMPOINT) ||
-			consttype == type_oid(T_TNPOINT))
+			consttype == type_oid(T_TGEOMPOINT)) 
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			BOX *box = palloc(sizeof(BOX));
@@ -4218,7 +4214,7 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *bBoxBounds = STCONST;
     }
     else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
-             consttype == type_oid(T_TNPOINT) || consttype == type_oid(T_PERIOD))
+             consttype == type_oid(T_PERIOD))
     {
         *temporal = true;
         *period = period_copy((Period *) ((Const *) other)->constvalue);

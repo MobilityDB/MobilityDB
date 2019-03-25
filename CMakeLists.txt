@@ -124,7 +124,6 @@ include("test/scripts/test.cmake")
 
 if(WITH_POSTGIS)
 		include("point/point.cmake")
-	    include("npoint/npoint.cmake")
 endif()
 
 add_custom_command(

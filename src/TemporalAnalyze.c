@@ -176,7 +176,7 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		non_null_cnt++;
 
 		/* Removing the temporal part from the stats HeapTuples if the base type is geometry */
-        if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY) || valueType == type_oid(T_NPOINT))
+        if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
             stats->rows[temporalinst_no] = remove_temporaldim(stats->rows[temporalinst_no], stats->tupDesc, stats->tupDesc->natts, stats->attrtypid, true, value);
 	}
 	slot_idx = 2;
@@ -1591,7 +1591,7 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
             count_item->frequency = 1;
 
         /* Removing the temporal part from the stats HeapTuples if the base type is geometry */
-        if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY) || valueType == type_oid(T_NPOINT))
+        if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
             stats->rows[analyzed_rows] = remove_temporaldim(stats->rows[analyzed_rows], stats->tupDesc, stats->tupattnum, stats->attrtypid, true, value);
 
         analyzed_rows++;
@@ -2706,7 +2706,7 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 
 
 		/* Removing the temporal part from the stats HeapTuples if the base type is geometry or geography */
-		if(baseType == type_oid(T_GEOMETRY) || baseType == type_oid(T_GEOGRAPHY) || baseType == type_oid(T_NPOINT))
+		if(baseType == type_oid(T_GEOMETRY) || baseType == type_oid(T_GEOGRAPHY))
 			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc, stats->tupDesc->natts, stats->attrtypid, true, value);
 
 		analyzed_arrays++;

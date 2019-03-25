@@ -16,7 +16,6 @@
 #include <liblwgeom.h>
 #include "TemporalTypes.h"
 #include "TemporalPoint.h"
-#include "TemporalNPoint.h"
 
 GBOX 
 get_gbox(Node *node)
@@ -25,8 +24,7 @@ get_gbox(Node *node)
 	Oid value_type = ((Const *) node)->consttype;
 
 	if (value_type == type_oid(T_TGEOMPOINT) || 
-		value_type == type_oid(T_TGEOGPOINT) ||
-		value_type == type_oid(T_TNPOINT))
+		value_type == type_oid(T_TGEOGPOINT)) 
 	{
 		Temporal *temp = DatumGetTemporal(((Const *) node)->constvalue);
 		temporal_bbox(&gbox, temp);
@@ -38,19 +36,6 @@ get_gbox(Node *node)
 		if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Error while obtaining the bounding box of the geometry")));
-		return gbox;
-	}
-	else if (value_type == type_oid(T_TNPOINT)){
-		GSERIALIZED *geom;
-		TemporalInst *inst = DatumGetTemporalInst(((Const *) node)->constvalue);
-
-		/* Read the bounds from the gserialized */
-		geom = (GSERIALIZED *)PG_DETOAST_DATUM(tnpointinst_geom(inst));
-		if (gserialized_get_gbox_p(geom, &gbox)) {
-			/* Skip empties too */
-			gbox.zmin = gbox.zmax = gbox.mmin = gbox.mmax = 0.0;
-			return gbox;
-		}
 		return gbox;
 	}
 	else if (value_type == type_oid(T_GBOX))

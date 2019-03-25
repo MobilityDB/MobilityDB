@@ -84,7 +84,12 @@ CREATE FUNCTION setSRID(tgeogpoint, srid integer)
 
 CREATE FUNCTION transform(tgeompoint, srid integer)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tgeompoint_transform'
+	AS 'MODULE_PATHNAME', 'tpoint_transform'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(tgeogpoint, srid integer)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_transform'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 ----- Gauss Kruger transformation
@@ -108,16 +113,6 @@ CREATE FUNCTION tgeogpoint(tgeompoint)
 
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
-
-CREATE FUNCTION synctrajectory(tgeompoint)
-	RETURNS geometry[]
-	AS 'MODULE_PATHNAME', 'tgeompoint_synctrajectory'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION synctrajectorypers(tgeompoint)
-	RETURNS period[]
-	AS 'MODULE_PATHNAME', 'tgeompoint_synctrajectorypers'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
@@ -185,6 +180,10 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
 	AS 'MODULE_PATHNAME', 'tpoint_minus_geometry'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
+CREATE FUNCTION NearestApproachInstant(geometry, tgeompoint)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'NAI_geometry_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION NearestApproachInstant(tgeompoint, geometry)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'NAI_tpoint_geometry'
