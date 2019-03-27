@@ -3,7 +3,7 @@
 -- File PeriodSet.c
 -------------------------------------------------------------------------------
 
-select size(ps) from tbl_periodset;
+select memSize(ps) from tbl_periodset;
 select timespan(ps) from tbl_periodset;
 select duration(ps) from tbl_periodset;
 

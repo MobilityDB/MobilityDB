@@ -391,6 +391,34 @@ SELECT DISTINCT temporalType(ttexts(ts)) FROM tbl_ttexts;
 (1 row)
 
 /******************************************************************************
+ * Cast functions
+ ******************************************************************************/
+
+SELECT COUNT(*) FROM tbl_tintinst WHERE tfloat(inst) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tinti WHERE tfloat(ti) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tintseq WHERE tfloat(seq) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+/******************************************************************************
  * Accessor functions
  ******************************************************************************/
 

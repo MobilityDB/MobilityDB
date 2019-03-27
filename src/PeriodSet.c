@@ -304,7 +304,7 @@ periodset_from_periodarr(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-/* Cast a TimestampTz value as a TimestampSet value */
+/* Cast a TimestampTz value as a PeriodSet value */
 
 PG_FUNCTION_INFO_V1(timestamp_as_periodset);
 
@@ -318,6 +318,34 @@ timestamp_as_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Cast a TimestampSet value as a PeriodSet value */
+
+PeriodSet *
+timestampset_as_periodset_internal(TimestampSet *ts)
+{
+	Period **periods = palloc(sizeof(Period *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TimestampTz t = timestampset_time_n(ts, i);
+		periods[i] = period_make(t, t, true, true);
+	}
+	PeriodSet *result = periodset_from_periodarr_internal(periods, ts->count, false);
+	for (int i = 0; i < ts->count; i++)
+		pfree(periods[i]);
+	pfree(periods);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(timestampset_as_periodset);
+
+PGDLLEXPORT Datum
+timestampset_as_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	PeriodSet *result = timestampset_as_periodset_internal(ts);
+	PG_RETURN_POINTER(result);
+}
+
 /* Cast a Period value as a PeriodSet value */
 
 PG_FUNCTION_INFO_V1(period_as_periodset);
@@ -327,7 +355,6 @@ period_as_periodset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
-	PG_FREE_IF_COPY(p, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -335,10 +362,10 @@ period_as_periodset(PG_FUNCTION_ARGS)
  * Accessor functions 
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(periodset_size);
+PG_FUNCTION_INFO_V1(periodset_mem_size);
 
 PGDLLEXPORT Datum
-periodset_size(PG_FUNCTION_ARGS)
+periodset_mem_size(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ps)));
@@ -659,7 +686,6 @@ periodset_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	PeriodSet *result = periodset_shift_internal(ps, interval);
 	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(interval, 1);
 	PG_RETURN_POINTER(result);
 }
 

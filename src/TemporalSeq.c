@@ -1433,7 +1433,8 @@ PeriodSet *
 temporalseq_get_time(TemporalSeq *seq)
 {
 	Period *p = &seq->period;
-	return periodset_from_periodarr_internal(&p, 1, false);
+	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
+	return result;
 }
 
 /* Bounding box range of a temporal number */

@@ -405,7 +405,6 @@ period_send(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 	period_send_internal(period, &buf);
-	PG_FREE_IF_COPY(period, 0);
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -608,8 +607,6 @@ period_shift(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	Period *result = period_shift_internal(p, interval);
-	PG_FREE_IF_COPY(p, 0);
-	PG_FREE_IF_COPY(interval, 1);
 	PG_RETURN_POINTER(result);
 }
 
@@ -623,7 +620,6 @@ period_duration(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	Datum result = call_function2(timestamp_mi, p->upper, p->lower);
-	PG_FREE_IF_COPY(p, 0);
 	PG_RETURN_DATUM(result);
 }
 

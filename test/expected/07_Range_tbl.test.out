@@ -4,22 +4,10 @@ select count(*) from tbl_intrange t1, tbl_int t2 where t1.i << t2.i;
   4805
 (1 row)
 
-select count(*) from tbl_intrange t1, tbl_float t2 where t1.i << t2.f;
- count 
--------
-  5400
-(1 row)
-
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i << t2.i;
  count 
 -------
   4678
-(1 row)
-
-select count(*) from tbl_float t1, tbl_intrange t2 where t1.f << t2.i;
- count 
--------
-  4600
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i >> t2.i;
@@ -28,22 +16,10 @@ select count(*) from tbl_intrange t1, tbl_int t2 where t1.i >> t2.i;
   4678
 (1 row)
 
-select count(*) from tbl_intrange t1, tbl_float t2 where t1.i >> t2.f;
- count 
--------
-  4600
-(1 row)
-
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i >> t2.i;
  count 
 -------
   4805
-(1 row)
-
-select count(*) from tbl_float t1, tbl_intrange t2 where t1.f >> t2.i;
- count 
--------
-  5400
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &< t2.i;
@@ -52,22 +28,10 @@ select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &< t2.i;
   4805
 (1 row)
 
-select count(*) from tbl_intrange t1, tbl_float t2 where t1.i &< t2.f;
- count 
--------
-  5400
-(1 row)
-
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i &< t2.i;
  count 
 -------
   4770
-(1 row)
-
-select count(*) from tbl_float t1, tbl_intrange t2 where t1.f &< t2.i;
- count 
--------
-  4600
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &> t2.i;
@@ -76,22 +40,10 @@ select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &> t2.i;
   4770
 (1 row)
 
-select count(*) from tbl_intrange t1, tbl_float t2 where t1.i &> t2.f;
- count 
--------
-  4600
-(1 row)
-
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i &> t2.i;
  count 
 -------
   4805
-(1 row)
-
-select count(*) from tbl_float t1, tbl_intrange t2 where t1.f &> t2.i;
- count 
--------
-  5400
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i -|- t2.i;
@@ -100,28 +52,10 @@ select count(*) from tbl_intrange t1, tbl_int t2 where t1.i -|- t2.i;
    211
 (1 row)
 
-select count(*) from tbl_intrange t1, tbl_float t2 where t1.i -|- t2.f;
- count 
--------
-     0
-(1 row)
-
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i -|- t2.i;
  count 
 -------
    211
-(1 row)
-
-select count(*) from tbl_float t1, tbl_intrange t2 where t1.f -|- t2.i;
- count 
--------
-     0
-(1 row)
-
-select count(*) from tbl_floatrange t1, tbl_int t2 where t1.f << t2.i;
- count 
--------
-     0
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f << t2.f;
@@ -130,22 +64,10 @@ select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f << t2.f;
   4579
 (1 row)
 
-select count(*) from tbl_int t1, tbl_floatrange t2 where t1.i << t2.f;
- count 
--------
- 10000
-(1 row)
-
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f << t2.f;
  count 
 -------
   4854
-(1 row)
-
-select count(*) from tbl_floatrange t1, tbl_int t2 where t1.f >> t2.i;
- count 
--------
- 10000
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f >> t2.f;
@@ -154,22 +76,10 @@ select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f >> t2.f;
   4854
 (1 row)
 
-select count(*) from tbl_int t1, tbl_floatrange t2 where t1.i >> t2.f;
- count 
--------
-     0
-(1 row)
-
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f >> t2.f;
  count 
 -------
   4579
-(1 row)
-
-select count(*) from tbl_floatrange t1, tbl_int t2 where t1.f &< t2.i;
- count 
--------
-     0
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &< t2.f;
@@ -178,22 +88,10 @@ select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &< t2.f;
   4579
 (1 row)
 
-select count(*) from tbl_int t1, tbl_floatrange t2 where t1.i &< t2.f;
- count 
--------
- 10000
-(1 row)
-
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f &< t2.f;
  count 
 -------
   4854
-(1 row)
-
-select count(*) from tbl_floatrange t1, tbl_int t2 where t1.f &> t2.i;
- count 
--------
- 10000
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &> t2.f;
@@ -202,31 +100,13 @@ select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &> t2.f;
   4854
 (1 row)
 
-select count(*) from tbl_int t1, tbl_floatrange t2 where t1.i &> t2.f;
- count 
--------
-     0
-(1 row)
-
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f &> t2.f;
  count 
 -------
   4579
 (1 row)
 
-select count(*) from tbl_floatrange t1, tbl_int t2 where t1.f -|- t2.i;
- count 
--------
-     0
-(1 row)
-
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f -|- t2.f;
- count 
--------
-     0
-(1 row)
-
-select count(*) from tbl_int t1, tbl_floatrange t2 where t1.i -|- t2.f;
  count 
 -------
      0

@@ -2224,6 +2224,36 @@ adjacent_periodset_periodset(PG_FUNCTION_ARGS)
  * Set union 
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(union_timestamp_timestamp);
+
+PGDLLEXPORT Datum
+union_timestamp_timestamp(PG_FUNCTION_ARGS)
+{
+	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
+	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
+	TimestampSet *result;
+	int cmp = timestamp_cmp_internal(t1, t2);
+	if (cmp == 0)
+		result = timestampset_from_timestamparr_internal(&t1, 1);
+	else
+	{
+		TimestampTz *times = palloc(sizeof(TimestampTz) * 2);
+		if (cmp < 0)
+		{
+			times[0] = t1;
+			times[1] = t2;
+		}
+		else
+		{
+			times[0] = t2;
+			times[1] = t1;
+		}
+		result = timestampset_from_timestamparr_internal(times, 2);
+		pfree(times);
+	}
+	PG_RETURN_POINTER(result);
+}
+
 TimestampSet *
 union_timestamp_timestampset_internal(TimestampTz t, TimestampSet *ts)
 {
@@ -2263,6 +2293,34 @@ union_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(ts, 1);
 	PG_RETURN_POINTER(result);
 }
+
+PG_FUNCTION_INFO_V1(union_timestamp_period);
+
+PGDLLEXPORT Datum
+union_timestamp_period(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	Period *p1 = period_make(t, t, true, true);
+	PeriodSet *result = union_period_period_internal(p, p1);
+	pfree(p1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(union_timestamp_periodset);
+
+PGDLLEXPORT Datum
+union_timestamp_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	PeriodSet *ps = PG_GETARG_PERIODSET(1);
+	Period *p = period_make(t, t, true, true);
+	PeriodSet *result = union_period_periodset_internal(p, ps);
+	pfree(p);
+	PG_FREE_IF_COPY(ps, 1);
+	PG_RETURN_POINTER(result);
+}
+
 
 /*****************************************************************************/
 
@@ -2327,6 +2385,35 @@ union_timestampset_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(union_timestampset_period);
+
+PGDLLEXPORT Datum
+union_timestampset_period(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	PeriodSet *ps = timestampset_as_periodset_internal(ts);
+	PeriodSet *result = union_period_periodset_internal(p, ps);
+	pfree(ps);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(union_timestampset_periodset);
+
+PGDLLEXPORT Datum
+union_timestampset_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	PeriodSet *ps = PG_GETARG_PERIODSET(1);
+	PeriodSet *ps1 = timestampset_as_periodset_internal(ts);
+	PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
+	pfree(ps1);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_FREE_IF_COPY(ps, 1);
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************/
 
 PeriodSet *
@@ -2385,6 +2472,33 @@ union_period_period_internal(Period *p1, Period *p2)
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
 	pfree(p);
 	return result;
+}
+
+PG_FUNCTION_INFO_V1(union_period_timestamp);
+
+PGDLLEXPORT Datum
+union_period_timestamp(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	Period *p1 = period_make(t, t, true, true);
+	PeriodSet *result = union_period_period_internal(p, p1);
+	pfree(p1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(union_period_timestampset);
+
+PGDLLEXPORT Datum
+union_period_timestampset(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+	PeriodSet *ps = timestampset_as_periodset_internal(ts);
+	PeriodSet *result = union_period_periodset_internal(p, ps);
+	pfree(ps);
+	PG_FREE_IF_COPY(ts, 1);
+	PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(union_period_period);
@@ -2509,6 +2623,35 @@ union_period_periodset(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(union_periodset_timestamp);
+
+PGDLLEXPORT Datum
+union_periodset_timestamp(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	Period *p = period_make(t, t, true, true);
+	PeriodSet *result = union_period_periodset_internal(p, ps);
+	pfree(p);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(union_periodset_timestampset);
+
+PGDLLEXPORT Datum
+union_periodset_timestampset(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+	PeriodSet *ps1 = timestampset_as_periodset_internal(ts);
+	PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
+	pfree(ps1);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_FREE_IF_COPY(ts, 1);
+	PG_RETURN_POINTER(result);
+}
 
 PG_FUNCTION_INFO_V1(union_periodset_period);
 
@@ -2682,6 +2825,18 @@ union_periodset_periodset(PG_FUNCTION_ARGS)
  * Set intersection 
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(intersection_timestamp_timestamp);
+
+PGDLLEXPORT Datum
+intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
+{
+	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
+	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(0);
+	if (timestamptz_cmp_internal(t1, t2) != 0)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t1);
+}
+
 PG_FUNCTION_INFO_V1(intersection_timestamp_timestampset);
 
 PGDLLEXPORT Datum
@@ -2691,6 +2846,34 @@ intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
 	bool contains = contains_timestampset_timestamp_internal(ts, t);
 	PG_FREE_IF_COPY(ts, 1);
+	if (!contains)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t);
+}
+
+PG_FUNCTION_INFO_V1(intersection_timestamp_period);
+
+PGDLLEXPORT Datum
+intersection_timestamp_period(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	bool contains = contains_period_timestamp_internal(p, t);
+	PG_FREE_IF_COPY(p, 1);
+	if (!contains)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t);
+}
+
+PG_FUNCTION_INFO_V1(intersection_timestamp_periodset);
+
+PGDLLEXPORT Datum
+intersection_timestamp_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	PeriodSet *ps = PG_GETARG_PERIODSET(1);
+	bool contains = contains_periodset_timestamp_internal(ps, t);
+	PG_FREE_IF_COPY(ps, 1);
 	if (!contains)
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(t);
@@ -2758,10 +2941,151 @@ intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 	TimestampSet *result = intersection_timestampset_timestampset_internal(ts1, ts2);
 	PG_FREE_IF_COPY(ts1, 0);
 	PG_FREE_IF_COPY(ts2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+TimestampSet *
+intersection_timestampset_period_internal(TimestampSet *ts, Period *p)
+{
+	TimestampTz *times = palloc(sizeof(Timestamp) * ts->count);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TimestampTz t = timestampset_time_n(ts, i);
+		if (contains_period_timestamp_internal(p, t))
+			times[k++] = t;
+	}
+	if (k == 0)
+	{
+		pfree(times);
+		return NULL;
+	}
+	
+	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+
+	pfree(times);
+
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(intersection_timestampset_period);
+
+PGDLLEXPORT Datum
+intersection_timestampset_period(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	TimestampSet *result = intersection_timestampset_period_internal(ts, p);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_FREE_IF_COPY(p, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+TimestampSet *
+intersection_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
+{
+	/* Test whether the timespan of the two time values overlap */
+	Period *p1 = timestampset_bbox(ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(p1, p2))
+		return NULL;
+	
+	TimestampTz *times = palloc(sizeof(Timestamp) * ts->count);
+	TimestampTz t = timestampset_time_n(ts, 0);
+	Period *p = periodset_per_n(ps, 0);
+	int i = 0, j = 0, k = 0;
+	while (i < ts->count && j < ps->count)
+	{
+		if (timestamp_cmp_internal(t, p->lower) < 0)
+		{
+			times[k++] = t;
+			i++;
+			if (i == ts->count)
+				break;
+			else
+				t = timestampset_time_n(ts, i);
+		}
+		else if (timestamp_cmp_internal(t, p->upper) > 0)
+		{
+			j++;
+			if (j == ps->count)
+				break;
+			else
+				p = periodset_per_n(ps, j);
+		}
+		else 
+		{
+			if (contains_period_timestamp_internal(p, t))
+				times[k++] = t;
+			i++;
+			if (i == ts->count)
+				break;
+			else
+				t = timestampset_time_n(ts, i);
+		}
+	}
+	if (k == 0)
+	{
+		pfree(times);
+		return NULL;
+	}
+	
+	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+
+	pfree(times);
+
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(intersection_timestampset_periodset);
+
+PGDLLEXPORT Datum
+intersection_timestampset_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	PeriodSet *ps = PG_GETARG_PERIODSET(1);
+	TimestampSet *result = intersection_timestampset_periodset_internal(ts, ps);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_FREE_IF_COPY(ps, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(intersection_period_timestamp);
+
+PGDLLEXPORT Datum
+intersection_period_timestamp(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	bool contains = contains_period_timestamp_internal(p, t);
+	PG_FREE_IF_COPY(p, 0);
+	if (!contains)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t);
+}
+
+PG_FUNCTION_INFO_V1(intersection_period_timestampset);
+
+PGDLLEXPORT Datum
+intersection_period_timestampset(PG_FUNCTION_ARGS)
+{
+	Period *ps = PG_GETARG_PERIOD(0);
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+	TimestampSet *result = intersection_timestampset_period_internal(ts, ps);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_FREE_IF_COPY(ts, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
 
 Period *
 intersection_period_period_internal(Period *p1, Period *p2)
@@ -2869,6 +3193,35 @@ intersection_period_periodset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(intersection_periodset_timestamp);
+
+PGDLLEXPORT Datum
+intersection_periodset_timestamp(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	bool contains = contains_periodset_timestamp_internal(ps, t);
+	PG_FREE_IF_COPY(ps, 0);
+	if (!contains)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t);
+}
+
+PG_FUNCTION_INFO_V1(intersection_periodset_timestampset);
+
+PGDLLEXPORT Datum
+intersection_periodset_timestampset(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+	TimestampSet *result = intersection_timestampset_periodset_internal(ts, ps);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_FREE_IF_COPY(ts, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(intersection_periodset_period);
 
 PGDLLEXPORT Datum
@@ -2935,6 +3288,8 @@ intersection_periodset_periodset(PG_FUNCTION_ARGS)
 	PeriodSet *result = intersection_periodset_periodset_internal(ps1, ps2);
 	PG_FREE_IF_COPY(ps1, 0);
 	PG_FREE_IF_COPY(ps2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -2942,6 +3297,18 @@ intersection_periodset_periodset(PG_FUNCTION_ARGS)
  * Set difference
  * All internal functions produce new results that must be freed after
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(minus_timestamp_timestamp);
+
+PGDLLEXPORT Datum
+minus_timestamp_timestamp(PG_FUNCTION_ARGS)
+{
+	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
+	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(0);
+	if (timestamptz_cmp_internal(t1, t2) == 0)
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(t1);
+}
 
 PG_FUNCTION_INFO_V1(minus_timestamp_timestampset);
 

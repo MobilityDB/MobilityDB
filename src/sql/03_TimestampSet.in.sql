@@ -77,9 +77,9 @@ CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz
  * Functions
  ******************************************************************************/
 
-CREATE FUNCTION size(timestampset)
+CREATE FUNCTION memSize(timestampset)
 	RETURNS int
-	AS 'MODULE_PATHNAME', 'timestampset_size'
+	AS 'MODULE_PATHNAME', 'timestampset_mem_size'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(timestampset)
