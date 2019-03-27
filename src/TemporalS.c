@@ -886,7 +886,10 @@ temporals_get_time(TemporalS *ts)
 {
 	Period **periods = palloc(sizeof(Period *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
-		periods[i] = &(temporals_seq_n(ts, i)->period);
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		periods[i] = &seq->period;
+	}
 	PeriodSet *result = periodset_from_periodarr_internal(periods, 
 		ts->count, false);
 	pfree(periods);

@@ -203,7 +203,7 @@ extern Datum timestamp_as_timestampset(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
-extern Datum timestampset_size(PG_FUNCTION_ARGS);
+extern Datum timestampset_mem_size(PG_FUNCTION_ARGS);
 extern Datum timestampset_timespan(PG_FUNCTION_ARGS);
 extern Datum timestampset_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_start_timestamp(PG_FUNCTION_ARGS);
@@ -262,11 +262,14 @@ extern Datum periodset_from_periodarr(PG_FUNCTION_ARGS);
 /* Cast functions */
 
 extern Datum timestamp_as_periodset(PG_FUNCTION_ARGS);
+extern Datum timestampset_as_periodset(PG_FUNCTION_ARGS);
 extern Datum period_as_periodset(PG_FUNCTION_ARGS);
+
+extern PeriodSet *timestampset_as_periodset_internal(TimestampSet *ts);
 
 /* Accessor functions */
 
-extern Datum periodset_size(PG_FUNCTION_ARGS);
+extern Datum periodset_mem_size(PG_FUNCTION_ARGS);
 extern Datum periodset_timespan(PG_FUNCTION_ARGS);
 extern Datum periodset_duration(PG_FUNCTION_ARGS);
 extern Datum periodset_num_periods(PG_FUNCTION_ARGS);
@@ -543,11 +546,20 @@ extern bool adjacent_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2
 
 /* union */
 
+extern Datum union_timestamp_timestamp(PG_FUNCTION_ARGS);
 extern Datum union_timestamp_timestampset(PG_FUNCTION_ARGS);
+extern Datum union_timestamp_period(PG_FUNCTION_ARGS);
+extern Datum union_timestamp_periodset(PG_FUNCTION_ARGS);
 extern Datum union_timestampset_timestamp(PG_FUNCTION_ARGS);
 extern Datum union_timestampset_timestampset(PG_FUNCTION_ARGS);
+extern Datum union_timestampset_period(PG_FUNCTION_ARGS);
+extern Datum union_timestampset_periodset(PG_FUNCTION_ARGS);
+extern Datum union_period_timestamp(PG_FUNCTION_ARGS);
+extern Datum union_period_timestampset(PG_FUNCTION_ARGS);
 extern Datum union_period_period(PG_FUNCTION_ARGS);
 extern Datum union_period_periodset(PG_FUNCTION_ARGS);
+extern Datum union_periodset_timestamp(PG_FUNCTION_ARGS);
+extern Datum union_periodset_timestampset(PG_FUNCTION_ARGS);
 extern Datum union_periodset_period(PG_FUNCTION_ARGS);
 extern Datum union_periodset_periodset(PG_FUNCTION_ARGS);
 
@@ -559,21 +571,32 @@ extern PeriodSet *union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *
 
 /* intersection */
 
+extern Datum intersection_timestamp_timestamp(PG_FUNCTION_ARGS);
 extern Datum intersection_timestamp_timestampset(PG_FUNCTION_ARGS);
+extern Datum intersection_timestamp_period(PG_FUNCTION_ARGS);
+extern Datum intersection_timestamp_periodset(PG_FUNCTION_ARGS);
 extern Datum intersection_timestampset_timestamp(PG_FUNCTION_ARGS);
 extern Datum intersection_timestampset_timestampset(PG_FUNCTION_ARGS);
+extern Datum intersection_timestampset_period(PG_FUNCTION_ARGS);
+extern Datum intersection_timestampset_periodset(PG_FUNCTION_ARGS);
+extern Datum intersection_period_timestamp(PG_FUNCTION_ARGS);
+extern Datum intersection_period_timestampset(PG_FUNCTION_ARGS);
 extern Datum intersection_period_period(PG_FUNCTION_ARGS);
 extern Datum intersection_period_periodset(PG_FUNCTION_ARGS);
+extern Datum intersection_periodset_timestamp(PG_FUNCTION_ARGS);
+extern Datum intersection_periodset_timestampset(PG_FUNCTION_ARGS);
 extern Datum intersection_periodset_period(PG_FUNCTION_ARGS);
 extern Datum intersection_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern TimestampSet *intersection_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet *ts2);
+extern TimestampSet *intersection_timestampset_period_internal(TimestampSet *ts, Period *p);
 extern Period *intersection_period_period_internal(Period *p1, Period *p2);
 extern PeriodSet *intersection_period_periodset_internal(Period *p, PeriodSet *ps);
 extern PeriodSet *intersection_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2);
 
 /* minus */
 
+extern Datum minus_timestamp_timestamp(PG_FUNCTION_ARGS);
 extern Datum minus_timestamp_timestampset(PG_FUNCTION_ARGS);
 extern Datum minus_timestamp_period(PG_FUNCTION_ARGS);
 extern Datum minus_timestamp_periodset(PG_FUNCTION_ARGS);

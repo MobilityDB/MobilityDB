@@ -511,7 +511,7 @@ PGDLLEXPORT Datum temporal_enforce_typmod(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Constructor functions
- ******************************************	**********************************/
+ ****************************************************************************/
 
  /* Make temporal instant value from two arguments */
 
@@ -894,7 +894,7 @@ Datum temporal_get_time(PG_FUNCTION_ARGS)
     else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
-	PG_RETURN_TEXT_P(result);
+	PG_RETURN_POINTER(result);
 }
 
 /* Timestamp of a temporal instant */

@@ -3,7 +3,7 @@
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
-select size(ts) from tbl_timestampset;
+select memSize(ts) from tbl_timestampset;
 select timespan(ts) from tbl_timestampset;
 
 select numTimestamps(ts) from tbl_timestampset;

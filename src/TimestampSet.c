@@ -125,7 +125,7 @@ timestampset_find_timestamp(TimestampSet *ts, TimestampTz t)
 	while (first <= last) 
 	{
 		TimestampTz t1 = timestampset_time_n(ts, middle);
-		int cmp = timestamp_cmp_internal(t1, t);
+		int cmp = timestamp_cmp_internal(t, t1);
 		if (cmp == 0)
 			return middle;
 		if (cmp < 0)
@@ -288,10 +288,10 @@ timestamp_as_timestampset(PG_FUNCTION_ARGS)
  * Accessor functions 
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_size);
+PG_FUNCTION_INFO_V1(timestampset_mem_size);
 
 PGDLLEXPORT Datum
-timestampset_size(PG_FUNCTION_ARGS)
+timestampset_mem_size(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
@@ -387,7 +387,7 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(ts, 0);
 		PG_RETURN_NULL();
 	}
-	TimestampTz result = timestampset_time_n(ts, n + 1);
+	TimestampTz result = timestampset_time_n(ts, n - 1);
 	PG_FREE_IF_COPY(ts, 0);
 	PG_RETURN_TIMESTAMPTZ(result);
 }
@@ -443,7 +443,6 @@ timestampset_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	TimestampSet *result = timestampset_shift_internal(ts, interval);
 	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(interval, 1);
 	PG_RETURN_POINTER(result);
 }
 

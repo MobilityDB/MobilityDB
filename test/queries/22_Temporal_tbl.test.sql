@@ -93,6 +93,15 @@ SELECT DISTINCT temporalType(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts
 SELECT DISTINCT temporalType(ttexts(ts)) FROM tbl_ttexts;
 
 /******************************************************************************
+ * Cast functions
+ ******************************************************************************/
+
+SELECT COUNT(*) FROM tbl_tintinst WHERE tfloat(inst) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tinti WHERE tfloat(ti) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tintseq WHERE tfloat(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
+
+/******************************************************************************
  * Accessor functions
  ******************************************************************************/
 

@@ -164,6 +164,17 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 
         <itemizedlist>
           <listitem>
+           <para><varname>memSize</varname>: Memory size in bytes</para>
+            <para>Signature: <varname>memSize({timestampset, periodset}): integer</varname></para>
+            <programlisting>
+SELECT memSize(timestampset '{2012-01-01, 2012-01-02, 2012-01-03}');
+-- 104
+SELECT memSize(periodset '{[2012-01-01, 2012-01-02], [2012-01-03, 2012-01-04], [2012-01-05, 2012-01-06]}');
+-- 136
+            </programlisting>
+          </listitem>
+
+          <listitem>
           <para><varname>lower</varname>: Lower bound</para>
           <para>Signature: <varname>lower(period): timestamptz</varname></para>
           <programlisting>

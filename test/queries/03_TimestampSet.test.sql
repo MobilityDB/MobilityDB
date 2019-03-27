@@ -3,8 +3,8 @@
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
-select size(timestampset '{2000-01-01}');
-select size(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+select memSize(timestampset '{2000-01-01}');
+select memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 
 select timespan(timestampset '{2000-01-01}');
 select timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
