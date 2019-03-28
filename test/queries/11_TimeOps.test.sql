@@ -66,8 +66,8 @@ SELECT periodset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' + periods
 
 -------------------------------------------------------------------------------
 
-SELECT timestamptz '2000-01-01' - timestamp '2000-01-01';
-SELECT timestamptz '2000-01-01' - timestamp '2000-01-02';
+SELECT temporal_minus(timestamptz '2000-01-01', timestamptz '2000-01-01');
+SELECT temporal_minus(timestamptz '2000-01-01', timestamptz '2000-01-02');
 SELECT timestamptz '2000-01-01' - timestampset '{2000-01-02, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-01' - timestampset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT timestamptz '2000-01-05' - timestampset '{2000-01-01, 2000-01-03, 2000-01-05}';

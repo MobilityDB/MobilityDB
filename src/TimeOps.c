@@ -2832,7 +2832,7 @@ intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
 	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
 	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(0);
-	if (timestamptz_cmp_internal(t1, t2) != 0)
+	if (timestamp_cmp_internal(t1, t2) != 0)
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(t1);
 }
@@ -3304,8 +3304,8 @@ PGDLLEXPORT Datum
 minus_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
 	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(0);
-	if (timestamptz_cmp_internal(t1, t2) == 0)
+	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
+	if (timestamp_cmp_internal(t1, t2) == 0)
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(t1);
 }

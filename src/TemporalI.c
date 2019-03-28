@@ -1163,7 +1163,7 @@ temporali_minus_timestamp(TemporalI *ti, TimestampTz t)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst= temporali_inst_n(ti, i);
-		if (timestamptz_cmp_internal(inst->t, t) != 0)
+		if (timestamp_cmp_internal(inst->t, t) != 0)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :

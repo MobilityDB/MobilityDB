@@ -1,19 +1,43 @@
 SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' @> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT period '[2000-01-01, 2000-01-02]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT period '[2000-01-01, 2000-01-02]' @> timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period '(2000-01-01, 2000-01-02]' @> timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT period '[2000-01-01, 2000-01-02)' @> timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT period '(2000-01-01, 2000-01-02)' @> timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT period '[2000-01-01, 2000-01-02]' @> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
@@ -61,7 +85,7 @@ SELECT periodset '{[2000-01-01, 2000-01-02], [2000-01-03, 2000-01-04]}' @> perio
 SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' <@ timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' <@ period '[2000-01-01, 2000-01-02]';
@@ -116,6 +140,30 @@ SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' && periodset '{[2000-
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT period '[2000-01-01, 2000-01-02]' && timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period '(2000-01-01, 2000-01-02]' && timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period '[2000-01-01, 2000-01-02)' && timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period '(2000-01-01, 2000-01-02)' && timestampset '{2000-01-01, 2000-01-02}';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT period '[2000-01-01, 2000-01-02]' && timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
