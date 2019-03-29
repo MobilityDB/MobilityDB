@@ -990,6 +990,8 @@ tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
  * Find the single timestamptz at which two temporal segments intersect.
  * The function supposes that the instants are synchronized, i.e.,
  * start1->t = start2->t and end1->t = end2->t 
+ * The function only returns an intersection at the middle, i.e., it returns
+ * false if they intersect at a bound.
  */
 
 bool
@@ -1004,12 +1006,12 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
 	   To reduce problems related to floating point arithmetic, t1 and t2
 	   are shifted, respectively, to 0 and 1 before the computation */
-	double denum = x2 - x1 - x4 + x3;
+	double denum = fabs(x2 - x1 - x4 + x3);
 	if (denum == 0)
 		/* Parallel segments */
 		return false;
 
-	double fraction = (x3 - x1) / denum;
+	double fraction = fabs((x3 - x1) / denum);
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		/* Intersection occurs out of the period */
 		return false;
