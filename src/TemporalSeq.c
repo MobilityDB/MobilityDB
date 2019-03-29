@@ -1764,8 +1764,6 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			line, value));
 		pfree(DatumGetPointer(line));
-		if (fabs(fraction) < EPSILON || fabs(fraction-1.0) < EPSILON)
-			return false;
 	}
 	else if (value1typid == type_oid(T_GEOGRAPHY))
 	{
@@ -1795,14 +1793,14 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1)); 
 		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1)); 
 		pfree(DatumGetPointer(value2));
-		if (fraction == 0 || fraction == 1)
-			return false;
 	}
 #endif
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 
+	if (fabs(fraction) < EPSILON || fabs(fraction-1.0) < EPSILON)
+		return false;
 	double duration = (double)inst2->t - (double)inst1->t;
 	*t = (double)inst1->t + duration * fraction;
 	return true;
