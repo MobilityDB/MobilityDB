@@ -37,7 +37,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE containsproperly(t1.temp, t2.temp);
  count 
 -------
-    33
+    28
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -79,7 +79,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE covers(t1.temp, t2.temp);
  count 
 -------
-    40
+    30
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -121,7 +121,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE coveredby(t1.temp, t2.temp);
  count 
 -------
-    40
+    30
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -149,14 +149,14 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE disjoint(g, temp);
  count 
 -------
-  9500
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE disjoint(temp, g);
  count 
 -------
-  9500
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -317,21 +317,21 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE dwithin(g, temp, 10);
  count 
 -------
-  2683
+  3084
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE dwithin(temp, g, 10);
  count 
 -------
-  2683
+  3084
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-    77
+    75
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint

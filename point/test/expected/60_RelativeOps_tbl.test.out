@@ -4,13 +4,11 @@ DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 NOTICE:  index "tbl_tgeompoint_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
-NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 NOTICE:  index "tbl_tgeogpoint_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
-NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
 DROP INDEX
 /*****************************************************************************/
 

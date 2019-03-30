@@ -391,40 +391,40 @@ SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDER BY 1;
  temporaltype 
 --------------
+ Instant
+ InstantSet
  Sequence
  SequenceSet
- InstantSet
- Instant
 (4 rows)
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint ORDER BY 1;
  temporaltype 
 --------------
+ Instant
+ InstantSet
  Sequence
  SequenceSet
- InstantSet
- Instant
 (4 rows)
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint3D;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint3D ORDER BY 1;
  temporaltype 
 --------------
+ Instant
+ InstantSet
  Sequence
  SequenceSet
- InstantSet
- Instant
 (4 rows)
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint3D;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
  temporaltype 
 --------------
+ Instant
+ InstantSet
  Sequence
  SequenceSet
- InstantSet
- Instant
 (4 rows)
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;

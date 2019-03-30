@@ -96,10 +96,10 @@ SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
  * Accessor functions
  ******************************************************************************/
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint ORDDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint3D ORDDER BY 1;
-SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint3D ORDDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint3D ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;
 SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;

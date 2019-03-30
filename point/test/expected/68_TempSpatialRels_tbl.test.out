@@ -310,6 +310,6 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE trelate(t1.temp, t2.temp, 'T*****FF*') IS NOT NULL;
  count 
 -------
-   679
+   104
 (1 row)
 

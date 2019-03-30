@@ -330,7 +330,7 @@ temporalinst_timespan(Period *p, TemporalInst *inst)
 ArrayType *
 temporalinst_timestamps(TemporalInst *inst)
 {
-	TimestampTz t;
+	TimestampTz t = inst->t;
 	return timestamparr_to_array(&t, 1);
 }
 

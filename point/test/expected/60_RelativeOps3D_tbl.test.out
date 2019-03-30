@@ -4,7 +4,6 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
 NOTICE:  index "tbl_tgeompoint3d_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
-NOTICE:  index "tbl_tgeompoint3d_spgist_idx" does not exist, skipping
 DROP INDEX
 /*****************************************************************************/
 
