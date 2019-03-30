@@ -648,10 +648,10 @@ extern TemporalInst *temporalinst_shift(TemporalInst *inst, Interval *interval);
 
 /* Restriction Functions */
 
-extern TemporalInst *temporalinst_at_value(TemporalInst *inst, Datum val, Oid valuetypid);
-extern TemporalInst *temporalinst_minus_value(TemporalInst *inst, Datum val, Oid valuetypid);
-extern TemporalInst *temporalinst_at_values(TemporalInst *inst, Datum *values, int count, Oid valuetypid);
-extern TemporalInst *temporalinst_minus_values(TemporalInst *inst, Datum *values, int count, Oid valuetypid);
+extern TemporalInst *temporalinst_at_value(TemporalInst *inst, Datum val);
+extern TemporalInst *temporalinst_minus_value(TemporalInst *inst, Datum val);
+extern TemporalInst *temporalinst_at_values(TemporalInst *inst, Datum *values, int count);
+extern TemporalInst *temporalinst_minus_values(TemporalInst *inst, Datum *values, int count);
 extern TemporalInst *tnumberinst_at_range(TemporalInst *inst, RangeType *range);
 extern TemporalInst *tnumberinst_minus_range(TemporalInst *inst, RangeType *range);
 
@@ -750,10 +750,10 @@ extern TemporalI *temporali_shift(TemporalI *ti, Interval *interval);
 
 /* Restriction Functions */
 
-extern TemporalI *temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid);
-extern TemporalI *temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid);
-extern TemporalI *temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid);
-extern TemporalI *temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid);
+extern TemporalI *temporali_at_value(TemporalI *ti, Datum value);
+extern TemporalI *temporali_minus_value(TemporalI *ti, Datum value);
+extern TemporalI *temporali_at_values(TemporalI *ti, Datum *values, int count);
+extern TemporalI *temporali_minus_values(TemporalI *ti, Datum *values, int count);
 extern TemporalI *tnumberi_at_range(TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_minus_range(TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_at_ranges(TemporalI *ti, RangeType **normranges, int count);
@@ -888,25 +888,18 @@ extern TemporalSeq *temporalseq_shift(TemporalSeq *seq,
 extern bool tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum value, Oid valuetypid, TimestampTz *t);
 extern TemporalSeq *temporalseq_at_value1(TemporalInst *inst1, 
-	TemporalInst *inst2, bool lower_inc, bool upper_inc, Datum value, Oid valuetypid);
-extern TemporalSeq **temporalseq_at_value2(TemporalSeq *seq, Datum value, 
-	Oid valuetypid, int *count);
-extern TemporalS *temporalseq_at_value(TemporalSeq *seq, Datum value, 
-	Oid valuetypid);
-extern TemporalSeq **temporalseq_minus_value2(TemporalSeq *seq, Datum value,
-	Oid valuetypid, int *count);
-extern TemporalS *temporalseq_minus_value(TemporalSeq *seq, Datum value,
-	Oid valuetypid);
+	TemporalInst *inst2, bool lower_inc, bool upper_inc, Datum value);
+extern TemporalSeq **temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count);
+extern TemporalS *temporalseq_at_value(TemporalSeq *seq, Datum value);
+extern TemporalSeq **temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count);
+extern TemporalS *temporalseq_minus_value(TemporalSeq *seq, Datum value);
 extern TemporalSeq **temporalseq_at_values1(TemporalSeq *seq, Datum *values, 
-	int count, Oid valuetypid, int *newcount);	
-extern TemporalS *temporalseq_at_values(TemporalSeq *seq, Datum *values, 
-	int count, Oid valuetypid);
+	int count, int *newcount);	
+extern TemporalS *temporalseq_at_values(TemporalSeq *seq, Datum *values, int count);
 extern TemporalSeq **temporalseq_minus_values1(TemporalSeq *seq, Datum *values, 
-	int count, Oid valuetypid, int *newcount);
-extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values,
-	int count, Oid valuetypid);
-extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values,
-	int count, Oid valuetypid);
+	int count, int *newcount);
+extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count);
+extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count);
 extern TemporalSeq **tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, 
 	int *count);
 extern TemporalS *tnumberseq_at_range(TemporalSeq *seq, RangeType *range);
@@ -1066,10 +1059,10 @@ extern bool temporals_continuous_time_internal(TemporalS *ts);
 
 /* Restriction Functions */
 
-extern TemporalS *temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid);
-extern TemporalS *temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid);
-extern TemporalS *temporals_at_values(TemporalS *ts, Datum *values, int count, Oid valuetypid);
-extern TemporalS *temporals_minus_values(TemporalS *ts, Datum *values, int count, Oid valuetypid);
+extern TemporalS *temporals_at_value(TemporalS *ts, Datum value);
+extern TemporalS *temporals_minus_value(TemporalS *ts, Datum value);
+extern TemporalS *temporals_at_values(TemporalS *ts, Datum *values, int count);
+extern TemporalS *temporals_minus_values(TemporalS *ts, Datum *values, int count);
 extern TemporalS *tnumbers_at_range(TemporalS *ts, RangeType *range);
 extern TemporalS *tnumbers_minus_range(TemporalS *ts, RangeType *range);
 extern TemporalS *tnumbers_at_ranges(TemporalS *ts, RangeType **normranges, int count);

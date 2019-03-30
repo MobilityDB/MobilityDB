@@ -2777,7 +2777,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	TemporalI *dist = sync_oper2_temporali_temporali(ti1, ti2, operator, 
 		FLOAT8OID);
 	Datum minvalue = temporali_min_value(dist);
-	TemporalI *mindistance = temporali_at_value(dist, minvalue, FLOAT8OID);
+	TemporalI *mindistance = temporali_at_value(dist, minvalue);
 	TimestampTz t = temporali_start_timestamp(mindistance);
 	TemporalInst *inst1 = temporali_at_timestamp(ti1, t);
 	TemporalInst *inst2 = temporali_at_timestamp(ti2, t);

@@ -659,20 +659,19 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
-			(TemporalInst *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalInst *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_value(
-			(TemporalI *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalI *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_value(
-			(TemporalSeq *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalSeq *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_value(
-			(TemporalS *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -744,20 +743,19 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
-			(TemporalInst *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalInst *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_value(
-			(TemporalI *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalI *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_value(
-			(TemporalSeq *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalSeq *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_value(
-			(TemporalS *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -779,7 +777,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
@@ -813,16 +811,16 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_values(
-			(TemporalS *)temp, values, count1, valuetypid);
+			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -845,7 +843,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
@@ -879,16 +877,16 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_values(
-			(TemporalS *)temp, values, count1, valuetypid);
+			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));

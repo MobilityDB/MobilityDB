@@ -377,9 +377,9 @@ temporalinst_shift(TemporalInst *inst, Interval *interval)
 /* Restriction to a value */
 
 TemporalInst *
-temporalinst_at_value(TemporalInst *inst, Datum value, Oid valuetypid)
+temporalinst_at_value(TemporalInst *inst, Datum value)
 {
-	if (datum_ne2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+	if (datum_ne(value, temporalinst_value(inst), inst->valuetypid))
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -387,9 +387,9 @@ temporalinst_at_value(TemporalInst *inst, Datum value, Oid valuetypid)
 /* Restriction to the complement of a value */
 
 TemporalInst *
-temporalinst_minus_value(TemporalInst *inst, Datum value, Oid valuetypid)
+temporalinst_minus_value(TemporalInst *inst, Datum value)
 {
-	if (datum_eq2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+	if (datum_eq(value, temporalinst_value(inst), inst->valuetypid))
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -400,11 +400,11 @@ temporalinst_minus_value(TemporalInst *inst, Datum value, Oid valuetypid)
  */
  
 TemporalInst *
-temporalinst_at_values(TemporalInst *inst, Datum *values, int count, Oid valuetypid)
+temporalinst_at_values(TemporalInst *inst, Datum *values, int count)
 {
 	Datum value = temporalinst_value(inst);
 	for (int i = 0; i < count; i++)
-		if (datum_eq2(value, values[i], inst->valuetypid, valuetypid))
+		if (datum_eq(value, values[i], inst->valuetypid))
 			return temporalinst_copy(inst);
 	return NULL;
 }
@@ -413,12 +413,11 @@ temporalinst_at_values(TemporalInst *inst, Datum *values, int count, Oid valuety
  * The function assumes that there are no duplicates values. */
 
 TemporalInst *
-temporalinst_minus_values(TemporalInst *inst, Datum *values, 
-	int count, Oid valuetypid)
+temporalinst_minus_values(TemporalInst *inst, Datum *values, int count)
 {
 	Datum value = temporalinst_value(inst);
 	for (int i = 0; i < count; i++)
-		if (datum_eq2(value, values[i], inst->valuetypid, valuetypid))
+		if (datum_eq(value, values[i], inst->valuetypid))
 			return NULL;
 	return temporalinst_copy(inst);
 }

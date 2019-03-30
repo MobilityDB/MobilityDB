@@ -239,7 +239,6 @@ CREATE OPERATOR CLASS spgist_tint_ops
 CREATE OPERATOR CLASS spgist_tfloat_ops
 	DEFAULT FOR TYPE tfloat USING spgist AS
 	-- strictly left
-	OPERATOR	1		<< (tfloat, integer),
 	OPERATOR	1		<< (tfloat, intrange),
 	OPERATOR	1		<< (tfloat, float),
 	OPERATOR	1		<< (tfloat, floatrange),
@@ -247,7 +246,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	1		<< (tfloat, tint),
 	OPERATOR	1		<< (tfloat, tfloat),
  	-- overlaps or left
-	OPERATOR	2		&< (tfloat, integer),
 	OPERATOR	2		&< (tfloat, intrange),
 	OPERATOR	2		&< (tfloat, float),
 	OPERATOR	2		&< (tfloat, floatrange),
@@ -255,7 +253,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	2		&< (tfloat, tint),
 	OPERATOR	2		&< (tfloat, tfloat),
 	-- overlaps
-	OPERATOR	3		&& (tfloat, integer),
 	OPERATOR	3		&& (tfloat, intrange),
 	OPERATOR	3		&& (tfloat, float),
 	OPERATOR	3		&& (tfloat, floatrange),
@@ -267,7 +264,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	3		&& (tfloat, tint),
 	OPERATOR	3		&& (tfloat, tfloat),
 	-- overlaps or right
-	OPERATOR	4		&> (tfloat, integer),
 	OPERATOR	4		&> (tfloat, intrange),
 	OPERATOR	4		&> (tfloat, float),
 	OPERATOR	4		&> (tfloat, floatrange),
@@ -275,7 +271,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	4		&> (tfloat, tint),
 	OPERATOR	4		&> (tfloat, tfloat),
 	-- strictly right
-	OPERATOR	5		>> (tfloat, integer),
 	OPERATOR	5		>> (tfloat, intrange),
 	OPERATOR	5		>> (tfloat, float),
 	OPERATOR	5		>> (tfloat, floatrange),
@@ -283,7 +278,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	5		>> (tfloat, tint),
 	OPERATOR	5		>> (tfloat, tfloat),
   	-- same
-	OPERATOR	6		~= (tfloat, integer),
 	OPERATOR	6		~= (tfloat, intrange),
 	OPERATOR	6		~= (tfloat, float),
 	OPERATOR	6		~= (tfloat, floatrange),
@@ -295,7 +289,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	6		~= (tfloat, tint),
 	OPERATOR	6		~= (tfloat, tfloat),
 	-- contains
-	OPERATOR	7		@> (tfloat, integer),
 	OPERATOR	7		@> (tfloat, intrange),
 	OPERATOR	7		@> (tfloat, float),
 	OPERATOR	7		@> (tfloat, floatrange),
@@ -307,7 +300,6 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	7		@> (tfloat, tint),
 	OPERATOR	7		@> (tfloat, tfloat),
 	-- contained by
-	OPERATOR	8		<@ (tfloat, integer),
 	OPERATOR	8		<@ (tfloat, intrange),
 	OPERATOR	8		<@ (tfloat, float),
 	OPERATOR	8		<@ (tfloat, floatrange),

@@ -1723,11 +1723,10 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	Oid value1typid = inst1->valuetypid;
 	
 	/* Continuous base type: Interpolation */
 	double fraction;
-	if (value1typid == FLOAT8OID)
+	if (inst1->valuetypid == FLOAT8OID)
 	{ 
 		double dvalue1 = DatumGetFloat8(value1);
 		double dvalue2 = DatumGetFloat8(value2);
@@ -1744,7 +1743,7 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 			partial / range : 1 - partial / range;
 	}
 #ifdef WITH_POSTGIS
-	else if (value1typid == type_oid(T_GEOMETRY))
+	else if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* We are sure that the trajectory is a line */
 		Datum line = tgeompointseq_trajectory1(inst1, inst2);
@@ -1765,7 +1764,7 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 			line, value));
 		pfree(DatumGetPointer(line));
 	}
-	else if (value1typid == type_oid(T_GEOGRAPHY))
+	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* We are sure that the trajectory is a line */
 		Datum line = tgeogpointseq_trajectory1(inst1, inst2);
@@ -1810,17 +1809,17 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 
 TemporalSeq *
 temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2, 
-	bool lower_inc, bool upper_inc, Datum value, Oid valuetypid)
+	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	Oid value1typid = inst1->valuetypid;
+	Oid valuetypid = inst1->valuetypid;
 	
 	/* Constant segment (discrete or continuous base type) */
-	if (datum_eq(value1, value2, value1typid))
+	if (datum_eq(value1, value2, valuetypid))
 	{
 		/* If not equal to value */
-		if (datum_ne2(value1, value, value1typid, valuetypid))
+		if (datum_ne(value1, value, valuetypid))
 			return NULL;
 		TemporalInst *instants[2];
 		instants[0] = inst1;
@@ -1834,17 +1833,17 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	if (!MOBDB_FLAGS_GET_CONTINUOUS(inst1->flags))
 	{
 		TemporalSeq *result = NULL;
-		if (datum_eq2(value1, value, value1typid, valuetypid))
+		if (datum_eq(value1, value, valuetypid))
 		{
 			/* <value@t1 x@t2> */
 			TemporalInst *instants[2];
 			instants[0] = inst1;
-			instants[1] = temporalinst_make(value1, inst2->t, value1typid);
+			instants[1] = temporalinst_make(value1, inst2->t, valuetypid);
 			result = temporalseq_from_temporalinstarr(instants, 2,
 				lower_inc, false, false);
 			pfree(instants[1]);
 		}
-		else if (upper_inc && datum_eq2(value, value2, valuetypid, value1typid))
+		else if (upper_inc && datum_eq(value, value2, valuetypid))
 		{
 			/* <x@t1 value@t2] */
 			result = temporalseq_from_temporalinstarr(&inst2, 1,
@@ -1854,14 +1853,14 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Continuous base type: Test of bounds */
-	if (datum_eq2(value1, value, value1typid, valuetypid))
+	if (datum_eq(value1, value, valuetypid))
 	{
 		if (!lower_inc)
 			return NULL;
 		return temporalseq_from_temporalinstarr(&inst1, 1,
 				true, true, false);
 	}
-	if (datum_eq2(value2, value, value1typid, valuetypid))
+	if (datum_eq(value2, value, valuetypid))
 	{
 		if (!upper_inc)
 			return NULL;
@@ -1874,7 +1873,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	if (!tempcontseq_timestamp_at_value(inst1, inst2, value, valuetypid, &t))
 		return NULL;
 	
-	TemporalInst *inst = temporalinst_make(value, t, value1typid);
+	TemporalInst *inst = temporalinst_make(value, t, valuetypid);
 	TemporalSeq *result = temporalseq_from_temporalinstarr(&inst, 1, 
 		true, true, false);
 	pfree(inst);
@@ -1887,10 +1886,11 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 */
 
 TemporalSeq **
-temporalseq_at_value2(TemporalSeq *seq, Datum value, Oid valuetypid, int *count)
+temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count)
 {
+	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
-	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporalseq_bbox(&box1, seq);
@@ -1906,7 +1906,7 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, Oid valuetypid, int *count)
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
-		if (datum_ne2(temporalinst_value(inst), value, inst->valuetypid, valuetypid))
+		if (datum_ne(temporalinst_value(inst), value, valuetypid))
 		{
 			*count = 0;
 			return NULL;			
@@ -1927,7 +1927,7 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, Oid valuetypid, int *count)
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
 		TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2, 
-			lower_inc, upper_inc, value, valuetypid);
+			lower_inc, upper_inc, value);
 		if (seq1 != NULL) 
 			result[k++] = seq1;
 		inst1 = inst2;
@@ -1944,10 +1944,10 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, Oid valuetypid, int *count)
 }
 
 TemporalS *
-temporalseq_at_value(TemporalSeq *seq, Datum value, Oid valuetypid)
+temporalseq_at_value(TemporalSeq *seq, Datum value)
 {
 	int count;
-	TemporalSeq **sequences = temporalseq_at_value2(seq, value, valuetypid, &count);
+	TemporalSeq **sequences = temporalseq_at_value2(seq, value, &count);
 	if (count == 0)
 		return NULL;
 
@@ -1963,18 +1963,18 @@ temporalseq_at_value(TemporalSeq *seq, Datum value, Oid valuetypid)
 static void
 tempcontseq_minus_value1(TemporalSeq **result,
 	TemporalInst *inst1, TemporalInst *inst2, 
-	bool lower_inc, bool upper_inc, Datum value, Oid valuetypid, int *count)
+	bool lower_inc, bool upper_inc, Datum value, int *count)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	Oid value1typid = inst1->valuetypid;
+	Oid valuetypid = inst1->valuetypid;
 	TemporalInst *instants[2];
 	
 	/* Constant segment */
-	if (datum_eq(value1, value2, value1typid))
+	if (datum_eq(value1, value2, valuetypid))
 	{
 		/* Equal to value */
-		if (datum_eq2(value1, value, value1typid, valuetypid))
+		if (datum_eq(value1, value, valuetypid))
 		{
 			*count = 0;
 			return;
@@ -1988,7 +1988,7 @@ tempcontseq_minus_value1(TemporalSeq **result,
 	}
 
 	/* Test of bounds */
-	if (datum_eq2(value1, value, value1typid, valuetypid))
+	if (datum_eq(value1, value, valuetypid))
 	{
 		instants[0] = inst1;
 		instants[1] = inst2;
@@ -1997,7 +1997,7 @@ tempcontseq_minus_value1(TemporalSeq **result,
 		*count = 1;
 		return;
 	}
-	if (datum_eq2(value2, value, value1typid, valuetypid))
+	if (datum_eq(value2, value, valuetypid))
 	{
 		instants[0] = inst1;
 		instants[1] = inst2;
@@ -2019,7 +2019,7 @@ tempcontseq_minus_value1(TemporalSeq **result,
 		return;
 	}
 	instants[0] = inst1;
-	instants[1] = temporalinst_make(value, t, value1typid);
+	instants[1] = temporalinst_make(value, t, valuetypid);
 	result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, false, false);
 	instants[0] = instants[1];
@@ -2037,11 +2037,11 @@ tempcontseq_minus_value1(TemporalSeq **result,
 */
 
 TemporalSeq **
-temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid, 
-	int *count)
+temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 {
+	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
-	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporalseq_bbox(&box1, seq);
@@ -2059,7 +2059,7 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid,
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
-		if (datum_eq2(temporalinst_value(inst), value, inst->valuetypid, valuetypid))
+		if (datum_eq(temporalinst_value(inst), value, valuetypid))
 		{
 			*count = 0;
 			return NULL;			
@@ -2084,12 +2084,12 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid,
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, i);
 			Datum value1 = temporalinst_value(inst);
-			if (datum_eq2(value1, value, inst->valuetypid, valuetypid))
+			if (datum_eq(value1, value, valuetypid))
 			{
 				if (j > 0)
 				{
 					instants[j] = temporalinst_make(temporalinst_value(instants[j-1]),
-						inst->t, inst->valuetypid);
+						inst->t, valuetypid);
 					bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
 					result[k++] = temporalseq_from_temporalinstarr(instants, j + 1,
 						lower_inc, upper_inc, false);
@@ -2118,7 +2118,7 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid,
 			TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 			bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
 			tempcontseq_minus_value1(&result[k], inst1, inst2, 
-				lower_inc, upper_inc, value, valuetypid, &countseq);
+				lower_inc, upper_inc, value, &countseq);
 			/* The previous step has added between one and two sequences */
 			k += countseq;
 			inst1 = inst2;
@@ -2138,11 +2138,10 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, Oid valuetypid,
 /* Restriction to the complement of a value */
 
 TemporalS *
-temporalseq_minus_value(TemporalSeq *seq, Datum value, Oid valuetypid)
+temporalseq_minus_value(TemporalSeq *seq, Datum value)
 {
 	int count;
-	TemporalSeq **sequences = temporalseq_minus_value2(seq, value, 
-		valuetypid, &count);
+	TemporalSeq **sequences = temporalseq_minus_value2(seq, value, &count);
 	if (count == 0)
 		return NULL;
 	
@@ -2159,14 +2158,13 @@ temporalseq_minus_value(TemporalSeq *seq, Datum value, Oid valuetypid)
  * This function is called for each sequence of a TemporalS. 
  */
 TemporalSeq **
-temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count, 
-	Oid valuetypid, int *newcount)
+temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count, int *newcount)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_at_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_at_values(inst, values, count);
 		if (inst1 == NULL)
 		{
 			*newcount = 0;
@@ -2192,7 +2190,7 @@ temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count,
 		for (int j = 0; j < count; j++)
 		{
 			TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2, 
-				lower_inc, upper_inc, values[j], valuetypid);
+				lower_inc, upper_inc, values[j]);
 			if (seq1 != NULL) 
 				result[k++] = seq1;
 		}
@@ -2205,11 +2203,11 @@ temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count,
 }
 	
 TemporalS *
-temporalseq_at_values(TemporalSeq *seq, Datum *values, int count, Oid valuetypid)
+temporalseq_at_values(TemporalSeq *seq, Datum *values, int count)
 {
 	int newcount;
 	TemporalSeq **sequences = temporalseq_at_values1(seq, values, 
-		count, valuetypid, &newcount);
+		count, &newcount);
 	if (newcount == 0) 
 		return NULL;
 	
@@ -2228,14 +2226,13 @@ temporalseq_at_values(TemporalSeq *seq, Datum *values, int count, Oid valuetypid
  * This function is called for each sequence of a TemporalS. 
  */
 TemporalSeq **
-temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count, 
-	Oid valuetypid, int *newcount)
+temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count, int *newcount)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count);
 		if (inst1 == NULL)
 		{
 			*newcount = 0;
@@ -2253,7 +2250,7 @@ temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count,
 	 * General case
 	 * Compute first the temporalseq_at_values, then compute its complement.
 	 */
-	TemporalS *ts = temporalseq_at_values(seq, values, count, valuetypid);
+	TemporalS *ts = temporalseq_at_values(seq, values, count);
 	if (ts == NULL)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -2278,11 +2275,11 @@ temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count,
 }
 
 TemporalS *
-temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count, Oid valuetypid)
+temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count)
 {
 	int newcount;
 	TemporalSeq **sequences = temporalseq_minus_values1(seq, values, 
-		count, valuetypid, &newcount);
+		count, &newcount);
 	if (newcount == 0) 
 		return NULL;
 	
@@ -2354,7 +2351,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 
 		/* Test with inclusive bounds */
 		TemporalSeq *newseq = temporalseq_at_value1(inst1, inst2, 
-			true, true, lowervalue, valuetypid);
+			true, true, lowervalue);
 		/* We are sure that both newseq is an instant sequence */
 		TemporalInst *inst = temporalseq_inst_n(newseq, 0);
 		result = temporalseq_from_temporalinstarr(&inst, 1,
@@ -2365,9 +2362,9 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		/* Test with inclusive bounds */
 		TemporalSeq *newseq1 = temporalseq_at_value1(inst1, inst2, 
-			true, true, lowervalue, valuetypid);
+			true, true, lowervalue);
 		TemporalSeq *newseq2 = temporalseq_at_value1(inst1, inst2, 
-			true, true, uppervalue, valuetypid);
+			true, true, uppervalue);
 		TimestampTz time1 = newseq1->period.lower;
 		TimestampTz time2 = newseq2->period.upper;
 		/* We are sure that both newseq1 and newseq2 are instant sequences */
@@ -2666,7 +2663,7 @@ temporalseq_at_min(TemporalSeq *seq)
 	/* Make a copy of the sequence with inclusive bounds */
 	TemporalSeq *seq1 = temporalseq_copy(seq);
 	seq1->period.lower_inc = seq1->period.upper_inc = true;
-	TemporalS *result = temporalseq_at_value(seq1, minvalue, seq->valuetypid);
+	TemporalS *result = temporalseq_at_value(seq1, minvalue);
 	pfree(seq1);
 	return result;	
 }
@@ -2677,7 +2674,7 @@ TemporalS *
 temporalseq_minus_min(TemporalSeq *seq)
 {
 	Datum minvalue = temporalseq_min_value(seq);
-	return temporalseq_minus_value(seq, minvalue, seq->valuetypid);
+	return temporalseq_minus_value(seq, minvalue);
 }
 
 /* Restriction to the maximum value */
@@ -2689,7 +2686,7 @@ temporalseq_at_max(TemporalSeq *seq)
 	/* Make a copy of the sequence with inclusive bounds */
 	TemporalSeq *seq1 = temporalseq_copy(seq);
 	seq1->period.lower_inc = seq1->period.upper_inc = true;
-	TemporalS *result = temporalseq_at_value(seq1, maxvalue, seq->valuetypid);
+	TemporalS *result = temporalseq_at_value(seq1, maxvalue);
 	pfree(seq1);
 	return result;	
 }
@@ -2700,7 +2697,7 @@ TemporalS *
 temporalseq_minus_max(TemporalSeq *seq)
 {
 	Datum maxvalue = temporalseq_max_value(seq);
-	return temporalseq_minus_value(seq, maxvalue, seq->valuetypid);
+	return temporalseq_minus_value(seq, maxvalue);
 }
 
 /*

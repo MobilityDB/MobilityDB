@@ -1273,10 +1273,11 @@ temporals_continuous_time_internal(TemporalS *ts)
 /* Restriction to a value */
 
 TemporalS *
-temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
+temporals_at_value(TemporalS *ts, Datum value)
 {
+	Oid valuetypid = ts->valuetypid;
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporals_bbox(&box1, ts);
@@ -1287,7 +1288,7 @@ temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return temporalseq_at_value(temporals_seq_n(ts, 0), value, valuetypid);
+		return temporalseq_at_value(temporals_seq_n(ts, 0), value);
 
 	/* General case */
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -1297,7 +1298,7 @@ temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = temporalseq_at_value2(seq, value, 
-			valuetypid, &countseqs[i]);
+			&countseqs[i]);
 		totalseqs += countseqs[i];
 	}
 	if (totalseqs == 0)
@@ -1327,10 +1328,11 @@ temporals_at_value(TemporalS *ts, Datum value, Oid valuetypid)
 /* Restriction to the complement of a value */
 
 TemporalS *
-temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid)
+temporals_minus_value(TemporalS *ts, Datum value)
 {
+	Oid valuetypid = ts->valuetypid;
 	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporals_bbox(&box1, ts);
@@ -1341,7 +1343,7 @@ temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid)
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return temporalseq_minus_value(temporals_seq_n(ts, 0), value, valuetypid);
+		return temporalseq_minus_value(temporals_seq_n(ts, 0), value);
 
 	/* General case */
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -1351,7 +1353,7 @@ temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = temporalseq_minus_value2(seq, value,
-			valuetypid, &countseqs[i]);
+			&countseqs[i]);
 		totalseqs += countseqs[i];
 	}
 	if (totalseqs == 0)
@@ -1383,13 +1385,11 @@ temporals_minus_value(TemporalS *ts, Datum value, Oid valuetypid)
  * The function assumes that there are no duplicates values.
  */
 TemporalS *
-temporals_at_values(TemporalS *ts, Datum *values, int count, 
-	Oid valuetypid)
+temporals_at_values(TemporalS *ts, Datum *values, int count)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return temporalseq_at_values(temporals_seq_n(ts, 0), values, 
-			count, valuetypid);
+		return temporalseq_at_values(temporals_seq_n(ts, 0), values, count);
 
 	/* General case */
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -1398,7 +1398,7 @@ temporals_at_values(TemporalS *ts, Datum *values, int count,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_at_values1(seq, values, count, valuetypid,
+		sequences[i] = temporalseq_at_values1(seq, values, count,
 			&countseqs[i]);
 		totalseqs += countseqs[i];
 	}
@@ -1431,13 +1431,11 @@ temporals_at_values(TemporalS *ts, Datum *values, int count,
  * The function assumes that there are no duplicates values.
  */
 TemporalS *
-temporals_minus_values(TemporalS *ts, Datum *values, int count,
-	Oid valuetypid)
+temporals_minus_values(TemporalS *ts, Datum *values, int count)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return temporalseq_minus_values(temporals_seq_n(ts, 0), values, 
-			count, valuetypid);
+		return temporalseq_minus_values(temporals_seq_n(ts, 0), values, count);
 
 	/* General case */
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -1446,7 +1444,7 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_minus_values1(seq, values, count, valuetypid,
+		sequences[i] = temporalseq_minus_values1(seq, values, count,
 			&countseqs[i]);
 		totalseqs += countseqs[i];
 	}
@@ -1701,8 +1699,7 @@ temporals_at_minmax(TemporalS *ts, Datum value)
 		/* Make a copy of the sequence with inclusive bounds */
 		TemporalSeq *seq1 = temporalseq_copy(seq);
 		seq1->period.lower_inc = seq1->period.upper_inc = true;
-		sequences[i] = temporalseq_at_value2(seq1, value, seq1->valuetypid,
-			&countseqs[i]);
+		sequences[i] = temporalseq_at_value2(seq1, value, &countseqs[i]);
 		totalseqs += countseqs[i];
 		pfree(seq1);
 	}
@@ -1752,7 +1749,7 @@ TemporalS *
 temporals_minus_min(TemporalS *ts)
 {
 	Datum minvalue = temporals_min_value(ts);
-	return temporals_minus_value(ts, minvalue, ts->valuetypid);
+	return temporals_minus_value(ts, minvalue);
 }
 
 /* Restriction to the maximum value */
@@ -1775,7 +1772,7 @@ TemporalS *
 temporals_minus_max(TemporalS *ts)
 {
 	Datum maxvalue = temporals_max_value(ts);
-	return temporals_minus_value(ts, maxvalue, ts->valuetypid);
+	return temporals_minus_value(ts, maxvalue);
 }
 
 /*

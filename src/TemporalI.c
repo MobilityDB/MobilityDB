@@ -729,10 +729,11 @@ temporali_shift(TemporalI *ti, Interval *interval)
 /* Restriction to a value */
 
 TemporalI *
-temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
+temporali_at_value(TemporalI *ti, Datum value)
 {
+	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporali_bbox(&box1, ti);
@@ -745,7 +746,7 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporalinst_at_value(temporali_inst_n(ti, 0), 
-			value, valuetypid);
+			value);
 		if (inst == NULL)
 			return NULL;
 		return temporali_copy(ti);
@@ -757,7 +758,7 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (datum_eq2(value, temporalinst_value(inst), valuetypid, inst->valuetypid)) 
+		if (datum_eq(value, temporalinst_value(inst), valuetypid)) 
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
@@ -769,10 +770,11 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 /* Restriction to the complement of a value. */
 
 TemporalI *
-temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
+temporali_minus_value(TemporalI *ti, Datum value)
 {
+	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporali_bbox(&box1, ti);
@@ -785,7 +787,7 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporalinst_minus_value(temporali_inst_n(ti, 0), 
-			value, valuetypid);
+			value);
 		if (inst == NULL)
 			return NULL;
 		return temporali_copy(ti);
@@ -797,7 +799,7 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (datum_ne2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+		if (datum_ne(value, temporalinst_value(inst), valuetypid))
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
@@ -812,13 +814,13 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
  */
  
 TemporalI *
-temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
+temporali_at_values(TemporalI *ti, Datum *values, int count)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, 0);
-		TemporalInst *inst1 = temporalinst_at_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_at_values(inst, values, count);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1); 
@@ -833,8 +835,7 @@ temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			if (datum_eq2(temporalinst_value(inst), values[j], 
-				inst->valuetypid, valuetypid))
+			if (datum_eq(temporalinst_value(inst), values[j], ti->valuetypid))
 			{
 				instants[newcount++] = inst;
 				break;
@@ -853,13 +854,13 @@ temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
  */
 
 TemporalI *
-temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
+temporali_minus_values(TemporalI *ti, Datum *values, int count)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, 0);
-		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1); 
@@ -875,8 +876,7 @@ temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			if (datum_eq2(temporalinst_value(inst), values[j], 
-				inst->valuetypid, valuetypid))
+			if (datum_eq(temporalinst_value(inst), values[j], ti->valuetypid))
 			{
 				found = true;
 				break;
@@ -1065,7 +1065,7 @@ TemporalI *
 temporali_at_min(TemporalI *ti)
 {
 	Datum minvalue = temporali_min_value(ti);
-	return temporali_at_value(ti, minvalue, ti->valuetypid);	
+	return temporali_at_value(ti, minvalue);	
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1074,7 +1074,7 @@ TemporalI *
 temporali_minus_min(TemporalI *ti)
 {
 	Datum minvalue = temporali_min_value(ti);
-	return temporali_minus_value(ti, minvalue, ti->valuetypid);	
+	return temporali_minus_value(ti, minvalue);	
 }
 
 /* Restriction to the maximum value */
@@ -1083,7 +1083,7 @@ TemporalI *
 temporali_at_max(TemporalI *ti)
 {
 	Datum maxvalue = temporali_max_value(ti);
-	return temporali_at_value(ti, maxvalue, ti->valuetypid);	
+	return temporali_at_value(ti, maxvalue);	
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1092,7 +1092,7 @@ TemporalI *
 temporali_minus_max(TemporalI *ti)
 {
 	Datum maxvalue = temporali_max_value(ti);
-	return temporali_minus_value(ti, maxvalue, ti->valuetypid);	
+	return temporali_minus_value(ti, maxvalue);	
 }
 
 /* 
