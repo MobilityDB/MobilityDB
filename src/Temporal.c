@@ -640,12 +640,9 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 
 /* Cast a temporal integer as a temporal float */
 
-PG_FUNCTION_INFO_V1(tint_as_tfloat);
-
-PGDLLEXPORT Datum
-tint_as_tfloat(PG_FUNCTION_ARGS)
+Temporal *
+tint_as_tfloat_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)tintinst_as_tfloatinst((TemporalInst *)temp);
@@ -658,6 +655,16 @@ tint_as_tfloat(PG_FUNCTION_ARGS)
     else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tint_as_tfloat);
+
+PGDLLEXPORT Datum
+tint_as_tfloat(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = tint_as_tfloat_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

@@ -33,6 +33,7 @@ datum_add(Datum l, Datum r, Oid typel, Oid typer)
 		errmsg("Operation not supported")));
 }
 
+
 /* Subtraction */
 
 static Datum
@@ -112,13 +113,25 @@ add_base_temporal(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_add, datumtypid, valuetypid, true);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_add, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
+
 
 PG_FUNCTION_INFO_V1(add_temporal_base);
 
@@ -128,10 +141,21 @@ add_temporal_base(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_add, datumtypid, valuetypid, false);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_add, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -166,10 +190,21 @@ sub_base_temporal(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_sub, datumtypid, valuetypid, true);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_sub, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_sub, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -182,10 +217,21 @@ sub_temporal_base(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_sub, datumtypid, valuetypid, false);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_sub, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -220,10 +266,21 @@ mult_base_temporal(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_mult, datumtypid, valuetypid, true);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_mult, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_mult, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -236,10 +293,21 @@ mult_temporal_base(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
-	Temporal *result = oper4_temporal_base(value, temp, 
-		&datum_mult, datumtypid, valuetypid, false);
+	/* The base type and the argument type must be equal */
+	Temporal *result;
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_mult, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_mult, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -284,11 +352,21 @@ div_base_temporal(PG_FUNCTION_ARGS)
 			errmsg("Division by zero")));
 	
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
+	/* The base type and the argument type must be equal */
 	Temporal *result;
-	result = oper4_temporal_base(value, temp,
-		&datum_div, datumtypid, valuetypid, true);
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_div, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_div, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -306,11 +384,21 @@ div_temporal_base(PG_FUNCTION_ARGS)
 			errmsg("Division by zero")));
 
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-	Oid valuetypid = base_oid_from_temporal(temptypid);
+	/* The base type and the argument type must be equal */
 	Temporal *result;
-	result = oper4_temporal_base(value, temp,
-		&datum_div, datumtypid, valuetypid, false);
+	if (datumtypid == temp->valuetypid)
+ 		result = oper4_temporal_base(value, temp, 
+		 	&datum_div, temp->valuetypid, temp->valuetypid, true);
+	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
+	{
+		Temporal *ftemp = tint_as_tfloat_internal(temp);
+		result = oper4_temporal_base(value, ftemp, 
+		 	&datum_div, FLOAT8OID, FLOAT8OID, true);
+		pfree(temp);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

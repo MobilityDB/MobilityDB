@@ -521,6 +521,8 @@ extern Datum temporal_make_temporals(PG_FUNCTION_ARGS);
 
 extern Datum tint_as_tfloat(PG_FUNCTION_ARGS);
 
+extern Temporal *tint_as_tfloat_internal(Temporal *temp);
+
 /* Accessor functions */
 
 extern Datum temporal_type(PG_FUNCTION_ARGS);
