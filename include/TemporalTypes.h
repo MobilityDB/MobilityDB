@@ -1717,9 +1717,9 @@ extern Temporal *oper2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	
 /*****************************************************************************/
 
-extern TemporalInst *oper3_temporalinst_base(TemporalInst *inst, Datum value, Datum dist, 
+extern TemporalInst *oper3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalI *oper3_temporali_base(TemporalI *ti, Datum value, Datum dist, 
+extern TemporalI *oper3_temporali_base(TemporalI *ti, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalSeq *oper3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
@@ -1759,7 +1759,7 @@ extern TemporalSeq *oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq
 extern TemporalS *oper4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
-extern Temporal *oper4_temporal_base(Datum value, Temporal *temp, 
+extern Temporal *oper4_temporal_base(Temporal *temp, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern Temporal *oper4_temporal_temporal(Temporal *temp1, Temporal *temp2, 

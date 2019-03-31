@@ -327,7 +327,7 @@ oper4_temporals_base(TemporalS *ts, Datum value,
 /* Dispatch function */
 
 Temporal *
-oper4_temporal_base(Datum value, Temporal *temp, 
+oper4_temporal_base(Temporal *temp, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool inverted)
 {

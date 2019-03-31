@@ -3279,7 +3279,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Input trajectory cannot be empty")));
 	}
-	if (!FLAGS_GET_M(gs->flags))
+	if (! FLAGS_GET_M(gs->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 

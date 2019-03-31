@@ -248,14 +248,14 @@ temporal_extend(Temporal *temp, Interval *interval,
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		*count = seq->count == 1 ? 1 : seq->count - 1;
-		if (!MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
 			return tempdiscseq_extend(seq, interval);
 		else
 			return tempcontseq_extend(seq, interval, min);
 	}
 	else if (temp->type == TEMPORALS)
 	{
-		if (!MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
 			return tempdiscs_extend(
 				(TemporalS *)temp, interval, count);
 		else

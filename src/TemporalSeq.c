@@ -911,7 +911,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	}
 	/* The last two values of discrete sequences with exclusive upper bound 
 	   must be equal */
-	if (!inter->upper_inc && k > 1 && !MOBDB_FLAGS_GET_CONTINUOUS(seq1->flags))
+	if (! inter->upper_inc && k > 1 && ! MOBDB_FLAGS_GET_CONTINUOUS(seq1->flags))
 	{
 		if (datum_ne(temporalinst_value(instants1[k-2]), 
 			temporalinst_value(instants1[k-1]), seq1->valuetypid))
@@ -922,7 +922,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			tofree[l++] = instants1[k-1];
 		}
 	}
-	if (!inter->upper_inc && k > 1 && !MOBDB_FLAGS_GET_CONTINUOUS(seq2->flags))
+	if (! inter->upper_inc && k > 1 && ! MOBDB_FLAGS_GET_CONTINUOUS(seq2->flags))
 	{
 		if (datum_ne(temporalinst_value(instants2[k-2]), 
 			temporalinst_value(instants2[k-1]), seq2->valuetypid))
@@ -1276,19 +1276,24 @@ tintseq_as_tfloatseq1(TemporalSeq *seq, int *count)
 	
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	Datum value1 = temporalinst_value(inst1);
 	TemporalInst *inst2;
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
 	for (int i = 1; i < seq->count; i++)
 	{
 		inst2 = temporalseq_inst_n(seq, i);
+		Datum value2 = temporalinst_value(inst2);
 		TemporalInst *instants[2];
 		instants[0] = tintinst_as_tfloatinst(inst1);
-		Datum value = temporalinst_value(instants[0]);
-		instants[1] = temporalinst_make(value, inst2->t, FLOAT8OID);
+		Datum fvalue1 = temporalinst_value(instants[0]);
+		instants[1] = temporalinst_make(fvalue1, inst2->t, FLOAT8OID);
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc && 
+			datum_eq(value1, value2, INT4OID): false;
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, false, false);
+			lower_inc, upper_inc, false);
 		inst1 = inst2;
+		value1 = value2;
 		lower_inc = true;
 		pfree(instants[0]); pfree(instants[1]);
 	}
@@ -1636,7 +1641,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 			return false;
 	}
 
-	if (!MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
 	{
 		for (int i = 0; i < seq->count; i++) 
 		{
@@ -1830,7 +1835,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Discrete base type */
-	if (!MOBDB_FLAGS_GET_CONTINUOUS(inst1->flags))
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(inst1->flags))
 	{
 		TemporalSeq *result = NULL;
 		if (datum_eq(value1, value, valuetypid))
@@ -2073,7 +2078,7 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 	/* General case */
 	TemporalSeq **result;
 	int k = 0;
-	if (!MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
 	{
 		/* Discrete base type */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -2090,7 +2095,7 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 				{
 					instants[j] = temporalinst_make(temporalinst_value(instants[j-1]),
 						inst->t, valuetypid);
-					bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
+					bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
 					result[k++] = temporalseq_from_temporalinstarr(instants, j + 1,
 						lower_inc, upper_inc, false);
 					pfree(instants[j]);

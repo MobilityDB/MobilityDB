@@ -258,7 +258,7 @@ tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Cannot obtain the bounding box of the value")));
 	
-	if (!FLAGS_GET_Z(gs->flags) && !FLAGS_GET_GEODETIC(box->flags))
+	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(box->flags))
 	{
 		/* Set the value of the missing Z dimension to +-infinity */
 		double infinity = get_float8_infinity();
@@ -416,7 +416,7 @@ geo_to_gbox_internal(GBOX *box, GSERIALIZED *gs)
 		FLAGS_SET_M(box->flags, true);
 		return false;
 	}
-	if (!FLAGS_GET_Z(gs->flags) && !FLAGS_GET_GEODETIC(gs->flags))
+	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(gs->flags))
 	{
 		/* Missing dimension is initialized to +-infinity */
 		box->zmin = -infinity;
@@ -566,7 +566,7 @@ geo_timestamp_to_gbox_internal(GBOX *box, GSERIALIZED *gs, TimestampTz t)
 		FLAGS_SET_M(box->flags, true);
 		return false;
 	}
-	if (!FLAGS_GET_Z(gs->flags) && !FLAGS_GET_GEODETIC(gs->flags))
+	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(gs->flags))
 	{
 		/* Missing dimension is initialized to +-infinity */
 		box->zmin = -infinity;
@@ -613,7 +613,7 @@ geo_period_to_gbox_internal(GBOX *box, GSERIALIZED *gs, Period *period)
 		return false;
 	}
 	
-	if (!FLAGS_GET_Z(gs->flags) && !FLAGS_GET_GEODETIC(gs->flags))
+	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(gs->flags))
 	{
 		/* Missing dimension is initialized to +-infinity */
 		box->zmin = -infinity;
