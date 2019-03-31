@@ -687,7 +687,7 @@ overfront_geom_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (! FLAGS_GET_Z(gs->flags) || ! FLAGS_GET_Z(temp->flags))
+	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
