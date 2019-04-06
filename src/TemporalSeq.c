@@ -3193,14 +3193,20 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 	}
 
 	/* General case */
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ps->count);
+	int n = periodset_find_timestamp(ps, seq->period.lower);
+	/* If the periodset does not contain the lower bound of the sequence */
+	if (n == -1)
+		n = 0;
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (ps->count - n));
 	int k = 0;
-	for (int i = 0; i < ps->count; i++)
+	for (int i = n; i < ps->count; i++)
 	{
 		Period *p = periodset_per_n(ps, i);
 		TemporalSeq *seq1 = temporalseq_at_period(seq, p);
 		if (seq1 != NULL)
 			result[k++] = seq1;
+		if (timestamp_cmp_internal(seq->period.upper, p->upper) < 0)
+			break;
 	}
 	if (k == 0)
 	{

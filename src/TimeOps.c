@@ -86,15 +86,11 @@ contains_period_timestamp_internal(Period *p, TimestampTz t)
 	int32		cmp;
 	
 	cmp = timestamp_cmp_internal(p->lower, t);
-	if (cmp > 0)
-		return false;
-	if (cmp == 0 && !(p->lower_inc))
+	if (cmp > 0 || (cmp == 0 && ! p->lower_inc))
 		return false;
 	
 	cmp = timestamp_cmp_internal(p->upper, t);
-	if (cmp < 0)
-		return false;
-	if (cmp == 0 && !(p->upper_inc))
+	if (cmp < 0 || (cmp == 0 && ! p->upper_inc))
 		return false;
 	
 	return true;
@@ -3151,9 +3147,14 @@ intersection_period_periodset_internal(Period *p, PeriodSet *ps)
 	if (contained_periodset_period_internal(ps, p))
 		return periodset_copy(ps);
 	
-	Period **periods = palloc(sizeof(Period *) * ps->count);
+		/* General case */
+	int n = periodset_find_timestamp(ps, p->lower);
+	/* If the periodset does not contain the lower bound of the period */
+	if (n == -1)
+		n = 0;
+	Period **periods = palloc(sizeof(Period *) * (ps->count - n));
 	int k = 0;
-	for (int i = 0; i < ps->count; i++)
+	for (int i = n; i < ps->count; i++)
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		Period *p2 = intersection_period_period_internal(p1, p);
@@ -3254,11 +3255,12 @@ intersection_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 		Period *inter = intersection_period_period_internal(p1, p2);
 		if (inter != NULL)
 			periods[k++] = inter;
-		if (timestamp_cmp_internal(p1->upper, p2->upper) == 0)
+		int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
+		if (cmp == 0 && p1->upper_inc == p2->upper_inc)
 		{
 			i++; j++;
 		}
-		else if (timestamp_cmp_internal(p1->upper, p2->upper) < 0)
+		else if (cmp < 0 || (cmp == 0 && ! p1->upper_inc && p2->upper_inc))
 			i++;
 		else 
 			j++;

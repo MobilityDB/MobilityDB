@@ -2039,21 +2039,22 @@ temporals_minus_period(TemporalS *ts, Period *period)
 /*
  * Restriction to a periodset.
  */
+/*
 TemporalS *
 temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 {
-	/* Bounding box test */
+	/ * Bounding box test * /
 	Period p1;
 	temporals_timespan(&p1, ts);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
 
-	/* Singleton sequence set */
+	/ * Singleton sequence set * /
 	if (ts->count == 1)
 		return temporalseq_at_periodset(temporals_seq_n(ts, 0), ps);
 
-	/* General case */
+	/ * General case * /
 	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
@@ -2086,6 +2087,54 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 	pfree(allseqs); pfree(sequences); pfree(countseqs); 
 	return result;
 }
+*/
+TemporalS *
+temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
+{
+	/* Bounding box test */
+	Period p1;
+	temporals_timespan(&p1, ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return NULL;
+
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return temporalseq_at_periodset(temporals_seq_n(ts, 0), ps);
+
+	/* General case */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + ps->count));
+	int i = 0, j = 0, k = 0;
+	while (i < ts->count && j < ps->count)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		Period *p = periodset_per_n(ps, j);
+		TemporalSeq *seq1 = temporalseq_at_period(seq, p);
+		if (seq1 != NULL)
+			sequences[k++] = seq1;
+		int cmp = timestamp_cmp_internal(seq->period.upper, p->upper);
+		if (cmp == 0 && seq->period.upper_inc == p->upper_inc)
+		{
+			i++; j++;
+		}
+		else if (cmp < 0 || (cmp == 0 && ! seq->period.upper_inc && p->upper_inc))
+			i++;
+		else 
+			j++;
+	}
+	if (k == 0)
+	{
+		pfree(sequences);
+		return NULL;
+	}
+
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
+	return result;
+}
+
 
 /*
  * Restriction to the complement of a period set.
