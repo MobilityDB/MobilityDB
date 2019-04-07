@@ -601,7 +601,7 @@ geo_timestamp_to_gbox(PG_FUNCTION_ARGS)
    Notice that the the gserialized_get_gbox_p do not set any flag*/
 
 bool
-geo_period_to_gbox_internal(GBOX *box, GSERIALIZED *gs, Period *period)
+geo_period_to_gbox_internal(GBOX *box, GSERIALIZED *gs, Period *p)
 {
 	double infinity = get_float8_infinity();
 	if (gserialized_get_gbox_p(gs, box) == LW_FAILURE)
@@ -619,8 +619,8 @@ geo_period_to_gbox_internal(GBOX *box, GSERIALIZED *gs, Period *period)
 		box->zmin = -infinity;
 		box->zmax = +infinity;
 	}
-	box->mmin = (double)period->lower;
-	box->mmax = (double)period->upper;
+	box->mmin = (double)p->lower;
+	box->mmax = (double)p->upper;
 	FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
 	FLAGS_SET_M(box->flags, true);
 	FLAGS_SET_GEODETIC(box->flags, FLAGS_GET_GEODETIC(gs->flags));
@@ -633,9 +633,9 @@ PGDLLEXPORT Datum
 geo_period_to_gbox(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Period *period = PG_GETARG_PERIOD(1);
+	Period *p = PG_GETARG_PERIOD(1);
 	GBOX *result = palloc0(sizeof(GBOX));
-	bool found = geo_period_to_gbox_internal(result, gs, period);
+	bool found = geo_period_to_gbox_internal(result, gs, p);
 	PG_FREE_IF_COPY(gs, 0);
 	if (!found)
 	{

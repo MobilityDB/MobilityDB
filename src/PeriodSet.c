@@ -130,7 +130,7 @@ periodset_copy(PeriodSet *ps)
 }
 
 /* Binary search of a timestamptz in a PeriodSet */
- 
+/* OLD VERSION
 int
 periodset_find_timestamp(PeriodSet *ps, TimestampTz t) 
 {
@@ -149,6 +149,48 @@ periodset_find_timestamp(PeriodSet *ps, TimestampTz t)
 		middle = (first + last)/2;
 	}
 	return -1;
+}
+*/
+
+/*
+ * Binary search of a timestamptz in a periodset.
+ * If the timestamp is found, the position of the period is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * periods or after. For example, given 3 periods, the result of the 
+ * function if the value is not found will be as follows: 
+ *			    0			1			2
+ *			|------|	|------|	|------|   
+ * 1)	t^ 											=> result = 0
+ * 2)				 t^ 							=> result = 1
+ * 3)							 t^ 				=> result = 2
+ * 4)										  t^	=> result = 3
+ */
+
+bool 
+periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos) 
+{
+	int first = 0;
+	int last = ps->count - 1;
+	int middle = 0; /* make compiler quiet */
+	Period *p = NULL; /* make compiler quiet */
+	while (first <= last) 
+	{
+		middle = (first + last)/2;
+		p = periodset_per_n(ps, middle);
+		if (contains_period_timestamp_internal(p, t))
+		{
+			*pos = middle;
+			return true;
+		}
+		if (timestamp_cmp_internal(t, p->lower) <= 0)
+			last = middle - 1;
+		else
+			first = middle + 1;
+	}
+	if (timestamp_cmp_internal(t, p->upper) >= 0)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /* Duration of the PeriodSet as a double */

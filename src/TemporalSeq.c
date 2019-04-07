@@ -786,7 +786,7 @@ intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	
 	*inter1 = temporalseq_at_period(seq1, inter);
 	*inter2 = temporalseq_at_period(seq2, inter);
-	
+	pfree(inter);
 	return true;
 }
 
@@ -832,7 +832,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			true, true, false);
 		*sync2 = temporalseq_from_temporalinstarr(&inst2, 1, 
 			true, true, false);
-		pfree(inst1); pfree(inst2); 
+		pfree(inst1); pfree(inst2); pfree(inter);
 		return true;
 	}
 	
@@ -906,7 +906,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	}
 	if (k == 0)
 	{
-		pfree(instants1); pfree(instants2); 
+		pfree(instants1); pfree(instants2); pfree(inter);
 		return false;
 	}
 	/* The last two values of discrete sequences with exclusive upper bound 
@@ -2969,23 +2969,27 @@ temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts)
 		return NULL;
 	
 	/* Instantaneous sequence */
+	TemporalInst *inst = temporalseq_inst_n(seq, 0);
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_at_timestampset(inst, ts);
-		if (inst1 == NULL)
+		if (!contains_timestampset_timestamp_internal(ts, inst->t))
 			return NULL;
-		pfree(inst1); 
 		return temporali_from_temporalinstarr(&inst, 1);
 	}
 
 	/* General case */
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ts->count);
+	Period *inter = intersection_period_period_internal(&seq->period, p);
+	int n = timestampset_find_timestamp(ts, inter->lower);
+	/* If the lower bound of the intersecting period is not in ts */
+	if (n == -1)
+		n = 0;
+	pfree(inter);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (ts->count - n));
 	int k = 0;
-	for (int i = 0; i < ts->count; i++) 
+	for (int i = n; i < ts->count; i++) 
 	{
 		TimestampTz t = timestampset_time_n(ts, i);
-		TemporalInst *inst = temporalseq_at_timestamp(seq, t);
+		inst = temporalseq_at_timestamp(seq, t);
 		if (inst != NULL)
 			instants[k++] = inst;
 	}
@@ -3081,10 +3085,10 @@ temporalseq_minus_timestampset(TemporalSeq *seq, TimestampSet *ts)
  * Restriction to a period.
  */
 TemporalSeq *
-temporalseq_at_period(TemporalSeq *seq, Period *period)
+temporalseq_at_period(TemporalSeq *seq, Period *p)
 {
 	/* Bounding box test */
-	if (!overlaps_period_period_internal(&seq->period, period))
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return NULL;
 
 	/* Instantaneous sequence */
@@ -3092,7 +3096,7 @@ temporalseq_at_period(TemporalSeq *seq, Period *period)
 		return temporalseq_copy(seq);
 
 	/* General case */
-	Period *inter = intersection_period_period_internal(&seq->period, period);
+	Period *inter = intersection_period_period_internal(&seq->period, p);
 	/* Intersecting period is instantaneous */
 	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
 	{
@@ -3148,10 +3152,10 @@ temporalseq_at_period(TemporalSeq *seq, Period *period)
  * Restriction to the complement of a period.
  */
 TemporalS *
-temporalseq_minus_period(TemporalSeq *seq, Period *period)
+temporalseq_minus_period(TemporalSeq *seq, Period *p)
 {
 	/* Bounding box test */
-	if (!overlaps_period_period_internal(&seq->period, period))
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return temporals_from_temporalseqarr(&seq, 1, false);
 	
 	/* Instantaneous sequence */
@@ -3159,7 +3163,7 @@ temporalseq_minus_period(TemporalSeq *seq, Period *period)
 		return NULL;
 
 	/* General case */
-	PeriodSet *ps = minus_period_period_internal(&seq->period, period);
+	PeriodSet *ps = minus_period_period_internal(&seq->period, p);
 	if (ps == NULL)
 		return NULL;
 	TemporalS *result = temporalseq_at_periodset(seq, ps);
@@ -3186,6 +3190,12 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
+		if (!contains_periodset_timestamp_internal(ps, inst->t))
+		{
+			*count = 0;
+			return NULL;
+		}
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
 		*count = 1;
@@ -3193,10 +3203,8 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 	}
 
 	/* General case */
-	int n = periodset_find_timestamp(ps, seq->period.lower);
-	/* If the periodset does not contain the lower bound of the sequence */
-	if (n == -1)
-		n = 0;
+	int n;
+	periodset_find_timestamp(ps, seq->period.lower, &n);
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (ps->count - n));
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
@@ -3290,9 +3298,9 @@ temporalseq_intersects_timestampset(TemporalSeq *seq, TimestampSet *ts)
 /* Does the temporal value intersects the period? */
 
 bool
-temporalseq_intersects_period(TemporalSeq *seq, Period *period)
+temporalseq_intersects_period(TemporalSeq *seq, Period *p)
 {
-	return overlaps_period_period_internal(&seq->period, period);
+	return overlaps_period_period_internal(&seq->period, p);
 }
 
 /* Does the temporal value intersects the period set? */

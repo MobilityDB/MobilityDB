@@ -157,8 +157,8 @@ contains_period_period(PG_FUNCTION_ARGS)
 bool
 contains_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 {
-	int n = periodset_find_timestamp(ps, t);
-	if (n == -1)
+	int n;
+	if (!periodset_find_timestamp(ps, t, &n))
 		return false;
 	return true;
 }
@@ -222,8 +222,8 @@ contains_periodset_timestampset(PG_FUNCTION_ARGS)
 bool
 contains_periodset_period_internal(PeriodSet *ps, Period *p)
 {
-	int n = periodset_find_timestamp(ps, p->lower);
-	if (n == -1)
+	int n;
+	if (!periodset_find_timestamp(ps, p->lower, &n))
 		return false;
 	Period *p1 = periodset_per_n(ps, n);
 	return contains_period_period_internal(p1, p);
@@ -265,15 +265,15 @@ bool
 contains_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	/* Test whether the timespan of the two PeriodSet values overlap */
-	Period *ts1 = periodset_bbox(ps1);
-	Period *ts2 = periodset_bbox(ps2);
-	if (!contains_period_period_internal(ts1, ts2))
+	Period *p1 = periodset_bbox(ps1);
+	Period *p2 = periodset_bbox(ps2);
+	if (!contains_period_period_internal(p1, p2))
 		return false;
 
 	for (int i = 0; i < ps2->count; i++)
 	{
-		Period *p = periodset_per_n(ps2, i);
-		if (!contains_periodset_period_internal(ps1, p))
+		p2 = periodset_per_n(ps2, i);
+		if (!contains_periodset_period_internal(ps1, p2))
 			return false;
 	}
 	return true;
@@ -608,18 +608,17 @@ PG_FUNCTION_INFO_V1(overlaps_period_periodset);
 bool
 overlaps_period_periodset_internal(Period *p, PeriodSet *ps)
 {
-	/* Binary search of lower and upper bounds of period */
-	int n1 = periodset_find_timestamp(ps, p->lower);
-	int n2 = periodset_find_timestamp(ps, p->upper);
-	/* It may be the case the period n1/n2 has non inclusive upper/lower 
-	   bound  equal to p->lower/p->upper */
-	if ((n1 != -1 && p->lower_inc) || 
-		(n2 != -1 && p->upper_inc))
-		return true;
-	
-	for (int i = 0; i < ps->count; i++)
+	/* Does the period and the timespan of the period set overlap */
+	Period *p1 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(p, p1))
+		return false;
+
+	/* Binary search of lower bound of period */
+	int n;
+	periodset_find_timestamp(ps, p->lower, &n);
+	for (int i = n; i < ps->count; i++)
 	{
-		Period *p1 = periodset_per_n(ps, i);
+		p1 = periodset_per_n(ps, i);
 		if (overlaps_period_period_internal(p1, p))
 			return true;
 		if (timestamp_cmp_internal(p->upper, p1->upper) < 0)
@@ -668,16 +667,16 @@ bool
 overlaps_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	/* Test whether the timespan of the two PeriodSet values overlap */
-	Period *ts1 = periodset_bbox(ps1);
-	Period *ts2 = periodset_bbox(ps2);
-	if (!overlaps_period_period_internal(ts1, ts2))
+	Period *p1 = periodset_bbox(ps1);
+	Period *p2 = periodset_bbox(ps2);
+	if (!overlaps_period_period_internal(p1, p2))
 		return false;
 	
 	int i = 0, j = 0;
 	while (i < ps1->count && j < ps2->count)
 	{
-		Period *p1 = periodset_per_n(ps1, i);
-		Period *p2 = periodset_per_n(ps2, j);
+		p1 = periodset_per_n(ps1, i);
+		p2 = periodset_per_n(ps2, j);
 		if (overlaps_period_period_internal(p1, p2))
 			return true;
 		if (timestamp_cmp_internal(p1->upper, p2->upper) == 0)
@@ -2510,97 +2509,71 @@ union_period_period(PG_FUNCTION_ARGS)
 PeriodSet *
 union_period_periodset_internal(Period *p, PeriodSet *ps)
 {
-	/* If the period set does not overlap with the period */
-	if (!overlaps_period_periodset_internal(p, ps))
-	{
-		Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
-		int k = 0;
-		bool found = false;
-		for (int i = 0; i < ps->count; i++)
-		{
-			Period *p1 = periodset_per_n(ps, i);
-			if (!found && before_period_period_internal(p, p1))
-			{
-				periods[k++] = p;
-				found = true;
-			}
-			periods[k++] = p1;
-		}
-		PeriodSet *result = periodset_from_periodarr_internal(periods, k, true);
-		pfree(periods);
-		return result;		
-	}
-	
-	/* If the period set is contained in the period */
-	if (contained_periodset_period_internal(ps, p))
-		return periodset_from_periodarr_internal(&p, 1, false);
-	
-	/* Binary search of lower and upper bounds of period */
-	int n1 = periodset_find_timestamp(ps, p->lower);
-	int n2 = periodset_find_timestamp(ps, p->upper);
+	Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
+    int i = 0, j, k = 0;
 
-	/* If lower and/or upper are before/after the period set or in a gap, 
-	   find n1 and/or n2 which are, respectively, the first/last overlapping 
-	   periods 
-		        |-----------------|
-		|------| |------| |------| |------| 
-	*/
-	Period *p1, *p2, p3;
-	if (n1 == -1)
-	{
-		n1 = 0;
-		p1 = periodset_per_n(ps, 0);
-		while (!overlaps_period_period_internal(p, p1))
-			p1 = periodset_per_n(ps, ++n1);
-	}
-	else
-		p1 = periodset_per_n(ps, n1);
-	if (n2 == -1)
-	{
-		n2 = ps->count-1;
-		p2 = periodset_per_n(ps, ps->count-1);
-		while (!overlaps_period_period_internal(p, p2))
-			p2 = periodset_per_n(ps, --n2);
-	}
-	else
-		p2 = periodset_per_n(ps, n2);
-		
-	/* Compute the union of the period with the overlapping periods */
-	TimestampTz lower, upper; 
-	bool lower_inc, upper_inc; 
-	if (period_cmp_bounds(p->lower, p1->lower, true, true, 
-		p->lower_inc, p1->lower_inc) < 0)
-	{
-		lower = p->lower;
-		lower_inc = p->lower_inc;
-	}
-	else
-	{
-		lower = p1->lower;
-		lower_inc = p1->lower_inc;
-	}
-	if (period_cmp_bounds(p->upper, p1->upper, false, false, 
-		p->upper_inc, p1->upper_inc) > 0)
-	{
-		upper = p->upper;
-		upper_inc = p->lower_inc;
-	}
-	else
-	{
-		upper = p1->upper;
-		upper_inc = p1->upper_inc;
-	}
-	period_set(&p3, lower, upper, lower_inc, upper_inc);
-	
-	Period **periods = palloc(sizeof(Period *) * (ps->count - n2 + n1));
-	/* Copy the first n1-1 periods */
-	int k = 0;
-	for (int i = 0; i < n1; i++)
+    /* Copy the periods of ps that are before p, if any */
+	Period *p1, *p2;
+   	for (i = 0; i < ps->count; i++)
+    {
+		p1 = periodset_per_n(ps, i);
+		if (before_period_period_internal(p1, p))
+			periods[k++] = p1;
+		else
+			break;
+    }
+
+    j = i;
+    /* Copy p when disjoint of ps */
+    if (i == ps->count)
+    	periods[k++] = p;
+    else if (before_period_period_internal(p, p1))
+        periods[k++] = p;
+    else
+    {
+        /* Find the periods of ps that overlap with p */
+        p2 = p1; 
+        for (j = i+1; j < ps->count; j++)
+        {
+			Period *p3 = periodset_per_n(ps, j);
+			if (!overlaps_period_period_internal(p3, p))
+	            break;
+			p2 = p3;
+        }
+        /* Compute the union of p with the overlapping periods */
+        TimestampTz lower, upper; 
+        bool lower_inc, upper_inc; 
+        if (period_cmp_bounds(p->lower, p1->lower, true, true, 
+            p->lower_inc, p1->lower_inc) < 0)
+        {
+            lower = p->lower;
+            lower_inc = p->lower_inc;
+        }
+        else
+        {
+            lower = p1->lower;
+            lower_inc = p1->lower_inc;
+        }
+        if (period_cmp_bounds(p->upper, p2->upper, false, false, 
+            p->upper_inc, p2->upper_inc) > 0)
+        {
+            upper = p->upper;
+            upper_inc = p->upper_inc;
+        }
+        else
+        {
+            upper = p2->upper;
+            upper_inc = p2->upper_inc;
+        }
+        Period p4;
+        period_set(&p4, lower, upper, lower_inc, upper_inc);
+        periods[k++] = &p4;
+   }
+
+    /* Copy the periods of ps that are after p, if any */
+   	for (i = j; i < ps->count; i++)
 		periods[k++] = periodset_per_n(ps, i);
-	periods[k++] = &p3;
-	/* Copy the last n2+1 periods */
-	for (int i = n2+1; i < ps->count; i++)
-		periods[k++] = periodset_per_n(ps, i);
+
 	PeriodSet *result = periodset_from_periodarr_internal(periods, k, true);
 	pfree(periods);
 	return result;
@@ -2945,6 +2918,11 @@ intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 TimestampSet *
 intersection_timestampset_period_internal(TimestampSet *ts, Period *p)
 {
+	/* Test whether the timespan of the two time values overlap */
+	Period *p1 = timestampset_bbox(ts);
+	if (!overlaps_period_period_internal(p1, p))
+		return NULL;
+	
 	TimestampTz *times = palloc(sizeof(Timestamp) * ts->count);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
@@ -3091,6 +3069,7 @@ intersection_period_period_internal(Period *p1, Period *p2)
 	bool result_lower_inc;
 	bool result_upper_inc;
 
+	/* Test whether the timespan of the two time values overlap */
 	if (!overlaps_period_period_internal(p1, p2))
 		return NULL;
 
@@ -3147,11 +3126,9 @@ intersection_period_periodset_internal(Period *p, PeriodSet *ps)
 	if (contained_periodset_period_internal(ps, p))
 		return periodset_copy(ps);
 	
-		/* General case */
-	int n = periodset_find_timestamp(ps, p->lower);
-	/* If the periodset does not contain the lower bound of the period */
-	if (n == -1)
-		n = 0;
+	/* General case */
+	int n;
+	periodset_find_timestamp(ps, p->lower, &n);
 	Period **periods = palloc(sizeof(Period *) * (ps->count - n));
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
@@ -3246,13 +3223,18 @@ intersection_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	if (!overlaps_period_period_internal(p1, p2))
 		return NULL;
 
-	Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count));
-	int i = 0, j = 0, k = 0;
+	Period *inter = intersection_period_period_internal(p1, p2);
+	int n1, n2;
+	periodset_find_timestamp(ps1, inter->lower, &n1);
+	periodset_find_timestamp(ps2, inter->lower, &n2);
+	pfree(inter);
+	Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count - n1 - n2));
+	int i = n1, j = n2, k = 0;
 	while (i < ps1->count && j < ps2->count)
 	{
-		Period *p1 = periodset_per_n(ps1, i);
-		Period *p2 = periodset_per_n(ps2, j);
-		Period *inter = intersection_period_period_internal(p1, p2);
+		p1 = periodset_per_n(ps1, i);
+		p2 = periodset_per_n(ps2, j);
+		inter = intersection_period_period_internal(p1, p2);
 		if (inter != NULL)
 			periods[k++] = inter;
 		int cmp = timestamp_cmp_internal(p1->upper, p2->upper);

@@ -43,20 +43,19 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
  * period_deserialize: deconstruct a period value
  */
 void
-period_deserialize(Period *period,
-				  PeriodBound *lower, PeriodBound *upper)
+period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
 {
 	if (lower) 
 	{
-		lower->val = period->lower;
-		lower->inclusive = period->lower_inc;
+		lower->val = p->lower;
+		lower->inclusive = p->lower_inc;
 		lower->lower = true;
 	}
 
 	if (upper) 
 	{
-		upper->val = period->upper;
-		upper->inclusive = period->upper_inc;
+		upper->val = p->upper;
+		upper->inclusive = p->upper_inc;
 		upper->lower = false;
 	}
 }
@@ -200,10 +199,10 @@ period_cmp_upper(const void** a, const void** b)
  */
  
 void
-period_set(Period *period, TimestampTz lower, TimestampTz upper, 
+period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc)
 {
-	int		cmp = timestamp_cmp_internal(lower, upper);	
+	int	cmp = timestamp_cmp_internal(lower, upper);	
 
 	/* error check: if lower bound value is above upper, it's wrong */
 	if (cmp > 0)
@@ -216,10 +215,10 @@ period_set(Period *period, TimestampTz lower, TimestampTz upper,
 			errmsg("Period cannot be empty")));
 
 	/* Now fill in the period */
-	period->lower = lower;
-	period->upper = upper;
-	period->lower_inc = lower_inc;
-	period->upper_inc = upper_inc;
+	p->lower = lower;
+	p->upper = upper;
+	p->lower_inc = lower_inc;
+	p->upper_inc = upper_inc;
 }
 
 Period *
@@ -234,12 +233,10 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc
 /* Copy a period */
 
 Period *
-period_copy(Period *period)
+period_copy(Period *p)
 {
-	Period		   *result = (Period *) palloc(sizeof(Period));
-
-	memcpy((char *) result, (char *) period, sizeof(Period));
-
+	Period *result = (Period *) palloc(sizeof(Period));
+	memcpy((char *) result, (char *) p, sizeof(Period));
 	return result;
 }
 
@@ -257,20 +254,20 @@ period_duration_secs(TimestampTz v1, TimestampTz v2)
 /* Duration of the period as a double */
 
 double
-period_duration_time(Period *period)
+period_duration_time(Period *p)
 {
-	double lower = (double)(period->lower);
-	double upper = (double)(period->upper);
+	double lower = (double)(p->lower);
+	double upper = (double)(p->upper);
 	return (upper - lower);
 }
 
 /* Duration of the period as an interval */
 
 Interval *
-period_duration_internal(Period *period)
+period_duration_internal(Period *p)
 {
-	return DatumGetIntervalP(call_function2(timestamp_mi, period->upper, 
-		period->lower));
+	return DatumGetIntervalP(call_function2(timestamp_mi, p->upper, 
+		p->lower));
 }
 
 /*
@@ -360,11 +357,11 @@ static void unquote(char *str)
 }
 
 char*
-period_to_string(Period *period) 
+period_to_string(Period *p) 
 {
-	char *lower = call_output(TIMESTAMPTZOID, period->lower);
-	char *upper = call_output(TIMESTAMPTZOID, period->upper);
-	char *result = period_deparse(period->lower_inc, period->upper_inc, lower, upper);
+	char *lower = call_output(TIMESTAMPTZOID, p->lower);
+	char *upper = call_output(TIMESTAMPTZOID, p->upper);
+	char *result = period_deparse(p->lower_inc, p->upper_inc, lower, upper);
 	unquote(result);
 	pfree(lower); pfree(upper);
 	return result;
@@ -377,21 +374,21 @@ PG_FUNCTION_INFO_V1(period_out);
 PGDLLEXPORT Datum
 period_out(PG_FUNCTION_ARGS) 
 {
-	Period *period = PG_GETARG_PERIOD(0);
-	PG_RETURN_CSTRING(period_to_string(period));
+	Period *p = PG_GETARG_PERIOD(0);
+	PG_RETURN_CSTRING(period_to_string(p));
 }
 
 /* Send function */
 
 void
-period_send_internal(Period *period, StringInfo buf)
+period_send_internal(Period *p, StringInfo buf)
 {
-	bytea *lower = call_send(TIMESTAMPTZOID, period->lower);
-	bytea *upper = call_send(TIMESTAMPTZOID, period->upper);
+	bytea *lower = call_send(TIMESTAMPTZOID, p->lower);
+	bytea *upper = call_send(TIMESTAMPTZOID, p->upper);
 	pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
 	pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-	pq_sendbyte(buf, period->lower_inc);
-	pq_sendbyte(buf, period->upper_inc);
+	pq_sendbyte(buf, p->lower_inc);
+	pq_sendbyte(buf, p->upper_inc);
 	pfree(lower);
 	pfree(upper);
 }
@@ -401,10 +398,10 @@ PG_FUNCTION_INFO_V1(period_send);
 PGDLLEXPORT Datum
 period_send(PG_FUNCTION_ARGS) 
 {
-	Period *period = PG_GETARG_PERIOD(0);
+	Period *p = PG_GETARG_PERIOD(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	period_send_internal(period, &buf);
+	period_send_internal(p, &buf);
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 

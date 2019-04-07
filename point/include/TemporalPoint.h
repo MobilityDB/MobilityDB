@@ -390,7 +390,7 @@ extern void timestampset_to_gbox_internal(GBOX *box, TimestampSet *ps);
 extern void period_to_gbox_internal(GBOX *box, Period *p);
 extern void periodset_to_gbox_internal(GBOX *box, PeriodSet *ps);
 extern bool geo_timestamp_to_gbox_internal(GBOX *box, GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *period);
+extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *p);
 
 /*****************************************************************************/
 

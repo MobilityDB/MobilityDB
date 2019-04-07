@@ -272,10 +272,10 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	}
 	else if (subtype == type_oid(T_PERIOD))
 	{
-		Period *period = PG_GETARG_PERIOD(1);
-		if (period == NULL)
+		Period *p = PG_GETARG_PERIOD(1);
+		if (p == NULL)
 			PG_RETURN_BOOL(false);
-		period_to_gbox_internal(&query, period);
+		period_to_gbox_internal(&query, p);
 	}
 	else if (subtype == type_oid(T_PERIODSET))
 	{

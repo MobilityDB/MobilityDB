@@ -1958,24 +1958,24 @@ temporals_minus_timestampset(TemporalS *ts1, TimestampSet *ts2)
  * Restriction to a period.
  */
 TemporalS *
-temporals_at_period(TemporalS *ts, Period *period)
+temporals_at_period(TemporalS *ts, Period *p)
 {
 	/* Bounding box test */
-	Period p;
-	temporals_timespan(&p, ts);
-	if (!overlaps_period_period_internal(&p, period))
+	Period p1;
+	temporals_timespan(&p1, ts);
+	if (!overlaps_period_period_internal(&p1, p))
 		return NULL;
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
-		TemporalSeq *seq = temporalseq_at_period(temporals_seq_n(ts, 0), period);
+		TemporalSeq *seq = temporalseq_at_period(temporals_seq_n(ts, 0), p);
 		return temporals_from_temporalseqarr(&seq, 1, false);
 	}
 
 	/* General case */
 	int n;
-	temporals_find_timestamp(ts, period->lower, &n);
+	temporals_find_timestamp(ts, p->lower, &n);
 	/* We are sure that n < ts->count because of the bounding period test above */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count - n));
 	TemporalSeq *tofree[2];
@@ -1983,15 +1983,15 @@ temporals_at_period(TemporalS *ts, Period *period)
 	for (int i = n; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		if (contains_period_period_internal(period, &seq->period))
+		if (contains_period_period_internal(p, &seq->period))
 				sequences[k++] = seq;
-		else if (overlaps_period_period_internal(period, &seq->period))
+		else if (overlaps_period_period_internal(p, &seq->period))
 		{
-			TemporalSeq *newseq = temporalseq_at_period(seq, period);
+			TemporalSeq *newseq = temporalseq_at_period(seq, p);
 			sequences[k++] = tofree[l++] = newseq;
 		}
-		if (timestamp_cmp_internal(period->upper, seq->period.upper) < 0 ||
-			(timestamp_cmp_internal(period->upper, seq->period.upper) == 0 &&
+		if (timestamp_cmp_internal(p->upper, seq->period.upper) < 0 ||
+			(timestamp_cmp_internal(p->upper, seq->period.upper) == 0 &&
 			 seq->period.upper_inc))
 			break;
 	}
@@ -2012,21 +2012,21 @@ temporals_at_period(TemporalS *ts, Period *period)
  * Restriction to the complement of a period.
  */
 TemporalS *
-temporals_minus_period(TemporalS *ts, Period *period)
+temporals_minus_period(TemporalS *ts, Period *p)
 {
 	/* Bounding box test */
 	Period p1;
 	temporals_timespan(&p1, ts);
-	if (!overlaps_period_period_internal(&p1, period))
+	if (!overlaps_period_period_internal(&p1, p))
 		return temporals_copy(ts);
 
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return temporalseq_minus_period(temporals_seq_n(ts, 0), period);
+		return temporalseq_minus_period(temporals_seq_n(ts, 0), p);
 
 	/* General case */
 	PeriodSet *ps = temporals_get_time(ts);
-	PeriodSet *resultps = minus_periodset_period_internal(ps, period);
+	PeriodSet *resultps = minus_periodset_period_internal(ps, p);
 	TemporalS *result = NULL;
 	if (resultps != NULL)
 		result = temporals_at_periodset(ts, resultps);
@@ -2039,55 +2039,6 @@ temporals_minus_period(TemporalS *ts, Period *period)
 /*
  * Restriction to a periodset.
  */
-/*
-TemporalS *
-temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
-{
-	/ * Bounding box test * /
-	Period p1;
-	temporals_timespan(&p1, ts);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
-		return NULL;
-
-	/ * Singleton sequence set * /
-	if (ts->count == 1)
-		return temporalseq_at_periodset(temporals_seq_n(ts, 0), ps);
-
-	/ * General case * /
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_at_periodset1(seq, ps, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
-	}
-	if (totalseqs == 0)
-	{
-		pfree(sequences); pfree(countseqs);
-		return NULL;
-	}
-
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs); pfree(sequences); pfree(countseqs); 
-	return result;
-}
-*/
 TemporalS *
 temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 {
@@ -2103,8 +2054,12 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 		return temporalseq_at_periodset(temporals_seq_n(ts, 0), ps);
 
 	/* General case */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + ps->count));
-	int i = 0, j = 0, k = 0;
+	TimestampTz t = Max(p1.lower, p2->lower);
+	int n1, n2;
+	temporals_find_timestamp(ts, t, &n1);
+	periodset_find_timestamp(ps, t, &n2);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + ps->count - n1 - n2));
+	int i = n1, j = n2, k = 0;
 	while (i < ts->count && j < ps->count)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
@@ -2192,20 +2147,20 @@ temporals_intersects_timestampset(TemporalS *ts, TimestampSet *ts1)
 /* Does a TemporalS intersects a period? */
 
 bool
-temporals_intersects_period(TemporalS *ts, Period *period)
+temporals_intersects_period(TemporalS *ts, Period *p)
 {
 	/* Binary search of lower and upper bounds of period */
 	int n1, n2;
-	if (temporals_find_timestamp(ts, period->lower, &n1) || 
-		temporals_find_timestamp(ts, period->upper, &n2))
+	if (temporals_find_timestamp(ts, p->lower, &n1) || 
+		temporals_find_timestamp(ts, p->upper, &n2))
 		return true;
 	
 	for (int i = n1; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		if (overlaps_period_period_internal(&seq->period, period))
+		if (overlaps_period_period_internal(&seq->period, p))
 			return true;
-		if (timestamp_cmp_internal(period->upper, seq->period.upper) < 0)
+		if (timestamp_cmp_internal(p->upper, seq->period.upper) < 0)
 			break;
 	}
 	return false;
@@ -2277,48 +2232,6 @@ temporals_intersects_temporals(TemporalS *ts1, TemporalS *ts2)
 			j++;
 	}
 	return false;
-}
-
-/* Intersection of the timespan of two TemporalS */
-
-PeriodSet *
-temporals_intersection_temporals(TemporalS *ts1, TemporalS *ts2)
-{
-	/* Test whether the bounding timespan of the two temporal values overlap */
-	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
-	if (!overlaps_period_period_internal(&p1, &p2))
-		return NULL;
-
-	Period **periods = palloc(sizeof(Period *) * (ts1->count + ts2->count));
-	int i = 0, j = 0, k = 0;
-	while (i < ts1->count && j < ts2->count)
-	{
-		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-		Period *inter = intersection_period_period_internal(&seq1->period, &seq2->period);
-		if (inter != NULL)
-			periods[k++] = inter;
-		if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0)
-		{
-			i++; j++;
-		}
-		else if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) < 0)
-			i++;
-		else 
-			j++;
-	}
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-	PeriodSet *result = periodset_from_periodarr_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
-		pfree(periods[i]);
-	pfree(periods);
-	return result;
 }
 
 /*****************************************************************************
