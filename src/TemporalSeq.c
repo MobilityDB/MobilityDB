@@ -2978,17 +2978,14 @@ temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts)
 	}
 
 	/* General case */
-	Period *inter = intersection_period_period_internal(&seq->period, p);
-	int n = timestampset_find_timestamp(ts, inter->lower);
-	/* If the lower bound of the intersecting period is not in ts */
-	if (n == -1)
-		n = 0;
-	pfree(inter);
+	TimestampTz t = Max(seq->period.lower, p->lower);
+	int n;
+	timestampset_find_timestamp(ts, t, &n);
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (ts->count - n));
 	int k = 0;
 	for (int i = n; i < ts->count; i++) 
 	{
-		TimestampTz t = timestampset_time_n(ts, i);
+		t = timestampset_time_n(ts, i);
 		inst = temporalseq_at_timestamp(seq, t);
 		if (inst != NULL)
 			instants[k++] = inst;

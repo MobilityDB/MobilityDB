@@ -115,7 +115,7 @@ timestampset_copy(TimestampSet *ts)
 }
 
 /* Binary search of a timestamptz in a TimestampSet */
-
+/* OLD VERSION
 int
 timestampset_find_timestamp(TimestampSet *ts, TimestampTz t) 
 {
@@ -135,6 +135,48 @@ timestampset_find_timestamp(TimestampSet *ts, TimestampTz t)
 		middle = (first + last)/2;
 	}
 	return -1;
+}
+*/
+
+/*
+ * Binary search of a timestamptz in a timestampset.
+ * If the timestamp is found, the position of the period is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * timestamps or after. For example, given 3 timestamps, the result of the 
+ * function if the timestamp is not found will be as follows: 
+ *			0   	1		2
+ *			|		|		|
+ * 1)	t^ 							=> result = 0
+ * 2)			t^ 					=> result = 1
+ * 3)					t^ 			=> result = 2
+ * 4)							t^	=> result = 3
+ */
+
+bool 
+timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *pos) 
+{
+	int first = 0;
+	int last = ts->count - 1;
+	int middle = 0; /* make compiler quiet */
+	while (first <= last) 
+	{
+		middle = (first + last)/2;
+		TimestampTz t1 = timestampset_time_n(ts, middle);
+		int cmp = timestamp_cmp_internal(t, t1);
+		if (cmp == 0)
+		{
+			*pos = middle;
+			return true;
+		}
+		if (cmp < 0)
+			last = middle - 1;
+		else
+			first = middle + 1;
+	}
+	if (middle == ts->count)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /*****************************************************************************
