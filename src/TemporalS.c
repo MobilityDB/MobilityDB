@@ -1816,24 +1816,27 @@ temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 		return temporalseq_minus_timestamp(temporals_seq_n(ts, 0), t);
 
 	/* General case */
-	int n;
-	if (!temporals_find_timestamp(ts, t, &n))
-		return temporals_copy(ts);
-
-	int k = 0;
+	/* At most one composing sequence can be split into two */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + 1));
-	for (int i = 0; i < n; i++)
-		sequences[k++] = temporals_seq_n(ts, i);
-	TemporalS *minus = temporalseq_minus_timestamp(temporals_seq_n(ts, n), t);
-	/* temporals_seq_n(ts, n) may be equal to [value@t] */
-	if (minus != NULL)
-		for (int i = 0; i < minus->count; i++)
-			sequences[k++] = temporals_seq_n(minus, i);
-	for (int i = n+1; i < ts->count; i++)
-		sequences[k++] = temporals_seq_n(ts, i);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		int count = temporalseq_minus_timestamp1(&sequences[k], seq, t);
+		k += count;
+		// if (timestamp_cmp_internal(t, seq->period.upper) < 0)
+		// 	break;
+	}
+	if (k == 0)
+	{
+		pfree(sequences);
+		return NULL;
+	}
+
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
-	if (minus != NULL)
-		pfree(minus);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -1921,36 +1924,25 @@ temporals_minus_timestampset(TemporalS *ts1, TimestampSet *ts2)
 		return temporalseq_minus_timestampset(temporals_seq_n(ts1, 0), ts2);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalS *) * ts1->count);
-	int *countseqs = palloc0(sizeof(int) * ts1->count);
-	int totalseqs = 0;
-	for (int i = 0; i < ts1->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts1, i);
-		sequences[i] = temporalseq_minus_timestampset1(seq, ts2, &countseqs[i]);
-		totalseqs += countseqs[i];
-	}
-	if (totalseqs == 0)
-	{
-		pfree(sequences); pfree(countseqs);
-		return NULL;
-	}
-
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
+	/* Each timestamp will split at most one composing sequence into two */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts1->count + ts2->count + 1));
 	int k = 0;
 	for (int i = 0; i < ts1->count; i++)
 	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
+		TemporalSeq *seq = temporals_seq_n(ts1, i);
+		int count = temporalseq_minus_timestampset1(&sequences[k], seq, ts2);
+		k += count;
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs); 
+	if (k == 0)
+	{
+		pfree(sequences);
+		return NULL;
+	}
+
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
 	return result;
 }
 
@@ -2039,6 +2031,7 @@ temporals_minus_period(TemporalS *ts, Period *p)
 /*
  * Restriction to a periodset.
  */
+
 TemporalS *
 temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 {
@@ -2090,10 +2083,36 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 	return result;
 }
 
-
 /*
  * Restriction to the complement of a period set.
  */
+
+/*
+TemporalS *
+temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
+{
+	/ * Bounding box test * /
+	Period p1;
+	temporals_timespan(&p1, ts);
+	Period *p2 = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&p1, p2))
+		return temporals_copy(ts);
+
+	/ * Singleton sequence set * /
+	if (ts->count == 1)
+		return temporalseq_minus_periodset(temporals_seq_n(ts, 0), ps);
+
+	/ * General case * /
+	PeriodSet *ps1 = temporals_get_time(ts);
+	PeriodSet *ps2 = minus_periodset_periodset_internal(ps1, ps);
+	TemporalS *result = NULL;
+	if (ps2 != NULL)
+		result = temporals_at_periodset(ts, ps2);	
+	pfree(ps1); pfree(ps2);
+	return result;
+}
+*/
+
 TemporalS *
 temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 {
@@ -2109,12 +2128,52 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 		return temporalseq_minus_periodset(temporals_seq_n(ts, 0), ps);
 
 	/* General case */
-	PeriodSet *ps1 = temporals_get_time(ts);
-	PeriodSet *ps2 = minus_periodset_periodset_internal(ps1, ps);
-	TemporalS *result = NULL;
-	if (ps2 != NULL)
-		result = temporals_at_periodset(ts, ps2);	
-	pfree(ps1); pfree(ps2);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + ps->count));
+	int i = 0, j = 0, k = 0;
+	while (i < ts->count && j < ps->count)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		p2 = periodset_per_n(ps, j);
+		/* The sequence and the period do not overlap, copy the sequence */
+		if (!overlaps_period_period_internal(&seq->period, p2))
+		{
+			sequences[k++] = temporalseq_copy(seq);
+			i++;
+		}
+		else
+		{
+			/* Find all periods in ps that overlap with seq
+			                  i
+				|------------------------|  
+				     |-----|  |-----|      |---|
+					    j                    l
+			*/
+			int l;
+			for (l = j; l < ps->count; l++)
+			{
+				Period *p3 = periodset_per_n(ps, l);
+				if (!overlaps_period_period_internal(&seq->period, p3))
+					break;
+			}
+			int count = l - j;
+			/* Compute the difference of the overlapping periods */
+			int countstep = temporalseq_minus_periodset1(&sequences[k], seq,
+				ps, j, count);
+			k += countstep;
+			i++;
+			j = l;
+		}
+	}
+	if (k == 0)
+	{
+		pfree(sequences);
+		return NULL;
+	}
+
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 

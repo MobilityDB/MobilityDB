@@ -922,16 +922,20 @@ extern TemporalInst *temporalseq_at_timestamp1(TemporalInst *inst1,
 	TemporalInst *inst2, TimestampTz t);
 extern TemporalInst *temporalseq_at_timestamp(TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_value_at_timestamp(TemporalSeq *seq, TimestampTz t, Datum *result);
+extern int temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq, 
+	TimestampTz t);
 extern TemporalS *temporalseq_minus_timestamp(TemporalSeq *seq, TimestampTz t);
 extern TemporalI *temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts);
-extern TemporalSeq **temporalseq_minus_timestampset1(TemporalSeq *seq, TimestampSet *ts, 
-	int *count);
+extern int temporalseq_minus_timestampset1(TemporalSeq **result, TemporalSeq *seq, 
+	TimestampSet *ts);
 extern TemporalS *temporalseq_minus_timestampset(TemporalSeq *seq, TimestampSet *ts);
 extern TemporalSeq *temporalseq_at_period(TemporalSeq *seq, Period *p);
 extern TemporalS *temporalseq_minus_period(TemporalSeq *seq, Period *p);
 extern TemporalSeq **temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, 
 	int *count);
 extern TemporalS *temporalseq_at_periodset(TemporalSeq *seq, PeriodSet *ps);
+extern int temporalseq_minus_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps, 
+	int from, int count);
 extern TemporalS *temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps);
 extern bool temporalseq_intersects_timestamp(TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_intersects_timestampset(TemporalSeq *seq, TimestampSet *t);
