@@ -98,10 +98,10 @@ extern Datum period_out(PG_FUNCTION_ARGS);
 extern Datum period_recv(PG_FUNCTION_ARGS);
 extern Datum period_send(PG_FUNCTION_ARGS);
 
-void period_send_internal(Period *period, StringInfo buf);
+void period_send_internal(Period *p, StringInfo buf);
 Period *period_recv_internal(StringInfo buf);
 
-char *period_to_string(Period *period);
+char *period_to_string(Period *p);
 
 /* Constructors */
 extern Datum period_constructor2(PG_FUNCTION_ARGS);
@@ -150,7 +150,7 @@ extern bool period_gt_internal(Period *p1, Period *p2);
 
 /* Assorted support functions */
 
-extern void period_deserialize(Period *period, PeriodBound *lower, PeriodBound *upper);
+extern void period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper);
 extern bool periodarr_find_timestamp(Period **array, int from, int count,
 	TimestampTz t, int *pos, bool ignorebounds);
 extern int period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, 
@@ -159,12 +159,12 @@ extern bool period_bounds_adjacent(TimestampTz t1, TimestampTz t2,
 	bool inclusive1, bool inclusive2);
 extern Period *period_make(TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc);
-extern void period_set(Period *period, TimestampTz lower, TimestampTz upper, 
+extern void period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc);
-extern Period *period_copy(Period *period);
+extern Period *period_copy(Period *p);
 extern float8 period_duration_secs(TimestampTz t1, TimestampTz t2);
-extern double period_duration_time(Period *period);
-extern Interval *period_duration_internal(Period *period);
+extern double period_duration_time(Period *p);
+extern Interval *period_duration_internal(Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 	
 /* Used in for GiST and SP-GiST */
@@ -243,7 +243,7 @@ extern Period *periodset_bbox(PeriodSet *ps);
 extern PeriodSet *periodset_from_periodarr_internal(Period **periods, 
 	int count, bool normalize);
 extern PeriodSet *periodset_copy(PeriodSet *ps);
-extern int periodset_find_timestamp(PeriodSet *ps, TimestampTz t);
+extern bool periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos);
 extern double periodset_duration_time(PeriodSet *ps);
 
 /* Input/output functions */
