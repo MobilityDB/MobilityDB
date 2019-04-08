@@ -591,7 +591,7 @@ index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
 		case RTContainsStrategyNumber:
 			return contains_period_period_internal(key, query);
 		case RTContainedByStrategyNumber:
-			return contained_period_period_internal(key, query);
+			return contains_period_period_internal(query, key);
 		case RTSameStrategyNumber:
 			return period_eq_internal(key, query);
 		case RTBeforeStrategyNumber:

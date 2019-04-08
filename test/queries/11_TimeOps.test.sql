@@ -122,6 +122,17 @@ SELECT period '[2000-01-01, 2000-01-03]' - period '[2000-01-01, 2000-01-03]';
 SELECT period '[2000-01-01, 2000-01-03]' - period '(2000-01-03, 2000-01-05]';
 SELECT period '[2000-01-01, 2000-01-03]' - periodset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}';
 
+select period '[2000-01-02, 2000-01-04]' - timestamptz '2000-01-01';
+select period '[2000-01-02, 2000-01-04]' - timestamptz '2000-01-02';
+select period '[2000-01-02, 2000-01-04]' - timestamptz '2000-01-03';
+select period '[2000-01-02, 2000-01-04]' - timestamptz '2000-01-04';
+select period '[2000-01-02, 2000-01-04]' - timestamptz '2000-01-05';
+select period '(2000-01-02, 2000-01-04)' - timestamptz '2000-01-01';
+select period '(2000-01-02, 2000-01-04)' - timestamptz '2000-01-02';
+select period '(2000-01-02, 2000-01-04)' - timestamptz '2000-01-03';
+select period '(2000-01-02, 2000-01-04)' - timestamptz '2000-01-04';
+select period '(2000-01-02, 2000-01-04)' - timestamptz '2000-01-05';
+
 SELECT periodset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' - timestamptz '2000-01-01';
 SELECT periodset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' - timestampset '{2000-01-01, 2000-01-03, 2000-01-05}';
 SELECT periodset '{[2000-01-01, 2000-01-03],[2000-01-04, 2000-01-05]}' - period '[2000-01-01, 2000-01-03]';

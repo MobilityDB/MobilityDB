@@ -349,17 +349,6 @@ extern Datum contained_period_periodset(PG_FUNCTION_ARGS);
 extern Datum contained_periodset_period(PG_FUNCTION_ARGS);
 extern Datum contained_periodset_periodset(PG_FUNCTION_ARGS);
 
-extern bool contained_timestamp_timestampset_internal(TimestampTz t, TimestampSet *ts);
-extern bool contained_timestamp_period_internal(TimestampTz t, Period *p);
-extern bool contained_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps);
-extern bool contained_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet *ts2);
-extern bool contained_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps);
-extern bool contained_timestampset_period_internal(TimestampSet *ts, Period *p);
-extern bool contained_period_period_internal(Period *p1, Period *p2);
-extern bool contained_period_periodset_internal(Period *p, PeriodSet *ps);
-extern bool contained_periodset_period_internal(PeriodSet *ps, Period *p);
-extern bool contained_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2);
-
 /* overlaps? */
 
 extern Datum overlaps_timestampset_timestamp(PG_FUNCTION_ARGS);
