@@ -114,30 +114,6 @@ timestampset_copy(TimestampSet *ts)
 	return result;
 }
 
-/* Binary search of a timestamptz in a TimestampSet */
-/* OLD VERSION
-int
-timestampset_find_timestamp(TimestampSet *ts, TimestampTz t) 
-{
-	int first = 0;
-	int last = ts->count - 1;
-	int middle = (first + last)/2;
-	while (first <= last) 
-	{
-		TimestampTz t1 = timestampset_time_n(ts, middle);
-		int cmp = timestamp_cmp_internal(t, t1);
-		if (cmp == 0)
-			return middle;
-		if (cmp < 0)
-			last = middle - 1;
-		else
-			first = middle + 1;
-		middle = (first + last)/2;
-	}
-	return -1;
-}
-*/
-
 /*
  * Binary search of a timestamptz in a timestampset.
  * If the timestamp is found, the position of the period is returned in pos.

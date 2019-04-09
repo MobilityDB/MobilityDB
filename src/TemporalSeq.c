@@ -2687,12 +2687,7 @@ TemporalS *
 temporalseq_at_min(TemporalSeq *seq)
 {
 	Datum minvalue = temporalseq_min_value(seq);
-	/* Make a copy of the sequence with inclusive bounds */
-	TemporalSeq *seq1 = temporalseq_copy(seq);
-	seq1->period.lower_inc = seq1->period.upper_inc = true;
-	TemporalS *result = temporalseq_at_value(seq1, minvalue);
-	pfree(seq1);
-	return result;	
+	return temporalseq_at_value(seq, minvalue);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -2710,12 +2705,7 @@ TemporalS *
 temporalseq_at_max(TemporalSeq *seq)
 {
 	Datum maxvalue = temporalseq_max_value(seq);
-	/* Make a copy of the sequence with inclusive bounds */
-	TemporalSeq *seq1 = temporalseq_copy(seq);
-	seq1->period.lower_inc = seq1->period.upper_inc = true;
-	TemporalS *result = temporalseq_at_value(seq1, maxvalue);
-	pfree(seq1);
-	return result;	
+	return temporalseq_at_value(seq, maxvalue);
 }
  
 /* Restriction to the complement of the maximum value */
@@ -2730,7 +2720,7 @@ temporalseq_minus_max(TemporalSeq *seq)
 /*
  * Value that the temporal sequence takes at the timestamp.
  * The function supposes that the timestamp t is between inst1->t and inst2->t
- * (both inclusive). The function creates new values that must be freed.
+ * (both inclusive). The function creates a new value that must be freed.
  */
 Datum
 temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2, 

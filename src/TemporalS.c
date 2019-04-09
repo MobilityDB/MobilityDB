@@ -1667,62 +1667,14 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 	return result;
 }
 
-/* Restriction to the minimum/maximum value */
-
-TemporalS *
-temporals_at_minmax(TemporalS *ts, Datum value)
-{
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		/* Make a copy of the sequence with inclusive bounds */
-		TemporalSeq *seq1 = temporalseq_copy(seq);
-		seq1->period.lower_inc = seq1->period.upper_inc = true;
-		sequences[i] = temporalseq_at_value2(seq1, value, &countseqs[i]);
-		totalseqs += countseqs[i];
-		pfree(seq1);
-	}
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-		{
-			allseqs[k++] = sequences[i][j];
-			/* Since the at_value function above has been computed by forcing 
-			   inclusive bounds the result for two consecutive sequences may
-			   overlap on the upper/lower bound respectively */
-			if (k > 1 && j == 0 && timestamp_cmp_internal(
-				allseqs[k-2]->period.upper, allseqs[k-1]->period.lower) == 0 &&
-				allseqs[k-2]->period.upper_inc && allseqs[k-1]->period.lower_inc)
-			{
-				allseqs[k-2]->period.upper_inc = false;
-			}
-		}
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs);
-	return result;
-}
+/* Restriction to the minimum value */
 
 TemporalS *
 temporals_at_min(TemporalS *ts)
 {
-	/* Singleton sequence set */
-	if (ts->count == 1)
-		return temporalseq_at_min(temporals_seq_n(ts, 0));
-
 	/* General case */
 	Datum minvalue = temporals_min_value(ts);
-	return temporals_at_minmax(ts, minvalue);
+	return temporals_at_value(ts, minvalue);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1739,13 +1691,8 @@ temporals_minus_min(TemporalS *ts)
 TemporalS *
 temporals_at_max(TemporalS *ts)
 {
-	/* Singleton sequence set */
-	if (ts->count == 1)
-		return temporalseq_at_max(temporals_seq_n(ts, 0));
-
-	/* General case */
 	Datum maxvalue = temporals_max_value(ts);
-	return temporals_at_minmax(ts, maxvalue);
+	return temporals_at_value(ts, maxvalue);
 }
 
 /* Restriction to the complement of the maximum value */
@@ -2068,32 +2015,6 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 /*
  * Restriction to the complement of a period set.
  */
-
-/*
-TemporalS *
-temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
-{
-	/ * Bounding box test * /
-	Period p1;
-	temporals_timespan(&p1, ts);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
-		return temporals_copy(ts);
-
-	/ * Singleton sequence set * /
-	if (ts->count == 1)
-		return temporalseq_minus_periodset(temporals_seq_n(ts, 0), ps);
-
-	/ * General case * /
-	PeriodSet *ps1 = temporals_get_time(ts);
-	PeriodSet *ps2 = minus_periodset_periodset_internal(ps1, ps);
-	TemporalS *result = NULL;
-	if (ps2 != NULL)
-		result = temporals_at_periodset(ts, ps2);	
-	pfree(ps1); pfree(ps2);
-	return result;
-}
-*/
 
 TemporalS *
 temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)

@@ -1972,6 +1972,8 @@ temporal_at_min(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = temporal_at_min_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -2022,6 +2024,8 @@ temporal_at_max(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
