@@ -976,7 +976,6 @@ extern TemporalS *temporals_copy(TemporalS *ts);
 extern bool temporalseqarr_find_timestamp(TemporalSeq **array, int from, 
 	int count, TimestampTz t, int *pos);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
-extern PeriodSet *temporals_intersection_temporals(TemporalS *ts1, TemporalS *ts2);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
 extern double temporals_duration_time(TemporalS *ts);
 extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
