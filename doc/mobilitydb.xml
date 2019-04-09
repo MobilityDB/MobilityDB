@@ -1932,13 +1932,14 @@ SELECT minusRanges(tfloat '[1@2012-01-01, 5@2012-01-05)', ARRAY[floatrange '[1,2
 
           <listitem>
             <para><varname>minusMin</varname>: Difference with minimum value</para>
-            <para>The function does not take into account whether the bounds are inclusive or not.</para>
             <para>Signature: <varname>minusMin(torder): torder</varname></para>
             <programlisting>
 SELECT minusMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{2@2012-01-03}"
-SELECT minusMin(tfloat '(1@2012-01-01, 3@2012-01-03]');
+SELECT minusMin(tfloat '[1@2012-01-01, 3@2012-01-03]');
 -- "{(1@2012-01-01, 3@2012-01-03]}"
+SELECT minusMin(tfloat '(1@2012-01-01, 3@2012-01-03)');
+-- "{(1@2012-01-01, 3@2012-01-03)}"
 SELECT minusMin(tint '{[1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}');
 -- NULL
             </programlisting>
@@ -1946,11 +1947,12 @@ SELECT minusMin(tint '{[1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05
 
           <listitem>
             <para><varname>minusMax</varname>: Difference with maximum value</para>
-            <para>The function does not take into account whether the bounds are inclusive or not.</para>
             <para>Signature: <varname>minusMax(torder): torder</varname></para>
             <programlisting>
 SELECT minusMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{1@2012-01-01, 2@2012-01-03}"
+SELECT minusMax(tfloat '[1@2012-01-01, 3@2012-01-03]');
+-- "{[1@2012-01-01, 3@2012-01-03)}"
 SELECT minusMax(tfloat '(1@2012-01-01, 3@2012-01-03)');
 -- "{(1@2012-01-01, 3@2012-01-03)}"
 SELECT minusMax(tfloat '{[2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-05)}');
