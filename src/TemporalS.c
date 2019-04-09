@@ -1587,27 +1587,15 @@ tnumbers_at_ranges(TemporalS *ts, RangeType **ranges, int count)
 		return tnumberseq_at_ranges(temporals_seq_n(ts, 0), ranges, count);
 
 	/* General case */
-	TemporalSeq ****sequences = palloc(sizeof(TemporalSeq *) * ts->count * count);
-	int **countseqs = palloc(sizeof(int *) * ts->count);
+	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count * count);
+	int *countseqs = palloc0(sizeof(int) * ts->count);
 	int totalseqs = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
-		sequences[i] = palloc(sizeof(TemporalSeq *) * count);
-		countseqs[i] = palloc0(sizeof(int) * count);
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		BOX box1, box2;
-		temporalseq_bbox(&box1, seq);
-		for (int j = 0; j < count; j ++)
-		{
-			/* Bounding box test */
-			range_to_box(&box2, ranges[j]);
-			if (overlaps_box_box_internal(&box1, &box2))
-			{
-				sequences[i][j] = tnumberseq_at_range2(seq, 
-					ranges[j], &(countseqs[i][j]));
-				totalseqs += countseqs[i][j];
-			}
-		}
+		sequences[i] = tnumberseq_at_ranges1(seq, ranges, count,
+			&countseqs[i]);
+		totalseqs += countseqs[i];
 	}
 	if (totalseqs == 0)
 	{
@@ -1616,26 +1604,20 @@ tnumbers_at_ranges(TemporalS *ts, RangeType **ranges, int count)
 	}
 
 	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int l = 0;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
-		for (int j = 0; j < count; j ++)
-		{
-			for (int k = 0; k < countseqs[i][j]; k ++)
-				allseqs[l++] = sequences[i][j][k];
-			if (countseqs[i][j] != 0)
-				pfree(sequences[i][j]);
-		}
-		pfree(countseqs[i]);
+		for (int j = 0; j < countseqs[i]; j ++)
+			allseqs[k++] = sequences[i][j];
+		if (countseqs[i] != 0)
+			pfree(sequences[i]);
 	}
-	temporalseqarr_sort(allseqs, totalseqs);
 	TemporalS *result = temporals_from_temporalseqarr(allseqs,
 		totalseqs, true);
-
 	pfree(sequences); pfree(countseqs);
 	for (int i = 0; i < totalseqs; i++)
 		pfree(allseqs[i]);
-	 pfree(allseqs);
+	pfree(allseqs); 
 	return result;
 }
 

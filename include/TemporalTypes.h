@@ -889,8 +889,6 @@ extern TemporalSeq *temporalseq_shift(TemporalSeq *seq,
 
 extern bool tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum value, Oid valuetypid, TimestampTz *t);
-extern TemporalSeq *temporalseq_at_value1(TemporalInst *inst1, 
-	TemporalInst *inst2, bool lower_inc, bool upper_inc, Datum value);
 extern TemporalSeq **temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count);
 extern TemporalS *temporalseq_at_value(TemporalSeq *seq, Datum value);
 extern TemporalSeq **temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count);
@@ -908,6 +906,8 @@ extern TemporalS *tnumberseq_at_range(TemporalSeq *seq, RangeType *range);
 extern TemporalSeq **tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, 
 	int *count);
 extern TemporalS *tnumberseq_minus_range(TemporalSeq *seq, RangeType *range);
+extern TemporalSeq **tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, 
+	int count, int *countresult);
 extern TemporalS *tnumberseq_at_ranges(TemporalSeq *seq, 
 	RangeType **normranges, int count);
 extern TemporalSeq **tnumberseq_minus_ranges1(TemporalSeq *seq, 

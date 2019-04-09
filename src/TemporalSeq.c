@@ -1812,7 +1812,7 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
  
 /* Restriction to a value for a segment */
 
-TemporalSeq *
+static TemporalSeq *
 temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2, 
 	bool lower_inc, bool upper_inc, Datum value)
 {
@@ -1887,7 +1887,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 
 /* 
    Restriction to a value.
-   This function is called for each sequence of a TemporalS. 
+   This function is called for each sequence of a TemporalS.
 */
 
 TemporalSeq **
@@ -2231,7 +2231,8 @@ temporalseq_at_values(TemporalSeq *seq, Datum *values, int count)
  * This function is called for each sequence of a TemporalS. 
  */
 TemporalSeq **
-temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count, int *newcount)
+temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count, 
+	int *newcount)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2540,10 +2541,13 @@ tnumberseq_minus_range(TemporalSeq *seq, RangeType *range)
 	return result;
 }
 
-/* Restriction to an array of ranges */
-
-TemporalS *
-tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
+/* 
+ * Restriction to an array of ranges 
+ * This function is called for each sequence of a TemporalS.
+ */
+TemporalSeq **
+tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, int count, 
+	int *newcount)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2551,13 +2555,19 @@ tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = tnumberinst_at_ranges(inst, normranges, count);
 		if (inst1 == NULL)
+		{
+			*newcount = 0;
 			return NULL;
+		}
 		pfree(inst1); 
-		return temporals_from_temporalseqarr(&seq, 1, false);
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		result[0] = temporalseq_copy(seq);
+		*newcount = 1;
+		return result;
 	}
 
 	/* General case */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count);
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count * count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;	
@@ -2570,27 +2580,43 @@ tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 			TemporalSeq *seq1 = tnumberseq_at_range1(inst1, inst2, 
 				lower_inc, upper_inc, normranges[j]);
 			if (seq1 != NULL) 
-				sequences[k++] = seq1;
+				result[k++] = seq1;
 		}
 		inst1 = inst2;
 		lower_inc = true;
 	}
 	if (k == 0) 
 	{
-		pfree(sequences);
+		pfree(result);
+		*newcount = 0;
 		return NULL;
 	}
 	
-	temporalseqarr_sort(sequences, k);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
-	for (int i = 0; i < k; i++)
+	temporalseqarr_sort(result, k);
+	*newcount = k;
+	return result;
+}
+
+TemporalS *
+tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
+{
+	int newcount;
+	TemporalSeq **sequences = tnumberseq_at_ranges1(seq, normranges, count, 
+		&newcount);
+	if (newcount == 0)
+		return NULL;
+
+	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount, true);
+	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	return result;
 }
 
-/* Restriction to the complement of an array of ranges */
-
+/*
+ * Restriction to the complement of an array of ranges.
+ * This function is called for each sequence of a TemporalS.
+ */
 TemporalSeq **
 tnumberseq_minus_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 	int *newcount)
@@ -2635,9 +2661,7 @@ tnumberseq_minus_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 	}
 	else
 		*newcount = 0;
-	
 	pfree(ts); pfree(ps1); 
-
 	return result;
 }	
 
@@ -2651,11 +2675,9 @@ tnumberseq_minus_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 		return NULL;
 	
 	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount, true);
-	
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-	
 	return result;
 }
 
