@@ -269,7 +269,7 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 #define FREE_DATUM(value, valuetypid) \
 	do { \
-		if (! type_byval_fast(valuetypid)) \
+		if (get_typlen_fast(valuetypid) == -1) \
 			pfree(DatumGetPointer(value)); \
 	} while (0)
 
