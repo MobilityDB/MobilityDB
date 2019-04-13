@@ -67,7 +67,7 @@ temporalinst_value_copy(TemporalInst *inst)
 		return *(Datum *)value;
 	/* For base types passed by reference */
 	int typlen = get_typlen_fast(inst->valuetypid);
-	size_t value_size = typlen != -1 ? (uint) typlen : VARSIZE(value);
+	size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
 	void *result = palloc0(value_size);
 	memcpy(result, value, value_size);
 	return PointerGetDatum(result);
@@ -109,7 +109,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 		/* For base types passed by reference */
 		void *value_from = DatumGetPointer(value);
 		int typlen = get_typlen_fast(valuetypid);
-		value_size = typlen != -1 ? double_pad((uint) typlen) : 
+		value_size = typlen != -1 ? double_pad((unsigned int) typlen) : 
 			double_pad(VARSIZE(value_from));
 		size += value_size;
 		result = palloc0(size);
@@ -657,6 +657,28 @@ temporalinst_intersects_temporalinst(TemporalInst *inst1, TemporalInst *inst2)
  *****************************************************************************/
 
 /* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	return datum_eq(value1, value2, inst1->valuetypid) && 
+		timestamp_cmp_internal(inst1->t, inst2->t) == 0;
+}
+
+/* 
+ * Inequality operator
+ */
+bool
+temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
+{
+	return !temporalinst_eq(inst1, inst2);
+}
+
+/* 
  * B-tree comparator
  */
 
@@ -675,51 +697,6 @@ temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 		inst1->valuetypid))
 		return 1;
 	return 0;
-}
-
-/* Comparison operators using the internal B-tree comparator */
-
-bool
-temporalinst_lt(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) < 0);
-}
-
-bool
-temporalinst_le(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) <= 0);
-}
-
-bool
-temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
-{
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing the
-	   individual components */
-	/* Total size */
-	size_t sz1 = VARSIZE(inst1); 
-	if (!memcmp(inst1, inst2, sz1))
-		return true;
-	return false;
-}
-
-bool
-temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) != 0);
-}
-
-bool
-temporalinst_ge(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) > 0);
-}
-
-bool
-temporalinst_gt(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) > 0);
 }
 
 /*****************************************************************************

@@ -2266,6 +2266,45 @@ tfloats_twavg(TemporalS *ts)
  *****************************************************************************/
 
 /* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporals_eq(TemporalS *ts1, TemporalS *ts2)
+{
+	/* If number of sequences are not equal */
+	if (ts1->count != ts2->count)
+		return false;
+
+	/* If bounding boxes are not equal */
+	size_t bboxsize = double_pad(temporal_bbox_size(ts1->valuetypid));
+	void *box1 = temporals_bbox_ptr(ts1);
+	void *box2 = temporals_bbox_ptr(ts2);
+	if (memcmp(box1, box2, bboxsize))
+		return false;
+
+	/* We need to compare the composing sequences */
+	for (int i = 0; i < ts1->count; i++)
+	{
+		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
+		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
+		if (!temporalseq_eq(seq1, seq2))
+			return false;
+	}
+	return true;
+}
+
+/* 
+ * Inequality operator
+ * The internal B-tree comparator is not used to increase efficiency 
+ */
+bool
+temporals_ne(TemporalS *ts1, TemporalS *ts2)
+{
+	return !temporals_eq(ts1, ts2);
+}
+
+/* 
  * B-tree comparator
  */
 
@@ -2289,43 +2328,6 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		return 1;
 	else
 		return 0;
-}
-
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency
- */
-bool
-temporals_eq(TemporalS *ts1, TemporalS *ts2)
-{
-	/* If number of sequences are not equal */
-	if (ts1->count != ts2->count)
-		return false;
-	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(ts1->valuetypid));
-	void *box1 = temporals_bbox_ptr(ts1);
-	void *box2 = temporals_bbox_ptr(ts2);
-	if (memcmp(box1, box2, bboxsize))
-		return false;
-
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing one by
-	   one all composing sequences */
-	/* Total size minus size of the bounding box */
-	size_t sz1 = VARSIZE(ts1) - double_pad(temporal_bbox_size(ts1->valuetypid)); 
-	if (!memcmp(ts1, ts2, sz1))
-		return true;
-	return false;
-}
-
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
- */
-bool
-temporals_ne(TemporalS *ts1, TemporalS *ts2)
-{
-	return !temporals_eq(ts1, ts2);
 }
 
 /*****************************************************************************

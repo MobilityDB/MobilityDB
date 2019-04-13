@@ -3492,6 +3492,46 @@ tfloatseq_twavg(TemporalSeq *seq)
  * The functions assume that the arguments are of the same temptypid
  *****************************************************************************/
 
+/* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
+{
+	/* If number of sequences or the periods are not equal */
+	if (seq1->count != seq2->count || 
+			!period_eq_internal(&seq1->period, &seq2->period)) 
+		return false;
+
+	/* If bounding boxes are not equal */
+	size_t bboxsize = double_pad(temporal_bbox_size(seq1->valuetypid));
+	void *box1 = temporalseq_bbox_ptr(seq1);
+	void *box2 = temporalseq_bbox_ptr(seq2);
+	if (memcmp(box1, box2, bboxsize))
+		return false;
+	
+	/* We need to compare the composing instants */
+	for (int i = 0; i < seq1->count; i++)
+	{
+		TemporalInst *inst1 = temporalseq_inst_n(seq1, i);
+		TemporalInst *inst2 = temporalseq_inst_n(seq2, i);
+		if (!temporalinst_eq(inst1, inst2))
+			return false;
+	}
+	return true;
+}
+
+/* 
+ * Inequality operator
+ * The internal B-tree comparator is not used to increase efficiency 
+ */
+bool
+temporalseq_ne(TemporalSeq *seq1, TemporalSeq *seq2)
+{
+	return !temporalseq_eq(seq1, seq2);
+}
+
 /*
  * B-tree comparator
  */
@@ -3516,53 +3556,6 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		return 1;
 	else /* compare the time spans of seq1 and seq2 */
 		return period_cmp_internal(&seq1->period, &seq2->period);
-}
-
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency
- */
-bool
-temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
-{
-	/* If number of sequences are not equal */
-	if (seq1->count != seq2->count)
-		return false;
-	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(seq1->valuetypid));
-	void *box1 = temporalseq_bbox_ptr(seq1);
-	void *box2 = temporalseq_bbox_ptr(seq2);
-	if (memcmp(box1, box2, bboxsize))
-		return false;
-	
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing one by
-	   one all composing sequences */
-	/* Pointer to the offset array */
-	size_t *offsets = temporalseq_offsets_ptr(seq1);
-	/* Size of precomputed trajectory (if any) */
-	size_t trajsize = 0;
-	if (offsets[seq1->count+1] != 0)
-	{
-		/* Get the size of the precomputed trajectory */
-		void *traj = temporalseq_data_ptr(seq1) + offsets[seq1->count+1];
-		trajsize = VARSIZE(traj);
-	}
-	/* Total size minus size of the bounding box and size of the trajectory */
-	size_t sz1 = VARSIZE(seq1) - bboxsize - trajsize;
-	if (!memcmp(seq1, seq2, sz1))
-		return true;
-	return false;
-}
-
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
- */
-bool
-temporalseq_ne(TemporalSeq *seq1, TemporalSeq *seq2)
-{
-	return !temporalseq_eq(seq1, seq2);
 }
 
 /*****************************************************************************

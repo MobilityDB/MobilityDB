@@ -1504,6 +1504,43 @@ temporali_lavg(TemporalI *ti)
  *****************************************************************************/
 
 /* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporali_eq(TemporalI *ti1, TemporalI *ti2)
+{
+	/* If number of sequences are not equal */
+	if (ti1->count != ti2->count)
+		return false;
+	/* If bounding boxes are not equal */
+	size_t bboxsize = double_pad(temporal_bbox_size(ti1->valuetypid));
+	void *box1 = temporali_bbox_ptr(ti1);
+	void *box2 = temporali_bbox_ptr(ti2);
+	if (memcmp(box1, box2, bboxsize))
+		return false;
+	
+	/* We need to compare the composing instants */
+	for (int i = 0; i < ti1->count; i++)
+	{
+		TemporalInst *inst1 = temporali_inst_n(ti1, i);
+		TemporalInst *inst2 = temporali_inst_n(ti2, i);
+		if (!temporalinst_eq(inst1, inst2))
+			return false;
+	}
+	return true;
+}
+
+/* 
+ * Inequality operator
+ */
+bool
+temporali_ne(TemporalI *ti1, TemporalI *ti2)
+{
+	return !temporali_eq(ti1, ti2);
+}
+
+/* 
  * B-tree comparator
  */
 
@@ -1527,42 +1564,6 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		return 1;
 	else
 		return 0;
-}
-
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency
- */
-bool
-temporali_eq(TemporalI *ti1, TemporalI *ti2)
-{
-	/* If number of sequences are not equal */
-	if (ti1->count != ti2->count)
-		return false;
-	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(ti1->valuetypid));
-	void *box1 = temporali_bbox_ptr(ti1);
-	void *box2 = temporali_bbox_ptr(ti2);
-	if (memcmp(box1, box2, bboxsize))
-		return false;
-	
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing one by
-	   one all composing sequences */
-	/* Total size minus size of the bounding box */
-	size_t sz1 = VARSIZE(ti1) - bboxsize;
-	if (!memcmp(ti1, ti2, sz1))
-		return true;
-	return false;
-}
-
-/* 
- * Inequality operator
- */
-bool
-temporali_ne(TemporalI *ti1, TemporalI *ti2)
-{
-	return !temporali_eq(ti1, ti2);
 }
 
 /*****************************************************************************
