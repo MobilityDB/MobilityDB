@@ -729,8 +729,8 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
 	bool res = true;
 	int i;
 
-	/* Initialize the value to recheck, will be updated below */
-	out->recheck = true;
+	/* Initialize the value to do not recheck, will be updated below */
+	out->recheck = false;
 
 	/* leafDatum is what it is... */
 	out->leafValue = in->leafDatum;

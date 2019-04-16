@@ -384,5 +384,33 @@ gbox_cmp_internal(const GBOX *g1, const GBOX *g2)
 	return 0;
 }
 
+PG_FUNCTION_INFO_V1(gbox_eq);
+
+PGDLLEXPORT Datum
+gbox_eq(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int cmp = gbox_cmp_internal(box1, box2);
+	if (cmp == 0)
+		PG_RETURN_BOOL(true);
+	else
+		PG_RETURN_BOOL(false);
+}
+
+PG_FUNCTION_INFO_V1(gbox_ne);
+
+PGDLLEXPORT Datum
+gbox_ne(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int cmp = gbox_cmp_internal(box1, box2);
+	if (cmp != 0)
+		PG_RETURN_BOOL(true);
+	else
+		PG_RETURN_BOOL(false);
+}
+
 /*****************************************************************************/
 
