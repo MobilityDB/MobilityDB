@@ -955,6 +955,8 @@ tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_and, false);
@@ -987,6 +989,8 @@ tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_or, false);
@@ -1021,6 +1025,8 @@ tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_int32, false);
@@ -1053,6 +1059,8 @@ tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_float8, true);
@@ -1085,6 +1093,8 @@ tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_int32, true);
@@ -1117,6 +1127,8 @@ tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_float8, true);
@@ -1149,6 +1161,8 @@ tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_sum_int32, false);
@@ -1181,6 +1195,8 @@ tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_sum_float8, false);
@@ -1213,6 +1229,8 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Temporal *tempcount = temporal_transform_tcount(temp);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, tempcount, 
@@ -1328,6 +1346,8 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state =  (PG_ARGISNULL(0)) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = NULL;
 	if (temp->type == TEMPORALINST)
@@ -1376,6 +1396,8 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)temporali_from_temporalinstarr(
@@ -1454,6 +1476,8 @@ temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)temporalinst_tavg_finalfn(
@@ -1477,6 +1501,8 @@ ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_text, false);
@@ -1509,6 +1535,8 @@ ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_text, false);

@@ -601,6 +601,8 @@ tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -617,6 +619,8 @@ tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -635,6 +639,8 @@ tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -651,6 +657,8 @@ tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -669,6 +677,8 @@ tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -685,6 +695,8 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	if ((temp->type == TEMPORALSEQ || temp->type == TEMPORALS) &&
 		temp->valuetypid == FLOAT8OID)
@@ -707,6 +719,8 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
@@ -733,6 +747,8 @@ temporal_wavg_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;

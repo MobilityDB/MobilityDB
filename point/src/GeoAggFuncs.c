@@ -173,6 +173,8 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum (*operator)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&datum_sum_double4 : &datum_sum_double3;
@@ -342,6 +344,8 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
