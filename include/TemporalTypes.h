@@ -134,8 +134,8 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		type;			/* type */
 	int16		flags;			/* flags */
-    Oid 		valuetypid;		/* base type's OID */
-    /* variable-length data follows, if any */
+	Oid 		valuetypid;		/* base type's OID */
+	/* variable-length data follows, if any */
 } Temporal;
 
 /* Temporal Instant */
@@ -145,9 +145,9 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		type;			/* type */
 	int16		flags;			/* flags */
-    Oid 		valuetypid;		/* base type's OID */
-    TimestampTz t;				/* time span */
-    /* variable-length data follows */
+	Oid 		valuetypid;		/* base type's OID */
+	TimestampTz t;				/* time span */
+	/* variable-length data follows */
 } TemporalInst;
 
 /* Temporal Set Instant */
@@ -157,9 +157,9 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		type;			/* type */
 	int16		flags;			/* flags */
-    Oid 		valuetypid;		/* base type's OID */
-    int32 		count;			/* number of TemporalInst elements */
-    /* variable-length data follows */
+	Oid 		valuetypid;		/* base type's OID */
+	int32 		count;			/* number of TemporalInst elements */
+	/* variable-length data follows */
 } TemporalI;
 
 /* Temporal Sequence */
@@ -169,10 +169,10 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		type;			/* type */
 	int16		flags;			/* flags */
-    Oid 		valuetypid;		/* base type's OID */
-    int32 		count;			/* number of TemporalInst elements */
-    Period 		period;			/* time span */
-    /* variable-length data follows */
+	Oid 		valuetypid;		/* base type's OID */
+	int32 		count;			/* number of TemporalInst elements */
+	Period 		period;			/* time span */
+	/* variable-length data follows */
 } TemporalSeq;
 
 /* Temporal Set Sequence */
@@ -182,9 +182,10 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		type;			/* type */
 	int16		flags;			/* flags */
-    Oid 		valuetypid;		/* base type's OID */
-    int32 		count;			/* number of TemporalSeq elements */
-    /* variable-length data follows */
+	Oid 		valuetypid;		/* base type's OID */
+	int32 		count;			/* number of TemporalSeq elements */
+	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
+	/* variable-length data follows */
 } TemporalS;
 
 /* Double2 - Internal type for computing aggregates for temporal numeric types */
@@ -216,8 +217,8 @@ typedef struct double4
 
 typedef struct AggregateState
 {
-    int 		size;
-    Temporal 	*values[];
+	int 		size;
+	Temporal 	*values[];
 } AggregateState;
 
 typedef struct
@@ -850,7 +851,7 @@ extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 
 /* Cast functions */
 
-extern TemporalSeq **tintseq_as_tfloatseq1(TemporalSeq *seq, int *count);
+extern int tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq);
 extern TemporalS *tintseq_as_tfloatseq(TemporalSeq *seq);
 extern TemporalSeq *tfloatseq_as_tintseq(TemporalSeq *seq);
 
@@ -889,29 +890,27 @@ extern TemporalSeq *temporalseq_shift(TemporalSeq *seq,
 
 extern bool tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum value, Oid valuetypid, TimestampTz *t);
-extern TemporalSeq **temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count);
+extern int temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value);
 extern TemporalS *temporalseq_at_value(TemporalSeq *seq, Datum value);
-extern TemporalSeq **temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count);
+extern int temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value);
 extern TemporalS *temporalseq_minus_value(TemporalSeq *seq, Datum value);
-extern TemporalSeq **temporalseq_at_values1(TemporalSeq *seq, Datum *values, 
-	int count, int *newcount);	
+extern int temporalseq_at_values1(TemporalSeq **result, TemporalSeq *seq, Datum *values, 
+	int count);	
 extern TemporalS *temporalseq_at_values(TemporalSeq *seq, Datum *values, int count);
-extern TemporalSeq **temporalseq_minus_values1(TemporalSeq *seq, Datum *values, 
-	int count, int *newcount);
+extern int temporalseq_minus_values1(TemporalSeq **result, TemporalSeq *seq, Datum *values, 
+	int count);
 extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count);
 extern TemporalS *temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count);
-extern TemporalSeq **tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, 
-	int *count);
+extern int tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range);
 extern TemporalS *tnumberseq_at_range(TemporalSeq *seq, RangeType *range);
-extern TemporalSeq **tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, 
-	int *count);
+extern int tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range);
 extern TemporalS *tnumberseq_minus_range(TemporalSeq *seq, RangeType *range);
-extern TemporalSeq **tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, 
-	int count, int *countresult);
+extern int tnumberseq_at_ranges1(TemporalSeq **result, TemporalSeq *seq, 
+	RangeType **normranges, int count);
 extern TemporalS *tnumberseq_at_ranges(TemporalSeq *seq, 
 	RangeType **normranges, int count);
-extern TemporalSeq **tnumberseq_minus_ranges1(TemporalSeq *seq, 
-	RangeType **normranges, int count, int *newcount);
+extern int tnumberseq_minus_ranges1(TemporalSeq **result, TemporalSeq *seq, 
+	RangeType **normranges, int count);
 extern TemporalS *tnumberseq_minus_ranges(TemporalSeq *seq,
 	RangeType **normranges, int count);
 extern TemporalS *temporalseq_at_min(TemporalSeq *seq);
@@ -931,8 +930,8 @@ extern int temporalseq_minus_timestampset1(TemporalSeq **result, TemporalSeq *se
 extern TemporalS *temporalseq_minus_timestampset(TemporalSeq *seq, TimestampSet *ts);
 extern TemporalSeq *temporalseq_at_period(TemporalSeq *seq, Period *p);
 extern TemporalS *temporalseq_minus_period(TemporalSeq *seq, Period *p);
-extern TemporalSeq **temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, 
-	int *count);
+extern int temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps);
+extern TemporalSeq **temporalseq_at_periodset2(TemporalSeq *seq, PeriodSet *ps, int *count);
 extern TemporalS *temporalseq_at_periodset(TemporalSeq *seq, PeriodSet *ps);
 extern int temporalseq_minus_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps, 
 	int from, int count);

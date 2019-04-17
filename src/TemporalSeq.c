@@ -78,10 +78,10 @@ temporalseq_bbox_ptr(TemporalSeq *seq)
 void 
 temporalseq_bbox(void *box, TemporalSeq *seq) 
 {
-    void *box1 = temporalseq_bbox_ptr(seq);
+	void *box1 = temporalseq_bbox_ptr(seq);
 	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
 	memcpy(box, box1, bboxsize);
-    return;
+	return;
 }
 
 /* 
@@ -1259,22 +1259,19 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 
 /* Cast a temporal integer as a temporal float */
 
-TemporalSeq **
-tintseq_as_tfloatseq1(TemporalSeq *seq, int *count)
+int
+tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = tintinst_as_tfloatinst(inst);
 		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
 			true, true, false);
 		pfree(inst1); 
-		*count = 1;
-		return result;
+		return 1;
 	}
 	
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
 	TemporalInst *inst2;
@@ -1308,15 +1305,14 @@ tintseq_as_tfloatseq1(TemporalSeq *seq, int *count)
 				true, true, false);
 		}
 	}
-	*count = k;
-	return result;
+	return k;
 }
 
 TemporalS *
 tintseq_as_tfloatseq(TemporalSeq *seq)
 {
-	int count;
-	TemporalSeq **sequences = tintseq_as_tfloatseq1(seq, &count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = tintseq_as_tfloatseq1(sequences, seq);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -1890,8 +1886,8 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
    This function is called for each sequence of a TemporalS.
 */
 
-TemporalSeq **
-temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count)
+int 
+temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 {
 	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
@@ -1901,10 +1897,7 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count)
 		temporalseq_bbox(&box1, seq);
 		base_to_box(&box2, value, valuetypid);
 		if (!contains_box_box_internal(&box1, &box2))
-		{
-			*count = 0;
-			return NULL;			
-		}
+			return 0;			
 	}
 
 	/* Instantaneous sequence */
@@ -1912,18 +1905,12 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
 		if (datum_ne(temporalinst_value(inst), value, valuetypid))
-		{
-			*count = 0;
-			return NULL;			
-		}
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+			return 0;
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
 	/* General case */
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
@@ -1938,23 +1925,19 @@ temporalseq_at_value2(TemporalSeq *seq, Datum value, int *count)
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	if (k == 0)
-	{
-		pfree(result);
-		*count = 0;
-		return NULL;
-	}
-	*count = k;
-	return result;
+	return k;
 }
 
 TemporalS *
 temporalseq_at_value(TemporalSeq *seq, Datum value)
 {
-	int count;
-	TemporalSeq **sequences = temporalseq_at_value2(seq, value, &count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = temporalseq_at_value2(sequences, seq, value);
 	if (count == 0)
+	{
+		pfree(sequences);
 		return NULL;
+	}
 
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true);
 	for (int i = 0; i < count; i++)
@@ -2041,8 +2024,8 @@ tempcontseq_minus_value1(TemporalSeq **result,
    This function is called for each sequence of a TemporalS. 
 */
 
-TemporalSeq **
-temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
+int
+temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 {
 	Oid valuetypid = seq->valuetypid;
 	/* Bounding box test */
@@ -2053,10 +2036,8 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 		base_to_box(&box2, value, valuetypid);
 		if (!contains_box_box_internal(&box1, &box2))
 		{
-			TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 			result[0] = temporalseq_copy(seq);
-			*count = 1;
-			return result;
+			return 1;
 		}
 	}
 
@@ -2065,24 +2046,17 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
 		if (datum_eq(temporalinst_value(inst), value, valuetypid))
-		{
-			*count = 0;
-			return NULL;			
-		}
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+			return 0;			
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
 	/* General case */
-	TemporalSeq **result;
 	int k = 0;
 	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
 	{
 		/* Discrete base type */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-		result = palloc(sizeof(TemporalSeq *) * seq->count);
 		bool lower_inc = seq->period.lower_inc;
 		int j = 0;
 		for (int i = 0; i < seq->count; i++)
@@ -2114,7 +2088,6 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 	else
 	{
 		/* Continuous base type */
-		result = palloc(sizeof(TemporalSeq *) * seq->count * 2);
 		int countseq;
 		bool lower_inc = seq->period.lower_inc;
 		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
@@ -2130,14 +2103,7 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 			lower_inc = true;
 		}
 	}	
-	if (k == 0)
-	{
-		pfree(result);
-		*count = 0;
-		return NULL;
-	}
-	*count = k;
-	return result;
+	return k;
 }
 
 /* Restriction to the complement of a value */
@@ -2145,8 +2111,13 @@ temporalseq_minus_value2(TemporalSeq *seq, Datum value, int *count)
 TemporalS *
 temporalseq_minus_value(TemporalSeq *seq, Datum value)
 {
-	int count;
-	TemporalSeq **sequences = temporalseq_minus_value2(seq, value, &count);
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
+		maxcount = seq->count;
+	else 
+		maxcount = seq->count * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int count = temporalseq_minus_value2(sequences, seq, value);
 	if (count == 0)
 		return NULL;
 	
@@ -2162,8 +2133,8 @@ temporalseq_minus_value(TemporalSeq *seq, Datum value)
  * The function assumes that there are no duplicates values.
  * This function is called for each sequence of a TemporalS. 
  */
-TemporalSeq **
-temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count, int *newcount)
+int
+temporalseq_at_values1(TemporalSeq **result, TemporalSeq *seq, Datum *values, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2171,20 +2142,14 @@ temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count, int *newcount
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = temporalinst_at_values(inst, values, count);
 		if (inst1 == NULL)
-		{
-			*newcount = 0;
-			return NULL;
-		}
+			return 0;
 		
 		pfree(inst1); 
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 	
 	/* General case */
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count * count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;	
@@ -2203,25 +2168,23 @@ temporalseq_at_values1(TemporalSeq *seq, Datum *values, int count, int *newcount
 		lower_inc = true;
 	}
 	temporalseqarr_sort(result, k);
-	*newcount = k;
-	return result;
+	return k;
 }
 	
 TemporalS *
 temporalseq_at_values(TemporalSeq *seq, Datum *values, int count)
 {
-	int newcount;
-	TemporalSeq **sequences = temporalseq_at_values1(seq, values, 
-		count, &newcount);
-	if (newcount == 0) 
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count);
+	int newcount = temporalseq_at_values1(sequences, seq, values, count);
+	if (newcount == 0)
+	{
+		pfree(sequences);
 		return NULL;
-	
+	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount, true);
-	
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-	
 	return result;
 }
 
@@ -2230,9 +2193,8 @@ temporalseq_at_values(TemporalSeq *seq, Datum *values, int count)
  * The function assumes that there are no duplicates values.
  * This function is called for each sequence of a TemporalS. 
  */
-TemporalSeq **
-temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count, 
-	int *newcount)
+int
+temporalseq_minus_values1(TemporalSeq **result, TemporalSeq *seq, Datum *values, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2240,16 +2202,10 @@ temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count,
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count);
 		if (inst1 == NULL)
-		{
-			*newcount = 0;
-			return NULL;
-		}
-
+			return 0;
 		pfree(inst1); 
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 	
 	/* 
@@ -2259,42 +2215,35 @@ temporalseq_minus_values1(TemporalSeq *seq, Datum *values, int count,
 	TemporalS *ts = temporalseq_at_values(seq, values, count);
 	if (ts == NULL)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 	PeriodSet *ps1 = temporals_get_time(ts);
 	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	TemporalSeq **result = NULL;
+	int newcount = 0;
 	if (ps2 != NULL)
 	{
-		result = temporalseq_at_periodset1(seq, ps2, newcount);
+		newcount = temporalseq_at_periodset1(result, seq, ps2);
 		pfree(ps2);
 	}
-	else
-		*newcount = 0;
-	
 	pfree(ts); pfree(ps1); 
-
-	return result;
+	return newcount;
 }
 
 TemporalS *
 temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count)
 {
-	int newcount;
-	TemporalSeq **sequences = temporalseq_minus_values1(seq, values, 
-		count, &newcount);
-	if (newcount == 0) 
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count * 2);
+	int newcount = temporalseq_minus_values1(sequences, seq, values, count);
+	if (newcount == 0)
+	{
+		pfree(sequences);
 		return NULL;
-	
+	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount, true);
-	
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-	
 	return result;
 }
 
@@ -2409,30 +2358,24 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
  * Restriction to the range.
  * This function is called for each sequence of a TemporalS.
  */
-TemporalSeq **
-tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, int *count)
+int 
+tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
 	BOX box1, box2;
 	temporalseq_bbox(&box1, seq);
 	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
-	{
-		*count = 0;
-		return NULL;
-	}
+		return 0;
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
 	/* General case */
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
@@ -2447,21 +2390,14 @@ tnumberseq_at_range2(TemporalSeq *seq, RangeType *range, int *count)
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	if (k == 0)
-	{
-		pfree(result);
-		*count = 0;
-		return NULL;
-	}
-	*count = k;
-	return result;
+	return k;
 }
 
 TemporalS *
 tnumberseq_at_range(TemporalSeq *seq, RangeType *range)
 {
-	int count;
-	TemporalSeq **sequences = tnumberseq_at_range2(seq, range, &count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = tnumberseq_at_range2(sequences, seq, range);
 	if (count == 0)
 		return NULL;
 
@@ -2476,8 +2412,8 @@ tnumberseq_at_range(TemporalSeq *seq, RangeType *range)
  * Restriction to the complement of a range.
  * This function is called for each sequence of a TemporalS.
  */
-TemporalSeq **
-tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
+int
+tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
 	BOX box1, box2;
@@ -2485,18 +2421,13 @@ tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
 	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-	{
-		*count = 0;
-		return NULL;
-	}
+		return 0;
 
 	/*
 	 * General case
@@ -2505,34 +2436,38 @@ tnumberseq_minus_range1(TemporalSeq *seq, RangeType *range, int *count)
 	TemporalS *ts = tnumberseq_at_range(seq, range);
 	if (ts == NULL)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 	PeriodSet *ps1 = temporals_get_time(ts);
 	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	TemporalSeq **result = NULL;
+	int count = 0;
 	if (ps2 != NULL)
 	{
-		result = temporalseq_at_periodset1(seq, ps2, count);
+		count = temporalseq_at_periodset1(result, seq, ps2);
 		pfree(ps2);
 	}
-	else
-		*count = 0;
 	
 	pfree(ts); pfree(ps1); 
 
-	return result;
+	return count;
 }
 
 TemporalS *
 tnumberseq_minus_range(TemporalSeq *seq, RangeType *range)
 {
-	int count;
-	TemporalSeq **sequences = tnumberseq_minus_range1(seq, range, &count);
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
+		maxcount = seq->count;
+	else 
+		maxcount = seq->count * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int count = tnumberseq_minus_range1(sequences, seq, range);
 	if (count == 0)
+	{
+		pfree(sequences);
 		return NULL;
+	}
 
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true);
 	for (int i = 0; i < count; i++)
@@ -2545,9 +2480,9 @@ tnumberseq_minus_range(TemporalSeq *seq, RangeType *range)
  * Restriction to an array of ranges 
  * This function is called for each sequence of a TemporalS.
  */
-TemporalSeq **
-tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, int count, 
-	int *newcount)
+int
+tnumberseq_at_ranges1(TemporalSeq **result, TemporalSeq *seq, 
+	RangeType **normranges, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2555,19 +2490,13 @@ tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = tnumberinst_at_ranges(inst, normranges, count);
 		if (inst1 == NULL)
-		{
-			*newcount = 0;
-			return NULL;
-		}
+			return 0;
 		pfree(inst1); 
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 
 	/* General case */
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count * count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;	
@@ -2586,26 +2515,22 @@ tnumberseq_at_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 		lower_inc = true;
 	}
 	if (k == 0) 
-	{
-		pfree(result);
-		*newcount = 0;
-		return NULL;
-	}
+		return 0;
 	
 	temporalseqarr_sort(result, k);
-	*newcount = k;
-	return result;
+	return k;
 }
 
 TemporalS *
 tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 {
-	int newcount;
-	TemporalSeq **sequences = tnumberseq_at_ranges1(seq, normranges, count, 
-		&newcount);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * count);
+	int newcount = tnumberseq_at_ranges1(sequences, seq, normranges, count);
 	if (newcount == 0)
+	{
+		pfree(sequences);
 		return NULL;
-
+	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount, true);
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
@@ -2617,9 +2542,8 @@ tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
  * Restriction to the complement of an array of ranges.
  * This function is called for each sequence of a TemporalS.
  */
-TemporalSeq **
-tnumberseq_minus_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
-	int *newcount)
+int 
+tnumberseq_minus_ranges1(TemporalSeq **result, TemporalSeq *seq, RangeType **normranges, int count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2627,16 +2551,11 @@ tnumberseq_minus_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = tnumberinst_minus_ranges(inst, normranges, count);
 		if (inst1 == NULL)
-		{
-			*newcount = 0;
-			return NULL;
-		}
+			return 0;
 
 		pfree(inst1); 
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 
 	/*  
@@ -2646,31 +2565,32 @@ tnumberseq_minus_ranges1(TemporalSeq *seq, RangeType **normranges, int count,
 	TemporalS *ts = tnumberseq_at_ranges(seq, normranges, count);
 	if (ts == NULL)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
-		*newcount = 1;
-		return result;
+		return 1;
 	}
 	PeriodSet *ps1 = temporals_get_time(ts);
 	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
-	TemporalSeq **result = NULL;
+	int newcount = 0;
 	if (ps2 != NULL)
 	{
-		result = temporalseq_at_periodset1(seq, ps2, newcount);
+		newcount = temporalseq_at_periodset1(result, seq, ps2);
 		pfree(ps2);
 	}
-	else
-		*newcount = 0;
 	pfree(ts); pfree(ps1); 
-	return result;
+	return newcount;
 }	
 
 TemporalS *
 tnumberseq_minus_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 {
-	int newcount;
-	TemporalSeq **sequences = tnumberseq_minus_ranges1(seq, normranges, 
-		count, &newcount);
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags))
+		maxcount = seq->count * count;
+	else 
+		maxcount = seq->count * count * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int newcount = tnumberseq_minus_ranges1(sequences, seq, normranges, 
+		count);
 	if (newcount == 0) 
 		return NULL;
 	
@@ -3200,38 +3120,29 @@ temporalseq_minus_period(TemporalSeq *seq, Period *p)
  * This function is called for each sequence of a TemporalS.
  */
 
-TemporalSeq **
-temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
+int
+temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 {
 	/* Bounding box test */
 	Period p1;
 	temporalseq_timespan(&p1, seq);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
-	{
-		*count = 0 ;
-		return NULL;
-	}
+		return 0;
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		if (!contains_periodset_timestamp_internal(ps, inst->t))
-		{
-			*count = 0;
-			return NULL;
-		}
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+			return 0;
 		result[0] = temporalseq_copy(seq);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
 	/* General case */
 	int n;
 	periodset_find_timestamp(ps, seq->period.lower, &n);
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (ps->count - n));
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
 	{
@@ -3242,13 +3153,19 @@ temporalseq_at_periodset1(TemporalSeq *seq, PeriodSet *ps, int *count)
 		if (timestamp_cmp_internal(seq->period.upper, p->upper) < 0)
 			break;
 	}
-	if (k == 0)
+	return k;
+}
+
+TemporalSeq **
+temporalseq_at_periodset2(TemporalSeq *seq, PeriodSet *ps, int *count)
+{
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ps->count);
+	*count = temporalseq_at_periodset1(result, seq, ps);
+	if (*count == 0)
 	{
 		pfree(result);
-		*count = 0;
 		return NULL;
 	}
-	*count = k;
 	return result;
 }
 
@@ -3256,7 +3173,7 @@ TemporalS *
 temporalseq_at_periodset(TemporalSeq *seq, PeriodSet *ps)
 {
 	int count;
-	TemporalSeq **sequences = temporalseq_at_periodset1(seq, ps, &count);
+	TemporalSeq **sequences = temporalseq_at_periodset2(seq, ps, &count);
 	if (count == 0)
 		return NULL;
 	

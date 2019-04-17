@@ -12,7 +12,7 @@
  *		equals, intersects, overlaps, touches, within, dwithin, and
  *		relate (with 2 and 3 arguments)
  * The following relationships are supported for geographies
- *     covers, coveredby, intersects, dwithin
+ *	 covers, coveredby, intersects, dwithin
  * Only dwithin and intersects support 3D geometries.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
@@ -436,7 +436,7 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		start2 = end2;
 	}
 	result = spatialrel3_tpointinst_tpointinst(start1, start2, d, operator);
-    return result;
+	return result;
 }
 
 static bool
@@ -454,7 +454,7 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 			break;
 		}
 	}
-    return result;
+	return result;
 }
 
 /*****************************************************************************
@@ -2106,8 +2106,8 @@ PG_FUNCTION_INFO_V1(relate_tpoint_tpoint);
 PGDLLEXPORT Datum
 relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-    Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-    Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	if (temp1->type == TEMPORALS || temp2->type == TEMPORALS)
 	{
 		PG_FREE_IF_COPY(temp1, 0);
@@ -2157,11 +2157,11 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("Operation not supported")));
 
 	pfree(inter1); pfree(inter2); 
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
-    if (result == NULL)
-        PG_RETURN_NULL();
-    PG_RETURN_POINTER(result);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
  
 /*****************************************************************************
@@ -2233,8 +2233,8 @@ PG_FUNCTION_INFO_V1(relate_pattern_tpoint_tpoint);
 PGDLLEXPORT Datum
 relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-    Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-    Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
 	{
@@ -2263,8 +2263,8 @@ relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	bool result = spatialrel3_tpoint_tpoint(inter1, inter2, pattern, &geom_relate_pattern);
 
 	pfree(inter1); pfree(inter2); 
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
 }
 

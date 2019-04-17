@@ -75,10 +75,10 @@ temporals_bbox_ptr(TemporalS *ts)
 void
 temporals_bbox(void *box, TemporalS *ts) 
 {
-    void *box1 = temporals_bbox_ptr(ts);
+	void *box1 = temporals_bbox_ptr(ts);
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	memcpy(box, box1, bboxsize);
-    return;
+	return;
 }
 
 /* Construct a TemporalS from an array of TemporalSeq 
@@ -137,14 +137,19 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	/* Compute the size of the TemporalS */
 	size_t pdata = double_pad(sizeof(TemporalS) + (newcount+1) * sizeof(size_t));
 	size_t memsize = 0;
+	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
+	{
+		totalcount += newsequences[i]->count;
 		memsize += double_pad(VARSIZE(newsequences[i]));
+	}
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	memsize += double_pad(bboxsize);
 	TemporalS *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
+	result->totalcount = totalcount;
 	result->valuetypid = valuetypid;
 	result->type = TEMPORALS;
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(newsequences[0]->flags);
@@ -189,7 +194,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
  * Otherwise, return a number encoding whether it is before, between two 
  * sequences or after. For example, given 3 sequences, the result of the 
  * function if the value is not found will be as follows: 
- *			    0			1			2
+ *				0			1			2
  *			|------|	|------|	|------|   
  * 1)	t^ 											=> result = 0
  * 2)				 t^ 							=> result = 1
@@ -656,30 +661,18 @@ tints_as_tfloats(TemporalS *ts)
 		return tintseq_as_tfloatseq(temporals_seq_n(ts, 0));
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tintseq_as_tfloatseq1(seq, &countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tintseq_as_tfloatseq1(&sequences[k], seq);
+		k += countstep;
 	}
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);	
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	 pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences); 
 	return result;
 }
 
@@ -1291,37 +1284,24 @@ temporals_at_value(TemporalS *ts, Datum value)
 		return temporalseq_at_value(temporals_seq_n(ts, 0), value);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_at_value2(seq, value, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = temporalseq_at_value2(&sequences[k], seq, value);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
 	
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);	
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	 pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);	
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences); 
 	return result;
 }
 
@@ -1346,37 +1326,29 @@ temporals_minus_value(TemporalS *ts, Datum value)
 		return temporalseq_minus_value(temporals_seq_n(ts, 0), value);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int count;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+		count = ts->totalcount;
+	else 
+		count = ts->totalcount * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_minus_value2(seq, value,
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = temporalseq_minus_value2(&sequences[k], seq, value);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
 
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(sequences); pfree(countseqs);
-	pfree(allseqs);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -1392,37 +1364,23 @@ temporals_at_values(TemporalS *ts, Datum *values, int count)
 		return temporalseq_at_values(temporals_seq_n(ts, 0), values, count);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount * count);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_at_values1(seq, values, count,
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = temporalseq_at_values1(&sequences[k], seq, values, count);
+		k += countstep;
 	}
-	if (totalseqs == 0) 
+	if (k == 0) 
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
-	
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	 pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences); 
 	return result;
 }
 
@@ -1438,37 +1396,29 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count)
 		return temporalseq_minus_values(temporals_seq_n(ts, 0), values, count);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+		maxcount = ts->totalcount * count;
+	else 
+		maxcount = ts->totalcount * count *2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);	
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_minus_values1(seq, values, count,
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = temporalseq_minus_values1(&sequences[k], seq, values, count);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
 
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	 pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences); 
 	return result;
 }
 
@@ -1490,37 +1440,23 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 		return tnumberseq_at_range(temporals_seq_n(ts, 0), range);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_at_range2(seq, range, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tnumberseq_at_range2(&sequences[k], seq, range);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
-	
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs, 
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	 pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences	); 
 	return result;
 }
 
@@ -1542,36 +1478,28 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 		return tnumberseq_minus_range(temporals_seq_n(ts, 0), range);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalS *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+		maxcount = ts->totalcount;
+	else 
+		maxcount = ts->totalcount * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_minus_range1(seq, range, 
-			&countseqs[i]);
+		countstep = tnumberseq_minus_range1(&sequences[k], seq, range);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
-
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
 	return result;
 }
 
@@ -1587,37 +1515,23 @@ tnumbers_at_ranges(TemporalS *ts, RangeType **ranges, int count)
 		return tnumberseq_at_ranges(temporals_seq_n(ts, 0), ranges, count);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count * count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount * count);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_at_ranges1(seq, ranges, count,
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tnumberseq_at_ranges1(&sequences[k], seq, ranges, count);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
-
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
 	return result;
 }
 
@@ -1633,37 +1547,28 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 		return tnumberseq_minus_ranges(temporals_seq_n(ts, 0), ranges, count);
 
 	/* General case */
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int maxcount;
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+		maxcount = ts->totalcount;
+	else 
+		maxcount = ts->totalcount * 2;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_minus_ranges1(seq, ranges, count,
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tnumberseq_minus_ranges1(&sequences[k], seq, ranges, count);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 	{
-		pfree(sequences); pfree(countseqs);
+		pfree(sequences);
 		return NULL;
 	}
-
-	TemporalSeq **allseqs = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j ++)
-			allseqs[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allseqs,
-		totalseqs, true);
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allseqs[i]);
-	pfree(allseqs); 
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
 	return result;
 }
 
@@ -2046,10 +1951,10 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 		else
 		{
 			/* Find all periods in ps that overlap with seq
-			                  i
+							  i
 				|------------------------|  
-				     |-----|  |-----|      |---|
-					    j                    l
+					 |-----|  |-----|	  |---|
+						j					l
 			*/
 			int l;
 			for (l = j; l < ps->count; l++)

@@ -375,8 +375,8 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 	 */
 	i1 = 0;
 	i2 = 0;
-    period_deserialize(by_lower[i1], &right_lower, NULL);
-    period_deserialize(by_upper[i2], &left_upper, NULL);
+	period_deserialize(by_lower[i1], &right_lower, NULL);
+	period_deserialize(by_upper[i2], &left_upper, NULL);
 	while (true)
 	{
 		/*
@@ -391,7 +391,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 				false, left_upper.lower,
 				by_lower[i1]->upper_inc, left_upper.inclusive) > 0)
 			{
-                period_deserialize(by_lower[i1], NULL, &left_upper);
+				period_deserialize(by_lower[i1], NULL, &left_upper);
 			}
 			i1++;
 		}
@@ -420,8 +420,8 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 	 */
 	i1 = nentries - 1;
 	i2 = nentries - 1;
-    period_deserialize(by_lower[i1], NULL, &right_lower);
-    period_deserialize(by_upper[i2], NULL, &left_upper);
+	period_deserialize(by_lower[i1], NULL, &right_lower);
+	period_deserialize(by_upper[i2], NULL, &left_upper);
 	while (true)
 	{
 		/*
@@ -435,13 +435,13 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 				true, right_lower.lower, by_upper[i2]->lower_inc, 
 				right_lower.inclusive) < 0)
 			{
-                period_deserialize(by_upper[i2], &right_lower, NULL);
+				period_deserialize(by_upper[i2], &right_lower, NULL);
 			}
 			i2--;
 		}
 		if (i2 < 0)
 			break;
-        period_deserialize(by_upper[i2], NULL, &left_upper);
+		period_deserialize(by_upper[i2], NULL, &left_upper);
 
 		/*
 		 * Find count of intervals which anyway should be placed to the right

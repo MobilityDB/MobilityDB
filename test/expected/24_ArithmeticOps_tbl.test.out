@@ -1,7 +1,6 @@
 /*****************************************************************************
  * Temporal addition
  *****************************************************************************/
-
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i + temp IS NOT NULL;
  count 
 -------
@@ -77,7 +76,6 @@ SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp + t2.temp IS NOT
 /*****************************************************************************
  * Temporal subtraction
  *****************************************************************************/
-
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i - temp IS NOT NULL;
  count 
 -------
@@ -153,7 +151,6 @@ SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp - t2.temp IS NOT
 /*****************************************************************************
  * Temporal multiplication
  *****************************************************************************/
-
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i * temp IS NOT NULL;
  count 
 -------
@@ -229,7 +226,6 @@ SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp * t2.temp IS NOT
 /*****************************************************************************
  * Temporal division
  *****************************************************************************/
-
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i / temp IS NOT NULL;
  count 
 -------

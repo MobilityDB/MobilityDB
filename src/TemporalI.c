@@ -66,8 +66,8 @@ temporali_inst_n(TemporalI *ti, int index)
 void * 
 temporali_bbox_ptr(TemporalI *ti) 
 {
-    size_t *offsets = temporali_offsets_ptr(ti);
-    return temporali_data_ptr(ti) + offsets[ti->count];
+	size_t *offsets = temporali_offsets_ptr(ti);
+	return temporali_data_ptr(ti) + offsets[ti->count];
 }
 
 /* Copy the bounding box of a TemporalI in the first argument */
@@ -75,10 +75,10 @@ temporali_bbox_ptr(TemporalI *ti)
 void 
 temporali_bbox(void *box, TemporalI *ti) 
 {
-    void *box1 = temporali_bbox_ptr(ti);
+	void *box1 = temporali_bbox_ptr(ti);
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	memcpy(box, box1, bboxsize);
-    return;
+	return;
 }
 
 /* Construct a TemporalI from an array of TemporalInst */
@@ -186,7 +186,7 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t)
 		if (timestamp_cmp_internal(t, inst->t) < 0)
 			last = middle - 1;
 		else
-			first = middle + 1;    
+			first = middle + 1;
 		middle = (first + last)/2;
 	}
 	return -1;
@@ -345,7 +345,7 @@ temporali_write(TemporalI *ti, StringInfo buf)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-        temporalinst_write(inst, buf);
+		temporalinst_write(inst, buf);
 	}
 }
  

@@ -216,10 +216,10 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 			stats->stavalues[slot_idx] = bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;
-            stats->statypid[slot_idx] = type_oid(T_PERIOD);
-            stats->statyplen[slot_idx] = sizeof(Period);
-            stats->statypbyval[slot_idx] = false;
-            stats->statypalign[slot_idx] = 'd';
+			stats->statypid[slot_idx] = type_oid(T_PERIOD);
+			stats->statyplen[slot_idx] = sizeof(Period);
+			stats->statypbyval[slot_idx] = false;
+			stats->statypalign[slot_idx] = 'd';
 			slot_idx++;
 		}
 

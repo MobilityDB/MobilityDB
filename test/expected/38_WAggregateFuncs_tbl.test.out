@@ -1,7 +1,6 @@
 /*****************************************************************************
  * TemporalInst
  *****************************************************************************/
-
 select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
@@ -38,7 +37,6 @@ from tbl_tintinst;
 (1 row)
 
 /*****************************************************************************/
-
 select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
@@ -77,7 +75,6 @@ from tbl_tfloatinst;
 /*****************************************************************************
  * TemporalI
  *****************************************************************************/
-
 select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
@@ -114,7 +111,6 @@ from tbl_tinti;
 (1 row)
 
 /*****************************************************************************/
-
 select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
@@ -153,7 +149,6 @@ from tbl_tfloati;
 /*****************************************************************************
  * TemporalSeq
  *****************************************************************************/
-
 select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
@@ -190,7 +185,6 @@ from tbl_tintseq;
 (1 row)
 
 /*****************************************************************************/
-
 select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tfloatseq;
  numsequences 
@@ -215,7 +209,6 @@ from tbl_tfloatseq;
 /*****************************************************************************
  * TemporalS
  *****************************************************************************/
-
 select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
@@ -252,7 +245,6 @@ from tbl_tints;
 (1 row)
 
 /*****************************************************************************/
-
 select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 

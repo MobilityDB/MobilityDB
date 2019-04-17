@@ -728,11 +728,11 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	}
 	
 	/* The original sequence will be split into ps->count + minus->count sequences
-		|----------------------|
-		      t     t     t
-			|---| |---| |---|
-		  f      f     f      f 
-		|---|   |-|   |-|    |-|
+		|------------------------|
+			  t		 t		t
+			|---| |---|	|-----|
+		 f		  f	   f	 f 
+		|---|   |-|   |-|	|-|
 	*/
 	*count = ps->count + minus->count;
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * *count);

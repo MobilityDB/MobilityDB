@@ -15,52 +15,52 @@
  *****************************************************************************/
 
 /* 1) There are 3 families of functions accounting for 
- *    - binary operators, such as spatial relationships functions (e.g. 
- *      intersects). 
- *    - ternary operators, such as spatial relationships functions (e.g. 
- *      tdwithin) that need an additional parameter. 
- *    - quaternary operators which apply binary operators (e.g. + or <) to
- *      temporal numeric types that can be of different base type (that is,
- *      integer and float), and thus the third and fourth arguments are the
- *      Oids of the first two arguments.
+ *	- binary operators, such as spatial relationships functions (e.g. 
+ *	  intersects). 
+ *	- ternary operators, such as spatial relationships functions (e.g. 
+ *	  tdwithin) that need an additional parameter. 
+ *	- quaternary operators which apply binary operators (e.g. + or <) to
+ *	  temporal numeric types that can be of different base type (that is,
+ *	  integer and float), and thus the third and fourth arguments are the
+ *	  Oids of the first two arguments.
  *  2) For each of the previous families, there are two set of functions
- *     depending on whether the resulting temporal type is discrete (e.g., 
- *     = for temporal floats that results in a temporal Boolean) or 
- *     continuous (e.g., distance for temporal points that results in a 
- *     temporal float).
+ *	 depending on whether the resulting temporal type is discrete (e.g., 
+ *	 = for temporal floats that results in a temporal Boolean) or 
+ *	 continuous (e.g., distance for temporal points that results in a 
+ *	 temporal float).
  *  3) For each of the previous cases there are two set of functions
- *     depending on whether the arguments are 
- *     - a temporal type and a base type. In this case the operand is applied 
- *       to each instant of the temporal type.
- *     - two temporal types. In this case the operands must be synchronized 
- *       and the operator is applied to each pair of synchronized instants. 
- *       Furthermore, some operators require in addition to add intermediate
- *       points between synchronized instants to take into account the crossings
- *       or the turning points (or local minimum/maximum) of the function 
- *       defined by the operator. For example, tfloat + tfloat only needs to 
- *       synchronize the arguments while tfloat * tfloat requires in addition 
- *       to add the turning point, which is defined at the middle between the
- *       two instants in which the linear functions defined by the arguments
- *       take the value 0.
+ *	 depending on whether the arguments are 
+ *	 - a temporal type and a base type. In this case the operand is applied 
+ *	   to each instant of the temporal type.
+ *	 - two temporal types. In this case the operands must be synchronized 
+ *	   and the operator is applied to each pair of synchronized instants. 
+ *	   Furthermore, some operators require in addition to add intermediate
+ *	   points between synchronized instants to take into account the crossings
+ *	   or the turning points (or local minimum/maximum) of the function 
+ *	   defined by the operator. For example, tfloat + tfloat only needs to 
+ *	   synchronize the arguments while tfloat * tfloat requires in addition 
+ *	   to add the turning point, which is defined at the middle between the
+ *	   two instants in which the linear functions defined by the arguments
+ *	   take the value 0.
  * 
  * Examples
  *   - tfloatseq * base => oper4_temporalseq_base
- *     applies the * operator to each instant.
+ *	 applies the * operator to each instant.
  *   - tfloatseq < base => oper4_temporalseq_base_crossdisc
- *     synchronizes the sequences, applies the < operator to each instant, 
- *     and if the tfloatseq is equal to base in the middle of two subsequent
- *     instants add an instant sequence at the crossing. The result is a 
- *     tfloats.
+ *	 synchronizes the sequences, applies the < operator to each instant, 
+ *	 and if the tfloatseq is equal to base in the middle of two subsequent
+ *	 instants add an instant sequence at the crossing. The result is a 
+ *	 tfloats.
  *   - tfloatseq + tfloatseq => oper4_temporalseq_temporalseq
- *     synchronizes the sequences and applies the + operator to each instant.
+ *	 synchronizes the sequences and applies the + operator to each instant.
  *   - tfloatseq * tfloatseq => oper4_temporalseq_temporalseq_crosscont
- *     synchronizes the sequences adding the turning points and applies the *
- *     operator to each instant. The result is a tfloatseq.
+ *	 synchronizes the sequences adding the turning points and applies the *
+ *	 operator to each instant. The result is a tfloatseq.
  *   - tfloatseq < tfloatseq => oper4_temporalseq_temporalseq_crossdisc
- *     synchronizes the sequences, applies the < operator to each instant, 
- *     and if there is a crossing in the middle of two subsequent pairs of 
- *     instants add an instant sequence and the crossing. The result is a 
- *     tfloats.
+ *	 synchronizes the sequences, applies the < operator to each instant, 
+ *	 and if there is a crossing in the middle of two subsequent pairs of 
+ *	 instants add an instant sequence and the crossing. The result is a 
+ *	 tfloats.
  */
 
 
@@ -98,10 +98,10 @@ oper2_temporali_base(TemporalI *ti, Datum value,
 			valuetypid, invert);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-    for (int i = 0; i < ti->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
 
 TemporalSeq *
@@ -117,10 +117,10 @@ oper2_temporalseq_base(TemporalSeq *seq, Datum value,
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
-    for (int i = 0; i < seq->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
 
 TemporalS *
@@ -136,11 +136,11 @@ oper2_temporals_base(TemporalS *ts, Datum value,
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
 	
-    for (int i = 0; i < ts->count; i++)
-        pfree(sequences[i]);
-    pfree(sequences);
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	
-    return result;
+	return result;
 }
 
 /*****************************************************************************/
@@ -163,7 +163,7 @@ oper2_temporal_base(Temporal *temp, Datum d,
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)oper2_temporals_base((TemporalS *)temp, d,
 			operator, valuetypid, invert);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
 	return result;
@@ -199,10 +199,10 @@ oper3_temporali_base(TemporalI *ti, Datum value, Datum param,
 			valuetypid, invert);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-    for (int i = 0; i < ti->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
 
 TemporalSeq *
@@ -218,10 +218,10 @@ oper3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
-    for (int i = 0; i < seq->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
  
 TemporalS *
@@ -236,10 +236,10 @@ oper3_temporals_base(TemporalS *ts, Datum value, Datum param,
 			valuetypid, invert);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
-    for (int i = 0; i < ts->count; i++)
-        pfree(sequences[i]);
-    pfree(sequences);
-    return result;
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
 }
 
 /*****************************************************************************
@@ -276,10 +276,10 @@ oper4_temporali_base(TemporalI *ti, Datum value,
 			datumtypid, valuetypid, invert);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-    for (int i = 0; i < ti->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
 
 TemporalSeq *
@@ -296,10 +296,10 @@ oper4_temporalseq_base(TemporalSeq *seq, Datum value,
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
-    for (int i = 0; i < seq->count; i++)
-        pfree(instants[i]);
-    pfree(instants);
-    return result;
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
 }
 
 TemporalS *
@@ -316,11 +316,11 @@ oper4_temporals_base(TemporalS *ts, Datum value,
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
 	
-    for (int i = 0; i < ts->count; i++)
-        pfree(sequences[i]);
-    pfree(sequences);
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	
-    return result;
+	return result;
 }
 
 /*****************************************************************************/
@@ -544,7 +544,7 @@ oper4_temporalseq_base_crossdisc2(TemporalSeq *seq, Datum value,
 		lower_inc = true;
 	}	
 	*count = k;
-    return result;
+	return result;
 }
 
 TemporalS *
@@ -561,7 +561,7 @@ oper4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value,
 		pfree(sequences[i]);
 	pfree(sequences);
 	
-    return result;
+	return result;
 }
 
 /*****************************************************************************/
@@ -598,7 +598,7 @@ oper4_temporals_base_crossdisc(TemporalS *ts, Datum value,
 		pfree(allsequences[i]);
 	pfree(allsequences); 
 	
-    return result;
+	return result;
 }
 
 /*****************************************************************************
@@ -2740,7 +2740,7 @@ static int
 sync_oper3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, 
-    bool lower_inc, bool upper_inc, Datum param,
+	bool lower_inc, bool upper_inc, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid)
 {
 	Datum startvalue1 = temporalinst_value(start1);

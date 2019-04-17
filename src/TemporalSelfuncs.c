@@ -108,11 +108,11 @@ same_bbox_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-    BBoxBounds bBoxBounds;
-    bool numeric, temporal;
-    double lower, upper;
-    Period *period;
-    ConstantData constantData;
+	BBoxBounds bBoxBounds;
+	bool numeric, temporal;
+	double lower, upper;
+	Period *period;
+	ConstantData constantData;
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -165,8 +165,8 @@ same_bbox_sel(PG_FUNCTION_ARGS)
 					 &temporal, &period);
 
 	constantData.bBoxBounds = bBoxBounds;
-    constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-    constantData.period = NULL;   /* keep compiler quiet */
+	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
+	constantData.period = NULL;   /* keep compiler quiet */
 	if (numeric) 
 	{
 		constantData.lower = lower;
@@ -202,11 +202,11 @@ contained_bbox_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-    BBoxBounds bBoxBounds;
-    bool numeric, temporal;
-    double lower, upper;
-    Period *period;
-    ConstantData constantData;
+	BBoxBounds bBoxBounds;
+	bool numeric, temporal;
+	double lower, upper;
+	Period *period;
+	ConstantData constantData;
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -235,15 +235,15 @@ contained_bbox_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(0.0);
 	}
 
-    /*
-     * Set constant information
-     */
+	/*
+	 * Set constant information
+	 */
 	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
 					 &temporal, &period);
 
 	constantData.bBoxBounds = bBoxBounds;
-    constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-    constantData.period = NULL;   /* keep compiler quiet */
+	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
+	constantData.period = NULL;   /* keep compiler quiet */
 	if (numeric) 
 	{
 		constantData.lower = lower;
@@ -298,11 +298,11 @@ contains_bbox_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-    BBoxBounds bBoxBounds;
-    bool numeric, temporal;
-    double lower, upper;
-    Period *period;
-    ConstantData constantData;
+	BBoxBounds bBoxBounds;
+	bool numeric, temporal;
+	double lower, upper;
+	Period *period;
+	ConstantData constantData;
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -331,15 +331,15 @@ contains_bbox_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(0.0);
 	}
 
-    /*
-     * Set constant information
-     */
-    get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-                     &temporal, &period);
+	/*
+	 * Set constant information
+	 */
+	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
+					 &temporal, &period);
 
 	constantData.bBoxBounds = bBoxBounds;
-    constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-    constantData.period = NULL;   /* keep compiler quiet */
+	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
+	constantData.period = NULL;   /* keep compiler quiet */
 	if (numeric) 
 	{
 		constantData.lower = lower;
@@ -395,11 +395,11 @@ overlaps_bbox_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-    BBoxBounds bBoxBounds;
-    bool numeric, temporal;
-    double lower, upper;
-    Period *period;
-    ConstantData constantData;
+	BBoxBounds bBoxBounds;
+	bool numeric, temporal;
+	double lower, upper;
+	Period *period;
+	ConstantData constantData;
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
@@ -443,17 +443,17 @@ overlaps_bbox_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-    /*
-     * Set constant information
-     */
+	/*
+	 * Set constant information
+	 */
 	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-                     &temporal, &period);
+					 &temporal, &period);
 
 	constantData.bBoxBounds = bBoxBounds;
 	constantData.oid = ((Const *) other)->consttype;
 
 	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-    constantData.period = NULL;   /* keep compiler quiet */
+	constantData.period = NULL;   /* keep compiler quiet */
 	if (numeric) 
 	{
 		constantData.lower = lower;
@@ -482,256 +482,256 @@ bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData
 	double selec = 0.0;
 
 	if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
-        vardata.vartype == type_oid(T_TIMESTAMPTZ))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                     false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                if (constantData.period->lower == constantData.period->upper)
-                {
-                    Oid op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else
-                    selec = 0;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
+		vardata.vartype == type_oid(T_TIMESTAMPTZ))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				if (constantData.period->lower == constantData.period->upper)
+				{
+					Oid op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else
+					selec = 0;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
 
-        bool hasNumeric = false, hasTemporal = false;
-        double selec1 = 0.0;
+		bool hasNumeric = false, hasTemporal = false;
+		double selec1 = 0.0;
 
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                hasNumeric = true;
-                selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                hasNumeric = true;
-                if (constantData.lower == constantData.upper)
-                {
-                    Oid op = oper_oid(LT_OP, vartype, vartype);
-                    selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                }
-                else
-                    selec1 = 0.0;
-                break;
-            }
-            default:
-                break;
-        }
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				hasNumeric = true;
+				selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				hasNumeric = true;
+				if (constantData.lower == constantData.upper)
+				{
+					Oid op = oper_oid(LT_OP, vartype, vartype);
+					selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				}
+				else
+					selec1 = 0.0;
+				break;
+			}
+			default:
+				break;
+		}
 
-        double selec2 = 0.0;
+		double selec2 = 0.0;
 
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                hasTemporal = true;
-                selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                      false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                hasTemporal = true;
-                if (constantData.period->lower == constantData.period->upper)
-                {
-                    Oid op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                          false, TEMPORAL_STATISTICS);
-                }
-                else
-                    selec2 = 0;
-                break;
-            }
-            default:
-                break;
-        }
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				hasTemporal = true;
+				selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									  false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				hasTemporal = true;
+				if (constantData.period->lower == constantData.period->upper)
+				{
+					Oid op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										  false, TEMPORAL_STATISTICS);
+				}
+				else
+					selec2 = 0;
+				break;
+			}
+			default:
+				break;
+		}
 
-        if (hasNumeric && hasTemporal)
-            selec = selec1 * selec2;
-        else if (hasNumeric && !hasTemporal)
-            selec = selec1;
+		if (hasNumeric && hasTemporal)
+			selec = selec1 * selec2;
+		else if (hasNumeric && !hasTemporal)
+			selec = selec1;
 
-        else if (!hasNumeric && hasTemporal)
-            selec = selec2;
-        else
-            selec = 0.0;
-    }
-    else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else
-                {
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                    selec *= period_sel_internal(root, &vardata, constantData.period,
-                                                 oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                }
-                break;
-            }
-            case DTCONST:
-            {
-                if (constantData.period->lower == constantData.period->upper)
-                {
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else
-                {
-                    Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		else if (!hasNumeric && hasTemporal)
+			selec = selec2;
+		else
+			selec = 0.0;
+	}
+	else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else
+				{
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+					selec *= period_sel_internal(root, &vardata, constantData.period,
+												 oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+				}
+				break;
+			}
+			case DTCONST:
+			{
+				if (constantData.period->lower == constantData.period->upper)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else
+				{
+					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
-                    selec = scalarineq_sel(root, opl, false, false, &vardata,
-                                           TimestampTzGetDatum(constantData.period->lower),
-                                           TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec += scalarineq_sel(root, opg, true, true, &vardata,
-                                            TimestampTzGetDatum(constantData.period->upper),
-                                            TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec = 1 - selec;
-                    selec = selec < 0 ? 0 : selec;
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == T_PERIOD)
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                selec *= period_sel_internal(root, &vardata, constantData.period,
-                                             oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                selec *= period_sel_internal(root, &vardata, constantData.period,
-                                             oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
+					selec = scalarineq_sel(root, opl, false, false, &vardata,
+										   TimestampTzGetDatum(constantData.period->lower),
+										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec += scalarineq_sel(root, opg, true, true, &vardata,
+											TimestampTzGetDatum(constantData.period->upper),
+											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec = 1 - selec;
+					selec = selec < 0 ? 0 : selec;
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == T_PERIOD)
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				selec *= period_sel_internal(root, &vardata, constantData.period,
+											 oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				selec *= period_sel_internal(root, &vardata, constantData.period,
+											 oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
 
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.lower, VALUE_STATISTICS);
-                selec *= calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.lower, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.upper, VALUE_STATISTICS);
-                selec *= calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.upper, VALUE_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.lower, VALUE_STATISTICS);
+				selec *= calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.lower, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.upper, VALUE_STATISTICS);
+				selec *= calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.upper, VALUE_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
 
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                if (constantData.lower == constantData.upper)
-                {
-                    Oid op = oper_oid(LT_OP, vartype, vartype);
-                    selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                }
-                else
-                    selec = 0.0;
-                break;
-            }
-            default:
-                break;
-        }
-    }
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				if (constantData.lower == constantData.upper)
+				{
+					Oid op = oper_oid(LT_OP, vartype, vartype);
+					selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				}
+				else
+					selec = 0.0;
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
 	return selec;
 }
@@ -740,209 +740,209 @@ double
 bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData) 
 {
 	double selec = 0.0;
-    if (vardata.vartype == type_oid(T_TBOOL)  || vardata.vartype == type_oid(T_TTEXT) ||
-        vardata.vartype == type_oid(T_TIMESTAMPTZ))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                     false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                selec = scalarineq_sel(root, opl, false, false, &vardata,
-                                       TimestampTzGetDatum(constantData.period->lower),
-                                       TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                selec += scalarineq_sel(root, opg, true, true, &vardata,
-                                        TimestampTzGetDatum(constantData.period->upper),
-                                        TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                selec = selec > 1 ? 1 : selec;
-                selec = 1 - selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
-        bool hasNumeric = false, hasTemporal = false;
-        double selec1 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                hasNumeric = true;
-                selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid opl = oper_oid(LE_OP, vartype, vartype);
-                Oid opg = oper_oid(GE_OP, vartype, vartype);
-                hasNumeric = true;
-                selec1 = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower, type_oid(vartype),
-                                        VALUE_STATISTICS);
-                selec1 += scalarineq_sel(root, opg, true, true, &vardata, (Datum) constantData.upper, type_oid(vartype),
-                                         VALUE_STATISTICS);
-                selec1 = selec1 > 1 ? 1 : selec1;
-                selec1 = 1 - selec1;
-                break;
-            }
-            default:
-                break;
-        }
-        double selec2 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                hasTemporal = true;
-                selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                      false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid opl = oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                Oid opg = oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                hasTemporal = true;
-                selec2 = scalarineq_sel(root, opl, false, true, &vardata,
-                                        TimestampTzGetDatum(constantData.period->lower),
-                                        TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                selec2 += scalarineq_sel(root, opg, true, true, &vardata,
-                                         TimestampTzGetDatum(constantData.period->upper),
-                                         TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                selec2 = selec2 > 1 ? 1 : selec2;
-                selec2= 1- selec2;
-                break;
-            }
-            default:
-                break;
-        }
+	if (vardata.vartype == type_oid(T_TBOOL)  || vardata.vartype == type_oid(T_TTEXT) ||
+		vardata.vartype == type_oid(T_TIMESTAMPTZ))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = scalarineq_sel(root, opl, false, false, &vardata,
+									   TimestampTzGetDatum(constantData.period->lower),
+									   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+				selec += scalarineq_sel(root, opg, true, true, &vardata,
+										TimestampTzGetDatum(constantData.period->upper),
+										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+				selec = selec > 1 ? 1 : selec;
+				selec = 1 - selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
+		bool hasNumeric = false, hasTemporal = false;
+		double selec1 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				hasNumeric = true;
+				selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid opl = oper_oid(LE_OP, vartype, vartype);
+				Oid opg = oper_oid(GE_OP, vartype, vartype);
+				hasNumeric = true;
+				selec1 = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower, type_oid(vartype),
+										VALUE_STATISTICS);
+				selec1 += scalarineq_sel(root, opg, true, true, &vardata, (Datum) constantData.upper, type_oid(vartype),
+										 VALUE_STATISTICS);
+				selec1 = selec1 > 1 ? 1 : selec1;
+				selec1 = 1 - selec1;
+				break;
+			}
+			default:
+				break;
+		}
+		double selec2 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				hasTemporal = true;
+				selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									  false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid opl = oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				Oid opg = oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				hasTemporal = true;
+				selec2 = scalarineq_sel(root, opl, false, true, &vardata,
+										TimestampTzGetDatum(constantData.period->lower),
+										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+				selec2 += scalarineq_sel(root, opg, true, true, &vardata,
+										 TimestampTzGetDatum(constantData.period->upper),
+										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+				selec2 = selec2 > 1 ? 1 : selec2;
+				selec2= 1- selec2;
+				break;
+			}
+			default:
+				break;
+		}
 
-        if (hasNumeric && hasTemporal)
-            selec = selec1 * selec2;
-        else if (hasNumeric && !hasTemporal)
-            selec = selec1;
-        else if (!hasNumeric && hasTemporal)
-            selec = selec2;
-        else
-            selec = 0;
-    }
-    else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case DTCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == T_PERIOD)
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.lower, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
-                                                        (Datum) constantData.upper, VALUE_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid opl = oper_oid(LE_OP, vartype, vartype);
-                Oid opg = oper_oid(GE_OP, vartype, vartype);
-                selec = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower,
-                                       type_oid(vartype), VALUE_STATISTICS);
-                selec += scalarineq_sel(root, opg, true, true, &vardata, (Datum) constantData.upper,
-                                        type_oid(vartype), VALUE_STATISTICS);
-                selec = selec > 1 ? 1 : selec;
-                selec = 1 -selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
+		if (hasNumeric && hasTemporal)
+			selec = selec1 * selec2;
+		else if (hasNumeric && !hasTemporal)
+			selec = selec1;
+		else if (!hasNumeric && hasTemporal)
+			selec = selec2;
+		else
+			selec = 0;
+	}
+	else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case DTCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == T_PERIOD)
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.lower, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contained(&vardata, typcache, (Datum) constantData.lower,
+														(Datum) constantData.upper, VALUE_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid opl = oper_oid(LE_OP, vartype, vartype);
+				Oid opg = oper_oid(GE_OP, vartype, vartype);
+				selec = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower,
+									   type_oid(vartype), VALUE_STATISTICS);
+				selec += scalarineq_sel(root, opg, true, true, &vardata, (Datum) constantData.upper,
+										type_oid(vartype), VALUE_STATISTICS);
+				selec = selec > 1 ? 1 : selec;
+				selec = 1 -selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
 	return selec;
 }
@@ -951,205 +951,205 @@ double
 bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData) 
 {
 	double selec = 0.0;
-    if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
-        vardata.vartype == type_oid(T_TIMESTAMPTZ))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                     false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                     false, TEMPORAL_STATISTICS);
-                selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
-                                      false, TEMPORAL_STATISTICS);
-                selec = selec > 1 ? 1 : selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
-        bool hasNumeric = false, hasTemporal = false;
-        double selec1 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                hasNumeric = true;
-                selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                hasNumeric = true;
-                selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                selec1 *= var_eq_const(&vardata, op, (Datum) constantData.upper, false, VALUE_STATISTICS);
-                selec1 = selec1 > 1 ? 1 : selec1;
-                break;
-            }
-            default:
-                break;
-        }
-        double selec2 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                hasTemporal = true;
-                selec2 = var_eq_const(&vardata, op, (Datum) constantData.period->lower, false, TEMPORAL_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                hasTemporal = true;
-                selec2 = var_eq_const(&vardata, op, (Datum) constantData.period->lower, false, TEMPORAL_STATISTICS);
-                selec2 *= var_eq_const(&vardata, op, (Datum) constantData.period->upper, false, TEMPORAL_STATISTICS);
-                selec2 = selec2 > 1 ? 1 : selec2;
-                break;
-            }
-            default:
-                break;
-        }
-        if (hasNumeric && hasTemporal)
-            selec = selec1 * selec2;
-        else if (hasNumeric && !hasTemporal)
-            selec = selec1;
-        else if (!hasNumeric && hasTemporal)
-            selec = selec2;
-        else
-            selec = 0;
-    }
-    else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case DTCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else if (constantData.period->lower == constantData.period->upper)
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-                else
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == T_PERIOD)
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
-                                                       (Datum) constantData.lower, VALUE_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
-                selec = calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
-                                                       (Datum) constantData.upper, VALUE_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                     false, DEFAULT_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                selec *= var_eq_const(&vardata, op, (Datum) constantData.upper, false, VALUE_STATISTICS);
-                selec = selec > 1 ? 1 : selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
+	if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
+		vardata.vartype == type_oid(T_TIMESTAMPTZ))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, TEMPORAL_STATISTICS);
+				selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
+									  false, TEMPORAL_STATISTICS);
+				selec = selec > 1 ? 1 : selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
+		bool hasNumeric = false, hasTemporal = false;
+		double selec1 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				hasNumeric = true;
+				selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				hasNumeric = true;
+				selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				selec1 *= var_eq_const(&vardata, op, (Datum) constantData.upper, false, VALUE_STATISTICS);
+				selec1 = selec1 > 1 ? 1 : selec1;
+				break;
+			}
+			default:
+				break;
+		}
+		double selec2 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				hasTemporal = true;
+				selec2 = var_eq_const(&vardata, op, (Datum) constantData.period->lower, false, TEMPORAL_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				hasTemporal = true;
+				selec2 = var_eq_const(&vardata, op, (Datum) constantData.period->lower, false, TEMPORAL_STATISTICS);
+				selec2 *= var_eq_const(&vardata, op, (Datum) constantData.period->upper, false, TEMPORAL_STATISTICS);
+				selec2 = selec2 > 1 ? 1 : selec2;
+				break;
+			}
+			default:
+				break;
+		}
+		if (hasNumeric && hasTemporal)
+			selec = selec1 * selec2;
+		else if (hasNumeric && !hasTemporal)
+			selec = selec1;
+		else if (!hasNumeric && hasTemporal)
+			selec = selec2;
+		else
+			selec = 0;
+	}
+	else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case DTCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else if (constantData.period->lower == constantData.period->upper)
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
+				else
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == T_PERIOD)
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
+													   (Datum) constantData.lower, VALUE_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
+				selec = calc_hist_selectivity_contains(&vardata, typcache, (Datum) constantData.lower,
+													   (Datum) constantData.upper, VALUE_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, DEFAULT_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				selec *= var_eq_const(&vardata, op, (Datum) constantData.upper, false, VALUE_STATISTICS);
+				selec = selec > 1 ? 1 : selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
 	return selec;
 }
@@ -1157,266 +1157,266 @@ bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, Constant
 double
 bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData) 
 {
-    double selec = 0.0;
+	double selec = 0.0;
 
-    if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
-        vardata.vartype == type_oid(T_TIMESTAMPTZ))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
+	if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
+		vardata.vartype == type_oid(T_TIMESTAMPTZ))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
 
-                    break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
-                    selec = scalarineq_sel(root, opl, false, false, &vardata,
-                                           TimestampTzGetDatum(constantData.period->lower),
-                                           TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec += scalarineq_sel(root, opg, true, true, &vardata,
-                                            TimestampTzGetDatum(constantData.period->upper),
-                                            TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec = 1 - selec;
-                    selec = selec < 0 ? 0 : selec;
-                }
-                else
-                {
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                }
-                break;
-            }
-            default:
-                break;
-        }
+					selec = scalarineq_sel(root, opl, false, false, &vardata,
+										   TimestampTzGetDatum(constantData.period->lower),
+										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec += scalarineq_sel(root, opg, true, true, &vardata,
+											TimestampTzGetDatum(constantData.period->upper),
+											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec = 1 - selec;
+					selec = selec < 0 ? 0 : selec;
+				}
+				else
+				{
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+				}
+				break;
+			}
+			default:
+				break;
+		}
 
-    }
-    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
-        CachedType varRangeType = (vardata.vartype == type_oid(T_TINT)) ? T_INTRANGE : T_FLOATRANGE;
-        bool hasNumeric = false, hasTemporal = false;
-        /*
-         * Compute the selectivity with regard to the value of the constant.
-         */
-        double selec1 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    hasNumeric = true;
-                    Oid op = oper_oid(EQ_OP, vartype, vartype);
-                    selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-                }
-                else
-                 {
-                    hasNumeric = true;
-                    TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-                    selec1 = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, true, typcache,
-                                                VALUE_STATISTICS);
-                    selec1 += range_sel_internal(root, &vardata, (Datum) constantData.lower, true, true, typcache,
-                                                 VALUE_STATISTICS);
-                    selec1 = 1 - selec1;
-                    selec1 = selec1 < 0 ? 0 : selec1;
-                 }
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                hasNumeric = true;
-                Oid opl = oper_oid(LT_OP, vartype, vartype);
-                Oid opg = oper_oid(GT_OP, vartype, vartype);
-                selec1 = scalarineq_sel(root, opl, false, false, &vardata, (Datum) constantData.lower,
-                                        type_oid(vartype), VALUE_STATISTICS);
-                selec1 += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
-                                         type_oid(vartype), VALUE_STATISTICS);
-                selec1 = 1 - selec1;
-                selec1 = selec1 < 0 ? 0 : selec1;
-                break;
-            }
-            default:
-                break;
-        }
-        /*
-         * Compute the selectivity with regard to the time dimension of the constant.
-         */
-        double selec2 = 0.0;
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    hasTemporal = true;
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                          false, TEMPORAL_STATISTICS);
-                }
-                else
-                {
-                    hasTemporal = true;
-                    selec2 = period_sel_internal(root, &vardata, constantData.period,
-                                                 oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
+	}
+	else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
+		CachedType varRangeType = (vardata.vartype == type_oid(T_TINT)) ? T_INTRANGE : T_FLOATRANGE;
+		bool hasNumeric = false, hasTemporal = false;
+		/*
+		 * Compute the selectivity with regard to the value of the constant.
+		 */
+		double selec1 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					hasNumeric = true;
+					Oid op = oper_oid(EQ_OP, vartype, vartype);
+					selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
+				}
+				else
+				 {
+					hasNumeric = true;
+					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
+					selec1 = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, true, typcache,
+												VALUE_STATISTICS);
+					selec1 += range_sel_internal(root, &vardata, (Datum) constantData.lower, true, true, typcache,
+												 VALUE_STATISTICS);
+					selec1 = 1 - selec1;
+					selec1 = selec1 < 0 ? 0 : selec1;
+				 }
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				hasNumeric = true;
+				Oid opl = oper_oid(LT_OP, vartype, vartype);
+				Oid opg = oper_oid(GT_OP, vartype, vartype);
+				selec1 = scalarineq_sel(root, opl, false, false, &vardata, (Datum) constantData.lower,
+										type_oid(vartype), VALUE_STATISTICS);
+				selec1 += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
+										 type_oid(vartype), VALUE_STATISTICS);
+				selec1 = 1 - selec1;
+				selec1 = selec1 < 0 ? 0 : selec1;
+				break;
+			}
+			default:
+				break;
+		}
+		/*
+		 * Compute the selectivity with regard to the time dimension of the constant.
+		 */
+		double selec2 = 0.0;
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					hasTemporal = true;
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										  false, TEMPORAL_STATISTICS);
+				}
+				else
+				{
+					hasTemporal = true;
+					selec2 = period_sel_internal(root, &vardata, constantData.period,
+												 oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
 
-                }
-                break;
-            }
-            default:
-                break;
-        }
-        if (hasNumeric && hasTemporal)
-            selec = selec1 * selec2;
-        else if (hasNumeric && !hasTemporal)
-            selec = selec1;
-        else if (!hasNumeric && hasTemporal)
-             selec = selec2;
-        else
-            selec = 0.0;
-    }
-    else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case DTCONST:
-            {
-                if(vardata.atttypmod == TEMPORALINST)
-                {
-                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-                                         false, TEMPORAL_STATISTICS);
-                }
-                else
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == T_PERIOD)
-    {
-        switch (constantData.bBoxBounds)
-        {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                selec = period_sel_internal(root, &vardata, constantData.period,
-                                            oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
-                selec = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, false, typcache,
-                                           DEFAULT_STATISTICS);
-                selec += range_sel_internal(root, &vardata, (Datum) constantData.upper, true, false, typcache,
-                                            DEFAULT_STATISTICS);
-                selec = 1 - selec;
-                selec = selec < 0 ? 0 : selec;
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
-                selec = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, false, typcache,
-                                           DEFAULT_STATISTICS);
-                selec += range_sel_internal(root, &vardata, (Datum) constantData.upper, true, false, typcache,
-                                            DEFAULT_STATISTICS);
-                selec = 1 - selec;
-                selec = selec < 0 ? 0 : selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-    else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
-    {
-        CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
-        switch (constantData.bBoxBounds)
-        {
-            case SNCONST:
-            case SNCONST_STCONST:
-            case SNCONST_DTCONST:
-            {
-                Oid op = oper_oid(EQ_OP, vartype, vartype);
-                selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, DEFAULT_STATISTICS);
-                break;
-            }
-            case DNCONST:
-            case DNCONST_STCONST:
-            case DNCONST_DTCONST:
-            {
-                Oid opl = oper_oid(LT_OP, vartype, vartype);
-                Oid opg = oper_oid(GT_OP, vartype, vartype);
-                selec = scalarineq_sel(root, opl, false, false, &vardata, (Datum) constantData.lower,
-                                       type_oid(vartype), DEFAULT_STATISTICS);
-                selec += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
-                                        type_oid(vartype), DEFAULT_STATISTICS);
-                selec = 1 - selec;
-                selec = selec < 0 ? 0 : selec;
-                break;
-            }
-            default:
-                break;
-        }
-    }
+				}
+				break;
+			}
+			default:
+				break;
+		}
+		if (hasNumeric && hasTemporal)
+			selec = selec1 * selec2;
+		else if (hasNumeric && !hasTemporal)
+			selec = selec1;
+		else if (!hasNumeric && hasTemporal)
+			 selec = selec2;
+		else
+			selec = 0.0;
+	}
+	else if (vardata.vartype == type_oid(T_TGEOMPOINT) || vardata.vartype == type_oid(T_TGEOGPOINT))
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case DTCONST:
+			{
+				if(vardata.atttypmod == TEMPORALINST)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+				}
+				else
+					selec = period_sel_internal(root, &vardata, constantData.period,
+												oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == T_PERIOD)
+	{
+		switch (constantData.bBoxBounds)
+		{
+			case STCONST:
+			case SNCONST_STCONST:
+			case DNCONST_STCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), DEFAULT_STATISTICS);
+				break;
+			}
+			case DTCONST:
+			case SNCONST_DTCONST:
+			case DNCONST_DTCONST:
+			{
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD), DEFAULT_STATISTICS);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INTRANGE)) ? T_INTRANGE : T_FLOATRANGE;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(vartype), TYPECACHE_RANGE_INFO);
+				selec = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, false, typcache,
+										   DEFAULT_STATISTICS);
+				selec += range_sel_internal(root, &vardata, (Datum) constantData.upper, true, false, typcache,
+											DEFAULT_STATISTICS);
+				selec = 1 - selec;
+				selec = selec < 0 ? 0 : selec;
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
+				selec = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, false, typcache,
+										   DEFAULT_STATISTICS);
+				selec += range_sel_internal(root, &vardata, (Datum) constantData.upper, true, false, typcache,
+											DEFAULT_STATISTICS);
+				selec = 1 - selec;
+				selec = selec < 0 ? 0 : selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else if (vardata.vartype == type_oid(T_INT4) || vardata.vartype == type_oid(T_FLOAT8))
+	{
+		CachedType vartype = (vardata.vartype == type_oid(T_INT4)) ? T_INT4 : T_FLOAT8;
+		switch (constantData.bBoxBounds)
+		{
+			case SNCONST:
+			case SNCONST_STCONST:
+			case SNCONST_DTCONST:
+			{
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec = var_eq_const(&vardata, op, (Datum) constantData.lower, false, DEFAULT_STATISTICS);
+				break;
+			}
+			case DNCONST:
+			case DNCONST_STCONST:
+			case DNCONST_DTCONST:
+			{
+				Oid opl = oper_oid(LT_OP, vartype, vartype);
+				Oid opg = oper_oid(GT_OP, vartype, vartype);
+				selec = scalarineq_sel(root, opl, false, false, &vardata, (Datum) constantData.lower,
+									   type_oid(vartype), DEFAULT_STATISTICS);
+				selec += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
+										type_oid(vartype), DEFAULT_STATISTICS);
+				selec = 1 - selec;
+				selec = selec < 0 ? 0 : selec;
+				break;
+			}
+			default:
+				break;
+		}
+	}
 
-    return selec;
+	return selec;
 }
 
 PG_FUNCTION_INFO_V1(after_temporal_sel);
@@ -4130,7 +4130,7 @@ calc_length_hist_frac_internal(Datum *length_hist_values,
  */
 static int
 length_hist_bsearch_internal(Datum *length_hist_values, int length_hist_nvalues,
-                             double value, bool equal)
+							 double value, bool equal)
 {
 	int lower = -1, upper = length_hist_nvalues - 1;
 
@@ -4148,88 +4148,88 @@ length_hist_bsearch_internal(Datum *length_hist_values, int length_hist_nvalues,
 
 void
 get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
-                 double *lower, double *upper, bool *temporal, Period **period)
+				 double *lower, double *upper, bool *temporal, Period **period)
 {
-    Oid consttype = ((Const *) other)->consttype;
-    *numeric = false;
-    *temporal = false;
-    if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-    {
-        Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-        BOX *box = palloc(sizeof(BOX));
-        temporal_bbox(box, temp);
-        *numeric = true;
-        *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        temporal_timespan_internal(*period, temp);
-        *bBoxBounds = DNCONST_DTCONST;
-        pfree(box);
-    }
-    else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
-    {
-        *numeric = true;
-        *lower = (double) ((Const *) other)->constvalue;
-        *bBoxBounds = SNCONST;
+	Oid consttype = ((Const *) other)->consttype;
+	*numeric = false;
+	*temporal = false;
+	if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+	{
+		Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
+		BOX *box = palloc(sizeof(BOX));
+		temporal_bbox(box, temp);
+		*numeric = true;
+		*temporal = true;
+		*lower = box->low.x;
+		*upper = box->high.x;
+		temporal_timespan_internal(*period, temp);
+		*bBoxBounds = DNCONST_DTCONST;
+		pfree(box);
+	}
+	else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
+	{
+		*numeric = true;
+		*lower = (double) ((Const *) other)->constvalue;
+		*bBoxBounds = SNCONST;
 
-    }
-    else if (consttype == type_oid(T_INTRANGE))
-    {
-        *numeric = true;
-        *lower = (double) DatumGetInt32(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-        *upper = (double) DatumGetInt32(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-        *bBoxBounds = DNCONST;
-    }
-    else if (consttype == type_oid(T_FLOATRANGE))
-    {
-        *numeric = true;
-        *lower = (double) DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-        *upper = (double) DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-        *bBoxBounds = DNCONST;
+	}
+	else if (consttype == type_oid(T_INTRANGE))
+	{
+		*numeric = true;
+		*lower = (double) DatumGetInt32(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+		*upper = (double) DatumGetInt32(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+		*bBoxBounds = DNCONST;
+	}
+	else if (consttype == type_oid(T_FLOATRANGE))
+	{
+		*numeric = true;
+		*lower = (double) DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+		*upper = (double) DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+		*bBoxBounds = DNCONST;
 
-    }
-    else if (consttype == BOXOID)
-    {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        *numeric = true;
-        *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        *period = period_make(box->low.y, box->high.y, true, true);
-        *bBoxBounds = DNCONST_DTCONST;
-    }
-    else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    {
-        Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-        *period = palloc(sizeof(Period));
-        temporal_bbox(period, temp);
-        *temporal = true;
-        *bBoxBounds = DTCONST;
-    }
-    else if (consttype == TIMESTAMPTZOID)
-    {
-        *temporal = true;
-        TimestampTz temp = DatumGetTimestampTz(((Const *) other)->constvalue);
-        *period = period_make(temp, temp, true, true);
-        *bBoxBounds = STCONST;
-    }
-    else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
-             consttype == type_oid(T_PERIOD))
-    {
-        *temporal = true;
-        *period = period_copy((Period *) ((Const *) other)->constvalue);
-        *bBoxBounds = DTCONST;
-    }
-    else if (consttype == type_oid(T_PERIODSET))
-    {
-        *temporal = true;
-        *period = periodset_bbox(((PeriodSet *)((Const *) other)->constvalue));
-        *bBoxBounds = DTCONST;
-    }
-    else if (consttype == type_oid(T_TIMESTAMPSET))
-    {
-        *temporal = true;
-        *period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
-        *bBoxBounds = DTCONST;
-    }
+	}
+	else if (consttype == BOXOID)
+	{
+		BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
+		*numeric = true;
+		*temporal = true;
+		*lower = box->low.x;
+		*upper = box->high.x;
+		*period = period_make(box->low.y, box->high.y, true, true);
+		*bBoxBounds = DNCONST_DTCONST;
+	}
+	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+	{
+		Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
+		*period = palloc(sizeof(Period));
+		temporal_bbox(period, temp);
+		*temporal = true;
+		*bBoxBounds = DTCONST;
+	}
+	else if (consttype == TIMESTAMPTZOID)
+	{
+		*temporal = true;
+		TimestampTz temp = DatumGetTimestampTz(((Const *) other)->constvalue);
+		*period = period_make(temp, temp, true, true);
+		*bBoxBounds = STCONST;
+	}
+	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
+			 consttype == type_oid(T_PERIOD))
+	{
+		*temporal = true;
+		*period = period_copy((Period *) ((Const *) other)->constvalue);
+		*bBoxBounds = DTCONST;
+	}
+	else if (consttype == type_oid(T_PERIODSET))
+	{
+		*temporal = true;
+		*period = periodset_bbox(((PeriodSet *)((Const *) other)->constvalue));
+		*bBoxBounds = DTCONST;
+	}
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+	{
+		*temporal = true;
+		*period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
+		*bBoxBounds = DTCONST;
+	}
 }

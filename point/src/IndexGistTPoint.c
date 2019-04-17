@@ -751,7 +751,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	OffsetNumber i,
 				maxoff;
 	ConsiderSplitContext context;
-	GBOX       *box,
+	GBOX	   *box,
 			   *leftBox,
 			   *rightBox;
 	int			dim,

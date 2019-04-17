@@ -2122,7 +2122,7 @@ tpointseq_minus_geometry1(TemporalSeq *seq, Datum geom, int *count)
 		*count = 0;
 		return NULL;
 	}
-	TemporalSeq **result = temporalseq_at_periodset1(seq, ps2, count);
+	TemporalSeq **result = temporalseq_at_periodset2(seq, ps2, count);
 	pfree(ps2);
 	return result;
 }

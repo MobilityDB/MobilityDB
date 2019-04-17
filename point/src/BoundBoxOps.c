@@ -282,7 +282,7 @@ tpointinstarr_to_gbox(GBOX *box, TemporalInst **instants, int count)
 		GBOX box1;
 		value = temporalinst_value(instants[i]);
 		tpointinst_make_gbox(&box1, value, instants[i]->t);
-        gbox_merge(&box1, box);
+		gbox_merge(&box1, box);
 	}
 	return;
 }

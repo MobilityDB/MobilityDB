@@ -41,7 +41,7 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 				value, operator, datumtypid, BOOLOID, invert) :
 			(Temporal *)oper4_temporals_base((TemporalS *)temp,
 				value, operator, datumtypid, BOOLOID, invert);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;

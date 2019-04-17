@@ -132,11 +132,11 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 void
 aggstate_clear(AggregateState *state)
 {
-    for (int i = 0; i < state->size; i ++) {
-        pfree(state->values[i]) ;
-        state->values[i] = NULL ;
-        state->size = 0 ;
-    }
+	for (int i = 0; i < state->size; i ++) {
+		pfree(state->values[i]) ;
+		state->values[i] = NULL ;
+		state->size = 0 ;
+	}
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
@@ -613,7 +613,7 @@ temporalseq_tagg1(TemporalSeq **result,
 	 * If the two sequences intersect there will be at most 3 sequences in the
 	 * result: one before the intersection, one for the intersection, and one 
 	 * after the intersection. This will be also the case for discrete sequences
-     * (e.g., tint) that has the last value different from the previous one as
+	 * (e.g., tint) that has the last value different from the previous one as
 	 * tint '[1@2000-01-03, 2@2000-01-04]' and tint '[3@2000-01-01, 4@2000-01-05]'
 	 * whose result for sum would be the following three sequences
 	 * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and

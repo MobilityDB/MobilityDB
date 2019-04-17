@@ -1,7 +1,6 @@
 /*****************************************************************************
  * TemporalInst aggregate functions
  *****************************************************************************/
-
 select numInstants(tand(inst)) from tbl_tboolinst;
  numinstants 
 -------------
@@ -341,7 +340,6 @@ select k%10, numInstants(tcount(inst)) from tbl_ttextinst group by k%10 order by
 /*****************************************************************************
  * TemporalI aggregate functions
  *****************************************************************************/
-
 select numInstants(tand(ti)) from tbl_tbooli;
  numinstants 
 -------------
@@ -681,7 +679,6 @@ select k%10, numInstants(tcount(ti)) from tbl_ttexti group by k%10 order by k%10
 /*****************************************************************************
  * TemporalSeq aggregate functions
  *****************************************************************************/
-
 select numSequences(tand(seq)) from tbl_tboolseq;
  numsequences 
 --------------
@@ -1021,7 +1018,6 @@ select k%10, numSequences(tcount(seq)) from tbl_ttextseq group by k%10 order by 
 /*****************************************************************************
  * TemporalS aggregate functions
  *****************************************************************************/
-
 select numSequences(tand(ts)) from tbl_tbools;
  numsequences 
 --------------
@@ -1359,4 +1355,3 @@ select k%10, numSequences(tcount(ts)) from tbl_ttexts group by k%10 order by k%1
 (10 rows)
 
 /*****************************************************************************/
-

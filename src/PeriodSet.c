@@ -135,7 +135,7 @@ periodset_copy(PeriodSet *ps)
  * Otherwise, return a number encoding whether it is before, between two 
  * periods or after. For example, given 3 periods, the result of the 
  * function if the value is not found will be as follows: 
- *			    0			1			2
+ *				0			1			2
  *			|------|	|------|	|------|   
  * 1)	t^ 											=> result = 0
  * 2)				 t^ 							=> result = 1

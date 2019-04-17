@@ -117,17 +117,17 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			errmsg("typmod array must not contain nulls")));
 
 	/*
-     * There are several ways to define a column wrt type modifiers:
-     *   column_type(Duration, Geometry, SRID) => All modifiers are determined.
-     * 	 column_type(Duration, Geometry) => The SRID is generic.
-     * 	 column_type(Geometry, SRID) => The duration type is generic.
-     * 	 column_type(Geometry) => The duration type and SRID are generic.
-     *	 column_type(Duration) => The geometry type and SRID are generic.
-     *	 column_type => The duration type, geometry type, and SRID are generic.
-     *
-     * For example, if the user did not set the duration type, we can use all 
-     * duration types in the same column. Similarly for all generic modifiers.
-     */
+	 * There are several ways to define a column wrt type modifiers:
+	 *   column_type(Duration, Geometry, SRID) => All modifiers are determined.
+	 * 	 column_type(Duration, Geometry) => The SRID is generic.
+	 * 	 column_type(Geometry, SRID) => The duration type is generic.
+	 * 	 column_type(Geometry) => The duration type and SRID are generic.
+	 *	 column_type(Duration) => The geometry type and SRID are generic.
+	 *	 column_type => The duration type, geometry type, and SRID are generic.
+	 *
+	 * For example, if the user did not set the duration type, we can use all 
+	 * duration types in the same column. Similarly for all generic modifiers.
+	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
 	uint8_t duration_type = 0, geometry_type = 0;
 	int z = 0, m = 0;

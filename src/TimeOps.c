@@ -2674,10 +2674,10 @@ union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 		else
 		{
 			/* Find all periods in ps1 that overlap with periods in ps2
-				   i                 i
-				|-----|  |-----|  |-----|  |-----|     
-				     |-----|  |-----| 
-					    j        j
+				   i				 i
+				|-----|  |-----|  |-----|  |-----|	 
+					 |-----|  |-----| 
+						j		j
 			*/
 			Period *q1 = NULL, *q2 = NULL; /* keep compiler quiet */
 			/* remember whether i or j was the last value incremented */
@@ -4031,10 +4031,10 @@ minus_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 		else
 		{
 			/* Find all periods in ps2 that overlap with p1
-			                  i
+							  i
 				|------------------------|  
-				     |-----|  |-----|      |---|
-					    j                    l
+					 |-----|  |-----|	  |---|
+						j					l
 			*/
 			int l;
 			for (l = j; l < ps2->count; l++)
