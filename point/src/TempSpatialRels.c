@@ -1218,13 +1218,12 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 	}
 }
 
-static TemporalSeq **
-tdwithin_tpointseq_tpointseq3(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
-	Datum (*operator)(Datum, Datum, Datum), int *count)
+static int
+tdwithin_tpointseq_tpointseq3(TemporalSeq **result, TemporalSeq *seq1, TemporalSeq *seq2,
+	Datum d, Datum (*operator)(Datum, Datum, Datum))
 {
 	if (seq1->count == 1)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
 		TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
 		TemporalInst *inst = temporalinst_make(
@@ -1233,11 +1232,9 @@ tdwithin_tpointseq_tpointseq3(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
 			true, true, false);
 		pfree(inst);
-		*count = 1;
-		return result;
+		return 1;
 	}
 
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq1->count * 3);
 	int k = 0;
 	int countseq;
 	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
@@ -1257,17 +1254,16 @@ tdwithin_tpointseq_tpointseq3(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		start2 = end2;
 		lower_inc = true;
 	}
-	*count = k;
-	return result;
+	return k;
 }
 
 static TemporalS *
 tdwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
 	Datum (*operator)(Datum, Datum, Datum))
 {
-	int count;
-	TemporalSeq **sequences = tdwithin_tpointseq_tpointseq3(seq1, seq2, 
-		param, operator, &count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq1->count * 3);
+	int count = tdwithin_tpointseq_tpointseq3(sequences, seq1, seq2, 
+		param, operator);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true);
 	
 	for (int i = 0; i < count; i++)
@@ -1289,32 +1285,21 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 		return tdwithin_tpointseq_tpointseq(temporals_seq_n(ts1, 0), 
 			temporals_seq_n(ts2, 0), d, operator);
 
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts1->count);
-	int *countseqs = palloc0(sizeof(int) * ts1->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts1->totalcount * 3);
+	int k = 0, countstep;
 	for (int i = 0; i < ts1->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		sequences[i] = tdwithin_tpointseq_tpointseq3(seq1, seq2, d, operator, 
-			&countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d, 
+			operator);
+		k += countstep;
 	}
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts1->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, k, true);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
 
-	pfree(sequences); pfree(countseqs);
-	for (int i = 0; i < totalseqs; i++)
-		pfree(allsequences[i]);
-	pfree(allsequences); 
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences); 
 	
 	return result;
 }
