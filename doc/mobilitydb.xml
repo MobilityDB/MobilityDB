@@ -1802,31 +1802,31 @@ SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)', ARRAY[floatrange '[1,2]',
 
           <listitem>
             <para><varname>atMin</varname>: Restrict to minimum value</para>
-            <para>The function returns NULL if the minimum occurs at an exclusive bound.</para>
+            <para>The function does not take into account whether the bounds are inclusive or not.</para>
             <para>Signature: <varname>atMin(torder): torder</varname></para>
             <programlisting>
 SELECT atMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{1@2012-01-01, 1@2012-01-05}"
 SELECT atMin(tfloat '(1@2012-01-01, 3@2012-01-03]');
--- NULL
-SELECT atMin(tint '{[1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}');
--- "{[1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}"
+-- "{[1@2012-01-01]}"
+SELECT atMin(tfloat '{(1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 3@2012-01-05)}');
+-- "{(1@2012-01-01, 1@2012-01-03)}"
             </programlisting>
           </listitem>
 
           <listitem>
             <para><varname>atMax</varname>: Restrict to maximum value</para>
-            <para>The function returns NULL if the maximum occurs at an exclusive bound.</para>
+            <para>The function does not take into account whether the bounds are inclusive or not.</para>
             <para>Signature: <varname>atMax(torder): torder</varname></para>
             <programlisting>
 SELECT atMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{3@2012-01-05}"
 SELECT atMax(tfloat '(1@2012-01-01, 3@2012-01-03)');
--- NULL
+-- "{[3@2012-01-03]}"
 SELECT atMax(tfloat '{[2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-05)}');
 -- "{[2@2012-01-01], [2@2012-01-03, 2@2012-01-05]}"
 SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}');
--- NULL
+-- "{[3@2012-01-03]}"
             </programlisting>
           </listitem>
 

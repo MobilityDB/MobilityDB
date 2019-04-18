@@ -823,24 +823,21 @@ temporals_min_value(TemporalS *ts)
 	if (valuetypid == INT4OID)
 	{
 		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum(box->low.x);
+		return Int32GetDatum((int)(box->low.x));
 	}
-	else if (valuetypid == FLOAT8OID)
+	if (valuetypid == FLOAT8OID)
 	{
 		BOX *box = temporals_bbox_ptr(ts);
 		return Float8GetDatum(box->low.x);
 	}
-	else
+	Datum result = temporalseq_min_value(temporals_seq_n(ts, 0));
+	for (int i = 1; i < ts->count; i++)
 	{
-		Datum result = temporalseq_min_value(temporals_seq_n(ts, 0));
-		for (int i = 1; i < ts->count; i++)
-		{
-			Datum value = temporalseq_min_value(temporals_seq_n(ts, i));
-			if (datum_lt(value, result, valuetypid))
-				result = value;
-		}
-		return result;
+		Datum value = temporalseq_min_value(temporals_seq_n(ts, i));
+		if (datum_lt(value, result, valuetypid))
+			result = value;
 	}
+	return result;
 }
 
 /* Maximum value */
@@ -852,24 +849,21 @@ temporals_max_value(TemporalS *ts)
 	if (valuetypid == INT4OID)
 	{
 		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum(box->high.x);
+		return Int32GetDatum((int)(box->high.x));
 	}
-	else if (valuetypid == FLOAT8OID)
+	if (valuetypid == FLOAT8OID)
 	{
 		BOX *box = temporals_bbox_ptr(ts);
 		return Float8GetDatum(box->high.x);
 	}
-	else
+	Datum result = temporalseq_max_value(temporals_seq_n(ts, 0));
+	for (int i = 1; i < ts->count; i++)
 	{
-		Datum result = temporalseq_max_value(temporals_seq_n(ts, 0));
-		for (int i = 1; i < ts->count; i++)
-		{
-			Datum value = temporalseq_max_value(temporals_seq_n(ts, i));
-			if (datum_gt(value, result, valuetypid))
-				result = value;
-		}
-		return result;
+		Datum value = temporalseq_max_value(temporals_seq_n(ts, i));
+		if (datum_gt(value, result, valuetypid))
+			result = value;
 	}
+	return result;
 }
 
 /* Get time */
@@ -1574,12 +1568,53 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 
 /* Restriction to the minimum value */
 
+static int
+temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
+{
+	if (count == 0)
+		return 0;
+	int newcount = 0;
+	for (int i = 1; i < count; i++) 
+		if (temporalseq_ne(sequences[newcount], sequences[i]))
+			sequences[++ newcount] = sequences[i];
+		else 
+			pfree(sequences[i]);
+	return newcount+1;
+}
+static TemporalS *
+temporals_at_minmax(TemporalS *ts, Datum value)
+{
+	TemporalS *result = temporals_at_value(ts, value);
+	/* If minimum/maximum is at an exclusive bound */
+	if (result == NULL)
+	{
+		TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count * 2);
+		int k = 0, countstep;
+		for (int i = 0; i < ts->count; i++)
+		{
+			TemporalSeq *seq = temporals_seq_n(ts, i);
+			countstep = temporalseq_at_minmax(&sequences[k], seq, value);
+			k += countstep;
+		}
+		/* The minimum/maximum could be at the upper exclusive bound of one
+		* sequence and at the lower exclusive bound of the next one
+		* e.g., .... min@t) (min@t .... */
+		temporalseqarr_sort(sequences, k);
+		int count = temporalseqarr_remove_duplicates(sequences, k);
+		result = temporals_from_temporalseqarr(sequences, count, true);
+		for (int i = 0; i < count; i++)
+			pfree(sequences[i]);
+		pfree(sequences);	
+	}
+	return result;
+}
+
 TemporalS *
 temporals_at_min(TemporalS *ts)
 {
 	/* General case */
 	Datum minvalue = temporals_min_value(ts);
-	return temporals_at_value(ts, minvalue);
+	return temporals_at_minmax(ts, minvalue);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1597,7 +1632,7 @@ TemporalS *
 temporals_at_max(TemporalS *ts)
 {
 	Datum maxvalue = temporals_max_value(ts);
-	return temporals_at_value(ts, maxvalue);
+	return temporals_at_minmax(ts, maxvalue);
 }
 
 /* Restriction to the complement of the maximum value */

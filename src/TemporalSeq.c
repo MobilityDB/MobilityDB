@@ -1468,28 +1468,24 @@ tnumberseq_value_range(TemporalSeq *seq)
 Datum
 temporalseq_min_value(TemporalSeq *seq)
 {
-	Oid valuetypid = seq->valuetypid;
-	if (valuetypid == INT4OID)
+	if (seq->valuetypid == INT4OID)
 	{
 		BOX *box = temporalseq_bbox_ptr(seq);
-		return Int32GetDatum(box->low.x);
+		return Int32GetDatum((int)(box->low.x));
 	}
-	else if (valuetypid == FLOAT8OID)
+	if (seq->valuetypid == FLOAT8OID)
 	{
 		BOX *box = temporalseq_bbox_ptr(seq);
 		return Float8GetDatum(box->low.x);
 	}
-	else
+	Datum result = temporalinst_value(temporalseq_inst_n(seq, 0));
+	for (int i = 1; i < seq->count; i++)
 	{
-		Datum result = temporalinst_value(temporalseq_inst_n(seq, 0));
-		for (int i = 1; i < seq->count; i++)
-		{
-			Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
-			if (datum_lt(value, result, valuetypid))
-				result = value;
-		}
-		return result;
+		Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
+		if (datum_lt(value, result, seq->valuetypid))
+			result = value;
 	}
+	return result;
 }
 
 /* Maximum value */
@@ -1500,25 +1496,21 @@ temporalseq_max_value(TemporalSeq *seq)
 	if (seq->valuetypid == INT4OID)
 	{
 		BOX *box = temporalseq_bbox_ptr(seq);
-		return Int32GetDatum(box->high.x);
+		return Int32GetDatum((int)(box->high.x));
 	}
-	else if (seq->valuetypid == FLOAT8OID)
+	if (seq->valuetypid == FLOAT8OID)
 	{
 		BOX *box = temporalseq_bbox_ptr(seq);
 		return Float8GetDatum(box->high.x);
 	}
-	else
+	Datum result = temporalinst_value(temporalseq_inst_n(seq, 0));
+	for (int i = 1; i < seq->count; i++)
 	{
-		Oid valuetypid = seq->valuetypid;
-		Datum result = temporalinst_value(temporalseq_inst_n(seq, 0));
-		for (int i = 1; i < seq->count; i++)
-		{
-			Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
-			if (datum_gt(value, result, valuetypid))
-				result = value;
-		}
-		return result;
+		Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
+		if (datum_gt(value, result, seq->valuetypid))
+			result = value;
 	}
+	return result;
 }
 
 /* Duration */
@@ -2603,11 +2595,48 @@ tnumberseq_minus_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 
 /* Restriction to the minimum value */
 
+int
+temporalseq_at_minmax(TemporalSeq **result, TemporalSeq *seq, Datum value)
+{
+	int count = temporalseq_at_value2(result, seq, value);
+	/* If minimum/maximum is at an exclusive bound */
+	if (count == 0)
+	{
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count-1);
+		Datum value1 = temporalinst_value(inst1);
+		Datum value2 = temporalinst_value(inst2);
+		if (datum_eq(value, value1, seq->valuetypid) &&
+			datum_eq(value, value2, seq->valuetypid))
+		{
+			result[0] = temporalseq_from_temporalinstarr(&inst1, 1, true, true, false);
+			result[1] = temporalseq_from_temporalinstarr(&inst2, 1, true, true, false);
+			count = 2;
+		}
+		else if (datum_eq(value, value1, seq->valuetypid))
+		{
+			result[0] = temporalseq_from_temporalinstarr(&inst1, 1, true, true, false);
+			count = 1;
+		}
+		else if (datum_eq(value, value2, seq->valuetypid))
+		{
+			result[0] = temporalseq_from_temporalinstarr(&inst2, 1, true, true, false);
+			count = 1;
+		}
+	}
+	return count;
+}
+
 TemporalS *
 temporalseq_at_min(TemporalSeq *seq)
 {
 	Datum minvalue = temporalseq_min_value(seq);
-	return temporalseq_at_value(seq, minvalue);
+	TemporalSeq *sequences[2];
+	int count = temporalseq_at_minmax(sequences, seq, minvalue);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, count, false);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	return result;
 }
 
 /* Restriction to the complement of the minimum value */
@@ -2625,7 +2654,12 @@ TemporalS *
 temporalseq_at_max(TemporalSeq *seq)
 {
 	Datum maxvalue = temporalseq_max_value(seq);
-	return temporalseq_at_value(seq, maxvalue);
+	TemporalSeq *sequences[2];
+	int count = temporalseq_at_minmax(sequences, seq, maxvalue);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, count, false);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	return result;
 }
  
 /* Restriction to the complement of the maximum value */

@@ -913,6 +913,7 @@ extern int tnumberseq_minus_ranges1(TemporalSeq **result, TemporalSeq *seq,
 	RangeType **normranges, int count);
 extern TemporalS *tnumberseq_minus_ranges(TemporalSeq *seq,
 	RangeType **normranges, int count);
+extern int temporalseq_at_minmax(TemporalSeq **result, TemporalSeq *seq, Datum value);
 extern TemporalS *temporalseq_at_min(TemporalSeq *seq);
 extern TemporalS *temporalseq_minus_min(TemporalSeq *seq);
 extern TemporalS *temporalseq_at_max(TemporalSeq *seq);
@@ -1071,7 +1072,6 @@ extern TemporalS *tnumbers_at_range(TemporalS *ts, RangeType *range);
 extern TemporalS *tnumbers_minus_range(TemporalS *ts, RangeType *range);
 extern TemporalS *tnumbers_at_ranges(TemporalS *ts, RangeType **normranges, int count);
 extern TemporalS *tnumbers_minus_ranges(TemporalS *ts, RangeType **normranges, int count);
-extern TemporalS *temporals_at_minmax(TemporalS *ts, Datum value);
 extern TemporalS *temporals_at_min(TemporalS *ts);
 extern TemporalS *temporals_minus_min(TemporalS *ts);
 extern TemporalS *temporals_at_max(TemporalS *ts);

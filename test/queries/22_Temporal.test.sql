@@ -985,6 +985,13 @@ SELECT atMin(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT atMin(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT atMin(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+select atMin(tfloat '(1@2000-01-01, 2@2000-01-02)');
+select atMin(tfloat '(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)');
+select atMin(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
+select atMin(tfloat '{(1@2000-01-01, 2@2000-01-02, 1@2000-01-03)}');
+SELECT atMin(tfloat '{[2@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}');
+SELECT atMin(tfloat '{[2@2012-01-01, 1@2012-01-03), (1@2012-01-03, 2@2012-01-05)}');
+
 SELECT minusMin(tint '1@2000-01-01');
 SELECT minusMin(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT minusMin(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
@@ -1010,6 +1017,12 @@ SELECT atMax(ttext 'AAA@2000-01-01');
 SELECT atMax(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT atMax(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT atMax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+
+select atMax(tfloat '(1@2000-01-01, 2@2000-01-02)');
+select atMax(tfloat '(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)');
+select atMax(tfloat '{(1@2000-01-01, 2@2000-01-02)}');
+select atMax(tfloat '{(2@2000-01-01, 1@2000-01-02, 2@2000-01-03)}');
+SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}');
 
 SELECT minusMax(tint '1@2000-01-01');
 SELECT minusMax(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
