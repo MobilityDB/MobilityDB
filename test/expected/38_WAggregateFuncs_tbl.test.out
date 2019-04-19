@@ -249,14 +249,14 @@ select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 
 --------------
-          752
+          775
 (1 row)
 
 select numSequences(wmax(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 
 --------------
-          750
+          776
 (1 row)
 
 select numSequences(wcount(ts, interval '5 minutes'))

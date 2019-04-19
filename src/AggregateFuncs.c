@@ -412,19 +412,9 @@ tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		errmsg("Operation not supported")));
 }
 
-static TemporalSeq **
-tnumbers_transform_tavg(TemporalS *ts)
+static int
+tnumbers_transform_tavg(TemporalSeq **result, TemporalS *ts)
 {
-	int count;
-	if (ts->valuetypid == INT4OID)
-		count = ts->totalcount;
-	else if (ts->valuetypid == FLOAT8OID)
-		count = ts->count;
-    else
-	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-		errmsg("Operation not supported")));
-
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * count);
 	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -432,7 +422,7 @@ tnumbers_transform_tavg(TemporalS *ts)
 		countstep = tnumberseq_transform_tavg(&result[k], seq);
 		k += countstep;
 	}
-	return result;
+	return k;
 }
 
 /*****************************************************************************
@@ -1327,16 +1317,17 @@ AggregateState *
 temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
-	int count;
+	int maxcount;
 	if (ts->valuetypid == INT4OID)
-		count = ts->totalcount;
+		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)
-		count = ts->count;
+		maxcount = ts->count;
     else
 	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 		errmsg("Operation not supported")));
 
-	TemporalSeq **sequences = tnumbers_transform_tavg(ts);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int count = tnumbers_transform_tavg(sequences, ts);
 	AggregateState *state2 = aggstate_make(fcinfo, count, (Temporal **)sequences);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2, 
 		&datum_sum_double2, false);
