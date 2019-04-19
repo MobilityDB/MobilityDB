@@ -1583,18 +1583,14 @@ tpointseq_azimuth1(TemporalInst *inst1, TemporalInst *inst2)
 			errmsg("Operation not supported")));
 }
 
-static TemporalSeq **
-tpointseq_azimuth2(TemporalSeq *seq, int *count)
+static int
+tpointseq_azimuth2(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
-	{
-		*count = 0;
-		return NULL;
-	}
+		return 0;
 	
 	/* We are sure that there are at least 2 instants */
 	Oid valuetypid = seq->valuetypid;
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	int k = 0, l = 0;
@@ -1616,7 +1612,7 @@ tpointseq_azimuth2(TemporalSeq *seq, int *count)
 				instants[k++] = temporalinst_make(azimuth,
 					inst1->t, FLOAT8OID);
 				bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
-				sequences[l++] = temporalseq_from_temporalinstarr(instants, 
+				result[l++] = temporalseq_from_temporalinstarr(instants, 
 					k, lower_inc, upper_inc, true);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
@@ -1638,26 +1634,20 @@ tpointseq_azimuth2(TemporalSeq *seq, int *count)
 		instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 		bool lower_inc = (l == 0) ? seq->period.lower_inc : true;
 		bool upper_inc = (l == seq->count-1) ? seq->period.upper_inc : false;
-		sequences[l++] = temporalseq_from_temporalinstarr(instants, 
+		result[l++] = temporalseq_from_temporalinstarr(instants, 
 			k, lower_inc, upper_inc, true);
 	}
-	pfree(instants);
-	if (l == 0)
-	{
-		pfree(sequences);
-		*count = 0;
-		return NULL;
-	}
 
-	*count = l;
-	return sequences;
+	pfree(instants);
+
+	return l;
 }
 
 TemporalS *
 tpointseq_azimuth(TemporalSeq *seq)
 {
-	int count;
-	TemporalSeq **sequences = tpointseq_azimuth2(seq, &count);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = tpointseq_azimuth2(sequences, seq);
 	if (sequences == NULL)
 		return NULL;
 	
@@ -1671,34 +1661,22 @@ tpointseq_azimuth(TemporalSeq *seq)
 TemporalS *
 tpoints_azimuth(TemporalS *ts)
 {
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tpointseq_azimuth2(seq, &countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tpointseq_azimuth2(&sequences[k], seq);
+		k += countstep;
 	}
-	if (totalseqs == 0)
+	if (k == 0)
 		return NULL;
 
-	TemporalSeq **allsequences = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			allsequences[k++] = sequences[i][j];
-		if (countseqs[i] != 0)
-			pfree(sequences[i]);
-	}
-	
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, k, true);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
 
 	for (int i = 0; i < k; i++)
-		pfree(allsequences[i]);
-	pfree(allsequences);
-	pfree(sequences); pfree(countseqs);
+		pfree(sequences[i]);
+	pfree(sequences);
 	
 	return result;
 }
