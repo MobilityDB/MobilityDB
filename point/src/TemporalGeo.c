@@ -1648,8 +1648,11 @@ tpointseq_azimuth(TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = tpointseq_azimuth2(sequences, seq);
-	if (sequences == NULL)
+	if (count == 0)
+	{
+		pfree(sequences);
 		return NULL;
+	}
 	
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true);
 	for (int i = 0; i < count; i++)
