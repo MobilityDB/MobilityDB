@@ -16,28 +16,28 @@
 #include "TemporalTypes.h"
 
 typedef enum {
-    VALUE_STATISTICS,
-    TEMPORAL_STATISTICS,
-    DEFAULT_STATISTICS
+ 	VALUE_STATISTICS,
+ 	TEMPORAL_STATISTICS,
+ 	DEFAULT_STATISTICS
 } StatisticsStrategy;
 
 typedef enum {
-    SNCONST, /* Single Numeric Constant */
-    DNCONST, /* Double Numeric Constant */
-    STCONST, /* Single Temporal Constant */
-    DTCONST, /* Double Temporal Constant */
-    SNCONST_STCONST, /* Single Numeric Constant and Single Temporal Constant*/
-    SNCONST_DTCONST, /* Single Numeric Constant and Double Temporal Constant*/
-    DNCONST_STCONST, /* Double Numeric Constant and Single Temporal Constant*/
-    DNCONST_DTCONST, /* Double Numeric Constant and Double Temporal Constant*/
+ 	SNCONST, /* Single Numeric Constant */
+ 	DNCONST, /* Double Numeric Constant */
+ 	STCONST, /* Single Temporal Constant */
+ 	DTCONST, /* Double Temporal Constant */
+ 	SNCONST_STCONST, /* Single Numeric Constant and Single Temporal Constant*/
+ 	SNCONST_DTCONST, /* Single Numeric Constant and Double Temporal Constant*/
+ 	DNCONST_STCONST, /* Double Numeric Constant and Single Temporal Constant*/
+ 	DNCONST_DTCONST, /* Double Numeric Constant and Double Temporal Constant*/
 } BBoxBounds;
 
 /* Temporal Unit Instant */
 typedef struct
 {
-    BBoxBounds bBoxBounds;
-    double lower, upper;
-    Period *period;
+ 	BBoxBounds bBoxBounds;
+ 	double lower, upper;
+ 	Period *period;
 	Oid oid;
 } ConstantData;
 
@@ -63,13 +63,13 @@ extern double calc_period_hist_selectivity(VariableStatData *vardata,
 extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
 												  PeriodBound *hist, int hist_nvalues, bool equal);
 extern double calc_length_hist_frac(Datum *length_hist_values,
-                                    int length_hist_nvalues, double length1, double length2, bool equal);
+ 	 	 	 	 	 	 	 	 	int length_hist_nvalues, double length1, double length2, bool equal);
 extern double calc_period_hist_selectivity_contained(PeriodBound *lower,
-                                                     PeriodBound *upper,	PeriodBound *hist_lower, int hist_nvalues,
-                                                     Datum *length_hist_values, int length_hist_nvalues);
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 PeriodBound *upper,	PeriodBound *hist_lower, int hist_nvalues,
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 Datum *length_hist_values, int length_hist_nvalues);
 extern double calc_period_hist_selectivity_contains(PeriodBound *lower,
-                                                    PeriodBound *upper,	PeriodBound *hist_lower, int hist_nvalues,
-                                                    Datum *length_hist_values, int length_hist_nvalues);
+ 	 	 	 	 	 	 	 	 	 	 	 	 	PeriodBound *upper,	PeriodBound *hist_lower, int hist_nvalues,
+ 	 	 	 	 	 	 	 	 	 	 	 	 	Datum *length_hist_values, int length_hist_nvalues);
 extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower, PeriodBound *upper,
 												  PeriodBound *hist_lower, PeriodBound *hist_upper, int hist_nvalues);
 
