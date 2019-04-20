@@ -34,16 +34,16 @@
 * at every step.
 */
 typedef struct ND_BOX_T {
-    float4 min[ND_DIMS];
-    float4 max[ND_DIMS];
+ 	float4 min[ND_DIMS];	
+ 	float4 max[ND_DIMS];
 } ND_BOX;
 
 /**
 * N-dimensional box index type
 */
 typedef struct ND_IBOX_T {
-    int min[ND_DIMS];
-    int max[ND_DIMS];
+ 	int min[ND_DIMS];
+ 	int max[ND_DIMS];
 } ND_IBOX;
 
 
@@ -54,38 +54,38 @@ typedef struct ND_IBOX_T {
 * into one shared piece of code).
 */
 typedef struct ND_STATS_T {
-    /* Dimensionality of the histogram. */
-    float4 ndims;
+ 	/* Dimensionality of the histogram. */
+ 	float4 ndims;
 
-    /* Size of n-d histogram in each dimension. */
-    float4 size[ND_DIMS];
+ 	/* Size of n-d histogram in each dimension. */
+ 	float4 size[ND_DIMS];
 
-    /* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
-    ND_BOX extent;
+ 	/* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
+ 	ND_BOX extent;
 
-    /* How many rows in the table itself? */
-    float4 table_features;
+ 	/* How many rows in the table itself? */
+ 	float4 table_features;
 
-    /* How many rows were in the sample that built this histogram? */
-    float4 sample_features;
+ 	/* How many rows were in the sample that built this histogram? */
+ 	float4 sample_features;
 
-    /* How many not-Null/Empty features were in the sample? */
-    float4 not_null_features;
+ 	/* How many not-Null/Empty features were in the sample? */
+ 	float4 not_null_features;
 
-    /* How many features actually got sampled in the histogram? */
-    float4 histogram_features;
+ 	/* How many features actually got sampled in the histogram? */
+ 	float4 histogram_features;
 
-    /* How many cells in histogram? (sizex*sizey*sizez*sizem) */
-    float4 histogram_cells;
+ 	/* How many cells in histogram? (sizex*sizey*sizez*sizem) */
+ 	float4 histogram_cells;
 
-    /* How many cells did those histogram features cover? */
-    /* Since we are pro-rating coverage, this number should */
-    /* now always equal histogram_features */
-    float4 cells_covered;
+ 	/* How many cells did those histogram features cover? */
+ 	/* Since we are pro-rating coverage, this number should */
+ 	/* now always equal histogram_features */
+ 	float4 cells_covered;
 
-    /* Variable length # of floats for histogram */
+ 	/* Variable length # of floats for histogram */
 
-    float4 value[1];
+ 	float4 value[1];
 } ND_STATS;
 
 /*
@@ -118,7 +118,7 @@ extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern int nd_box_expand(ND_BOX *nd_box, double expansion_factor);
 extern int nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims,
-                                     double *distribution);
+ 	 	 	 	 	 	 	 	 	 double *distribution);
 extern int range_quintile(int *vals, int nvals);
 extern int cmp_int(const void *a, const void *b);
 extern double total_double(const double *vals, int nvals);
@@ -130,7 +130,7 @@ extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
 
 extern float8 estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
-                                                           Oid operator);
+ 	 	 	 	 	 	 	 	 	 	 	 	 	 	   Oid operator);
 extern int gbox_ndims(const GBOX* gbox);
 
 /*****************************************************************************
@@ -139,24 +139,24 @@ extern int gbox_ndims(const GBOX* gbox);
 #define DEFAULT_ND_JOINSEL 0.001
 #define FALLBACK_ND_JOINSEL 0.3
 /*
- *      rt_fetch
+ * 	  rt_fetch
  *
  * NB: this will crash and burn if handed an out-of-range RT index
  */
 #define rt_fetch(rangetable_index, rangetable) \
-     ((RangeTblEntry *) list_nth(rangetable, (rangetable_index)-1))
+ 	 ((RangeTblEntry *) list_nth(rangetable, (rangetable_index)-1))
 
 extern ND_STATS* pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_parent);
 extern ND_STATS* pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode);
 extern CachedOp get_cacheOp(Oid operator);
 extern double calc_period_hist_join_selectivity_scalar(PeriodBound *constbound, PeriodBound *hist,
-                                                       int hist_nvalues1, int hist_nvalues2, bool equal);
+ 	 	 	 	 	 	 	 	 	 	 	 	 	   int hist_nvalues1, int hist_nvalues2, bool equal);
 extern double timestamp_join_sel(AttStatsSlot hslot1, AttStatsSlot hslot2, CachedOp cachedOp);
 extern double check_mcv(PlannerInfo *root, CachedOp cacheOp, VariableStatData *vardata1, VariableStatData *vardata2,
-                        double nd1, double nd2,
-                        AttStatsSlot *sslot1, AttStatsSlot *sslot2,
-                        Form_pg_statistic stats1, Form_pg_statistic stats2,
-                        bool have_mcvs1, bool have_mcvs2);
+ 	 	 	 	 	 	double nd1, double nd2,
+ 	 	 	 	 	 	AttStatsSlot *sslot1, AttStatsSlot *sslot2,
+ 	 	 	 	 	 	Form_pg_statistic stats1, Form_pg_statistic stats2,
+ 	 	 	 	 	 	bool have_mcvs1, bool have_mcvs2);
 extern float8 estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2);
 extern Selectivity estimate_join_selectivity_temporal_dimension(PlannerInfo *root, List *args, SpecialJoinInfo *sjinfo, Oid operator, CachedOp cacheOp);
 

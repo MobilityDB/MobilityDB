@@ -65,17 +65,17 @@ typedef struct {
 /* A hash table entry for the Lossy Counting algorithm */
 typedef struct
 {
-	Datum       key;            /* This is 'e' from the LC algorithm. */
-	int         frequency;      /* This is 'f'. */
-	int         delta;          /* And this is 'delta'. */
-	int         last_container; /* For de-duplication of array elements. */
+	Datum		key; 	 	 	/* This is 'e' from the LC algorithm. */
+	int			frequency; 	  /* This is 'f'. */
+	int			delta; 	 	  /* And this is 'delta'. */
+	int			last_container; /* For de-duplication of array elements. */
 } TrackItem;
 
 /* A hash table entry for distinct-elements counts */
 typedef struct
 {
-	int         count;          /* Count of distinct elements in an array */
-	int         frequency;      /* Number of arrays seen with this count */
+	int			count; 	 	  /* Count of distinct elements in an array */
+	int			frequency; 	  /* Number of arrays seen with this count */
 } DECountItem;
 
 
@@ -84,11 +84,11 @@ typedef struct
  *****************************************************************************/
 extern Datum temporalinst_analyze(VacAttrStats *stats);
 extern void compute_temporalinst_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                       int samplerows, double totalrows);
+ 	 	 	 	 	 	 	 	 	   int samplerows, double totalrows);
 extern void compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                      int samplerows, double totalrows);
+ 	 	 	 	 	 	 	 	 	  int samplerows, double totalrows);
 extern void compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                              int samplerows, double totalrows);
+ 	 	 	 	 	 	 	 	 	 	 	  int samplerows, double totalrows);
 
 /*****************************************************************************
  * Statistics functions for TemporalI type
@@ -106,9 +106,9 @@ extern void compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetch
  *****************************************************************************/
 extern Datum temporal_traj_analyze(VacAttrStats *stats);
 extern void compute_temporal_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                        int samplerows, double totalrows);
+ 	 	 	 	 	 	 	 	 	 	int samplerows, double totalrows);
 extern void compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                           int samplerows, double totalrows);
+ 	 	 	 	 	 	 	 	 	 	   int samplerows, double totalrows);
 extern void compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									 int samplerows, double totalrows);
 /*****************************************************************************
@@ -136,7 +136,7 @@ extern int compare_mcvs(const void *a, const void *b);
  
 extern int get_statype_num_dims(VacAttrStats *stats);
 extern HeapTuple remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, Oid attrtypid,
-                                    bool geom, Datum value);
+ 	 	 	 	 	 	 	 	 	bool geom, Datum value);
 extern Period* get_bbox_onedim(Datum value, Oid oid);
 extern BOX* get_bbox_twodim(Datum value, Oid oid);
 extern GBOX* get_bbox_threedim(Datum value, Oid oid);
