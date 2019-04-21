@@ -857,9 +857,9 @@ sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	
 	/* 
 	 * General case 
-	 * seq1 =  ... *      *   *   *       *>
-	 * seq2 =        <*           *   *      * ...
-	 * result =      <X I X I X I * I X I X>
+	 * seq1 =  ... *	 *   *   *	  *>
+	 * seq2 =	   <*		 *   *	 * ...
+	 * result =	 <X I X I X I * I X I X>
 	 * where *, X, and I are values computed, respectively at common points, 
 	 * synchronization points, and intermediate points
 	 */
@@ -1414,9 +1414,9 @@ sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 
 	/* 
 	 * General case 
-	 * seq1 =  ... *      *   *   *       *>
-	 * seq2 =        <*           *   *      * ...
-	 * result =      <X I X I X I * I X I X>
+	 * seq1 =  ... *	 *   *   *	  *>
+	 * seq2 =	   <*		 *   *	 * ...
+	 * result =	 <X I X I X I * I X I X>
 	 * where *, X, and I are values computed, respectively at common points, 
 	 * synchronization points, and intermediate points
 	 */
@@ -1976,9 +1976,9 @@ sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	
 	/* 
 	 * General case 
-	 * seq1 =  ... *      *   *   *       *>
-	 * seq2 =        <*           *   *      * ...
-	 * result =      <X I X I X I * I X I X>
+	 * seq1 =  ... *	 *   *   *	  *>
+	 * seq2 =	   <*		 *   *	 * ...
+	 * result =	 <X I X I X I * I X I X>
 	 * where *, X, and I are values computed, respectively at common points, 
 	 * synchronization points, and intermediate points
 	 */

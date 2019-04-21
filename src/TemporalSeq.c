@@ -838,10 +838,10 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	
 	/* 
 	 * General case 
-	 * seq1 =  ... *      *   *   *       *>
-	 * seq2 =        <*               *      * ...
-	 * sync1 =       <X C * C * C X C X C *>
-	 * sync1 =       <* C X C X C * C * C X>
+	 * seq1 =  ... *	 *   *   *	  *>
+	 * seq2 =	   <*			*	 * ...
+	 * sync1 =	  <X C * C * C X C X C *>
+	 * sync1 =	  <* C X C X C * C * C X>
 	 * where X are values added for synchronization and C are values added
 	 * for the crossings
 	 */

@@ -130,7 +130,7 @@ extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
 
 extern float8 estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
- 	 	 	 	 	 	 	 	 	 	 	 	 	 	   Oid operator);
+	Oid operator);
 extern int gbox_ndims(const GBOX* gbox);
 
 /*****************************************************************************
@@ -152,11 +152,10 @@ extern CachedOp get_cacheOp(Oid operator);
 extern double calc_period_hist_join_selectivity_scalar(PeriodBound *constbound, PeriodBound *hist,
  	 	 	 	 	 	 	 	 	 	 	 	 	   int hist_nvalues1, int hist_nvalues2, bool equal);
 extern double timestamp_join_sel(AttStatsSlot hslot1, AttStatsSlot hslot2, CachedOp cachedOp);
-extern double check_mcv(PlannerInfo *root, CachedOp cacheOp, VariableStatData *vardata1, VariableStatData *vardata2,
- 	 	 	 	 	 	double nd1, double nd2,
- 	 	 	 	 	 	AttStatsSlot *sslot1, AttStatsSlot *sslot2,
- 	 	 	 	 	 	Form_pg_statistic stats1, Form_pg_statistic stats2,
- 	 	 	 	 	 	bool have_mcvs1, bool have_mcvs2);
+extern double check_mcv(PlannerInfo *root, CachedOp cacheOp, VariableStatData *vardata1, 
+	VariableStatData *vardata2, double nd1, double nd2, AttStatsSlot *sslot1, 
+	AttStatsSlot *sslot2, Form_pg_statistic stats1, Form_pg_statistic stats2,
+	bool have_mcvs1, bool have_mcvs2);
 extern float8 estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2);
 extern Selectivity estimate_join_selectivity_temporal_dimension(PlannerInfo *root, List *args, SpecialJoinInfo *sjinfo, Oid operator, CachedOp cacheOp);
 
