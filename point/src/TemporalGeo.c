@@ -2261,7 +2261,7 @@ NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
 			number = i;
 		}
 	}
-	return temporali_inst_n(ti, number);
+	return temporalinst_copy(temporali_inst_n(ti, number));
 }
 
 /*****************************************************************************/
@@ -2314,8 +2314,7 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 		inst1 = inst2;
 		pfree(DatumGetPointer(traj)); 
 	}
-	TemporalInst *result = temporalinst_make(minpoint, t, 
-		seq->valuetypid);
+	TemporalInst *result = temporalinst_make(minpoint, t, seq->valuetypid);
 	pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
@@ -2346,8 +2345,7 @@ NAI_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
 		}
 		pfree(inst);
 	}
-	TemporalInst *result = temporalinst_make(minpoint, t, 
-		ts->valuetypid);
+	TemporalInst *result = temporalinst_make(minpoint, t, ts->valuetypid);
 	return result;
 }
 
