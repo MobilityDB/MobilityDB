@@ -50,7 +50,7 @@ src/sql/13_IndexGistTime.in.sql
 src/sql/15_IndexSPGistTime.in.sql
 src/sql/20_DoubleN.in.sql
 src/sql/22_Temporal.in.sql
-src/sql/24_ArithmeticOps.in.sql
+src/sql/24_MathematicalFuncs.in.sql
 src/sql/26_BooleanOps.in.sql
 src/sql/28_ComparisonOps.in.sql
 src/sql/30_TempSelFuncs.in.sql
