@@ -12,10 +12,7 @@
  *
  *****************************************************************************/
 
-#include <TemporalSelfuncs.h>
-#include <TimeTypes.h>
 #include "TemporalTypes.h"
-#include "TemporalSelfuncs.h"
 
 static double calc_temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 									TemporalInst *constval, Oid operator);

@@ -1184,7 +1184,7 @@ tpointseq_speed1(TemporalSeq *seq)
 	TemporalInst *instants[2];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
-	double speed = 0; /* To make the compiler happy */
+	double speed = 0; /* To make the compiler quiet */
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count-1; i++)
 	{
@@ -1590,50 +1590,43 @@ tpointseq_azimuth2(TemporalSeq **result, TemporalSeq *seq)
 		return 0;
 	
 	/* We are sure that there are at least 2 instants */
-	Oid valuetypid = seq->valuetypid;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	Datum value1 = temporalinst_value(inst1);
 	int k = 0, l = 0;
-	Datum azimuth = 0; /* To make the compiler happy */
-	bool lower_inc = seq->period.lower_inc;
+	Datum azimuth = 0; /* To make the compiler quiet */
+	bool lower_inc = seq->period.lower_inc, upper_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-		if (datum_eq(temporalinst_value(inst1), 
-			temporalinst_value(inst2), valuetypid))
+		Datum value2 = temporalinst_value(inst2);
+		upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
+		if (datum_ne(value1, value2, seq->valuetypid))
 		{
-			if (k == 0)
+			azimuth = tpointseq_azimuth1(inst1, inst2);
+			instants[k++] = temporalinst_make(azimuth,
+				inst1->t, FLOAT8OID);
+		}
+		else 
+		{
+			if (k != 0) 
 			{
-				inst1 = inst2;
-				continue;
-			}
-			else
-			{
-				instants[k++] = temporalinst_make(azimuth,
-					inst1->t, FLOAT8OID);
-				bool upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
+				instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
+				upper_inc = true;
 				result[l++] = temporalseq_from_temporalinstarr(instants, 
 					k, lower_inc, upper_inc, true);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
 				k = 0;
 			}
-				
-		}
-		else
-		{
-			azimuth = tpointseq_azimuth1(inst1, inst2);
-			instants[k++] = temporalinst_make(azimuth,
-				inst1->t, FLOAT8OID);
+			lower_inc = true;
 		}
 		inst1 = inst2;
-		lower_inc = true;
+		value1 = value2;
 	}
 	if (k != 0)
 	{
 		instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
-		bool lower_inc = (l == 0) ? seq->period.lower_inc : true;
-		bool upper_inc = (l == seq->count-1) ? seq->period.upper_inc : false;
 		result[l++] = temporalseq_from_temporalinstarr(instants, 
 			k, lower_inc, upper_inc, true);
 	}

@@ -3,7 +3,6 @@ project(MobilityDB VERSION 0.0.1)
 
 set(SRCS
 src/AggregateFuncs.c
-src/ArithmeticOps.c
 src/BooleanOps.c
 src/BoundBoxOps.c
 src/ComparisonOps.c
@@ -16,6 +15,7 @@ src/IndexGistTnumber.c
 src/IndexSpgistTemporal.c
 src/IndexSpgistTime.c
 src/IndexSpgistTnumber.c
+src/MathematicalFuncs.c
 src/OidCache.c
 src/Parser.c
 src/Period.c
@@ -28,12 +28,12 @@ src/Temporal.c
 src/TemporalI.c
 src/TemporalInst.c
 src/TemporalS.c
-src/TemporalSelfuncs.c
+src/TemporalSelFuncs.c
 src/TemporalSeq.c
 src/TemporalTypes.c
 src/TempSelFuncs.c
 src/TimeOps.c
-src/TimeSelfuncs.c
+src/TimeSelFuncs.c
 src/TimestampSet.c
 src/TimeTypanalyze.c
 src/WAggregateFuncs.c

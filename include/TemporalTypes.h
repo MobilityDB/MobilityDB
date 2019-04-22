@@ -53,7 +53,7 @@
 #include <utils/varlena.h>
 #include "TimeTypes.h"
 #include "OidCache.h"
-#include "TemporalSelfuncs.h"
+#include "TemporalSelFuncs.h"
 
 #ifndef USE_FLOAT4_BYVAL
 #error Postgres needs to be configured with USE_FLOAT4_BYVAL
@@ -1693,6 +1693,11 @@ sync_oper4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * Used for arithmetic, Boolean, comparison, and geometric distance 
  * File GenericOps.c
  *****************************************************************************/
+
+extern Temporal *oper_temporal(Temporal *temp, Datum (*operator)(Datum), 
+	Oid valuetypid);
+extern Temporal *oper1_temporal(Temporal *temp, Datum value,
+	Datum (*operator)(Datum, Datum), Oid valuetypid);
 
 extern TemporalInst *oper2_temporalinst_base(TemporalInst *inst, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);

@@ -454,10 +454,16 @@ CREATE OPERATOR / (
 
 /* tfloat round */
 
-CREATE FUNCTION temporal_round(tfloat, integer)
+CREATE FUNCTION round(tfloat, integer)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'round_temporal'
+	AS 'MODULE_PATHNAME', 'temporal_round'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* tfloat degrees */
+
+CREATE FUNCTION degrees(tfloat)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'temporal_degrees'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

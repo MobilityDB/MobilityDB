@@ -88,17 +88,20 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 /* Round to n decimal places */
 
 static Datum
-datum_round(Datum l, Datum r, Oid typel, Oid typer) {
-	Assert(typel == FLOAT8OID && typer == INT4OID) ;
-	double x = DatumGetFloat8(l) ;
-	int n = DatumGetInt32(r) ;
-	// using strings for truncating. not efficient but I don't know how to do it correctly numerically...
-	char pattern[16] ;
-	char str[128] ;
-	sprintf(pattern, "%%.%df", n) ;
-	sprintf(str, pattern, x) ;
-	double x2 = strtod(str, NULL) ;
-	return Float8GetDatum(x2) ;
+datum_round(Datum value1, Datum value2)
+{
+	Datum numeric = call_function1(float8_numeric, value1);
+	Datum round = call_function2(numeric_round, numeric, value2);
+	return call_function1(numeric_float8, round);
+	
+}
+
+/* Convert to degrees */
+
+static Datum
+datum_degrees(Datum value)
+{
+	return call_function1(degrees, value);
 }
 
 /*****************************************************************************
@@ -560,22 +563,27 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-
-PG_FUNCTION_INFO_V1(round_temporal);
+PG_FUNCTION_INFO_V1(temporal_round);
 
 PGDLLEXPORT Datum
-round_temporal(PG_FUNCTION_ARGS)
+temporal_round(PG_FUNCTION_ARGS)
 {
-	//Datum value = PG_GETARG_DATUM(1);
-	int digits = PG_GETARG_INT32(1) ;
-	//Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	//double d = datum_double(value, datumtypid);
-
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-
-	Temporal *result;
-	result = oper4_temporal_base(temp, Int32GetDatum(digits),
-		&datum_round, INT4OID, FLOAT8OID, false);
+	Datum digits = PG_GETARG_DATUM(1);
+	Temporal *result = oper1_temporal(temp, digits, &datum_round, FLOAT8OID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
+
+PG_FUNCTION_INFO_V1(temporal_degrees);
+
+PGDLLEXPORT Datum
+temporal_degrees(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = oper_temporal(temp, &datum_degrees, FLOAT8OID);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/

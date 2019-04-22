@@ -67,6 +67,187 @@
 #include "TemporalTypes.h"
 
 /*****************************************************************************
+ * Version of the functions where the argument is a temporal type which apply 
+ * the operator to the composing instants.
+ *****************************************************************************/
+
+TemporalInst *
+oper_temporalinst(TemporalInst *inst, Datum (*operator)(Datum), Oid valuetypid)
+{
+	Datum value = temporalinst_value(inst);
+	TemporalInst *result = temporalinst_make(operator(value), inst->t, valuetypid);
+	return result;
+}
+
+TemporalI *
+oper_temporali(TemporalI *ti, Datum (*operator)(Datum), Oid valuetypid)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		instants[i] = oper_temporalinst(inst, operator,	valuetypid);
+	}
+	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+TemporalSeq *
+oper_temporalseq(TemporalSeq *seq, Datum (*operator)(Datum), Oid valuetypid)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		instants[i] = oper_temporalinst(inst, operator, valuetypid);
+	}
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
+		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+TemporalS *
+oper_temporals(TemporalS *ts, Datum (*operator)(Datum), Oid valuetypid)
+{
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		sequences[i] = oper_temporalseq(seq, operator, valuetypid);
+	}
+	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
+	
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	
+	return result;
+}
+
+/*****************************************************************************/
+/* Dispatch function */
+
+Temporal *
+oper_temporal(Temporal *temp, Datum (*operator)(Datum), Oid valuetypid)
+{
+	Temporal *result;
+	if (temp->type == TEMPORALINST)
+		result = (Temporal *)oper_temporalinst((TemporalInst *)temp,
+			operator, valuetypid);
+	else if (temp->type == TEMPORALI)
+		result = (Temporal *)oper_temporali((TemporalI *)temp,
+			operator, valuetypid);
+	else if (temp->type == TEMPORALSEQ)
+		result = (Temporal *)oper_temporalseq((TemporalSeq *)temp,
+			operator, valuetypid);
+	else if (temp->type == TEMPORALS)
+		result = (Temporal *)oper_temporals((TemporalS *)temp,
+			operator, valuetypid);
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
+	return result;
+}
+
+/*****************************************************************************/
+
+TemporalInst *
+oper1_temporalinst(TemporalInst *inst, Datum value,
+    Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	Datum value1 = temporalinst_value(inst);
+	TemporalInst *result = temporalinst_make(operator(value1, value), inst->t, 
+		valuetypid);
+	return result;
+}
+
+TemporalI *
+oper1_temporali(TemporalI *ti, Datum value,
+    Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		instants[i] = oper1_temporalinst(inst, value, operator, valuetypid);
+	}
+	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+TemporalSeq *
+oper1_temporalseq(TemporalSeq *seq, Datum value,
+    Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		instants[i] = oper1_temporalinst(inst, value, operator, valuetypid);
+	}
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
+		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+TemporalS *
+oper1_temporals(TemporalS *ts, Datum value,
+    Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		sequences[i] = oper1_temporalseq(seq, value, operator, valuetypid);
+	}
+	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
+	
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	
+	return result;
+}
+
+/*****************************************************************************/
+/* Dispatch function */
+
+Temporal *
+oper1_temporal(Temporal *temp, Datum value,
+    Datum (*operator)(Datum, Datum), Oid valuetypid)
+{
+	Temporal *result;
+	if (temp->type == TEMPORALINST)
+		result = (Temporal *)oper1_temporalinst((TemporalInst *)temp,
+			value, operator, valuetypid);
+	else if (temp->type == TEMPORALI)
+		result = (Temporal *)oper1_temporali((TemporalI *)temp,
+			value, operator, valuetypid);
+	else if (temp->type == TEMPORALSEQ)
+		result = (Temporal *)oper1_temporalseq((TemporalSeq *)temp,
+			value, operator, valuetypid);
+	else if (temp->type == TEMPORALS)
+		result = (Temporal *)oper1_temporals((TemporalS *)temp,
+			value, operator, valuetypid);
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
+	return result;
+}
+
+/*****************************************************************************
  * Version of the functions where the arguments are a temporal type and a base
  * type which apply the operator to the composing instants without looking 
  * for crossings or local minimum/maximum. The last argument states whether 
@@ -80,10 +261,10 @@ oper2_temporalinst_base(TemporalInst *inst, Datum value,
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
-	TemporalInst *inst1 = invert ?
+	TemporalInst *result = invert ?
 		temporalinst_make(operator(value, value1), inst->t, valuetypid) :
 		temporalinst_make(operator(value1, value), inst->t, valuetypid);
-	return inst1;
+	return result;
 }
 
 TemporalI *
@@ -181,10 +362,10 @@ oper3_temporalinst_base(TemporalInst *inst, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
-	TemporalInst *inst1 = invert ?
+	TemporalInst *result = invert ?
 		temporalinst_make(operator(value, value1, param), inst->t, valuetypid) :
 		temporalinst_make(operator(value1, value, param), inst->t, valuetypid);
-	return inst1;
+	return result;
 }
 
 TemporalI *
@@ -253,14 +434,14 @@ oper4_temporalinst_base(TemporalInst *inst, Datum value,
 	Datum (*operator)(Datum, Datum, Oid, Oid), 
 	Oid datumtypid, Oid valuetypid, bool invert)
 {
-	TemporalInst *inst1 = invert ?
+	TemporalInst *result = invert ?
 		temporalinst_make(
 			operator(value, temporalinst_value(inst), datumtypid, inst->valuetypid), 
 			inst->t, valuetypid) :
 		temporalinst_make(
 			operator(temporalinst_value(inst), value, inst->valuetypid, datumtypid), 
 			inst->t, valuetypid);
-	return inst1;
+	return result;
 }
 
 TemporalI *
