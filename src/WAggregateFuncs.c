@@ -485,15 +485,15 @@ temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 static AggregateState *
 temporal_wagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	Temporal *temp, Interval *interval,
-	Datum (*operator)(Datum, Datum), bool min, bool crossings)
+	Datum (*func)(Datum, Datum), bool min, bool crossings)
 {
 	int count;
 	TemporalSeq **sequences = temporal_extend(temp, interval, min, &count);
 	AggregateState *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
-		operator, crossings);
+		func, crossings);
 	for (int i = 1; i < count; i++)
 		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i],
-			operator, crossings);
+			func, crossings);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);

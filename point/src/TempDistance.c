@@ -45,14 +45,14 @@ geog_distance(Datum geog1, Datum geog2)
 static void
 distance_tpointseq_geo1(TemporalInst **result,
 	TemporalInst *inst1, TemporalInst *inst2, 
-	Datum point, Datum (*operator)(Datum, Datum), int *count)
+	Datum point, Datum (*func)(Datum, Datum), int *count)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segments */
+	/* Constant segment */
 	if (datum_eq(value1, value2, inst1->valuetypid))
 	{
-		result[0] = temporalinst_make(operator(point, value1),
+		result[0] = temporalinst_make(func(point, value1),
 			inst1->t, FLOAT8OID); 
 		*count = 1;
 		return;
@@ -92,7 +92,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 
 	if (fraction == 0 || fraction == 1)
 	{
-		result[0] = temporalinst_make(operator(point, value1),
+		result[0] = temporalinst_make(func(point, value1),
 			inst1->t, FLOAT8OID);
 		*count = 1;
 		return;
@@ -101,9 +101,9 @@ distance_tpointseq_geo1(TemporalInst **result,
 	double delta = (inst2->t - inst1->t) * fraction;
 	TimestampTz time = inst1->t + delta;
 	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, time);
-	result[0] = temporalinst_make(operator(point, value1),
+	result[0] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID);
-	result[1] = temporalinst_make(operator(point, value), time,
+	result[1] = temporalinst_make(func(point, value), time,
 		FLOAT8OID);
 	pfree(DatumGetPointer(value));
 	*count = 2;
@@ -114,7 +114,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 
 static TemporalSeq *
 distance_tpointseq_geo(TemporalSeq *seq, Datum point, 
-	Datum (*operator)(Datum, Datum))
+	Datum (*func)(Datum, Datum))
 {
 	int k = 0;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count * 2);
@@ -123,13 +123,13 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		int count;
-		distance_tpointseq_geo1(&instants[k], inst1, inst2, point, operator,
+		distance_tpointseq_geo1(&instants[k], inst1, inst2, point, func,
 			&count);
 		/* The previous step has added between one and three sequences */
 		k += count;
 		inst1 = inst2;
 	}
-	instants[k++] = temporalinst_make(operator(point, temporalinst_value(inst1)),
+	instants[k++] = temporalinst_make(func(point, temporalinst_value(inst1)),
 		inst1->t, FLOAT8OID); 
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
 		seq->period.lower_inc, seq->period.upper_inc, true);
@@ -145,13 +145,13 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 
 static TemporalS *
 distance_tpoints_geo(TemporalS *ts, Datum point, 
-	Datum (*operator)(Datum, Datum))
+	Datum (*func)(Datum, Datum))
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = distance_tpointseq_geo(seq, point, operator);
+		sequences[i] = distance_tpointseq_geo(seq, point, func);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
 	
@@ -176,6 +176,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	if (gserialized_get_type(gs) != POINTTYPE)
 	{
 		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Only point geometries accepted")));
 	}
@@ -194,16 +195,16 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The geometries must be of the same dimensionality")));
 	}
 
-	Datum (*operator)(Datum, Datum);
+	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
-			operator = &geom_distance3d;
+			func = &geom_distance3d;
 		else
-			operator = &geom_distance2d;
+			func = &geom_distance2d;
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_distance;
+		func = &geog_distance;
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -211,16 +212,16 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *result = NULL;
 	if (temp->type == TEMPORALINST)
 		result = (Temporal *)oper2_temporalinst_base((TemporalInst *)temp,
-			PointerGetDatum(gs), operator, FLOAT8OID, true);
+			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALI)
 		result = (Temporal *)oper2_temporali_base((TemporalI *)temp,
-			PointerGetDatum(gs), operator, FLOAT8OID, true);
+			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), operator);
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), operator);
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -259,16 +260,16 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 			errmsg("The geometries must be of the same dimensionality")));
 	}
 	
-	Datum (*operator)(Datum, Datum);
+	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
-			operator = &geom_distance3d;
+			func = &geom_distance3d;
 		else
-			operator = &geom_distance2d;
+			func = &geom_distance2d;
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_distance;
+		func = &geog_distance;
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -276,16 +277,16 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *result = NULL;
 	if (temp->type == TEMPORALINST)
 		result = (Temporal *)oper2_temporalinst_base((TemporalInst *)temp,
-			PointerGetDatum(gs), operator, FLOAT8OID, true);
+			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALI)
 		result = (Temporal *)oper2_temporali_base((TemporalI *)temp,
-			PointerGetDatum(gs), operator, FLOAT8OID, true);
+			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), operator);
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), operator);
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -295,6 +296,23 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+
+Temporal *
+distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
+{
+	Datum (*func)(Datum, Datum);
+	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+	{
+		if (MOBDB_FLAGS_GET_Z(temp1->flags))
+			func = &geom_distance3d;
+		else
+			func = &geom_distance2d;
+	}
+	else
+		func = &geog_distance;
+	return sync_oper2_temporal_temporal(temp1, temp2,
+		func, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
+}
 
 PG_FUNCTION_INFO_V1(distance_tpoint_tpoint);
 
@@ -318,18 +336,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 	
-	Datum (*operator)(Datum, Datum);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			operator = &geom_distance3d;
-		else
-			operator = &geom_distance2d;
-	}
-	else
-		operator = &geog_distance;
-	Temporal *result = sync_oper2_temporal_temporal(temp1, temp2,
-		operator, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
+	Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

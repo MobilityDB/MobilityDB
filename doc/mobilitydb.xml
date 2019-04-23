@@ -1678,8 +1678,8 @@ Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}');
 					</listitem>
 
 					<listitem>
-						<para><varname>nearestApproachInstant</varname>: First instant of the first temporal point at which the two arguments are at the nearest distance. Notice that the resulting instant may be at an exclusive bound. &Z_support;</para>
-						<para>Signature: <varname>nearestApproachInstant(tgeompoint, {geometry, tgeompoint}): tgeompoint</varname></para>
+						<para><varname>nearestApproachInstant</varname>: Instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. Notice that the resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
+						<para>Signature: <varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
 						<programlisting>
 SELECT asText(nearestApproachInstant(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
@@ -1700,8 +1700,8 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012
 					</listitem>
 
 					<listitem>
-						<para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments &Z_support;</para>
-						<para>Signature: <varname>nearestApproachDistance({geometry, tgeompoint}, {geometry, tgeompoint}): float</varname></para>
+						<para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments &Z_support; &geography_support;</para>
+						<para>Signature: <varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
 						<programlisting>
 SELECT nearestApproachDistance(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
@@ -1722,8 +1722,8 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012
 					</listitem>
 
 					<listitem>
-						<para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments &Z_support;</para>
-						<para>Signature: <varname>shortestLine({geometry, tgeompoint}, {geometry, tgeompoint}): geometry</varname></para>
+						<para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments. The function will only return the first line that it finds if there are more than one. &Z_support; &geography_support;</para>
+						<para>Signature: <varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
 						<programlisting>
 SELECT ST_AsText(shortestLine(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',

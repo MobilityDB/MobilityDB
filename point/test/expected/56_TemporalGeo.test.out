@@ -785,31 +785,31 @@ SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2
 SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------
- POINT(2 2)@2000-01-02 00:00:00+00
+ POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0 0,3 3 3)'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring(0 0,3 3)'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
+              astext               
+-----------------------------------
+ POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -833,31 +833,31 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
               astext               
 -----------------------------------
- POINT(2 2)@2000-01-02 00:00:00+00
+ POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint 'Point(1 1 1)@2000-01-01'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
-                 astext                 
-----------------------------------------
- POINT Z (1 1 1)@2000-01-01 00:00:00+00
+SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+              astext               
+-----------------------------------
+ POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -1052,6 +1052,198 @@ SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Poin
  POINT Z (1.5 1.5 1.5)@2000-01-01 12:00:00+00
 (1 row)
 
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-01'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint 'Point(2 2)@2000-01-01'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint 'Point(2 2)@2000-01-01'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint 'Point(2 2)@2000-01-01'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+                astext                 
+---------------------------------------
+ POINT(1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+                astext                 
+---------------------------------------
+ POINT(1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+                astext                 
+---------------------------------------
+ POINT(1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+                astext                 
+---------------------------------------
+ POINT(1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+                    astext                    
+----------------------------------------------
+ POINT Z (1.5 1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+                    astext                    
+----------------------------------------------
+ POINT Z (1.5 1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+                    astext                    
+----------------------------------------------
+ POINT Z (1.5 1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+                    astext                    
+----------------------------------------------
+ POINT Z (1.5 1.5 1.5)@2000-01-01 12:00:00+00
+(1 row)
+
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)');
  nearestapproachdistance 
 -------------------------
@@ -1100,6 +1292,54 @@ SELECT NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 
                        0
 (1 row)
 
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring(0 0,3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring(0 0,3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring(0 0,3 3)');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geography 'Linestring(0 0 0,3 3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geography 'Linestring(0 0 0,3 3 3)');
+ nearestapproachdistance 
+-------------------------
+                      95
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geography 'Linestring(0 0 0,3 3 3)');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
 SELECT NearestApproachDistance(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01');
  nearestapproachdistance 
 -------------------------
@@ -1143,6 +1383,54 @@ SELECT NearestApproachDistance(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '[
 (1 row)
 
 SELECT NearestApproachDistance(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1 1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+   4.69362363549184e-322
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  nearestapproachdistance 
 -------------------------
                        0
@@ -1340,6 +1628,198 @@ SELECT NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 
                        0
 (1 row)
 
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint 'Point(2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint 'Point(2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint 'Point(2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(2 2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint 'Point(2 2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint 'Point(2 2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint 'Point(2 2 2)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+         156876.14940189
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |=| geometry 'Linestring(0 0,3 3)';
  ?column? 
 ----------
@@ -1388,6 +1868,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
         0
 (1 row)
 
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| geography 'Linestring(0 0,3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| geography 'Linestring(0 0,3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| geography 'Linestring(0 0,3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| geography 'Linestring(0 0,3 3)';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| geography 'Linestring(0 0 0,3 3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| geography 'Linestring(0 0 0,3 3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| geography 'Linestring(0 0 0,3 3 3)';
+ ?column? 
+----------
+       95
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| geography 'Linestring(0 0 0,3 3 3)';
+ ?column? 
+----------
+        0
+(1 row)
+
 SELECT geometry 'Linestring(0 0,3 3)' |=| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1431,6 +1959,54 @@ SELECT geometry 'Linestring(0 0 0,3 3 3)' |=| tgeompoint '[Point(1 1 1)@2000-01-
 (1 row)
 
 SELECT geometry 'Linestring(0 0 0,3 3 3)' |=| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint 'Point(1 1)@2000-01-01';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint 'Point(1 1 1)@2000-01-01';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+       ?column?        
+-----------------------
+ 4.69362363549184e-322
+(1 row)
+
+SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
         0
@@ -1628,6 +2204,198 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
         0
 (1 row)
 
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| tgeogpoint 'Point(2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| tgeogpoint 'Point(2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| tgeogpoint 'Point(2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| tgeogpoint 'Point(2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| tgeogpoint 'Point(2 2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| tgeogpoint 'Point(2 2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| tgeogpoint 'Point(2 2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| tgeogpoint 'Point(2 2 2)@2000-01-01';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+    ?column?     
+-----------------
+ 156876.14940189
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+        0
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
@@ -1676,6 +2444,54 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
  LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring(0 0,3 3)'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring(0 0,3 3)'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
+      st_astext      
+---------------------
+ LINESTRING(3 3,3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geography 'Linestring(0 0 0,3 3 3)'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geography 'Linestring(0 0 0,3 3 3)'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geography 'Linestring(0 0 0,3 3 3)'));
+         st_astext          
+----------------------------
+ LINESTRING Z (3 3 3,3 3 3)
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
       st_astext      
 ---------------------
@@ -1719,6 +2535,54 @@ SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '[P
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (3 3 3,3 3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(3 3,3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1 1 1)@2000-01-01'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
          st_astext          
 ----------------------------
  LINESTRING Z (3 3 3,3 3 3)
@@ -1914,6 +2778,198 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
                st_astext                
 ----------------------------------------
  LINESTRING Z (1.5 1.5 1.5,1.5 1.5 1.5)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint 'Point(2 2)@2000-01-01'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint 'Point(2 2)@2000-01-01'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint 'Point(2 2)@2000-01-01'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(3 3,3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint 'Point(2 2 2)@2000-01-01'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (2 2 2,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (2 2 2,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (2 2 2,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (2 2 2,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (2 2 2,1 1 1)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeogpoint '{[Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+         st_astext          
+----------------------------
+ LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
 SELECT ST_AsText(tgeompoint 'Point(1 1)@2000-01-01'::geometry);

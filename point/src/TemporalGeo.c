@@ -2243,7 +2243,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static TemporalInst *
-NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
+NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
 	double mindist = DBL_MAX;
@@ -2252,9 +2252,7 @@ NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
 	{
 		inst = temporali_inst_n(ti, i);
 		Datum value = temporalinst_value(inst);
-		double dist = hasz ?
-			DatumGetFloat8(call_function2(distance3d, value, geom)) : 
-			DatumGetFloat8(call_function2(distance, value, geom));	
+		double dist = DatumGetFloat8(func(value, geo));	
 		if (dist < mindist)
 		{
 			mindist = dist;
@@ -2266,8 +2264,74 @@ NAI_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
 
 /*****************************************************************************/
 
+/* NAI between temporal sequence point and a geometry/geography */
+
+static Datum
+NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
+	TimestampTz *t)
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	/* Constant segment */
+	if (datum_eq(value1, value2, inst1->valuetypid))
+	{
+		*t = inst1->t;
+		return temporalinst_value_copy(inst1); 
+	}
+
+	double fraction;
+	if (inst1->valuetypid == type_oid(T_GEOMETRY))
+	{
+		/* The trajectory is a line */
+		Datum traj = tgeompointseq_trajectory1(inst1, inst2);
+        Datum point = call_function2(LWGEOM_closestpoint, traj, geo);
+		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+			traj, point));
+		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
+	}
+	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		/* The trajectory is a line */
+		Datum traj = tgeogpointseq_trajectory1(inst1, inst2);
+		/* There is no function equivalent to LWGEOM_line_locate_point 
+		 * for geographies. We do as the ST_Intersection function, e.g.
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
+		 * @extschema@._ST_BestSRID($1, $2)), 
+		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+		Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
+		Datum traj1 = call_function1(geometry_from_geography, traj);
+		Datum traj2 = call_function2(transform, traj1, bestsrid);
+		Datum geo1 = call_function1(geometry_from_geography, geo);
+		Datum geo2 = call_function2(transform, geo1, bestsrid);
+        Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
+		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+			traj2, point));
+		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1)); 
+		pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
+		pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
+
+	if (fraction == 0)
+	{
+		*t = inst1->t;
+		return temporalinst_value_copy(inst1);
+	}
+	if (fraction == 1)
+	{
+		*t = inst2->t;
+		return temporalinst_value_copy(inst2);
+	}
+
+	double delta = (inst2->t - inst1->t) * fraction;
+	*t = inst1->t + delta;
+	return temporalseq_value_at_timestamp1(inst1, inst2, *t);
+}
+
 static TemporalInst *
-NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
+NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2275,46 +2339,25 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
-	TimestampTz t = 0; /* keep compiler quiet */
+	TimestampTz mint = 0; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count-1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
-		Datum traj = tgeompointseq_trajectory1(inst1, inst2);
-		Datum point;
-		double dist;
-		if (hasz)
-		{
-			point = call_function2(LWGEOM_closestpoint3d, traj, geom);
-			dist = DatumGetFloat8(call_function2(distance3d,
-				point, geom));
-		}
-		else
-		{
-			point = call_function2(LWGEOM_closestpoint, traj, geom);
-			dist = DatumGetFloat8(call_function2(distance,
-				point, geom));
-		}
+		TimestampTz t;
+		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t);
+		double dist = DatumGetFloat8(func(point, geo));
 		if (dist < mindist)
 		{
 			mindist = dist;
 			minpoint = point;
-			GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
-			if (gserialized_get_type(gstraj) == POINTTYPE)
-				t = inst1->t;
-			else
-			{
-				double fraction = DatumGetFloat8(call_function2(
-					LWGEOM_line_locate_point, traj, minpoint));
-				t = inst1->t + (inst2->t - inst1->t) * fraction;
-			}
+			mint = t;
 		}
 		else
 			pfree(DatumGetPointer(point)); 			
 		inst1 = inst2;
-		pfree(DatumGetPointer(traj)); 
 	}
-	TemporalInst *result = temporalinst_make(minpoint, t, seq->valuetypid);
+	TemporalInst *result = temporalinst_make(minpoint, mint, seq->valuetypid);
 	pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
@@ -2322,56 +2365,69 @@ NAI_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
 /*****************************************************************************/
 
 static TemporalInst *
-NAI_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
+NAI_tpoints_geo(TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 {
-	Datum minpoint = 0; /* keep compiler quiet */
-	TimestampTz t = 0; /* keep compiler quiet */
+	TemporalInst *result = NULL;
 	double mindist = DBL_MAX;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		TemporalInst *inst = NAI_tpointseq_geometry(seq, geom, hasz);
+		TemporalInst *inst = NAI_tpointseq_geo(seq, geo, func);
 		Datum value = temporalinst_value(inst);
-		double dist = hasz ?
-			DatumGetFloat8(call_function2(distance3d, value, geom)) :
-			DatumGetFloat8(call_function2(distance, value, geom));
+		double dist = DatumGetFloat8(func(value, geo));
 		if (dist < mindist)
 		{
-			if (mindist != DBL_MAX)
-				pfree(DatumGetPointer(minpoint));
-			mindist = dist;
-			minpoint = temporalinst_value_copy(inst);
-			t = inst->t;
+			if (result != NULL)
+				pfree(result);
+			result = inst;
 		}
-		pfree(inst);
+		else
+			pfree(inst);
 	}
-	TemporalInst *result = temporalinst_make(minpoint, t, ts->valuetypid);
 	return result;
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(NAI_geometry_tpoint);
+PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
 
 PGDLLEXPORT Datum
-NAI_geometry_tpoint(PG_FUNCTION_ARGS)
+NAI_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) || FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("3D geometries are not allowed")));
+	}
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = &geom_distance2d;
+	else
+		func = &geog_distance;
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
 	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)NAI_tpointi_geometry((TemporalI *)temp, 
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp, 
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)NAI_tpointseq_geometry((TemporalSeq *)temp, 
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp, 
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)NAI_tpoints_geometry((TemporalS *)temp,
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2381,27 +2437,45 @@ NAI_geometry_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(NAI_tpoint_geometry);
+PG_FUNCTION_INFO_V1(NAI_tpoint_geo);
 
 PGDLLEXPORT Datum
-NAI_tpoint_geometry(PG_FUNCTION_ARGS)
+NAI_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) || FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("3D geometries are not allowed")));
+	}
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = &geom_distance2d;
+	else
+		func = &geog_distance;
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
 	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)NAI_tpointi_geometry((TemporalI *)temp, 
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp, 
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)NAI_tpointseq_geometry((TemporalSeq *)temp, 
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp, 
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)NAI_tpoints_geometry((TemporalS *)temp,
-			PointerGetDatum(gs), hasz);
+		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2433,23 +2507,8 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Datum (*operator)(Datum, Datum);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			operator = &geom_distance3d;
-		else
-			operator = &geom_distance2d;
-	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_distance;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	TemporalInst *result = NULL;
-	Temporal *dist = sync_oper2_temporal_temporal(temp1, temp2,
-		operator, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
+	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist != NULL)
 	{
 		Temporal *mindist = temporal_at_min_internal(dist);
@@ -2469,69 +2528,88 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static double
-NAD_tpointinst_geometry(TemporalInst *inst, Datum geom, bool hasz)
+NAD_tpointinst_geo(TemporalInst *inst, Datum geo, 
+	Datum (*func)(Datum, Datum))
 {
 	Datum value = temporalinst_value(inst);
-	Datum result = hasz ?
-		DatumGetFloat8(call_function2(distance3d, value, geom)) :
-		DatumGetFloat8(call_function2(distance, value, geom));
+	Datum result = DatumGetFloat8(func(value, geo));
 	return result;
 }
 
 static double
-NAD_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
+NAD_tpointi_geo(TemporalI *ti, Datum geo, 
+	Datum (*func)(Datum, Datum))
 {
-	Datum traj = tgeompointi_values(ti);
-	double result = hasz ?
-		DatumGetFloat8(call_function2(distance3d, traj, geom)) :
-		DatumGetFloat8(call_function2(distance, traj, geom));
+	Datum traj = tpointi_values(ti);
+	double result = DatumGetFloat8(func(traj, geo));
 	pfree(DatumGetPointer(traj));
 	return result;
 }
 
 static double
-NAD_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
+NAD_tpointseq_geo(TemporalSeq *seq, Datum geo, 
+	Datum (*func)(Datum, Datum))
 {
 	Datum traj = tpointseq_trajectory(seq);
-	double result = hasz ?
-		DatumGetFloat8(call_function2(distance3d, traj, geom)) :
-		DatumGetFloat8(call_function2(distance, traj, geom));
+	double result = DatumGetFloat8(func(traj, geo));
 	return result;
 }
 
 static double
-NAD_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
+NAD_tpoints_geo(TemporalS *ts, Datum geo, 
+	Datum (*func)(Datum, Datum))
 {
-	Datum traj = tgeompoints_trajectory(ts);
-	double result = hasz ?
-		DatumGetFloat8(call_function2(distance3d, traj, geom)) :
-		DatumGetFloat8(call_function2(distance, traj, geom));
+	Datum traj = tpoints_trajectory(ts);
+	double result = DatumGetFloat8(func(traj, geo));
 	pfree(DatumGetPointer(traj));
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(NAD_geometry_tpoint);
+PG_FUNCTION_INFO_V1(NAD_geo_tpoint);
 
 PGDLLEXPORT Datum
-NAD_geometry_tpoint(PG_FUNCTION_ARGS)
+NAD_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be of the same dimensionality")));
+	}
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		if (MOBDB_FLAGS_GET_Z(temp->flags))
+			func = &geom_distance3d;
+		else
+			func = &geom_distance2d;
+	}
+	else
+		func = &geog_distance;
 
 	Datum result;
 	if (temp->type == TEMPORALINST) 
-		result = NAD_tpointinst_geometry((TemporalInst *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointinst_geo((TemporalInst *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALI) 
-		result = NAD_tpointi_geometry((TemporalI *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointi_geo((TemporalI *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALSEQ) 
-		result = NAD_tpointseq_geometry((TemporalSeq *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointseq_geo((TemporalSeq *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS) 
-		result = NAD_tpoints_geometry((TemporalS *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2541,28 +2619,51 @@ NAD_geometry_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(NAD_tpoint_geometry);
+PG_FUNCTION_INFO_V1(NAD_tpoint_geo);
 
 PGDLLEXPORT Datum
-NAD_tpoint_geometry(PG_FUNCTION_ARGS)
+NAD_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be of the same dimensionality")));
+	}
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+	{
+		if (MOBDB_FLAGS_GET_Z(temp->flags))
+			func = &geom_distance3d;
+		else
+			func = &geom_distance2d;
+	}
+	else
+		func = &geog_distance;
 
 	Datum result;
 	if (temp->type == TEMPORALINST) 
-		result = NAD_tpointinst_geometry((TemporalInst *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointinst_geo((TemporalInst *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALI) 
-		result = NAD_tpointi_geometry((TemporalI *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointi_geo((TemporalI *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALSEQ) 
-		result = NAD_tpointseq_geometry((TemporalSeq *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpointseq_geo((TemporalSeq *)temp,
+			PointerGetDatum(gs), func);
 	else if (temp->type == TEMPORALS) 
-		result = NAD_tpoints_geometry((TemporalS *)temp,
-			PointerGetDatum(gs), hasz);
+		result = NAD_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2596,22 +2697,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Datum (*operator)(Datum, Datum);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))
-			operator = &geom_distance3d;
-		else
-			operator = &geom_distance2d;
-	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_distance;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
-	Temporal *dist = sync_oper2_temporal_temporal_crossdisc(temp1, temp2, 
-		operator, FLOAT8OID);
+	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist == NULL)
 	{
 		PG_FREE_IF_COPY(temp1, 0);
@@ -2631,68 +2717,82 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static Datum
-shortestline_tpointinst_geometry(TemporalInst *inst, Datum geom, bool hasz)
+shortestline_tpointinst_geo(TemporalInst *inst, Datum geo, bool hasz)
 {
-	Datum value = temporalinst_value(inst);
+	Datum traj = temporalinst_value(inst);
 	Datum result = hasz ?
-		call_function2(LWGEOM_shortestline3d, value, geom) :
-		call_function2(LWGEOM_shortestline2d, value, geom);
+		call_function2(LWGEOM_shortestline3d, traj, geo) :
+		call_function2(LWGEOM_shortestline2d, traj, geo);
 	return result;
 }
 
 static Datum
-shortestline_tpointi_geometry(TemporalI *ti, Datum geom, bool hasz)
+shortestline_tpointi_geo(TemporalI *ti, Datum geo, bool hasz)
 {
 	Datum traj = tgeompointi_values(ti);
-	Datum result = hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geom) :
-		call_function2(LWGEOM_shortestline2d, traj, geom);
+	Datum result =  hasz ?
+		call_function2(LWGEOM_shortestline3d, traj, geo) :
+		call_function2(LWGEOM_shortestline2d, traj, geo);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
 
 static Datum
-shortestline_tpointseq_geometry(TemporalSeq *seq, Datum geom, bool hasz)
+shortestline_tpointseq_geo(TemporalSeq *seq, Datum geo, bool hasz)
 {
 	Datum traj = tpointseq_trajectory(seq);
-	Datum result = hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geom) :
-		call_function2(LWGEOM_shortestline2d, traj, geom);
+	Datum result =  hasz ?
+		call_function2(LWGEOM_shortestline3d, traj, geo) :
+		call_function2(LWGEOM_shortestline2d, traj, geo);
 	return result;
 }
 
 static Datum
-shortestline_tpoints_geometry(TemporalS *ts, Datum geom, bool hasz)
+shortestline_tpoints_geo(TemporalS *ts, Datum geo, bool hasz)
 {
 	Datum traj = tpoints_trajectory(ts);
-	Datum result = hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geom) :
-		call_function2(LWGEOM_shortestline2d, traj, geom);
+	Datum result =  hasz ?
+		call_function2(LWGEOM_shortestline3d, traj, geo) :
+		call_function2(LWGEOM_shortestline2d, traj, geo);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(shortestline_geometry_tpoint);
+PG_FUNCTION_INFO_V1(shortestline_geo_tpoint);
 
 PGDLLEXPORT Datum
-shortestline_geometry_tpoint(PG_FUNCTION_ARGS)
+shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
-	
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be of the same dimensionality")));
+	}
+	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
+
 	Datum result;
 	if (temp->type == TEMPORALINST) 
-		result = shortestline_tpointinst_geometry((TemporalInst *)temp, 
+		result = shortestline_tpointinst_geo((TemporalInst *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALI) 
-		result = shortestline_tpointi_geometry((TemporalI *)temp, 
+		result = shortestline_tpointi_geo((TemporalI *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALSEQ) 
-		result = shortestline_tpointseq_geometry((TemporalSeq *)temp, 
+		result = shortestline_tpointseq_geo((TemporalSeq *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALS) 
-		result = shortestline_tpoints_geometry((TemporalS *)temp, 
+		result = shortestline_tpoints_geo((TemporalS *)temp, 
 			PointerGetDatum(gs), hasz);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
@@ -2703,27 +2803,41 @@ shortestline_geometry_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(shortestline_tpoint_geometry);
+PG_FUNCTION_INFO_V1(shortestline_tpoint_geo);
 
 PGDLLEXPORT Datum
-shortestline_tpoint_geometry(PG_FUNCTION_ARGS)
+shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags); 
+	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be in the same SRID")));
+	}
+	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The geometries must be of the same dimensionality")));
+	}
+	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
 
 	Datum result;
 	if (temp->type == TEMPORALINST) 
-		result = shortestline_tpointinst_geometry((TemporalInst *)temp, 
+		result = shortestline_tpointinst_geo((TemporalInst *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALI) 
-		result = shortestline_tpointi_geometry((TemporalI *)temp, 
+		result = shortestline_tpointi_geo((TemporalI *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALSEQ) 
-		result = shortestline_tpointseq_geometry((TemporalSeq *)temp, 
+		result = shortestline_tpointseq_geo((TemporalSeq *)temp, 
 			PointerGetDatum(gs), hasz);
 	else if (temp->type == TEMPORALS) 
-		result = shortestline_tpoints_geometry((TemporalS *)temp, 
+		result = shortestline_tpoints_geo((TemporalS *)temp, 
 			PointerGetDatum(gs), hasz);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
@@ -2746,10 +2860,10 @@ shortestline_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
 
 static Datum
 shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
-	Datum (*operator)(Datum, Datum))
+	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalI *dist = sync_oper2_temporali_temporali(ti1, ti2, operator, 
+	TemporalI *dist = sync_oper2_temporali_temporali(ti1, ti2, func, 
 		FLOAT8OID);
 	Datum minvalue = temporali_min_value(dist);
 	TemporalI *mindistance = temporali_at_value(dist, minvalue);
@@ -2764,11 +2878,11 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 
 static Datum
 shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum))
+	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
 	TemporalSeq *dist = sync_oper2_temporalseq_temporalseq(seq1, seq2, 
-		operator, FLOAT8OID, NULL);
+		func, FLOAT8OID, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
 	/* Make a copy of the sequences with inclusive bounds */
@@ -2789,10 +2903,10 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 
 static Datum
 shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
-	Datum (*operator)(Datum, Datum))
+	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalS *dist = sync_oper2_temporals_temporals(ts1, ts2, operator, 
+	TemporalS *dist = sync_oper2_temporals_temporals(ts1, ts2, func, 
 		FLOAT8OID, NULL);
 	TemporalS *mindist = temporals_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
@@ -2896,16 +3010,16 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	
-	Datum (*operator)(Datum, Datum);
+	Datum (*func)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))
-			operator = &geom_distance3d;
+			func = &geom_distance3d;
 		else
-			operator = &geom_distance2d;
+			func = &geom_distance2d;
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		operator = &geog_distance;
+		func = &geog_distance;
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -2916,13 +3030,13 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 			(TemporalInst *)sync2);
 	else if (sync1->type == TEMPORALI)
 		result = shortestline_tpointi_tpointi((TemporalI *)sync1,
-			(TemporalI *)sync2, operator);
+			(TemporalI *)sync2, func);
 	else if (sync1->type == TEMPORALSEQ)
 		result = shortestline_tpointseq_tpointseq((TemporalSeq *)sync1,
-			(TemporalSeq *)sync2, operator);
+			(TemporalSeq *)sync2, func);
 	else if (sync1->type == TEMPORALS)
 		result = shortestline_tpoints_tpoints((TemporalS *)sync1,
-			(TemporalS *)sync2, operator);
+			(TemporalS *)sync2, func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));

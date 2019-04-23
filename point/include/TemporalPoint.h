@@ -541,6 +541,8 @@ extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 
+extern Temporal *distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
+
 /*****************************************************************************
  * Index functions defined in IndexGistTPoint.c
  *****************************************************************************/
