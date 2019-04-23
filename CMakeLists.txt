@@ -7,7 +7,6 @@ src/BooleanOps.c
 src/BoundBoxOps.c
 src/ComparisonOps.c
 src/DoubleN.c
-src/GenericOps.c
 src/indexesstat.c
 src/IndexGistTemporal.c
 src/IndexGistTime.c
@@ -15,6 +14,7 @@ src/IndexGistTnumber.c
 src/IndexSpgistTemporal.c
 src/IndexSpgistTime.c
 src/IndexSpgistTnumber.c
+src/LiftingFuncs.c
 src/MathematicalFuncs.c
 src/OidCache.c
 src/Parser.c

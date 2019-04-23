@@ -211,10 +211,10 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 
 	Temporal *result = NULL;
 	if (temp->type == TEMPORALINST)
-		result = (Temporal *)oper2_temporalinst_base((TemporalInst *)temp,
+		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALI)
-		result = (Temporal *)oper2_temporali_base((TemporalI *)temp,
+		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
@@ -276,10 +276,10 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 
 	Temporal *result = NULL;
 	if (temp->type == TEMPORALINST)
-		result = (Temporal *)oper2_temporalinst_base((TemporalInst *)temp,
+		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALI)
-		result = (Temporal *)oper2_temporali_base((TemporalI *)temp,
+		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
@@ -310,7 +310,7 @@ distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
 	}
 	else
 		func = &geog_distance;
-	return sync_oper2_temporal_temporal(temp1, temp2,
+	return sync_tfunc2_temporal_temporal(temp1, temp2,
 		func, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
 }
 

@@ -2268,7 +2268,7 @@ NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 
 static Datum
 NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
-	TimestampTz *t)
+	TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -2276,7 +2276,8 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	if (datum_eq(value1, value2, inst1->valuetypid))
 	{
 		*t = inst1->t;
-		return temporalinst_value_copy(inst1); 
+		*tofree = false;
+		return value1; 
 	}
 
 	double fraction;
@@ -2317,16 +2318,19 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	if (fraction == 0)
 	{
 		*t = inst1->t;
-		return temporalinst_value_copy(inst1);
+		*tofree = false;
+		return value1;
 	}
 	if (fraction == 1)
 	{
 		*t = inst2->t;
-		return temporalinst_value_copy(inst2);
+		*tofree = false;
+		return value2;
 	}
 
 	double delta = (inst2->t - inst1->t) * fraction;
 	*t = inst1->t + delta;
+	*tofree = true;
 	return temporalseq_value_at_timestamp1(inst1, inst2, *t);
 }
 
@@ -2340,25 +2344,29 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
 	TimestampTz mint = 0; /* keep compiler quiet */
+	bool mintofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count-1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
 		TimestampTz t;
-		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t);
+		bool tofree;
+		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
 		double dist = DatumGetFloat8(func(point, geo));
 		if (dist < mindist)
 		{
 			mindist = dist;
 			minpoint = point;
 			mint = t;
+			mintofree = tofree;
 		}
-		else
+		else if (tofree)
 			pfree(DatumGetPointer(point)); 			
 		inst1 = inst2;
 	}
 	TemporalInst *result = temporalinst_make(minpoint, mint, seq->valuetypid);
-	pfree(DatumGetPointer(minpoint)); 
+	if (mintofree)
+		pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
 
@@ -2531,8 +2539,8 @@ static double
 NAD_tpointinst_geo(TemporalInst *inst, Datum geo, 
 	Datum (*func)(Datum, Datum))
 {
-	Datum value = temporalinst_value(inst);
-	Datum result = DatumGetFloat8(func(value, geo));
+	Datum traj = temporalinst_value(inst);
+	Datum result = DatumGetFloat8(func(traj, geo));
 	return result;
 }
 
@@ -2863,7 +2871,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalI *dist = sync_oper2_temporali_temporali(ti1, ti2, func, 
+	TemporalI *dist = sync_tfunc2_temporali_temporali(ti1, ti2, func, 
 		FLOAT8OID);
 	Datum minvalue = temporali_min_value(dist);
 	TemporalI *mindistance = temporali_at_value(dist, minvalue);
@@ -2881,7 +2889,7 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalSeq *dist = sync_oper2_temporalseq_temporalseq(seq1, seq2, 
+	TemporalSeq *dist = sync_tfunc2_temporalseq_temporalseq(seq1, seq2, 
 		func, FLOAT8OID, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
@@ -2906,7 +2914,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
-	TemporalS *dist = sync_oper2_temporals_temporals(ts1, ts2, func, 
+	TemporalS *dist = sync_tfunc2_temporals_temporals(ts1, ts2, func, 
 		FLOAT8OID, NULL);
 	TemporalS *mindist = temporals_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);

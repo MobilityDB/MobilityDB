@@ -1499,193 +1499,193 @@ extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
  *****************************************************************************/
 
 extern TemporalInst *
-sync_oper2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+sync_tfunc2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper2_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
+sync_tfunc2_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper2_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
+sync_tfunc2_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper2_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
+sync_tfunc2_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper2_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
+sync_tfunc2_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper2_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
+sync_tfunc2_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalSeq *
-sync_oper2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*operator)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalInst *
-sync_oper2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
+sync_tfunc2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
+sync_tfunc2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper2_temporals_temporali(TemporalS *ts, TemporalI *ti, 
+sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper2_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc2_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 extern TemporalS *
-sync_oper2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
+sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper2_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc2_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
 	Datum (*operator)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
-sync_oper2_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum (*operator)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
-sync_oper2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
+sync_tfunc2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	Datum (*operator)(Datum, Datum), Datum valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalInst *
-sync_oper3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+sync_tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
+sync_tfunc3_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
+sync_tfunc3_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
+sync_tfunc3_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
+sync_tfunc3_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
+sync_tfunc3_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
-sync_oper3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
+sync_tfunc3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper3_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
+sync_tfunc3_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper3_temporals_temporali(TemporalS *ts, TemporalI *ti, 
+sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
-sync_oper3_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalSeq *
-sync_oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
+sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
-sync_oper3_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
-sync_oper3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
+sync_tfunc3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalInst *
-sync_oper4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+sync_tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
-sync_oper4_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
+sync_tfunc4_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
-sync_oper4_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
+sync_tfunc4_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
-sync_oper4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
-sync_oper4_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
+sync_tfunc4_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
-sync_oper4_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
+sync_tfunc4_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
-sync_oper4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
-sync_oper4_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
+sync_tfunc4_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalSeq *
-sync_oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalInst *
-sync_oper4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
+sync_tfunc4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
-sync_oper4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
+sync_tfunc4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
-sync_oper4_temporals_temporali(TemporalS *ts, TemporalI *ti, 
+sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
-sync_oper4_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc4_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalS *
-sync_oper4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
+sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper4_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc4_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
-sync_oper4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+sync_tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
-sync_oper4_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 	
 extern Temporal *
-sync_oper4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
+sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
 	
 /*****************************************************************************
@@ -1694,106 +1694,106 @@ sync_oper4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * File GenericOps.c
  *****************************************************************************/
 
-extern Temporal *oper_temporal(Temporal *temp, Datum (*operator)(Datum), 
+extern Temporal *tfunc1_temporal(Temporal *temp, Datum (*operator)(Datum), 
 	Oid valuetypid);
-extern Temporal *oper1_temporal(Temporal *temp, Datum value,
+extern Temporal *tfunc2_temporal(Temporal *temp, Datum value,
 	Datum (*operator)(Datum, Datum), Oid valuetypid);
 
-extern TemporalInst *oper2_temporalinst_base(TemporalInst *inst, Datum d, 
+extern TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalI *oper2_temporali_base(TemporalI *ti, Datum d, 
+extern TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalSeq *oper2_temporalseq_base(TemporalSeq *seq, Datum d, 
+extern TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalS *oper2_temporals_base(TemporalS *ts, Datum d, 
+extern TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
 
-extern TemporalInst *oper2_temporalinst_temporalinst(TemporalInst *inst1, 
+extern TemporalInst *tfunc2_temporalinst_temporalinst(TemporalInst *inst1, 
 	TemporalInst *inst2, Datum (*operator)(Datum, Datum), Oid valuetypid);
-extern TemporalI *oper2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+extern TemporalI *tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid);
-extern TemporalSeq *oper2_temporalseq_temporalseq(TemporalSeq *seq1, 
+extern TemporalSeq *tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, 
 	TemporalSeq *seq2, Datum (*operator)(Datum, Datum),  Oid valuetypid);
-extern TemporalS *oper2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+extern TemporalS *tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid);
 
-extern Temporal *oper2_temporal_base(Temporal *temp, Datum d, 
+extern Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
-extern Temporal *oper2_temporal_temporal(Temporal *temp1, Temporal *temp2, 
+extern Temporal *tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid);
 	
 /*****************************************************************************/
 
-extern TemporalInst *oper3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
+extern TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalI *oper3_temporali_base(TemporalI *ti, Datum value, Datum param, 
+extern TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalSeq *oper3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
+extern TemporalSeq *tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
-extern TemporalS *oper3_temporals_base(TemporalS *ts, Datum value, Datum param,
+extern TemporalS *tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
 	
-extern TemporalInst *oper3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+extern TemporalInst *tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum dist, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
-extern TemporalI *oper3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 
+extern TemporalI *tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
-extern TemporalSeq *oper3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
+extern TemporalSeq *tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
-extern TemporalS *oper3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, Datum param,
+extern TemporalS *tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 
 /*****************************************************************************/
 
-extern TemporalInst *oper4_temporalinst_base(TemporalInst *inst, Datum value,  
+extern TemporalInst *tfunc4_temporalinst_base(TemporalInst *inst, Datum value,  
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern TemporalI *oper4_temporali_base(TemporalI *ti, Datum d, 
+extern TemporalI *tfunc4_temporali_base(TemporalI *ti, Datum d, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern TemporalSeq *oper4_temporalseq_base(TemporalSeq *seq, Datum d, 
+extern TemporalSeq *tfunc4_temporalseq_base(TemporalSeq *seq, Datum d, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern TemporalS *oper4_temporals_base(TemporalS *ts, Datum d, 
+extern TemporalS *tfunc4_temporals_base(TemporalS *ts, Datum d, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 
-extern TemporalInst *oper4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
+extern TemporalInst *tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
-extern TemporalI *oper4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
+extern TemporalI *tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
-extern TemporalSeq *oper4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
+extern TemporalSeq *tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
-extern TemporalS *oper4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
+extern TemporalS *tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
-extern Temporal *oper4_temporal_base(Temporal *temp, Datum value, 
+extern Temporal *tfunc4_temporal_base(Temporal *temp, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern Temporal *oper4_temporal_temporal(Temporal *temp1, Temporal *temp2, 
+extern Temporal *tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 /*****************************************************************************/
 
-extern TemporalS *oper2_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, 
+extern TemporalS *tfunc2_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, 
 	TemporalSeq *seq2, Datum (*operator)(Datum, Datum), Oid valuetypid);
-extern TemporalS *oper2_temporals_temporals_crossdisc(TemporalS *ts1, 
+extern TemporalS *tfunc2_temporals_temporals_crossdisc(TemporalS *ts1, 
 	TemporalS *ts2, Datum (*operator)(Datum, Datum), Oid valuetypid);
 
-extern TemporalS *oper3_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
+extern TemporalS *tfunc3_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
-extern TemporalS *oper3_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
+extern TemporalS *tfunc3_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 
-extern TemporalS *oper4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value, 
+extern TemporalS *tfunc4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern TemporalS *oper4_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
+extern TemporalS *tfunc4_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
-extern TemporalS *oper4_temporals_base_crossdisc(TemporalS *ts, Datum value, 
+extern TemporalS *tfunc4_temporals_base_crossdisc(TemporalS *ts, Datum value, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-extern TemporalS *oper4_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
+extern TemporalS *tfunc4_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 /*****************************************************************************
