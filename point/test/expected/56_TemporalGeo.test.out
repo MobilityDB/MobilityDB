@@ -556,6 +556,78 @@ SELECT astext(atGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
  {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT astext(atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0 0,3 3 3)'));
+                                                          astext                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+                                                           astext                                                           
+----------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+                                                                                                    astext                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT astext(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)'));
  astext 
 --------
@@ -578,6 +650,78 @@ SELECT astext(minusGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000
                                                                                        astext                                                                                        
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {(POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00), [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
+              astext               
+-----------------------------------
+ POINT(1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
+                                                  astext                                                   
+-----------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
+                                                  astext                                                   
+-----------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+                                                                                       astext                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(3 3)@2000-01-04 00:00:00+00, POINT(3 3)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring(0 0 0,3 3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring(0 0 0,3 3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
+                 astext                 
+----------------------------------------
+ POINT Z (1 1 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty'));
+                                                          astext                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ {POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+                                                          astext                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ [POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+                                                                                                    astext                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT azimuth(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -788,6 +932,30 @@ SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(
  POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
+SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------
@@ -810,6 +978,30 @@ SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(
               astext               
 -----------------------------------
  POINT(3 3)@2000-01-04 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring empty'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring empty'));
+ astext 
+--------
+ 
 (1 row)
 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -836,6 +1028,30 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 
  POINT(3 3)@2000-01-04 00:00:00+00
 (1 row)
 
+SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01'));
               astext               
 -----------------------------------
@@ -858,6 +1074,30 @@ SELECT asText(NearestApproachInstant(geography 'Linestring(0 0,3 3)', tgeogpoint
               astext               
 -----------------------------------
  POINT(3 3)@2000-01-04 00:00:00+00
+(1 row)
+
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint 'Point(1 1)@2000-01-01'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(NearestApproachInstant(geography 'Linestring empty', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+ astext 
+--------
+ 
 (1 row)
 
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -1268,6 +1508,30 @@ SELECT NearestApproachDistance(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2
                        0
 (1 row)
 
+SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)');
  nearestapproachdistance 
 -------------------------
@@ -1290,6 +1554,30 @@ SELECT NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 
  nearestapproachdistance 
 -------------------------
                        0
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
 (1 row)
 
 SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)');
@@ -1316,6 +1604,30 @@ SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2
                        0
 (1 row)
 
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
 SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)');
  nearestapproachdistance 
 -------------------------
@@ -1338,6 +1650,30 @@ SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 
  nearestapproachdistance 
 -------------------------
                        0
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geography 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geography 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geography 'Linestring Z empty');
+ nearestapproachdistance 
+-------------------------
+                        
 (1 row)
 
 SELECT NearestApproachDistance(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -1364,6 +1700,30 @@ SELECT NearestApproachDistance(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Poi
                        0
 (1 row)
 
+SELECT NearestApproachDistance(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
 SELECT NearestApproachDistance(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint 'Point(1 1 1)@2000-01-01');
  nearestapproachdistance 
 -------------------------
@@ -1386,6 +1746,30 @@ SELECT NearestApproachDistance(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{
  nearestapproachdistance 
 -------------------------
                        0
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geometry 'Linestring Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
 (1 row)
 
 SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -1412,6 +1796,30 @@ SELECT NearestApproachDistance(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Po
                        0
 (1 row)
 
+SELECT NearestApproachDistance(geography 'Linestring empty', tgeogpoint 'Point(1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring empty', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring empty', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
 SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1 1 1)@2000-01-01');
  nearestapproachdistance 
 -------------------------
@@ -1434,6 +1842,30 @@ SELECT NearestApproachDistance(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '
  nearestapproachdistance 
 -------------------------
                        0
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint 'Point(1 1 1)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT NearestApproachDistance(geography 'Linestring Z empty', tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
 (1 row)
 
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01');
@@ -1844,6 +2276,30 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
         0
 (1 row)
 
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |=| geometry 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| geometry 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| geometry 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| geometry 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |=| geometry 'Linestring(0 0 0,3 3 3)';
  ?column? 
 ----------
@@ -1866,6 +2322,30 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
         0
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |=| geometry 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| geometry 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| geometry 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| geometry 'Linestring Z empty';
+ ?column? 
+----------
+         
 (1 row)
 
 SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| geography 'Linestring(0 0,3 3)';
@@ -1892,6 +2372,30 @@ SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
         0
 (1 row)
 
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' |=| geography 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' |=| geography 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' |=| geography 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' |=| geography 'Linestring empty';
+ ?column? 
+----------
+         
+(1 row)
+
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| geography 'Linestring(0 0 0,3 3 3)';
  ?column? 
 ----------
@@ -1914,6 +2418,30 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
         0
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' |=| geography 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |=| geography 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |=| geography 'Linestring Z empty';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |=| geography 'Linestring Z empty';
+ ?column? 
+----------
+         
 (1 row)
 
 SELECT geometry 'Linestring(0 0,3 3)' |=| tgeompoint 'Point(1 1)@2000-01-01';
@@ -1940,6 +2468,30 @@ SELECT geometry 'Linestring(0 0,3 3)' |=| tgeompoint '{[Point(1 1)@2000-01-01, P
         0
 (1 row)
 
+SELECT geometry 'Linestring empty' |=| tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring empty' |=| tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring empty' |=| tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring empty' |=| tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+         
+(1 row)
+
 SELECT geometry 'Linestring(0 0 0,3 3 3)' |=| tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1962,6 +2514,30 @@ SELECT geometry 'Linestring(0 0 0,3 3 3)' |=| tgeompoint '{[Point(1 1 1)@2000-01
  ?column? 
 ----------
         0
+(1 row)
+
+SELECT geometry 'Linestring Z empty' |=| tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring Z empty' |=| tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring Z empty' |=| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geometry 'Linestring Z empty' |=| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+         
 (1 row)
 
 SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint 'Point(1 1)@2000-01-01';
@@ -1988,6 +2564,30 @@ SELECT geography 'Linestring(0 0,3 3)' |=| tgeogpoint '{[Point(1 1)@2000-01-01, 
         0
 (1 row)
 
+SELECT geography 'Linestring empty' |=| tgeogpoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring empty' |=| tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring empty' |=| tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring empty' |=| tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+         
+(1 row)
+
 SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint 'Point(1 1 1)@2000-01-01';
        ?column?        
 -----------------------
@@ -2010,6 +2610,30 @@ SELECT geography 'Linestring(0 0 0,3 3 3)' |=| tgeogpoint '{[Point(1 1 1)@2000-0
  ?column? 
 ----------
         0
+(1 row)
+
+SELECT geography 'Linestring Z empty' |=| tgeogpoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring Z empty' |=| tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring Z empty' |=| tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT geography 'Linestring Z empty' |=| tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+         
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |=| tgeompoint 'Point(2 2)@2000-01-01';
@@ -2420,6 +3044,30 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
  LINESTRING(3 3,3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring(0 0 0,3 3 3)'));
          st_astext          
 ----------------------------
@@ -2442,6 +3090,30 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
          st_astext          
 ----------------------------
  LINESTRING Z (3 3 3,3 3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geometry 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring(0 0,3 3)'));
@@ -2468,6 +3140,30 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
  LINESTRING(3 3,3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring(0 0 0,3 3 3)'));
          st_astext          
 ----------------------------
@@ -2490,6 +3186,30 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
          st_astext          
 ----------------------------
  LINESTRING Z (3 3 3,3 3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', geography 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geography 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geography 'Linestring Z empty'));
+ st_astext 
+-----------
+ 
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -2516,6 +3236,30 @@ SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Poin
  LINESTRING(3 3,3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint 'Point(1 1 1)@2000-01-01'));
          st_astext          
 ----------------------------
@@ -2538,6 +3282,30 @@ SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[
          st_astext          
 ----------------------------
  LINESTRING Z (3 3 3,3 3 3)
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring Z empty', tgeompoint 'Point(1 1 1)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geometry 'Linestring Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint 'Point(1 1)@2000-01-01'));
@@ -2564,6 +3332,30 @@ SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Poi
  LINESTRING(3 3,3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring empty', tgeogpoint 'Point(1 1)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring empty', tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring empty', tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring empty', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint 'Point(1 1 1)@2000-01-01'));
          st_astext          
 ----------------------------
@@ -2588,10 +3380,34 @@ SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{
  LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
-SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring Z empty', tgeogpoint 'Point(1 1 1)@2000-01-01'));
  st_astext 
 -----------
  
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring Z empty', tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring Z empty', tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(geography 'Linestring Z empty', tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-01'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -2685,9 +3501,9 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(2 2 2)@2000-01-01'));
- st_astext 
------------
- 
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(2 2 2)@2000-01-01'));
@@ -2781,9 +3597,9 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-01'));
- st_astext 
------------
- 
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeogpoint 'Point(2 2)@2000-01-01'));
@@ -2877,9 +3693,9 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(2 2 2)@2000-01-01'));
- st_astext 
------------
- 
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeogpoint 'Point(2 2 2)@2000-01-01'));

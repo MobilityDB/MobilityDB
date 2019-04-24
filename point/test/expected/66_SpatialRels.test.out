@@ -22,6 +22,30 @@ SELECT contains(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Poin
  f
 (1 row)
 
+SELECT contains(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ contains 
+----------
+ 
+(1 row)
+
 SELECT contains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
@@ -44,6 +68,30 @@ SELECT contains(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, 
  contains 
 ----------
  f
+(1 row)
+
+SELECT contains(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ contains 
+----------
+ 
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -70,6 +118,30 @@ SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  t
 (1 row)
 
+SELECT contains(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ contains 
+----------
+ 
+(1 row)
+
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  contains 
 ----------
@@ -94,10 +166,34 @@ SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
  t
 (1 row)
 
-SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  contains 
 ----------
  
+(1 row)
+
+SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ contains 
+----------
+ 
+(1 row)
+
+SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ contains 
+----------
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -193,7 +289,7 @@ SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
- 
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -310,6 +406,30 @@ SELECT containsproperly(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-
  f
 (1 row)
 
+SELECT containsproperly(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ containsproperly 
+------------------
+ 
+(1 row)
+
 SELECT containsproperly(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
@@ -332,6 +452,30 @@ SELECT containsproperly(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000
  containsproperly 
 ------------------
  f
+(1 row)
+
+SELECT containsproperly(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ containsproperly 
+------------------
+ 
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -358,6 +502,30 @@ SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
  t
 (1 row)
 
+SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  containsproperly 
 ------------------
@@ -382,10 +550,34 @@ SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000
  t
 (1 row)
 
-SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  containsproperly 
 ------------------
  
+(1 row)
+
+SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ containsproperly 
+------------------
+ 
+(1 row)
+
+SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ containsproperly 
+------------------
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -481,7 +673,7 @@ SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
- 
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -598,6 +790,30 @@ SELECT covers(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(
  f
 (1 row)
 
+SELECT covers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ covers 
+--------
+ 
+(1 row)
+
 SELECT covers(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
@@ -620,6 +836,30 @@ SELECT covers(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Po
  covers 
 --------
  f
+(1 row)
+
+SELECT covers(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ covers 
+--------
+ 
 (1 row)
 
 SELECT covers(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -646,6 +886,30 @@ SELECT covers(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, P
  f
 (1 row)
 
+SELECT covers(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ covers 
+--------
+ 
+(1 row)
+
 SELECT covers(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  covers 
 --------
@@ -668,6 +932,30 @@ SELECT covers(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01
  covers 
 --------
  f
+(1 row)
+
+SELECT covers(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+ covers 
+--------
+ 
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -694,6 +982,30 @@ SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
  t
 (1 row)
 
+SELECT covers(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  covers 
 --------
@@ -716,6 +1028,30 @@ SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  covers 
 --------
  t
+(1 row)
+
+SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ covers 
+--------
+ 
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
@@ -742,6 +1078,30 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
  f
 (1 row)
 
+SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
+ covers 
+--------
+ 
+(1 row)
+
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
  covers 
 --------
@@ -766,10 +1126,34 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
  f
 (1 row)
 
-SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
  covers 
 --------
  
+(1 row)
+
+SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
+ covers 
+--------
+ 
+(1 row)
+
+SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ covers 
+--------
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -865,7 +1249,7 @@ SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
- 
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -961,7 +1345,7 @@ SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
 --------
- 
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -1057,7 +1441,7 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  covers 
 --------
- 
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
@@ -1174,6 +1558,30 @@ SELECT coveredby(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Poi
  f
 (1 row)
 
+SELECT coveredby(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ coveredby 
+-----------
+ 
+(1 row)
+
 SELECT coveredby(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
@@ -1196,6 +1604,30 @@ SELECT coveredby(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01,
  coveredby 
 -----------
  f
+(1 row)
+
+SELECT coveredby(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ coveredby 
+-----------
+ 
 (1 row)
 
 SELECT coveredby(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -1222,6 +1654,30 @@ SELECT coveredby(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01
  f
 (1 row)
 
+SELECT coveredby(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ coveredby 
+-----------
+ 
+(1 row)
+
 SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  coveredby 
 -----------
@@ -1244,6 +1700,30 @@ SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000
  coveredby 
 -----------
  f
+(1 row)
+
+SELECT coveredby(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+ coveredby 
+-----------
+ 
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -1270,6 +1750,30 @@ SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
  f
 (1 row)
 
+SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  coveredby 
 -----------
@@ -1292,6 +1796,30 @@ SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
  coveredby 
 -----------
  f
+(1 row)
+
+SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ coveredby 
+-----------
+ 
 (1 row)
 
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
@@ -1318,6 +1846,30 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
  f
 (1 row)
 
+SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
  coveredby 
 -----------
@@ -1342,10 +1894,34 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
  f
 (1 row)
 
-SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
  coveredby 
 -----------
  
+(1 row)
+
+SELECT coveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
+ coveredby 
+-----------
+ 
+(1 row)
+
+SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ coveredby 
+-----------
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -1441,7 +2017,7 @@ SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
- 
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -1537,7 +2113,7 @@ SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- 
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -1633,7 +2209,7 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- 
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
@@ -1750,6 +2326,30 @@ SELECT crosses(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point
  f
 (1 row)
 
+SELECT crosses(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ crosses 
+---------
+ 
+(1 row)
+
 SELECT crosses(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  crosses 
 ---------
@@ -1772,6 +2372,30 @@ SELECT crosses(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, P
  crosses 
 ---------
  f
+(1 row)
+
+SELECT crosses(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ crosses 
+---------
+ 
 (1 row)
 
 SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -1798,6 +2422,30 @@ SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  f
 (1 row)
 
+SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ crosses 
+---------
+ 
+(1 row)
+
 SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  crosses 
 ---------
@@ -1822,10 +2470,34 @@ SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  f
 (1 row)
 
-SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  crosses 
 ---------
  
+(1 row)
+
+SELECT crosses(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ crosses 
+---------
+ 
+(1 row)
+
+SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ crosses 
+---------
+ f
 (1 row)
 
 SELECT crosses(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -1921,7 +2593,7 @@ SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  crosses 
 ---------
- 
+ f
 (1 row)
 
 SELECT crosses(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -2038,6 +2710,30 @@ SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Poin
  f
 (1 row)
 
+SELECT disjoint(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ disjoint 
+----------
+ 
+(1 row)
+
 SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  disjoint 
 ----------
@@ -2060,6 +2756,30 @@ SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, 
  disjoint 
 ----------
  f
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ disjoint 
+----------
+ 
 (1 row)
 
 SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -2086,6 +2806,30 @@ SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  f
 (1 row)
 
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ disjoint 
+----------
+ 
+(1 row)
+
 SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  disjoint 
 ----------
@@ -2110,10 +2854,34 @@ SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
  f
 (1 row)
 
-SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  disjoint 
 ----------
  
+(1 row)
+
+SELECT disjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ disjoint 
+----------
+ f
 (1 row)
 
 SELECT disjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -2209,7 +2977,7 @@ SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  disjoint 
 ----------
- 
+ f
 (1 row)
 
 SELECT disjoint(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -2326,6 +3094,30 @@ SELECT equals(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(
  f
 (1 row)
 
+SELECT equals(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ equals 
+--------
+ 
+(1 row)
+
 SELECT equals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
@@ -2348,6 +3140,30 @@ SELECT equals(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Po
  equals 
 --------
  f
+(1 row)
+
+SELECT equals(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ equals 
+--------
+ 
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -2374,6 +3190,30 @@ SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
  f
 (1 row)
 
+SELECT equals(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ equals 
+--------
+ 
+(1 row)
+
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  equals 
 --------
@@ -2398,10 +3238,34 @@ SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  f
 (1 row)
 
-SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  equals 
 --------
  
+(1 row)
+
+SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ equals 
+--------
+ 
+(1 row)
+
+SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ equals 
+--------
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -2497,7 +3361,7 @@ SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
- 
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -2614,6 +3478,30 @@ SELECT intersects(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Po
  t
 (1 row)
 
+SELECT intersects(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
 SELECT intersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  intersects 
 ------------
@@ -2636,6 +3524,30 @@ SELECT intersects(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01
  intersects 
 ------------
  t
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ intersects 
+------------
+ 
 (1 row)
 
 SELECT intersects(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -2662,6 +3574,30 @@ SELECT intersects(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-0
  f
 (1 row)
 
+SELECT intersects(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ 
+(1 row)
+
 SELECT intersects(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
@@ -2684,6 +3620,30 @@ SELECT intersects(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@200
  intersects 
 ------------
  f
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+ intersects 
+------------
+ 
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -2710,6 +3670,30 @@ SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
  t
 (1 row)
 
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
 SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  intersects 
 ------------
@@ -2732,6 +3716,30 @@ SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02
  intersects 
 ------------
  t
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ intersects 
+------------
+ 
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
@@ -2758,6 +3766,30 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
  f
 (1 row)
 
+SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty');
+ intersects 
+------------
+ 
+(1 row)
+
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
  intersects 
 ------------
@@ -2782,10 +3814,34 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5
  f
 (1 row)
 
-SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
  intersects 
 ------------
  
+(1 row)
+
+SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
+ intersects 
+------------
+ 
+(1 row)
+
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ intersects 
+------------
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -2881,7 +3937,7 @@ SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
 SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  intersects 
 ------------
- 
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -2977,7 +4033,7 @@ SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  intersects 
 ------------
- 
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -3073,7 +4129,7 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
- 
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
@@ -3190,6 +4246,30 @@ SELECT overlaps(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Poin
  f
 (1 row)
 
+SELECT overlaps(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ overlaps 
+----------
+ 
+(1 row)
+
 SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  overlaps 
 ----------
@@ -3212,6 +4292,30 @@ SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, 
  overlaps 
 ----------
  f
+(1 row)
+
+SELECT overlaps(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ overlaps 
+----------
+ 
 (1 row)
 
 SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -3238,6 +4342,30 @@ SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  f
 (1 row)
 
+SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ overlaps 
+----------
+ 
+(1 row)
+
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  overlaps 
 ----------
@@ -3262,10 +4390,34 @@ SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
  f
 (1 row)
 
-SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  overlaps 
 ----------
  
+(1 row)
+
+SELECT overlaps(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ overlaps 
+----------
+ 
+(1 row)
+
+SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ overlaps 
+----------
+ f
 (1 row)
 
 SELECT overlaps(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -3361,7 +4513,7 @@ SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  overlaps 
 ----------
- 
+ f
 (1 row)
 
 SELECT overlaps(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -3478,6 +4630,30 @@ SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point
  f
 (1 row)
 
+SELECT touches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ touches 
+---------
+ 
+(1 row)
+
 SELECT touches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
 ---------
@@ -3500,6 +4676,30 @@ SELECT touches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, P
  touches 
 ---------
  f
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ touches 
+---------
+ 
 (1 row)
 
 SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -3526,6 +4726,30 @@ SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  f
 (1 row)
 
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ touches 
+---------
+ 
+(1 row)
+
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  touches 
 ---------
@@ -3550,10 +4774,34 @@ SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  f
 (1 row)
 
-SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  touches 
 ---------
  
+(1 row)
+
+SELECT touches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ touches 
+---------
+ 
+(1 row)
+
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ touches 
+---------
+ f
 (1 row)
 
 SELECT touches(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -3649,7 +4897,7 @@ SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
 ---------
- 
+ f
 (1 row)
 
 SELECT touches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -3766,6 +5014,30 @@ SELECT within(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(
  t
 (1 row)
 
+SELECT within(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ within 
+--------
+ 
+(1 row)
+
 SELECT within(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
@@ -3788,6 +5060,30 @@ SELECT within(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Po
  within 
 --------
  t
+(1 row)
+
+SELECT within(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ within 
+--------
+ 
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
@@ -3814,6 +5110,30 @@ SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
  f
 (1 row)
 
+SELECT within(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ within 
+--------
+ 
+(1 row)
+
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
  within 
 --------
@@ -3838,10 +5158,34 @@ SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  f
 (1 row)
 
-SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  within 
 --------
  
+(1 row)
+
+SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ within 
+--------
+ 
+(1 row)
+
+SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ within 
+--------
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -3937,7 +5281,7 @@ SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
- 
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -4054,6 +5398,30 @@ SELECT dwithin(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point
  t
 (1 row)
 
+SELECT dwithin(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
 SELECT dwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
  dwithin 
 ---------
@@ -4076,6 +5444,30 @@ SELECT dwithin(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, P
  dwithin 
 ---------
  t
+(1 row)
+
+SELECT dwithin(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
 (1 row)
 
 SELECT dwithin(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
@@ -4102,6 +5494,30 @@ SELECT dwithin(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, 
  f
 (1 row)
 
+SELECT dwithin(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point empty', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point empty', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
 SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
  dwithin 
 ---------
@@ -4124,6 +5540,30 @@ SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-0
  dwithin 
 ---------
  f
+(1 row)
+
+SELECT dwithin(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+ dwithin 
+---------
+ 
 (1 row)
 
 SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)', 2);
@@ -4150,6 +5590,30 @@ SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  t
 (1 row)
 
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
 SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)', 2);
  dwithin 
 ---------
@@ -4172,6 +5636,30 @@ SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  dwithin 
 ---------
  t
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty', 2);
+ dwithin 
+---------
+ 
 (1 row)
 
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)', 2);
@@ -4198,6 +5686,30 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
  f
 (1 row)
 
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)', 2);
  dwithin 
 ---------
@@ -4222,10 +5734,34 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
  f
 (1 row)
 
-SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty', 2);
  dwithin 
 ---------
  
+(1 row)
+
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ dwithin 
+---------
+ t
 (1 row)
 
 SELECT dwithin(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', 2);
@@ -4321,7 +5857,7 @@ SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
  dwithin 
 ---------
- 
+ t
 (1 row)
 
 SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
@@ -4417,7 +5953,7 @@ SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
  dwithin 
 ---------
- 
+ t
 (1 row)
 
 SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
@@ -4513,7 +6049,7 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
  dwithin 
 ---------
- 
+ t
 (1 row)
 
 SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
@@ -4630,6 +6166,30 @@ SELECT relate(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(
  0FFFFF1F2
 (1 row)
 
+SELECT relate(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ relate 
+--------
+ 
+(1 row)
+
 SELECT relate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
   relate   
 -----------
@@ -4654,6 +6214,30 @@ SELECT relate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Po
  0FFFFF1F2
 (1 row)
 
+SELECT relate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+ relate 
+--------
+ 
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
   relate   
 -----------
@@ -4673,7 +6257,35 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFF1F2
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
+ relate 
+--------
+ 
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
   relate   
 -----------
@@ -4693,11 +6305,39 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
-SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+  relate   
+-----------
+ 0FFFFF1F2
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  relate 
 --------
  
+(1 row)
+
+SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+  relate   
+-----------
+ 0FFFFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
@@ -4713,7 +6353,11 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
   relate   
 -----------
@@ -4733,7 +6377,11 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
   relate   
 -----------
@@ -4753,19 +6401,39 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
- relate 
---------
- 
+  relate   
+-----------
+ 0FFFFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -4781,7 +6449,11 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
   relate   
 -----------
@@ -4801,7 +6473,11 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
   relate   
 -----------
@@ -4821,15 +6497,35 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 0FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  The relate operator cannot accept temporal points of sequence set duration
+  relate   
+-----------
+ 1FFFFFFF2
+(1 row)
+
 SELECT relate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -4852,6 +6548,30 @@ SELECT relate(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(
  relate 
 --------
  f
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
+ relate 
+--------
+ 
 (1 row)
 
 SELECT relate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
@@ -4878,6 +6598,30 @@ SELECT relate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Po
  f
 (1 row)
 
+SELECT relate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)', 'T*****FF*');
  relate 
 --------
@@ -4900,6 +6644,30 @@ SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
  relate 
 --------
  t
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty', 'T*****FF*');
+ relate 
+--------
+ 
 (1 row)
 
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)', 'T*****FF*');
@@ -4926,10 +6694,34 @@ SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  t
 (1 row)
 
-SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty', 'T*****FF*');
  relate 
 --------
  
+(1 row)
+
+SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ relate 
+--------
+ t
 (1 row)
 
 SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
@@ -5025,7 +6817,7 @@ SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
- 
+ t
 (1 row)
 
 SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
