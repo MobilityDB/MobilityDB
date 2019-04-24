@@ -373,13 +373,14 @@ PGDLLEXPORT Datum
 tpoint_make_temporalinst(PG_FUNCTION_ARGS) 
 {
 	GSERIALIZED *value = PG_GETARG_GSERIALIZED_P(0);
-	if (gserialized_get_type(value) != POINTTYPE)
+	if (gserialized_get_type(value) != POINTTYPE ||
+		gserialized_is_empty(value))
 	{
 		PG_FREE_IF_COPY(value, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only point geometries accepted")));		
+			errmsg("Only non empty point geometries accepted")));		
 	}
-	
+
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(value),
