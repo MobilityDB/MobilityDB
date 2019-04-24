@@ -194,6 +194,12 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -258,6 +264,12 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 	
 	Datum (*func)(Datum, Datum);

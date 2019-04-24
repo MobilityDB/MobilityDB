@@ -1995,6 +1995,12 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
+	}
 	
 	/* Bounding box test */
 	GBOX box1, box2;
@@ -2195,6 +2201,13 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		Temporal* copy = temporal_copy(temp) ;
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_POINTER(copy);
 	}
 
 	/* Bounding box test */
@@ -2418,12 +2431,18 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("3D geometries are not allowed")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
+
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
 		func = &geog_distance;
-
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
@@ -2466,12 +2485,18 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("3D geometries are not allowed")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
+	}
+
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
 		func = &geog_distance;
-
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
@@ -2594,6 +2619,13 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
+
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -2604,7 +2636,6 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		func = &geog_distance;
-
 	Datum result;
 	if (temp->type == TEMPORALINST) 
 		result = NAD_tpointinst_geo((TemporalInst *)temp,
@@ -2648,6 +2679,13 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
+	}
+
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -2658,7 +2696,6 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		func = &geog_distance;
-
 	Datum result;
 	if (temp->type == TEMPORALINST) 
 		result = NAD_tpointinst_geo((TemporalInst *)temp,
@@ -2775,20 +2812,26 @@ shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
 	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
+	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
 	Datum result;
 	if (temp->type == TEMPORALINST) 
 		result = shortestline_tpointinst_geo((TemporalInst *)temp, 
@@ -2832,8 +2875,14 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
+	}
 
+	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
 	Datum result;
 	if (temp->type == TEMPORALINST) 
 		result = shortestline_tpointinst_geo((TemporalInst *)temp, 

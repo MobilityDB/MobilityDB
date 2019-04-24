@@ -1738,6 +1738,13 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 #ifdef WITH_POSTGIS
 	else if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
+		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
+		if (gserialized_is_empty(gs))
+		{
+    		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+			return false;
+		}
+
 		/* We are sure that the trajectory is a line */
 		Datum line = tgeompointseq_trajectory1(inst1, inst2);
 		/* The following approximation is essential for the atGeometry function
@@ -1759,6 +1766,13 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 	}
 	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
+		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
+		if (gserialized_is_empty(gs))
+		{
+    		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+			return false;
+		}
+
 		/* We are sure that the trajectory is a line */
 		Datum line = tgeogpointseq_trajectory1(inst1, inst2);
 		bool inter = DatumGetFloat8(call_function4(geography_distance, line, 

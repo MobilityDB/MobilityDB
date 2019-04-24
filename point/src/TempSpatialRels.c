@@ -1379,6 +1379,12 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_contains, BOOLOID, true);
@@ -1408,6 +1414,12 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
@@ -1474,6 +1486,12 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = NULL;
@@ -1555,6 +1573,12 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = NULL;
@@ -1682,6 +1706,12 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
@@ -1762,6 +1792,12 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Datum (*func)(Datum, Datum);
@@ -1892,6 +1928,12 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_disjoint, BOOLOID, true);
@@ -1921,6 +1963,12 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
@@ -1988,6 +2036,12 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_equals, BOOLOID, true);
@@ -2017,6 +2071,12 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
@@ -2083,6 +2143,12 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
 	}
 
 	Datum (*func)(Datum, Datum);
@@ -2169,6 +2235,12 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Datum (*func)(Datum, Datum);
@@ -2305,6 +2377,12 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_touches, BOOLOID, true);
@@ -2334,6 +2412,12 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
@@ -2380,7 +2464,6 @@ ttouches_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Temporal within
  *****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(twithin_geo_tpoint);
 
 PGDLLEXPORT Datum
@@ -2401,6 +2484,12 @@ twithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
@@ -2431,6 +2520,12 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
@@ -2498,6 +2593,12 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
 	}
 
 	Datum (*func)(Datum, Datum, Datum);
@@ -2585,6 +2686,12 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Datum (*func)(Datum, Datum, Datum);
@@ -2747,6 +2854,12 @@ trelate_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_relate, TEXTOID, true);
@@ -2776,6 +2889,12 @@ trelate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
@@ -2844,6 +2963,12 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
 	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
+		PG_RETURN_NULL();
+	}
 
 	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs), 
 		pattern, &geom_relate_pattern, true);
@@ -2874,6 +2999,12 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be of the same dimensionality")));
+	}
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
 	}
 
 	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs), 
