@@ -2526,13 +2526,16 @@ PGDLLEXPORT Datum
 tint_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	if (temp->type == TEMPORALSEQ)
+	double result; 
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = 0;
+	else if (temp->type == TEMPORALSEQ)
 		result = tintseq_integral((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = tints_integral((TemporalS *)temp);
-	/* Notice that there is no error raised for TEMPORALINST or TEMPORALI 
-	 * since in that case the result will be 0 */
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
@@ -2545,13 +2548,16 @@ PGDLLEXPORT Datum
 tfloat_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	if (temp->type == TEMPORALSEQ)
+	double result; 
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = 0;
+	else if (temp->type == TEMPORALSEQ)
 		result = tfloatseq_integral((TemporalSeq *)temp);
-	if (temp->type == TEMPORALS)
+	else if (temp->type == TEMPORALS)
 		result = tfloats_integral((TemporalS *)temp);
-	/* Notice that there is no error raised for TEMPORALINST or TEMPORALI 
-	 * since in that case the result will be 0 */
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }

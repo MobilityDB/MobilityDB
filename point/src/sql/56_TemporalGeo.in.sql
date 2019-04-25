@@ -104,15 +104,17 @@ CREATE FUNCTION transform_gk(geometry)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -------
 
-CREATE FUNCTION tgeompoint(tgeogpoint)
-	RETURNS tgeompoint AS 'MODULE_PATHNAME', 'tgeompoint_as_tgeogpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint(tgeompoint)
-	RETURNS tgeogpoint AS 'MODULE_PATHNAME', 'tgeogpoint_as_tgeompoint'
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tgeompoint_as_tgeogpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeompoint(tgeogpoint)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tgeogpoint_as_tgeompoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
+CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
@@ -162,7 +164,6 @@ CREATE FUNCTION azimuth(tgeompoint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'tpoint_azimuth'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION azimuth(tgeogpoint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'tpoint_azimuth'

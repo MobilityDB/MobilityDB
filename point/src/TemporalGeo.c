@@ -555,20 +555,22 @@ tpoint_transform(PG_FUNCTION_ARGS)
 /* Geometry to Geography */
  
 static TemporalInst *
-tgeompointinst_as_tgeogpointinst_internal(TemporalInst *inst)
+tgeompointinst_as_tgeogpointinst(TemporalInst *inst)
 {
 	Datum geog = call_function1(geography_from_geometry, temporalinst_value(inst));
-	return temporalinst_make(geog, inst->t, type_oid(T_GEOGRAPHY));
+	TemporalInst *result = temporalinst_make(geog, inst->t, type_oid(T_GEOGRAPHY));
+	pfree(DatumGetPointer(geog));
+	return result;
 }
 
 static TemporalI *
-tgeompointi_as_tgeogpointi_internal(TemporalI *ti)
+tgeompointi_as_tgeogpointi(TemporalI *ti)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tgeompointinst_as_tgeogpointinst_internal(inst);
+		instants[i] = tgeompointinst_as_tgeogpointinst(inst);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
 
@@ -580,13 +582,13 @@ tgeompointi_as_tgeogpointi_internal(TemporalI *ti)
 }
 
 static TemporalSeq *
-tgeompointseq_as_tgeogpointseq_internal(TemporalSeq *seq)
+tgeompointseq_as_tgeogpointseq(TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tgeompointinst_as_tgeogpointinst_internal(inst);
+		instants[i] = tgeompointinst_as_tgeogpointinst(inst);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, false);
@@ -599,13 +601,13 @@ tgeompointseq_as_tgeogpointseq_internal(TemporalSeq *seq)
 }
 
 static TemporalS *
-tgeompoints_as_tgeogpoints_internal(TemporalS *ts)
+tgeompoints_as_tgeogpoints(TemporalS *ts)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tgeompointseq_as_tgeogpointseq_internal(seq);
+		sequences[i] = tgeompointseq_as_tgeogpointseq(seq);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, 
 		ts->count, false);
@@ -625,13 +627,13 @@ tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
-		result = (Temporal *)tgeompointinst_as_tgeogpointinst_internal((TemporalInst *)temp);
+		result = (Temporal *)tgeompointinst_as_tgeogpointinst((TemporalInst *)temp);
 	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)tgeompointi_as_tgeogpointi_internal((TemporalI *)temp);
+		result = (Temporal *)tgeompointi_as_tgeogpointi((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)tgeompointseq_as_tgeogpointseq_internal((TemporalSeq *)temp);
+		result = (Temporal *)tgeompointseq_as_tgeogpointseq((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)tgeompoints_as_tgeogpoints_internal((TemporalS *)temp);
+		result = (Temporal *)tgeompoints_as_tgeogpoints((TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -647,7 +649,9 @@ TemporalInst *
 tgeogpointinst_as_tgeompointinst(TemporalInst *inst)
 {
 	Datum geom = call_function1(geometry_from_geography, temporalinst_value(inst));
-	return temporalinst_make(geom, inst->t, type_oid(T_GEOMETRY));
+	TemporalInst *result = temporalinst_make(geom, inst->t, type_oid(T_GEOMETRY));
+	pfree(DatumGetPointer(geom));
+	return result;
 }
 
 TemporalI *
@@ -1066,8 +1070,10 @@ PGDLLEXPORT Datum
 tpoint_length(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	if (temp->type == TEMPORALSEQ)
+	double result; 
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = 0.0;
+	else if (temp->type == TEMPORALSEQ)
 		result = tpointseq_length((TemporalSeq *)temp);	
 	else if (temp->type == TEMPORALS)
 		result = tpoints_length((TemporalS *)temp);	
@@ -1079,6 +1085,29 @@ tpoint_length(PG_FUNCTION_ARGS)
 }
 
 /* Cumulative length traversed by the temporal point */
+
+static TemporalInst *
+tpointinst_cumulative_length(TemporalInst *inst)
+{
+	return temporalinst_make(Float8GetDatum(0.0), inst->t, FLOAT8OID);
+}
+
+static TemporalI *
+tpointi_cumulative_length(TemporalI *ti)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	Datum length = Float8GetDatum(0.0);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
+	}
+	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	for (int i = 1; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
 
 static TemporalSeq *
 tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
@@ -1155,18 +1184,18 @@ PGDLLEXPORT Datum
 tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->type != TEMPORALSEQ && temp->type != TEMPORALS)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-	}
-
 	Temporal *result; 
-	if (temp->type == TEMPORALSEQ)
+	if (temp->type == TEMPORALINST)
+		result = (Temporal *)tpointinst_cumulative_length((TemporalInst *)temp);
+	else if (temp->type == TEMPORALI)
+		result = (Temporal *)tpointi_cumulative_length((TemporalI *)temp);
+	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_cumulative_length((TemporalSeq *)temp, 0);	
+	else if (temp->type == TEMPORALS)
+		result = (Temporal *)tpoints_cumulative_length((TemporalS *)temp);
 	else
-		result = (Temporal *)tpoints_cumulative_length((TemporalS *)temp);	
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
@@ -1289,18 +1318,16 @@ PGDLLEXPORT Datum
 tpoint_speed(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->type != TEMPORALSEQ && temp->type != TEMPORALS)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-	}
-
 	Temporal *result; 
-	if (temp->type == TEMPORALSEQ)
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = NULL;
+	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_speed((TemporalSeq *)temp);	
-	else
+	else if (temp->type == TEMPORALS)
 		result = (Temporal *)tpoints_speed((TemporalS *)temp);	
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
@@ -1686,18 +1713,16 @@ PGDLLEXPORT Datum
 tpoint_azimuth(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	if (temp->type != TEMPORALSEQ && temp->type != TEMPORALS)
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input must be a temporal sequence (set)")));
-	}
-
 	Temporal *result; 
-	if (temp->type == TEMPORALSEQ)
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = NULL;
+	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_azimuth((TemporalSeq *)temp);	
+	else if (temp->type == TEMPORALS)
+		result = (Temporal *)tpoints_azimuth((TemporalS *)temp);
 	else
-		result = (Temporal *)tpoints_azimuth((TemporalS *)temp);	
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
