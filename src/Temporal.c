@@ -2568,7 +2568,7 @@ tint_twavg(PG_FUNCTION_ARGS)
 	if (temp->type == TEMPORALINST)
 		result = DatumGetInt32(temporalinst_value((TemporalInst *)temp));
 	else if (temp->type == TEMPORALI)
-		result = temporali_lavg((TemporalI *)temp);
+		result = temporali_twavg((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ)
 		result = tintseq_twavg((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
@@ -2592,7 +2592,7 @@ tfloat_twavg(PG_FUNCTION_ARGS)
 	if (temp->type == TEMPORALINST)
 		result = DatumGetFloat8(temporalinst_value((TemporalInst *)temp));
 	else if (temp->type == TEMPORALI)
-		result = temporali_lavg((TemporalI *)temp);
+		result = temporali_twavg((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ)
 		result = tfloatseq_twavg((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)

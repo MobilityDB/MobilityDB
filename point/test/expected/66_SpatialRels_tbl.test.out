@@ -16,7 +16,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE contains(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -37,7 +37,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE containsproperly(t1.temp, t2.temp);
  count 
 -------
-    28
+    52
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -58,7 +58,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE covers(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -79,7 +79,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE covers(t1.temp, t2.temp);
  count 
 -------
-    30
+    54
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -100,7 +100,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE coveredby(t1.temp, t2.temp);
  count 
 -------
-    76
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -121,7 +121,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE coveredby(t1.temp, t2.temp);
  count 
 -------
-    30
+    54
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -149,21 +149,21 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE disjoint(g, temp);
  count 
 -------
- 10000
+  9900
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE disjoint(temp, g);
  count 
 -------
- 10000
+  9900
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE disjoint(t1.temp, t2.temp);
  count 
 -------
-   602
+     2
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -184,7 +184,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE equals(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -205,7 +205,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -226,7 +226,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint3D, tbl_tgeogpoint3D
@@ -247,7 +247,7 @@ SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -310,28 +310,28 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE within(t1.temp, t2.temp);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE dwithin(g, temp, 10);
  count 
 -------
-  3084
+  2918
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE dwithin(temp, g, 10);
  count 
 -------
-  3084
+  2918
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-    75
+   102
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -352,7 +352,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-    75
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -360,7 +360,7 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	relate(g, temp) IS NOT NULL;
  count 
 -------
-  7500
+  7425
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
@@ -368,7 +368,7 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	relate(temp, g) IS NOT NULL;
  count 
 -------
-  7500
+  7425
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -377,7 +377,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	relate(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-    50
+    75
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint

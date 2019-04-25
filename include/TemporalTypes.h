@@ -783,7 +783,7 @@ extern bool temporali_intersects_temporali(TemporalI *ti1, TemporalI *ti2);
 
 /* Local aggregate functions */
 
-extern double temporali_lavg(TemporalI *ti);
+extern double temporali_twavg(TemporalI *ti);
 
 /* Functions for defining B-tree index */
 

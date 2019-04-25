@@ -27,7 +27,7 @@ INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '&<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &< temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &> temp;
-
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '|>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp;

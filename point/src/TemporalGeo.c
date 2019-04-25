@@ -1349,11 +1349,11 @@ tgeompointi_centroid(TemporalI *ti)
 	TemporalI *tiz = NULL; /* keep compiler quiet */
 	if (hasz)
 		tiz = temporali_from_temporalinstarr(instantsz, ti->count);
-	double avgx = temporali_lavg(tix);
-	double avgy = temporali_lavg(tiy);
+	double avgx = temporali_twavg(tix);
+	double avgy = temporali_twavg(tiy);
 	double avgz;
 	if (hasz)
-		avgz = temporali_lavg(tiz);
+		avgz = temporali_twavg(tiz);
 	Datum result;
 	if (hasz)
 		result = call_function3(LWGEOM_makepoint, Float8GetDatum(avgx), 

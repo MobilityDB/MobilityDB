@@ -1484,7 +1484,7 @@ temporali_intersects_temporali(TemporalI *ti1, TemporalI *ti2)
  *****************************************************************************/
 
 double
-temporali_lavg(TemporalI *ti)
+temporali_twavg(TemporalI *ti)
 {
 	double result = 0.0;
 	for (int i = 0; i < ti->count; i++)

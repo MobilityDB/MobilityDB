@@ -33,12 +33,9 @@ INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &> temp;
 INSERT 0 1
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp;
- ?column? |    ?column?    |  ?column?  | count 
-----------+----------------+------------+-------
- <<|      | geomcollection | tgeompoint |   959
-(1 row)
-
+INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '|>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp;
 INSERT 0 1
@@ -328,7 +325,7 @@ UPDATE 1
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
-UPDATE 0
+UPDATE 1
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
@@ -709,7 +706,7 @@ UPDATE 1
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
-UPDATE 0
+UPDATE 1
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
