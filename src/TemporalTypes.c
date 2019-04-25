@@ -654,14 +654,20 @@ datum_eq(Datum l, Datum r, Oid type)
 	else if (type == type_oid(T_DOUBLE4)) 
 		return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
 #ifdef WITH_POSTGIS
+	/*
 	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
 	{
 		GSERIALIZED *g1 = (GSERIALIZED *)DatumGetPointer(l);
 		GSERIALIZED *g2 = (GSERIALIZED *)DatumGetPointer(r);
-		if (VARSIZE(g1) == VARSIZE(g2) && !memcmp(g1, g2, VARSIZE(g1))) 
+		if (VARSIZE(g1) == VARSIZE(g2) && memcmp(g1, g2, VARSIZE(g1))) 
 			return true;
 		return false;
 	}
+	*/
+	else if (type == type_oid(T_GEOMETRY))
+		return DatumGetBool(call_function2(lwgeom_eq, l, r));
+	else if (type == type_oid(T_GEOGRAPHY)) 
+		return DatumGetBool(call_function2(geography_eq, l, r));
 #endif
 
 	List *lst = list_make1(makeString("="));
@@ -733,6 +739,8 @@ datum_ge(Datum l, Datum r, Oid type)
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
+	if (typel == 0 || typer == 0)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
 	if ((typel == BOOLOID && typer == BOOLOID) ||
 		(typel == INT4OID && typer == INT4OID) ||
 		(typel == FLOAT8OID && typer == FLOAT8OID))

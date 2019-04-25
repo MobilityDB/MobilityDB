@@ -138,11 +138,11 @@ CREATE FUNCTION length(tgeogpoint)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE FUNCTION cumulativeLength(tgeompoint)
-	RETURNS tgeompoint
+	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'tpoint_cumulative_length'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cumulativeLength(tgeogpoint)
-	RETURNS tgeogpoint
+	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'tpoint_cumulative_length'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
