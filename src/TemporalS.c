@@ -2217,10 +2217,10 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 		return false;
 
 	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(ts1->valuetypid));
+	size_t bboxsize = temporal_bbox_size(ts1->valuetypid);
 	void *box1 = temporals_bbox_ptr(ts1);
 	void *box2 = temporals_bbox_ptr(ts2);
-	if (memcmp(box1, box2, bboxsize))
+	if (memcmp(box1, box2, bboxsize) != 0)
 		return false;
 
 	/* We need to compare the composing sequences */

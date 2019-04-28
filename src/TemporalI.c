@@ -1514,10 +1514,10 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 	if (ti1->count != ti2->count)
 		return false;
 	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(ti1->valuetypid));
+	size_t bboxsize = temporal_bbox_size(ti1->valuetypid);
 	void *box1 = temporali_bbox_ptr(ti1);
 	void *box2 = temporali_bbox_ptr(ti2);
-	if (memcmp(box1, box2, bboxsize))
+	if (memcmp(box1, box2, bboxsize) != 0)
 		return false;
 	
 	/* We need to compare the composing instants */
