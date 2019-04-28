@@ -164,8 +164,23 @@ box_cmp_internal(const BOX *box1, const BOX *box2)
 	return 0;
 }
 
+/*
+ * Compare two boxes
+ */
+bool
+box_eq_internal(const BOX *box1, const BOX *box2)
+{
+	if (box1->low.x != box2->low.x ||
+		box1->low.y != box2->low.y ||
+		box1->high.x != box2->high.x ||
+		box1->high.y != box2->high.y)
+		return false;
+	/* The two boxes are equal */
+	return true;
+}
+
 /*****************************************************************************
- * Bounding box common functions
+ * Size of bounding box
  *****************************************************************************/
 
 size_t
@@ -182,6 +197,26 @@ temporal_bbox_size(Oid valuetypid)
 #endif
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
+}
+
+/*****************************************************************************
+ * Equality of bounding boxes
+ *****************************************************************************/
+
+bool
+temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
+{
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		return period_eq_internal((Period *)box1, (Period *)box2);
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		return box_eq_internal((BOX *)box1, (BOX *)box2);
+#ifdef WITH_POSTGIS
+	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+		valuetypid == type_oid(T_GEOMETRY))
+		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2) == 0;
+#endif
+	/* Types without bounding box, for example, doubleN */
+	return false;
 } 
 
 /*****************************************************************************

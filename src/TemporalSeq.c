@@ -3470,10 +3470,9 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 		return false;
 
 	/* If bounding boxes are not equal */
-	size_t bboxsize = temporal_bbox_size(seq1->valuetypid);
 	void *box1 = temporalseq_bbox_ptr(seq1);
 	void *box2 = temporalseq_bbox_ptr(seq2);
-	if (memcmp(box1, box2, bboxsize) != 0)
+	if (!temporal_bbox_eq(seq1->valuetypid, box1, box2))
 		return false;
 	
 	/* We need to compare the composing instants */
