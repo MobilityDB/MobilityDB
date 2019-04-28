@@ -961,7 +961,7 @@ SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 					<para>Temporal geography point to temporal geometry point</para>
 					<para>Cast: <varname>tgeogpoint::tgeompoint</varname></para>
 					<programlisting>
-SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoints);
+SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
 -- "{[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}"
 					</programlisting>
 				</listitem>
