@@ -1338,8 +1338,8 @@ tpoint_speed(PG_FUNCTION_ARGS)
  * Time-weighed centroid for temporal geometry points
  *****************************************************************************/
 
-static Datum
-tgeompointi_centroid(TemporalI *ti)
+Datum
+tgeompointi_twcentroid(TemporalI *ti)
 {
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * ti->count);
@@ -1406,7 +1406,7 @@ tgeompointi_centroid(TemporalI *ti)
 	return result;
 }
 
-static Datum
+Datum
 tgeompointseq_twcentroid(TemporalSeq *seq)
 {
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * seq->count);
@@ -1475,7 +1475,7 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 	return result;
 }
 
-static Datum
+Datum
 tgeompoints_twcentroid(TemporalS *ts)
 {
 	TemporalSeq **sequencesx = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -1578,7 +1578,7 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 	if (temp->type == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->type == TEMPORALI) 
-		result = tgeompointi_centroid((TemporalI *)temp);
+		result = tgeompointi_twcentroid((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ) 
 		result = tgeompointseq_twcentroid((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 

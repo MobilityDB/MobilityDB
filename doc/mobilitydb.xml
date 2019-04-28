@@ -640,7 +640,7 @@ CREATE TABLE Fligth(FlightNo integer, Route tgeogpoint(Sequence,PointZ,4326));
 			</itemizedlist>
 		</para>
 
-		<para>A rich set of functions and operators is available to perform various operations on temporal types. They are explained in Section <xref linkend="manipulating_temporal_types" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.</para>
+		<para>A rich set of functions and operators is available to perform various operations on temporal types. They are explained in <xref linkend="manipulating_temporal_types" />. Some of these operations, in particular those related to indexes, manipulate bounding boxes for efficiency reasons.</para>
 
 		<sect1 id="examples_temporal_types">
 			<title>Examples of Temporal Types</title>
@@ -1224,15 +1224,15 @@ SELECT getValues(tfloat '[1@2012-01-01, 2@2012-01-03)');
 -- "{[1,2)}"
 SELECT getValues(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 4@2012-01-05)}');
 -- "{[1,2),[3,4)}"
-SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),15020>
+SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 [Point(0 1)@2012-01-03, Point(1 1)@2012-01-04)}'));
 -- "LINESTRING(0 0,0 1,1 1)"
-SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),15024>
+SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 [Point(1 1)@2012-01-03, Point(2 2)@2012-01-04)}'));
 -- "MULTILINESTRING((0 0,0 1),(1 1,2 2)"
 SELECT st_astext(getValues1(tgeompoint '{Point(0 0)@2012-01-01, Point(0 1)@2012-01-02}'));
 -- "MULTIPOINT(0 0,0 1)"
-SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),15031>
+SELECT st_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 [Point(1 1)@2012-01-03, Point(1 1)@2012-01-04), [Point(2 1)@2012-01-05, Point(2 2)@2012-01-06)}'));
 -- "GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))"
 					</programlisting>
@@ -1527,7 +1527,7 @@ SELECT isContinuousInTime(tfloat '{[1@2012-01-01, 2@2012-01-03),15102>
 
 				<listitem>
 					<para><varname>twAvg</varname>: Time-weighted average</para>
-					<para>Signature: <varname>twAvg({tnumseq, tnums}): float</varname></para>
+					<para>Signature: <varname>twAvg(tnum): float</varname></para>
 					<programlisting>
 SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)}');
 -- 1.75
@@ -1552,135 +1552,135 @@ SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 					</programlisting>
 				</listitem>
 
-					<listitem>
+				<listitem>
 					<para><varname>asEWKT</varname>: Extended Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
-						<para>Signature: <varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
-						<programlisting>
+					<para>Signature: <varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
+					<programlisting>
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
 -- "SRID=4326;[POINT Z (0 0 0)@2012-01-01 00:00:00+00, POINT Z (1 1 1)@2012-01-02 00:00:00+00)"
 SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 -- "{"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}"
 						</programlisting>
-					</listitem>
+				</listitem>
 
-					<listitem>
-						<para><varname>SRID</varname>: Spatial reference identifier &Z_support; &geography_support;</para>
-						<para>Signature: <varname>SRID(tpoint): integer</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>SRID</varname>: Spatial reference identifier &Z_support; &geography_support;</para>
+					<para>Signature: <varname>SRID(tpoint): integer</varname></para>
+					<programlisting>
 SELECT SRID(tgeompoint 'Point(0 0)@2012-01-01');
 -- 0
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>setSRID</varname>: Set the spatial reference identifier &Z_support; &geography_support;</para>
-						<para>Signature: <varname>setSRID(tpoint): integer</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>setSRID</varname>: Set the spatial reference identifier &Z_support; &geography_support;</para>
+					<para>Signature: <varname>setSRID(tpoint): integer</varname></para>
+					<programlisting>
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)', 4326));
 -- "SRID=4326;[POINT(0 0)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-02 00:00:00+00)"
-						</programlisting>
-					 </listitem>
-
-					<listitem>
-						<para><varname>transform</varname>: Transform to a different spatial reference &Z_support; &geography_support;</para>
-						<para>Signature: <varname>transform(tpoint, integer): tpoint</varname></para>
-						<programlisting>
-SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
--- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
-						</programlisting>
+					</programlisting>
 					</listitem>
 
-					<listitem>
-						<para><varname>length</varname>: Length traversed by the temporal point &Z_support; &geography_support;</para>
-						<para>Signature: <varname>length({tpointseq, tpoints}): float</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>transform</varname>: Transform to a different spatial reference &Z_support; &geography_support;</para>
+					<para>Signature: <varname>transform(tpoint, integer): tpoint</varname></para>
+					<programlisting>
+SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
+-- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>length</varname>: Length traversed by the temporal point &Z_support; &geography_support;</para>
+					<para>Signature: <varname>length(tpoint): float</varname></para>
+					<programlisting>
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 Point(0 0 0)@2000-01-03]');
 -- 3.46410161513775
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>cumulativeLength</varname>: Cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
-						<para>Signature: <varname>cumulativeLength({tpointseq, tpoints}): tfloatseq</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>cumulativeLength</varname>: Cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
+					<para>Signature: <varname>cumulativeLength(tpoint): tfloatseq</varname></para>
+					<programlisting>
 SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
 	 '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]',"
 	 '[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]']));
 	 -- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
 			[2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>speed</varname>: Speed of the temporal point in units per second &Z_support; &geography_support;</para>
-						<para>Signature: <varname>speed({tpointseq, tpoints}): tfloats</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>speed</varname>: Speed of the temporal point in units per second &Z_support; &geography_support;</para>
+					<para>Signature: <varname>speed(tpoint): tfloats</varname></para>
+					<programlisting>
 SELECT speed(tgeompoints(ARRAY[tgeompoint
 	 '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]',
 	 '[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]']))
 	 * 3600 * 24;
 	 -- "{[1.4142135623731@2000-01-01, 1.4142135623731@2000-01-02),
 [1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>gbox</varname>: Construct the bounding box from a geometry/geography and a time type &Z_support; &geography_support;</para>
-						<para>Signature: <varname>gbox(geo, time): gbox</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>gbox</varname>: Construct the bounding box from a geometry/geography and a timestap or a period &Z_support; &geography_support;</para>
+					<para>Signature: <varname>gbox(geo, {timestamp, period}): gbox</varname></para>
+					<programlisting>
 SELECT gbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
 -- "GBOX ZM((1,1,1,3.78864e+14),(2,2,2,3.790368e+14))"
 SELECT gbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
 -- "GEODBOX((0.99878198,0.017449748,0.017452406,3.78864e+14),
 (0.99969542,0.034878239,0.034899499,3.790368e+14))"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>expandSpatial</varname>: Expand the bounding box of the temporal point by a float value &Z_support; &geography_support;</para>
-						<para>Signature: <varname>expandSpatial(tpoint, float): gbox</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>expandSpatial</varname>: Expand the bounding box of the temporal point by a float value &Z_support; &geography_support;</para>
+					<para>Signature: <varname>expandSpatial(tpoint, float): gbox</varname></para>
+					<programlisting>
 SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
 [Point(1 1 1)@2012-01-03, Point(3 3 3)@2012-01-05)}', 1);
 -- "GBOX((0,0,0,3.786912e+14),(4,4,4,3.790368e+14))"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>expandTemporal</varname>: Expand the bounding box of the temporal point by a time interval &Z_support; &geography_support;</para>
-						<para>Signature: <varname>expandSpatial(tpoint, interval): gbox</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>expandTemporal</varname>: Expand the bounding box of the temporal point by a time interval &Z_support; &geography_support;</para>
+					<para>Signature: <varname>expandSpatial(tpoint, interval): gbox</varname></para>
+					<programlisting>
 SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
 [Point(1 1 1)@2012-01-03, Point(3 3 3)@2012-01-05)}', interval '1 day');
 -- "GBOX((1,1,1,3.786048e+14),(3,3,3,3.791232e+14))"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>twCentroid</varname>: Time-weighted centroid &Z_support;</para>
-						<para>Signature: <varname>twCentroid({tgeompointseq, tgeompoints}): point</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>twCentroid</varname>: Time-weighted centroid &Z_support;</para>
+					<para>Signature: <varname>twCentroid(tgeompoint): point</varname></para>
+					<programlisting>
 SELECT st_astext(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
 	Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 -- "POINT Z (0 0.666666666666667 0.666666666666667)"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>azimuth</varname>: Temporal azimuth &Z_support; &geography_support;</para>
-						<para>Signature: <varname>azimuth({tpointseq, tpoints}): {tfloatseq, tfloats}</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>azimuth</varname>: Temporal azimuth &Z_support; &geography_support;</para>
+					<para>Signature: <varname>azimuth(tpoint): tfloat</varname></para>
+					<programlisting>
 SELECT azimuth(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
 Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}');
 -- "{[0@2012-01-01 00:00:00+00, 0@2012-01-02 00:00:00+00), [3.14159265358979@2012-01-03 00:00:00+00, 3.14159265358979@2012-01-04 00:00:00+00)}"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>nearestApproachInstant</varname>: Instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. Notice that the resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
-						<para>Signature: <varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>nearestApproachInstant</varname>: Instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. Notice that the resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
+					<para>Signature: <varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
+					<programlisting>
 SELECT asText(nearestApproachInstant(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
 geometry 'Linestring(2 2,2 1,3 1)'));
@@ -1689,20 +1689,20 @@ SELECT asText(nearestApproachInstant(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
-						</programlisting>
-						<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
-						<programlisting>
+					</programlisting>
+					<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
+					<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'::geometry));
 -- "2012-01-03 12:00:00+00"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments &Z_support; &geography_support;</para>
-						<para>Signature: <varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>nearestApproachDistance</varname>: Smallest distance ever between the two arguments &Z_support; &geography_support;</para>
+					<para>Signature: <varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
+					<programlisting>
 SELECT nearestApproachDistance(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
 geometry 'Linestring(2 2,2 1,3 1)');
@@ -1711,20 +1711,20 @@ SELECT nearestApproachDistance(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)');
 -- "0.5"
-						</programlisting>
-						<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST index (see Section <xref linkend="operators_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
-						<programlisting>
+					</programlisting>
+					<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="operators_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
+					<programlisting>
 SELECT ST_DistanceCPA(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'::geometry);
 -- "0.5"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem>
-						<para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments. The function will only return the first line that it finds if there are more than one. &Z_support; &geography_support;</para>
-						<para>Signature: <varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
-						<programlisting>
+				<listitem>
+					<para><varname>shortestLine</varname>: Line connecting the nearest approach point between the two arguments. The function will only return the first line that it finds if there are more than one. &Z_support; &geography_support;</para>
+					<para>Signature: <varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
+					<programlisting>
 SELECT ST_AsText(shortestLine(
 tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
 geometry 'Linestring(2 2,2 1,3 1)'));
@@ -1733,9 +1733,9 @@ SELECT ST_AsText(shortestLine(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)"
-						</programlisting>
-						<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
-						<programlisting>
+					</programlisting>
+					<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
+					<programlisting>
 SELECT ST_Length(shortestLine(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)',
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'))
@@ -1745,9 +1745,9 @@ SELECT ST_CPAWithin(
 tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)'::geometry,
 tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'::geometry, 0.5);
 -- true
-						</programlisting>
-					</listitem>
-				</itemizedlist>
+					</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect1>
 
 		<sect1>
@@ -2094,7 +2094,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 
 		<sect1>
 			<title>Ever and Always Equals Operators</title>
-			<para>These operators test whether a temporal value is ever or always equal to a value of the base type. As explained in Section <xref linkend="manipulating_temporal_types" />, these are typically used to test whether a condition is ever or always satisfied.</para>
+			<para>These operators test whether a temporal value is ever or always equal to a value of the base type. As explained in <xref linkend="manipulating_temporal_types" />, these are typically used to test whether a condition is ever or always satisfied.</para>
 			<itemizedlist>
 				<listitem>
 					<para><varname>&amp;=</varname>: Is ever equal to the value?</para>
@@ -2308,7 +2308,7 @@ SELECT ~ tbool '[true@2012-01-03, true@2012-01-05)';
 
 		<sect1>
 			<title>Bounding Box Operators</title>
-			<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in Section <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>gbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
+			<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>gbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
 
 			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types. The operators for the value dimension of the <varname>tint</varname> and <varname>tfloat</varname> types are given next.</para>
 
@@ -2371,7 +2371,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&gt;&gt;</varname>: Is the bouding box strictly to the right of?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &gt;&gt;25020>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &gt;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2381,7 +2381,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&amp;&lt;</varname>: The bouding box does not extend to the right of?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &amp;&lt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;25023>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2391,7 +2391,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&amp;&gt;</varname>: The bouding box does not extend to the left of?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&gt;25026>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2647,7 +2647,7 @@ tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-04)';
 
 		<sect1>
 			<title>Distance Operators</title>
-			<para>There are two distance operators. The first one computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see Section <xref linkend="indexing_temporal_types" />).</para>
+			<para>There are two distance operators. The first one computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
 
 			<para>On the other hand, the temporal distance operator computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
 		
@@ -3029,11 +3029,11 @@ WHERE intersects(T.Trip, R.Geom)
 
 			<para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available or reporting objects (for example, number of cars in an area). For Boolean types, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>. For numeric types, two types of temporal aggregate functions are available. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful. For temporal text, the functions Finally, for temporal points the function <varname>tcentroid</varname>, generalizes the corresponding function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para>
 		
-			<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in Section <xref linkend="examples_temporal_types" />.</para>
+			<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="examples_temporal_types" />.</para>
 			<itemizedlist>
 				<listitem>
 					<para><varname>tcount</varname>: Temporal count</para>
-					<para>Signature: <varname>tcount(ttype): {tints, tinti}</varname></para>
+					<para>Signature: <varname>tcount(ttype): {tinti, tints}</varname></para>
 					<programlisting>
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 1@2012-08-01, 1@2012-10-01)}"
@@ -3042,7 +3042,7 @@ SELECT tcount(NoEmps) FROM Department;
 
 				<listitem>
 					<para><varname>tand</varname>: Temporal and</para>
-					<para>Signature: <varname>tand(tbool): {tbooli, tbools}</varname></para>
+					<para>Signature: <varname>tand(tbool): tbool</varname></para>
 					<programlisting>
 SELECT tand(NoEmps #&gt; 6) FROM Department;
 -- "{[t@2012-01-01, f@2012-04-01, f@2012-10-01)}"
@@ -3051,7 +3051,7 @@ SELECT tand(NoEmps #&gt; 6) FROM Department;
 
 				<listitem>
 					<para><varname>tor</varname>: Temporal or</para>
-					<para>Signature: <varname>tor(tbool): {tbooli, tbools}</varname></para>
+					<para>Signature: <varname>tor(tbool): tbool</varname></para>
 					<programlisting>
 SELECT tor(NoEmps #&gt; 6) FROM Department;
 -- "{[t@2012-01-01, f@2012-08-01, f@2012-10-01)}"
@@ -3069,7 +3069,7 @@ SELECT tmin(NoEmps) FROM Department;
 
 				<listitem>
 					<para><varname>tmax</varname>: Temporal maximum</para>
-					<para>Signature: <varname>tmax(ttype): {ttypes, ttypei}</varname></para>
+					<para>Signature: <varname>tmax(ttype): {ttypei, ttypes}</varname></para>
 					<programlisting>
 SELECT tmax(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 12@2012-04-01, 6@2012-08-01, 6@2012-10-01)}"
@@ -3078,7 +3078,7 @@ SELECT tmax(NoEmps) FROM Department;
 
 				<listitem>
 					<para><varname>tsum</varname>: Temporal sum</para>
-					<para>Signature: <varname>tsum(tnumber): {tnums, tnumi}</varname></para>
+					<para>Signature: <varname>tsum(tnumber): {tnumi, tnums}</varname></para>
 					<programlisting>
 SELECT tsum(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 14@2012-02-01, 16@2012-04-01, 18@2012-06-01, 6@2012-08-01, 6@2012-10-01)}"
@@ -3087,7 +3087,7 @@ SELECT tsum(NoEmps) FROM Department;
 
 				<listitem>
 					<para><varname>tavg</varname>: Temporal average</para>
-					<para>Signature: <varname>tavg(tnumber): {tfloats, tfloati}</varname></para>
+					<para>Signature: <varname>tavg(tnumber): {tfloati, tfloats}</varname></para>
 					<programlisting>
 SELECT tavg(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01), [8@2012-04-01, 8@2012-06-01),
@@ -3097,7 +3097,7 @@ SELECT tavg(NoEmps) FROM Department;
 
 				<listitem>
 					<para><varname>wmin</varname>: Window minimum</para>
-					<para>Signature: <varname>wmin(tnumber, interval): {tnums, tnumi}</varname></para>
+					<para>Signature: <varname>wmin(tnumber, interval): {tnumi, tnums}</varname></para>
 					<programlisting>
 SELECT wmin(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 4@2012-04-01, 6@2012-06-03, 6@2012-10-03)}"
@@ -3106,7 +3106,7 @@ SELECT wmin(NoEmps, interval '2 days') FROM Department;
 
 				<listitem>
 					<para><varname>wmax</varname>: Window maximum</para>
-					<para>Signature: <varname>wmax(tnumber, interval): {tnums, tnumi}</varname></para>
+					<para>Signature: <varname>wmax(tnumber, interval): {tnumi, tnums}</varname></para>
 					<programlisting>
 SELECT wmax(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 12@2012-04-01, 6@2012-08-03, 6@2012-10-03)}"
@@ -3115,7 +3115,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 
 				<listitem>
 					<para><varname>wcount</varname>: Window count</para>
-					<para>Signature: <varname>wcount(tnumber, interval): {tints, tinti}</varname></para>
+					<para>Signature: <varname>wcount(tnumber, interval): {tinti, tints}</varname></para>
 					<programlisting>
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 3@2012-04-01, 2@2012-04-03, 3@2012-06-01, 2@2012-06-03,30022>
@@ -3125,7 +3125,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 
 				<listitem>
 					<para><varname>wsum</varname>: Window sum</para>
-					<para>Signature: <varname>wsum(tint, interval): {tints, tinti}</varname></para>
+					<para>Signature: <varname>wsum(tint, interval): {tinti, tints}</varname></para>
 					<programlisting>
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 14@2012-02-01, 26@2012-04-01, 16@2012-04-03, 22@2012-06-01, 18@2012-06-03,30025>
@@ -3135,7 +3135,7 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 
 				<listitem>
 					<para><varname>wavg</varname>: Window average</para>
-					<para>Signature: <varname>wavg(tint, interval): {tfloats, tfloati}</varname></para>
+					<para>Signature: <varname>wavg(tint, interval): {tfloati, tfloats}</varname></para>
 					<programlisting>
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01),30028>
@@ -3168,7 +3168,7 @@ CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);31002>C
 			</programlisting>
 		</para>
 
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in Section <xref linkend="temporal_types" />, these are
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="temporal_types" />, these are
 			<itemizedlist>
 				<listitem>
 					<para>the period <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
@@ -3184,7 +3184,7 @@ CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);31002>C
 			 </itemizedlist>
 		</para>
 			
-		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see Section <xref linkend="operators_temporal_types" /> for more information):
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="operators_temporal_types" /> for more information):
 			<itemizedlist>
 				 <listitem>
 					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, which only consider the value dimension in temporal alphanumeric types,</para>
@@ -3233,7 +3233,7 @@ tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-0
 				
 		<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 
-		<para>In order to speed up several of the functions in Section <xref linkend="manipulating_temporal_types" />, a bounding box comparison that make uses of the available indexes can be added in the <varname>WHERE</varname> clause of queries. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
+		<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types" />, a bounding box comparison that make uses of the available indexes can be added in the <varname>WHERE</varname> clause of queries. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
 			<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
@@ -3242,7 +3242,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			 </programlisting>
 		</para>
 				
-		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see Section <xref linkend="spatial_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="spatial_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

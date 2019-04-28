@@ -168,6 +168,10 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
+extern Datum tgeompointi_twcentroid(TemporalI *ti);
+extern Datum tgeompointseq_twcentroid(TemporalSeq *seq);
+extern Datum tgeompoints_twcentroid(TemporalS *ts);
+
 /* Restriction functions */
 
 extern Datum tpoint_at_geometry(PG_FUNCTION_ARGS);
