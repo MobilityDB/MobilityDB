@@ -2014,24 +2014,29 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 		<sect1 id="operators_temporal_types">
 			<title>Comparison Operators</title>
 
-			<para>The traditional comparison operators are the only ones that require that the left and right arguments be identical, that is, of the same duration and the same base type. Excepted the equality and inequality, the other comparison operators (<varname>&lt;=</varname> and so on) are not useful in the real world but allow B-tree indexes to be constructed on temporal types. For temporal instant values, they compare first the timestamps and only if those are equal, compare the value(s). For temporal values with sequence duration, they compare the first N instants, where N is the minimum of the number of composing instants of both values. For temporal set values, they compare the first N unit values, where N is the minimum of the number of composing unit values of both temporal set values.</para>
+			<para>The traditional comparison operators require that the left and right be of the same base type. Excepted the equality and inequality, the other comparison operators (<varname>&lt;=</varname> and so on) are not useful in the real world but allow B-tree indexes to be constructed on temporal types. For temporal instant values, they compare first the timestamps and only if those are equal, compare the value(s). For temporal values with sequence duration, they compare the first N instants, where N is the minimum of the number of composing instants of both values. For temporal set values, they compare the first N unit values, where N is the minimum of the number of composing unit values of both temporal set values.</para>
 
-			<para>The equality and inequality operators consider the normal forms of the temporal types as shown next.
+			<para>The equality and inequality operators consider the normal forms of the temporal types and the equivalent representation for different durations as shown next.
 				<programlisting>
-SELECT tint '{[1@2001-01-01, 1@2001-01-03), [1@2001-01-03, 1@2001-01-05)}' =20002>
+SELECT tint '{[1@2001-01-01, 1@2001-01-03), [1@2001-01-03, 1@2001-01-05)}' =
 tint '{[1@2001-01-01, 1@2001-01-05)}';
 -- true
-SELECT tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-03, 3@2001-01-05)}' &lt;&gt;20006>
+SELECT tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-03, 3@2001-01-05)}' &lt;&gt;
 tfloat '{[1@2001-01-01, 3@2001-01-05)}';
 -- false
-SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03),20010>
-[Point(1 1)@2001-01-03, Point(1 1)@2001-01-05)}' =20011>
+SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-03),
+[Point(1 1)@2001-01-03, Point(1 1)@2001-01-05)}' =
 tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-05)}';
 -- true
-SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03),20015>
-[Point(2 2)@2001-01-03, Point(3 3)@2001-01-05)}' &lt;&gt;20016r16">
+SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03),
+[Point(2 2)@2001-01-03, Point(3 3)@2001-01-05)}' &lt;&gt;
 tgeompoint '{[Point(1 1)@2001-01-01, Point(3 3)@2001-01-05)}';
 -- false
+SELECT tgeompoint '{[Point(1 1)@2001-01-01]}' = tgeompoint 'Point(1 1)@2001-01-01';
+-- false
+SELECT tgeompoint '{[Point(1 1)@2001-01-01], [Point(2 2)@2001-01-02]}' = 
+	tgeompoint '{Point(1 1)@2001-01-01,Point(2 2)@2001-01-02}';
+-- true
 				</programlisting>
 			</para>
 
