@@ -468,7 +468,8 @@ extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str);
 extern PeriodSet *periodset_parse(char **str);
 
-extern TemporalInst *temporalinst_parse1(char **str, Oid basetype, bool end);
+extern TemporalInst *temporalinst_parse(char **str, Oid basetype, bool end);
+extern TemporalI *temporali_parse(char **str, Oid basetype);
 extern Temporal *temporal_parse(char **str, Oid basetype);
 
 /*****************************************************************************
