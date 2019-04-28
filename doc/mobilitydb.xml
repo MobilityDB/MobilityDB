@@ -1479,7 +1479,7 @@ SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '201
 					<para><varname>intersectsTimestampSet</varname>: Intersects the timestamp set?</para>
 					<para>Signature: <varname>intersectsTimestampSet(ttype, timestampset): boolean</varname></para>
 					<programlisting>
-SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',15090>
+SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
 timestampset '{2012-01-01, 2012-01-03}');
 -- true
 					</programlisting>
@@ -1489,7 +1489,7 @@ timestampset '{2012-01-01, 2012-01-03}');
 					<para><varname>intersectsPeriod</varname>: Intersects the period?</para>
 					<para>Signature: <varname>intersectsPeriod(ttype, period): boolean</varname></para>
 					<programlisting>
-SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',15093>
+SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
 period '[2012-01-01,2012-01-05)');
 -- true
 					</programlisting>
@@ -1499,7 +1499,7 @@ period '[2012-01-01,2012-01-05)');
 					<para><varname>intersectsPeriodSet</varname>: Intersects the period set?</para>
 					<para>Signature: <varname>intersectsPeriodSet(ttype, periodset): boolean</varname></para>
 					<programlisting>
-SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',15096>
+SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
 periodset '{[2012-01-01, 2012-01-03), [2012-01-05, 2012-01-07)}');
 -- true
 					</programlisting>
@@ -1509,7 +1509,7 @@ periodset '{[2012-01-01, 2012-01-03), [2012-01-05, 2012-01-07)}');
 					<para><varname>isContinuousInValue</varname>: Is continuous in the value dimension?</para>
 					<para>Signature: <varname>isContinuousInValue(tfloats): boolean</varname></para>
 					<programlisting>
-SELECT isContinuousInValue(tfloat '{[1@2012-01-01, 2@2012-01-03),15099>
+SELECT isContinuousInValue(tfloat '{[1@2012-01-01, 2@2012-01-03),
 [1@2012-01-03, 2@2012-01-05)}');
 -- false
 					</programlisting>
@@ -1519,7 +1519,7 @@ SELECT isContinuousInValue(tfloat '{[1@2012-01-01, 2@2012-01-03),15099>
 					<para><varname>isContinuousInTime</varname>: Is continuous in the time dimension?</para>
 					<para>Signature: <varname>isContinuousInTime(ttypes): boolean</varname></para>
 					<programlisting>
-SELECT isContinuousInTime(tfloat '{[1@2012-01-01, 2@2012-01-03),15102>
+SELECT isContinuousInTime(tfloat '{[1@2012-01-01, 2@2012-01-03),
 [1@2012-01-03, 2@2012-01-05)}');
 -- true
 					</programlisting>
@@ -1761,7 +1761,7 @@ tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012
 					<programlisting>
 SELECT atValue(tint '[1@2012-01-01, 1@2012-01-15)', 1);
 -- "[1@2012-01-01, 1@2012-01-15)"
-SELECT astext(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',17005>
+SELECT astext(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
 'Point(1 1 1)'));
 -- "{[POINT Z (1 1 1)@2012-01-02]}"
 					</programlisting>
@@ -1773,7 +1773,7 @@ SELECT astext(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01
 					<programlisting>
 SELECT atValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[1, 3, 5]);
 -- "{[1@2012-01-01], [3@2012-01-03]}"
-SELECT astext(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)',17011>
+SELECT astext(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)',
 ARRAY[geometry 'Point(0 0)', 'Point(1 1)']));
 -- "{[POINT(0 0)@2012-01-01 00:00:00+00], [POINT(1 1)@2012-01-02 00:00:00+00]}"
 					</programlisting>
@@ -1831,7 +1831,7 @@ SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)
 					<para><varname>atGeometry</varname>: Restrict to geometry</para>
 					<para>Signature: <varname>atGeometry(tgeompoint, geometry): tgeompoint</varname></para>
 					<programlisting>
-SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',17037>
+SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
  -- "{"[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]"}"
 					</programlisting>
@@ -1850,7 +1850,7 @@ SELECT atTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 					<para><varname>atTimestampSet</varname>: Restrict to timestamp set</para>
 					<para>Signature: <varname>atTimestampSet(ttype, timestampset): {ttypeinst, ttypei}</varname></para>
 					<programlisting>
-SELECT atTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',17042>
+SELECT atTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
 timestampset '{2012-01-01, 2012-01-03}');
 -- "{1@2012-01-01, 1@2012-01-03}"
 					</programlisting>
@@ -1860,7 +1860,7 @@ timestampset '{2012-01-01, 2012-01-03}');
 					<para><varname>atPeriod</varname>: Restrict to period</para>
 					<para>Signature: <varname>atPeriod(ttype, period): ttype</varname></para>
 					<programlisting>
-SELECT atPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',17045>
+SELECT atPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',
 '[2012-01-02,2012-01-05)');
 -- "{[2@2012-01-02, 3@2012-01-03), [3@2012-01-04, 2@2012-01-05)}"
 					</programlisting>
@@ -1870,7 +1870,7 @@ SELECT atPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-
 					<para><varname>atPeriodSet</varname>: Restrict to period set</para>
 					<para>Signature: <varname>atPeriodSet(ttype, periodset): ttype</varname></para>
 					<programlisting>
-SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',17048>
+SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 	periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
 	-- "{[1@2012-01-01, 1@2012-01-03),[1@2012-01-04, 1@2012-01-05)}"
 					</programlisting>
@@ -1888,9 +1888,9 @@ SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',17048>
 				<programlisting>
 SELECT minusValue(tint '[1@2012-01-01, 2@2012-01-02, 2@2012-01-03)', 1);
 -- "{[2@2012-01-02, 2@2012-01-03)}"
-SELECT astext(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',18005>
+SELECT astext(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
 'Point(1 1 1)'));
--- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),18007>
+-- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),
 (POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03)}"
 					</programlisting>
 				</listitem>
@@ -1901,7 +1901,7 @@ SELECT astext(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012
 					<programlisting>
 SELECT minusValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[2, 3]);
 -- "{[1@2012-01-01, 2@2012-01-02), (2@2012-01-02, 3@2012-01-03), (3@2012-01-03, 4@2012-01-04)}"
-SELECT astext(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@2012-01-04)',18012>
+SELECT astext(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@2012-01-04)',
 ARRAY[geometry 'Point(1 1 1)', 'Point(2 2 2)']));
 -- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),
 (POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03),
@@ -1963,9 +1963,9 @@ SELECT minusMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-
 					<para><varname>minusGeometry</varname>: Difference with geometry</para>
 					<para>Signature: <varname>minusGeometry(tgeompoint, geometry): tgeompoint</varname></para>
 					<programlisting>
-SELECT astext(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',18040>
+SELECT astext(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
  geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
- -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02), (POINT(2 2)@2012-01-03,18042>
+ -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02), (POINT(2 2)@2012-01-03,
 POINT(3 3)@2012-01-04)}"
 					</programlisting>
 				</listitem>
@@ -1983,7 +1983,7 @@ SELECT minusTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 					<para><varname>minusTimestampSet</varname>: Difference with timestamp set</para>
 					<para>Signature: <varname>minusTimestampSet(ttype, timestampset): ttype</varname></para>
 					<programlisting>
-SELECT minusTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',18046>
+SELECT minusTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
 timestampset '{2012-01-02, 2012-01-03}');
 -- "{[1@2012-01-01, 1@2012-01-02), (1@2012-01-02, 1@2012-01-03), (1@2012-01-03, 1@2012-01-15)}"
 					</programlisting>
@@ -1993,7 +1993,7 @@ timestampset '{2012-01-02, 2012-01-03}');
 					<para><varname>minusPeriod</varname>: Difference with period</para>
 					<para>Signature: <varname>minusPeriod(ttype, period): ttype</varname></para>
 					<programlisting>
-SELECT minusPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',18049>
+SELECT minusPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',
 '[2012-01-02,2012-01-05)');
 -- "{[1@2012-01-01, 2@2012-01-02), [2@2012-01-05, 1@2012-01-06)}"
 					</programlisting>
@@ -2003,7 +2003,7 @@ SELECT minusPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-
 					<para><varname>minusPeriodSet</varname>: Difference with period set</para>
 					<para>Signature: <varname>minusPeriodSet(ttype, periodset): ttype</varname></para>
 					<programlisting>
-SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',18052>
+SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 	periodset '{[2012-01-02, 2012-01-03), [2012-01-04, 2012-01-05)}');
 	-- "{[1@2012-01-01, 1@2012-01-02), [1@2012-01-03, 1@2012-01-04), [1@2012-01-05, 1@2012-01-15)}"
 					</programlisting>
