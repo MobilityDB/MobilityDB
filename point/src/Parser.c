@@ -114,6 +114,19 @@ gbox_parse(char **str)
 	if (!p_cparen(str) && !p_cparen(str) )
 		return NULL;
 
+	/* Set missing dimensions to +-infinity */
+	double infinity = get_float8_infinity();
+	if (hasz == 0)
+	{	
+		result->zmin = -infinity;
+		result->zmax = infinity;
+	}
+	if (hasm == 0)
+	{	
+		result->mmin = -infinity;
+		result->mmax = infinity;
+	}
+
 	return result;
 }
 

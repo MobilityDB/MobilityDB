@@ -2131,7 +2131,7 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @= geometry '
 		</sect1>
 
 		<sect1>
-			<title>Comparison Operators</title>
+			<title>Temporal Comparison Operators</title>
 
 			<itemizedlist>
 				<listitem>
