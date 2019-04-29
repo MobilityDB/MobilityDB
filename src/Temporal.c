@@ -2713,30 +2713,33 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 	}
 	if (t1->type == TEMPORALINST && t2->type == TEMPORALI)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalI *ti = (TemporalI *)t2;
 		if (ti->count != 1) 
 			return false;
-		TemporalInst *inst = temporali_inst_n(ti, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporali_inst_n(ti, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALINST && t2->type == TEMPORALSEQ)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalSeq *seq = (TemporalSeq *)t2; 
 		if (seq->count != 1) 
 			return false;
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALINST && t2->type == TEMPORALS)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalS *ts = (TemporalS *)t2; 
 		if (ts->count != 1) 
 			return false;
 		TemporalSeq *seq = temporals_seq_n(ts, 0);
 		if (seq->count != 1) 
 			return false;
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALI && t2->type == TEMPORALSEQ)
 	{
@@ -2744,8 +2747,8 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalSeq *seq = (TemporalSeq *)t2; 
 		if (ti->count != 1 || seq->count != 1) 
 			return false;
-		TemporalInst *inst1 = temporali_inst_n((TemporalI *)t1, 0);
-		TemporalInst *inst2 = temporalseq_inst_n((TemporalSeq *)t2, 0);
+		TemporalInst *inst1 = temporali_inst_n(ti, 0);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, 0);
 		return temporalinst_eq(inst1, inst2);	
 	}
 	else if (t1->type == TEMPORALI && t2->type == TEMPORALS)
@@ -2766,11 +2769,12 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 	}
 	else if (t1->type == TEMPORALSEQ && t2->type == TEMPORALS)
 	{
+		TemporalSeq *seq = (TemporalSeq *)t1; 
 		TemporalS *ts = (TemporalS *)t2; 
 		if (ts->count != 1) 
 			return false;
-		TemporalSeq *seq = temporals_seq_n(ts, 0);
-		return temporalseq_eq((TemporalSeq *)t1, seq);	
+		TemporalSeq *seq1 = temporals_seq_n(ts, 0);
+		return temporalseq_eq(seq, seq1);	
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
