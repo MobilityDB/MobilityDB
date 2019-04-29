@@ -730,7 +730,7 @@ SELECT tfloat '[1.5@2001-01-01 08:00:00]'; -- instant sequence
 SELECT tfloat '[2.5@2001-01-01 08:00:00, 3@2001-01-03 08:00:00, 1@2001-01-04 08:00:00]';
 SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
 SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
-SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,9015>
+SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
 Point(0 0)@2017-01-01 08:10:00)';
 				</programlisting>
 			</para>
@@ -745,7 +745,7 @@ SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
 SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
 SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
 SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),9024>
+SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),
 [true@2001-01-03 08:00:00], (false@2001-01-04 08:00:00, false@2001-01-06 08:00:00]}';
 SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
 [2@2001-01-04 08:00:00, 3@2001-01-05 08:00:00, 3@2001-01-06 08:00:00]}';
@@ -773,15 +773,15 @@ SELECT tgeogpointinst('Point(1 1)', '2001-01-01 08:05:00');
 			<para>The constructor functions of temporal sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the last two arguments are not specified they are assumed to be true by default. Examples of temporal sequence values defined with the constructor functions are as follows:
 				<programlisting>
 SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'], true, true);
-SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'), tintinst(2,'2001-01-01 08:10:00')],9043>
+SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'), tintinst(2,'2001-01-01 08:10:00')],
 true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',9045>
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
 '1@2001-01-03 08:10:00'], true, false);
-SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),9047>
+SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
 	 ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
 	 SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
 'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
-SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',9051>
+SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 'Point(0 0)@2001-01-03 08:05:00']);
 				</programlisting>
 			As can be seen above, the values in the array can be specified using either a literal constant or the constructor function.</para>
@@ -2146,7 +2146,7 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #= tfloat '[4@2012-01-02, 1@2012-01
 -- "{[f@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04)}"
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)' #= geometry 'Point(1 1)';
 -- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)' #=22014>
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)' #=
 tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-03)';
 -- "{[f@2012-01-01], (t@2012-01-01, t@2012-01-03)}"
 					</programlisting>
@@ -2353,7 +2353,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&lt; tfloat '{2@2012-01-03, 3@20
 					<para><varname>&amp;&gt;</varname>: Is the bounding box never less than?</para>
 					<para>Signature: <varname>{base, numrange, ttype} &amp;&gt; {base, numrange, ttype}: boolean</varname></para>
 					<programlisting>
-SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&gt;25014>
+SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&gt;
 tfloat '{[2@2012-01-02, 3@2012-01-04), [3@2012-01-04, 2@2012-01-06)}';
 -- false
 					</programlisting>
@@ -2366,7 +2366,7 @@ tfloat '{[2@2012-01-02, 3@2012-01-04), [3@2012-01-04, 2@2012-01-06)}';
 					<para><varname>&lt;&lt;</varname>: Is the bouding box strictly to the left of?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &lt;&lt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;25017>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2406,7 +2406,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&lt;&lt;|</varname>: Is the bouding box strictly below?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &lt;&lt;| {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;|25029>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;|
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2416,7 +2416,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>|&gt;&gt;</varname>: Is the bouding box strictly above?</para>
 					<para>Signature: <varname>{geo, tgeompoint} |&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' |&gt;&gt;25032>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' |&gt;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2426,7 +2426,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&amp;&lt;|</varname>: The bouding box does not extend above?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &amp;&lt;| {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;|25035>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;|
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2436,7 +2436,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>|&amp;&gt;</varname>: The bouding box does not extend below?</para>
 					<para>Signature: <varname>{geo, tgeompoint} |&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0)@2001-01-01' |&amp;&gt;25038>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' |&amp;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2446,10 +2446,10 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&lt;&lt;/</varname>: Is the bouding box strictly in front?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &lt;&lt;/ {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &lt;&lt;/25041>
+SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &lt;&lt;/
 tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 2 2)@2001-01-02)';
 -- true
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;/25044>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;/
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- NULL
 					</programlisting>
@@ -2459,10 +2459,10 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>/&gt;&gt;</varname>: Is the bouding box strictly back?</para>
 					<para>Signature: <varname>{geo, tgeompoint} /&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&gt;&gt;25047>
+SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&gt;&gt;
 tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 2 2)@2001-01-02)';
 -- false
-SELECT tgeompoint 'Point(0 0)@2001-01-01' /&gt;&gt;25050>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' /&gt;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- NULL
 					</programlisting>
@@ -2472,7 +2472,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<para><varname>&amp;&lt;/</varname>: The bouding box does not extend in front?</para>
 					<para>Signature: <varname>{geo, tgeompoint} &amp;&lt;/ {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &amp;&lt;/25053>
+SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &amp;&lt;/
 tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 2 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2482,7 +2482,7 @@ tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 2 2)@2001-01-02)';
 					<para><varname>/&amp;&gt;</varname>: The bouding box does not extend back?</para>
 					<para>Signature: <varname>{geo, tgeompoint} /&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;25056>
+SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;
 tgeompoint '[Point(1 1 1)@2001-01-01, Point(1 2 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2499,7 +2499,7 @@ SELECT tbool '[t@2012-01-01, t@2012-01-04)' &lt;&lt;# timestamptz '2012-01-03';
 -- false
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;&lt;# tint '[2@2012-01-03, 2@2012-01-05)';
 -- false
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;#25065>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;#
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2513,7 +2513,7 @@ SELECT tbool '[t@2012-01-03, t@2012-01-04)' #&gt;&gt; period '[2012-01-01, 2012-
 -- true
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' #&gt;&gt; tfloat '[2@2012-01-03, 2@2012-01-05)';
 -- false
-SELECT tgeompoint 'Point(0 0)@2001-01-01' #&gt;&gt;25074>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' #&gt;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- false
 					</programlisting>
@@ -2527,7 +2527,7 @@ SELECT tbool '[t@2012-01-01, t@2012-01-04)' &amp;&lt;# tbool '[f@2012-01-03, f@2
 -- true
 SELECT tfloat '[1@2012-01-01, 1@2012-01-04)' &amp;&lt;# tfloat '[2@2012-01-03, 2@2012-01-05)';
 -- true
-SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;#25083>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;#
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2539,7 +2539,7 @@ tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' #&amp;&gt; tfloat '{2@2012-01-03, 3@2012-01-05}';
 -- false
-SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;25089>
+SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 tgeompoint '[Point(1 1)@2001-01-01, Point(1 2)@2001-01-02)';
 -- true
 					</programlisting>
@@ -2584,7 +2584,7 @@ SELECT ttext '[A@2012-01-01, B@2012-01-06]' @&gt; ttext '[C@2012-01-03, D@2012-0
 					<para>Signature: <varname>{base, numrange, time, box, ttype} &lt;@</varname></para>
 					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
 					<programlisting>
-SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@25108>
+SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@
 box(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
 -- true
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tint '[2@2012-01-03, 2@2012-01-05)';
@@ -2599,7 +2599,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-0
 					<para>Signature: <varname>{base, numrange, time, box, ttype} ~=</varname></para>
 					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
 					<programlisting>
-SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=25117>  tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
 -- true
 					</programlisting>
 				</listitem>
@@ -2612,7 +2612,7 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=25117>  tint '{4@2012-01-01, 3@20
 					<para><varname>&amp;&amp;</varname>: Does the bounding boxes overlap?</para>
 					<para>Signature: <varname>{geo, time, gbox, tpoint} &amp;&amp; {geo, time, gbox, tpoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;25120>
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 tgeompoint '[Point(0 1)@2012-01-03, Point(2 0)@2012-01-05)';
 -- true
 					</programlisting>
@@ -2622,7 +2622,7 @@ tgeompoint '[Point(0 1)@2012-01-03, Point(2 0)@2012-01-05)';
 					<para><varname>@&gt;</varname>: Does the first bounding box contains the second one?</para>
 					<para>Signature: <varname>{geo, time, gbox, tpoint} @&gt; {geo, time, gbox, tpoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;25123>
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 tgeompoint '[Point(1 1)@2012-01-03, Point(2 0)@2012-01-05)';
 -- true
 					</programlisting>
@@ -2632,7 +2632,7 @@ tgeompoint '[Point(1 1)@2012-01-03, Point(2 0)@2012-01-05)';
 					<para><varname>&lt;@</varname>: Is the first bounding box contained in the second one?</para>
 					<para>Signature: <varname>{geo, time, gbox, tpoint} &lt;@ {geo, time, gbox, tpoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint 'Point(1 1)@2012-01-01' &lt;@25126>
+SELECT tgeompoint 'Point(1 1)@2012-01-01' &lt;@
 tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)';
 -- true
 					</programlisting>
@@ -2642,7 +2642,7 @@ tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)';
 					<para><varname>~=</varname>: Are the bounding boxes equal?</para>
 					<para>Signature: <varname>{geo, time, gbox, tpoint} ~= {geo, time, gbox, tpoint}: boolean</varname></para>
 					<programlisting>
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ~=25129>
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ~=
 tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-04)';
 -- true
 					</programlisting>
@@ -2663,10 +2663,10 @@ tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-04)';
 					<para><varname>|=|</varname>: Smallest distance ever between the two arguments</para>
 					<para>Signature: <varname>{geometry, tgeompoint} |=| {geometry, tgeompoint}: float</varname></para>
 					<programlisting>
-SELECT tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)' |=|26002>
+SELECT tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)' |=|
 geometry 'Linestring(2 2,2 1,3 1)';
 -- "1"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03, Point(0 0)@2012-01-05)' |=|26006>
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03, Point(0 0)@2012-01-05)' |=|
 tgeompoint '[Point(2 0)@2012-01-02, Point(1 1)@2012-01-04, Point(2 2)@2012-01-06)';
 -- "0.5"
 					</programlisting>
@@ -2684,7 +2684,7 @@ tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)';
 SELECT tgeompoint '[Point(0 1)@2012-01-01, Point(0 0)@2012-01-03)' &lt;-&gt;
 tgeompoint '[Point(0 0)@2012-01-01, Point(1 0)@2012-01-03)';
 -- "[1@2012-01-01, 0.707106781186548@2012-01-02, 1@2012-01-03)"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;26020>
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
 -- "[1@2012-01-01,1@2012-01-02)"
 					</programlisting>
@@ -2708,7 +2708,7 @@ tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
 			</itemizedlist>
 			<para>Notice that semantics conveyed by the first version of the relationships varies depending on the relationship and the type of the arguments. For example, the following query
 				<programlisting>
-SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',27002>
+SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 				</programlisting>
 			tests whether the temporal point ever intersected the geometry, since the query is conceptually equivalent to the following one.
@@ -2717,12 +2717,12 @@ SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', geometry 'Linest
 				</programlisting>
 			where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point. On the other hand, the query
 				<programlisting>
-SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',27005>
+SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
 				</programlisting>
 				tests whether the geometry always contains the temporal point. Finally, the following query
 				<programlisting>
-SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',27007>
+SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
 tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 				</programlisting>
 				tests whether the temporal points may intersect, since the query above is conceptually equivalent to the following one 
@@ -2767,7 +2767,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>contains</varname>: May contain</para>
 						<para>Signature: <varname>contains({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28002>
+	SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- true
 						</programlisting>
@@ -2777,7 +2777,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>containsproperly</varname>: May contain properly</para>
 						<para>Signature: <varname>containsproperly({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT containsproperly(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28005>
+	SELECT containsproperly(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- false
 						</programlisting>
@@ -2787,7 +2787,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>covers</varname>: May cover</para>
 						<para>Signature: <varname>covers({geo, tpoint}, {geo, tpoint}): boolean</varname></para>
 						<programlisting>
-	SELECT covers(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28008>
+	SELECT covers(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- true
 						</programlisting>
@@ -2797,7 +2797,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>coveredby</varname>: May be covered by</para>
 						<para>Signature: <varname>coveredby({geo, tpoint}, {geo, tpoint}): boolean</varname></para>
 						<programlisting>
-	SELECT coveredby(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28011>
+	SELECT coveredby(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- false
 						</programlisting>
@@ -2807,7 +2807,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>crosses</varname>: May cross</para>
 						<para>Signature: <varname>crosses({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT crosses(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28014>
+	SELECT crosses(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
 	-- true
 						</programlisting>
@@ -2817,7 +2817,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>disjoint</varname>: May be disjoint</para>
 						<para>Signature: <varname>disjoint({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28017>
+	SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- false
 						</programlisting>
@@ -2827,7 +2827,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>equals</varname>: May be equal</para>
 						<para>Signature: <varname>equals({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT equals(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28020>
+	SELECT equals(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 	-- false
 						</programlisting>
@@ -2837,9 +2837,11 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>intersects</varname>: May intersect &Z_support;</para>
 					<para>Signature: <varname>intersects({geo, tpoint}, {geo, tpoint}): boolean</varname></para>
 						<programlisting>
-	SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',28023>tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
+	SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
+		tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
 	-- false
-	SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',28027>tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
+	SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+		tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
 	-- true
 						</programlisting>
 					</listitem>
@@ -2848,8 +2850,8 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>overlaps</varname>: May overlap</para>
 						<para>Signature: <varname>overlaps({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT overlaps(geometry 'Linestring(1 1,3 3)',28030>
-	tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
+	SELECT overlaps(geometry 'Linestring(1 1,3 3)',
+		tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
 	-- true
 						</programlisting>
 					</listitem>
@@ -2858,7 +2860,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>touches</varname>: May touch</para>
 						<para>Signature: <varname>touches({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',28033>
+	SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(0 1)@2012-01-03)');
 	-- true
 						</programlisting>
@@ -2868,7 +2870,7 @@ WHERE intersects(T.Trip, R.Geom)
 						<para><varname>within</varname>: May be within</para>
 						<para>Signature: <varname>within({geo, tgeompoint}, {geo, tgeompoint}): boolean</varname></para>
 						<programlisting>
-	SELECT within(geometry 'LineString(1 1,2 2)',28036>
+	SELECT within(geometry 'LineString(1 1,2 2)',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-03)');
 	-- true
 						</programlisting>
@@ -3123,7 +3125,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 					<para>Signature: <varname>wcount(tnumber, interval): {tinti, tints}</varname></para>
 					<programlisting>
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
--- "{[1@2012-01-01, 2@2012-02-01, 3@2012-04-01, 2@2012-04-03, 3@2012-06-01, 2@2012-06-03,30022>
+-- "{[1@2012-01-01, 2@2012-02-01, 3@2012-04-01, 2@2012-04-03, 3@2012-06-01, 2@2012-06-03,
 1@2012-08-03, 1@2012-10-03)}"
 					</programlisting>
 				</listitem>
@@ -3133,7 +3135,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 					<para>Signature: <varname>wsum(tint, interval): {tinti, tints}</varname></para>
 					<programlisting>
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
--- "{[10@2012-01-01, 14@2012-02-01, 26@2012-04-01, 16@2012-04-03, 22@2012-06-01, 18@2012-06-03,30025>
+-- "{[10@2012-01-01, 14@2012-02-01, 26@2012-04-01, 16@2012-04-03, 22@2012-06-01, 18@2012-06-03,
 6@2012-08-03, 6@2012-10-03)}"
 					</programlisting>
 				</listitem>
@@ -3143,9 +3145,9 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 					<para>Signature: <varname>wavg(tint, interval): {tfloati, tfloats}</varname></para>
 					<programlisting>
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
--- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01),30028>
-[8.66666666666667@2012-04-01, 8.66666666666667@2012-04-03), [8@2012-04-03, 8@2012-06-01),30029>
-[7.33333333333333@2012-06-01, 7.33333333333333@2012-06-03), [9@2012-06-03, 9@2012-08-03),30030>
+-- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01),
+[8.66666666666667@2012-04-01, 8.66666666666667@2012-04-03), [8@2012-04-03, 8@2012-06-01),
+[7.33333333333333@2012-06-01, 7.33333333333333@2012-06-03), [9@2012-06-03, 9@2012-08-03),
 [6@2012-08-03, 6@2012-10-03)}"
 					</programlisting>
 				</listitem>
@@ -3155,9 +3157,9 @@ SELECT wavg(NoEmps, interval '2 days') FROM Department;
 					<para>Signature: <varname>tcentroid(tgeompoint): tgeompoint</varname></para>
 					<programlisting>
 SELECT tcentroid(Trip) FROM Trips;
--- "{[POINT(0 0)@2012-01-01 08:00:00+00, POINT(1 0)@2012-01-01 08:05:00+00),30033>
-[POINT(0.5 0)@2012-01-01 08:05:00+00, POINT(1.5 0.5)@2012-01-01 08:10:00+00,30034>
-POINT(2 1.5)@2012-01-01 08:15:00+00),30035>
+-- "{[POINT(0 0)@2012-01-01 08:00:00+00, POINT(1 0)@2012-01-01 08:05:00+00),
+[POINT(0.5 0)@2012-01-01 08:05:00+00, POINT(1.5 0.5)@2012-01-01 08:10:00+00,
+POINT(2 1.5)@2012-01-01 08:15:00+00),
 [POINT(2 2)@2012-01-01 08:15:00+00, POINT(3 3)@2012-01-01 08:20:00+00)}"
 					</programlisting>
 				</listitem>
@@ -3169,7 +3171,8 @@ POINT(2 1.5)@2012-01-01 08:15:00+00),30035>
 		<title>Indexing of Temporal Types</title>
 		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and a TB-tree for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
 			<programlisting>
-CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);31002>CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
+CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
+CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</programlisting>
 		</para>
 
@@ -3217,9 +3220,9 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1,5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; period '[2012-04-01, 2012-05-01)';
-SELECT * FROM Department WHERE NoEmps &amp;&amp;31008>
+SELECT * FROM Department WHERE NoEmps &amp;&amp;
 box(intrange '[1,5)', period '[2012-04-01, 2012-05-01)');
-SELECT * FROM Department WHERE NoEmps &amp;&amp;31010>
+SELECT * FROM Department WHERE NoEmps &amp;&amp;
 tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
 			</programlisting>
 		</para>
@@ -3229,9 +3232,9 @@ tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
 SELECT * FROM Trips WHERE Trip &amp;&amp; period '[2001-01-01, 2001-01-05)';
-SELECT * FROM Trips WHERE Trip &amp;&amp;31015>
+SELECT * FROM Trips WHERE Trip &amp;&amp;
 gbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', period '[2001-01-01, 2001-01-05]');
-SELECT * FROM Trips WHERE Trip &amp;&amp;31017>
+SELECT * FROM Trips WHERE Trip &amp;&amp;
 tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
 			</programlisting>
 		</para>
