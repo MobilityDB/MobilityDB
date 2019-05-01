@@ -335,49 +335,49 @@ int
 gbox_cmp_internal(const GBOX *g1, const GBOX *g2)
 {
 	/* Compare the box minima */
-	if (g1->xmin < g1->xmin)
+	if (g1->xmin < g2->xmin)
 		return -1;
-	if (g1->xmin > g1->xmin)
+	if (g1->xmin > g2->xmin)
 		return 1;
-	if (g1->ymin < g1->ymin)
+	if (g1->ymin < g2->ymin)
 		return -1;
-	if (g1->ymin > g1->ymin)
+	if (g1->ymin > g2->ymin)
 		return 1;
 	if ( FLAGS_GET_Z(g1->flags) && FLAGS_GET_Z(g2->flags) )
 	{
-		if (g1->zmin < g1->zmin)
+		if (g1->zmin < g2->zmin)
 			return -1;
-		if (g1->zmin > g1->zmin)
+		if (g1->zmin > g2->zmin)
 			return 1;
 	}
 	if ( FLAGS_GET_M(g1->flags) && FLAGS_GET_M(g2->flags) )
 	{
-		if (g1->mmin < g1->mmin)
+		if (g1->mmin < g2->mmin)
 			return -1;
-		if (g1->mmin > g1->mmin)
+		if (g1->mmin > g2->mmin)
 			return 1;
 	}
 	/* Compare the box maxima */
-	if (g1->xmax < g1->xmax)
+	if (g1->xmax < g2->xmax)
 		return -1;
-	if (g1->xmax > g1->xmax)
+	if (g1->xmax > g2->xmax)
 		return 1;
-	if (g1->ymax < g1->ymax)
+	if (g1->ymax < g2->ymax)
 		return -1;
-	if (g1->ymax > g1->ymax)
+	if (g1->ymax > g2->ymax)
 		return 1;
 	if ( FLAGS_GET_Z(g1->flags) && FLAGS_GET_Z(g2->flags) )
 	{
-		if (g1->zmax < g1->zmax)
+		if (g1->zmax < g2->zmax)
 			return -1;
-		if (g1->zmax > g1->zmax)
+		if (g1->zmax > g2->zmax)
 			return 1;
 	}
 	if ( FLAGS_GET_M(g1->flags) && FLAGS_GET_M(g2->flags) )
 	{
-		if (g1->mmax < g1->mmax)
+		if (g1->mmax < g2->mmax)
 			return -1;
-		if (g1->mmax > g1->mmax)
+		if (g1->mmax > g2->mmax)
 			return 1;
 	}
 	/* The two boxes are equal */
