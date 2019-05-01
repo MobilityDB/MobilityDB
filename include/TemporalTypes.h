@@ -1697,9 +1697,9 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  *****************************************************************************/
 
 extern Temporal *tfunc1_temporal(Temporal *temp, Datum (*operator)(Datum), 
-	Oid valuetypid);
+	Oid valuetypid, bool mustfree);
 extern Temporal *tfunc2_temporal(Temporal *temp, Datum value,
-	Datum (*operator)(Datum, Datum), Oid valuetypid);
+	Datum (*operator)(Datum, Datum), Oid valuetypid, bool mustfree);
 
 extern TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum d, 
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);

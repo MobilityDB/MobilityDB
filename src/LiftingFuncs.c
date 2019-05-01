@@ -69,22 +69,26 @@
  * The funcion is applied to the composing instants.
  *****************************************************************************/
 
-TemporalInst *
-tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid valuetypid)
+static TemporalInst *
+tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid valuetypid,
+	bool mustfree)
 {
-	Datum value = temporalinst_value(inst);
+	Datum value = func(temporalinst_value(inst));
 	TemporalInst *result = temporalinst_make(func(value), inst->t, valuetypid);
+	if (mustfree)
+		pfree(DatumGetPointer(value));
 	return result;
 }
 
-TemporalI *
-tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid valuetypid)
+static TemporalI *
+tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid valuetypid,
+	bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tfunc1_temporalinst(inst, func,	valuetypid);
+		instants[i] = tfunc1_temporalinst(inst, func, valuetypid, mustfree);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -93,14 +97,15 @@ tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid valuetypid)
 	return result;
 }
 
-TemporalSeq *
-tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid)
+static TemporalSeq *
+tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
+	bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tfunc1_temporalinst(inst, func, valuetypid);
+		instants[i] = tfunc1_temporalinst(inst, func, valuetypid, mustfree);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
@@ -110,14 +115,15 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid)
 	return result;
 }
 
-TemporalS *
-tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid)
+static TemporalS *
+tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
+	bool mustfree)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tfunc1_temporalseq(seq, func, valuetypid);
+		sequences[i] = tfunc1_temporalseq(seq, func, valuetypid, mustfree);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
 	
@@ -132,21 +138,22 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid)
 /* Dispatch function */
 
 Temporal *
-tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid)
+tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid, 
+	bool mustfree)
 {
 	Temporal *result;
 	if (temp->type == TEMPORALINST)
 		result = (Temporal *)tfunc1_temporalinst((TemporalInst *)temp,
-			func, valuetypid);
+			func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALI)
 		result = (Temporal *)tfunc1_temporali((TemporalI *)temp,
-			func, valuetypid);
+			func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)tfunc1_temporalseq((TemporalSeq *)temp,
-			func, valuetypid);
+			func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)tfunc1_temporals((TemporalS *)temp,
-			func, valuetypid);
+			func, valuetypid, mustfree);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -156,24 +163,26 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid)
 /*****************************************************************************/
 
 TemporalInst *
-tfunc2_temporalinst(TemporalInst *inst, Datum value,
-    Datum (*func)(Datum, Datum), Oid valuetypid)
+tfunc2_temporalinst(TemporalInst *inst, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
-	Datum value1 = temporalinst_value(inst);
-	TemporalInst *result = temporalinst_make(func(value1, value), inst->t, 
+	Datum value = func(temporalinst_value(inst), param);
+	TemporalInst *result = temporalinst_make(value, inst->t, 
 		valuetypid);
+	if (mustfree)
+		pfree(DatumGetPointer(value));
 	return result;
 }
 
 TemporalI *
-tfunc2_temporali(TemporalI *ti, Datum value,
-    Datum (*func)(Datum, Datum), Oid valuetypid)
+tfunc2_temporali(TemporalI *ti, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tfunc2_temporalinst(inst, value, func, valuetypid);
+		instants[i] = tfunc2_temporalinst(inst, param, func, valuetypid, mustfree);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -183,14 +192,14 @@ tfunc2_temporali(TemporalI *ti, Datum value,
 }
 
 TemporalSeq *
-tfunc2_temporalseq(TemporalSeq *seq, Datum value,
-    Datum (*func)(Datum, Datum), Oid valuetypid)
+tfunc2_temporalseq(TemporalSeq *seq, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tfunc2_temporalinst(inst, value, func, valuetypid);
+		instants[i] = tfunc2_temporalinst(inst, param, func, valuetypid, mustfree);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
@@ -201,14 +210,14 @@ tfunc2_temporalseq(TemporalSeq *seq, Datum value,
 }
 
 TemporalS *
-tfunc2_temporals(TemporalS *ts, Datum value,
-    Datum (*func)(Datum, Datum), Oid valuetypid)
+tfunc2_temporals(TemporalS *ts, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tfunc2_temporalseq(seq, value, func, valuetypid);
+		sequences[i] = tfunc2_temporalseq(seq, param, func, valuetypid, mustfree);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
 	
@@ -223,22 +232,22 @@ tfunc2_temporals(TemporalS *ts, Datum value,
 /* Dispatch function */
 
 Temporal *
-tfunc2_temporal(Temporal *temp, Datum value,
-    Datum (*func)(Datum, Datum), Oid valuetypid)
+tfunc2_temporal(Temporal *temp, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	Temporal *result;
 	if (temp->type == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst((TemporalInst *)temp,
-			value, func, valuetypid);
+			param, func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali((TemporalI *)temp,
-			value, func, valuetypid);
+			param, func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq((TemporalSeq *)temp,
-			value, func, valuetypid);
+			param, func, valuetypid, mustfree);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)tfunc2_temporals((TemporalS *)temp,
-			value, func, valuetypid);
+			param, func, valuetypid, mustfree);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));

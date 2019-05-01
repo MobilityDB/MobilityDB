@@ -17,7 +17,8 @@
  *****************************************************************************/
 
 /* 
- * Output a geometry in Well-Known Text (WKT) format.
+ * Output a geometry in Well-Known Text (WKT) and Extended Well-Known Text 
+ * (EWKT) format.
  * The Oid argument is not used but is needed since the second argument of 
  * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum) 
  */
@@ -35,11 +36,6 @@ wkt_out(Oid type, Datum value)
 	return result;
 }
 
-/* 
- * Output a geometry in Well-Known Text (WKT) format prefixed with the SRID.
- * The Oid argument is not used but is needed since the second argument of 
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum) 
- */
 static char *
 ewkt_out(Oid type, Datum value)
 {
@@ -106,6 +102,12 @@ geometry_serialize(LWGEOM *geom)
 	GSERIALIZED *result = gserialized_from_lwgeom(geom, &size);
 	SET_VARSIZE(result, size);
 	return result;
+}
+
+static Datum
+datum_transform(Datum value, Datum srid)
+{
+	return call_function2(transform, value, srid);
 }
 
 /*****************************************************************************
@@ -458,7 +460,7 @@ tgeompointinst_transform(TemporalInst *inst, Datum srid)
 }
 
 static TemporalI *
-tgeompointi_transform_internal(TemporalI *ti, Datum srid)
+tgeompointi_transform(TemporalI *ti, Datum srid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -476,7 +478,7 @@ tgeompointi_transform_internal(TemporalI *ti, Datum srid)
 }
 
 static TemporalSeq *
-tgeompointseq_transform_internal(TemporalSeq *seq, Datum srid)
+tgeompointseq_transform(TemporalSeq *seq, Datum srid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -495,7 +497,7 @@ tgeompointseq_transform_internal(TemporalSeq *seq, Datum srid)
 }
 
 static TemporalS *
-tgeompoints_transform_internal(TemporalS *ts, Datum srid)
+tgeompoints_transform(TemporalS *ts, Datum srid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -530,18 +532,8 @@ tpoint_transform(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
-		result = (Temporal *)tgeompointinst_transform((TemporalInst *)temp, srid);
-	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)tgeompointi_transform_internal((TemporalI *)temp, srid);
-	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)tgeompointseq_transform_internal((TemporalSeq *)temp, srid);
-	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)tgeompoints_transform_internal((TemporalS *)temp, srid);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	Temporal *result = tfunc2_temporal(temp, srid, &datum_transform, 
+		type_oid(T_GEOMETRY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

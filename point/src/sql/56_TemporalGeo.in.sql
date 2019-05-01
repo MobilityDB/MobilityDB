@@ -87,11 +87,6 @@ CREATE FUNCTION transform(tgeompoint, srid integer)
 	AS 'MODULE_PATHNAME', 'tpoint_transform'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION transform(tgeogpoint, srid integer)
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_transform'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 ----- Gauss Kruger transformation
 CREATE FUNCTION transform_gk(tgeompoint)
 	RETURNS tgeompoint

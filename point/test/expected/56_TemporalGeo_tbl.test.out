@@ -207,11 +207,18 @@ SELECT setSRID(temp,5676) FROM tbl_tgeompoint;
 SELECT setSRID(temp,4326) FROM tbl_tgeogpoint;
 SELECT setSRID(temp,5676) FROM tbl_tgeompoint3D;
 SELECT setSRID(temp,4326) FROM tbl_tgeogpoint3D;
-
-SELECT transform(setSRID(temp, 5676), 4326) FROM tbl_tgeompoint;
-SELECT transform(setSRID(temp, 5676), 4326) FROM tbl_tgeompoint3D;
 */
+SELECT MAX(length(astext(transform(setSRID(temp, 5676), 4326)))) FROM tbl_tgeompoint;
+ max  
+------
+ 2688
+(1 row)
 
+SELECT MAX(length(astext(transform(setSRID(temp, 5676), 4326)))) FROM tbl_tgeompoint3D;
+ max  
+------
+ 3881
+(1 row)
 
 SELECT transform_gk(temp) from tbl_tgeompoint LIMIT 10;
                                transform_gk                                

@@ -24,10 +24,9 @@ SELECT setSRID(temp,5676) FROM tbl_tgeompoint;
 SELECT setSRID(temp,4326) FROM tbl_tgeogpoint;
 SELECT setSRID(temp,5676) FROM tbl_tgeompoint3D;
 SELECT setSRID(temp,4326) FROM tbl_tgeogpoint3D;
-
-SELECT transform(setSRID(temp, 5676), 4326) FROM tbl_tgeompoint;
-SELECT transform(setSRID(temp, 5676), 4326) FROM tbl_tgeompoint3D;
 */
+SELECT MAX(length(astext(transform(setSRID(temp, 5676), 4326)))) FROM tbl_tgeompoint;
+SELECT MAX(length(astext(transform(setSRID(temp, 5676), 4326)))) FROM tbl_tgeompoint3D;
 
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
