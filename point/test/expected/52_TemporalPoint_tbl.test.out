@@ -1621,7 +1621,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  7082
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -1635,14 +1635,14 @@ SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  2818
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  2918
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
@@ -1663,7 +1663,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  7129
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
@@ -1677,14 +1677,14 @@ SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  2771
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  2871
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
@@ -1705,7 +1705,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  6786
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
@@ -1719,14 +1719,14 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  3114
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  3214
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
@@ -1747,7 +1747,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  7013
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
@@ -1761,13 +1761,13 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  2887
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  2987
+  5050
 (1 row)
 

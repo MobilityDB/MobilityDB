@@ -1802,7 +1802,7 @@ SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  6831
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
@@ -1816,14 +1816,14 @@ SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  3069
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  3169
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
@@ -1844,7 +1844,7 @@ SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  6768
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
@@ -1858,14 +1858,14 @@ SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  3132
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  3232
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
@@ -1886,7 +1886,7 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  6888
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
@@ -1900,14 +1900,14 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  3012
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  3112
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
@@ -1928,7 +1928,7 @@ SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  6911
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
@@ -1942,13 +1942,13 @@ SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  2989
+  4950
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  3089
+  5050
 (1 row)
 
