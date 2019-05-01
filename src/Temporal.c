@@ -2639,14 +2639,6 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 				errmsg("Bad temporal type")));
 	}
 	
-	/* Use the hash comparison */
-	uint32 hash1 = temporal_hash_internal(t1);
-	uint32 hash2 = temporal_hash_internal(t2);
-	if (hash1 < hash2)
-		return -1;
-	else if (hash2 > hash1)
-		return 1;
-	
 	/* Compare bounding box */
 	union bboxunion box1, box2;
 	temporal_bbox(&box1, t1);
@@ -2655,6 +2647,14 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	if (cmp != 0)
 		return cmp;
 
+	/* Use the hash comparison */
+	uint32 hash1 = temporal_hash_internal(t1);
+	uint32 hash2 = temporal_hash_internal(t2);
+	if (hash1 < hash2)
+		return -1;
+	else if (hash2 > hash1)
+		return 1;
+	
 	/* Compare memory size */
 	size_t size1 = VARSIZE(DatumGetPointer(t1));
 	size_t size2 = VARSIZE(DatumGetPointer(t2));
