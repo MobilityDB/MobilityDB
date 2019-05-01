@@ -2646,7 +2646,15 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 		return -1;
 	else if (hash2 > hash1)
 		return 1;
-		
+	
+	/* Compare bounding box */
+	union bboxunion box1, box2;
+	temporal_bbox(&box1, t1);
+	temporal_bbox(&box2, t2);
+	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	if (cmp != 0)
+		return cmp;
+
 	/* Compare memory size */
 	size_t size1 = VARSIZE(DatumGetPointer(t1));
 	size_t size2 = VARSIZE(DatumGetPointer(t2));

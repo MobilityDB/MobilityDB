@@ -188,6 +188,14 @@ typedef struct
 	/* variable-length data follows */
 } TemporalS;
 
+/* bboxunion - Union type for all types of bounding boxes */
+
+union bboxunion {
+	Period p;
+	BOX b;
+	GBOX g;
+} bboxunion;
+
 /* Double2 - Internal type for computing aggregates for temporal numeric types */
 
 typedef struct double2
@@ -1377,6 +1385,7 @@ extern bool same_box_box_internal(const BOX *box1, const BOX *box2);
 extern int box_cmp_internal(const BOX *box1, const BOX *box2);
 extern size_t temporal_bbox_size(Oid valuetypid);
 extern bool temporal_bbox_eq(Oid valuetypid, void *box1, void *box2);
+extern int temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2);
 extern bool temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,  
 	Oid valuetypid);
 extern bool temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
