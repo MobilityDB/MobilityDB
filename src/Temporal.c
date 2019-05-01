@@ -2642,21 +2642,14 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	/* Use the hash comparison */
 	uint32 hash1 = temporal_hash_internal(t1);
 	uint32 hash2 = temporal_hash_internal(t2);
-	int cmp;
 	if (hash1 < hash2)
 		return -1;
 	else if (hash2 > hash1)
 		return 1;
 		
-	/* Compare memory content */
+	/* Compare memory size */
 	size_t size1 = VARSIZE(DatumGetPointer(t1));
 	size_t size2 = VARSIZE(DatumGetPointer(t2));
-	size_t size = Min(size1, size2);
-	cmp = memcmp(t1, t2, size);
-	if (cmp != 0)
-		return cmp;
-	
-	/* Compare memory size */
 	if (size1 != size2)
 		return (size1 < size2) ? -1 : 1;
 	
