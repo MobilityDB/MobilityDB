@@ -69,12 +69,12 @@
  * The funcion is applied to the composing instants.
  *****************************************************************************/
 
-static TemporalInst *
+TemporalInst *
 tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid valuetypid,
 	bool mustfree)
 {
 	Datum value = func(temporalinst_value(inst));
-	TemporalInst *result = temporalinst_make(func(value), inst->t, valuetypid);
+	TemporalInst *result = temporalinst_make(value, inst->t, valuetypid);
 	if (mustfree)
 		pfree(DatumGetPointer(value));
 	return result;
@@ -97,7 +97,7 @@ tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid valuetypid,
 	return result;
 }
 
-static TemporalSeq *
+TemporalSeq *
 tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
 	bool mustfree)
 {
@@ -115,7 +115,7 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
 	return result;
 }
 
-static TemporalS *
+TemporalS *
 tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
 	bool mustfree)
 {
@@ -167,8 +167,7 @@ tfunc2_temporalinst(TemporalInst *inst, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	Datum value = func(temporalinst_value(inst), param);
-	TemporalInst *result = temporalinst_make(value, inst->t, 
-		valuetypid);
+	TemporalInst *result = temporalinst_make(value, inst->t, valuetypid);
 	if (mustfree)
 		pfree(DatumGetPointer(value));
 	return result;

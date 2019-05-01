@@ -1696,9 +1696,18 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * File GenericOps.c
  *****************************************************************************/
 
-extern Temporal *tfunc1_temporal(Temporal *temp, Datum (*operator)(Datum), 
-	Oid valuetypid, bool mustfree);
-extern Temporal *tfunc2_temporal(Temporal *temp, Datum value,
+extern TemporalInst *tfunc1_temporalinst(TemporalInst *inst, 
+    Datum (*func)(Datum), Oid valuetypid, bool mustfree);
+extern TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, 
+	Datum (*func)(Datum), Oid valuetypid, bool mustfree);
+extern TemporalS *tfunc1_temporals(TemporalS *ts, 
+	Datum (*func)(Datum), Oid valuetypid, bool mustfree);
+extern Temporal *tfunc1_temporal(Temporal *temp, 
+Datum (*operator)(Datum), Oid valuetypid, bool mustfree);
+
+extern TemporalInst *tfunc2_temporalinst(TemporalInst *inst, Datum param,
+    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+extern Temporal *tfunc2_temporal(Temporal *temp, Datum param,
 	Datum (*operator)(Datum, Datum), Oid valuetypid, bool mustfree);
 
 extern TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum d, 

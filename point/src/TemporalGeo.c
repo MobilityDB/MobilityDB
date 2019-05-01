@@ -110,6 +110,18 @@ datum_transform(Datum value, Datum srid)
 	return call_function2(transform, value, srid);
 }
 
+static Datum
+geog_as_geom(Datum value)
+{
+	return call_function1(geometry_from_geography, value);
+}
+
+static Datum
+geom_as_geog(Datum value)
+{
+	return call_function1(geography_from_geometry, value);
+}
+
 /*****************************************************************************
  * Functions for output in WKT and EWKT format 
  *****************************************************************************/
@@ -452,77 +464,8 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 TemporalInst *
 tgeompointinst_transform(TemporalInst *inst, Datum srid)
 {
-	Datum geom = call_function2(transform, temporalinst_value(inst), srid);
-	TemporalInst *result = temporalinst_make(geom, inst->t, 
-		type_oid(T_GEOMETRY));
-	pfree(DatumGetPointer(geom)); 
-	return result;
-}
-
-static TemporalI *
-tgeompointi_transform(TemporalI *ti, Datum srid)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tgeompointinst_transform(inst, srid);
-	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
-}
-
-static TemporalSeq *
-tgeompointseq_transform(TemporalSeq *seq, Datum srid)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tgeompointinst_transform(inst, srid);
-	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
-
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
-}
-
-static TemporalS *
-tgeompoints_transform(TemporalS *ts, Datum srid)
-{
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-		for (int j = 0; j < seq->count; j++)
-		{
-			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			instants[j] = tgeompointinst_transform(inst, srid);
-		}
-		sequences[i] = temporalseq_from_temporalinstarr(instants, 
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
-		for (int j = 0; j < seq->count; j++)
-			pfree(instants[j]);
-		pfree(instants);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, 
-		ts->count, false);
-
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
+	return tfunc2_temporalinst(inst, srid, &datum_transform, 
+		type_oid(T_GEOMETRY), true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_transform);
@@ -546,89 +489,14 @@ tpoint_transform(PG_FUNCTION_ARGS)
 
 /* Geometry to Geography */
  
-static TemporalInst *
-tgeompointinst_as_tgeogpointinst(TemporalInst *inst)
-{
-	Datum geog = call_function1(geography_from_geometry, temporalinst_value(inst));
-	TemporalInst *result = temporalinst_make(geog, inst->t, type_oid(T_GEOGRAPHY));
-	pfree(DatumGetPointer(geog));
-	return result;
-}
-
-static TemporalI *
-tgeompointi_as_tgeogpointi(TemporalI *ti)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tgeompointinst_as_tgeogpointinst(inst);
-	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
-}
-
-static TemporalSeq *
-tgeompointseq_as_tgeogpointseq(TemporalSeq *seq)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tgeompointinst_as_tgeogpointinst(inst);
-	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, false);
-	
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	
-	return result;
-}
-
-static TemporalS *
-tgeompoints_as_tgeogpoints(TemporalS *ts)
-{
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tgeompointseq_as_tgeogpointseq(seq);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, 
-		ts->count, false);
-	
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	
-	return result;
-}
-
 PG_FUNCTION_INFO_V1(tgeompoint_as_tgeogpoint);
 
 PGDLLEXPORT Datum
 tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
-		result = (Temporal *)tgeompointinst_as_tgeogpointinst((TemporalInst *)temp);
-	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)tgeompointi_as_tgeogpointi((TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)tgeompointseq_as_tgeogpointseq((TemporalSeq *)temp);
-	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)tgeompoints_as_tgeogpoints((TemporalS *)temp);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	Temporal *result = tfunc1_temporal(temp, &geom_as_geog, 
+		type_oid(T_GEOGRAPHY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -640,66 +508,22 @@ tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS)
 TemporalInst *
 tgeogpointinst_as_tgeompointinst(TemporalInst *inst)
 {
-	Datum geom = call_function1(geometry_from_geography, temporalinst_value(inst));
-	TemporalInst *result = temporalinst_make(geom, inst->t, type_oid(T_GEOMETRY));
-	pfree(DatumGetPointer(geom));
-	return result;
-}
-
-TemporalI *
-tgeogpointi_as_tgeompointi(TemporalI *ti)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = tgeogpointinst_as_tgeompointinst(inst);
-	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-
-	return result;
+	return tfunc1_temporalinst(inst, &geog_as_geom,
+		type_oid(T_GEOMETRY), true);
 }
 
 TemporalSeq *
 tgeogpointseq_as_tgeompointseq(TemporalSeq *seq)
 {
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		instants[i] = tgeogpointinst_as_tgeompointinst(inst);
-	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, false);
-	
-	for (int i = 0; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	
-	return result;
+	return tfunc1_temporalseq(seq, &geog_as_geom,
+		type_oid(T_GEOMETRY), true);
 }
 
 TemporalS *
 tgeogpoints_as_tgeompoints(TemporalS *ts)
 {
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tgeogpointseq_as_tgeompointseq(seq);
-	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, 
-		ts->count, false);
-	
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	
-	return result;
+	return tfunc1_temporals(ts, &geog_as_geom,
+		type_oid(T_GEOMETRY), true);
 }
 
 PG_FUNCTION_INFO_V1(tgeogpoint_as_tgeompoint);
@@ -708,18 +532,8 @@ PGDLLEXPORT Datum
 tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
-		result = (Temporal *)tgeogpointinst_as_tgeompointinst((TemporalInst *)temp);
-	else if (temp->type == TEMPORALI) 
-		result = (Temporal *)tgeogpointi_as_tgeompointi((TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ) 
-		result = (Temporal *)tgeogpointseq_as_tgeompointseq((TemporalSeq *)temp);
-	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)tgeogpoints_as_tgeompoints((TemporalS *)temp);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	Temporal *result = tfunc1_temporal(temp, &geog_as_geom, 
+		type_oid(T_GEOMETRY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
