@@ -455,22 +455,22 @@ SELECT MAX(length(temp)) FROM tbl_tgeompoint;
  1869.97680776699
 (1 row)
 
-SELECT MAX(length(temp)) FROM tbl_tgeogpoint;
-       max        
-------------------
- 75703291.4221778
-(1 row)
-
 SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
        max        
 ------------------
  2176.93854543468
 (1 row)
 
-SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 2176.93854543468
+SELECT count(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
+ count 
+-------
+   100
 (1 row)
 
 SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
@@ -491,10 +491,10 @@ SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
  43371.6598116918
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
        max        
 ------------------
- 43371.6598116918
+ 315938.762145883
 (1 row)
 
 SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
@@ -509,16 +509,16 @@ SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeogpoint;
  61902.7013871606
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 2.38954917312791
+SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+ count 
+-------
+    47
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 2.38954917312791
+SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+ count 
+-------
+     9
 (1 row)
 
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
@@ -566,18 +566,51 @@ SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT N
  {(0.0929372019717@2001-03-05 17:21:00+00, 3.2723228480443@2001-03-05 17:28:00+00, 3.2723228480443@2001-03-05 17:32:00+00)}
 (10 rows)
 
-SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint azimuth(temp) IS NOT NULL LIMIT 10;
-ERROR:  syntax error at or near "IS"
-LINE 1: ...muth(temp), 13) FROM tbl_tgeogpoint azimuth(temp) IS NOT NUL...
-                                                             ^
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NULL LIMIT 10;
-ERROR:  syntax error at or near "IS"
-LINE 1: ...th(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NUL...
-                                                             ^
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NULL LIMIT 10;
-ERROR:  syntax error at or near "IS"
-LINE 1: ...th(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NUL...
-                                                             ^
+SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+                                                                                                                                                                round                                                                                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0.1323648396975@2001-04-22 12:56:00+00, -0.6434111917753@2001-04-22 13:04:00+00, -0.6434111917753@2001-04-22 13:09:00+00]}
+ {(-2.3029598554815@2001-05-13 01:05:00+00, -2.3100354565341@2001-05-13 01:11:00+00, -0.021521637396@2001-05-13 01:19:00+00, 0.1395743926168@2001-05-13 01:21:00+00, 0.1395743926168@2001-05-13 01:24:00+00]}
+ {[0.3502934314836@2001-06-19 22:10:00+00, -2.5799107391059@2001-06-19 22:18:00+00, 0.7366931253136@2001-06-19 22:26:00+00, -0.2757709882302@2001-06-19 22:35:00+00, 2.7285358619708@2001-06-19 22:42:00+00, -1.220711028369@2001-06-19 22:45:00+00, 0.1238699562953@2001-06-19 22:47:00+00, 0.1238699562953@2001-06-19 22:50:00+00)}
+ {[2.6944985837116@2001-04-30 08:45:00+00, -0.2295414105002@2001-04-30 08:46:00+00, 0.4963594489118@2001-04-30 08:54:00+00, -3.0277980805521@2001-04-30 09:01:00+00, -3.0277980805521@2001-04-30 09:07:00+00]}
+ {(-2.329202872894@2001-09-02 17:47:00+00, -0.04967328832@2001-09-02 17:49:00+00, 0.6955991925836@2001-09-02 17:54:00+00, 0.6955991925836@2001-09-02 17:56:00+00]}
+ {(-2.5766718666957@2001-11-17 14:46:00+00, -3.0800318305653@2001-11-17 14:54:00+00, -0.636971935849@2001-11-17 14:57:00+00, 2.105002208616@2001-11-17 15:04:00+00, -2.2570567573938@2001-11-17 15:11:00+00, 0.6680997110968@2001-11-17 15:18:00+00, 0.0253094928094@2001-11-17 15:26:00+00, 0.0253094928094@2001-11-17 15:29:00+00]}
+ {(1.7220656887365@2001-05-22 15:53:00+00, -0.4968644365596@2001-05-22 15:54:00+00, -0.841984070258@2001-05-22 16:03:00+00, 3.0698261985074@2001-05-22 16:06:00+00, 3.0698261985074@2001-05-22 16:07:00+00]}
+ {[0.1644970085939@2001-06-23 17:52:00+00, -2.5482054699561@2001-06-23 17:56:00+00, 0.6730357262364@2001-06-23 18:03:00+00, -0.7635111604678@2001-06-23 18:04:00+00, -0.0347030698865@2001-06-23 18:10:00+00, 2.3574909543764@2001-06-23 18:16:00+00, 2.3574909543764@2001-06-23 18:21:00+00]}
+ {[-2.3868545523475@2001-10-09 09:18:00+00, 0.8677157795006@2001-10-09 09:22:00+00, -0.2054120963003@2001-10-09 09:25:00+00, 2.8060626371783@2001-10-09 09:32:00+00, -0.1355261508671@2001-10-09 09:37:00+00, 2.7283269245954@2001-10-09 09:42:00+00, 2.7283269245954@2001-10-09 09:44:00+00)}
+ {[-0.4151921125199@2001-04-15 01:50:00+00, 2.3919738350802@2001-04-15 01:59:00+00, 0.8648588343507@2001-04-15 02:05:00+00, -0.5710480149579@2001-04-15 02:14:00+00, 1.780376924171@2001-04-15 02:17:00+00, 0.9395583673895@2001-04-15 02:26:00+00, 0.9395583673895@2001-04-15 02:30:00+00)}
+(10 rows)
+
+SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+                                                                                                                                                                                   round                                                                                                                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[4.6401058915207@2001-06-16 09:30:00+00, 5.2908134009187@2001-06-16 09:33:00+00, 2.7490407348444@2001-06-16 09:42:00+00, 1.7435064890615@2001-06-16 09:48:00+00, 0.2549385650658@2001-06-16 09:54:00+00, 4.0458707199357@2001-06-16 10:02:00+00, 1.1407235285371@2001-06-16 10:05:00+00, 1.1407235285371@2001-06-16 10:13:00+00)}
+ {(2.1973082514458@2001-06-12 16:30:00+00, 2.1973082514458@2001-06-12 16:33:00+00]}
+ {(5.6688562598499@2001-07-19 01:15:00+00, 2.5982037276702@2001-07-19 01:18:00+00, 1.3982841949399@2001-07-19 01:19:00+00, 4.2018902581229@2001-07-19 01:26:00+00, 4.8162568458834@2001-07-19 01:27:00+00, 0.9433421641135@2001-07-19 01:33:00+00, 2.90856105892@2001-07-19 01:41:00+00, 5.7788344011901@2001-07-19 01:48:00+00, 5.7788344011901@2001-07-19 01:52:00+00)}
+ {[4.9897831504252@2001-08-06 12:26:00+00, 1.9202750231248@2001-08-06 12:33:00+00, 5.7869133856209@2001-08-06 12:38:00+00, 3.2753428716076@2001-08-06 12:39:00+00, 3.2753428716076@2001-08-06 12:43:00+00)}
+ {[2.005728079633@2001-12-04 19:49:00+00, 4.8697023455857@2001-12-04 19:54:00+00, 0.6739586465064@2001-12-04 19:59:00+00, 2.8451067020862@2001-12-04 20:02:00+00, 2.8451067020862@2001-12-04 20:05:00+00]}
+ {[3.8837190904744@2001-05-02 14:56:00+00, 0.9653295989806@2001-05-02 15:04:00+00, 3.2144996234913@2001-05-02 15:05:00+00, 5.2873789365264@2001-05-02 15:14:00+00, 0.1099416019835@2001-05-02 15:18:00+00, 3.5783290992763@2001-05-02 15:24:00+00, 3.5783290992763@2001-05-02 15:32:00+00]}
+ {(5.0957745371513@2001-09-18 03:03:00+00, 0.6638878239901@2001-09-18 03:05:00+00, 2.0673353579342@2001-09-18 03:14:00+00, 4.9466430385637@2001-09-18 03:18:00+00, 2.1887037659883@2001-09-18 03:20:00+00, 0.1190120774925@2001-09-18 03:24:00+00, 3.8097461246196@2001-09-18 03:33:00+00, 0.0695269399095@2001-09-18 03:42:00+00, 0.0695269399095@2001-09-18 03:47:00+00]}
+ {(4.9231582725198@2001-09-27 04:38:00+00, 1.6455428294887@2001-09-27 04:43:00+00, 3.2969806770816@2001-09-27 04:48:00+00, 5.6077908287137@2001-09-27 04:56:00+00, 5.6760544045653@2001-09-27 05:03:00+00, 0.7683954847866@2001-09-27 05:06:00+00, 3.1477054782273@2001-09-27 05:10:00+00, 1.5849853812448@2001-09-27 05:18:00+00, 1.5849853812448@2001-09-27 05:22:00+00]}
+ {[0.8936107048141@2001-12-06 16:28:00+00, 3.6655275297909@2001-12-06 16:36:00+00, 1.0823028476842@2001-12-06 16:45:00+00, 5.2832468095346@2001-12-06 16:51:00+00, 5.8041993152757@2001-12-06 16:59:00+00, 2.8016471170561@2001-12-06 17:05:00+00, 0.294629047494@2001-12-06 17:07:00+00, 0.294629047494@2001-12-06 17:12:00+00]}
+ {(2.6154591452676@2001-01-26 06:18:00+00, 2.6154591452676@2001-01-26 06:25:00+00)}
+(10 rows)
+
+SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+                                                                                                                                             round                                                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(1.7939872350084@2001-12-03 13:38:00+00, -1.3810334368285@2001-12-03 13:42:00+00, 1.6227972998157@2001-12-03 13:44:00+00, 2.8304555002001@2001-12-03 13:51:00+00, -3.1092502696095@2001-12-03 13:52:00+00, -0.9118759387776@2001-12-03 13:56:00+00, -0.9118759387776@2001-12-03 14:00:00+00)}
+ {(-2.401882166547@2001-06-19 23:10:00+00, -2.2028515366741@2001-06-19 23:15:00+00, -0.6031941224368@2001-06-19 23:23:00+00, 3.0245760059507@2001-06-19 23:25:00+00, 3.0245760059507@2001-06-19 23:26:00+00)}
+ {[-2.5907202283996@2001-10-21 11:36:00+00, 2.6475601118525@2001-10-21 11:42:00+00, 1.7787615314454@2001-10-21 11:51:00+00, -0.8849858039437@2001-10-21 11:59:00+00, 2.6247868432365@2001-10-21 12:08:00+00, -2.4875699119239@2001-10-21 12:16:00+00, -2.4875699119239@2001-10-21 12:17:00+00]}
+ {[2.9359586835006@2001-08-27 17:13:00+00, 2.9359586835006@2001-08-27 17:22:00+00]}
+ {(-0.1046324328374@2001-09-11 10:20:00+00, -0.1046324328374@2001-09-11 10:24:00+00]}
+ {(1.6827022916752@2001-10-18 00:01:00+00, 1.6827022916752@2001-10-18 00:05:00+00)}
+ {(0.4890137499669@2001-04-25 11:31:00+00, -2.6149698853524@2001-04-25 11:35:00+00, 0.1986339168705@2001-04-25 11:44:00+00, 0.1986339168705@2001-04-25 11:48:00+00)}
+ {(-0.4705052307306@2001-09-05 07:57:00+00, 2.5770757090579@2001-09-05 08:01:00+00, 0.5726310623741@2001-09-05 08:05:00+00, 0.5726310623741@2001-09-05 08:13:00+00)}
+ {(2.9344698727393@2001-03-04 19:21:00+00, -0.220411792734@2001-03-04 19:26:00+00, -0.6052791973966@2001-03-04 19:35:00+00, -0.6052791973966@2001-03-04 19:37:00+00)}
+ {[2.232360472658@2001-08-29 06:17:00+00, -0.1807997671505@2001-08-29 06:18:00+00, 0.7407622881389@2001-08-29 06:20:00+00, 0.7407622881389@2001-08-29 06:24:00+00]}
+(10 rows)
+
 SELECT atGeometry(temp, g) FROM tbl_tgeompoint, tbl_geomcollection
 WHERE atGeometry(temp, g) IS NOT NULL AND atGeometry(temp, g) != temp LIMIT 10;
                                                                                                                                                                    atgeometry                                                                                                                                                                    
@@ -617,13 +650,6 @@ WHERE NearestApproachInstant(temp, g) IS NOT NULL;
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection
-WHERE NearestApproachInstant(temp, g) IS NOT NULL;
- count 
--------
-  9400
-(1 row)
-
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
@@ -631,11 +657,21 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
     78
 (1 row)
 
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ERROR:  3D geometries are not allowed
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
     82
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ count 
+-------
+  9400
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
@@ -645,6 +681,9 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
     77
 (1 row)
 
+SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
+ERROR:  3D geometries are not allowed
 SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
@@ -653,31 +692,59 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
    102
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
    100
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   102
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
@@ -706,34 +773,6 @@ WHERE t1.temp |=| t2.temp IS NOT NULL;
  count 
 -------
    100
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
- count 
--------
-  9400
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
- count 
--------
-   100
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
- count 
--------
-  9400
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
- count 
--------
-   102
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 

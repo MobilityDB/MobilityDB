@@ -55,27 +55,29 @@ SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeogpoint3D ORDER BY k LIMIT 10 ;
 
 SELECT MAX(length(temp)) FROM tbl_tgeompoint;
-SELECT MAX(length(temp)) FROM tbl_tgeogpoint;
 SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
-SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
+-- Tests independent of PROJ version
+SELECT count(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
+SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
 
 SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
 SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint;
 SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
 
 SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
 SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
+-- Tests intended to avoid floating point precision errors
+SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 
@@ -89,26 +91,41 @@ WHERE minusGeometry(temp, g) IS NOT NULL AND minusGeometry(temp, g) != temp LIMI
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection
-WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+-- Errors with 3D
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+-- Errors with 3D
+SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
+WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
+WHERE NearestApproachDistance(temp, g) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
+WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 
 WHERE g |=| temp IS NOT NULL;
@@ -118,15 +135,6 @@ SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D
 WHERE g |=| temp IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
 WHERE t1.temp |=| t2.temp IS NOT NULL;
-
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D
-WHERE nearestApproachDistance(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 
-WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection 
 WHERE g |=| temp IS NOT NULL;

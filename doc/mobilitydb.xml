@@ -1594,6 +1594,8 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 381
 					<para><varname>length</varname>: Length traversed by the temporal point &Z_support; &geography_support;</para>
 					<para>Signature: <varname>length(tpoint): float</varname></para>
 					<programlisting>
+SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
+-- 1.73205080756888
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 Point(0 0 0)@2000-01-03]');
 -- 3.46410161513775
