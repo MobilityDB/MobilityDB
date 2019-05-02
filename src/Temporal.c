@@ -1358,9 +1358,12 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 			result = (Temporal *)temporalinst_copy(
 				temporalseq_inst_n((TemporalSeq *)temp, n - 1));
 	}
-	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)temporalinst_copy(temporals_instant_n(
-			(TemporalS *)temp, n));
+	else if (temp->type == TEMPORALS)
+	{
+		if (n >= 1 && n <= ((TemporalS *)temp)->totalcount)
+			result = (Temporal *)temporalinst_copy(temporals_instant_n(
+				(TemporalS *)temp, n));
+	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));

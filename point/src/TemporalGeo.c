@@ -730,6 +730,7 @@ tgeompoints_trajectory(TemporalS *ts)
 		else
 		{
 			ArrayType *array = datumarr_to_array(points, j, type_oid(T_GEOMETRY));
+			/* ST_Union is used to avoid duplicate points */
 			multipoint = call_function1(pgis_union_geometry_array, 
 				PointerGetDatum(array));
 			pfree(array);
@@ -743,10 +744,10 @@ tgeompoints_trajectory(TemporalS *ts)
 		else
 		{
 			ArrayType *array = datumarr_to_array(segments, k, type_oid(T_GEOMETRY));
-			Datum lines = call_function1(LWGEOM_collect_garray, 
+			/* ST_linemerge is not used to avoid splitting lines 
+			   at intersections */
+			multilinestring = call_function1(LWGEOM_collect_garray, 
 				PointerGetDatum(array));
-			multilinestring = call_function1(linemerge, lines);
-			pfree(DatumGetPointer(lines));
 			pfree(array);
 		}			
 	}
@@ -768,10 +769,77 @@ tgeompoints_trajectory(TemporalS *ts)
 static Datum
 tgeogpoints_trajectory(TemporalS *ts)
 {
-	TemporalS *tsgeom = tgeogpoints_as_tgeompoints(ts);
-	Datum geomresult = tgeompoints_trajectory(tsgeom);
-	Datum result = call_function1(geography_from_geometry, geomresult);
-	pfree(tsgeom); pfree(DatumGetPointer(geomresult));
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0)); 
+	
+	Datum *points = palloc(sizeof(Datum) * ts->count);
+	Datum *segments = palloc(sizeof(Datum) * ts->count);
+	int j = 0, k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
+		GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
+		if (gserialized_get_type(gstraj) == POINTTYPE)
+			points[j++] = call_function1(geometry_from_geography, traj);
+		else
+			segments[k++] = call_function1(geometry_from_geography, traj);
+	}
+	Datum multipoint = 0, multilinestring = 0; /* keep compiler quiet */
+	if (j > 0)
+	{
+		if (j == 1)
+			multipoint = PointerGetDatum(gserialized_copy(
+				(GSERIALIZED *)(DatumGetPointer(points[0]))));
+		else
+		{
+			ArrayType *array = datumarr_to_array(points, j, type_oid(T_GEOMETRY));
+			/* ST_Union is used to avoid duplicate points */
+			multipoint = call_function1(pgis_union_geometry_array, 
+				PointerGetDatum(array));
+			pfree(array);
+		}			
+	}
+	if (k > 0)
+	{
+		if (k == 1)
+			multilinestring = PointerGetDatum(gserialized_copy(
+				(GSERIALIZED *)(DatumGetPointer(segments[0]))));
+		else
+		{
+			ArrayType *array = datumarr_to_array(segments, k, type_oid(T_GEOMETRY));
+			/* ST_linemerge is not used to avoid splitting lines 
+			   at intersections */
+			multilinestring = call_function1(LWGEOM_collect_garray, 
+				PointerGetDatum(array));
+			pfree(array);
+		}			
+	}
+	Datum result;
+ 	if (j > 0 && k > 0)
+	{
+		/* ST_Union is not used to avoid splitting lines at intersections */
+		Datum geomresult = call_function2(LWGEOM_collect, multipoint, multilinestring);
+		result = call_function1(geography_from_geometry, geomresult);
+		pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(multilinestring));
+		pfree(DatumGetPointer(geomresult));
+	}
+ 	else if (j > 0)
+	{
+ 		result = call_function1(geography_from_geometry, multipoint);
+		pfree(DatumGetPointer(multipoint));
+	}
+	else 
+	{
+		result = call_function1(geography_from_geometry, multilinestring);
+		pfree(DatumGetPointer(multilinestring));
+	}
+
+	for (int i = 0; i < j; i++)
+		pfree(DatumGetPointer(points[i]));
+	for (int i = 0; i < k; i++)
+		pfree(DatumGetPointer(segments[i]));
+	pfree(points); pfree(segments);
 	return result;
 }
 
