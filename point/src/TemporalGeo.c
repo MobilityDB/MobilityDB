@@ -754,7 +754,8 @@ tgeompoints_trajectory(TemporalS *ts)
 	Datum result;
  	if (j > 0 && k > 0)
 	{
-		result = call_function2(geomunion, multipoint, multilinestring);
+		/* ST_Union is not used to avoid splitting lines at intersections */
+		result = call_function2(LWGEOM_collect, multipoint, multilinestring);
 		pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(multilinestring));
 	}
  	else if (j > 0)
