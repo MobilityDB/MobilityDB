@@ -922,7 +922,7 @@ tpointseq_length(TemporalSeq *seq)
 		/* The next function call works for 2D and 3D */
 		result = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
 	else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
-		result = DatumGetFloat8(call_function1(geography_length, traj));
+		result = DatumGetFloat8(call_function2(geography_length, traj, BoolGetDatum(true)));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
