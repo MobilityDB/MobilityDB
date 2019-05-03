@@ -503,10 +503,10 @@ SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
  1.95374239664269
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
        max        
 ------------------
- 61902.7013871606
+ 2.38954917312791
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;

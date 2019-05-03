@@ -23,16 +23,16 @@
 /* 
  * The memory structure of a TemporalS with, e.g., 2 sequences is as follows
  *
- *	------------------------------------------------------------------
+ *	--------------------------------------------------------
  *	( TemporalS | offset_0 | offset_1 | offset_2 )_ X | ...
- *	------------------------------------------------------------------
+ *	--------------------------------------------------------
  *	--------------------------------------------------------
  *	( TemporalSeq_0 )_X | ( TemporalSeq_1 )_X | ( bbox )_X | 
  *	--------------------------------------------------------
  *
  * where the X are unused bytes added for double padding, offset_0 and offset_1
  * are offsets for the corresponding sequences and offset_2 is the offset for the 
- * bounding box. Currently there is no precomputed trajectory for TemporalS.
+ * bounding box. There is no precomputed trajectory for TemporalS.
  */
 
 /* Pointer to the offset array of the TemporalS */

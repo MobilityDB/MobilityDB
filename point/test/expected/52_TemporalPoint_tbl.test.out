@@ -501,9 +501,9 @@ SELECT MAX(st_memSize(getValue(inst)::geometry)) FROM tbl_tgeogpoint3Dinst;
 (1 row)
 
 SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint;
-  max  
--------
- 11544
+ max 
+-----
+ 752
 (1 row)
 
 SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint;
@@ -513,9 +513,9 @@ SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint;
 (1 row)
 
 SELECT MAX(st_memSize(getValues(temp))) FROM tbl_tgeompoint3D;
-  max  
--------
- 16288
+ max  
+------
+ 1176
 (1 row)
 
 SELECT MAX(st_memSize(getValues(temp)::geometry)) FROM tbl_tgeogpoint3D;

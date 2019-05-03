@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 /* PRECOMPUTED TRAJECTORIES
- * The memory structure of a TemporalSeq with, e.g., 3 instants and 
+ * The memory structure of a TemporalSeq with, e.g., 2 instants and 
  * a precomputed trajectory is as follows
  *
  *	-------------------------------------------------------------------
