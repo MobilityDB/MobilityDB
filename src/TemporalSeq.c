@@ -3109,8 +3109,10 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 		Datum value = temporalinst_value(instants[k-1]);
 		instants[k++] = temporalinst_make(value, inter->upper, seq->valuetypid);
 	}
+	/* Since by definition the sequence is normalized it is not necessary to
+	   normalize the projection of the sequence to the period */
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k,
-		inter->lower_inc, inter->upper_inc, true);
+		inter->lower_inc, inter->upper_inc, false);
 
 	pfree(instants[0]); pfree(instants[k-1]); pfree(instants); pfree(inter);
 	
