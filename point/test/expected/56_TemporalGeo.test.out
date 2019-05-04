@@ -427,7 +427,7 @@ SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
                        st_astext                        
 --------------------------------------------------------
- GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))
+ GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -451,7 +451,7 @@ SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.
 SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
                                st_astext                                
 ------------------------------------------------------------------------
- GEOMETRYCOLLECTION(POINT(3.5 3.5),LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5))
+ GEOMETRYCOLLECTION(LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5),POINT(3.5 3.5))
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1 1)@2000-01-01'));
@@ -475,7 +475,7 @@ SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
                                 st_astext                                
 -------------------------------------------------------------------------
- GEOMETRYCOLLECTION Z (POINT Z (3 3 3),LINESTRING Z (1 1 1,2 2 2,1 1 1))
+ GEOMETRYCOLLECTION Z (LINESTRING Z (1 1 1,2 2 2,1 1 1),POINT Z (3 3 3))
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'));
@@ -499,7 +499,7 @@ SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.
 SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'));
                                             st_astext                                            
 -------------------------------------------------------------------------------------------------
- GEOMETRYCOLLECTION Z (POINT Z (3.5 3.5 3.5),LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5,1.5 1.5 1.5))
+ GEOMETRYCOLLECTION Z (LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5,1.5 1.5 1.5),POINT Z (3.5 3.5 3.5))
 (1 row)
 
 SELECT length(tgeompoint 'Point(1 1)@2000-01-01');
@@ -3385,7 +3385,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@200
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
- LINESTRING(3 3,3 3)
+ LINESTRING(2 2,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
@@ -3433,7 +3433,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Linestring(0 0 0,3 3 3)'));
          st_astext          
 ----------------------------
- LINESTRING Z (3 3 3,3 3 3)
+ LINESTRING Z (1 1 1,1 1 1)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestring Z empty'));
@@ -3481,7 +3481,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@200
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Linestring(0 0,3 3)'));
       st_astext      
 ---------------------
- LINESTRING(3 3,3 3)
+ LINESTRING(2 2,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Linestring empty'));
@@ -3529,7 +3529,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geography 'Linestring(0 0 0,3 3 3)'));
          st_astext          
 ----------------------------
- LINESTRING Z (3 3 3,3 3 3)
+ LINESTRING Z (1 1 1,1 1 1)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Linestring Z empty'));
@@ -3577,7 +3577,7 @@ SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '[Point
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
       st_astext      
 ---------------------
- LINESTRING(3 3,3 3)
+ LINESTRING(2 2,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -3625,7 +3625,7 @@ SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '[P
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring(0 0 0,3 3 3)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
          st_astext          
 ----------------------------
- LINESTRING Z (3 3 3,3 3 3)
+ LINESTRING Z (1 1 1,1 1 1)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geometry 'Linestring Z empty', tgeompoint 'Point(1 1 1)@2000-01-01'));
@@ -3673,7 +3673,7 @@ SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '[Poin
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0,3 3)', tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
       st_astext      
 ---------------------
- LINESTRING(3 3,3 3)
+ LINESTRING(2 2,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring empty', tgeogpoint 'Point(1 1)@2000-01-01'));
@@ -3721,7 +3721,7 @@ SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '[
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring(0 0 0,3 3 3)', tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
          st_astext          
 ----------------------------
- LINESTRING Z (3 3 3,3 3 3)
+ LINESTRING Z (1 1 1,1 1 1)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(geography 'Linestring Z empty', tgeogpoint 'Point(1 1 1)@2000-01-01'));

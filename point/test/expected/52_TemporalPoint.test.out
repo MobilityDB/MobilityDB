@@ -1159,7 +1159,7 @@ SELECT st_asewkt(getValues(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-0
 SELECT st_asewkt(getValues(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
                        st_asewkt                        
 --------------------------------------------------------
- GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))
+ GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))
 (1 row)
 
 SELECT st_asewkt(getValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -1183,7 +1183,7 @@ SELECT st_asewkt(getValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5
 SELECT st_asewkt(getValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
                                     st_asewkt                                     
 ----------------------------------------------------------------------------------
- SRID=4326;GEOMETRYCOLLECTION(POINT(3.5 3.5),LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5))
+ SRID=4326;GEOMETRYCOLLECTION(LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5),POINT(3.5 3.5))
 (1 row)
 
 SELECT st_asewkt(startValue(tgeompoint 'Point(1 1)@2000-01-01'));

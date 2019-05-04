@@ -114,7 +114,7 @@ SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  contains 
@@ -160,7 +160,7 @@ SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  contains 
@@ -278,7 +278,7 @@ SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
@@ -372,7 +372,7 @@ SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "contains" statement 1
 SELECT containsproperly(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
@@ -490,7 +490,7 @@ SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "containsproperly" statement 1
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  containsproperly 
@@ -536,7 +536,7 @@ SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-
 
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "containsproperly" statement 1
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  containsproperly 
@@ -654,7 +654,7 @@ SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "containsproperly" statement 1
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
@@ -748,7 +748,7 @@ SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-
 
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "containsproperly" statement 1
 SELECT covers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
@@ -962,7 +962,7 @@ SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  covers 
@@ -1008,7 +1008,7 @@ SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  covers 
@@ -1222,7 +1222,7 @@ SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
@@ -1316,7 +1316,7 @@ SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
@@ -1530,7 +1530,7 @@ SELECT coveredby(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Poin
 
 SELECT coveredby(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
@@ -1576,7 +1576,7 @@ SELECT coveredby(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, 
 
 SELECT coveredby(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
@@ -1982,7 +1982,7 @@ SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 
 SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
@@ -2076,7 +2076,7 @@ SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 
 SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
@@ -2290,7 +2290,7 @@ SELECT crosses(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(
 
 SELECT crosses(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  crosses 
@@ -2336,7 +2336,7 @@ SELECT crosses(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Po
 
 SELECT crosses(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  crosses 
@@ -2382,7 +2382,7 @@ SELECT crosses(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 
 SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  crosses 
@@ -2428,7 +2428,7 @@ SELECT crosses(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 
 SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  crosses 
@@ -2546,7 +2546,7 @@ SELECT crosses(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 
 SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  crosses 
@@ -2640,7 +2640,7 @@ SELECT crosses(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 
 SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "crosses" statement 1
 SELECT disjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  disjoint 
@@ -2662,7 +2662,7 @@ SELECT disjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point
 
 SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT disjoint(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  disjoint 
 ----------
@@ -2707,7 +2707,7 @@ SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, P
 
 SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT disjoint(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  disjoint 
 ----------
@@ -2752,7 +2752,7 @@ SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  disjoint 
 ----------
@@ -2797,7 +2797,7 @@ SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  disjoint 
 ----------
@@ -2914,7 +2914,7 @@ SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  disjoint 
 ----------
@@ -3007,7 +3007,7 @@ SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT equals(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
@@ -3292,7 +3292,7 @@ SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "equals" statement 1
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
@@ -3386,7 +3386,7 @@ SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "equals" statement 1
 SELECT intersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
@@ -4176,7 +4176,7 @@ SELECT overlaps(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point
 
 SELECT overlaps(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  overlaps 
@@ -4222,7 +4222,7 @@ SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, P
 
 SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  overlaps 
@@ -4268,7 +4268,7 @@ SELECT overlaps(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  overlaps 
@@ -4314,7 +4314,7 @@ SELECT overlaps(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  overlaps 
@@ -4432,7 +4432,7 @@ SELECT overlaps(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  overlaps 
@@ -4526,7 +4526,7 @@ SELECT overlaps(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 
 SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT touches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  touches 
@@ -4548,7 +4548,7 @@ SELECT touches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(
 
 SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  touches 
@@ -4594,7 +4594,7 @@ SELECT touches(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Po
 
 SELECT touches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
@@ -4640,7 +4640,7 @@ SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 
 SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  touches 
@@ -4686,7 +4686,7 @@ SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 
 SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  touches 
@@ -4804,7 +4804,7 @@ SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 
 SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
@@ -4898,7 +4898,7 @@ SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 
 SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "touches" statement 1
 SELECT within(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  within 
@@ -4920,7 +4920,7 @@ SELECT within(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2
 
 SELECT within(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "within" statement 1
 SELECT within(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  within 
@@ -4966,7 +4966,7 @@ SELECT within(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Poi
 
 SELECT within(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "within" statement 1
 SELECT within(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
@@ -5180,7 +5180,7 @@ SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "within" statement 1
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
@@ -5274,7 +5274,7 @@ SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 CONTEXT:  SQL function "within" statement 1
 SELECT dwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
  dwithin 
@@ -6064,7 +6064,7 @@ SELECT relate(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2
 
 SELECT relate(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  relate 
 --------
@@ -6109,7 +6109,7 @@ SELECT relate(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Poi
 
 SELECT relate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  relate 
 --------
@@ -6154,7 +6154,7 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  relate 
 --------
@@ -6199,7 +6199,7 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  relate 
 --------
@@ -6316,7 +6316,7 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
   relate   
 -----------
@@ -6409,7 +6409,7 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -6430,7 +6430,7 @@ SELECT relate(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2
 
 SELECT relate(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -6475,7 +6475,7 @@ SELECT relate(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Poi
 
 SELECT relate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -6520,7 +6520,7 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty', 'T*****FF*');
  relate 
 --------
@@ -6565,7 +6565,7 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty', 'T*****FF*');
  relate 
 --------
@@ -6682,7 +6682,7 @@ SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -6775,4 +6775,4 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(3 3),LINESTRING(1 1,2 2,1 1))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'

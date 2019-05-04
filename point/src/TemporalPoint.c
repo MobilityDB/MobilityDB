@@ -527,7 +527,7 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Assemble the set of points of a temporal instant point as a single 
- * geometry/geography
+ * geometry/geography. Duplicate points are removed.
  *****************************************************************************/
 
 Datum
@@ -536,13 +536,32 @@ tgeompointi_values(TemporalI *ti)
 	if (ti->count == 1)
 		return temporalinst_value_copy(temporali_inst_n(ti, 0));
 
-	Datum *geoms = palloc(sizeof(Datum *) * ti->count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int k = 0;
 	for (int i = 0; i < ti->count; i++)
-		geoms[i] = temporalinst_value(temporali_inst_n(ti, i));
-	ArrayType *array = datumarr_to_array(geoms, ti->count, type_oid(T_GEOMETRY));
-	/* The following function removes duplicates */
-	Datum result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
-	pfree(geoms); pfree(array);
+	{
+		Datum value = temporalinst_value(temporali_inst_n(ti, i));
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (datum_eq(value, values[j], ti->valuetypid))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			values[k++] = value;
+	}
+	if (k == 1)
+	{
+		pfree(values);
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+	}
+
+	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
+	Datum result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+	pfree(values); pfree(array);
 	return result;
 }
 
@@ -552,21 +571,39 @@ tgeogpointi_values(TemporalI *ti)
 	if (ti->count == 1)
 		return temporalinst_value_copy(temporali_inst_n(ti, 0));
 
-	Datum *geoms = palloc(sizeof(Datum *) * ti->count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int k = 0;
+	Oid geomoid = type_oid(T_GEOMETRY);
 	for (int i = 0; i < ti->count; i++)
 	{
 		Datum value = temporalinst_value(temporali_inst_n(ti, i));
-		geoms[i] = call_function1(geometry_from_geography, value);
+		Datum geomvalue = call_function1(geometry_from_geography, value);
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (datum_eq(geomvalue, values[j], geomoid))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			values[k++] = geomvalue;
+		else
+			pfree(DatumGetPointer(geomvalue));	
 	}
-	ArrayType *array = datumarr_to_array(geoms, ti->count, type_oid(T_GEOMETRY));
-	/* The following function removes duplicates */
-	Datum geomresult = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
-	Datum result = call_function1(geography_from_geometry, geomresult);
-	
-	for (int i = 0; i < ti->count; i++)
-		pfree(DatumGetPointer(geoms[i]));
-	pfree(geoms); pfree(array); pfree(DatumGetPointer(geomresult));
+	if (k == 1)
+	{
+		pfree(DatumGetPointer(values[0])); pfree(values);
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+	}
 
+	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
+	Datum geomresult = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+	Datum result = call_function1(geography_from_geometry, geomresult);
+	for (int i = 0; i < k; i++)
+		pfree(DatumGetPointer(values[i]));
+	pfree(values); pfree(array); pfree(DatumGetPointer(geomresult));
 	return result;
 }
 
