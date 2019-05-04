@@ -591,8 +591,8 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		trajectory = type_has_precomputed_trajectory(valuetypid);  
 		if (trajectory)
 		{
-			/* A trajectory is a geometry/geography, either a point or a linestring,
-			 * which may be self-intersecting */
+			/* A trajectory is a geometry/geography, either a point or a 
+			 * linestring, which may be self-intersecting */
 			traj = tpointseq_make_trajectory(newinstants, newcount);
 			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
@@ -631,8 +631,11 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	if (bboxsize != 0)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-		temporalseq_make_bbox(bbox, newinstants, newcount, 
-			lower_inc, upper_inc);
+		if (trajectory)
+			geo_to_gbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
+		else
+			temporalseq_make_bbox(bbox, newinstants, newcount, 
+				lower_inc, upper_inc);
 		offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}

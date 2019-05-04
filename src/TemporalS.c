@@ -1861,7 +1861,8 @@ temporals_at_period(TemporalS *ts, Period *p)
 		pfree(sequences);
 		return NULL;		
 	}
-	
+	/* Since both the temporals and the period are normalized it is not 
+	   necessary to normalize the result of the projection */	
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
 	for (int i = 0; i < l; i++)
 		pfree(tofree[i]);
@@ -1944,8 +1945,9 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 		pfree(sequences);
 		return NULL;
 	}
-
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
+	/* Since both the temporals and the periodset are normalized it is not 
+	   necessary to normalize the result of the projection */
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences); 
@@ -2012,7 +2014,8 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 		pfree(sequences);
 		return NULL;
 	}
-
+	/* Since both the temporals and the periodset are normalized it is not 
+	   necessary to normalize the result of the difference */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
