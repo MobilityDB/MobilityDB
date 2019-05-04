@@ -632,7 +632,12 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		if (trajectory)
+		{
 			geo_to_gbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
+			((GBOX *)bbox)->mmin = (double)(result->period.lower);
+			((GBOX *)bbox)->mmax = (double)(result->period.upper);
+			FLAGS_SET_M(((GBOX *)bbox)->flags, true);
+		}
 		else
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
 				lower_inc, upper_inc);
