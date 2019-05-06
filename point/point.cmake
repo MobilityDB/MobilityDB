@@ -21,24 +21,18 @@ point/src/TempSpatialRels.c
 )
 
 set(SQLPOINT
-point/src/sql/20_Gbox.in.sql
-point/src/sql/21_TemporalPoint.in.sql
-point/src/sql/22_ComparisonOps.in.sql
-point/src/sql/23_TemporalGeo.in.sql
-point/src/sql/24_RelativePosOpsG.in.sql
-point/src/sql/24_RelativePosOpsM.in.sql
-point/src/sql/25_TempDistance.in.sql
-point/src/sql/26_GeoAggFuncs.in.sql
-point/src/sql/27_BoundBoxOpsG.in.sql
-point/src/sql/27_BoundBoxOpsM.in.sql
-point/src/sql/28_SpatialRelsG.in.sql
-point/src/sql/28_SpatialRelsM.in.sql
-point/src/sql/29_TempSpatialRelsG.in.sql
-point/src/sql/29_TempSpatialRelsM.in.sql
-point/src/sql/30_IndexGistTPointM.in.sql
-point/src/sql/30_IndexSpgistTPointM.in.sql
-point/src/sql/31_IndexGistTPointG.in.sql
-point/src/sql/31_IndexSpgistTPointG.in.sql
+point/src/sql/50_Gbox.in.sql
+point/src/sql/52_TemporalPoint.in.sql
+point/src/sql/54_ComparisonOps.in.sql
+point/src/sql/56_TemporalGeo.in.sql
+point/src/sql/58_BoundBoxOps.in.sql
+point/src/sql/60_RelativePosOps.in.sql
+point/src/sql/62_TempDistance.in.sql
+point/src/sql/64_GeoAggFuncs.in.sql
+point/src/sql/66_SpatialRels.in.sql
+point/src/sql/68_TempSpatialRels.in.sql
+point/src/sql/70_IndexGistTPoint.in.sql
+point/src/sql/72_IndexSpgistTPoint.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})

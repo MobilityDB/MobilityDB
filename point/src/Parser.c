@@ -114,31 +114,44 @@ gbox_parse(char **str)
 	if (!p_cparen(str) && !p_cparen(str) )
 		return NULL;
 
+	/* Set missing dimensions to +-infinity */
+	double infinity = get_float8_infinity();
+	if (hasz == 0)
+	{	
+		result->zmin = -infinity;
+		result->zmax = infinity;
+	}
+	if (hasm == 0)
+	{	
+		result->mmin = -infinity;
+		result->mmax = infinity;
+	}
+
 	return result;
 }
 
 /*****************************************************************************/
 
 static TemporalInst *
-tpointinst_parse1(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* The next instruction will throw an exception if it fails */
 	Datum geo = p_basetype(str, basetype); 
 	GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
-	bool ispoint = (gserialized_get_type(gs) == POINTTYPE);
-	int geom_srid = gserialized_get_srid(gs);
-	if (!ispoint) 
+	int geo_srid = gserialized_get_srid(gs);
+	if ((gserialized_get_type(gs) != POINTTYPE) || 
+		gserialized_is_empty(gs))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only point geometries accepted")));
-	if (*tpoint_srid != 0 && geom_srid != 0 && *tpoint_srid != geom_srid) 
+			errmsg("Only non-empty point geometries accepted")));
+	if (*tpoint_srid != 0 && geo_srid != 0 && *tpoint_srid != geo_srid) 
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
-			geom_srid, *tpoint_srid)));
-	if (*tpoint_srid != 0 && geom_srid == 0)
+			geo_srid, *tpoint_srid)));
+	if (*tpoint_srid != 0 && geo_srid == 0)
 		gserialized_set_srid(gs, *tpoint_srid);
-	if (*tpoint_srid == 0 && geom_srid != 0)
-		*tpoint_srid = geom_srid;
+	if (*tpoint_srid == 0 && geo_srid != 0)
+		*tpoint_srid = geo_srid;
 	/* The next instruction will throw an exception if it fails */
 	TimestampTz t = timestamp_parse(str);
 	TemporalInst *result = temporalinst_make(PointerGetDatum(gs), t, basetype);
@@ -146,14 +159,8 @@ tpointinst_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 	return result;
 }
 
-static TemporalInst *
-tpointinst_parse(char **str, Oid basetype, int *tpoint_srid)
-{
-	return tpointinst_parse1(str, basetype, true, tpoint_srid);
-}
-
 static TemporalI *
-tpointi_parse1(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointi_parse(char **str, Oid basetype, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	if (!p_obrace(str))
@@ -162,33 +169,30 @@ tpointi_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalInst *inst = tpointinst_parse1(str, basetype, false, tpoint_srid);
+	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(inst);
-		inst = tpointinst_parse1(str, basetype, false, tpoint_srid);
+		inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 	pfree(inst);
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	/* Ensure there is no more input */
+	p_whitespace(str);
+	if (**str != 0)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse temporal value")));
 	/* Second parsing */
 	*str = bak;
 	TemporalInst **insts = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = tpointinst_parse1(str, basetype, false, tpoint_srid);
+		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 	p_cbrace(str);
 	TemporalI *result = temporali_from_temporalinstarr(insts, count);
@@ -200,14 +204,8 @@ tpointi_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 	return result;
 }
 
-static TemporalI *
-tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
-{
-	return tpointi_parse1(str, basetype, true, tpoint_srid);
-}
-
 static TemporalSeq *
-tpointseq_parse1(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -222,13 +220,13 @@ tpointseq_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 	// FIXME: I pre-parse to have the count, then re-parse. This is the only
 	// approach I see at the moment which is both correct and simple
 	char *bak = *str;
-	TemporalInst *inst = tpointinst_parse1(str, basetype, false, tpoint_srid);
+	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(inst);
-		inst = tpointinst_parse1(str, basetype, false, tpoint_srid);
+		inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 	pfree(inst);
 	if (p_cbracket(str))
@@ -252,7 +250,7 @@ tpointseq_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = tpointinst_parse1(str, basetype, false, tpoint_srid);
+		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 
 	p_cbracket(str);
@@ -268,12 +266,6 @@ tpointseq_parse1(char **str, Oid basetype, bool end, int *tpoint_srid)
 	return result;
 }
 
-static TemporalSeq *
-tpointseq_parse(char **str, Oid basetype, int *tpoint_srid)
-{
-	return tpointseq_parse1(str, basetype, true, tpoint_srid);
-}
-
 static TemporalS *
 tpoints_parse(char **str, Oid basetype, int *tpoint_srid) 
 {
@@ -284,13 +276,13 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalSeq *seq = tpointseq_parse1(str, basetype, false, tpoint_srid);
+	TemporalSeq *seq = tpointseq_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(seq);
-		seq = tpointseq_parse1(str, basetype, false, tpoint_srid);
+		seq = tpointseq_parse(str, basetype, false, tpoint_srid);
 	}
 	pfree(seq);
 	if (!p_cbrace(str))
@@ -307,7 +299,7 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = tpointseq_parse1(str, basetype, false, tpoint_srid);
+		seqs[i] = tpointseq_parse(str, basetype, false, tpoint_srid);
 	}
 	p_cbrace(str);
 	TemporalS *result = temporals_from_temporalseqarr(seqs, count, true);
@@ -343,9 +335,9 @@ tpoint_parse(char **str, Oid basetype)
 	
 	/* Determine the type of the temporal point */
 	if (**str != '{' && **str != '[' && **str != '(')
-		return (Temporal *)tpointinst_parse(str, basetype, &tpoint_srid);
+		return (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
 	else if (**str == '[' || **str == '(')
-		return (Temporal *)tpointseq_parse(str, basetype, &tpoint_srid);		
+		return (Temporal *)tpointseq_parse(str, basetype, true, &tpoint_srid);		
 	else if (**str == '{')
 	{
 		char *bak = *str;

@@ -1,0 +1,150 @@
+select memSize(timestampset '{2000-01-01}');
+ memsize 
+---------
+      72
+(1 row)
+
+select memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ memsize 
+---------
+     104
+(1 row)
+
+select timespan(timestampset '{2000-01-01}');
+                     timespan                     
+--------------------------------------------------
+ [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
+(1 row)
+
+select timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                     timespan                     
+--------------------------------------------------
+ [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
+(1 row)
+
+select numTimestamps(timestampset '{2000-01-01}');
+ numtimestamps 
+---------------
+             1
+(1 row)
+
+select numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+ numtimestamps 
+---------------
+             3
+(1 row)
+
+select startTimestamp(timestampset '{2000-01-01}');
+     starttimestamp     
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+select startTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+     starttimestamp     
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+select endTimestamp(timestampset '{2000-01-01}');
+      endtimestamp      
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+select endTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+      endtimestamp      
+------------------------
+ 2000-01-03 00:00:00+00
+(1 row)
+
+select timestampN(timestampset '{2000-01-01}', 1);
+       timestampn       
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+select timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+       timestampn       
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+select timestampN(timestampset '{2000-01-01}', 2);
+ timestampn 
+------------
+ 
+(1 row)
+
+select timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+ timestampn 
+------------
+ 
+(1 row)
+
+select timestamps(timestampset '{2000-01-01}');
+         timestamps         
+----------------------------
+ {"2000-01-01 00:00:00+00"}
+(1 row)
+
+select timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                                  timestamps                                  
+------------------------------------------------------------------------------
+ {"2000-01-01 00:00:00+00","2000-01-02 00:00:00+00","2000-01-03 00:00:00+00"}
+(1 row)
+
+select shift(timestampset '{2000-01-01}', '5 min');
+          shift           
+--------------------------
+ {2000-01-01 00:05:00+00}
+(1 row)
+
+select shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+                                  shift                                   
+--------------------------------------------------------------------------
+ {2000-01-01 00:05:00+00, 2000-01-02 00:05:00+00, 2000-01-03 00:05:00+00}
+(1 row)
+
+select timestampset_cmp(timestampset '{2000-01-01}', timestampset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+ ?column? 
+----------
+ t
+(1 row)
+
+select timestampset '{2000-01-01}' = timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+select timestampset '{2000-01-01}' <> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+select timestampset '{2000-01-01}' < timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+select timestampset '{2000-01-01}' <= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+select timestampset '{2000-01-01}' > timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+select timestampset '{2000-01-01}' >= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+

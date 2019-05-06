@@ -148,9 +148,6 @@ extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
 
 /* Trajectory functions */
 
-extern Datum tgeompoint_synctrajectory(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_synctrajectorypers(PG_FUNCTION_ARGS);
-
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
@@ -171,6 +168,10 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
+extern Datum tgeompointi_twcentroid(TemporalI *ti);
+extern Datum tgeompointseq_twcentroid(TemporalSeq *seq);
+extern Datum tgeompoints_twcentroid(TemporalS *ts);
+
 /* Restriction functions */
 
 extern Datum tpoint_at_geometry(PG_FUNCTION_ARGS);
@@ -180,6 +181,7 @@ extern TemporalSeq **tpointseq_at_geometry2(TemporalSeq *seq, Datum geo, int *co
 
 /* Nearest approach functions */
 
+extern Datum NAI_geometry_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geometry(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
@@ -392,7 +394,7 @@ extern void timestampset_to_gbox_internal(GBOX *box, TimestampSet *ps);
 extern void period_to_gbox_internal(GBOX *box, Period *p);
 extern void periodset_to_gbox_internal(GBOX *box, PeriodSet *ps);
 extern bool geo_timestamp_to_gbox_internal(GBOX *box, GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *period);
+extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *p);
 
 /*****************************************************************************/
 
@@ -542,6 +544,8 @@ extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
+
+extern Temporal *distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
 
 /*****************************************************************************
  * Index functions defined in IndexGistTPoint.c

@@ -18,10 +18,9 @@
 
 /* Extend the temporal value by a time interval */
 
-static TemporalSeq *
-temporalinst_extend1(TemporalInst *inst, Interval *interval)
+static int
+temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
-	TemporalSeq *result;
 	TemporalInst *instants[2];
 	TimestampTz upper = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
@@ -30,39 +29,29 @@ temporalinst_extend1(TemporalInst *inst, Interval *interval)
 	instants[0] = inst;
 	instants[1] = temporalinst_make(temporalinst_value(inst), 
 		upper, inst->valuetypid);
-	result = temporalseq_from_temporalinstarr(instants, 2,
+	result[0] = temporalseq_from_temporalinstarr(instants, 2,
 		true, true, false);
 	pfree(instants[1]);
-	return result;
+	return 1;
 }
 
-static TemporalSeq **
-temporalinst_extend(TemporalInst *inst, Interval *interval)
+static int
+temporali_extend(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-	result[0] = temporalinst_extend1(inst, interval);
-	return result;
-}
-
-static TemporalSeq **
-temporali_extend(TemporalI *ti, Interval *interval)
-{
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		result[i] = temporalinst_extend1(inst, interval);
+		temporalinst_extend(&result[i], inst, interval);
 	}
-	return result;
+	return ti->count;
 }
 
-static TemporalSeq **
-tempdiscseq_extend(TemporalSeq *seq, Interval *interval)
+static int
+tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
 	if (seq->count == 1)
-		return temporalinst_extend(temporalseq_inst_n(seq, 0), interval);
+		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
 	
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count-1));
 	TemporalInst *instants[2];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
@@ -83,16 +72,15 @@ tempdiscseq_extend(TemporalSeq *seq, Interval *interval)
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	return result;
+	return seq->count-1;
 }
 
-static TemporalSeq **
-tempcontseq_extend(TemporalSeq *seq, Interval *interval, bool min)
+static int
+tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
 {
 	if (seq->count == 1)
-		return temporalinst_extend(temporalseq_inst_n(seq, 0), interval);
+		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
 
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count-1));
 	TemporalInst *instants[3];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
@@ -153,114 +141,80 @@ tempcontseq_extend(TemporalSeq *seq, Interval *interval, bool min)
 		inst1 = inst2;
 		lower_inc = true;
 	}	
-	return result;
+	return seq->count-1;
 }
 
-static TemporalSeq **
-tempdiscs_extend(TemporalS *ts, Interval *interval, int *count)
+static int
+tempdiscs_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
 	if (ts->count == 1)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, 0);
-		*count = seq->count == 1 ? 1 : seq->count - 1;
-		return tempdiscseq_extend(seq, interval);
-	}
+		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
 
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tempdiscseq_extend(seq, interval);
-		countseqs[i] = seq->count == 1 ? 1 : seq->count - 1;
-		totalseqs += countseqs[i];
+		countstep = tempdiscseq_extend(&result[k], seq, interval);
+		k += countstep;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		pfree(sequences[i]);
-	}
-
-	pfree(sequences); pfree(countseqs);
-	
-	*count = totalseqs;
-	return result;
+	return k;
 }
 
-static TemporalSeq **
-tempconts_extend(TemporalS *ts, Interval *interval, bool min, int *count)
+static int
+tempconts_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
 {
 	if (ts->count == 1)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, 0);
-		*count = seq->count == 1 ? 1 : seq->count - 1;
-		return tempcontseq_extend(seq, interval, min);
-	}
+		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
 
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tempcontseq_extend(seq, interval, min);
-		countseqs[i] = seq->count == 1 ? 1 : seq->count - 1;
-		totalseqs += countseqs[i];
+		countstep = tempcontseq_extend(&result[k], seq, interval, min);
+		k += countstep;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		pfree(sequences[i]);
-	}
-	
-	pfree(sequences); pfree(countseqs);
-	
-	*count = totalseqs;
-	return result;
+	return k;
 }
 
 /* Dispatch function */
 
 static TemporalSeq **
-temporal_extend(Temporal *temp, Interval *interval, 
-	bool min, int *count)
+temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
+	TemporalSeq **result;
 	if (temp->type == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
-		*count = 1;
-		return temporalinst_extend(inst, interval);
+		result = palloc(sizeof(TemporalSeq *));
+		*count = temporalinst_extend(result, inst, interval);
+		return result;
 	}
 	if (temp->type == TEMPORALI)
 	{
 		TemporalI *ti = (TemporalI *)temp;
-		*count = ti->count;
-		return temporali_extend(ti, interval);
+		result = palloc(sizeof(TemporalSeq *) * ti->count);
+		*count = temporali_extend(result, ti, interval);
+		return result;
 	}
 	else if (temp->type == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
-		*count = seq->count == 1 ? 1 : seq->count - 1;
-		if (!MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			return tempdiscseq_extend(seq, interval);
+		result = palloc(sizeof(TemporalSeq *) * seq->count);
+		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+			*count = tempdiscseq_extend(result, seq, interval);
 		else
-			return tempcontseq_extend(seq, interval, min);
+			*count = tempcontseq_extend(result, seq, interval, min);
+		return result;
 	}
 	else if (temp->type == TEMPORALS)
 	{
-		if (!MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			return tempdiscs_extend(
-				(TemporalS *)temp, interval, count);
+		TemporalS *ts = (TemporalS *)temp;
+		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+			*count = tempdiscs_extend(result, ts, interval);
 		else
-			return tempconts_extend(
-				(TemporalS *)temp, interval, min, count);
+			*count = tempconts_extend(result, ts, interval, min);
+		return result;
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -272,54 +226,37 @@ temporal_extend(Temporal *temp, Interval *interval,
  * extended by a time interval. 
  *****************************************************************************/
 
-static TemporalSeq *
-temporalinst_transform_wcount1(TemporalInst *inst, Interval *interval)
+static int
+temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
-	TemporalSeq *result;
 	TemporalInst *instants[2];
 	TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
 		timestamptz_pl_interval, TimestampTzGetDatum(inst->t), 
 		PointerGetDatum(interval)));
 	instants[0] = temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 	instants[1] = temporalinst_make(Int32GetDatum(1), upper, INT4OID);
-	result = temporalseq_from_temporalinstarr(instants, 2, true, true, false);
+	result[0] = temporalseq_from_temporalinstarr(instants, 2, true, true, false);
 	pfree(instants[0]);	pfree(instants[1]);
-	return result;
+	return 1;
 }
 
-static TemporalSeq **
-temporalinst_transform_wcount(TemporalInst *inst, Interval *interval)
+static int
+temporali_transform_wcount(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-	result[0] = temporalinst_transform_wcount1(inst, interval);
-	return result;
-}
-
-
-static TemporalSeq **
-temporali_transform_wcount(TemporalI *ti, Interval *interval)
-{
-	TemporalSeq **result= palloc(sizeof(TemporalSeq *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		result[i] = temporalinst_transform_wcount1(inst, interval);
+		temporalinst_transform_wcount(&result[i], inst, interval);
 	}
-	return result;
+	return ti->count;
 }
 
-static TemporalSeq **
-temporalseq_transform_wcount(TemporalSeq *seq, Interval *interval)
+static int
+temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
 	if (seq->count == 1)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		result[0] = temporalinst_transform_wcount1(inst, interval);
-		return result;
-	}
+		return temporalinst_transform_wcount(result, temporalseq_inst_n(seq, 0), interval);
 
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count-1));
 	TemporalInst *instants[2];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
@@ -338,35 +275,20 @@ temporalseq_transform_wcount(TemporalSeq *seq, Interval *interval)
 		inst1 = inst2;
 		lower_inc = true;
 	}	
-	return result;
+	return seq->count-1;
 }
 
-static TemporalSeq **
-temporals_transform_wcount(TemporalS *ts, Interval *interval, int *count)
+static int
+temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_transform_wcount(seq, interval);
-		countseqs[i] = seq->count == 1 ? 1 : seq->count - 1;
-		totalseqs += countseqs[i];
+		countstep = temporalseq_transform_wcount(&result[k], seq, interval);
+		k += countstep;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		pfree(sequences[i]);
-	}
-		
-	pfree(sequences); pfree(countseqs);
-	
-	*count = totalseqs;
-	return result;
+	return k;
 }
 
 /* Dispatch function */
@@ -374,28 +296,34 @@ temporals_transform_wcount(TemporalS *ts, Interval *interval, int *count)
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
+	TemporalSeq **result;
 	if (temp->type == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
-		*count = 1;
-		return temporalinst_transform_wcount(inst, interval);
+		result = palloc(sizeof(TemporalSeq *));
+		*count = temporalinst_transform_wcount(result, inst, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALI)
+	if (temp->type == TEMPORALI)
 	{
 		TemporalI *ti = (TemporalI *)temp;
-		*count = ti->count;
-		return temporali_transform_wcount(ti, interval);
+		result = palloc(sizeof(TemporalSeq *) * ti->count);
+		*count = temporali_transform_wcount(result, ti, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALSEQ)
+	if (temp->type == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
-		*count = seq->count == 1 ? 1 : seq->count - 1;
-		return temporalseq_transform_wcount(seq, interval);
+		result = palloc(sizeof(TemporalSeq *) * seq->count);
+		*count = temporalseq_transform_wcount(result, seq, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALS)
+	if (temp->type == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
-		return temporals_transform_wcount(ts, interval, count);
+		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+		*count = temporals_transform_wcount(result, ts, interval);
+		return result;
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -407,8 +335,8 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 /* Transform a temporal numeric type into a temporal double and 
  * extend it by a time interval */
 
-static TemporalSeq *
-temporalinst_transform_wavg1(TemporalInst *inst, Interval *interval)
+static int
+temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
 	float8 value;
 	if (inst->valuetypid == INT4OID)
@@ -429,42 +357,32 @@ temporalinst_transform_wavg1(TemporalInst *inst, Interval *interval)
 		inst->t, type_oid(T_DOUBLE2));
 	instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
 		upper, type_oid(T_DOUBLE2));
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 2,
+	result[0] = temporalseq_from_temporalinstarr(instants, 2,
 		true, true, false);
 	pfree(instants[0]);	pfree(instants[1]);
-	return result;
+	return 1;
 }
 
-static TemporalSeq **
-temporalinst_transform_wavg(TemporalInst *inst, Interval *interval)
+static int
+temporali_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-	result[0] = temporalinst_transform_wavg1(inst, interval);
-	return result;
-}
-
-static TemporalSeq **
-temporali_transform_wavg(TemporalI *ti, Interval *interval)
-{
-	TemporalSeq **result= palloc(sizeof(TemporalSeq *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		result[i] = temporalinst_transform_wavg1(inst, interval);
+		temporalinst_transform_wavg(&result[i], inst, interval);
 	}
-	return result;
+	return ti->count;
 }
 
 /* Transform a discrete temporal numeric sequence into a temporal double and extend
  * it by a time interval. There is no equivalent function for continuous types */
 
-static TemporalSeq **
-tintseq_transform_wavg(TemporalSeq *seq, Interval *interval)
+static int
+tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
 	TemporalInst *instants[2];
 	if (seq->count == 1)
 	{
-		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		double value = DatumGetInt32(temporalinst_value(inst)); 
 		double2 *dvalue = double2_construct(value, 1);
@@ -479,10 +397,9 @@ tintseq_transform_wavg(TemporalSeq *seq, Interval *interval)
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			true, true, false);
 		pfree(instants[0]);	pfree(instants[1]);
-		return result;
+		return 1;
 	}
 
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count-1));
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count-1; i++)
@@ -504,35 +421,20 @@ tintseq_transform_wavg(TemporalSeq *seq, Interval *interval)
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	return result;
+	return seq->count-1;
 }
 
-static TemporalSeq **
-tints_transform_wavg(TemporalS *ts, Interval *interval, int *count)
+static int
+tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tintseq_transform_wavg(seq, interval);
-		countseqs[i] = seq->count == 1 ? 1 : seq->count - 1;
-		totalseqs += countseqs[i];
+		countstep = tintseq_transform_wavg(&result[k], seq, interval);
+		k += countstep;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		pfree(sequences[i]);
-	}
-		
-	pfree(sequences); pfree(countseqs);
-	
-	*count = totalseqs;
-	return result;
+	return k;
 }
 
 /* Dispatch function */
@@ -540,28 +442,34 @@ tints_transform_wavg(TemporalS *ts, Interval *interval, int *count)
 static TemporalSeq **
 temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
+	TemporalSeq **result;
 	if (temp->type == TEMPORALINST)
 	{	
 		TemporalInst *inst = (TemporalInst *)temp;
-		*count = 1;
-		return temporalinst_transform_wavg(inst, interval);
+		result = palloc(sizeof(TemporalSeq *));
+		*count = temporalinst_transform_wavg(result, inst, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALI)
+	if (temp->type == TEMPORALI)
 	{	
 		TemporalI *ti = (TemporalI *)temp;
-		*count = ti->count;
-		return temporali_transform_wavg(ti, interval);
+		result = palloc(sizeof(TemporalSeq *) * ti->count);
+		*count = temporali_transform_wavg(result, ti, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALSEQ)
+	if (temp->type == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
-		*count = seq->count == 1 ? 1 : seq->count - 1;
-		return tintseq_transform_wavg(seq, interval);
+		result = palloc(sizeof(TemporalSeq *) * seq->count);
+		*count = tintseq_transform_wavg(result, seq, interval);
+		return result;
 	}
-	else if (temp->type == TEMPORALS)
+	if (temp->type == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
-		return tints_transform_wavg(ts, interval, count);
+		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+		*count = tints_transform_wavg(result, ts, interval);
+		return result;
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -577,15 +485,15 @@ temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 static AggregateState *
 temporal_wagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	Temporal *temp, Interval *interval,
-	Datum (*operator)(Datum, Datum), bool min, bool crossings)
+	Datum (*func)(Datum, Datum), bool min, bool crossings)
 {
 	int count;
 	TemporalSeq **sequences = temporal_extend(temp, interval, min, &count);
 	AggregateState *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
-		operator, crossings);
+		func, crossings);
 	for (int i = 1; i < count; i++)
 		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i],
-			operator, crossings);
+			func, crossings);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -601,6 +509,8 @@ tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -617,6 +527,8 @@ tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -635,6 +547,8 @@ tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -651,6 +565,8 @@ tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -669,6 +585,8 @@ tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -685,6 +603,8 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	if ((temp->type == TEMPORALSEQ || temp->type == TEMPORALS) &&
 		temp->valuetypid == FLOAT8OID)
@@ -707,6 +627,8 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
@@ -733,6 +655,8 @@ temporal_wavg_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;

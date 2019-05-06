@@ -3,12 +3,10 @@ project(MobilityDB VERSION 0.0.1)
 
 set(SRCS
 src/AggregateFuncs.c
-src/ArithmeticOps.c
 src/BooleanOps.c
 src/BoundBoxOps.c
 src/ComparisonOps.c
 src/DoubleN.c
-src/GenericOps.c
 src/indexesstat.c
 src/IndexGistTemporal.c
 src/IndexGistTime.c
@@ -16,6 +14,8 @@ src/IndexGistTnumber.c
 src/IndexSpgistTemporal.c
 src/IndexSpgistTime.c
 src/IndexSpgistTnumber.c
+src/LiftingFuncs.c
+src/MathematicalFuncs.c
 src/OidCache.c
 src/Parser.c
 src/Period.c
@@ -28,12 +28,12 @@ src/Temporal.c
 src/TemporalI.c
 src/TemporalInst.c
 src/TemporalS.c
-src/TemporalSelfuncs.c
+src/TemporalSelFuncs.c
 src/TemporalSeq.c
 src/TemporalTypes.c
 src/TempSelFuncs.c
 src/TimeOps.c
-src/TimeSelfuncs.c
+src/TimeSelFuncs.c
 src/TimestampSet.c
 src/TimeTypanalyze.c
 src/WAggregateFuncs.c
@@ -42,24 +42,24 @@ src/WAggregateFuncs.c
 set(SQL
 src/sql/00_Catalog.in.sql
 src/sql/01_Period.in.sql
-src/sql/01_PeriodSet.in.sql
-src/sql/01_Range.in.sql
-src/sql/01_TimestampSet.in.sql
-src/sql/01_TimeTypesOps.in.sql
-src/sql/02_IndexGistTime.in.sql
-src/sql/02_IndexSPGistTime.in.sql
-src/sql/02_Temporal.in.sql
-src/sql/06_DoubleN.in.sql
-src/sql/06_TempSelFuncs.in.sql
-src/sql/07_ArithmeticOps.in.sql
-src/sql/08_BooleanOps.in.sql
-src/sql/09_ComparisonOps.in.sql
-src/sql/10_AggregateFuncs.in.sql
-src/sql/11_RelativePosOps.in.sql
-src/sql/11_WAggregateFuncs.in.sql
-src/sql/12_BoundBoxOps.in.sql
-src/sql/13_IndexGistTemporal.in.sql
-src/sql/13_IndexSPGistTemporal.in.sql
+src/sql/03_TimestampSet.in.sql
+src/sql/05_PeriodSet.in.sql
+src/sql/07_Range.in.sql
+src/sql/11_TimeOps.in.sql
+src/sql/13_IndexGistTime.in.sql
+src/sql/15_IndexSPGistTime.in.sql
+src/sql/20_DoubleN.in.sql
+src/sql/22_Temporal.in.sql
+src/sql/24_MathematicalFuncs.in.sql
+src/sql/26_BooleanOps.in.sql
+src/sql/28_ComparisonOps.in.sql
+src/sql/30_TempSelFuncs.in.sql
+src/sql/32_BoundBoxOps.in.sql
+src/sql/34_RelativePosOps.in.sql
+src/sql/36_AggregateFuncs.in.sql
+src/sql/38_WAggregateFuncs.in.sql
+src/sql/40_IndexGistTemporal.in.sql
+src/sql/42_IndexSPGistTemporal.in.sql
 src/sql/99_OpCache.in.sql
 )
 
@@ -124,7 +124,6 @@ include("test/scripts/test.cmake")
 
 if(WITH_POSTGIS)
 		include("point/point.cmake")
-	    include("npoint/npoint.cmake")
 endif()
 
 add_custom_command(
