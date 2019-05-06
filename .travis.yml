@@ -10,15 +10,18 @@ before_install:
   - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
   - sudo apt-get update
   - sudo apt-get install -y postgresql-11 postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-11 libproj-dev postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
+  - pip install --user cpp-coveralls
 
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake -DWITH_COVERAGE=1 ..
 
 script: 
   - export PATH="/usr/lib/postgresql/11/bin:$PATH"
   - make && make test
 
 after_failure: ../test/scripts/print_fail.sh
+
+after_success: coveralls --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp'
 
