@@ -1,0 +1,120 @@
+select intrange '[3,5)' << 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+select 5 << intrange '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+select intrange '[3,5)' >> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5 >> intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+select intrange '[3,5)' &< 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+select 5 &< intrange '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+select intrange '[3,5)' &> 5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5 &> intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+select intrange '[3,5)' -|- 5;
+ ?column? 
+----------
+ t
+(1 row)
+
+select 5 -|- intrange '[3,5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+select floatrange '[3.5, 5.5]' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 << floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+select floatrange '[3.5, 5.5]' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 >> floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+select floatrange '[3.5, 5.5]' &< 5.5;
+ ?column? 
+----------
+ t
+(1 row)
+
+select 5.5 &< floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+select floatrange '[3.5, 5.5]' &> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 &> floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ t
+(1 row)
+
+select floatrange '[3.5, 5.5]' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 -|- floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+

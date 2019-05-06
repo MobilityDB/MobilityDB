@@ -75,4 +75,32 @@ CREATE OR REPLACE FUNCTION geodbox(float8, float8, float8, float8, float8, float
 	AS 'MODULE_PATHNAME', 'geodbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Comparison
+ *****************************************************************************/
+
+CREATE FUNCTION gbox_eq(gbox, gbox)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'gbox_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gbox_ne(gbox, gbox)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'gbox_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR = (
+	LEFTARG = gbox, RIGHTARG = gbox,
+	PROCEDURE = gbox_eq,
+	COMMUTATOR = =,
+	NEGATOR = <>,
+	RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+	LEFTARG = gbox, RIGHTARG = gbox,
+	PROCEDURE = gbox_ne,
+	COMMUTATOR = <>,
+	NEGATOR = =,
+	RESTRICT = neqsel, JOIN = neqjoinsel
+);
+
 /*****************************************************************************/

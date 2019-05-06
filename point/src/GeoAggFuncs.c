@@ -92,12 +92,12 @@ tpoints_transform_tcentroid(TemporalS *ts)
 
 AggregateState *
 tpointinst_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalInst *inst,	Datum (*operator)(Datum, Datum))
+	TemporalInst *inst,	Datum (*func)(Datum, Datum))
 {
 	TemporalInst *newinst = tpointinst_transform_tcentroid(inst);
 	AggregateState *state2 = aggstate_make(fcinfo, 1, (Temporal **)&newinst);
 	AggregateState *result = temporalinst_tagg_combinefn(fcinfo, state, state2, 
-		operator);
+		func);
 
 	pfree(newinst);
 	if (result != state)
@@ -110,12 +110,12 @@ tpointinst_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 
 AggregateState *
 tpointi_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalI *ti, Datum (*operator)(Datum, Datum))
+	TemporalI *ti, Datum (*func)(Datum, Datum))
 {
 	TemporalInst **instants = tpointi_transform_tcentroid(ti);
 	AggregateState *state2 = aggstate_make(fcinfo, ti->count, (Temporal **)instants);
 	AggregateState *result = temporalinst_tagg_combinefn(fcinfo, state, state2, 
-		operator);
+		func);
 
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
@@ -130,12 +130,12 @@ tpointi_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 
 AggregateState *
 tpointseq_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalSeq *seq, Datum (*operator)(Datum, Datum))
+	TemporalSeq *seq, Datum (*func)(Datum, Datum))
 {
 	TemporalSeq *newseq = tpointseq_transform_tcentroid(seq);
 	AggregateState *state2 = aggstate_make(fcinfo, 1, (Temporal **)&newseq);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2, 
-		operator, false);
+		func, false);
 
 	pfree(newseq);
 	if (result != state)
@@ -148,12 +148,12 @@ tpointseq_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 
 AggregateState *
 tpoints_tcentroid_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalS *ts, Datum (*operator)(Datum, Datum))
+	TemporalS *ts, Datum (*func)(Datum, Datum))
 {
 	TemporalSeq **sequences = tpoints_transform_tcentroid(ts);
 	AggregateState *state2 = aggstate_make(fcinfo, ts->count, (Temporal **)sequences);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2, 
-		operator, false);
+		func, false);
 
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -173,22 +173,24 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Datum (*operator)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&datum_sum_double4 : &datum_sum_double3;
 	AggregateState *result;
 	if (temp->type == TEMPORALINST)
 		result = tpointinst_tcentroid_transfn(fcinfo, state, (TemporalInst *)temp,
-			operator);
+			func);
 	else if (temp->type == TEMPORALI)
 		result = tpointi_tcentroid_transfn(fcinfo, state, (TemporalI *)temp,
-			operator);
+			func);
 	else if (temp->type == TEMPORALSEQ)
 		result = tpointseq_tcentroid_transfn(fcinfo, state, (TemporalSeq *)temp,
-			operator);
+			func);
 	else if (temp->type == TEMPORALS)
 		result = tpoints_tcentroid_transfn(fcinfo, state, (TemporalS *)temp,
-			operator);
+			func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported")));
@@ -223,13 +225,13 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 			errmsg("Operation not supported")));
 	
 	/* Get a pointer to the first element of the first state */
-	Datum (*operator)(Datum, Datum) = hasz ?
+	Datum (*func)(Datum, Datum) = hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
 	AggregateState *result;
 	if (state1->values[0]->type == TEMPORALINST) 
-		result = temporalinst_tagg_combinefn(fcinfo, state1, state2, operator);
+		result = temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
 	else if (state1->values[0]->type == TEMPORALSEQ) 
-		result = temporalseq_tagg_combinefn(fcinfo, state1, state2, operator, false);
+		result = temporalseq_tagg_combinefn(fcinfo, state1, state2, func, false);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported")));
@@ -342,6 +344,8 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(

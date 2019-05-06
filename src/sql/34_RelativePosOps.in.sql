@@ -854,49 +854,6 @@ CREATE OPERATOR &> (
 	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
 );
 
-/*****************************************************************************/
-/* integer op tfloat */
-
-CREATE FUNCTION temporal_left(integer, tfloat)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'left_datum_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(integer, tfloat)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overleft_datum_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(integer, tfloat)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'right_datum_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(integer, tfloat)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overright_datum_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR << (
-	LEFTARG = integer, RIGHTARG = tfloat,
-	PROCEDURE = temporal_left,
-	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR &< (
-	LEFTARG = integer, RIGHTARG = tfloat,
-	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR >> (
-	LEFTARG = integer, RIGHTARG = tfloat,
-	PROCEDURE = temporal_right,
-	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR &> (
-	LEFTARG = integer, RIGHTARG = tfloat,
-	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
-);
-
 /*****************************************************************************
  * intrange 
  *****************************************************************************/
@@ -2134,49 +2091,6 @@ CREATE OPERATOR #&> (
 /*****************************************************************************
  * tfloat
  *****************************************************************************/
-/* tfloat op int */
-
-CREATE FUNCTION temporal_left(tfloat, int)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'left_temporal_datum'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(tfloat, int)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overleft_temporal_datum'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(tfloat, int)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'right_temporal_datum'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(tfloat, int)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overright_temporal_datum'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR << (
-	LEFTARG = tfloat, RIGHTARG = int,
-	PROCEDURE = temporal_left,
-	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR &< (
-	LEFTARG = tfloat, RIGHTARG = int,
-	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR >> (
-	LEFTARG = tfloat, RIGHTARG = int,
-	PROCEDURE = temporal_right,
-	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
-);
-CREATE OPERATOR &> (
-	LEFTARG = tfloat, RIGHTARG = int,
-	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
-);
-
-/*****************************************************************************/
 /* tfloat op float */
 
 CREATE FUNCTION temporal_left(tfloat, float)

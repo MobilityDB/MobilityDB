@@ -114,27 +114,45 @@ timestampset_copy(TimestampSet *ts)
 	return result;
 }
 
-/* Binary search of a timestamptz in a TimestampSet */
+/*
+ * Binary search of a timestamptz in a timestampset.
+ * If the timestamp is found, the position of the period is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * timestamps or after. For example, given 3 timestamps, the result of the 
+ * function if the timestamp is not found will be as follows: 
+ *			0   	1		2
+ *			|		|		|
+ * 1)	t^ 							=> result = 0
+ * 2)			t^ 					=> result = 1
+ * 3)					t^ 			=> result = 2
+ * 4)							t^	=> result = 3
+ */
 
-int
-timestampset_find_timestamp(TimestampSet *ts, TimestampTz t) 
+bool 
+timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *pos) 
 {
 	int first = 0;
 	int last = ts->count - 1;
-	int middle = (first + last)/2;
+	int middle = 0; /* make compiler quiet */
 	while (first <= last) 
 	{
+		middle = (first + last)/2;
 		TimestampTz t1 = timestampset_time_n(ts, middle);
-		int cmp = timestamp_cmp_internal(t1, t);
+		int cmp = timestamp_cmp_internal(t, t1);
 		if (cmp == 0)
-			return middle;
+		{
+			*pos = middle;
+			return true;
+		}
 		if (cmp < 0)
 			last = middle - 1;
 		else
 			first = middle + 1;
-		middle = (first + last)/2;
 	}
-	return -1;
+	if (middle == ts->count)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /*****************************************************************************
@@ -288,10 +306,10 @@ timestamp_as_timestampset(PG_FUNCTION_ARGS)
  * Accessor functions 
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_size);
+PG_FUNCTION_INFO_V1(timestampset_mem_size);
 
 PGDLLEXPORT Datum
-timestampset_size(PG_FUNCTION_ARGS)
+timestampset_mem_size(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
@@ -387,7 +405,7 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(ts, 0);
 		PG_RETURN_NULL();
 	}
-	TimestampTz result = timestampset_time_n(ts, n + 1);
+	TimestampTz result = timestampset_time_n(ts, n - 1);
 	PG_FREE_IF_COPY(ts, 0);
 	PG_RETURN_TIMESTAMPTZ(result);
 }
@@ -443,7 +461,6 @@ timestampset_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	TimestampSet *result = timestampset_shift_internal(ts, interval);
 	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(interval, 1);
 	PG_RETURN_POINTER(result);
 }
 

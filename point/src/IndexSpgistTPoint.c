@@ -64,7 +64,7 @@
  * that we don't yet have as infinity.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
- * 		Université Libre de Bruxelles
+ * 		Universitï¿½ Libre de Bruxelles
  * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
@@ -574,9 +574,9 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 	queries = (GBOX *) palloc(sizeof(GBOX) * in->nkeys);
 	for (i = 0; i < in->nkeys; i++)
 	{
-        StrategyNumber strategy = in->scankeys[i].sk_strategy;
+		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
-        
+		
 		if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 			/* We do not test the return value of the next function since
 			   if the result is false all dimensions of the box have been 
@@ -729,8 +729,8 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
 	bool res = true;
 	int i;
 
-	/* Initialize the value to recheck, will be updated below */
-	out->recheck = true;
+	/* Initialize the value to do not recheck, will be updated below */
+	out->recheck = false;
 
 	/* leafDatum is what it is... */
 	out->leafValue = in->leafDatum;
@@ -767,8 +767,8 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
 		}
 		else if (subtype == type_oid(T_PERIOD))
 		{
-			Period *period = DatumGetPeriod(in->scankeys[i].sk_argument);
-			period_to_gbox_internal(&query, period);
+			Period *p = DatumGetPeriod(in->scankeys[i].sk_argument);
+			period_to_gbox_internal(&query, p);
 			res = index_leaf_consistent_gbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_PERIODSET))

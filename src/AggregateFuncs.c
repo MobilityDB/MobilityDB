@@ -132,11 +132,11 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 void
 aggstate_clear(AggregateState *state)
 {
-    for (int i = 0; i < state->size; i ++) {
-        pfree(state->values[i]) ;
-        state->values[i] = NULL ;
-        state->size = 0 ;
-    }
+	for (int i = 0; i < state->size; i ++) {
+		pfree(state->values[i]) ;
+		state->values[i] = NULL ;
+		state->size = 0 ;
+	}
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
@@ -332,10 +332,9 @@ tnumberi_transform_tavg(TemporalI *ti)
 	return result;
 }
 
-static TemporalSeq **
-tintseq_transform_tavg(TemporalSeq *seq, int *count)
+static int
+tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * seq->count);
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
@@ -343,10 +342,10 @@ tintseq_transform_tavg(TemporalSeq *seq, int *count)
 		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
 			true, true, false);
 		pfree(inst1);
-		*count = 1;
-		return result;
+		return 1;
 	}
 	
+	int count;
 	TemporalInst *instants[2];
 	TemporalInst *inst1, *inst2;
 	inst1 = temporalseq_inst_n(seq, 0);
@@ -376,16 +375,16 @@ tintseq_transform_tavg(TemporalSeq *seq, int *count)
 		instants[0] = tnumberinst_transform_tavg(inst2);
 		result[seq->count-1] = temporalseq_from_temporalinstarr(instants, 1,
 			true, true, false);
-		*count = seq->count;
+		count = seq->count;
 		pfree(instants[0]);
 	}
 	else
-		*count = seq->count - 1;
-	return result;
+		count = seq->count - 1;
+	return count;
 }
 
-static TemporalSeq **
-tfloatseq_transform_tavg(TemporalSeq *seq, int *count)
+int 
+tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -393,51 +392,37 @@ tfloatseq_transform_tavg(TemporalSeq *seq, int *count)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 	result[0] = temporalseq_from_temporalinstarr(instants, 
 		seq->count,	seq->period.lower_inc, seq->period.upper_inc, false);
 		
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
-
-	*count = 1;
-	return result;
+	return 1;
 }
 
-static TemporalSeq **
-tnumberseq_transform_tavg(TemporalSeq *seq, int *count)
+static int
+tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->valuetypid == INT4OID)
-		return tintseq_transform_tavg(seq, count);
+		return tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
-		return tfloatseq_transform_tavg(seq, count);
+		return tfloatseq_transform_tavg(result, seq);
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 		errmsg("Operation not supported")));
 }
 
-static TemporalSeq **
-tnumbers_transform_tavg(TemporalS *ts)
+static int
+tnumbers_transform_tavg(TemporalSeq **result, TemporalS *ts)
 {
-	TemporalSeq ***sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int *countseqs = palloc0(sizeof(int) * ts->count);
-	int totalseqs = 0;
+	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tnumberseq_transform_tavg(seq, &countseqs[i]);
-		totalseqs += countseqs[i];
+		countstep = tnumberseq_transform_tavg(&result[k], seq);
+		k += countstep;
 	}
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * totalseqs);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		for (int j = 0; j < countseqs[i]; j++)
-			result[k++] = sequences[i][j];
-		pfree(sequences[i]);
-	}
-	pfree(countseqs);
-	return result;
+	return k;
 }
 
 /*****************************************************************************
@@ -449,14 +434,14 @@ tnumbers_transform_tavg(TemporalS *ts)
  */
 AggregateState *
 temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
-	TemporalInst *inst, Datum (*operator)(Datum, Datum))
+	TemporalInst *inst, Datum (*func)(Datum, Datum))
 {
 	AggregateState *state2 = aggstate_make(fcinfo, 1, (Temporal **)&inst);
 	if (state->size == 0)
 		return state2;
 
 	AggregateState *result = temporalinst_tagg_combinefn(fcinfo, state, 
-		state2, operator);
+		state2, func);
 
 	if (result != state)
 		pfree(state);
@@ -471,7 +456,7 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
  */
 AggregateState *
 temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*operator)(Datum, Datum))
+	AggregateState *state2,	Datum (*func)(Datum, Datum))
 {
 	int count1 = state1->size;
 	int count2 = state2->size;
@@ -505,7 +490,7 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 		if (timestamp_cmp_internal(inst->t, state11[j]->t) == 0)
 		{
 			TemporalInst *inst1 = temporalinst_make(
-				operator(temporalinst_value(state11[j]), temporalinst_value(inst)),
+				func(temporalinst_value(state11[j]), temporalinst_value(inst)),
 				inst->t, inst->valuetypid);
 			newinsts[newcount1++] = mustfree[freecount++] = inst1;
 			i++;
@@ -559,7 +544,7 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
  */
 static AggregateState *
 temporali_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalI *ti, Datum (*operator)(Datum, Datum))
+	TemporalI *ti, Datum (*func)(Datum, Datum))
 {
 	TemporalInst **instants = temporali_instantarr(ti);
 	AggregateState *state2 = aggstate_make(fcinfo, ti->count, (Temporal **)instants);
@@ -567,7 +552,7 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 		return state2;
 
 	AggregateState *result = temporalinst_tagg_combinefn(fcinfo, state, 
-		state2, operator);
+		state2, func);
 
 	if (result != state)
 		pfree(state);
@@ -589,7 +574,7 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 void
 temporalseq_tagg1(TemporalSeq **result,
 	TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum (*operator)(Datum, Datum), bool crossings, int *newcount)
+	Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
 	if (intersect == NULL)
@@ -613,7 +598,7 @@ temporalseq_tagg1(TemporalSeq **result,
 	 * If the two sequences intersect there will be at most 3 sequences in the
 	 * result: one before the intersection, one for the intersection, and one 
 	 * after the intersection. This will be also the case for discrete sequences
-     * (e.g., tint) that has the last value different from the previous one as
+	 * (e.g., tint) that has the last value different from the previous one as
 	 * tint '[1@2000-01-03, 2@2000-01-04]' and tint '[3@2000-01-01, 4@2000-01-05]'
 	 * whose result for sum would be the following three sequences
 	 * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and
@@ -663,7 +648,7 @@ temporalseq_tagg1(TemporalSeq **result,
 		TemporalInst *inst1 = temporalseq_inst_n(syncseq1, i);
 		TemporalInst *inst2 = temporalseq_inst_n(syncseq2, i);
 		instants[i] = temporalinst_make(
-			operator(temporalinst_value(inst1), temporalinst_value(inst2)),
+			func(temporalinst_value(inst1), temporalinst_value(inst2)),
 			inst1->t, inst1->valuetypid);
 	}
 	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
@@ -711,7 +696,7 @@ temporalseq_tagg1(TemporalSeq **result,
  */
 TemporalSeq **
 temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
-	int count2, Datum (*operator)(Datum, Datum), bool crossings, int *newcount)
+	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
 	/*
 	 * Each sequence can be split 3 times, there may be count - 1 holes between
@@ -726,7 +711,7 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
 	TemporalSeq *seq2 = sequences2[j];
 	while (i < count1 && j < count2)
 	{
-		temporalseq_tagg1(&sequences[k], seq1, seq2, operator, crossings,
+		temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings,
 			&countstep);
 		k += countstep - 1;
 		/* If both upper bounds are equal */
@@ -786,11 +771,11 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
  
 AggregateState *
 temporalseq_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool crossings)
+	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool crossings)
 {
 	AggregateState *state2 = aggstate_make(fcinfo, 1, (Temporal **)&seq);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2,
-		operator, crossings);
+		func, crossings);
 	if (result != state)
 		pfree(state);
 	if (result != state2)
@@ -803,7 +788,7 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
  */
 AggregateState *
 temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*operator)(Datum, Datum), bool crossings)
+	AggregateState *state2,	Datum (*func)(Datum, Datum), bool crossings)
 {
 	int count1 = state1->size;
 	int count2 = state2->size;
@@ -853,7 +838,7 @@ temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 			int newcount1 = upperidx - loweridx;
 			int newcount2;
 			TemporalSeq **newseqs = temporalseq_tagg2(&state11[loweridx], newcount1,
-				state22, count2, operator, crossings, &newcount2);
+				state22, count2, func, crossings, &newcount2);
 			/* Copy them into the aggregation state memory context */
 			AggregateState *tempstate = aggstate_make(fcinfo, newcount2, (Temporal **)newseqs); 
 			result = aggstate_splice(fcinfo, state1, tempstate, loweridx, upperidx);
@@ -878,7 +863,7 @@ temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
  */
 static AggregateState *
 temporals_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	TemporalS *ts, Datum (*operator)(Datum, Datum), bool crossings)
+	TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
 {
 	TemporalSeq **sequences = temporals_sequencearr(ts);
 	AggregateState *state2 = aggstate_make(fcinfo, ts->count, 
@@ -888,7 +873,7 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 		return state2;
 
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2, 
-		operator, crossings);
+		func, crossings);
 
 	if (result != state)
 		pfree(state);
@@ -904,20 +889,20 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 
 static AggregateState *
 temporal_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
-	Temporal *temp, Datum (*operator)(Datum, Datum), bool crossings)
+	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
 	if (temp->type == TEMPORALINST) 
 		return temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
-			operator);
+			func);
 	else if (temp->type == TEMPORALI) 
 		return temporali_tagg_transfn(fcinfo, state, (TemporalI *)temp, 
-			operator);
+			func);
 	else if (temp->type == TEMPORALSEQ) 
 		return temporalseq_tagg_transfn(fcinfo, state, (TemporalSeq *)temp, 
-			operator, crossings);
+			func, crossings);
 	else if (temp->type == TEMPORALS) 
 		return temporals_tagg_transfn(fcinfo, state, (TemporalS *)temp, 
-			operator, crossings);
+			func, crossings);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported")));
@@ -926,7 +911,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 static AggregateState *
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, 
 	AggregateState *state1, AggregateState *state2,
-	Datum (*operator)(Datum, Datum), bool crossings)
+	Datum (*func)(Datum, Datum), bool crossings)
 {
 	if (state1->size == 0)
 		return state2;
@@ -936,9 +921,9 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo,
 	/* Get a pointer to the first element of the first array */
 	Temporal *temp = (Temporal*) state1->values[0];
 	if (temp->type == TEMPORALINST)
-		return temporalinst_tagg_combinefn(fcinfo, state1, state2, operator);
+		return temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
 	if (temp->type == TEMPORALSEQ)
-		return temporalseq_tagg_combinefn(fcinfo, state1, state2, operator, crossings);
+		return temporalseq_tagg_combinefn(fcinfo, state1, state2, func, crossings);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Operation not supported")));
@@ -955,6 +940,8 @@ tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_and, false);
@@ -987,6 +974,8 @@ tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_or, false);
@@ -1021,6 +1010,8 @@ tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_int32, false);
@@ -1053,6 +1044,8 @@ tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_float8, true);
@@ -1085,6 +1078,8 @@ tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_int32, true);
@@ -1117,6 +1112,8 @@ tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_float8, true);
@@ -1149,6 +1146,8 @@ tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_sum_int32, false);
@@ -1181,6 +1180,8 @@ tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_sum_float8, false);
@@ -1213,6 +1214,8 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Temporal *tempcount = temporal_transform_tcount(temp);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, tempcount, 
@@ -1284,8 +1287,17 @@ AggregateState *
 temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
-	int count;
-	TemporalSeq **sequences = tnumberseq_transform_tavg(seq, &count);
+	int maxcount;
+	if (seq->valuetypid == INT4OID)
+		maxcount = seq->count;
+	else if (seq->valuetypid == FLOAT8OID)
+		maxcount = 1;
+    else
+	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+		errmsg("Operation not supported")));
+
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int count = tnumberseq_transform_tavg(sequences, seq);
 	AggregateState *state2 = aggstate_make(fcinfo, count, (Temporal **)sequences);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2,
 		&datum_sum_double2, false);
@@ -1305,12 +1317,22 @@ AggregateState *
 temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
-	TemporalSeq **sequences = tnumbers_transform_tavg(ts);
-	AggregateState *state2 = aggstate_make(fcinfo, ts->count, (Temporal **)sequences);
+	int maxcount;
+	if (ts->valuetypid == INT4OID)
+		maxcount = ts->totalcount;
+	else if (ts->valuetypid == FLOAT8OID)
+		maxcount = ts->count;
+    else
+	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+		errmsg("Operation not supported")));
+
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
+	int count = tnumbers_transform_tavg(sequences, ts);
+	AggregateState *state2 = aggstate_make(fcinfo, count, (Temporal **)sequences);
 	AggregateState *result = temporalseq_tagg_combinefn(fcinfo, state, state2, 
 		&datum_sum_double2, false);
 
-	for (int i = 0; i < ts->count; i++)
+	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	if (result != state)
@@ -1328,6 +1350,8 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state =  (PG_ARGISNULL(0)) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = NULL;
 	if (temp->type == TEMPORALINST)
@@ -1376,6 +1400,8 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)temporali_from_temporalinstarr(
@@ -1454,6 +1480,8 @@ temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+	if (state->size == 0)
+		PG_RETURN_NULL();
 	Temporal *result = NULL;
 	if (state->values[0]->type == TEMPORALINST)
 		result = (Temporal *)temporalinst_tavg_finalfn(
@@ -1477,6 +1505,8 @@ ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_min_text, false);
@@ -1509,6 +1539,8 @@ ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	AggregateState *state = PG_ARGISNULL(0) ?
 		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = temporal_tagg_transfn(fcinfo, state, temp, 
 		&datum_max_text, false);

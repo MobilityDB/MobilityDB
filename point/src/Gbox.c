@@ -40,13 +40,13 @@ gbox_in(PG_FUNCTION_ARGS)
 
 char* gbox_to_string_mdb(const GBOX *gbox)
 {
-	static int sz = 138;
+	static int sz = 256;
 	char *str = NULL;
 
 	if ( ! gbox )
 		return strdup("NULL POINTER");
 
-	str = (char*)lwalloc(sz);
+	str = (char *)palloc(sz);
 
 	if ( FLAGS_GET_GEODETIC(gbox->flags) )
 	{
@@ -335,53 +335,81 @@ int
 gbox_cmp_internal(const GBOX *g1, const GBOX *g2)
 {
 	/* Compare the box minima */
-	if (g1->xmin < g1->xmin)
+	if (g1->xmin < g2->xmin)
 		return -1;
-	if (g1->xmin > g1->xmin)
+	if (g1->xmin > g2->xmin)
 		return 1;
-	if (g1->ymin < g1->ymin)
+	if (g1->ymin < g2->ymin)
 		return -1;
-	if (g1->ymin > g1->ymin)
+	if (g1->ymin > g2->ymin)
 		return 1;
 	if ( FLAGS_GET_Z(g1->flags) && FLAGS_GET_Z(g2->flags) )
 	{
-		if (g1->zmin < g1->zmin)
+		if (g1->zmin < g2->zmin)
 			return -1;
-		if (g1->zmin > g1->zmin)
+		if (g1->zmin > g2->zmin)
 			return 1;
 	}
 	if ( FLAGS_GET_M(g1->flags) && FLAGS_GET_M(g2->flags) )
 	{
-		if (g1->mmin < g1->mmin)
+		if (g1->mmin < g2->mmin)
 			return -1;
-		if (g1->mmin > g1->mmin)
+		if (g1->mmin > g2->mmin)
 			return 1;
 	}
 	/* Compare the box maxima */
-	if (g1->xmax < g1->xmax)
+	if (g1->xmax < g2->xmax)
 		return -1;
-	if (g1->xmax > g1->xmax)
+	if (g1->xmax > g2->xmax)
 		return 1;
-	if (g1->ymax < g1->ymax)
+	if (g1->ymax < g2->ymax)
 		return -1;
-	if (g1->ymax > g1->ymax)
+	if (g1->ymax > g2->ymax)
 		return 1;
 	if ( FLAGS_GET_Z(g1->flags) && FLAGS_GET_Z(g2->flags) )
 	{
-		if (g1->zmax < g1->zmax)
+		if (g1->zmax < g2->zmax)
 			return -1;
-		if (g1->zmax > g1->zmax)
+		if (g1->zmax > g2->zmax)
 			return 1;
 	}
 	if ( FLAGS_GET_M(g1->flags) && FLAGS_GET_M(g2->flags) )
 	{
-		if (g1->mmax < g1->mmax)
+		if (g1->mmax < g2->mmax)
 			return -1;
-		if (g1->mmax > g1->mmax)
+		if (g1->mmax > g2->mmax)
 			return 1;
 	}
 	/* The two boxes are equal */
 	return 0;
+}
+
+PG_FUNCTION_INFO_V1(gbox_eq);
+
+PGDLLEXPORT Datum
+gbox_eq(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int cmp = gbox_cmp_internal(box1, box2);
+	if (cmp == 0)
+		PG_RETURN_BOOL(true);
+	else
+		PG_RETURN_BOOL(false);
+}
+
+PG_FUNCTION_INFO_V1(gbox_ne);
+
+PGDLLEXPORT Datum
+gbox_ne(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int cmp = gbox_cmp_internal(box1, box2);
+	if (cmp != 0)
+		PG_RETURN_BOOL(true);
+	else
+		PG_RETURN_BOOL(false);
 }
 
 /*****************************************************************************/

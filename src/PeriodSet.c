@@ -89,7 +89,7 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 	int newcount = count;
 	if (normalize && count > 1)
 		newperiods = periodarr_normalize(periods, count, &newcount);
-	size_t memsize = double_pad(int4_pad(sizeof(Period)) * (newcount+1));
+	size_t memsize = double_pad(sizeof(Period)) * (newcount+1);
 	/* Array of pointers containing the pointers to the component Period,
 	   and a pointer to the bbox */
 	size_t pdata = double_pad(sizeof(PeriodSet) + (newcount+1) * sizeof(size_t));
@@ -103,14 +103,14 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 	{
 		memcpy(((char *) result) + pdata + pos, newperiods[i], sizeof(Period));
 		offsets[i] = pos;
-		pos += int4_pad(sizeof(Period));
+		pos += double_pad(sizeof(Period));
 	}
 	/* Precompute the bounding box */
 	period_set(&bbox, newperiods[0]->lower, newperiods[newcount-1]->upper,
 		newperiods[0]->lower_inc, newperiods[newcount-1]->upper_inc);
 	offsets[newcount] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += int4_pad(sizeof(Period));
+	pos += double_pad(sizeof(Period));
 	/* Normalize */
 	if (normalize && count > 1)
 	{
@@ -129,26 +129,45 @@ periodset_copy(PeriodSet *ps)
 	return result;
 }
 
-/* Binary search of a timestamptz in a PeriodSet */
- 
-int
-periodset_find_timestamp(PeriodSet *ps, TimestampTz t) 
+/*
+ * Binary search of a timestamptz in a periodset.
+ * If the timestamp is found, the position of the period is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * periods or after. For example, given 3 periods, the result of the 
+ * function if the value is not found will be as follows: 
+ *				0			1			2
+ *			|------|	|------|	|------|   
+ * 1)	t^ 											=> result = 0
+ * 2)				 t^ 							=> result = 1
+ * 3)							 t^ 				=> result = 2
+ * 4)										  t^	=> result = 3
+ */
+
+bool 
+periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos) 
 {
 	int first = 0;
 	int last = ps->count - 1;
-	int middle = (first + last)/2;
+	int middle = 0; /* make compiler quiet */
+	Period *p = NULL; /* make compiler quiet */
 	while (first <= last) 
 	{
-		Period *p = periodset_per_n(ps, middle);
+		middle = (first + last)/2;
+		p = periodset_per_n(ps, middle);
 		if (contains_period_timestamp_internal(p, t))
-			return middle;
+		{
+			*pos = middle;
+			return true;
+		}
 		if (timestamp_cmp_internal(t, p->lower) <= 0)
 			last = middle - 1;
 		else
 			first = middle + 1;
-		middle = (first + last)/2;
 	}
-	return -1;
+	if (timestamp_cmp_internal(t, p->upper) >= 0)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /* Duration of the PeriodSet as a double */
@@ -304,7 +323,7 @@ periodset_from_periodarr(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-/* Cast a TimestampTz value as a TimestampSet value */
+/* Cast a TimestampTz value as a PeriodSet value */
 
 PG_FUNCTION_INFO_V1(timestamp_as_periodset);
 
@@ -318,6 +337,34 @@ timestamp_as_periodset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Cast a TimestampSet value as a PeriodSet value */
+
+PeriodSet *
+timestampset_as_periodset_internal(TimestampSet *ts)
+{
+	Period **periods = palloc(sizeof(Period *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TimestampTz t = timestampset_time_n(ts, i);
+		periods[i] = period_make(t, t, true, true);
+	}
+	PeriodSet *result = periodset_from_periodarr_internal(periods, ts->count, false);
+	for (int i = 0; i < ts->count; i++)
+		pfree(periods[i]);
+	pfree(periods);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(timestampset_as_periodset);
+
+PGDLLEXPORT Datum
+timestampset_as_periodset(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	PeriodSet *result = timestampset_as_periodset_internal(ts);
+	PG_RETURN_POINTER(result);
+}
+
 /* Cast a Period value as a PeriodSet value */
 
 PG_FUNCTION_INFO_V1(period_as_periodset);
@@ -327,7 +374,6 @@ period_as_periodset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
-	PG_FREE_IF_COPY(p, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -335,10 +381,10 @@ period_as_periodset(PG_FUNCTION_ARGS)
  * Accessor functions 
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(periodset_size);
+PG_FUNCTION_INFO_V1(periodset_mem_size);
 
 PGDLLEXPORT Datum
-periodset_size(PG_FUNCTION_ARGS)
+periodset_mem_size(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ps)));
@@ -659,7 +705,6 @@ periodset_shift(PG_FUNCTION_ARGS)
 	Interval *interval = PG_GETARG_INTERVAL_P(1);
 	PeriodSet *result = periodset_shift_internal(ps, interval);
 	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(interval, 1);
 	PG_RETURN_POINTER(result);
 }
 

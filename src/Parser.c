@@ -273,7 +273,7 @@ periodset_parse(char **str)
 /* Temporal Types */
 
 TemporalInst *
-temporalinst_parse1(char **str, Oid basetype, bool end) 
+temporalinst_parse(char **str, Oid basetype, bool end) 
 {
 	p_whitespace(str);
 	/* The next two instructions will throw an exception if they fail */
@@ -291,14 +291,8 @@ temporalinst_parse1(char **str, Oid basetype, bool end)
 	return temporalinst_make(elem, t, basetype);
 }
 
-static TemporalInst *
-temporalinst_parse(char **str, Oid basetype) 
-{
-	return temporalinst_parse1(str, basetype, true);
-}
-
-static TemporalI *
-temporali_parse1(char **str, Oid basetype, bool end) 
+TemporalI *
+temporali_parse(char **str, Oid basetype) 
 {
 	p_whitespace(str);
 	if (!p_obrace(str))
@@ -307,33 +301,30 @@ temporali_parse1(char **str, Oid basetype, bool end)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalInst *inst = temporalinst_parse1(str, basetype, false);
+	TemporalInst *inst = temporalinst_parse(str, basetype, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(inst);
-		inst = temporalinst_parse1(str, basetype, false);
+		inst = temporalinst_parse(str, basetype, false);
 	}
 	pfree(inst);
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
-	if (end)
-	{
-		/* Ensure there is no more input */
-		p_whitespace(str);
-		if (**str != 0)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse temporal value")));
-	}
+	/* Ensure there is no more input */
+	p_whitespace(str);
+	if (**str != 0)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse temporal value")));
 	/* Second parsing */
 	*str = bak;
 	TemporalInst **insts = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = temporalinst_parse1(str, basetype, false);
+		insts[i] = temporalinst_parse(str, basetype, false);
 	}
 	p_cbrace(str);
 	TemporalI *result = temporali_from_temporalinstarr(insts, count);
@@ -345,14 +336,8 @@ temporali_parse1(char **str, Oid basetype, bool end)
 	return result;
 }
 
-static TemporalI *
-temporali_parse(char **str, Oid basetype) 
-{
-	return temporali_parse1(str, basetype, true);
-}
-
 static TemporalSeq *
-temporalseq_parse1(char **str, Oid basetype, bool end) 
+temporalseq_parse(char **str, Oid basetype, bool end) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -367,13 +352,13 @@ temporalseq_parse1(char **str, Oid basetype, bool end)
 	// FIXME: I pre-parse to have the count, then re-parse. This is the only
 	// approach I see at the moment which is both correct and simple
 	char *bak = *str;
-	TemporalInst *inst = temporalinst_parse1(str, basetype, false);
+	TemporalInst *inst = temporalinst_parse(str, basetype, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(inst);
-		inst = temporalinst_parse1(str, basetype, false);
+		inst = temporalinst_parse(str, basetype, false);
 	}
 	pfree(inst);
 	if (p_cbracket(str))
@@ -397,7 +382,7 @@ temporalseq_parse1(char **str, Oid basetype, bool end)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		insts[i] = temporalinst_parse1(str, basetype, false);
+		insts[i] = temporalinst_parse(str, basetype, false);
 	}
 	p_cbracket(str);
 	p_cparen(str);
@@ -411,12 +396,6 @@ temporalseq_parse1(char **str, Oid basetype, bool end)
 	return result;
 }
 
-static TemporalSeq *
-temporalseq_parse(char **str, Oid basetype) 
-{
-	return temporalseq_parse1(str, basetype, true);
-}
-
 static TemporalS *
 temporals_parse(char **str, Oid basetype) 
 {
@@ -427,13 +406,13 @@ temporals_parse(char **str, Oid basetype)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalSeq *seq = temporalseq_parse1(str, basetype, false);
+	TemporalSeq *seq = temporalseq_parse(str, basetype, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(seq);
-		seq = temporalseq_parse1(str, basetype, false);
+		seq = temporalseq_parse(str, basetype, false);
 	}
 	pfree(seq);
 	if (!p_cbrace(str))
@@ -450,7 +429,7 @@ temporals_parse(char **str, Oid basetype)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = temporalseq_parse1(str, basetype, false);
+		seqs[i] = temporalseq_parse(str, basetype, false);
 	}
 	p_cbrace(str);
 	TemporalS *result = temporals_from_temporalseqarr(seqs, count, true);
@@ -467,9 +446,9 @@ temporal_parse(char **str, Oid basetype)
 {
 	p_whitespace(str);
 	if (**str != '{' && **str != '[' && **str != '(')
-		return (Temporal *)temporalinst_parse(str, basetype);
+		return (Temporal *)temporalinst_parse(str, basetype, true);
 	else if (**str == '[' || **str == '(')
-		return (Temporal *)temporalseq_parse(str, basetype);		
+		return (Temporal *)temporalseq_parse(str, basetype, true);		
 	else if (**str == '{')
 	{
 		char *bak = *str;

@@ -45,8 +45,8 @@ PG_FUNCTION_INFO_V1(double2_out);
 PGDLLEXPORT Datum
 double2_out(PG_FUNCTION_ARGS)
 {
-	double2    *d = (double2 *) PG_GETARG_POINTER(0);
-	char	   *result;
+	double2 *d = (double2 *) PG_GETARG_POINTER(0);
+	char *result;
 
 	result = psprintf("(%g,%g)", d->a, d->b);
 	PG_RETURN_CSTRING(result);
@@ -140,8 +140,8 @@ PG_FUNCTION_INFO_V1(double3_out);
 PGDLLEXPORT Datum
 double3_out(PG_FUNCTION_ARGS)
 {
-	double3    *d = (double3 *) PG_GETARG_POINTER(0);
-	char	   *result;
+	double3 *d = (double3 *) PG_GETARG_POINTER(0);
+	char *result;
 
 	result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
 	PG_RETURN_CSTRING(result);
@@ -220,8 +220,8 @@ PG_FUNCTION_INFO_V1(double4_out);
 PGDLLEXPORT Datum
 double4_out(PG_FUNCTION_ARGS)
 {
-	double4    *d = (double4 *) PG_GETARG_POINTER(0);
-	char	   *result;
+	double4 *d = (double4 *) PG_GETARG_POINTER(0);
+	char *result;
 
 	result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
 	PG_RETURN_CSTRING(result);
@@ -294,7 +294,7 @@ PGDLLEXPORT Datum
 tdouble2_in(PG_FUNCTION_ARGS)
 {
 	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-	    errmsg("Type tdouble2 is an internal type")));
+		errmsg("Type tdouble2 is an internal type")));
 	PG_RETURN_POINTER(NULL);
 }
 
@@ -304,7 +304,7 @@ PGDLLEXPORT Datum
 tdouble3_in(PG_FUNCTION_ARGS)
 {
 	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-	    errmsg("Type tdouble3 is an internal type")));
+		errmsg("Type tdouble3 is an internal type")));
 	PG_RETURN_POINTER(NULL);
 }
 
@@ -314,7 +314,7 @@ PGDLLEXPORT Datum
 tdouble4_in(PG_FUNCTION_ARGS)
 {
 	ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-	    errmsg("Type tdouble4 is an internal type")));
+		errmsg("Type tdouble4 is an internal type")));
 	PG_RETURN_POINTER(NULL);
 }
 

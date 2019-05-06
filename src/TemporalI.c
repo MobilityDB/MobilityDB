@@ -66,8 +66,8 @@ temporali_inst_n(TemporalI *ti, int index)
 void * 
 temporali_bbox_ptr(TemporalI *ti) 
 {
-    size_t *offsets = temporali_offsets_ptr(ti);
-    return temporali_data_ptr(ti) + offsets[ti->count];
+	size_t *offsets = temporali_offsets_ptr(ti);
+	return temporali_data_ptr(ti) + offsets[ti->count];
 }
 
 /* Copy the bounding box of a TemporalI in the first argument */
@@ -75,10 +75,10 @@ temporali_bbox_ptr(TemporalI *ti)
 void 
 temporali_bbox(void *box, TemporalI *ti) 
 {
-    void *box1 = temporali_bbox_ptr(ti);
+	void *box1 = temporali_bbox_ptr(ti);
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	memcpy(box, box1, bboxsize);
-    return;
+	return;
 }
 
 /* Construct a TemporalI from an array of TemporalInst */
@@ -186,7 +186,7 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t)
 		if (timestamp_cmp_internal(t, inst->t) < 0)
 			last = middle - 1;
 		else
-			first = middle + 1;    
+			first = middle + 1;
 		middle = (first + last)/2;
 	}
 	return -1;
@@ -345,7 +345,7 @@ temporali_write(TemporalI *ti, StringInfo buf)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-        temporalinst_write(inst, buf);
+		temporalinst_write(inst, buf);
 	}
 }
  
@@ -482,8 +482,10 @@ temporali_get_time(TemporalI *ti)
 {
 	Period **periods = palloc(sizeof(Period *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
-		periods[i] = period_make(temporali_inst_n(ti, i)->t, 
-			temporali_inst_n(ti, i)->t, true, true);
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		periods[i] = period_make(inst->t, inst->t, true, true);
+	}
 	PeriodSet *result = periodset_from_periodarr_internal(periods, ti->count, false);
 	for (int i = 0; i < ti->count; i++)
 		pfree(periods[i]);
@@ -727,10 +729,11 @@ temporali_shift(TemporalI *ti, Interval *interval)
 /* Restriction to a value */
 
 TemporalI *
-temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
+temporali_at_value(TemporalI *ti, Datum value)
 {
+	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporali_bbox(&box1, ti);
@@ -743,7 +746,7 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporalinst_at_value(temporali_inst_n(ti, 0), 
-			value, valuetypid);
+			value);
 		if (inst == NULL)
 			return NULL;
 		return temporali_copy(ti);
@@ -755,7 +758,7 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (datum_eq2(value, temporalinst_value(inst), valuetypid, inst->valuetypid)) 
+		if (datum_eq(value, temporalinst_value(inst), valuetypid)) 
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
@@ -767,10 +770,11 @@ temporali_at_value(TemporalI *ti, Datum value, Oid valuetypid)
 /* Restriction to the complement of a value. */
 
 TemporalI *
-temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
+temporali_minus_value(TemporalI *ti, Datum value)
 {
+	Oid valuetypid = ti->valuetypid;
 	/* Bounding box test */
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
 		BOX box1, box2;
 		temporali_bbox(&box1, ti);
@@ -783,7 +787,7 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporalinst_minus_value(temporali_inst_n(ti, 0), 
-			value, valuetypid);
+			value);
 		if (inst == NULL)
 			return NULL;
 		return temporali_copy(ti);
@@ -795,7 +799,7 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (datum_ne2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+		if (datum_ne(value, temporalinst_value(inst), valuetypid))
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
@@ -810,13 +814,13 @@ temporali_minus_value(TemporalI *ti, Datum value, Oid valuetypid)
  */
  
 TemporalI *
-temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
+temporali_at_values(TemporalI *ti, Datum *values, int count)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, 0);
-		TemporalInst *inst1 = temporalinst_at_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_at_values(inst, values, count);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1); 
@@ -831,8 +835,7 @@ temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			if (datum_eq2(temporalinst_value(inst), values[j], 
-				inst->valuetypid, valuetypid))
+			if (datum_eq(temporalinst_value(inst), values[j], ti->valuetypid))
 			{
 				instants[newcount++] = inst;
 				break;
@@ -851,13 +854,13 @@ temporali_at_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
  */
 
 TemporalI *
-temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
+temporali_minus_values(TemporalI *ti, Datum *values, int count)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, 0);
-		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count, valuetypid);
+		TemporalInst *inst1 = temporalinst_minus_values(inst, values, count);
 		if (inst1 == NULL)
 			return NULL;
 		pfree(inst1); 
@@ -873,8 +876,7 @@ temporali_minus_values(TemporalI *ti, Datum *values, int count, Oid valuetypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		for (int j = 0; j < count; j++)
 		{
-			if (datum_eq2(temporalinst_value(inst), values[j], 
-				inst->valuetypid, valuetypid))
+			if (datum_eq(temporalinst_value(inst), values[j], ti->valuetypid))
 			{
 				found = true;
 				break;
@@ -1063,7 +1065,7 @@ TemporalI *
 temporali_at_min(TemporalI *ti)
 {
 	Datum minvalue = temporali_min_value(ti);
-	return temporali_at_value(ti, minvalue, ti->valuetypid);	
+	return temporali_at_value(ti, minvalue);	
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1072,7 +1074,7 @@ TemporalI *
 temporali_minus_min(TemporalI *ti)
 {
 	Datum minvalue = temporali_min_value(ti);
-	return temporali_minus_value(ti, minvalue, ti->valuetypid);	
+	return temporali_minus_value(ti, minvalue);	
 }
 
 /* Restriction to the maximum value */
@@ -1081,7 +1083,7 @@ TemporalI *
 temporali_at_max(TemporalI *ti)
 {
 	Datum maxvalue = temporali_max_value(ti);
-	return temporali_at_value(ti, maxvalue, ti->valuetypid);	
+	return temporali_at_value(ti, maxvalue);	
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1090,7 +1092,7 @@ TemporalI *
 temporali_minus_max(TemporalI *ti)
 {
 	Datum maxvalue = temporali_max_value(ti);
-	return temporali_minus_value(ti, maxvalue, ti->valuetypid);	
+	return temporali_minus_value(ti, maxvalue);	
 }
 
 /* 
@@ -1161,7 +1163,7 @@ temporali_minus_timestamp(TemporalI *ti, TimestampTz t)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst= temporali_inst_n(ti, i);
-		if (timestamptz_cmp_internal(inst->t, t) != 0)
+		if (timestamp_cmp_internal(inst->t, t) != 0)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
@@ -1482,7 +1484,7 @@ temporali_intersects_temporali(TemporalI *ti1, TemporalI *ti2)
  *****************************************************************************/
 
 double
-temporali_lavg(TemporalI *ti)
+temporali_twavg(TemporalI *ti)
 {
 	double result = 0.0;
 	for (int i = 0; i < ti->count; i++)
@@ -1500,6 +1502,42 @@ temporali_lavg(TemporalI *ti)
  * Functions for defining B-tree index
  * The functions assume that the arguments are of the same temptypid
  *****************************************************************************/
+
+/* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporali_eq(TemporalI *ti1, TemporalI *ti2)
+{
+	/* If number of sequences are not equal */
+	if (ti1->count != ti2->count)
+		return false;
+	/* If bounding boxes are not equal */
+	void *box1 = temporali_bbox_ptr(ti1);
+	void *box2 = temporali_bbox_ptr(ti2);
+	if (!temporal_bbox_eq(ti1->valuetypid, box1, box2))
+		return false;
+	
+	/* We need to compare the composing instants */
+	for (int i = 0; i < ti1->count; i++)
+	{
+		TemporalInst *inst1 = temporali_inst_n(ti1, i);
+		TemporalInst *inst2 = temporali_inst_n(ti2, i);
+		if (!temporalinst_eq(inst1, inst2))
+			return false;
+	}
+	return true;
+}
+
+/* 
+ * Inequality operator
+ */
+bool
+temporali_ne(TemporalI *ti1, TemporalI *ti2)
+{
+	return !temporali_eq(ti1, ti2);
+}
 
 /* 
  * B-tree comparator
@@ -1525,42 +1563,6 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		return 1;
 	else
 		return 0;
-}
-
-/* 
- * Equality operator
- * The internal B-tree comparator is not used to increase efficiency
- */
-bool
-temporali_eq(TemporalI *ti1, TemporalI *ti2)
-{
-	/* If number of sequences are not equal */
-	if (ti1->count != ti2->count)
-		return false;
-	/* If bounding boxes are not equal */
-	size_t bboxsize = double_pad(temporal_bbox_size(ti1->valuetypid));
-	void *box1 = temporali_bbox_ptr(ti1);
-	void *box2 = temporali_bbox_ptr(ti2);
-	if (memcmp(box1, box2, bboxsize))
-		return false;
-	
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing one by
-	   one all composing sequences */
-	/* Total size minus size of the bounding box */
-	size_t sz1 = VARSIZE(ti1) - bboxsize;
-	if (!memcmp(ti1, ti2, sz1))
-		return true;
-	return false;
-}
-
-/* 
- * Inequality operator
- */
-bool
-temporali_ne(TemporalI *ti1, TemporalI *ti2)
-{
-	return !temporali_eq(ti1, ti2);
 }
 
 /*****************************************************************************

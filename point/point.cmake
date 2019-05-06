@@ -25,20 +25,14 @@ point/src/sql/50_Gbox.in.sql
 point/src/sql/52_TemporalPoint.in.sql
 point/src/sql/54_ComparisonOps.in.sql
 point/src/sql/56_TemporalGeo.in.sql
-point/src/sql/58_RelativePosOpsG.in.sql
-point/src/sql/60_RelativePosOpsM.in.sql
+point/src/sql/58_BoundBoxOps.in.sql
+point/src/sql/60_RelativePosOps.in.sql
 point/src/sql/62_TempDistance.in.sql
 point/src/sql/64_GeoAggFuncs.in.sql
-point/src/sql/66_BoundBoxOpsG.in.sql
-point/src/sql/68_BoundBoxOpsM.in.sql
-point/src/sql/70_SpatialRelsG.in.sql
-point/src/sql/72_SpatialRelsM.in.sql
-point/src/sql/74_TempSpatialRelsG.in.sql
-point/src/sql/76_TempSpatialRelsM.in.sql
-point/src/sql/78_IndexGistTPointM.in.sql
-point/src/sql/80_IndexSpgistTPointM.in.sql
-point/src/sql/82_IndexGistTPointG.in.sql
-point/src/sql/84_IndexSpgistTPointG.in.sql
+point/src/sql/66_SpatialRels.in.sql
+point/src/sql/68_TempSpatialRels.in.sql
+point/src/sql/70_IndexGistTPoint.in.sql
+point/src/sql/72_IndexSpgistTPoint.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})

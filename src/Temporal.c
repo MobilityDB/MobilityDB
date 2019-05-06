@@ -213,7 +213,7 @@ intersection_temporal_temporal(Temporal *temp1, Temporal *temp2,
 		result = intersection_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
 			(TemporalS **)inter1, (TemporalS **)inter2);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 
@@ -298,7 +298,7 @@ synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 		result = synchronize_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
 			(TemporalS **)synctemp1, (TemporalS **)synctemp2, crossings);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 
@@ -366,7 +366,7 @@ temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum))
 		result = temporalseq_to_string((TemporalSeq *)temp, value_out);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_to_string((TemporalS *)temp, value_out);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
@@ -386,7 +386,7 @@ temporal_out(PG_FUNCTION_ARGS)
 /* Send function */
 
 void temporal_write(Temporal* temp, StringInfo buf) {
-    pq_sendint(buf, temp->type, 2);
+	pq_sendint(buf, temp->type, 2);
 	if (temp->type == TEMPORALINST)
 		temporalinst_write((TemporalInst *) temp, buf);
 	else if (temp->type == TEMPORALI)
@@ -416,20 +416,20 @@ temporal_send(PG_FUNCTION_ARGS)
 /* Receive function */
 
 Temporal* temporal_read(StringInfo buf, Oid valuetypid) {
-    Temporal *result = NULL ;
-    int type = (int) pq_getmsgint(buf, 2);
-    if (type == TEMPORALINST)
-        result = (Temporal *) temporalinst_read(buf, valuetypid);
-    else if (type == TEMPORALI)
-        result = (Temporal *) temporali_read(buf, valuetypid);
-    else if (type == TEMPORALSEQ)
-        result = (Temporal *) temporalseq_read(buf, valuetypid);
-    else if (type == TEMPORALS)
-        result = (Temporal *) temporals_read(buf, valuetypid);
-    else
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                errmsg("Bad temporal type")));
-    return result ;
+	Temporal *result = NULL ;
+	int type = (int) pq_getmsgint(buf, 2);
+	if (type == TEMPORALINST)
+		result = (Temporal *) temporalinst_read(buf, valuetypid);
+	else if (type == TEMPORALI)
+		result = (Temporal *) temporali_read(buf, valuetypid);
+	else if (type == TEMPORALSEQ)
+		result = (Temporal *) temporalseq_read(buf, valuetypid);
+	else if (type == TEMPORALS)
+		result = (Temporal *) temporals_read(buf, valuetypid);
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Bad temporal type")));
+	return result ;
 }
 
 PG_FUNCTION_INFO_V1(temporal_recv);
@@ -511,7 +511,7 @@ PGDLLEXPORT Datum temporal_enforce_typmod(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Constructor functions
- ******************************************	**********************************/
+ ****************************************************************************/
 
  /* Make temporal instant value from two arguments */
 
@@ -640,12 +640,9 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 
 /* Cast a temporal integer as a temporal float */
 
-PG_FUNCTION_INFO_V1(tint_as_tfloat);
-
-PGDLLEXPORT Datum
-tint_as_tfloat(PG_FUNCTION_ARGS)
+Temporal *
+tint_as_tfloat_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)tintinst_as_tfloatinst((TemporalInst *)temp);
@@ -655,9 +652,19 @@ tint_as_tfloat(PG_FUNCTION_ARGS)
 		result = (Temporal *)tintseq_as_tfloatseq((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tints_as_tfloats((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tint_as_tfloat);
+
+PGDLLEXPORT Datum
+tint_as_tfloat(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = tint_as_tfloat_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -683,7 +690,7 @@ temporal_as_temporalinst(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_as_temporalinst((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)temporals_as_temporalinst((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -707,7 +714,7 @@ temporal_as_temporali(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_as_temporali((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)temporals_as_temporali((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -731,7 +738,7 @@ temporal_as_temporalseq(PG_FUNCTION_ARGS)
 		result = temporal_copy(temp);
 	else if (temp->type == TEMPORALS)
 		result = (Temporal *)temporals_as_temporalseq((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -755,7 +762,7 @@ temporal_as_temporals(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_as_temporals((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = temporal_copy(temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -782,7 +789,7 @@ Datum temporal_type(PG_FUNCTION_ARGS)
 		strcpy(str, "Sequence");
 	else if (temp->type == TEMPORALS) 
 		strcpy(str, "SequenceSet");
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	text *result = cstring_to_text(str);
@@ -850,7 +857,7 @@ tfloat_ranges(PG_FUNCTION_ARGS)
 		result = tfloatseq_ranges((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = tfloats_ranges((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -891,10 +898,10 @@ Datum temporal_get_time(PG_FUNCTION_ARGS)
 		result = temporalseq_get_time((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_get_time((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
-	PG_RETURN_TEXT_P(result);
+	PG_RETURN_POINTER(result);
 }
 
 /* Timestamp of a temporal instant */
@@ -927,7 +934,7 @@ temporal_bbox(void *box, const Temporal *temp)
 		temporalseq_bbox(box, (TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		temporals_bbox(box, (TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return;
@@ -972,7 +979,7 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 		result = tnumberseq_value_range((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = tnumbers_value_range((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -999,7 +1006,7 @@ temporal_start_value(PG_FUNCTION_ARGS)
 		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, 0);
 		result = temporalinst_value_copy(temporalseq_inst_n(seq, 0));
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);	
@@ -1028,7 +1035,7 @@ temporal_end_value(PG_FUNCTION_ARGS)
 		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, ((TemporalS *)temp)->count - 1);
 		result = temporalinst_value_copy(temporalseq_inst_n(seq, seq->count - 1));
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1052,7 +1059,7 @@ temporal_min_value_internal(Temporal *temp)
 	else if (temp->type == TEMPORALS) 
 		result = datum_copy(temporals_min_value((TemporalS *)temp),
 			temp->valuetypid);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
@@ -1089,7 +1096,7 @@ temporal_max_value(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = datum_copy(temporals_max_value((TemporalS *)temp),
 			temp->valuetypid);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1115,7 +1122,7 @@ temporal_duration(PG_FUNCTION_ARGS)
 		result = temporalseq_duration((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_duration((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1135,7 +1142,7 @@ temporal_timespan_internal(Period *p, Temporal *temp)
 		temporalseq_timespan(p, (TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		temporals_timespan(p, (TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 }
@@ -1262,7 +1269,7 @@ temporal_num_instants(PG_FUNCTION_ARGS)
 		result = ((TemporalSeq *)temp)->count;
 	else if (temp->type == TEMPORALS) 
 		result = temporals_num_instants((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1287,7 +1294,7 @@ temporal_start_instant(PG_FUNCTION_ARGS)
 		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, 0);
 		result = (Temporal *)temporalinst_copy(temporalseq_inst_n(seq, 0));
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);	
@@ -1317,7 +1324,7 @@ temporal_end_instant(PG_FUNCTION_ARGS)
 			((TemporalS *)temp)->count - 1);
 		result = (Temporal *)temporalinst_copy(temporalseq_inst_n(seq, seq->count - 1));
 	}	
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1351,10 +1358,13 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 			result = (Temporal *)temporalinst_copy(
 				temporalseq_inst_n((TemporalSeq *)temp, n - 1));
 	}
-	else if (temp->type == TEMPORALS) 
-		result = (Temporal *)temporalinst_copy(temporals_instant_n(
-			(TemporalS *)temp, n));
-    else
+	else if (temp->type == TEMPORALS)
+	{
+		if (n >= 1 && n <= ((TemporalS *)temp)->totalcount)
+			result = (Temporal *)temporalinst_copy(temporals_instant_n(
+				(TemporalS *)temp, n));
+	}
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1380,7 +1390,7 @@ temporal_instants(PG_FUNCTION_ARGS)
 		result = temporalseq_instants_array((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_instants((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1402,7 +1412,7 @@ temporal_start_timestamp_internal(Temporal *temp)
 		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, 0);
 		result = temporalseq_inst_n(seq, 0)->t;
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
@@ -1439,7 +1449,7 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, ((TemporalS *)temp)->count - 1);
 		result = temporalseq_inst_n(seq, seq->count - 1)->t;
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1463,7 +1473,7 @@ temporal_num_timestamps(PG_FUNCTION_ARGS)
 		result = ((TemporalSeq *)temp)->count;
 	else if (temp->type == TEMPORALS) 
 		result = temporals_num_timestamps((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1507,7 +1517,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			found = false;
 	else if (temp->type == TEMPORALS) 
 		found = temporals_timestamp_n((TemporalS *)temp, n, &result);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1533,7 +1543,7 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 		result = temporalseq_timestamps((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_timestamps((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1558,7 +1568,7 @@ temporal_ever_equals(PG_FUNCTION_ARGS)
 		result = temporalseq_ever_equals((TemporalSeq *)temp, value);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_ever_equals((TemporalS *)temp, value);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1584,7 +1594,7 @@ temporal_always_equals(PG_FUNCTION_ARGS)
 		result = temporalseq_always_equals((TemporalSeq *)temp, value);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_always_equals((TemporalS *)temp, value);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1610,7 +1620,7 @@ temporal_shift(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_shift((TemporalSeq *)temp, interval);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_shift((TemporalS *)temp, interval);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1668,17 +1678,17 @@ temporal_at_value(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
-			(TemporalInst *)temp, value, valuetypid);
+			(TemporalInst *)temp, value);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_value(
-			(TemporalI *)temp, value, valuetypid);
+			(TemporalI *)temp, value);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_value(
-			(TemporalSeq *)temp, value, valuetypid);
+			(TemporalSeq *)temp, value);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_value(
-			(TemporalS *)temp, value, valuetypid);
-    else
+			(TemporalS *)temp, value);
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1701,20 +1711,21 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
-			(TemporalInst *)temp, value, valuetypid);
+			(TemporalInst *)temp, value);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_value(
-			(TemporalI *)temp, value, valuetypid);
+			(TemporalI *)temp, value);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_value(
-			(TemporalSeq *)temp, value, valuetypid);
+			(TemporalSeq *)temp, value);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_value(
-			(TemporalS *)temp, value, valuetypid);
-    else
+			(TemporalS *)temp, value);
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, valuetypid);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
@@ -1729,7 +1740,7 @@ temporal_at_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	datum_sort(values, count, valuetypid);
@@ -1737,17 +1748,17 @@ temporal_at_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_values(
-			(TemporalS *)temp, values, count1, valuetypid);
-    else
+			(TemporalS *)temp, values, count1);
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1766,7 +1777,7 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	datum_sort(values, count, valuetypid);
@@ -1774,17 +1785,17 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_values(
-			(TemporalS *)temp, values, count1, valuetypid);
-    else
+			(TemporalS *)temp, values, count1);
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1816,7 +1827,7 @@ tnumber_at_range(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_at_range(
 			(TemporalS *)temp, range);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1848,7 +1859,7 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_minus_range(
 			(TemporalS *)temp, range);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -1883,7 +1894,7 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_at_ranges(
 			(TemporalS *)temp, normranges, count);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	pfree(ranges);
@@ -1922,7 +1933,7 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_minus_ranges((TemporalS *)temp,
 			normranges, count);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	pfree(ranges);
@@ -1950,7 +1961,7 @@ temporal_at_min_internal(Temporal *temp)
 		result = (Temporal *)temporalseq_at_min((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_min((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
@@ -1964,6 +1975,8 @@ temporal_at_min(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = temporal_at_min_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1984,7 +1997,7 @@ temporal_minus_min(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_minus_min((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_min((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2010,10 +2023,12 @@ temporal_at_max(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_at_max((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_max((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -2034,7 +2049,7 @@ temporal_minus_max(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_minus_max((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_max((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2057,7 +2072,7 @@ temporal_at_timestamp_internal(Temporal *temp, TimestampTz t)
 		result = temporalseq_at_timestamp((TemporalSeq *)temp, t);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_at_timestamp((TemporalS *)temp, t);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
@@ -2095,7 +2110,7 @@ temporal_minus_timestamp(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporalseq_minus_timestamp((TemporalSeq *)temp, t);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_timestamp((TemporalS *)temp, t);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2123,7 +2138,7 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
 		found = temporalseq_value_at_timestamp((TemporalSeq *)temp, t, &result);
 	else if (temp->type == TEMPORALS) 
 		found = temporals_value_at_timestamp((TemporalS *)temp, t, &result);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2154,7 +2169,7 @@ temporal_at_timestampset(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_timestampset(
 			(TemporalS *)temp, ts);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2186,7 +2201,7 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_timestampset(
 			(TemporalS *)temp, ts);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2218,7 +2233,7 @@ temporal_at_period(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_period(
 			(TemporalS *)temp, p);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2249,7 +2264,7 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_period(
 			(TemporalS *)temp, p);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2280,7 +2295,7 @@ temporal_at_periodset(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_periodset(
 			(TemporalS *)temp, ps);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2312,7 +2327,7 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_periodset(
 			(TemporalS *)temp, ps);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2340,7 +2355,7 @@ temporal_intersects_timestamp(PG_FUNCTION_ARGS)
 		result = temporalseq_intersects_timestamp((TemporalSeq *)temp, t);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_intersects_timestamp((TemporalS *)temp, t);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2365,7 +2380,7 @@ temporal_intersects_timestampset(PG_FUNCTION_ARGS)
 		result = temporalseq_intersects_timestampset((TemporalSeq *)temp, ts);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_intersects_timestampset((TemporalS *)temp, ts);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2391,7 +2406,7 @@ temporal_intersects_period(PG_FUNCTION_ARGS)
 		result = temporalseq_intersects_period((TemporalSeq *)temp, p);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_intersects_period((TemporalS *)temp, p);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2416,7 +2431,7 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
 		result = temporalseq_intersects_periodset((TemporalSeq *)temp, ps);
 	else if (temp->type == TEMPORALS) 
 		result = temporals_intersects_periodset((TemporalS *)temp, ps);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2482,7 +2497,7 @@ temporal_intersects_temporal_internal(Temporal *temp1, Temporal *temp2)
 		result = temporals_intersects_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2);
 
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 
@@ -2514,13 +2529,16 @@ PGDLLEXPORT Datum
 tint_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	if (temp->type == TEMPORALSEQ)
+	double result; 
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = 0;
+	else if (temp->type == TEMPORALSEQ)
 		result = tintseq_integral((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = tints_integral((TemporalS *)temp);
-    /* Notice that there is no error raised for TEMPORALINST or TEMPORALI 
-	 * since in that case the result will be 0 */
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
@@ -2533,13 +2551,16 @@ PGDLLEXPORT Datum
 tfloat_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	if (temp->type == TEMPORALSEQ)
+	double result; 
+	if (temp->type == TEMPORALINST || temp->type == TEMPORALI)
+		result = 0;
+	else if (temp->type == TEMPORALSEQ)
 		result = tfloatseq_integral((TemporalSeq *)temp);
-	if (temp->type == TEMPORALS)
+	else if (temp->type == TEMPORALS)
 		result = tfloats_integral((TemporalS *)temp);
-    /* Notice that there is no error raised for TEMPORALINST or TEMPORALI 
-	 * since in that case the result will be 0 */
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
@@ -2556,12 +2577,12 @@ tint_twavg(PG_FUNCTION_ARGS)
 	if (temp->type == TEMPORALINST)
 		result = DatumGetInt32(temporalinst_value((TemporalInst *)temp));
 	else if (temp->type == TEMPORALI)
-		result = temporali_lavg((TemporalI *)temp);
+		result = temporali_twavg((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ)
 		result = tintseq_twavg((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = tints_twavg((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2580,12 +2601,12 @@ tfloat_twavg(PG_FUNCTION_ARGS)
 	if (temp->type == TEMPORALINST)
 		result = DatumGetFloat8(temporalinst_value((TemporalInst *)temp));
 	else if (temp->type == TEMPORALI)
-		result = temporali_lavg((TemporalI *)temp);
+		result = temporali_twavg((TemporalI *)temp);
 	else if (temp->type == TEMPORALSEQ)
 		result = tfloatseq_twavg((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = tfloats_twavg((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
@@ -2621,24 +2642,25 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 				errmsg("Bad temporal type")));
 	}
 	
+	/* Compare bounding box */
+	union bboxunion box1, box2;
+	temporal_bbox(&box1, t1);
+	temporal_bbox(&box2, t2);
+	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	if (cmp != 0)
+		return cmp;
+
 	/* Use the hash comparison */
 	uint32 hash1 = temporal_hash_internal(t1);
 	uint32 hash2 = temporal_hash_internal(t2);
-	int cmp;
 	if (hash1 < hash2)
 		return -1;
 	else if (hash2 > hash1)
 		return 1;
-		
-	/* Compare memory content */
-	size_t size1 = VARSIZE(DatumGetPointer(t1));
-	size_t size2 = VARSIZE(DatumGetPointer(t2));
-	size_t size = Min(size1, size2);
-	cmp = memcmp(t1, t2, size);
-	if (cmp != 0)
-		return cmp;
 	
 	/* Compare memory size */
+	size_t size1 = VARSIZE(DatumGetPointer(t1));
+	size_t size2 = VARSIZE(DatumGetPointer(t2));
 	if (size1 != size2)
 		return (size1 < size2) ? -1 : 1;
 	
@@ -2695,30 +2717,33 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 	}
 	if (t1->type == TEMPORALINST && t2->type == TEMPORALI)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalI *ti = (TemporalI *)t2;
 		if (ti->count != 1) 
 			return false;
-		TemporalInst *inst = temporali_inst_n(ti, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporali_inst_n(ti, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALINST && t2->type == TEMPORALSEQ)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalSeq *seq = (TemporalSeq *)t2; 
 		if (seq->count != 1) 
 			return false;
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALINST && t2->type == TEMPORALS)
 	{
+		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalS *ts = (TemporalS *)t2; 
 		if (ts->count != 1) 
 			return false;
 		TemporalSeq *seq = temporals_seq_n(ts, 0);
 		if (seq->count != 1) 
 			return false;
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		return temporalinst_eq((TemporalInst *)t1, inst);	
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		return temporalinst_eq(inst, inst1);	
 	}
 	else if (t1->type == TEMPORALI && t2->type == TEMPORALSEQ)
 	{
@@ -2726,8 +2751,8 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalSeq *seq = (TemporalSeq *)t2; 
 		if (ti->count != 1 || seq->count != 1) 
 			return false;
-		TemporalInst *inst1 = temporali_inst_n((TemporalI *)t1, 0);
-		TemporalInst *inst2 = temporalseq_inst_n((TemporalSeq *)t2, 0);
+		TemporalInst *inst1 = temporali_inst_n(ti, 0);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, 0);
 		return temporalinst_eq(inst1, inst2);	
 	}
 	else if (t1->type == TEMPORALI && t2->type == TEMPORALS)
@@ -2748,13 +2773,14 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 	}
 	else if (t1->type == TEMPORALSEQ && t2->type == TEMPORALS)
 	{
+		TemporalSeq *seq = (TemporalSeq *)t1; 
 		TemporalS *ts = (TemporalS *)t2; 
 		if (ts->count != 1) 
 			return false;
-		TemporalSeq *seq = temporals_seq_n(ts, 0);
-		return temporalseq_eq((TemporalSeq *)t1, seq);	
+		TemporalSeq *seq1 = temporals_seq_n(ts, 0);
+		return temporalseq_eq(seq, seq1);	
 	}
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 }
@@ -2877,7 +2903,7 @@ temporal_hash_internal(const Temporal *temp)
 		result = temporalseq_hash((TemporalSeq *)temp);
 	else if (temp->type == TEMPORALS)
 		result = temporals_hash((TemporalS *)temp);
-    else
+	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	return result;
