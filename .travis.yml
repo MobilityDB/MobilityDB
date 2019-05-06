@@ -23,5 +23,5 @@ script:
 
 after_failure: ../test/scripts/print_fail.sh
 
-after_success: coveralls --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
+after_success: coveralls --exclude build --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
 
