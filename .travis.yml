@@ -2,10 +2,6 @@ language: c
 
 dist: xenial
 
-env:
-  - WITH_POSTGIS=0
-  - WITH_POSTGIS=1
-
 compiler:
   - gcc
 
