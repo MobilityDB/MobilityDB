@@ -74,10 +74,10 @@ SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 and sta
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 13) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 
