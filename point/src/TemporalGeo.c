@@ -17,6 +17,113 @@
  *****************************************************************************/
 
 /* 
+ * Manipulate a geomtry point directly from the GSERIALIZED.
+ * These functions consitutute a SERIOUS break of encapsulation but it is the
+ * only way to achieve reasonable performance when manipulating mobility data.
+ * The datum_* functions suppose that the GSERIALIZED has been already detoasted.
+ * This is typically the case when the datum is within a Temporal* that 
+ * has been already detoasted with PG_GETARG_TEMPORAL*  
+ */
+
+/* Get 2D point from a serialized geometry */
+
+POINT2D
+gs_get_point2d(GSERIALIZED *gs)
+{
+	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 2D point from a datum */
+POINT2D
+datum_get_point2d(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
+	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DZ point from a serialized geometry */
+
+POINT3DZ
+gs_get_point3dz(GSERIALIZED *gs)
+{
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DZ point from a datum */
+
+POINT3DZ
+datum_get_point3dz(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(geom);
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DM point from a serialized geometry */
+
+POINT3DM
+gs_get_point3dm(GSERIALIZED *gs)
+{
+	POINT3DM *point = (POINT3DM *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 4D point from a serialized geometry */
+
+POINT4D
+gs_get_point4d(GSERIALIZED *gs)
+{
+	POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Compare two points from serialized geometries */
+
+bool
+datum_point_eq(Datum geopoint1, Datum geopoint2)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *)PointerGetDatum(geopoint1);
+	GSERIALIZED *gs2 = (GSERIALIZED *)PointerGetDatum(geopoint1);
+	if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+		FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags) ||
+		FLAGS_GET_M(gs1->flags) != FLAGS_GET_M(gs2->flags) ||
+		FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
+		return false;
+	if (FLAGS_GET_Z(gs1->flags) && FLAGS_GET_Z(gs2->flags))
+	{
+		POINT4D point1 = gs_get_point4d(gs1);
+		POINT4D point2 = gs_get_point4d(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.z == point2.z && point1.m == point2.m;
+	}
+	else if (FLAGS_GET_Z(gs1->flags))
+	{
+		POINT3DZ point1 = gs_get_point3dz(gs1);
+		POINT3DZ point2 = gs_get_point3dz(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.z == point2.z;
+	}
+	else if (FLAGS_GET_M(gs2->flags))
+	{
+		POINT3DM point1 = gs_get_point3dm(gs1);
+		POINT3DM point2 = gs_get_point3dm(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.m == point2.m;
+	}
+	else
+	{
+		POINT2D point1 = gs_get_point2d(gs1);
+		POINT2D point2 = gs_get_point2d(gs2);
+		return point1.x == point2.x && point1.y == point2.y;
+	}
+}
+
+/*****************************************************************************/
+
+/* 
  * Output a geometry in Well-Known Text (WKT) and Extended Well-Known Text 
  * (EWKT) format.
  * The Oid argument is not used but is needed since the second argument of 
@@ -50,49 +157,6 @@ ewkt_out(Oid type, Datum value)
 	return result;
 }
 
-/* Get 2D point from a serialized geometry */
-
-POINT2D
-gs_get_point2d(GSERIALIZED *gs)
-{
-	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 2D point from a datum
- * The function supposes that the GSERIALIZED has been already detoasted.
- * This is typically the case when the datum is within a Temporal* that 
- * has been already detoasted with PG_GETARG_TEMPORAL*  */
-POINT2D
-datum_get_point2d(Datum geom)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
-	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 3D point from a serialized geometry */
-
-POINT3DZ
-gs_get_point3dz(GSERIALIZED *gs)
-{
-	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 3D point from a datum 
- * The function supposes that the GSERIALIZED has been already detoasted.
- * This is typically the case when the datum is within a Temporal* that 
- * has been already detoasted with PG_GETARG_TEMPORAL* */
-
-POINT3DZ
-datum_get_point3dz(Datum geom)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(geom);
-	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
 /* Serialize a geometry */
  
 GSERIALIZED *
@@ -103,6 +167,8 @@ geometry_serialize(LWGEOM *geom)
 	SET_VARSIZE(result, size);
 	return result;
 }
+
+/* Call to PostGIS external functions */
 
 static Datum
 datum_transform(Datum value, Datum srid)
