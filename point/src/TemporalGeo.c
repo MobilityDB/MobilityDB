@@ -637,7 +637,7 @@ tgeompointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		GSERIALIZED *gstart = (GSERIALIZED *)DatumGetPointer(value1);
 		Datum result = PointerGetDatum(gserialized_copy(gstart)); 
@@ -653,7 +653,7 @@ tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value1);
 		Datum result = PointerGetDatum(gserialized_copy(gsvalue)); 
@@ -823,7 +823,6 @@ tgeogpoints_trajectory(TemporalS *ts)
 	Datum *points = palloc(sizeof(Datum) * ts->count);
 	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
 	int k = 0, l = 0;
-	Oid geomoid = type_oid(T_GEOMETRY);
 	for (int i = 0; i < ts->count; i++)
 	{
 		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
@@ -834,7 +833,7 @@ tgeogpoints_trajectory(TemporalS *ts)
 			bool found = false;
 			for (int j = 0; j < l; j++)
 			{
-				if (datum_eq(traj, points[j], geomoid))
+				if (datum_point_eq(traj, points[j]))
 				{
 					found = true;
 					break;
@@ -1115,7 +1114,7 @@ tpointseq_speed1(TemporalSeq *seq)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
 		Datum value2 = temporalinst_value(inst2);
-		if (datum_eq(value1, value2, seq->valuetypid))
+		if (datum_point_eq(value1, value2))
 			speed = 0;
 		else
 		{
@@ -1672,7 +1671,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum value2 = temporalinst_value(inst2);
 
 	/* Constant sequence */
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		if (!DatumGetBool(call_function2(intersects, value1, geom)))
 		{
@@ -2207,7 +2206,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
 		*tofree = false;
