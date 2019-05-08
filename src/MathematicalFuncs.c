@@ -1,7 +1,8 @@
 /*****************************************************************************
  *
- * ArithmeticOps.c
- *	  Temporal arithmetic operators (+, -, *, /).
+ * MathematicalFuncs.c
+ *		Temporal mathematical operators (+, -, *, /) and functions (round, 
+ *		degrees).
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -13,7 +14,7 @@
 #include "TemporalTypes.h"
 
 /*****************************************************************************
- * Arithmetic operations functions on datums
+ * Mathematical functions on datums
  *****************************************************************************/
 
 /* Addition */

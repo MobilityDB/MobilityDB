@@ -2314,6 +2314,44 @@ SELECT ~ tbool '[true@2012-01-03, true@2012-01-05)';
 		</sect1>
 
 		<sect1>
+			<title>Text Functions and Operators</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><varname>||</varname>: Concatenation</para>
+					<para>Signature: <varname>{text, ttext} || {text, ttext}: ttext</varname></para>
+					<programlisting>
+SELECT ttext '[AA@2012-01-01, AA@2012-01-04)' || text 'B';
+-- "["AAB"@2012-01-01, "AAB"@2012-01-04)"
+SELECT ttext '[AA@2012-01-01, AA@2012-01-04)' || ttext '[BB@2012-01-02, BB@2012-01-05)';
+-- "["AABB"@2012-01-02, "AABB"@2012-01-04)"
+SELECT ttext '[A@2012-01-01, B@2012-01-03, C@2012-01-04]' ||
+ttext '{[D@2012-01-01, D@2012-01-02), [E@2012-01-02, E@2012-01-04)}';
+-- "{["DA"@2012-01-01, "EA"@2012-01-02, "EB"@2012-01-03, "EB"@2012-01-04)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>upper</varname>: Transform to uppercase</para>
+					<para>Signature: <varname>upper(ttext, integer): ttext</varname></para>
+					<programlisting>
+SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- "["AA"@2000-01-01, "BB"@2000-01-02]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>lower</varname>: Transform to lowercase</para>
+					<para>Signature: <varname>lower(ttext): ttext</varname></para>
+					<programlisting>
+SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- "["aa"@2000-01-01, "bb"@2000-01-02]"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1>
 			<title>Bounding Box Operators</title>
 			<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>gbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
 
