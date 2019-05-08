@@ -1,10 +1,6 @@
-﻿------------------------------------------------------------------------------
--- Temporal
-------------------------------------------------------------------------------
-
-/******************************************************************************
- * Transformation functions
- ******************************************************************************/
+﻿-------------------------------------------------------------------------------
+-- Transformation functions
+-------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(tboolinst(inst)) FROM tbl_tboolinst;
 SELECT DISTINCT temporalType(tbooli(inst)) FROM tbl_tboolinst;
@@ -26,7 +22,7 @@ SELECT DISTINCT temporalType(ttexti(inst)) FROM tbl_ttextinst;
 SELECT DISTINCT temporalType(ttextseq(inst)) FROM tbl_ttextinst;
 SELECT DISTINCT temporalType(ttexts(inst)) FROM tbl_ttextinst;
 
-/******************************************************************************/
+-------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
 SELECT DISTINCT temporalType(tbooli(ti)) FROM tbl_tbooli;
@@ -48,7 +44,7 @@ SELECT DISTINCT temporalType(ttexti(ti)) FROM tbl_ttexti;
 SELECT DISTINCT temporalType(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
 SELECT DISTINCT temporalType(ttexts(ti)) FROM tbl_ttexti;
 
-/******************************************************************************/
+-------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
 SELECT DISTINCT temporalType(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
@@ -70,7 +66,7 @@ SELECT DISTINCT temporalType(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(se
 SELECT DISTINCT temporalType(ttextseq(seq)) FROM tbl_ttextseq;
 SELECT DISTINCT temporalType(ttexts(seq)) FROM tbl_ttextseq;
 
-/******************************************************************************/
+-------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
 SELECT DISTINCT temporalType(tbooli(ts)) FROM tbl_tbools WHERE duration(ts) = '00:00:00';
@@ -92,18 +88,25 @@ SELECT DISTINCT temporalType(ttexti(ts)) FROM tbl_ttexts WHERE duration(ts) = '0
 SELECT DISTINCT temporalType(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
 SELECT DISTINCT temporalType(ttexts(ts)) FROM tbl_ttexts;
 
-/******************************************************************************
- * Cast functions
- ******************************************************************************/
+-------------------------------------------------------------------------------
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tbool;
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
+
+-------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tintinst WHERE tfloat(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tinti WHERE tfloat(ti) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tintseq WHERE tfloat(seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
 
-/******************************************************************************
- * Accessor functions
- ******************************************************************************/
+-------------------------------------------------------------------------------
+-- Accessor functions
+-------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(temp) FROM tbl_tbool;
 SELECT DISTINCT temporalType(temp) FROM tbl_tint;
@@ -464,9 +467,9 @@ SELECT sum(integral(temp)) FROM tbl_tfloat;
 SELECT sum(twAvg(temp)) FROM tbl_tint;
 SELECT sum(twAvg(temp)) FROM tbl_tfloat;
 
-/******************************************************************************
- * Comparison functions and B-tree indexing
- ******************************************************************************/
+-------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+-------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp = t2.temp;

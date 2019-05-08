@@ -1,6 +1,3 @@
-/******************************************************************************
- * Transformation functions
- ******************************************************************************/
 SELECT DISTINCT temporalType(tgeompointinst(inst)) FROM tbl_tgeompointinst;
  temporaltype 
 --------------
@@ -97,7 +94,6 @@ SELECT DISTINCT temporalType(tgeogpoints(inst)) FROM tbl_tgeogpoint3Dinst;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tgeompointinst(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
  temporaltype 
 --------------
@@ -194,7 +190,6 @@ SELECT DISTINCT temporalType(tgeogpoints(ti)) FROM tbl_tgeogpoint3Di;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tgeompointinst(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
  temporaltype 
 --------------
@@ -291,7 +286,6 @@ SELECT DISTINCT temporalType(tgeogpoints(seq)) FROM tbl_tgeogpoint3Dseq;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tgeompointinst(ts)) FROM tbl_tgeompoints WHERE numInstants(ts) = 1;
  temporaltype 
 --------------
@@ -388,9 +382,18 @@ SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
  SequenceSet
 (1 row)
 
-/******************************************************************************
- * Accessor functions
- ******************************************************************************/
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
+ max 
+-----
+  41
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
+ max 
+-----
+  53
+(1 row)
+
 SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDER BY 1;
  temporaltype 
 --------------
@@ -1600,9 +1603,6 @@ SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
   40
 (1 row)
 
-/******************************************************************************
- * Comparison functions and B-tree indexing
- ******************************************************************************/
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp = t2.temp;
  count 

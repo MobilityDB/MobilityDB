@@ -264,7 +264,7 @@ CREATE FUNCTION ttexts(ttext[])
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Append
+ * Append function
  ******************************************************************************/
 
  CREATE FUNCTION appendInstant(tbool, tbool)

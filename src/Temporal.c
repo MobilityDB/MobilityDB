@@ -635,7 +635,7 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Append functions
+ * Append function
  ****************************************************************************/
 
  /* Append an instant to the end of a temporal */
@@ -650,6 +650,9 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 	if (inst->type != TEMPORALINST) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
+	if (temp->valuetypid != inst->valuetypid)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+			errmsg("Operation not supported")));
 
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
@@ -667,7 +670,7 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
-	return result;
+
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(inst, 1);
 	PG_RETURN_POINTER(result);
