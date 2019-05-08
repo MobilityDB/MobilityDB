@@ -2287,8 +2287,7 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 					<programlisting>
 SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp; tbool '[false@2012-01-03, false@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
-SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp;24005>
-tbool '{[false@2012-01-03, false@2012-01-04), [true@2012-01-04, true@2012-01-05)}';
+SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp; tbool '{[false@2012-01-03, false@2012-01-04), [true@2012-01-04, true@2012-01-05)}';
 -- "{[f@2012-01-03, t@2012-01-04, t@2012-01-05)}"
 					</programlisting>
 				</listitem>
