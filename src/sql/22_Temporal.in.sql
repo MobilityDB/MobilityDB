@@ -264,6 +264,27 @@ CREATE FUNCTION ttexts(ttext[])
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Append
+ ******************************************************************************/
+
+ CREATE FUNCTION appendInstant(tbool, tbool)
+	RETURNS tbool
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tint, tint)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tfloat, tfloat)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(ttext, ttext)
+	RETURNS ttext
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Cast functions
  ******************************************************************************/
 
