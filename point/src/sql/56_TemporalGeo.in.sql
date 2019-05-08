@@ -111,6 +111,16 @@ CREATE FUNCTION tgeompoint(tgeogpoint)
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 
+CREATE OR REPLACE FUNCTION setprecision(tgeompoint, int)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION setprecision(tgeogpoint, int)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
 	AS 'MODULE_PATHNAME', 'tgeompoint_trajectory'

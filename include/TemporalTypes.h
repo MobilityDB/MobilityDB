@@ -1153,8 +1153,10 @@ extern Datum tdouble3_in(PG_FUNCTION_ARGS);
 extern Datum tdouble4_in(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
- * Temporal arithmetic operators defined in ArithmeticOps.c
+ * Temporal mathematical operators defined in MathematicalFuncs.c
  *****************************************************************************/
+
+extern Datum datum_round(Datum value, Datum prec);
 
 extern Datum add_base_temporal(PG_FUNCTION_ARGS);
 extern Datum add_temporal_base(PG_FUNCTION_ARGS);

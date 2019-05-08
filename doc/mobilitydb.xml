@@ -1591,6 +1591,17 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 381
 				</listitem>
 
 				<listitem>
+					<para><varname>setPrecision</varname>: Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
+					<para>Signature: <varname>setPrecision(tpoint, int): tpoint</varname></para>
+					<programlisting>
+SELECT astext(setprecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
+-- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (1.12 1.12 1.12)@2000-01-03}"
+SELECT astext(setprecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+-- "POINT(1.12 1.12)@2000-01-01"
+					</programlisting>
+				</listitem>
+
+				<listitem>
 					<para><varname>length</varname>: Length traversed by the temporal point &Z_support; &geography_support;</para>
 					<para>Signature: <varname>length(tpoint): float</varname></para>
 					<programlisting>
