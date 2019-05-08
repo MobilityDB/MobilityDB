@@ -632,7 +632,11 @@ extern TemporalInst *temporalinst_read(StringInfo buf, Oid valuetypid);
 
 extern bool intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	TemporalInst **inter1, TemporalInst **inter2);
-	
+
+/* Append function */
+
+extern TemporalI *temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2);
+
 /* Cast functions */
 
 extern TemporalInst *tintinst_as_tfloatinst(TemporalInst *inst);
@@ -725,6 +729,10 @@ extern bool intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 extern char *temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum));
 extern void temporali_write(TemporalI *ti, StringInfo buf);
 extern TemporalI *temporali_read(StringInfo buf, Oid valuetypid);
+
+/* Append function */
+
+extern TemporalI *temporali_append_instant(TemporalI *ti, TemporalInst *inst);
 
 /* Cast functions */
  
@@ -857,6 +865,10 @@ extern RangeType *tnumberseq_floatrange(TemporalSeq *seq);
 extern char *temporalseq_to_string(TemporalSeq *seq, char *(*value_out)(Oid, Datum));
 extern void temporalseq_write(TemporalSeq *seq, StringInfo buf);
 extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
+
+/* Append function */
+
+extern TemporalSeq *temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst);
 
 /* Cast functions */
 
@@ -1030,6 +1042,10 @@ extern char *temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum));
 extern void temporals_write(TemporalS *ts, StringInfo buf);
 extern TemporalS *temporals_read(StringInfo buf, Oid valuetypid);
 
+/* Append function */
+
+extern TemporalS *temporals_append_instant(TemporalS *ts, TemporalInst *inst);
+
 /* Cast functions */
 
 extern TemporalS *tints_as_tfloats(TemporalS *ts);
@@ -1153,8 +1169,10 @@ extern Datum tdouble3_in(PG_FUNCTION_ARGS);
 extern Datum tdouble4_in(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
- * Temporal arithmetic operators defined in ArithmeticOps.c
+ * Temporal mathematical operators defined in MathematicalFuncs.c
  *****************************************************************************/
+
+extern Datum datum_round(Datum value, Datum prec);
 
 extern Datum add_base_temporal(PG_FUNCTION_ARGS);
 extern Datum add_temporal_base(PG_FUNCTION_ARGS);

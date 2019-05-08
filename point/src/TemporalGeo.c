@@ -106,7 +106,7 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 		return point1.x == point2.x && point1.y == point2.y && 
 			point1.z == point2.z;
 	}
-	else if (FLAGS_GET_M(gs2->flags))
+	else if (FLAGS_GET_M(gs1->flags))
 	{
 		POINT3DM point1 = gs_get_point3dm(gs1);
 		POINT3DM point2 = gs_get_point3dm(gs2);
@@ -118,6 +118,28 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 		POINT2D point1 = gs_get_point2d(gs1);
 		POINT2D point2 = gs_get_point2d(gs2);
 		return point1.x == point2.x && point1.y == point2.y;
+	}
+}
+
+
+static Datum
+datum_setprecision(Datum value, Datum size)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+	if (FLAGS_GET_Z(gs->flags))
+	{
+		POINT3DZ point = gs_get_point3dz(gs);
+		Datum x = datum_round(Float8GetDatum(point.x), size);
+		Datum y = datum_round(Float8GetDatum(point.y), size);
+		Datum z = datum_round(Float8GetDatum(point.z), size);
+		return call_function3(LWGEOM_makepoint, x, y, z);
+	}
+	else
+	{
+		POINT2D point = gs_get_point2d(gs);
+		Datum x = datum_round(Float8GetDatum(point.x), size);
+		Datum y = datum_round(Float8GetDatum(point.y), size);
+		return call_function2(LWGEOM_makepoint, x, y);
 	}
 }
 
@@ -599,6 +621,23 @@ tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geog_as_geom, 
+		type_oid(T_GEOMETRY), true);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Set precision function.
+ *****************************************************************************/
+ 
+PG_FUNCTION_INFO_V1(tpoint_setprecision);
+
+PGDLLEXPORT Datum
+tpoint_setprecision(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum size = PG_GETARG_DATUM(1);
+	Temporal *result = tfunc2_temporal(temp, size, &datum_setprecision, 
 		type_oid(T_GEOMETRY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

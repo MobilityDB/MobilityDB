@@ -1,10 +1,6 @@
 ﻿------------------------------------------------------------------------------
--- TemporalPoint
+-- Transformation functions
 ------------------------------------------------------------------------------
-
-/******************************************************************************
- * Transformation functions
- ******************************************************************************/
 
 SELECT DISTINCT temporalType(tgeompointinst(inst)) FROM tbl_tgeompointinst;
 SELECT DISTINCT temporalType(tgeompointi(inst)) FROM tbl_tgeompointinst;
@@ -26,7 +22,7 @@ SELECT DISTINCT temporalType(tgeogpointi(inst)) FROM tbl_tgeogpoint3Dinst;
 SELECT DISTINCT temporalType(tgeogpointseq(inst)) FROM tbl_tgeogpoint3Dinst;
 SELECT DISTINCT temporalType(tgeogpoints(inst)) FROM tbl_tgeogpoint3Dinst;
 
-/******************************************************************************/
+------------------------------------------------------------------------------/
 
 SELECT DISTINCT temporalType(tgeompointinst(ti)) FROM tbl_tgeompointi WHERE numInstants(ti) = 1;
 SELECT DISTINCT temporalType(tgeompointi(ti)) FROM tbl_tgeompointi;
@@ -48,7 +44,7 @@ SELECT DISTINCT temporalType(tgeogpointi(ti)) FROM tbl_tgeogpoint3Di;
 SELECT DISTINCT temporalType(tgeogpointseq(ti)) FROM tbl_tgeogpoint3Di WHERE numInstants(ti) = 1;
 SELECT DISTINCT temporalType(tgeogpoints(ti)) FROM tbl_tgeogpoint3Di;
 
-/******************************************************************************/
+------------------------------------------------------------------------------/
 
 SELECT DISTINCT temporalType(tgeompointinst(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
 SELECT DISTINCT temporalType(tgeompointi(seq)) FROM tbl_tgeompointseq WHERE numInstants(seq) = 1;
@@ -70,7 +66,7 @@ SELECT DISTINCT temporalType(tgeogpointi(seq)) FROM tbl_tgeogpoint3Dseq WHERE nu
 SELECT DISTINCT temporalType(tgeogpointseq(seq)) FROM tbl_tgeogpoint3Dseq;
 SELECT DISTINCT temporalType(tgeogpoints(seq)) FROM tbl_tgeogpoint3Dseq;
 
-/******************************************************************************/
+------------------------------------------------------------------------------/
 
 SELECT DISTINCT temporalType(tgeompointinst(ts)) FROM tbl_tgeompoints WHERE numInstants(ts) = 1;
 SELECT DISTINCT temporalType(tgeompointi(ts)) FROM tbl_tgeompoints WHERE duration(ts) = '00:00:00';
@@ -92,9 +88,14 @@ SELECT DISTINCT temporalType(tgeogpointi(ts)) FROM tbl_tgeogpoint3Ds WHERE durat
 SELECT DISTINCT temporalType(tgeogpointseq(ts)) FROM tbl_tgeogpoint3Ds WHERE numSequences(ts) = 1;
 SELECT DISTINCT temporalType(tgeogpoints(ts)) FROM tbl_tgeogpoint3Ds;
 
-/******************************************************************************
- * Accessor functions
- ******************************************************************************/
+------------------------------------------------------------------------------
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeompoint;
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tgeogpoint;
+
+------------------------------------------------------------------------------
+-- Accessor functions
+------------------------------------------------------------------------------
 
 SELECT DISTINCT temporalType(temp) FROM tbl_tgeompoint ORDER BY 1;
 SELECT DISTINCT temporalType(temp) FROM tbl_tgeogpoint ORDER BY 1;
@@ -410,9 +411,9 @@ WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint;
 SELECT MAX(st_memsize(twCentroid(temp))) FROM tbl_tgeompoint3D;
 
-/******************************************************************************
- * Comparison functions and B-tree indexing
- ******************************************************************************/
+------------------------------------------------------------------------------
+-- Comparison functions and B-tree indexing
+------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE t1.temp = t2.temp;

@@ -221,6 +221,21 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 /*****************************************************************************
+ * Append function
+ *****************************************************************************/
+
+ /* Append an instant to the end of a temporal */
+
+TemporalI *
+temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
+{
+	TemporalInst *instants[2];
+	instants[0] = inst1;
+	instants[1] = inst2;
+	return temporali_from_temporalinstarr(instants, 2);
+}
+
+/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 

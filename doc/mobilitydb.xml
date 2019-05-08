@@ -1179,6 +1179,22 @@ SELECT tfloats(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 -- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
 				</programlisting>
 				</listitem>
+
+				<listitem>
+				<para>Append a temporal instant to a temporal value</para>
+				<para>Signature: <varname>{appendInstant(ttype, ttypeinst)} : ttype</varname></para>
+				<programlisting>
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT appendInstant(tintseq(tint '1@2000-01-01'), tint '1@2000-01-02');
+-- "[1@2000-01-01, 1@2000-01-02]"
+SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02],
+    [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-06'));
+"{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
+    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+				</programlisting>
+				</listitem>
+
 			</itemizedlist>
 		</sect1>
 
@@ -1587,6 +1603,17 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)
 					<programlisting>
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
 -- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>setPrecision</varname>: Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
+					<para>Signature: <varname>setPrecision(tpoint, int): tpoint</varname></para>
+					<programlisting>
+SELECT astext(setprecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
+-- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (1.12 1.12 1.12)@2000-01-03}"
+SELECT astext(setprecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+-- "POINT(1.12 1.12)@2000-01-01"
 					</programlisting>
 				</listitem>
 
