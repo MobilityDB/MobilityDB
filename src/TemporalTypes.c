@@ -229,6 +229,7 @@ call_function1(PGFunction func, Datum arg1)
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
 	InitFunctionCallInfoData(fcinfo, NULL, 1, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, NULL, 1, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;

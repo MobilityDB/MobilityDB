@@ -32,6 +32,7 @@ src/TemporalSelFuncs.c
 src/TemporalSeq.c
 src/TemporalTypes.c
 src/TempSelFuncs.c
+src/TextFuncs.c
 src/TimeOps.c
 src/TimeSelFuncs.c
 src/TimestampSet.c
@@ -52,6 +53,7 @@ src/sql/20_DoubleN.in.sql
 src/sql/22_Temporal.in.sql
 src/sql/24_MathematicalFuncs.in.sql
 src/sql/26_BooleanOps.in.sql
+src/sql/27_TextFuncs.in.sql
 src/sql/28_ComparisonOps.in.sql
 src/sql/30_TempSelFuncs.in.sql
 src/sql/32_BoundBoxOps.in.sql
