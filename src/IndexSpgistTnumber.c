@@ -447,23 +447,29 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
-		if (subtype == INT4OID || subtype == FLOAT8OID)
-			base_to_box(&queries[i],
-				in->scankeys[i].sk_argument, subtype);
-		else if (subtype == type_oid(T_INTRANGE) || subtype == type_oid(T_FLOATRANGE))
-			range_to_box(&queries[i],
+		if (subtype == INT4OID)
+			int_to_box_internal(&queries[i],	
+				DatumGetInt32(in->scankeys[i].sk_argument));
+		if (subtype == FLOAT8OID)
+			float_to_box_internal(&queries[i], 
+				DatumGetFloat8(in->scankeys[i].sk_argument));
+		else if (subtype == type_oid(T_INTRANGE))
+			intrange_to_box_internal(&queries[i],
+				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+		else if (subtype == type_oid(T_FLOATRANGE))
+			floatrange_to_box_internal(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == TIMESTAMPTZOID)
-			timestamp_to_box(&queries[i],
+			timestamp_to_box_internal(&queries[i],
 				DatumGetTimestamp(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_TIMESTAMPSET))
-			timestampset_to_box(&queries[i],
+			timestampset_to_box_internal(&queries[i],
 				DatumGetTimestampSet(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_PERIOD))
-			period_to_box(&queries[i],
+			period_to_box_internal(&queries[i],
 				DatumGetPeriod(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_PERIODSET))
-			periodset_to_box(&queries[i],
+			periodset_to_box_internal(&queries[i],
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		else if (subtype == BOXOID)
 			memcpy(&queries[i], DatumGetBoxP(in->scankeys[i].sk_argument), sizeof(BOX));
@@ -588,40 +594,52 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;	
 		
-		if (subtype == INT4OID || subtype == FLOAT8OID)
+		if (subtype == INT4OID)
 		{
-			Datum base = in->scankeys[i].sk_argument;
-			base_to_box(&query, base, subtype);									  
+			int i1 = DatumGetInt32(in->scankeys[i].sk_argument);
+			int_to_box_internal(&query, i1);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
-		else if (subtype == type_oid(T_INTRANGE) || subtype == type_oid(T_FLOATRANGE))
+		else if (subtype == FLOAT8OID)
+		{
+			double d = DatumGetFloat8(in->scankeys[i].sk_argument);
+			float_to_box_internal(&query, d);									  
+			res = index_leaf_consistent_box(key, &query, strategy);
+		}
+		else if (subtype == type_oid(T_INTRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			range_to_box(&query, range);									  
+			intrange_to_box_internal(&query, range);									  
+			res = index_leaf_consistent_box(key, &query, strategy);
+		}
+		else if (subtype == type_oid(T_FLOATRANGE))
+		{
+			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+			floatrange_to_box_internal(&query, range);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == TIMESTAMPTZOID)
 		{
 			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			timestamp_to_box(&query, t);									  
+			timestamp_to_box_internal(&query, t);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_TIMESTAMPSET))
 		{
 			TimestampSet *ts = DatumGetTimestampSet(in->scankeys[i].sk_argument);
-			timestampset_to_box(&query, ts);									  
+			timestampset_to_box_internal(&query, ts);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_PERIOD))
 		{
 			Period *period = DatumGetPeriod(in->scankeys[i].sk_argument);
-			period_to_box(&query, period);									  
+			period_to_box_internal(&query, period);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_PERIODSET))
 		{
 			PeriodSet *ps = DatumGetPeriodSet(in->scankeys[i].sk_argument);
-			periodset_to_box(&query, ps);									  
+			periodset_to_box_internal(&query, ps);									  
 			res = index_leaf_consistent_box(key, &query, strategy);
 		}
 		else if (subtype == BOXOID)

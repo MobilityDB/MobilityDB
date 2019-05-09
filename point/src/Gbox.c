@@ -384,6 +384,76 @@ gbox_cmp_internal(const GBOX *g1, const GBOX *g2)
 	return 0;
 }
 
+PG_FUNCTION_INFO_V1(gbox_cmp);
+
+PGDLLEXPORT Datum
+gbox_cmp(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int	cmp = gbox_cmp_internal(box1, box2);
+	PG_RETURN_INT32(cmp);
+}
+
+PG_FUNCTION_INFO_V1(gbox_lt);
+
+PGDLLEXPORT Datum
+gbox_lt(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int	cmp = gbox_cmp_internal(box1, box2);
+	PG_RETURN_BOOL(cmp < 0);
+}
+
+PG_FUNCTION_INFO_V1(gbox_le);
+
+PGDLLEXPORT Datum
+gbox_le(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int	cmp = gbox_cmp_internal(box1, box2);
+	PG_RETURN_BOOL(cmp <= 0);
+}
+
+PG_FUNCTION_INFO_V1(gbox_ge);
+
+PGDLLEXPORT Datum
+gbox_ge(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int	cmp = gbox_cmp_internal(box1, box2);
+	PG_RETURN_BOOL(cmp >= 0);
+}
+
+PG_FUNCTION_INFO_V1(gbox_gt);
+
+PGDLLEXPORT Datum
+gbox_gt(PG_FUNCTION_ARGS)
+{
+	GBOX *box1 = PG_GETARG_GBOX_P(0);
+	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	int	cmp = gbox_cmp_internal(box1, box2);
+	PG_RETURN_BOOL(cmp > 0);
+}
+
+/*
+ * Equality and inequality of two boxes
+ */
+bool
+gbox_eq_internal(const GBOX *box1, const GBOX *box2)
+{
+	if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
+		box1->zmin != box2->zmin || box1->mmin != box2->mmin ||
+		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
+		box1->zmax != box2->zmax || box1->mmax != box2->mmax)
+		return false;
+	/* The two boxes are equal */
+	return true;
+}
+
 PG_FUNCTION_INFO_V1(gbox_eq);
 
 PGDLLEXPORT Datum
@@ -391,11 +461,7 @@ gbox_eq(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
-	int cmp = gbox_cmp_internal(box1, box2);
-	if (cmp == 0)
-		PG_RETURN_BOOL(true);
-	else
-		PG_RETURN_BOOL(false);
+	PG_RETURN_BOOL(gbox_eq_internal(box1, box2));
 }
 
 PG_FUNCTION_INFO_V1(gbox_ne);
@@ -405,11 +471,7 @@ gbox_ne(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
-	int cmp = gbox_cmp_internal(box1, box2);
-	if (cmp != 0)
-		PG_RETURN_BOOL(true);
-	else
-		PG_RETURN_BOOL(false);
+	PG_RETURN_BOOL(! gbox_eq_internal(box1, box2));
 }
 
 /*****************************************************************************/

@@ -16,6 +16,16 @@ SELECT geodbox(1,2,3,4,5,6);
 
 -------------------------------------------------------------------------------
 
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b = t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b <> t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b < t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b <= t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b > t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b >= t2.b;
+
+SELECT count(*) FROM tbl_tgeompoint WHERE temp::gbox IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint WHERE temp::gbox IS NOT NULL;
+
 SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b && t2.b;
 SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b @> t2.b;
 SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b <@ t2.b;

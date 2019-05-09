@@ -538,7 +538,6 @@ periodset_to_gbox_internal(GBOX *box, PeriodSet *ps)
 	return;
 }
 
-
 PG_FUNCTION_INFO_V1(periodset_to_gbox);
 
 PGDLLEXPORT Datum

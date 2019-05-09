@@ -700,7 +700,7 @@ period_lt(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int			cmp = period_cmp_internal(p1, p2);
+	int	cmp = period_cmp_internal(p1, p2);
 	PG_RETURN_BOOL(cmp < 0);
 }
 
@@ -718,7 +718,7 @@ period_le(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int			cmp = period_cmp_internal(p1, p2);
+	int	cmp = period_cmp_internal(p1, p2);
 	PG_RETURN_BOOL(cmp <= 0);
 }
 
@@ -736,7 +736,7 @@ period_ge(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int			cmp = period_cmp_internal(p1, p2);
+	int	cmp = period_cmp_internal(p1, p2);
 	PG_RETURN_BOOL(cmp >= 0);
 }
 
@@ -754,7 +754,7 @@ period_gt(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int			cmp = period_cmp_internal(p1, p2);
+	int	cmp = period_cmp_internal(p1, p2);
 	PG_RETURN_BOOL(cmp > 0);
 }
 

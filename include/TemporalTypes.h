@@ -1396,6 +1396,17 @@ extern Datum overafter_temporal_temporal(PG_FUNCTION_ARGS);
  * File BoundBoxOps.c
  *****************************************************************************/
 
+extern void base_to_box(BOX *box, Datum value, Oid valuetypid);
+extern void range_to_box_internal(BOX *box, RangeType *r);
+extern void int_to_box_internal(BOX *box, int i);
+extern void float_to_box_internal(BOX *box, double d);
+extern void intrange_to_box_internal(BOX *box, RangeType *range);
+extern void floatrange_to_box_internal(BOX *box, RangeType *range);
+extern void timestamp_to_box_internal(BOX *box, TimestampTz t);
+extern void timestampset_to_box_internal(BOX *box, TimestampSet *ts);
+extern void period_to_box_internal(BOX *box, Period *p);
+extern void periodset_to_box_internal(BOX *box, PeriodSet *ps);
+
 extern bool overlaps_box_box_internal(const BOX *box1, const BOX *box2);
 extern bool contained_box_box_internal(const BOX *box1, const BOX *box2);
 extern bool contains_box_box_internal(const BOX *box1, const BOX *box2);
@@ -1431,22 +1442,22 @@ extern bool contained_box_period_internal(BOX *box, Period *p);
 extern bool overlaps_box_period_internal(BOX *box, Period *p);
 extern bool same_box_period_internal(BOX *box, Period *p);
 
-extern void base_to_box(BOX *box, Datum value, Oid valuetypid);
-extern void range_to_box(BOX *box, RangeType *r);
-extern void timestamp_to_box(BOX *box, TimestampTz t);
-extern void timestampset_to_box(BOX *box, TimestampSet *ts);
-extern void period_to_box(BOX *box, Period *p);
-extern void periodset_to_box(BOX *box, PeriodSet *ps);
-
-extern Datum base_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum base_period_to_box(PG_FUNCTION_ARGS);
-extern Datum range_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum range_period_to_box(PG_FUNCTION_ARGS);
-
-extern BOX *base_timestamp_to_box_internal(Datum value, TimestampTz t, Oid valuetypid);
-extern BOX *base_period_to_box_internal(Datum value, Period *p, Oid valuetypid);
-extern BOX *range_timestamp_to_box_internal(RangeType *range, TimestampTz t);
-extern BOX *range_period_to_box_internal(RangeType *range, Period *p);
+extern Datum int_to_box(PG_FUNCTION_ARGS);
+extern Datum float_to_box(PG_FUNCTION_ARGS);
+extern Datum intrange_to_box(PG_FUNCTION_ARGS);
+extern Datum floatrange_to_box(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_box(PG_FUNCTION_ARGS);
+extern Datum period_to_box(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_box(PG_FUNCTION_ARGS);
+extern Datum periodset_to_box(PG_FUNCTION_ARGS);
+extern Datum int_timestamp_to_box(PG_FUNCTION_ARGS);
+extern Datum float_timestamp_to_box(PG_FUNCTION_ARGS);
+extern Datum int_period_to_box(PG_FUNCTION_ARGS);
+extern Datum float_period_to_box(PG_FUNCTION_ARGS);
+extern Datum intrange_timestamp_to_box(PG_FUNCTION_ARGS);
+extern Datum floatrange_timestamp_to_box(PG_FUNCTION_ARGS);
+extern Datum intrange_period_to_box(PG_FUNCTION_ARGS);
+extern Datum floatrange_period_to_box(PG_FUNCTION_ARGS);
 
 extern Datum overlaps_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_timestampset_temporal(PG_FUNCTION_ARGS);

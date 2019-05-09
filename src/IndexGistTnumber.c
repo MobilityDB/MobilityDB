@@ -166,18 +166,32 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	 * Transform the query into a box initializing the dimensions that must
 	 * not be taken into account by the operators to infinity.
 	 */
-	if (subtype == INT4OID || subtype == FLOAT8OID)
+	if (subtype == INT4OID)
 	{
 		if (PG_ARGISNULL(1))
 			PG_RETURN_BOOL(false);
-		base_to_box(&query, PG_GETARG_DATUM(1), subtype);
+		int_to_box_internal(&query, PG_GETARG_INT32(1));
 	}
-	else if (subtype == type_oid(T_INTRANGE) || subtype == type_oid(T_FLOATRANGE))
+	if (subtype == FLOAT8OID)
+	{
+		if (PG_ARGISNULL(1))
+			PG_RETURN_BOOL(false);
+		float_to_box_internal(&query, PG_GETARG_FLOAT8(1));
+	}
+	else if (subtype == type_oid(T_INTRANGE))
 	{
 		RangeType *range = PG_GETARG_RANGE_P(1);
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
-		range_to_box(&query, range);
+		intrange_to_box_internal(&query, range);
+		PG_FREE_IF_COPY(range, 1);
+	}
+	else if (subtype == type_oid(T_FLOATRANGE))
+	{
+		RangeType *range = PG_GETARG_RANGE_P(1);
+		if (range == NULL)
+			PG_RETURN_BOOL(false);
+		floatrange_to_box_internal(&query, range);
 		PG_FREE_IF_COPY(range, 1);
 	}
 	else if (subtype == TIMESTAMPTZOID)
@@ -185,14 +199,14 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		if (PG_ARGISNULL(1))
 			PG_RETURN_BOOL(false);
 		TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-		timestamp_to_box(&query, t);
+		timestamp_to_box_internal(&query, t);
 	}
 	else if (subtype == type_oid(T_TIMESTAMPSET))
 	{
 		TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
 		if (ts == NULL)
 			PG_RETURN_BOOL(false);
-		timestampset_to_box(&query, ts);
+		timestampset_to_box_internal(&query, ts);
 		PG_FREE_IF_COPY(ts, 1);
 	}
 	else if (subtype == type_oid(T_PERIOD))
@@ -200,14 +214,14 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		Period *period = PG_GETARG_PERIOD(1);
 		if (period == NULL)
 			PG_RETURN_BOOL(false);
-		period_to_box(&query, period);
+		period_to_box_internal(&query, period);
 	}
 	else if (subtype == type_oid(T_PERIODSET))
 	{
 		PeriodSet *ps = PG_GETARG_PERIODSET(1);
 		if (ps == NULL)
 			PG_RETURN_BOOL(false);
-		periodset_to_box(&query, ps);
+		periodset_to_box_internal(&query, ps);
 		PG_FREE_IF_COPY(ps, 1);
 	}
 	else if (subtype == BOXOID)
