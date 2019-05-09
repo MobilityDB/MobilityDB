@@ -164,8 +164,23 @@ box_cmp_internal(const BOX *box1, const BOX *box2)
 	return 0;
 }
 
+/*
+ * Compare two boxes
+ */
+bool
+box_eq_internal(const BOX *box1, const BOX *box2)
+{
+	if (box1->low.x != box2->low.x ||
+		box1->low.y != box2->low.y ||
+		box1->high.x != box2->high.x ||
+		box1->high.y != box2->high.y)
+		return false;
+	/* The two boxes are equal */
+	return true;
+}
+
 /*****************************************************************************
- * Bounding box common functions
+ * Size of bounding box
  *****************************************************************************/
 
 size_t
@@ -181,6 +196,42 @@ temporal_bbox_size(Oid valuetypid)
 		return sizeof(GBOX);
 #endif
 	/* Types without bounding box, for example, tdoubleN */
+	return 0;
+}
+
+/*****************************************************************************
+ * Equality and comparison of bounding boxes
+ *****************************************************************************/
+
+bool
+temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
+{
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		return period_eq_internal((Period *)box1, (Period *)box2);
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		return box_eq_internal((BOX *)box1, (BOX *)box2);
+#ifdef WITH_POSTGIS
+	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+		valuetypid == type_oid(T_GEOMETRY))
+		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2) == 0;
+#endif
+	/* Types without bounding box, for example, doubleN */
+	return false;
+} 
+
+int
+temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2) 
+{
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		return period_cmp_internal((Period *)box1, (Period *)box2);
+	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		return box_cmp_internal((BOX *)box1, (BOX *)box2);
+#ifdef WITH_POSTGIS
+	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+		valuetypid == type_oid(T_GEOMETRY))
+		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2);
+#endif
+	/* Types without bounding box, for example, doubleN */
 	return 0;
 } 
 
@@ -952,7 +1003,7 @@ contained_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
 	Period *p1 = timestampset_bbox(ts);
 	Period p2;
 	temporal_timespan_internal(&p2, temp);
-	bool result = contained_period_period_internal(p1, &p2);
+	bool result = contains_period_period_internal(&p2, p1);
 	PG_FREE_IF_COPY(ts, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -968,7 +1019,7 @@ contained_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
 	Period p1;
 	temporal_timespan_internal(&p1, temp);
 	Period *p2 = timestampset_bbox(ts);
-	bool result = contained_period_period_internal(&p1, p2);
+	bool result = contains_period_period_internal(p2, &p1);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ts, 1);
 	PG_RETURN_BOOL(result);
@@ -985,7 +1036,7 @@ contained_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
 	temporal_timespan_internal(&p1, temp);
-	bool result = contained_period_period_internal(p, &p1);
+	bool result = contains_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
@@ -999,7 +1050,7 @@ contained_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
 	temporal_timespan_internal(&p1, temp);
-	bool result = contained_period_period_internal(&p1, p);
+	bool result = contains_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
@@ -1016,7 +1067,7 @@ contained_bbox_periodset_temporal(PG_FUNCTION_ARGS)
 	Period *p1 = periodset_bbox(ps);
 	Period p2;
 	temporal_timespan_internal(&p2, temp);
-	bool result = contained_period_period_internal(p1, &p2);
+	bool result = contains_period_period_internal(&p2, p1);
 	PG_FREE_IF_COPY(ps, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -1032,7 +1083,7 @@ contained_bbox_temporal_periodset(PG_FUNCTION_ARGS)
 	Period p1;
 	temporal_timespan_internal(&p1, temp);
 	Period *p2 = periodset_bbox(ps);
-	bool result = contained_period_period_internal(&p1, p2);
+	bool result = contains_period_period_internal(p2, &p1);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ps, 1);
 	PG_RETURN_BOOL(result);
@@ -1050,7 +1101,7 @@ contained_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Period p1, p2;
 	temporal_timespan_internal(&p1, temp1);
 	temporal_timespan_internal(&p2, temp2);
-	bool result = contained_period_period_internal(&p1, &p2);
+	bool result = contains_period_period_internal(&p2, &p1);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);

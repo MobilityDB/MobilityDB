@@ -1,0 +1,224 @@
+SELECT tand(temp) FROM (VALUES
+(NULL::tbool),(NULL::tbool)) t(temp);
+ tand 
+------
+ 
+(1 row)
+
+SELECT tand(temp) FROM (VALUES
+(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+            tand            
+----------------------------
+ {t@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tor(temp) FROM (VALUES
+(NULL::tbool),(NULL::tbool)) t(temp);
+ tor 
+-----
+ 
+(1 row)
+
+SELECT tor(temp) FROM (VALUES
+(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+            tor             
+----------------------------
+ {t@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tbool),(NULL::tbool)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tbool),('true@2000-01-01'::tbool)) t(temp);
+           tcount           
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::tint),(NULL::tint)) t(temp);
+ tmin 
+------
+ 
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+            tmin            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::tint),(NULL::tint)) t(temp);
+ tmax 
+------
+ 
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+            tmax            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tint),(NULL::tint)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+           tcount           
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+(NULL::tint),(NULL::tint)) t(temp);
+ tsum 
+------
+ 
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+            tsum            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tavg(temp) FROM (VALUES
+(NULL::tint),(NULL::tint)) t(temp);
+ tavg 
+------
+ 
+(1 row)
+
+SELECT tavg(temp) FROM (VALUES
+(NULL::tint),('1@2000-01-01'::tint)) t(temp);
+            tavg            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::tfloat),(NULL::tfloat)) t(temp);
+ tmin 
+------
+ 
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+            tmin            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::tfloat),(NULL::tfloat)) t(temp);
+ tmax 
+------
+ 
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+            tmax            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tfloat),(NULL::tfloat)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+           tcount           
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+(NULL::tfloat),(NULL::tfloat)) t(temp);
+ tsum 
+------
+ 
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+            tsum            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tavg(temp) FROM (VALUES
+(NULL::tfloat),(NULL::tfloat)) t(temp);
+ tavg 
+------
+ 
+(1 row)
+
+SELECT tavg(temp) FROM (VALUES
+(NULL::tfloat),('1@2000-01-01'::tfloat)) t(temp);
+            tavg            
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::ttext),(NULL::ttext)) t(temp);
+ tmin 
+------
+ 
+(1 row)
+
+SELECT tmin(temp) FROM (VALUES
+(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+              tmin               
+---------------------------------
+ {"AAAA"@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::ttext),(NULL::ttext)) t(temp);
+ tmax 
+------
+ 
+(1 row)
+
+SELECT tmax(temp) FROM (VALUES
+(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+              tmax               
+---------------------------------
+ {"AAAA"@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::ttext),(NULL::ttext)) t(temp);
+ tcount 
+--------
+ 
+(1 row)
+
+SELECT tcount(temp) FROM (VALUES
+(NULL::ttext),('AAAA@2000-01-01'::ttext)) t(temp);
+           tcount           
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+

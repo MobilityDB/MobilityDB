@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * PeriodSelfuncs.c
- *	  Functions for selectivity estimation of period operators
+ * GeoEstimate.c
+ *	  Functions for selectivity estimation of geometry/geography operators
  *
  * Estimates are based on histograms of lower and upper bounds, and the
  * fraction of empty periods.
@@ -67,16 +67,16 @@ overlaps_point_sel(PG_FUNCTION_ARGS)
 	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
 
 	/*
-     * If expression is not (variable op something) or (something op
-     * variable), then punt and return a default estimate.
-     */
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
 	if (!get_restriction_variable(root, args, varRelid,
 								  &vardata, &other, &varonleft))
 		PG_RETURN_FLOAT8(0.01);
 
 	/*
-     * Can't do anything useful if the something is not a constant, either.
-     */
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
 	if (!IsA(other, Const))
 	{
 		ReleaseVariableStats(vardata);
@@ -84,9 +84,9 @@ overlaps_point_sel(PG_FUNCTION_ARGS)
 	}
 
 	/*
-     * All the period operators are strict, so we can cope with a NULL constant
-     * right away.
-     */
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
 	if (((Const *) other)->constisnull)
 	{
 		ReleaseVariableStats(vardata);
@@ -96,9 +96,9 @@ overlaps_point_sel(PG_FUNCTION_ARGS)
 	GBOX box = get_gbox(other);
 
 	/*
-     * If var is on the right, commute the operator, so that we can assume the
-     * var is on the left in what follows.
-     */
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
 	if (!varonleft)
 	{
 		/* we have other Op var, commute to make var Op other */
@@ -200,7 +200,7 @@ same_point_sel(PG_FUNCTION_ARGS)
 
 	if(((Const *) other)->consttype == type_oid(T_TGEOMPOINT) || ((Const *) other)->consttype == type_oid(T_TGEOGPOINT))
 	{
-        ((Const *) other)->constvalue = PointerGetDatum(period_make(box.mmin, box.mmin, true, true));
+		((Const *) other)->constvalue = PointerGetDatum(period_make(box.mmin, box.mmin, true, true));
 		selec2 = estimate_selectivity_temporal_dimension(root, vardata, other, SAME_OP);
 		selec2Flag = true;
 	}
@@ -1505,10 +1505,10 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 	nd_box_from_gbox(box, &nd_box);
 
 	/*
-     * To return 2D stats on an ND sample, we need to make the
-     * 2D box cover the full range of the other dimensions in the
-     * histogram.
-     */
+	 * To return 2D stats on an ND sample, we need to make the
+	 * 2D box cover the full range of the other dimensions in the
+	 * histogram.
+	 */
 
 	int ndims_max = 2;
 
@@ -1621,7 +1621,7 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 					nd_cell.min[d] = (float4)(min[d] + (at[d] + 0) * cell_size[d]);
 					nd_cell.max[d] = (float4)(min[d] + (at[d] + 1) * cell_size[d]);
 				}
-                cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
+				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 				ratio = (float4)nd_box_ratio(&nd_box, &nd_cell, (int) nd_stats->ndims);
 
 				/* Add the pro-rated count for this cell to the overall total */
@@ -1636,435 +1636,435 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 
 			return selectivity;
 		}
-        case LEFT_OP:
-        {
-            d = 0;
-            double total_count = 0.0;
-            /* Initialize the box with the stored nd size */
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[1] - 1;
-            at[0] = 0; at[1] = 0;
-            /* The default case: the box is on the left side of the right side.
-             * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
-             * to get the right comparison with the stored box.
-             * This is because PostGIS added 0.5 to the borders of the box.
-             */
+		case LEFT_OP:
+		{
+			d = 0;
+			double total_count = 0.0;
+			/* Initialize the box with the stored nd size */
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[1] - 1;
+			at[0] = 0; at[1] = 0;
+			/* The default case: the box is on the left side of the right side.
+			 * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
+			 * to get the right comparison with the stored box.
+			 * This is because PostGIS added 0.5 to the borders of the box.
+			 */
 
-            if (max[d] < (nd_box.max[d] + 0.5))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do
-                {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    /* Calculate the new bounds for only the x dimension */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
-                    /* There are three cases:
-                     * (1) The max value of the x dimension is on the left,
-                     * so we need to get the whole number of the cell-count value.
-                     * (2) The min value of the x dimension is on the left,
-                     * so we need to scan the box.
-                     * (3) Otherwise, the ratio is 0.
-                     * */
-                    if (nd_cell.max[d] < nd_box.max[d] + 0.5)
-                    {
-                        ratio = 1.0;
-                        //int index = at[d];
-                        //for (int i = 0; i < nd_stats->size[d]; i++)
-                        //{
-                            cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
-                        //    index += (int) nd_stats->size[1];
-                        //}
-                        total_count += cell_count * ratio;
-                    }
-                    else if (nd_cell.min[d] < nd_box.max[d])
-                    {
-                        cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
-                        double width = nd_cell.max[0] - nd_cell.min[0];
-                        double step = width / (cell_count);
-                        double newMax = nd_cell.max[0];
-                        int count = 0;
-                        do
-                        {
-                            newMax -= step;
-                            if(newMax < nd_box.max[0])
-                                break;
-                            count++;
-                        } while(true);
-                        ratio = 1 - count / (cell_count);
-                        total_count += cell_count * ratio;
-                    }
-                    else
-                        total_count += 0;
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
+			if (max[d] < (nd_box.max[d] + 0.5))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do
+				{
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					/* Calculate the new bounds for only the x dimension */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* There are three cases:
+					 * (1) The max value of the x dimension is on the left,
+					 * so we need to get the whole number of the cell-count value.
+					 * (2) The min value of the x dimension is on the left,
+					 * so we need to scan the box.
+					 * (3) Otherwise, the ratio is 0.
+					 * */
+					if (nd_cell.max[d] < nd_box.max[d] + 0.5)
+					{
+						ratio = 1.0;
+						//int index = at[d];
+						//for (int i = 0; i < nd_stats->size[d]; i++)
+						//{
+							cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
+						//	index += (int) nd_stats->size[1];
+						//}
+						total_count += cell_count * ratio;
+					}
+					else if (nd_cell.min[d] < nd_box.max[d])
+					{
+						cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
+						double width = nd_cell.max[0] - nd_cell.min[0];
+						double step = width / (cell_count);
+						double newMax = nd_cell.max[0];
+						int count = 0;
+						do
+						{
+							newMax -= step;
+							if(newMax < nd_box.max[0])
+								break;
+							count++;
+						} while(true);
+						ratio = 1 - count / (cell_count);
+						total_count += cell_count * ratio;
+					}
+					else
+						total_count += 0;
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
 
-            /* Scale by the number of features in our histogram to get the proportion */
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0) selectivity = 0.0;
+			/* Scale by the number of features in our histogram to get the proportion */
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0) selectivity = 0.0;
 
-            return selectivity;
-        }
-        case RIGHT_OP:
-        {
-            d = 0;
-            double total_count = 0.0;
-            /* Initialize the box with the stored nd size */
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
-            at[0] = 0; at[1] = 0;
-            /* The default case: the box is on the left side of the right side.
-             * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
-             * to get the right comparison with the stored box.
-             * This is because PostGIS added 0.5 to the borders of the box.
-             */
+			return selectivity;
+		}
+		case RIGHT_OP:
+		{
+			d = 0;
+			double total_count = 0.0;
+			/* Initialize the box with the stored nd size */
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
+			at[0] = 0; at[1] = 0;
+			/* The default case: the box is on the left side of the right side.
+			 * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
+			 * to get the right comparison with the stored box.
+			 * This is because PostGIS added 0.5 to the borders of the box.
+			 */
 
-            if (min[d] > (nd_box.max[d] + 0.5))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do
-                {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    int cells_count = 0;
-                    /* Calculate the new bounds for only the x dimension */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
-                    /* There are three cases:
-                     * (1) The max value of the x dimension is on the left,
-                     * so we need to get the whole number of the cell-count value.
-                     * (2) The min value of the x dimension is on the left,
-                     * so we need to scan the box.
-                     * (3) Otherwise, the ratio is 0.
-                     * */
-                    if (nd_cell.min[d] >= (nd_box.max[d] + 0.5))
-                    {
-                        ratio = 1.0;
-                        int index = at[d];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cells_count += nd_stats->value[index];
-                            index += (int) nd_stats->size[0];
-                        }
-                        total_count += cells_count * ratio;
-                    }
-                    else if (nd_cell.max[d] > (nd_box.max[d] + 0.5))
-                    {
-                        int index = at[0];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cell_count = nd_stats->value[index];
-                            float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
-                            float4 total = nd_cell.min[d] + step;
-                            float4 c = 0;
-                            for (int i = 1; i <= cell_count; i++)
-                            {
-                                if (total >= nd_box.max[d])
-                                    c++;
-                                total += step;
-                            }
-                            total_count += c;
-                            index += (int) nd_stats->size[0];
-                        }
-                    }
-                    else
-                        total_count += 0;
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
+			if (min[d] > (nd_box.max[d] + 0.5))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do
+				{
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					int cells_count = 0;
+					/* Calculate the new bounds for only the x dimension */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* There are three cases:
+					 * (1) The max value of the x dimension is on the left,
+					 * so we need to get the whole number of the cell-count value.
+					 * (2) The min value of the x dimension is on the left,
+					 * so we need to scan the box.
+					 * (3) Otherwise, the ratio is 0.
+					 * */
+					if (nd_cell.min[d] >= (nd_box.max[d] + 0.5))
+					{
+						ratio = 1.0;
+						int index = at[d];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cells_count += nd_stats->value[index];
+							index += (int) nd_stats->size[0];
+						}
+						total_count += cells_count * ratio;
+					}
+					else if (nd_cell.max[d] > (nd_box.max[d] + 0.5))
+					{
+						int index = at[0];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cell_count = nd_stats->value[index];
+							float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
+							float4 total = nd_cell.min[d] + step;
+							float4 c = 0;
+							for (int i = 1; i <= cell_count; i++)
+							{
+								if (total >= nd_box.max[d])
+									c++;
+								total += step;
+							}
+							total_count += c;
+							index += (int) nd_stats->size[0];
+						}
+					}
+					else
+						total_count += 0;
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
 
-            /* Scale by the number of features in our histogram to get the proportion */
+			/* Scale by the number of features in our histogram to get the proportion */
 
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0) selectivity = 0.0;
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0) selectivity = 0.0;
 
-            return selectivity;
-        }
-        case OVERLEFT_OP:
-        {
-            d = 0;
-            double total_count = 0.0;
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0];
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
-            at[0] = 0; at[1] = 0;
+			return selectivity;
+		}
+		case OVERLEFT_OP:
+		{
+			d = 0;
+			double total_count = 0.0;
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0];
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
+			at[0] = 0; at[1] = 0;
 
-            if (max[d] <= (nd_box.max[d] + 0.5))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    int cells_count = 0;
+			if (max[d] <= (nd_box.max[d] + 0.5))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do {
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					int cells_count = 0;
 
-                    /* We have to pro-rate partially overlapped cells. */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* We have to pro-rate partially overlapped cells. */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
 
-                    if (nd_cell.max[0] <= (nd_box.max[0] + 0.5)) {
-                        ratio = 1;
-                        int index = at[0];
-                        for (int i = 0; i < nd_stats->size[1]; i++) {
-                            cells_count += nd_stats->value[index];
-                            index += (int) nd_stats->size[0];
-                        }
-                        total_count += cells_count * ratio;
-                    }
-                    else if (nd_cell.min[0] <= (nd_box.max[0] + 0.5))
-                    {
-                        int index = at[0];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cell_count = nd_stats->value[index];
-                            float4 step = (nd_cell.max[0] - nd_cell.min[0]) / cell_count;
-                            float4 total = nd_cell.min[0] + step;
-                            float4 c = 0;
-                            for (int i = 1; i < cell_count; i++)
-                            {
-                                if (total <= nd_box.max[0])
-                                    c++;
-                                total += step;
-                            }
-                            total_count += c;
-                            index += (int) nd_stats->size[0];
-                        }
-                    }
-                    else
-                       total_count += 0;
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
-            /* Scale by the number of features in our histogram to get the proportion */
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0 ) selectivity = 0.0;
+					if (nd_cell.max[0] <= (nd_box.max[0] + 0.5)) {
+						ratio = 1;
+						int index = at[0];
+						for (int i = 0; i < nd_stats->size[1]; i++) {
+							cells_count += nd_stats->value[index];
+							index += (int) nd_stats->size[0];
+						}
+						total_count += cells_count * ratio;
+					}
+					else if (nd_cell.min[0] <= (nd_box.max[0] + 0.5))
+					{
+						int index = at[0];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cell_count = nd_stats->value[index];
+							float4 step = (nd_cell.max[0] - nd_cell.min[0]) / cell_count;
+							float4 total = nd_cell.min[0] + step;
+							float4 c = 0;
+							for (int i = 1; i < cell_count; i++)
+							{
+								if (total <= nd_box.max[0])
+									c++;
+								total += step;
+							}
+							total_count += c;
+							index += (int) nd_stats->size[0];
+						}
+					}
+					else
+					   total_count += 0;
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
+			/* Scale by the number of features in our histogram to get the proportion */
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0 ) selectivity = 0.0;
 
-            return selectivity;
-        }
-        case OVERRIGHT_OP:
-        {
-            d = 0;
-            double total_count = 0.0;
-            /*
-             * We only need to set the x dimension
-             */
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
-            at[0] = 0; at[1] = 0;
+			return selectivity;
+		}
+		case OVERRIGHT_OP:
+		{
+			d = 0;
+			double total_count = 0.0;
+			/*
+			 * We only need to set the x dimension
+			 */
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = (int) nd_stats->size[0] - 1;
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = 0;
+			at[0] = 0; at[1] = 0;
 
-            if (min[d] >= (nd_box.max[d]))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    int cells_count = 0;
+			if (min[d] >= (nd_box.max[d]))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do {
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					int cells_count = 0;
 
-                    /* We have to pro-rate partially overlapped cells. */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* We have to pro-rate partially overlapped cells. */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
 
-                    if (nd_cell.min[0] >= (nd_box.max[0] + 0.5))
-                    {
-                        ratio = 1;
-                        int index = at[0];
-                        for (int i = 0; i < nd_stats->size[1]; i++) {
-                            cells_count += nd_stats->value[index];
-                            index += (int) nd_stats->size[0];
-                        }
-                        total_count += cells_count * ratio;
-                    } else if (nd_cell.max[0] > (nd_box.max[0] + 0.5))
-                    {
-                        int index = at[0];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cell_count = nd_stats->value[index];
-                            float4 step = (nd_cell.max[0] - nd_cell.min[0]) / cell_count;
-                            float4 total = nd_cell.min[0] + step;
-                            float4 c = 0;
-                            for (int i = 1; i <= cell_count; i++) {
-                                if (total >= nd_box.max[0])
-                                    c++;
-                                total += step;
-                            }
-                            total_count += c;
-                            index += (int) nd_stats->size[0];
-                        }
-                    }
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
-            /* Scale by the number of features in our histogram to get the proportion */
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0 ) selectivity = 0.0;
+					if (nd_cell.min[0] >= (nd_box.max[0] + 0.5))
+					{
+						ratio = 1;
+						int index = at[0];
+						for (int i = 0; i < nd_stats->size[1]; i++) {
+							cells_count += nd_stats->value[index];
+							index += (int) nd_stats->size[0];
+						}
+						total_count += cells_count * ratio;
+					} else if (nd_cell.max[0] > (nd_box.max[0] + 0.5))
+					{
+						int index = at[0];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cell_count = nd_stats->value[index];
+							float4 step = (nd_cell.max[0] - nd_cell.min[0]) / cell_count;
+							float4 total = nd_cell.min[0] + step;
+							float4 c = 0;
+							for (int i = 1; i <= cell_count; i++) {
+								if (total >= nd_box.max[0])
+									c++;
+								total += step;
+							}
+							total_count += c;
+							index += (int) nd_stats->size[0];
+						}
+					}
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
+			/* Scale by the number of features in our histogram to get the proportion */
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0 ) selectivity = 0.0;
 
-            return selectivity;
-        }
-        case BELOW_OP:
-        {
-            d = 1;
-            double total_count = 0.0;
-            /* Initialize the box with the stored nd size */
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = 0;
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[0] - 1;
-            at[0] = 0; at[1] = 0;
-            /* The default case: the box is on the left side of the right side.
-             * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
-             * to get the right comparison with the stored box.
-             * This is because PostGIS added 0.5 to the borders of the box.
-             */
+			return selectivity;
+		}
+		case BELOW_OP:
+		{
+			d = 1;
+			double total_count = 0.0;
+			/* Initialize the box with the stored nd size */
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = 0;
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[0] - 1;
+			at[0] = 0; at[1] = 0;
+			/* The default case: the box is on the left side of the right side.
+			 * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
+			 * to get the right comparison with the stored box.
+			 * This is because PostGIS added 0.5 to the borders of the box.
+			 */
 
-            if (max[d] < (nd_box.max[d] + 0.5))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do
-                {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    int cells_count = 0;
-                    /* Calculate the new bounds for only the x dimension */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
-                    /* There are three cases:
-                     * (1) The max value of the x dimension is on the left,
-                     * so we need to get the whole number of the cell-count value.
-                     * (2) The min value of the x dimension is on the left,
-                     * so we need to scan the box.
-                     * (3) Otherwise, the ratio is 0.
-                     * */
-                    if (nd_cell.max[d] < nd_box.max[d] + 0.5)
-                    {
-                        ratio = 1.0;
-                        int index = at[d];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cells_count += nd_stats->value[index];
-                            index ++;
-                        }
-                        total_count += cells_count * ratio;
-                    }
-                    else if (nd_cell.min[d] < nd_box.max[d])
-                    {
-                        int index = at[d];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cell_count = nd_stats->value[index];
-                            float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
-                            float4 total = nd_cell.min[d] + step;
-                            float4 c = 0;
-                            for (int i = 1; i < cell_count; i++)
-                            {
-                                if (total < nd_box.max[d])
-                                    c++;
-                                total += step;
-                            }
-                            total_count += c;
-                            index ++;
-                        }
-                    }
-                    else
-                        total_count += 0;
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
+			if (max[d] < (nd_box.max[d] + 0.5))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do
+				{
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					int cells_count = 0;
+					/* Calculate the new bounds for only the x dimension */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* There are three cases:
+					 * (1) The max value of the x dimension is on the left,
+					 * so we need to get the whole number of the cell-count value.
+					 * (2) The min value of the x dimension is on the left,
+					 * so we need to scan the box.
+					 * (3) Otherwise, the ratio is 0.
+					 * */
+					if (nd_cell.max[d] < nd_box.max[d] + 0.5)
+					{
+						ratio = 1.0;
+						int index = at[d];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cells_count += nd_stats->value[index];
+							index ++;
+						}
+						total_count += cells_count * ratio;
+					}
+					else if (nd_cell.min[d] < nd_box.max[d])
+					{
+						int index = at[d];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cell_count = nd_stats->value[index];
+							float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
+							float4 total = nd_cell.min[d] + step;
+							float4 c = 0;
+							for (int i = 1; i < cell_count; i++)
+							{
+								if (total < nd_box.max[d])
+									c++;
+								total += step;
+							}
+							total_count += c;
+							index ++;
+						}
+					}
+					else
+						total_count += 0;
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
 
-            /* Scale by the number of features in our histogram to get the proportion */
+			/* Scale by the number of features in our histogram to get the proportion */
 
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0) selectivity = 0.0;
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0) selectivity = 0.0;
 
-            return selectivity;
-        }
-        case ABOVE_OP:
-        {
-            d = 1;
-            double total_count = 0.0;
-            /* Initialize the box with the stored nd size */
-            nd_ibox.min[0] = 0;nd_ibox.max[0] = 0;
-            nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[1] - 1;
-            at[0] = 0; at[1] = 0;
-            /* The default case: the box is on the left side of the right side.
-             * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
-             * to get the right comparison with the stored box.
-             * This is because PostGIS added 0.5 to the borders of the box.
-             */
+			return selectivity;
+		}
+		case ABOVE_OP:
+		{
+			d = 1;
+			double total_count = 0.0;
+			/* Initialize the box with the stored nd size */
+			nd_ibox.min[0] = 0;nd_ibox.max[0] = 0;
+			nd_ibox.min[1] = 0;nd_ibox.max[1] = (int) nd_stats->size[1] - 1;
+			at[0] = 0; at[1] = 0;
+			/* The default case: the box is on the left side of the right side.
+			 * We compare with the max value of the x dimension plus 0.5. The number is increased by 0.5 to be able
+			 * to get the right comparison with the stored box.
+			 * This is because PostGIS added 0.5 to the borders of the box.
+			 */
 
-            if (min[d] > (nd_box.max[d] + 0.5))
-                total_count = nd_stats->histogram_features;
-            else
-            {
-                do
-                {
-                    float cell_count, ratio;
-                    ND_BOX nd_cell;
-                    int cells_count = 0;
-                    /* Calculate the new bounds for only the x dimension */
-                    nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
-                    nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
-                    /* There are three cases:
-                     * (1) The max value of the x dimension is on the left,
-                     * so we need to get the whole number of the cell-count value.
-                     * (2) The min value of the x dimension is on the left,
-                     * so we need to scan the box.
-                     * (3) Otherwise, the ratio is 0.
-                     * */
-                    if (nd_cell.min[d] >= (nd_box.max[d] + 0.5))
-                    {
-                        ratio = 1.0;
-                        int index = at[d];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cells_count += nd_stats->value[index];
-                            index ++;
-                        }
-                        total_count += cells_count * ratio;
-                    }
-                    else if (nd_cell.max[d] > (nd_box.max[d]))
-                    {
-                        int index = at[d];
-                        for (int i = 0; i < nd_stats->size[1]; i++)
-                        {
-                            cell_count = nd_stats->value[index];
-                            float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
-                            float4 total = nd_cell.min[d] + step;
-                            float4 c = 0;
-                            for (int i = 1; i < cell_count; i++)
-                            {
-                                if (total >= nd_box.max[d])
-                                    c++;
-                                total += step;
-                            }
-                            total_count += c;
-                            index ++;
-                        }
-                    }
-                    else
-                        total_count += 0;
-                } while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-            }
+			if (min[d] > (nd_box.max[d] + 0.5))
+				total_count = nd_stats->histogram_features;
+			else
+			{
+				do
+				{
+					float cell_count, ratio;
+					ND_BOX nd_cell;
+					int cells_count = 0;
+					/* Calculate the new bounds for only the x dimension */
+					nd_cell.min[d] = (float4) (min[d] + (at[d] + 0) * cell_size[d]);
+					nd_cell.max[d] = (float4) (min[d] + (at[d] + 1) * cell_size[d]);
+					/* There are three cases:
+					 * (1) The max value of the x dimension is on the left,
+					 * so we need to get the whole number of the cell-count value.
+					 * (2) The min value of the x dimension is on the left,
+					 * so we need to scan the box.
+					 * (3) Otherwise, the ratio is 0.
+					 * */
+					if (nd_cell.min[d] >= (nd_box.max[d] + 0.5))
+					{
+						ratio = 1.0;
+						int index = at[d];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cells_count += nd_stats->value[index];
+							index ++;
+						}
+						total_count += cells_count * ratio;
+					}
+					else if (nd_cell.max[d] > (nd_box.max[d]))
+					{
+						int index = at[d];
+						for (int i = 0; i < nd_stats->size[1]; i++)
+						{
+							cell_count = nd_stats->value[index];
+							float4 step = (nd_cell.max[d] - nd_cell.min[d]) / cell_count;
+							float4 total = nd_cell.min[d] + step;
+							float4 c = 0;
+							for (int i = 1; i < cell_count; i++)
+							{
+								if (total >= nd_box.max[d])
+									c++;
+								total += step;
+							}
+							total_count += c;
+							index ++;
+						}
+					}
+					else
+						total_count += 0;
+				} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+			}
 
-            /* Scale by the number of features in our histogram to get the proportion */
+			/* Scale by the number of features in our histogram to get the proportion */
 
-            selectivity = total_count / nd_stats->histogram_features;
-            /* Prevent rounding overflows */
-            if (selectivity > 1.0) selectivity = 1.0;
-            else if (selectivity < 0.0) selectivity = 0.0;
+			selectivity = total_count / nd_stats->histogram_features;
+			/* Prevent rounding overflows */
+			if (selectivity > 1.0) selectivity = 1.0;
+			else if (selectivity < 0.0) selectivity = 0.0;
 
-            return selectivity;
-        }
+			return selectivity;
+		}
 
 
-        default:
+		default:
 			return 0;
 	}
 }
@@ -2143,77 +2143,77 @@ PG_FUNCTION_INFO_V1(tpoint_join_sel);
 PGDLLEXPORT Datum
 tpoint_join_sel(PG_FUNCTION_ARGS)
 {
-    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-    Oid operator = PG_GETARG_OID(1);
-    List *args = (List *) PG_GETARG_POINTER(2);
-    JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-    SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
-    int mode = 2;
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+	SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
+	int mode = 2;
 
-    Node *arg1, *arg2;
-    Var *var1, *var2;
-    Oid relid1, relid2;
+	Node *arg1, *arg2;
+	Var *var1, *var2;
+	Oid relid1, relid2;
 
-    ND_STATS *stats1, *stats2;
-    bool selec2Flag = false;
-    Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
+	ND_STATS *stats1, *stats2;
+	bool selec2Flag = false;
+	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
 
-    /* Only respond to an inner join/unknown context join */
-    if (jointype != JOIN_INNER)
-    {
-        elog(DEBUG1, "%s: jointype %d not supported", __func__, jointype);
-        PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
-    }
+	/* Only respond to an inner join/unknown context join */
+	if (jointype != JOIN_INNER)
+	{
+		elog(DEBUG1, "%s: jointype %d not supported", __func__, jointype);
+		PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+	}
 
-    /* Find Oids of the geometry columns we are working with */
-    arg1 = (Node*) linitial(args);
-    arg2 = (Node*) lsecond(args);
-    var1 = (Var*) arg1;
-    var2 = (Var*) arg2;
+	/* Find Oids of the geometry columns we are working with */
+	arg1 = (Node*) linitial(args);
+	arg2 = (Node*) lsecond(args);
+	var1 = (Var*) arg1;
+	var2 = (Var*) arg2;
 
-    /* We only do column joins right now, no functional joins */
-    /* TODO: handle g1 && ST_Expand(g2) */
-    if (!IsA(arg1, Var) || !IsA(arg2, Var))
-    {
-        elog(DEBUG1, "%s called with arguments that are not column references", __func__);
-        PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
-    }
+	/* We only do column joins right now, no functional joins */
+	/* TODO: handle g1 && ST_Expand(g2) */
+	if (!IsA(arg1, Var) || !IsA(arg2, Var))
+	{
+		elog(DEBUG1, "%s called with arguments that are not column references", __func__);
+		PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+	}
 
-    /* What are the Oids of our tables/relations? */
-    relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
-    relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
+	/* What are the Oids of our tables/relations? */
+	relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
+	relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
 
-    /* Pull the stats from the stats system. */
-    stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
-    stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
+	/* Pull the stats from the stats system. */
+	stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
+	stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
 
-    /* If we can't get stats, we have to stop here! */
-    if (stats1 && stats2)
-        selec1 = estimate_join_selectivity(stats1, stats2);
-    else
-        PG_RETURN_FLOAT8(selec);
+	/* If we can't get stats, we have to stop here! */
+	if (stats1 && stats2)
+		selec1 = estimate_join_selectivity(stats1, stats2);
+	else
+		PG_RETURN_FLOAT8(selec);
 
-    if (var1->vartype == type_oid(T_TGEOMPOINT) || var1->vartype == type_oid(T_TGEOGPOINT))
-    {
-        selec2 = estimate_join_selectivity_temporal_dimension(root, args, sjinfo, operator, get_cacheOp(operator));
-        if(selec2 != 0)
-            selec2Flag = true;
-    }
-    if (selec2 == 0 && !selec2Flag)
-        selec = selec1;
-    else if(selec1 == 0.0 && selec2Flag)
-        selec = selec2;
-    else if(selec1 == 0.0 && selec2 == 0.0)
-        PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
-    else
-        selec = selec1 * selec2;
+	if (var1->vartype == type_oid(T_TGEOMPOINT) || var1->vartype == type_oid(T_TGEOGPOINT))
+	{
+		selec2 = estimate_join_selectivity_temporal_dimension(root, args, sjinfo, operator, get_cacheOp(operator));
+		if(selec2 != 0)
+			selec2Flag = true;
+	}
+	if (selec2 == 0 && !selec2Flag)
+		selec = selec1;
+	else if(selec1 == 0.0 && selec2Flag)
+		selec = selec2;
+	else if(selec1 == 0.0 && selec2 == 0.0)
+		PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+	else
+		selec = selec1 * selec2;
 
-    if(stats1 && stats2)
-    {
-        pfree(stats1);
-        pfree(stats2);
-    }
-    PG_RETURN_FLOAT8(selec);
+	if(stats1 && stats2)
+	{
+		pfree(stats1);
+		pfree(stats2);
+	}
+	PG_RETURN_FLOAT8(selec);
 }
 
 
@@ -2225,7 +2225,7 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 		  Form_pg_statistic stats1, Form_pg_statistic stats2,
 		  bool have_mcvs1, bool have_mcvs2)
 {
-	double      selec;
+	double	  selec;
 	TypeCacheEntry *typecache = lookup_type_cache(TIMESTAMPTZOID,
 												  TYPECACHE_EQ_OPR |
 												  TYPECACHE_CMP_PROC_FINFO |
@@ -2234,23 +2234,23 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 	if (have_mcvs1 && have_mcvs2)
 	{
 		/*
-         * We have most-common-value lists for both relations.  Run through
-         * the lists to see which MCVs actually join to each other with the
-         * given operator.  This allows us to determine the exact join
-         * selectivity for the portion of the relations represented by the MCV
-         * lists.  We still have to estimate for the remaining population, but
-         * in a skewed distribution this gives us a big leg up in accuracy.
-         * For motivation see the analysis in Y. Ioannidis and S.
-         * Christodoulakis, "On the propagation of errors in the size of join
-         * results", Technical Report 1018, Computer Science Dept., University
-         * of Wisconsin, Madison, March 1991 (available from ftp.cs.wisc.edu).
-         */
+		 * We have most-common-value lists for both relations.  Run through
+		 * the lists to see which MCVs actually join to each other with the
+		 * given operator.  This allows us to determine the exact join
+		 * selectivity for the portion of the relations represented by the MCV
+		 * lists.  We still have to estimate for the remaining population, but
+		 * in a skewed distribution this gives us a big leg up in accuracy.
+		 * For motivation see the analysis in Y. Ioannidis and S.
+		 * Christodoulakis, "On the propagation of errors in the size of join
+		 * results", Technical Report 1018, Computer Science Dept., University
+		 * of Wisconsin, Madison, March 1991 (available from ftp.cs.wisc.edu).
+		 */
 
-		bool       *hasmatch1;
-		bool       *hasmatch2;
-		double      nullfrac1 = stats1->stanullfrac;
-		double      nullfrac2 = stats2->stanullfrac;
-		double      matchprodfreq,
+		bool	   *hasmatch1;
+		bool	   *hasmatch2;
+		double	  nullfrac1 = stats1->stanullfrac;
+		double	  nullfrac2 = stats2->stanullfrac;
+		double	  matchprodfreq,
 				matchfreq1,
 				matchfreq2,
 				unmatchfreq1,
@@ -2259,23 +2259,23 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 				otherfreq2,
 				totalsel1,
 				totalsel2;
-		int         i,
+		int		 i,
 				nmatches;
 
 		hasmatch1 = (bool *) palloc0(sslot1->nvalues * sizeof(bool));
 		hasmatch2 = (bool *) palloc0(sslot2->nvalues * sizeof(bool));
 
 		/*
-         * Note we assume that each MCV will match at most one member of the
-         * other MCV list.  If the operator isn't really equality, there could
-         * be multiple matches --- but we don't look for them, both for speed
-         * and because the math wouldn't add up...
-         */
+		 * Note we assume that each MCV will match at most one member of the
+		 * other MCV list.  If the operator isn't really equality, there could
+		 * be multiple matches --- but we don't look for them, both for speed
+		 * and because the math wouldn't add up...
+		 */
 		matchprodfreq = 0.0;
 		nmatches = 0;
 		for (i = 0; i < sslot1->nvalues; i++)
 		{
-			int         j;
+			int		 j;
 
 			for (j = 0; j < sslot2->nvalues; j++)
 			{
@@ -2320,22 +2320,22 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 		pfree(hasmatch2);
 
 		/*
-         * Compute total frequency of non-null values that are not in the MCV
-         * lists.
-         */
+		 * Compute total frequency of non-null values that are not in the MCV
+		 * lists.
+		 */
 		otherfreq1 = 1.0 - nullfrac1 - matchfreq1 - unmatchfreq1;
 		otherfreq2 = 1.0 - nullfrac2 - matchfreq2 - unmatchfreq2;
 		CLAMP_PROBABILITY(otherfreq1);
 		CLAMP_PROBABILITY(otherfreq2);
 
 		/*
-         * We can estimate the total selectivity from the point of view of
-         * relation 1 as: the known selectivity for matched MCVs, plus
-         * unmatched MCVs that are assumed to match against random members of
-         * relation 2's non-MCV population, plus non-MCV values that are
-         * assumed to match against random members of relation 2's unmatched
-         * MCVs plus non-MCV values.
-         */
+		 * We can estimate the total selectivity from the point of view of
+		 * relation 1 as: the known selectivity for matched MCVs, plus
+		 * unmatched MCVs that are assumed to match against random members of
+		 * relation 2's non-MCV population, plus non-MCV values that are
+		 * assumed to match against random members of relation 2's unmatched
+		 * MCVs plus non-MCV values.
+		 */
 		totalsel1 = matchprodfreq;
 		if (nd2 > sslot2->nvalues)
 			totalsel1 += unmatchfreq1 * otherfreq2 / (nd2 - sslot2->nvalues);
@@ -2351,19 +2351,19 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 						 (nd1 - nmatches);
 
 		/*
-         * Use the smaller of the two estimates.  This can be justified in
-         * essentially the same terms as given below for the no-stats case: to
-         * a first approximation, we are estimating from the point of view of
-         * the relation with smaller nd.
-         */
+		 * Use the smaller of the two estimates.  This can be justified in
+		 * essentially the same terms as given below for the no-stats case: to
+		 * a first approximation, we are estimating from the point of view of
+		 * the relation with smaller nd.
+		 */
 		selec = (totalsel1 < totalsel2) ? totalsel1 : totalsel2;
 	}
 	else
 	{
 		/*
-         * We do not have MCV lists. Estimate the join selectivity by using
-         * Histogram.
-         */
+		 * We do not have MCV lists. Estimate the join selectivity by using
+		 * Histogram.
+		 */
 			StrategyNumber  strategyNumber;
 			AttStatsSlot hslot1, hslot2;
 			if (vardata2->vartype == type_oid(T_TGEOMPOINT) || vardata2->vartype == type_oid(T_TGEOGPOINT))
@@ -2380,27 +2380,27 @@ check_mcv(PlannerInfo *root, CachedOp cacheOp,
 			CLAMP_PROBABILITY(selec);
 
 		/*
-         * We do not have MCV lists for both sides.  Estimate the join
-         * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
-         * is plausible if we assume that the join operator is strict and the
-         * non-null values are about equally distributed: a given non-null
-         * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
-         * of rel2, so total join rows are at most
-         * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
-         * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
-         * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
-         * with MIN() is an upper bound.  Using the MIN() means we estimate
-         * from the point of view of the relation with smaller nd (since the
-         * larger nd is determining the MIN).  It is reasonable to assume that
-         * most tuples in this rel will have join partners, so the bound is
-         * probably reasonably tight and should be taken as-is.
-         *
-         * XXX Can we be smarter if we have an MCV list for just one side? It
-         * seems that if we assume equal distribution for the other side, we
-         * end up with the same answer anyway.
-         */
-		//double      nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
-		//double      nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
+		 * We do not have MCV lists for both sides.  Estimate the join
+		 * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
+		 * is plausible if we assume that the join operator is strict and the
+		 * non-null values are about equally distributed: a given non-null
+		 * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
+		 * of rel2, so total join rows are at most
+		 * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
+		 * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
+		 * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
+		 * with MIN() is an upper bound.  Using the MIN() means we estimate
+		 * from the point of view of the relation with smaller nd (since the
+		 * larger nd is determining the MIN).  It is reasonable to assume that
+		 * most tuples in this rel will have join partners, so the bound is
+		 * probably reasonably tight and should be taken as-is.
+		 *
+		 * XXX Can we be smarter if we have an MCV list for just one side? It
+		 * seems that if we assume equal distribution for the other side, we
+		 * end up with the same answer anyway.
+		 */
+		//double	  nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
+		//double	  nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
 
 		/*selec = (1.0 - nullfrac1) * (1.0 - nullfrac2);
 		if (nd1 > nd2)
@@ -2481,9 +2481,9 @@ estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 	}
 
 	/*
-     * First find the index range of the part of the smaller
-     * histogram that overlaps the larger one.
-     */
+	 * First find the index range of the part of the smaller
+	 * histogram that overlaps the larger one.
+	 */
 	if ( ! nd_box_overlap(s1, &extent2, &ibox1) )
 	{
 		PG_RETURN_FLOAT8(FALLBACK_ND_JOINSEL);
@@ -2563,30 +2563,30 @@ estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 
 
 	/*
-     * In order to compare our total cell count "val" to the
-     * ntuples_max, we need to scale val up to reflect a full
-     * table estimate. So, multiply by ratio of table size to
-     * sample size.
-     */
+	 * In order to compare our total cell count "val" to the
+	 * ntuples_max, we need to scale val up to reflect a full
+	 * table estimate. So, multiply by ratio of table size to
+	 * sample size.
+	 */
 	val *= (s1->table_features / s1->sample_features);
 	val *= (s2->table_features / s2->sample_features);
 
 
 	/*
-     * Because the cell counts are over-determined due to
-     * double counting of features that overlap multiple cells
-     * (see the compute_gserialized_stats routine)
-     * we also have to scale our cell count "val" *down*
-     * to adjust for the double counting.
-     */
-	//      val /= (s1->cells_covered / s1->histogram_features);
-	//      val /= (s2->cells_covered / s2->histogram_features);
+	 * Because the cell counts are over-determined due to
+	 * double counting of features that overlap multiple cells
+	 * (see the compute_gserialized_stats routine)
+	 * we also have to scale our cell count "val" *down*
+	 * to adjust for the double counting.
+	 */
+	//	  val /= (s1->cells_covered / s1->histogram_features);
+	//	  val /= (s2->cells_covered / s2->histogram_features);
 
 	/*
-     * Finally, the selectivity is the estimated number of
-     * rows to be returned divided by the maximum possible
-     * number of rows that can be returned.
-     */
+	 * Finally, the selectivity is the estimated number of
+	 * rows to be returned divided by the maximum possible
+	 * number of rows that can be returned.
+	 */
 	selectivity = val / ntuples_max;
 
 	/* Guard against over-estimates and crazy numbers :) */
@@ -2606,22 +2606,22 @@ estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 float8
 estimate_join_selectivity_temporal_dimension(PlannerInfo *root, List *args, SpecialJoinInfo *sjinfo, Oid operator, CachedOp cacheOp)
 {
-	double      selec;
-	double      selec_inner;
+	double	  selec;
+	double	  selec_inner;
 	VariableStatData vardata1;
 	VariableStatData vardata2;
-	double      nd1;
-	double      nd2;
-	bool        isdefault1;
-	bool        isdefault2;
-	Oid         opfuncoid;
+	double	  nd1;
+	double	  nd2;
+	bool		isdefault1;
+	bool		isdefault2;
+	Oid		 opfuncoid;
 	AttStatsSlot sslot1;
 	AttStatsSlot sslot2;
 	Form_pg_statistic stats1 = NULL;
 	Form_pg_statistic stats2 = NULL;
-	bool        have_mcvs1 = false;
-	bool        have_mcvs2 = false;
-	bool        join_is_reversed;
+	bool		have_mcvs1 = false;
+	bool		have_mcvs2 = false;
+	bool		join_is_reversed;
 
 	get_join_variables(root, args, sjinfo,
 					   &vardata1, &vardata2, &join_is_reversed);
@@ -2677,13 +2677,13 @@ estimate_join_selectivity_temporal_dimension(PlannerInfo *root, List *args, Spec
 CachedOp
 get_cacheOp(Oid operator)
 {
-    if (operator == oper_oid(OVERLAPS_OP, T_TGEOMPOINT, T_PERIOD) ||
-        operator == oper_oid(OVERLAPS_OP, T_TGEOMPOINT, T_TIMESTAMPTZ))
-        return OVERLAPS_OP;
-    else if (operator == oper_oid(CONTAINS_OP, T_TGEOMPOINT, T_PERIOD))
-        return CONTAINS_OP;
-    else
-        return OVERLAPS_OP;
+	if (operator == oper_oid(OVERLAPS_OP, T_TGEOMPOINT, T_PERIOD) ||
+		operator == oper_oid(OVERLAPS_OP, T_TGEOMPOINT, T_TIMESTAMPTZ))
+		return OVERLAPS_OP;
+	else if (operator == oper_oid(CONTAINS_OP, T_TGEOMPOINT, T_PERIOD))
+		return CONTAINS_OP;
+	else
+		return OVERLAPS_OP;
 }
 
 /*
@@ -2698,9 +2698,9 @@ calc_period_hist_join_selectivity_scalar(PeriodBound *constbound,
 	int			index;
 
 	/*
-     * Find the histogram bin the given constant falls into. Estimate
-     * selectivity as the number of preceding whole bins.
-     */
+	 * Find the histogram bin the given constant falls into. Estimate
+	 * selectivity as the number of preceding whole bins.
+	 */
 	index = period_rbound_bsearch(constbound, hist, hist_nvalues1, equal);
 	selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues1 * hist_nvalues2  - 1);
 

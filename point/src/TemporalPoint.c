@@ -117,17 +117,17 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			errmsg("typmod array must not contain nulls")));
 
 	/*
-     * There are several ways to define a column wrt type modifiers:
-     *   column_type(Duration, Geometry, SRID) => All modifiers are determined.
-     * 	 column_type(Duration, Geometry) => The SRID is generic.
-     * 	 column_type(Geometry, SRID) => The duration type is generic.
-     * 	 column_type(Geometry) => The duration type and SRID are generic.
-     *	 column_type(Duration) => The geometry type and SRID are generic.
-     *	 column_type => The duration type, geometry type, and SRID are generic.
-     *
-     * For example, if the user did not set the duration type, we can use all 
-     * duration types in the same column. Similarly for all generic modifiers.
-     */
+	 * There are several ways to define a column wrt type modifiers:
+	 *   column_type(Duration, Geometry, SRID) => All modifiers are determined.
+	 * 	 column_type(Duration, Geometry) => The SRID is generic.
+	 * 	 column_type(Geometry, SRID) => The duration type is generic.
+	 * 	 column_type(Geometry) => The duration type and SRID are generic.
+	 *	 column_type(Duration) => The geometry type and SRID are generic.
+	 *	 column_type => The duration type, geometry type, and SRID are generic.
+	 *
+	 * For example, if the user did not set the duration type, we can use all 
+	 * duration types in the same column. Similarly for all generic modifiers.
+	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
 	uint8_t duration_type = 0, geometry_type = 0;
 	int z = 0, m = 0;
@@ -373,13 +373,14 @@ PGDLLEXPORT Datum
 tpoint_make_temporalinst(PG_FUNCTION_ARGS) 
 {
 	GSERIALIZED *value = PG_GETARG_GSERIALIZED_P(0);
-	if (gserialized_get_type(value) != POINTTYPE)
+	if (gserialized_get_type(value) != POINTTYPE ||
+		gserialized_is_empty(value))
 	{
 		PG_FREE_IF_COPY(value, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only point geometries accepted")));		
+			errmsg("Only non empty point geometries accepted")));		
 	}
-	
+
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(value),
@@ -526,7 +527,7 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Assemble the set of points of a temporal instant point as a single 
- * geometry/geography
+ * geometry/geography. Duplicate points are removed.
  *****************************************************************************/
 
 Datum
@@ -535,13 +536,32 @@ tgeompointi_values(TemporalI *ti)
 	if (ti->count == 1)
 		return temporalinst_value_copy(temporali_inst_n(ti, 0));
 
-	Datum *geoms = palloc(sizeof(Datum *) * ti->count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int k = 0;
 	for (int i = 0; i < ti->count; i++)
-		geoms[i] = temporalinst_value(temporali_inst_n(ti, i));
-	ArrayType *array = datumarr_to_array(geoms, ti->count, type_oid(T_GEOMETRY));
-	/* The following function removes duplicates */
-	Datum result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
-	pfree(geoms); pfree(array);
+	{
+		Datum value = temporalinst_value(temporali_inst_n(ti, i));
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (datum_eq(value, values[j], ti->valuetypid))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			values[k++] = value;
+	}
+	if (k == 1)
+	{
+		pfree(values);
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+	}
+
+	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
+	Datum result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+	pfree(values); pfree(array);
 	return result;
 }
 
@@ -551,21 +571,39 @@ tgeogpointi_values(TemporalI *ti)
 	if (ti->count == 1)
 		return temporalinst_value_copy(temporali_inst_n(ti, 0));
 
-	Datum *geoms = palloc(sizeof(Datum *) * ti->count);
+	Datum *values = palloc(sizeof(Datum *) * ti->count);
+	int k = 0;
+	Oid geomoid = type_oid(T_GEOMETRY);
 	for (int i = 0; i < ti->count; i++)
 	{
 		Datum value = temporalinst_value(temporali_inst_n(ti, i));
-		geoms[i] = call_function1(geometry_from_geography, value);
+		Datum geomvalue = call_function1(geometry_from_geography, value);
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (datum_eq(geomvalue, values[j], geomoid))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			values[k++] = geomvalue;
+		else
+			pfree(DatumGetPointer(geomvalue));	
 	}
-	ArrayType *array = datumarr_to_array(geoms, ti->count, type_oid(T_GEOMETRY));
-	/* The following function removes duplicates */
-	Datum geomresult = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
-	Datum result = call_function1(geography_from_geometry, geomresult);
-	
-	for (int i = 0; i < ti->count; i++)
-		pfree(DatumGetPointer(geoms[i]));
-	pfree(geoms); pfree(array); pfree(DatumGetPointer(geomresult));
+	if (k == 1)
+	{
+		pfree(DatumGetPointer(values[0])); pfree(values);
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+	}
 
+	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
+	Datum geomresult = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+	Datum result = call_function1(geography_from_geometry, geomresult);
+	for (int i = 0; i < k; i++)
+		pfree(DatumGetPointer(values[i]));
+	pfree(values); pfree(array); pfree(DatumGetPointer(geomresult));
 	return result;
 }
 
@@ -659,20 +697,19 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
-			(TemporalInst *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalInst *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_value(
-			(TemporalI *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalI *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_value(
-			(TemporalSeq *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalSeq *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_value(
-			(TemporalS *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -744,20 +781,19 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
-			(TemporalInst *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalInst *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_value(
-			(TemporalI *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalI *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_value(
-			(TemporalSeq *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalSeq *)temp, PointerGetDatum(value));
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_value(
-			(TemporalS *)temp, PointerGetDatum(value), valuetypid);
+			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -779,7 +815,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
@@ -813,16 +849,16 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_at_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_at_values(
-			(TemporalS *)temp, values, count1, valuetypid);
+			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));
@@ -845,7 +881,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = ARR_ELEMTYPE(array);
+	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
 	for (int i = 0; i < count; i++)
@@ -879,16 +915,16 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
-			(TemporalInst *)temp, values, count1, valuetypid);
+			(TemporalInst *)temp, values, count1);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)temporali_minus_values(
-			(TemporalI *)temp, values, count1, valuetypid);
+			(TemporalI *)temp, values, count1);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_values(
-			(TemporalSeq *)temp, values, count1, valuetypid);
+			(TemporalSeq *)temp, values, count1);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)temporals_minus_values(
-			(TemporalS *)temp, values, count1, valuetypid);
+			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Operation not supported")));

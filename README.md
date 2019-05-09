@@ -11,7 +11,7 @@ Requirements
  - Linux (other UNIX-like systems may work, but remain untested)
  - PostgreSQL == 11
  - CMake >= 3.1
- - PostGIS >= 2.5 (optional)
+ - PostGIS == 2.5
 
 Building & installation
 -----------------------
@@ -23,10 +23,20 @@ $ cd MobilityDB/build
 $ cmake ..
 $ make
 $ sudo make install
+$ psql -c 'CREATE EXTENSION MobilityDB CASCADE'
+```
+
+You should also set the following in postgresql.conf:
+```
+shared_preload_libraries = 'postgis-2.5'
+max_locks_per_transaction = 128
 ```
 
 Usage
 -----
+
+https://docs.mobilitydb.com/nightly/
+
 
 License
 -------

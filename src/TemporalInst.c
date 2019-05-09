@@ -67,7 +67,7 @@ temporalinst_value_copy(TemporalInst *inst)
 		return *(Datum *)value;
 	/* For base types passed by reference */
 	int typlen = get_typlen_fast(inst->valuetypid);
-	size_t value_size = typlen != -1 ? (uint) typlen : VARSIZE(value);
+	size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
 	void *result = palloc0(value_size);
 	memcpy(result, value, value_size);
 	return PointerGetDatum(result);
@@ -109,7 +109,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 		/* For base types passed by reference */
 		void *value_from = DatumGetPointer(value);
 		int typlen = get_typlen_fast(valuetypid);
-		value_size = typlen != -1 ? double_pad((uint) typlen) : 
+		value_size = typlen != -1 ? double_pad((unsigned int) typlen) : 
 			double_pad(VARSIZE(value_from));
 		size += value_size;
 		result = palloc0(size);
@@ -190,6 +190,7 @@ temporalinst_write(TemporalInst *inst, StringInfo buf)
 	bytea *bt = call_send(TIMESTAMPTZOID, inst->t);
 	bytea *bv = call_send(inst->valuetypid, temporalinst_value(inst));
 	pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
+	pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
 	pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
 }
 
@@ -200,7 +201,11 @@ TemporalInst *
 temporalinst_read(StringInfo buf, Oid valuetypid)
 {
 	TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
-	Datum value = call_recv(valuetypid, buf);
+	int size = pq_getmsgint(buf, 4) ;
+	StringInfoData buf2 = *buf ;
+	buf2.len = buf->cursor + size ;
+	Datum value = call_recv(valuetypid, &buf2);
+	buf->cursor += size ;
 	return temporalinst_make(value, t, valuetypid);
 }
 
@@ -213,11 +218,26 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	TemporalInst **inter1, TemporalInst **inter2)
 {
 	/* Test whether the two temporal values overlap on time */
-	if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
+	if (timestamp_cmp_internal(inst1->t, inst2->t) != 0)
 		return false;
 	*inter1 = temporalinst_copy(inst1);
 	*inter2 = temporalinst_copy(inst2);
 	return true;
+}
+
+/*****************************************************************************
+ * Append function
+ *****************************************************************************/
+
+ /* Append an instant to the end of a temporal */
+
+TemporalI *
+temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
+{
+	TemporalInst *instants[2];
+	instants[0] = inst1;
+	instants[1] = inst2;
+	return temporali_from_temporalinstarr(instants, 2);
 }
 
 /*****************************************************************************
@@ -304,7 +324,7 @@ temporalinst_get_time(TemporalInst *inst)
 {
 	Period *p = period_make(inst->t, inst->t, true, true);
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
-	pfree(result);
+	pfree(p);
 	return result;
 }
 
@@ -330,7 +350,7 @@ temporalinst_timespan(Period *p, TemporalInst *inst)
 ArrayType *
 temporalinst_timestamps(TemporalInst *inst)
 {
-	TimestampTz t;
+	TimestampTz t = inst->t;
 	return timestamparr_to_array(&t, 1);
 }
 
@@ -377,9 +397,9 @@ temporalinst_shift(TemporalInst *inst, Interval *interval)
 /* Restriction to a value */
 
 TemporalInst *
-temporalinst_at_value(TemporalInst *inst, Datum value, Oid valuetypid)
+temporalinst_at_value(TemporalInst *inst, Datum value)
 {
-	if (datum_ne2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+	if (datum_ne(value, temporalinst_value(inst), inst->valuetypid))
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -387,9 +407,9 @@ temporalinst_at_value(TemporalInst *inst, Datum value, Oid valuetypid)
 /* Restriction to the complement of a value */
 
 TemporalInst *
-temporalinst_minus_value(TemporalInst *inst, Datum value, Oid valuetypid)
+temporalinst_minus_value(TemporalInst *inst, Datum value)
 {
-	if (datum_eq2(value, temporalinst_value(inst), valuetypid, inst->valuetypid))
+	if (datum_eq(value, temporalinst_value(inst), inst->valuetypid))
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -400,11 +420,11 @@ temporalinst_minus_value(TemporalInst *inst, Datum value, Oid valuetypid)
  */
  
 TemporalInst *
-temporalinst_at_values(TemporalInst *inst, Datum *values, int count, Oid valuetypid)
+temporalinst_at_values(TemporalInst *inst, Datum *values, int count)
 {
 	Datum value = temporalinst_value(inst);
 	for (int i = 0; i < count; i++)
-		if (datum_eq2(value, values[i], inst->valuetypid, valuetypid))
+		if (datum_eq(value, values[i], inst->valuetypid))
 			return temporalinst_copy(inst);
 	return NULL;
 }
@@ -413,12 +433,11 @@ temporalinst_at_values(TemporalInst *inst, Datum *values, int count, Oid valuety
  * The function assumes that there are no duplicates values. */
 
 TemporalInst *
-temporalinst_minus_values(TemporalInst *inst, Datum *values, 
-	int count, Oid valuetypid)
+temporalinst_minus_values(TemporalInst *inst, Datum *values, int count)
 {
 	Datum value = temporalinst_value(inst);
 	for (int i = 0; i < count; i++)
-		if (datum_eq2(value, values[i], inst->valuetypid, valuetypid))
+		if (datum_eq(value, values[i], inst->valuetypid))
 			return NULL;
 	return temporalinst_copy(inst);
 }
@@ -658,6 +677,28 @@ temporalinst_intersects_temporalinst(TemporalInst *inst1, TemporalInst *inst2)
  *****************************************************************************/
 
 /* 
+ * Equality operator
+ * The internal B-tree comparator is not used to increase efficiency
+ */
+bool
+temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	return datum_eq(value1, value2, inst1->valuetypid) && 
+		timestamp_cmp_internal(inst1->t, inst2->t) == 0;
+}
+
+/* 
+ * Inequality operator
+ */
+bool
+temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
+{
+	return !temporalinst_eq(inst1, inst2);
+}
+
+/* 
  * B-tree comparator
  */
 
@@ -676,51 +717,6 @@ temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 		inst1->valuetypid))
 		return 1;
 	return 0;
-}
-
-/* Comparison operators using the internal B-tree comparator */
-
-bool
-temporalinst_lt(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) < 0);
-}
-
-bool
-temporalinst_le(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) <= 0);
-}
-
-bool
-temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
-{
-	/* Since we ensure a unique normal representation of temporal types
-	   we can use memory comparison which is faster than comparing the
-	   individual components */
-	/* Total size */
-	size_t sz1 = VARSIZE(inst1); 
-	if (!memcmp(inst1, inst2, sz1))
-		return true;
-	return false;
-}
-
-bool
-temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) != 0);
-}
-
-bool
-temporalinst_ge(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) > 0);
-}
-
-bool
-temporalinst_gt(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return (temporalinst_cmp(inst1, inst2) > 0);
 }
 
 /*****************************************************************************

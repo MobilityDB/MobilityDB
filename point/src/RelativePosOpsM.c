@@ -183,7 +183,7 @@ overabove_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 front_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_Z(box1->flags) || !FLAGS_GET_Z(box2->flags))
+	if ( ! FLAGS_GET_Z(box1->flags) || ! FLAGS_GET_Z(box2->flags))
 		return false;
 	return (box1->zmax < box2->zmin);
 }
@@ -204,7 +204,7 @@ front_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overfront_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_Z(box1->flags) || !FLAGS_GET_Z(box2->flags))
+	if (! FLAGS_GET_Z(box1->flags) || ! FLAGS_GET_Z(box2->flags))
 		return false;
 	return (box1->zmax <= box2->zmax);
 }
@@ -225,7 +225,7 @@ overfront_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 back_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_Z(box1->flags) || !FLAGS_GET_Z(box2->flags))
+	if (! FLAGS_GET_Z(box1->flags) || ! FLAGS_GET_Z(box2->flags))
 		return false;
 	return (box1->zmin > box2->zmax);
 }
@@ -246,7 +246,7 @@ back_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overback_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_Z(box1->flags) || !FLAGS_GET_Z(box2->flags))
+	if (! FLAGS_GET_Z(box1->flags) || ! FLAGS_GET_Z(box2->flags))
 		return false;
 	return (box1->zmin >= box2->zmin);
 }
@@ -267,7 +267,7 @@ overback_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 before_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_M(box1->flags) || !FLAGS_GET_M(box2->flags))
+	if (! FLAGS_GET_M(box1->flags) || ! FLAGS_GET_M(box2->flags))
 		return false;
 	return (box1->mmax < box2->mmin);
 }
@@ -288,7 +288,7 @@ before_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overbefore_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_M(box1->flags) || !FLAGS_GET_M(box2->flags))
+	if (! FLAGS_GET_M(box1->flags) || ! FLAGS_GET_M(box2->flags))
 		return false;
 	return (box1->mmax <= box2->mmax);
 }
@@ -309,7 +309,7 @@ overbefore_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 after_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_M(box1->flags) || !FLAGS_GET_M(box2->flags))
+	if (! FLAGS_GET_M(box1->flags) || ! FLAGS_GET_M(box2->flags))
 		return false;
 	return (box1->mmin > box2->mmax);
 }
@@ -330,7 +330,7 @@ after_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overafter_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
-	if ( !FLAGS_GET_M(box1->flags) || !FLAGS_GET_M(box2->flags))
+	if (! FLAGS_GET_M(box1->flags) || ! FLAGS_GET_M(box2->flags))
 		return false;
 	return (box1->mmin >= box2->mmin);
 }
@@ -651,7 +651,7 @@ front_geom_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!FLAGS_GET_Z(gs->flags) || !MOBDB_FLAGS_GET_Z(temp->flags))
+	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
@@ -687,7 +687,7 @@ overfront_geom_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!FLAGS_GET_Z(gs->flags) || !MOBDB_FLAGS_GET_Z(temp->flags))
+	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
@@ -723,7 +723,7 @@ back_geom_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!FLAGS_GET_Z(gs->flags) || !MOBDB_FLAGS_GET_Z(temp->flags))
+	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
@@ -759,7 +759,7 @@ overback_geom_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!FLAGS_GET_Z(gs->flags) || !MOBDB_FLAGS_GET_Z(temp->flags))
+	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
@@ -1086,7 +1086,7 @@ front_tpoint_geom(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp->flags) || !FLAGS_GET_Z(gs->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp->flags) || ! FLAGS_GET_Z(gs->flags))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -1122,7 +1122,7 @@ overfront_tpoint_geom(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp->flags) || !FLAGS_GET_Z(gs->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp->flags) || ! FLAGS_GET_Z(gs->flags))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -1158,7 +1158,7 @@ back_tpoint_geom(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp->flags) || !FLAGS_GET_Z(gs->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp->flags) || ! FLAGS_GET_Z(gs->flags))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -1194,7 +1194,7 @@ overback_tpoint_geom(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The geometries must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp->flags) || !FLAGS_GET_Z(gs->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp->flags) || ! FLAGS_GET_Z(gs->flags))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -2031,7 +2031,7 @@ front_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp1->flags) || !MOBDB_FLAGS_GET_Z(temp2->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp1->flags) || ! MOBDB_FLAGS_GET_Z(temp2->flags))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2062,7 +2062,7 @@ overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp1->flags) || !MOBDB_FLAGS_GET_Z(temp2->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp1->flags) || ! MOBDB_FLAGS_GET_Z(temp2->flags))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2093,7 +2093,7 @@ back_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp1->flags) || !MOBDB_FLAGS_GET_Z(temp2->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp1->flags) || ! MOBDB_FLAGS_GET_Z(temp2->flags))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);
@@ -2124,7 +2124,7 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be in the same SRID")));
 	}
-	if (!MOBDB_FLAGS_GET_Z(temp1->flags) || !MOBDB_FLAGS_GET_Z(temp2->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp1->flags) || ! MOBDB_FLAGS_GET_Z(temp2->flags))
 	{
 		PG_FREE_IF_COPY(temp1, 0);
 		PG_FREE_IF_COPY(temp2, 1);

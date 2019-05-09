@@ -114,8 +114,11 @@ extern Datum tpoints_at_values(PG_FUNCTION_ARGS);
 
 extern POINT2D gs_get_point2d(GSERIALIZED *gs);
 extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
+extern POINT3DM gs_get_point3dm(GSERIALIZED *gs);
+extern POINT4D gs_get_point4d(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
+extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 /* Functions for output in WKT format */
@@ -167,6 +170,10 @@ extern Datum tpoint_cumulative_length(PG_FUNCTION_ARGS);
 extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
+
+extern Datum tgeompointi_twcentroid(TemporalI *ti);
+extern Datum tgeompointseq_twcentroid(TemporalSeq *seq);
+extern Datum tgeompoints_twcentroid(TemporalS *ts);
 
 /* Restriction functions */
 
@@ -390,7 +397,7 @@ extern void timestampset_to_gbox_internal(GBOX *box, TimestampSet *ps);
 extern void period_to_gbox_internal(GBOX *box, Period *p);
 extern void periodset_to_gbox_internal(GBOX *box, PeriodSet *ps);
 extern bool geo_timestamp_to_gbox_internal(GBOX *box, GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *period);
+extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *p);
 
 /*****************************************************************************/
 
@@ -540,6 +547,8 @@ extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
+
+extern Temporal *distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
 
 /*****************************************************************************
  * Index functions defined in IndexGistTPoint.c

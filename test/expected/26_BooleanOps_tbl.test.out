@@ -1,0 +1,43 @@
+SELECT count(*) FROM tbl_tbool WHERE TRUE & temp IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tbool WHERE temp & TRUE IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp & t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT count(*) FROM tbl_tbool WHERE TRUE | temp IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tbool WHERE temp | TRUE IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp | t2.temp IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT count(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+/*****************************************************************************/
