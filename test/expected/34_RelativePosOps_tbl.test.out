@@ -2809,4 +2809,14 @@ ORDER BY op, leftarg, rightarg;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP INDEX tbl_tbool_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_tint_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_tfloat_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_ttext_spgist_idx;
+DROP INDEX
+DROP TABLE test_relativeposops;
+DROP TABLE
 /*****************************************************************************/
