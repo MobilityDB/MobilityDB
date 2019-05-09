@@ -74,6 +74,29 @@ double2_send(PG_FUNCTION_ARGS) {
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
+
+PG_FUNCTION_INFO_V1(double3_recv) ;
+
+PGDLLEXPORT Datum
+double3_recv(PG_FUNCTION_ARGS) {
+	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+	double3* result = palloc(sizeof(double3)) ;
+	const char* bytes = pq_getmsgbytes(buf, sizeof(double3)) ;
+	memcpy(result, bytes, sizeof(double3)) ;
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(double3_send) ;
+
+PGDLLEXPORT Datum
+double3_send(PG_FUNCTION_ARGS) {
+	double3* d = (double3*) PG_GETARG_POINTER(0);
+	StringInfoData buf;
+	pq_begintypsend(&buf);
+	pq_sendbytes(&buf, (void*) d, sizeof(double3)) ;
+	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
 /*****************************************************************************
  * Functions
  *****************************************************************************/
