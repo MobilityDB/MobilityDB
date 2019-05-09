@@ -1422,16 +1422,6 @@ extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count,
 	bool lower_inc, bool upper_inc);
 extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
-extern bool contains_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
-extern bool contained_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
-extern bool overlaps_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
-extern bool same_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
-
-extern bool contains_box_range_internal(BOX *box, RangeType *range, Oid valuetypid);
-extern bool contained_box_range_internal(BOX *box, RangeType *range, Oid valuetypid);
-extern bool overlaps_box_range_internal(BOX *box, RangeType *range, Oid valuetypid);
-extern bool same_box_range_internal(BOX *box, RangeType *range, Oid valuetypid);
-
 extern bool contains_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool contained_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool overlaps_box_timestamp_internal(BOX *box, TimestampTz t);
@@ -1444,6 +1434,7 @@ extern bool same_box_period_internal(BOX *box, Period *p);
 
 extern Datum int_to_box(PG_FUNCTION_ARGS);
 extern Datum float_to_box(PG_FUNCTION_ARGS);
+extern Datum numeric_to_box(PG_FUNCTION_ARGS);
 extern Datum intrange_to_box(PG_FUNCTION_ARGS);
 extern Datum floatrange_to_box(PG_FUNCTION_ARGS);
 extern Datum timestamp_to_box(PG_FUNCTION_ARGS);

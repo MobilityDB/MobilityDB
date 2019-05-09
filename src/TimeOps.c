@@ -13,7 +13,7 @@
 #include <TemporalTypes.h>
 
 /*****************************************************************************/
-/* Function use for indexes */
+/* Functions used for indexes */
 
 PG_FUNCTION_INFO_V1(timestamp_to_period);
 
@@ -22,6 +22,26 @@ timestamp_to_period(PG_FUNCTION_ARGS)
 {
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
 	Period *result = period_make(t, t, true, true);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(timestampset_to_period);
+
+PGDLLEXPORT Datum
+timestampset_to_period(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	Period *result = timestampset_bbox(ts);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(periodset_to_period);
+
+PGDLLEXPORT Datum
+periodset_to_period(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	Period *result = periodset_bbox(ps);
 	PG_RETURN_POINTER(result);
 }
 

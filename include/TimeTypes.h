@@ -308,9 +308,11 @@ extern bool periodset_ne_internal(PeriodSet *ps1, PeriodSet *ps2);
  * Prototypes for functions defined in TimeTypesOps.c
  *****************************************************************************/
 
-/* Function needed for GIST index */
+/* Functions needed for indexes */
 
 extern Datum timestamp_to_period(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
+extern Datum periodset_to_period(PG_FUNCTION_ARGS);
 
 /* contains? */
 

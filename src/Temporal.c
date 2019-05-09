@@ -982,6 +982,8 @@ temporal_bbox(void *box, const Temporal *temp)
 	return;
 }
 
+PG_FUNCTION_INFO_V1(temporal_period);
+
 PGDLLEXPORT Datum
 temporal_period(PG_FUNCTION_ARGS)
 {

@@ -78,7 +78,7 @@ CREATE FUNCTION tstzrange(period)
 	AS 'MODULE_PATHNAME', 'period_as_range'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
-CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
+CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz) AS IMPLICIT;
 CREATE CAST (tstzrange AS period) WITH FUNCTION period(tstzrange);
 CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
 	

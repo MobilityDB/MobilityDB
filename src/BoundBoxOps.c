@@ -528,7 +528,7 @@ int_to_box(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Transform an integer to a box */
+/* Transform a float to a box */
 
 void
 float_to_box_internal(BOX *box, double d)
@@ -546,6 +546,20 @@ PGDLLEXPORT Datum
 float_to_box(PG_FUNCTION_ARGS)
 {
 	double d = PG_GETARG_FLOAT8(0);
+	BOX *result = palloc0(sizeof(BOX));
+	float_to_box_internal(result, d);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a numeric to a box */
+
+PG_FUNCTION_INFO_V1(numeric_to_box);
+
+PGDLLEXPORT Datum
+numeric_to_box(PG_FUNCTION_ARGS)
+{
+	Datum num = PG_GETARG_DATUM(0);
+	double d = DatumGetFloat8(call_function1(numeric_float8, num));
 	BOX *result = palloc0(sizeof(BOX));
 	float_to_box_internal(result, d);
 	PG_RETURN_POINTER(result);
@@ -1461,38 +1475,6 @@ same_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  * overlaps for tnumber
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_datum_tnumber);
-
-PGDLLEXPORT Datum
-overlaps_bbox_datum_tnumber(PG_FUNCTION_ARGS)
-{
-	Datum d = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX box1, box2;
-	base_to_box(&box1, d, valuetypid);
-	temporal_bbox(&box2, temp);
-	bool result = overlaps_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
-
-PGDLLEXPORT Datum
-overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-	RangeType *range = PG_GETARG_RANGE_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	BOX box1, box2;
-	range_to_box_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = overlaps_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(overlaps_bbox_box_tnumber);
 
 PGDLLEXPORT Datum
@@ -1503,41 +1485,7 @@ overlaps_bbox_box_tnumber(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = overlaps_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_datum);
-
-PGDLLEXPORT Datum
-overlaps_bbox_tnumber_datum(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum d = PG_GETARG_DATUM(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	base_to_box(&box2, d, valuetypid);
-	bool result = overlaps_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	range_to_box_internal(&box2, range);
-	bool result = overlaps_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -1575,38 +1523,6 @@ overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
  * contains for tnumber
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_datum_tnumber);
-
-PGDLLEXPORT Datum
-contains_bbox_datum_tnumber(PG_FUNCTION_ARGS)
-{
-	Datum d = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX box1, box2;
-	base_to_box(&box1, d, valuetypid);
-	temporal_bbox(&box2, temp);
-	bool result = contains_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
-
-PGDLLEXPORT Datum
-contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-	RangeType *range = PG_GETARG_RANGE_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	BOX box1, box2;
-	range_to_box_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = contains_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(contains_bbox_box_tnumber);
 
 PGDLLEXPORT Datum
@@ -1617,41 +1533,7 @@ contains_bbox_box_tnumber(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = contains_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_datum);
-
-PGDLLEXPORT Datum
-contains_bbox_tnumber_datum(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum d = PG_GETARG_DATUM(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	base_to_box(&box2, d, valuetypid);
-	bool result = contains_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-contains_bbox_tnumber_range(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	range_to_box_internal(&box2, range);
-	bool result = contains_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -1689,38 +1571,6 @@ contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
  * contained for tnumber
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_datum_tnumber);
-
-PGDLLEXPORT Datum
-contained_bbox_datum_tnumber(PG_FUNCTION_ARGS)
-{
-	Datum d = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX box1, box2;
-	base_to_box(&box1, d, valuetypid);
-	temporal_bbox(&box2, temp);
-	bool result = contained_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
-
-PGDLLEXPORT Datum
-contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-	RangeType *range = PG_GETARG_RANGE_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	BOX box1, box2;
-	range_to_box_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = contained_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(contained_bbox_box_tnumber);
 
 PGDLLEXPORT Datum
@@ -1731,41 +1581,7 @@ contained_bbox_box_tnumber(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = contained_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_datum);
-
-PGDLLEXPORT Datum
-contained_bbox_tnumber_datum(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum d = PG_GETARG_DATUM(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	base_to_box(&box2, d, valuetypid);
-	bool result = contained_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-contained_bbox_tnumber_range(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	range_to_box_internal(&box2, range);
-	bool result = contained_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -1803,38 +1619,6 @@ contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
  * same for tnumber
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_datum_tnumber);
-
-PGDLLEXPORT Datum
-same_bbox_datum_tnumber(PG_FUNCTION_ARGS)
-{
-	Datum d = PG_GETARG_DATUM(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	BOX box1, box2;
-	base_to_box(&box1, d, valuetypid);
-	temporal_bbox(&box2, temp);
-	bool result = same_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
-
-PGDLLEXPORT Datum
-same_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-	RangeType *range = PG_GETARG_RANGE_P(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	BOX box1, box2;
-	range_to_box_internal(&box1, range);
-	temporal_bbox(&box2, temp);
-	bool result = same_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(range, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
 PG_FUNCTION_INFO_V1(same_bbox_box_tnumber);
 
 PGDLLEXPORT Datum
@@ -1845,41 +1629,7 @@ same_bbox_box_tnumber(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = same_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_datum);
-
-PGDLLEXPORT Datum
-same_bbox_tnumber_datum(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum d = PG_GETARG_DATUM(1);
-	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	base_to_box(&box2, d, valuetypid);
-	bool result = same_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
-
-PGDLLEXPORT Datum
-same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
-	BOX box1, box2;
-	temporal_bbox(&box1, temp);
-	range_to_box_internal(&box2, range);
-	bool result = same_box_box_internal(&box1, &box2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(range, 1);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 

@@ -126,21 +126,26 @@ static Datum
 datum_setprecision(Datum value, Datum size)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+	int srid = gserialized_get_srid(gs);
+	LWPOINT *lwpoint;
 	if (FLAGS_GET_Z(gs->flags))
 	{
 		POINT3DZ point = gs_get_point3dz(gs);
 		Datum x = datum_round(Float8GetDatum(point.x), size);
 		Datum y = datum_round(Float8GetDatum(point.y), size);
 		Datum z = datum_round(Float8GetDatum(point.z), size);
-		return call_function3(LWGEOM_makepoint, x, y, z);
+		lwpoint = lwpoint_make3dz(srid, x, y, z);
 	}
 	else
 	{
 		POINT2D point = gs_get_point2d(gs);
 		Datum x = datum_round(Float8GetDatum(point.x), size);
 		Datum y = datum_round(Float8GetDatum(point.y), size);
-		return call_function2(LWGEOM_makepoint, x, y);
+		lwpoint = lwpoint_make2d(srid, x, y);
 	}
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+	pfree(lwpoint);
+	return result;
 }
 
 /*****************************************************************************/
@@ -638,7 +643,7 @@ tpoint_setprecision(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum size = PG_GETARG_DATUM(1);
 	Temporal *result = tfunc2_temporal(temp, size, &datum_setprecision, 
-		type_oid(T_GEOMETRY), true);
+		temp->valuetypid, true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

@@ -70,8 +70,13 @@ CREATE FUNCTION timestampset(timestamptz)
 	RETURNS timestampset
 	AS 'MODULE_PATHNAME', 'timestamp_as_timestampset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION period(timestampset)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'timestampset_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
+CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset) AS IMPLICIT;
 
 /******************************************************************************
  * Functions

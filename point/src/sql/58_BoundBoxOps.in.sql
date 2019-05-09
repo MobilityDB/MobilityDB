@@ -65,8 +65,8 @@ CREATE CAST (timestamptz AS gbox) WITH FUNCTION gbox(timestamptz) AS IMPLICIT;
 CREATE CAST (timestampset AS gbox) WITH FUNCTION gbox(timestampset) AS IMPLICIT;
 CREATE CAST (period AS gbox) WITH FUNCTION gbox(period) AS IMPLICIT;
 CREATE CAST (periodset AS gbox) WITH FUNCTION gbox(periodset) AS IMPLICIT;
-CREATE CAST (tgeompoint AS gbox) WITH FUNCTION gbox(tgeompoint) AS IMPLICIT;
-CREATE CAST (tgeogpoint AS gbox) WITH FUNCTION gbox(tgeogpoint) AS IMPLICIT;
+CREATE CAST (tgeompoint AS gbox) WITH FUNCTION gbox(tgeompoint);
+CREATE CAST (tgeogpoint AS gbox) WITH FUNCTION gbox(tgeogpoint);
 
 /*****************************************************************************/
 
