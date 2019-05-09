@@ -1788,4 +1788,11 @@ SELECT * FROM test_boundboxops
 WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
+DROP INDEX tbl_tbool_spgist_idx;
+DROP INDEX tbl_tint_spgist_idx;
+DROP INDEX tbl_tfloat_spgist_idx;
+DROP INDEX tbl_ttext_spgist_idx;
+
+DROP TABLE test_boundboxops;
+
 /*****************************************************************************/
