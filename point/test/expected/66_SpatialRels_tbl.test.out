@@ -8,7 +8,7 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE contains(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE contains(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -23,7 +23,7 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE containsproperly(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE containsproperly(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -38,7 +38,7 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE covers(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE covers(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -67,7 +67,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE coveredby(g, temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE coveredby(temp, g);
  count 
@@ -103,11 +103,11 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE crosses(g, temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE crosses(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE crosses(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -208,11 +208,11 @@ SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE overlaps(g, temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE overlaps(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE overlaps(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -220,11 +220,11 @@ HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE touches(g, temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE touches(temp, g);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE touches(t1.temp, t2.temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
@@ -232,7 +232,7 @@ HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE within(g, temp);
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(POINT(71.6263087000698 13.8647543266416),LINESTRING(21.554...'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(16.3115305826068 55.610231263563,91.72021304257...'
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE within(temp, g);
  count 
