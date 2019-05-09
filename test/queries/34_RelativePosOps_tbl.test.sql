@@ -2373,6 +2373,7 @@ WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 /*****************************************************************************/
 
 SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx; 
+WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
 
 /*****************************************************************************/

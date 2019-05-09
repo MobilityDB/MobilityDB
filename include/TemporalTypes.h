@@ -1411,8 +1411,6 @@ extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count,
 	bool lower_inc, bool upper_inc);
 extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
-extern Period *box_to_period_internal(BOX *box);
-
 extern bool contains_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
 extern bool contained_box_datum_internal(BOX *box, Datum d, Oid valuetypid);
 extern bool overlaps_box_datum_internal(BOX *box, Datum d, Oid valuetypid);

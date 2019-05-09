@@ -982,6 +982,3 @@ SELECT * FROM test_geoboundboxops
 WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx; 
 
 /*****************************************************************************/
-
-
-
