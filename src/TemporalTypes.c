@@ -229,6 +229,7 @@ call_function1(PGFunction func, Datum arg1)
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
 	InitFunctionCallInfoData(fcinfo, NULL, 1, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, NULL, 1, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
@@ -655,9 +656,11 @@ datum_eq(Datum l, Datum r, Oid type)
 		return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
-		return DatumGetBool(call_function2(lwgeom_eq, l, r));
+	//	return DatumGetBool(call_function2(lwgeom_eq, l, r));
+		return datum_point_eq(l, r);
 	else if (type == type_oid(T_GEOGRAPHY)) 
-		return DatumGetBool(call_function2(geography_eq, l, r));
+	//	return DatumGetBool(call_function2(geography_eq, l, r));
+		return datum_point_eq(l, r);
 #endif
 
 	List *lst = list_make1(makeString("="));
@@ -749,9 +752,11 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 		return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
 #ifdef WITH_POSTGIS
 	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-		return DatumGetBool(call_function2(lwgeom_eq, l, r));	
+	//	return DatumGetBool(call_function2(lwgeom_eq, l, r));	
+		return datum_point_eq(l, r);
 	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
-		return DatumGetBool(call_function2(geography_eq, l, r));
+	//	return DatumGetBool(call_function2(geography_eq, l, r));
+		return datum_point_eq(l, r);
 #endif
 
 	List *lst = list_make1(makeString("="));

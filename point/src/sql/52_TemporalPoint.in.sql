@@ -186,6 +186,19 @@ CREATE FUNCTION tgeogpoints(tgeogpoint)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Append function
+ ******************************************************************************/
+
+CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tgeogpoint, tgeogpoint)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Functions
  ******************************************************************************/
 

@@ -60,6 +60,7 @@ extern Datum within(PG_FUNCTION_ARGS);
 extern Datum relate_full(PG_FUNCTION_ARGS);
 extern Datum relate_pattern(PG_FUNCTION_ARGS);
 extern Datum geomunion(PG_FUNCTION_ARGS);
+extern Datum ST_Scale(PG_FUNCTION_ARGS);
 extern Datum ST_Snap(PG_FUNCTION_ARGS);
 extern Datum ST_UnaryUnion(PG_FUNCTION_ARGS);
 

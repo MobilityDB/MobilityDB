@@ -1,7 +1,8 @@
 /*****************************************************************************
  *
- * ArithmeticOps.c
- *	  Temporal arithmetic operators (+, -, *, /).
+ * MathematicalFuncs.c
+ *		Temporal mathematical operators (+, -, *, /) and functions (round, 
+ *		degrees).
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -13,7 +14,7 @@
 #include "TemporalTypes.h"
 
 /*****************************************************************************
- * Arithmetic operations functions on datums
+ * Mathematical functions on datums
  *****************************************************************************/
 
 /* Addition */
@@ -87,13 +88,12 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 
 /* Round to n decimal places */
 
-static Datum
-datum_round(Datum value1, Datum value2)
+Datum
+datum_round(Datum value, Datum prec)
 {
-	Datum numeric = call_function1(float8_numeric, value1);
-	Datum round = call_function2(numeric_round, numeric, value2);
+	Datum numeric = call_function1(float8_numeric, value);
+	Datum round = call_function2(numeric_round, numeric, prec);
 	return call_function1(numeric_float8, round);
-	
 }
 
 /* Convert to degrees */

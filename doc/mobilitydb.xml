@@ -1179,6 +1179,22 @@ SELECT tfloats(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 -- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
 				</programlisting>
 				</listitem>
+
+				<listitem>
+				<para>Append a temporal instant to a temporal value</para>
+				<para>Signature: <varname>{appendInstant(ttype, ttypeinst)} : ttype</varname></para>
+				<programlisting>
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT appendInstant(tintseq(tint '1@2000-01-01'), tint '1@2000-01-02');
+-- "[1@2000-01-01, 1@2000-01-02]"
+SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02],
+    [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-06'));
+"{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
+    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+				</programlisting>
+				</listitem>
+
 			</itemizedlist>
 		</sect1>
 
@@ -1587,6 +1603,17 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)
 					<programlisting>
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
 -- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>setPrecision</varname>: Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
+					<para>Signature: <varname>setPrecision(tpoint, int): tpoint</varname></para>
+					<programlisting>
+SELECT astext(setprecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
+-- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02, POINT Z (1.12 1.12 1.12)@2000-01-03}"
+SELECT astext(setprecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+-- "POINT(1.12 1.12)@2000-01-01"
 					</programlisting>
 				</listitem>
 
@@ -2287,8 +2314,7 @@ SELECT degrees(tfloat '[0.785398163397448@2000-01-01, 2.35619449019234@2000-01-0
 					<programlisting>
 SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp; tbool '[false@2012-01-03, false@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
-SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp;24005>
-tbool '{[false@2012-01-03, false@2012-01-04), [true@2012-01-04, true@2012-01-05)}';
+SELECT tbool '[true@2012-01-03, true@2012-01-05)' &amp; tbool '{[false@2012-01-03, false@2012-01-04), [true@2012-01-04, true@2012-01-05)}';
 -- "{[f@2012-01-03, t@2012-01-04, t@2012-01-05)}"
 					</programlisting>
 				</listitem>
@@ -2308,6 +2334,44 @@ SELECT tbool '[true@2012-01-03, true@2012-01-05)' | tbool '[false@2012-01-03, fa
 					<programlisting>
 SELECT ~ tbool '[true@2012-01-03, true@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1>
+			<title>Text Functions and Operators</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><varname>||</varname>: Concatenation</para>
+					<para>Signature: <varname>{text, ttext} || {text, ttext}: ttext</varname></para>
+					<programlisting>
+SELECT ttext '[AA@2012-01-01, AA@2012-01-04)' || text 'B';
+-- "["AAB"@2012-01-01, "AAB"@2012-01-04)"
+SELECT ttext '[AA@2012-01-01, AA@2012-01-04)' || ttext '[BB@2012-01-02, BB@2012-01-05)';
+-- "["AABB"@2012-01-02, "AABB"@2012-01-04)"
+SELECT ttext '[A@2012-01-01, B@2012-01-03, C@2012-01-04]' ||
+ttext '{[D@2012-01-01, D@2012-01-02), [E@2012-01-02, E@2012-01-04)}';
+-- "{["DA"@2012-01-01, "EA"@2012-01-02, "EB"@2012-01-03, "EB"@2012-01-04)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>upper</varname>: Transform to uppercase</para>
+					<para>Signature: <varname>upper(ttext, integer): ttext</varname></para>
+					<programlisting>
+SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- "["AA"@2000-01-01, "BB"@2000-01-02]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>lower</varname>: Transform to lowercase</para>
+					<para>Signature: <varname>lower(ttext): ttext</varname></para>
+					<programlisting>
+SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
+-- "["aa"@2000-01-01, "bb"@2000-01-02]"
 					</programlisting>
 				</listitem>
 			</itemizedlist>

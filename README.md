@@ -35,6 +35,9 @@ max_locks_per_transaction = 128
 Usage
 -----
 
+https://docs.mobilitydb.com/nightly/
+
+
 License
 -------
 MobilityDB is provided under the PostgreSQL license.

@@ -16,7 +16,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tcontains(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -37,7 +37,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tcovers(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -58,7 +58,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tcovers(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   100
+   150
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -79,7 +79,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tcoveredby(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -100,7 +100,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tcoveredby(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   100
+   150
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -121,7 +121,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -142,7 +142,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tequals(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -163,7 +163,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -184,7 +184,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   100
+   150
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -205,7 +205,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE ttouches(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -226,7 +226,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE twithin(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -247,7 +247,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -268,7 +268,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
-   100
+   150
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -289,7 +289,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE trelate(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
@@ -310,6 +310,6 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE trelate(t1.temp, t2.temp, 'T*****FF*') IS NOT NULL;
  count 
 -------
-   102
+   148
 (1 row)
 

@@ -1,6 +1,3 @@
-/******************************************************************************
- * Transformation functions
- ******************************************************************************/
 SELECT DISTINCT temporalType(tboolinst(inst)) FROM tbl_tboolinst;
  temporaltype 
 --------------
@@ -97,7 +94,6 @@ SELECT DISTINCT temporalType(ttexts(inst)) FROM tbl_ttextinst;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
  temporaltype 
 --------------
@@ -194,7 +190,6 @@ SELECT DISTINCT temporalType(ttexts(ti)) FROM tbl_ttexti;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
  temporaltype 
 --------------
@@ -291,7 +286,6 @@ SELECT DISTINCT temporalType(ttexts(seq)) FROM tbl_ttextseq;
  SequenceSet
 (1 row)
 
-/******************************************************************************/
 SELECT DISTINCT temporalType(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
  temporaltype 
 --------------
@@ -319,14 +313,12 @@ SELECT DISTINCT temporalType(tbools(ts)) FROM tbl_tbools;
 SELECT DISTINCT temporalType(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
  temporaltype 
 --------------
- Instant
-(1 row)
+(0 rows)
 
 SELECT DISTINCT temporalType(tinti(ts)) FROM tbl_tints WHERE duration(ts) = '00:00:00';
  temporaltype 
 --------------
- InstantSet
-(1 row)
+(0 rows)
 
 SELECT DISTINCT temporalType(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
  temporaltype 
@@ -343,12 +335,14 @@ SELECT DISTINCT temporalType(tints(ts)) FROM tbl_tints;
 SELECT DISTINCT temporalType(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
  temporaltype 
 --------------
-(0 rows)
+ Instant
+(1 row)
 
 SELECT DISTINCT temporalType(tfloati(ts)) FROM tbl_tfloats WHERE duration(ts) = '00:00:00';
  temporaltype 
 --------------
-(0 rows)
+ InstantSet
+(1 row)
 
 SELECT DISTINCT temporalType(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
  temporaltype 
@@ -365,14 +359,12 @@ SELECT DISTINCT temporalType(tfloats(ts)) FROM tbl_tfloats;
 SELECT DISTINCT temporalType(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
  temporaltype 
 --------------
- Instant
-(1 row)
+(0 rows)
 
 SELECT DISTINCT temporalType(ttexti(ts)) FROM tbl_ttexts WHERE duration(ts) = '00:00:00';
  temporaltype 
 --------------
- InstantSet
-(1 row)
+(0 rows)
 
 SELECT DISTINCT temporalType(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
  temporaltype 
@@ -386,9 +378,30 @@ SELECT DISTINCT temporalType(ttexts(ts)) FROM tbl_ttexts;
  SequenceSet
 (1 row)
 
-/******************************************************************************
- * Cast functions
- ******************************************************************************/
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tbool;
+ max 
+-----
+  57
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
+ max 
+-----
+  49
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
+ max 
+-----
+  42
+(1 row)
+
+SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
+ max 
+-----
+  56
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tintinst WHERE tfloat(inst) IS NOT NULL;
  count 
 -------
@@ -413,9 +426,6 @@ SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
    100
 (1 row)
 
-/******************************************************************************
- * Accessor functions
- ******************************************************************************/
 SELECT DISTINCT temporalType(temp) FROM tbl_tbool;
  temporaltype 
 --------------
@@ -455,25 +465,25 @@ SELECT DISTINCT temporalType(temp) FROM tbl_ttext;
 SELECT MAX(memSize(temp)) FROM tbl_tbool;
  max  
 ------
- 3176
+ 3128
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tint;
  max  
 ------
- 3824
+ 2792
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tfloat;
  max  
 ------
- 3744
+ 2448
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_ttext;
  max  
 ------
- 3592
+ 3184
 (1 row)
 
 /*
@@ -492,19 +502,19 @@ SELECT DISTINCT getValue(inst) FROM tbl_tboolinst;
 SELECT MAX(getValue(inst)) FROM tbl_tintinst;
  max 
 -----
- 100
+  99
 (1 row)
 
 SELECT MAX(getValue(inst)) FROM tbl_tfloatinst;
        max        
 ------------------
- 99.4821230173111
+ 98.3521782993339
 (1 row)
 
 SELECT MAX(getValue(inst)) FROM tbl_ttextinst;
-    max    
------------
- ZNTQBTJMT
+   max   
+---------
+ YXQHYJN
 (1 row)
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
@@ -516,7 +526,7 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
  max 
 -----
-  49
+  34
 (1 row)
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
@@ -528,7 +538,7 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
  max 
 -----
-  54
+  50
 (1 row)
 
 SELECT MAX(upper(valueRange(temp))) FROM tbl_tint;
@@ -540,7 +550,7 @@ SELECT MAX(upper(valueRange(temp))) FROM tbl_tint;
 SELECT MAX(upper(valueRange(temp))) FROM tbl_tfloat;
        max        
 ------------------
- 100.981821561232
+ 99.8820648631081
 (1 row)
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
@@ -553,19 +563,19 @@ SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
  max 
 -----
- 100
+  99
 (1 row)
 
 SELECT MAX(startValue(temp)) FROM tbl_tfloat;
        max        
 ------------------
- 99.4821230173111
+ 98.3521782993339
 (1 row)
 
 SELECT MAX(startValue(temp)) FROM tbl_ttext;
-  max   
---------
- ZXFXSY
+   max   
+---------
+ YXQHYJN
 (1 row)
 
 SELECT DISTINCT endValue(temp) FROM tbl_tbool;
@@ -578,19 +588,19 @@ SELECT DISTINCT endValue(temp) FROM tbl_tbool;
 SELECT MAX(endValue(temp)) FROM tbl_tint;
  max 
 -----
- 100
+  99
 (1 row)
 
 SELECT MAX(endValue(temp)) FROM tbl_tfloat;
        max        
 ------------------
- 99.4821230173111
+ 99.5429236846976
 (1 row)
 
 SELECT MAX(endValue(temp)) FROM tbl_ttext;
-   max    
-----------
- ZWIGSIXS
+   max   
+---------
+ YXQHYJN
 (1 row)
 
 SELECT MAX(minValue(temp)) FROM tbl_tint;
@@ -602,13 +612,13 @@ SELECT MAX(minValue(temp)) FROM tbl_tint;
 SELECT MAX(minValue(temp)) FROM tbl_tfloat;
        max        
 ------------------
- 99.4821230173111
+ 98.3521782993339
 (1 row)
 
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
- max 
------
- YW
+   max   
+---------
+ YXQHYJN
 (1 row)
 
 SELECT MAX(maxValue(temp)) FROM tbl_tint;
@@ -620,253 +630,253 @@ SELECT MAX(maxValue(temp)) FROM tbl_tint;
 SELECT MAX(maxValue(temp)) FROM tbl_tfloat;
        max        
 ------------------
- 100.981821561232
+ 99.8820648631081
 (1 row)
 
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
-  max   
---------
- ZXFXSY
+    max    
+-----------
+ YYENQTKNU
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tboolinst;
           max           
 ------------------------
- 2001-12-28 00:19:00+00
+ 2001-12-27 17:40:00+00
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tintinst;
           max           
 ------------------------
- 2001-12-28 10:41:00+00
+ 2001-12-30 02:29:00+00
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tfloatinst;
           max           
 ------------------------
- 2001-12-28 17:59:00+00
+ 2001-12-30 15:02:00+00
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_ttextinst;
           max           
 ------------------------
- 2001-12-29 11:32:00+00
+ 2001-12-15 04:20:00+00
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tbool;
    max    
 ----------
- 04:22:00
+ 04:20:00
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tint;
    max    
 ----------
- 05:34:00
+ 03:40:00
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_tfloat;
    max    
 ----------
- 05:45:00
+ 02:44:00
 (1 row)
 
 SELECT MAX(duration(getTime(temp))) FROM tbl_ttext;
    max    
 ----------
- 05:07:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(duration(timespan(temp))) FROM tbl_tbool;
    max    
 ----------
- 05:46:00
+ 05:22:00
 (1 row)
 
 SELECT MAX(duration(timespan(temp))) FROM tbl_tint;
    max    
 ----------
- 07:19:00
+ 04:50:00
 (1 row)
 
 SELECT MAX(duration(timespan(temp))) FROM tbl_tfloat;
    max    
 ----------
- 07:00:00
+ 03:58:00
 (1 row)
 
 SELECT MAX(duration(timespan(temp))) FROM tbl_ttext;
    max    
 ----------
- 06:41:00
+ 05:01:00
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tbool;
    max    
 ----------
- 04:22:00
+ 04:20:00
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tint;
    max    
 ----------
- 05:34:00
+ 03:40:00
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_tfloat;
    max    
 ----------
- 05:45:00
+ 02:44:00
 (1 row)
 
 SELECT MAX(duration(temp)) FROM tbl_ttext;
    max    
 ----------
- 05:07:00
+ 04:01:00
 (1 row)
 
 SELECT MAX(numSequences(ts)) FROM tbl_tbools;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(numSequences(ts)) FROM tbl_tints;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(numSequences(ts)) FROM tbl_tfloats;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(numSequences(ts)) FROM tbl_ttexts;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(duration(startSequence(ts))) FROM tbl_tbools;
    max    
 ----------
- 01:04:00
+ 00:46:00
 (1 row)
 
 SELECT MAX(duration(startSequence(ts))) FROM tbl_tints;
    max    
 ----------
- 01:03:00
+ 00:50:00
 (1 row)
 
 SELECT MAX(duration(startSequence(ts))) FROM tbl_tfloats;
    max    
 ----------
- 01:00:00
+ 00:52:00
 (1 row)
 
 SELECT MAX(duration(startSequence(ts))) FROM tbl_ttexts;
    max    
 ----------
- 01:10:00
+ 00:59:00
 (1 row)
 
 SELECT MAX(duration(endSequence(ts))) FROM tbl_tbools;
    max    
 ----------
- 01:03:00
+ 00:48:00
 (1 row)
 
 SELECT MAX(duration(endSequence(ts))) FROM tbl_tints;
    max    
 ----------
- 01:00:00
+ 00:48:00
 (1 row)
 
 SELECT MAX(duration(endSequence(ts))) FROM tbl_tfloats;
    max    
 ----------
- 01:03:00
+ 00:50:00
 (1 row)
 
 SELECT MAX(duration(endSequence(ts))) FROM tbl_ttexts;
    max    
 ----------
- 01:12:00
+ 00:55:00
 (1 row)
 
 SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tbools;
    max    
 ----------
- 01:03:00
+ 00:48:00
 (1 row)
 
 SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tints;
    max    
 ----------
- 01:00:00
+ 00:48:00
 (1 row)
 
 SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloats;
    max    
 ----------
- 01:03:00
+ 00:50:00
 (1 row)
 
 SELECT MAX(duration(sequenceN(ts, numSequences(ts)))) FROM tbl_ttexts;
    max    
 ----------
- 01:12:00
+ 00:55:00
 (1 row)
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tbools;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tints;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tfloats;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttexts;
  max 
 -----
-  10
+   9
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tbool;
  max 
 -----
-  56
+  57
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tint;
  max 
 -----
-  70
+  49
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tfloat;
  max 
 -----
-  68
+  41
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_ttext;
  max 
 -----
-  59
+  55
 (1 row)
 
 SELECT COUNT(startInstant(temp)) FROM tbl_tbool;
@@ -944,145 +954,145 @@ SELECT COUNT(instantN(temp, numInstants(temp))) FROM tbl_ttext;
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_tbool;
  max 
 -----
-  56
+  57
 (1 row)
 
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_tint;
  max 
 -----
-  70
+  49
 (1 row)
 
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_tfloat;
  max 
 -----
-  68
+  41
 (1 row)
 
 SELECT MAX(array_length(instants(temp),1)) FROM tbl_ttext;
  max 
 -----
-  59
+  55
 (1 row)
 
 SELECT MAX(numTimestamps(temp)) FROM tbl_tbool;
  max 
 -----
-  56
+  57
 (1 row)
 
 SELECT MAX(numTimestamps(temp)) FROM tbl_tint;
  max 
 -----
-  70
+  49
 (1 row)
 
 SELECT MAX(numTimestamps(temp)) FROM tbl_tfloat;
  max 
 -----
-  68
+  41
 (1 row)
 
 SELECT MAX(numTimestamps(temp)) FROM tbl_ttext;
  max 
 -----
-  59
+  55
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tbool;
           max           
 ------------------------
- 2001-12-27 20:48:00+00
+ 2001-12-18 09:31:00+00
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tint;
           max           
 ------------------------
- 2001-12-30 21:10:00+00
+ 2001-12-30 14:16:00+00
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_tfloat;
           max           
 ------------------------
- 2001-12-24 08:59:00+00
+ 2001-12-27 08:00:00+00
 (1 row)
 
 SELECT MAX(startTimestamp(temp)) FROM tbl_ttext;
           max           
 ------------------------
- 2001-12-29 20:09:00+00
+ 2001-12-27 18:20:00+00
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tbool;
           max           
 ------------------------
- 2001-12-27 23:45:00+00
+ 2001-12-18 10:52:00+00
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tint;
           max           
 ------------------------
- 2001-12-30 21:19:00+00
+ 2001-12-30 18:02:00+00
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_tfloat;
           max           
 ------------------------
- 2001-12-24 14:42:00+00
+ 2001-12-27 08:13:00+00
 (1 row)
 
 SELECT MAX(endTimestamp(temp)) FROM tbl_ttext;
           max           
 ------------------------
- 2001-12-29 22:22:00+00
+ 2001-12-27 18:46:00+00
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tbool;
           max           
 ------------------------
- 2001-12-27 23:45:00+00
+ 2001-12-18 10:52:00+00
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tint;
           max           
 ------------------------
- 2001-12-30 21:19:00+00
+ 2001-12-30 18:02:00+00
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_tfloat;
           max           
 ------------------------
- 2001-12-24 14:42:00+00
+ 2001-12-27 08:13:00+00
 (1 row)
 
 SELECT MAX(timestampN(temp, numTimestamps(temp))) FROM tbl_ttext;
           max           
 ------------------------
- 2001-12-29 22:22:00+00
+ 2001-12-27 18:46:00+00
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tbool;
  max 
 -----
-  56
+  57
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tint;
  max 
 -----
-  70
+  49
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tfloat;
  max 
 -----
-  68
+  41
 (1 row)
 
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
  max 
 -----
-  59
+  55
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool WHERE temp &= startValue(temp);
@@ -1100,7 +1110,7 @@ SELECT COUNT(*) FROM tbl_tint WHERE temp &= startValue(temp);
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp &= startValue(temp);
  count 
 -------
-    95
+    94
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE temp &= startValue(temp);
@@ -1112,13 +1122,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp &= startValue(temp);
 SELECT COUNT(*) FROM tbl_tbool WHERE temp @= true;
  count 
 -------
-    18
+    19
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp @= i;
  count 
 -------
-    27
+    44
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp @= f;
@@ -1161,42 +1171,42 @@ SELECT COUNT(*) FROM tbl_tbool
 WHERE atValue(temp, true) IS NOT NULL;
  count 
 -------
-    84
+    86
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_int 
 WHERE atValue(temp, i) IS NOT NULL;
  count 
 -------
-   838
+   726
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float 
 WHERE atValue(temp, f) IS NOT NULL;
  count 
 -------
-  3952
+  3595
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_text 
 WHERE atValue(temp, t) IS NOT NULL;
  count 
 -------
-    28
+    13
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool
 WHERE minusValue(temp, true) IS NOT NULL;
  count 
 -------
-    82
+    81
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_int
 WHERE minusValue(temp, i) IS NOT NULL;
  count 
 -------
-  9973
+  9956
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float
@@ -1218,7 +1228,7 @@ SELECT COUNT(*) FROM tbl_tint,
 WHERE atValues(temp, valuearr) IS NOT NULL;
  count 
 -------
-    87
+    88
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, 
@@ -1226,7 +1236,7 @@ SELECT COUNT(*) FROM tbl_tfloat,
 WHERE atValues(temp, valuearr) IS NOT NULL;
  count 
 -------
-    48
+    47
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, 
@@ -1234,7 +1244,7 @@ SELECT COUNT(*) FROM tbl_ttext,
 WHERE atValues(temp, valuearr) IS NOT NULL;
  count 
 -------
-    23
+    12
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint,
@@ -1242,7 +1252,7 @@ SELECT COUNT(*) FROM tbl_tint,
 WHERE minusValues(temp, valuearr) IS NOT NULL;
  count 
 -------
-    73
+    70
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat,
@@ -1265,28 +1275,28 @@ SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE atRange(temp, i) IS NOT NULL;
  count 
 -------
-  2786
+  2409
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange 
 WHERE atRange(temp, f) IS NOT NULL;
  count 
 -------
-  4814
+  4457
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE minusRange(temp, i) IS NOT NULL;
  count 
 -------
-  9823
+  9819
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange
 WHERE minusRange(temp, f) IS NOT NULL;
  count 
 -------
-  9855
+  9817
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, 
@@ -1294,7 +1304,7 @@ SELECT COUNT(*) FROM tbl_tint,
 WHERE atRanges(temp, valuearr) IS NOT NULL;
  count 
 -------
-   100
+    97
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, 
@@ -1302,7 +1312,7 @@ SELECT COUNT(*) FROM tbl_tfloat,
 WHERE atRanges(temp, valuearr) IS NOT NULL;
  count 
 -------
-    99
+   100
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint,
@@ -1310,7 +1320,7 @@ SELECT COUNT(*) FROM tbl_tint,
 WHERE minusRanges(temp, valuearr) IS NOT NULL;
  count 
 -------
-    32
+    15
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat,
@@ -1318,7 +1328,7 @@ SELECT COUNT(*) FROM tbl_tfloat,
 WHERE minusRanges(temp, valuearr) IS NOT NULL;
  count 
 -------
-    52
+    62
 (1 row)
 
 SELECT MAX(numInstants(atMin(temp))) FROM tbl_tint;
@@ -1342,25 +1352,25 @@ SELECT MAX(numInstants(atMin(temp))) FROM tbl_ttext;
 SELECT COUNT(*) FROM tbl_tint WHERE minusMin(temp) IS NOT NULL;
  count 
 -------
-    65
+    63
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE minusMin(temp) IS NOT NULL;
  count 
 -------
-    72
+    68
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE minusMin(temp) IS NOT NULL;
  count 
 -------
-    68
+    67
 (1 row)
 
 SELECT MAX(numInstants(atMax(temp))) FROM tbl_tint;
  max 
 -----
-   6
+   4
 (1 row)
 
 SELECT MAX(numInstants(atMax(temp))) FROM tbl_tfloat;
@@ -1378,33 +1388,33 @@ SELECT MAX(numInstants(atMax(temp))) FROM tbl_ttext;
 SELECT COUNT(*) FROM tbl_tint WHERE minusMax(temp) IS NOT NULL;
  count 
 -------
-    65
+    63
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE minusMax(temp) IS NOT NULL;
  count 
 -------
-    72
+    68
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext WHERE minusMax(temp) IS NOT NULL;
  count 
 -------
-    68
+    67
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
 WHERE atTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
 WHERE atTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     2
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
@@ -1418,7 +1428,7 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
 WHERE atTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     2
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
@@ -1453,14 +1463,14 @@ SELECT COUNT(*) FROM tbl_tbool, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     2
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_timestamptz
@@ -1474,35 +1484,35 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz
 WHERE valueAtTimestamp(temp, t) IS NOT NULL;
  count 
 -------
-     2
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
- count 
--------
-     0
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
 WHERE atTimestampSet(temp, ts) IS NOT NULL;
  count 
 -------
      1
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset
+SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
+WHERE atTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+     2
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
 WHERE atTimestampSet(temp, ts) IS NOT NULL;
  count 
 -------
      0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_timestampset
+WHERE atTimestampSet(temp, ts) IS NOT NULL;
+ count 
+-------
+     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool, tbl_timestampset
@@ -1516,7 +1526,7 @@ SELECT COUNT(*) FROM tbl_tint, tbl_timestampset
 WHERE minusTimestampSet(temp, ts) IS NOT NULL;
  count 
 -------
- 10000
+  9998
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_timestampset
@@ -1544,14 +1554,14 @@ SELECT COUNT(*) FROM tbl_tint, tbl_period
 WHERE atPeriod(temp, p) IS NOT NULL;
  count 
 -------
-     1
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_period
 WHERE atPeriod(temp, p) IS NOT NULL;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_period
@@ -1593,21 +1603,21 @@ SELECT COUNT(*) FROM tbl_tbool, tbl_periodset
 WHERE atPeriodSet(temp, ps) IS NOT NULL;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint, tbl_periodset
 WHERE atPeriodSet(temp, ps) IS NOT NULL;
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_periodset
 WHERE atPeriodSet(temp, ps) IS NOT NULL;
  count 
 -------
-     4
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_periodset
@@ -1758,197 +1768,194 @@ WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
 (1 row)
 
 SELECT sum(integral(temp)) FROM tbl_tint;
-      sum       
-----------------
- 12433380000000
+      sum      
+---------------
+ 9602160000000
 (1 row)
 
 SELECT sum(integral(temp)) FROM tbl_tfloat;
        sum        
 ------------------
- 12464440291601.4
+ 8715778562802.03
 (1 row)
 
 SELECT sum(twAvg(temp)) FROM tbl_tint;
        sum        
 ------------------
- 5406.99263227052
+ 5248.47813513507
 (1 row)
 
 SELECT sum(twAvg(temp)) FROM tbl_tfloat;
        sum        
 ------------------
- 5139.92231423631
+ 5813.77192162652
 (1 row)
 
-/******************************************************************************
- * Comparison functions and B-tree indexing
- ******************************************************************************/
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp = t2.temp;
  count 
 -------
-   100
+   118
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
-  9900
+  9882
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  4950
+  4941
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
-   100
+   118
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  4950
+  4941
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  5050
+  5059
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp = t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
-  9900
+  9880
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  5050
+  5060
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp = t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
-  9900
+  9880
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  5050
+  5060
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp = t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp <> t2.temp;
  count 
 -------
-  9900
+  9880
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp < t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
-   100
+   120
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp > t2.temp;
  count 
 -------
-  4950
+  4940
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2
 WHERE t1.temp >= t2.temp;
  count 
 -------
-  5050
+  5060
 (1 row)
 

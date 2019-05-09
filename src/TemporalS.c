@@ -648,6 +648,31 @@ temporals_read(StringInfo buf, Oid valuetypid)
 }
 
 /*****************************************************************************
+ * Append function
+ *****************************************************************************/
+
+ /* Append an instant to the end of a temporal */
+
+TemporalS *
+temporals_append_instant(TemporalS *ts, TemporalInst *inst)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (ts->totalcount + 1));
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count));
+	for (int i = 0; i < ts->count - 1; i++)
+		sequences[i] = temporals_seq_n(ts, i);
+	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
+	for (int i = 0; i < seq->count; i++)
+		instants[i] = temporalseq_inst_n(seq, i);
+	instants[seq->count] = inst;
+	sequences[ts->count - 1] = temporalseq_from_temporalinstarr(instants, 
+		seq->count + 1, seq->period.lower_inc, seq->period.upper_inc, true);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
+		false);
+	pfree(sequences[ts->count - 1]);
+	return result;
+}
+
+/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 

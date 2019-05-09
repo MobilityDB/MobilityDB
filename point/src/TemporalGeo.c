@@ -17,6 +17,135 @@
  *****************************************************************************/
 
 /* 
+ * Manipulate a geomtry point directly from the GSERIALIZED.
+ * These functions consitutute a SERIOUS break of encapsulation but it is the
+ * only way to achieve reasonable performance when manipulating mobility data.
+ * The datum_* functions suppose that the GSERIALIZED has been already detoasted.
+ * This is typically the case when the datum is within a Temporal* that 
+ * has been already detoasted with PG_GETARG_TEMPORAL*  
+ */
+
+/* Get 2D point from a serialized geometry */
+
+POINT2D
+gs_get_point2d(GSERIALIZED *gs)
+{
+	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 2D point from a datum */
+POINT2D
+datum_get_point2d(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
+	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DZ point from a serialized geometry */
+
+POINT3DZ
+gs_get_point3dz(GSERIALIZED *gs)
+{
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DZ point from a datum */
+
+POINT3DZ
+datum_get_point3dz(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(geom);
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 3DM point from a serialized geometry */
+
+POINT3DM
+gs_get_point3dm(GSERIALIZED *gs)
+{
+	POINT3DM *point = (POINT3DM *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Get 4D point from a serialized geometry */
+
+POINT4D
+gs_get_point4d(GSERIALIZED *gs)
+{
+	POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
+	return *point;
+}
+
+/* Compare two points from serialized geometries */
+
+bool
+datum_point_eq(Datum geopoint1, Datum geopoint2)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *)PointerGetDatum(geopoint1);
+	GSERIALIZED *gs2 = (GSERIALIZED *)PointerGetDatum(geopoint2);
+	if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
+		FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags) ||
+		FLAGS_GET_M(gs1->flags) != FLAGS_GET_M(gs2->flags) ||
+		FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
+		return false;
+	if (FLAGS_GET_Z(gs1->flags) && FLAGS_GET_M(gs1->flags))
+	{
+		POINT4D point1 = gs_get_point4d(gs1);
+		POINT4D point2 = gs_get_point4d(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.z == point2.z && point1.m == point2.m;
+	}
+	else if (FLAGS_GET_Z(gs1->flags))
+	{
+		POINT3DZ point1 = gs_get_point3dz(gs1);
+		POINT3DZ point2 = gs_get_point3dz(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.z == point2.z;
+	}
+	else if (FLAGS_GET_M(gs1->flags))
+	{
+		POINT3DM point1 = gs_get_point3dm(gs1);
+		POINT3DM point2 = gs_get_point3dm(gs2);
+		return point1.x == point2.x && point1.y == point2.y && 
+			point1.m == point2.m;
+	}
+	else
+	{
+		POINT2D point1 = gs_get_point2d(gs1);
+		POINT2D point2 = gs_get_point2d(gs2);
+		return point1.x == point2.x && point1.y == point2.y;
+	}
+}
+
+
+static Datum
+datum_setprecision(Datum value, Datum size)
+{
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+	if (FLAGS_GET_Z(gs->flags))
+	{
+		POINT3DZ point = gs_get_point3dz(gs);
+		Datum x = datum_round(Float8GetDatum(point.x), size);
+		Datum y = datum_round(Float8GetDatum(point.y), size);
+		Datum z = datum_round(Float8GetDatum(point.z), size);
+		return call_function3(LWGEOM_makepoint, x, y, z);
+	}
+	else
+	{
+		POINT2D point = gs_get_point2d(gs);
+		Datum x = datum_round(Float8GetDatum(point.x), size);
+		Datum y = datum_round(Float8GetDatum(point.y), size);
+		return call_function2(LWGEOM_makepoint, x, y);
+	}
+}
+
+/*****************************************************************************/
+
+/* 
  * Output a geometry in Well-Known Text (WKT) and Extended Well-Known Text 
  * (EWKT) format.
  * The Oid argument is not used but is needed since the second argument of 
@@ -50,49 +179,6 @@ ewkt_out(Oid type, Datum value)
 	return result;
 }
 
-/* Get 2D point from a serialized geometry */
-
-POINT2D
-gs_get_point2d(GSERIALIZED *gs)
-{
-	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 2D point from a datum
- * The function supposes that the GSERIALIZED has been already detoasted.
- * This is typically the case when the datum is within a Temporal* that 
- * has been already detoasted with PG_GETARG_TEMPORAL*  */
-POINT2D
-datum_get_point2d(Datum geom)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(geom);
-	POINT2D *point = (POINT2D *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 3D point from a serialized geometry */
-
-POINT3DZ
-gs_get_point3dz(GSERIALIZED *gs)
-{
-	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
-/* Get 3D point from a datum 
- * The function supposes that the GSERIALIZED has been already detoasted.
- * This is typically the case when the datum is within a Temporal* that 
- * has been already detoasted with PG_GETARG_TEMPORAL* */
-
-POINT3DZ
-datum_get_point3dz(Datum geom)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(geom);
-	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	return *point;
-}
-
 /* Serialize a geometry */
  
 GSERIALIZED *
@@ -103,6 +189,8 @@ geometry_serialize(LWGEOM *geom)
 	SET_VARSIZE(result, size);
 	return result;
 }
+
+/* Call to PostGIS external functions */
 
 static Datum
 datum_transform(Datum value, Datum srid)
@@ -539,6 +627,23 @@ tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Set precision function.
+ *****************************************************************************/
+ 
+PG_FUNCTION_INFO_V1(tpoint_setprecision);
+
+PGDLLEXPORT Datum
+tpoint_setprecision(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum size = PG_GETARG_DATUM(1);
+	Temporal *result = tfunc2_temporal(temp, size, &datum_setprecision, 
+		type_oid(T_GEOMETRY), true);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Trajectory functions.
  *****************************************************************************/
  
@@ -571,7 +676,7 @@ tgeompointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		GSERIALIZED *gstart = (GSERIALIZED *)DatumGetPointer(value1);
 		Datum result = PointerGetDatum(gserialized_copy(gstart)); 
@@ -587,7 +692,7 @@ tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value1);
 		Datum result = PointerGetDatum(gserialized_copy(gsvalue)); 
@@ -757,7 +862,6 @@ tgeogpoints_trajectory(TemporalS *ts)
 	Datum *points = palloc(sizeof(Datum) * ts->count);
 	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
 	int k = 0, l = 0;
-	Oid geomoid = type_oid(T_GEOMETRY);
 	for (int i = 0; i < ts->count; i++)
 	{
 		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
@@ -768,7 +872,7 @@ tgeogpoints_trajectory(TemporalS *ts)
 			bool found = false;
 			for (int j = 0; j < l; j++)
 			{
-				if (datum_eq(traj, points[j], geomoid))
+				if (datum_point_eq(traj, points[j]))
 				{
 					found = true;
 					break;
@@ -1049,7 +1153,7 @@ tpointseq_speed1(TemporalSeq *seq)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
 		Datum value2 = temporalinst_value(inst2);
-		if (datum_eq(value1, value2, seq->valuetypid))
+		if (datum_point_eq(value1, value2))
 			speed = 0;
 		else
 		{
@@ -1606,7 +1710,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum value2 = temporalinst_value(inst2);
 
 	/* Constant sequence */
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		if (!DatumGetBool(call_function2(intersects, value1, geom)))
 		{
@@ -2141,7 +2245,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
 		*tofree = false;
