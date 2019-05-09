@@ -190,6 +190,7 @@ temporalinst_write(TemporalInst *inst, StringInfo buf)
 	bytea *bt = call_send(TIMESTAMPTZOID, inst->t);
 	bytea *bv = call_send(inst->valuetypid, temporalinst_value(inst));
 	pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
+	pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
 	pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
 }
 
@@ -200,7 +201,11 @@ TemporalInst *
 temporalinst_read(StringInfo buf, Oid valuetypid)
 {
 	TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
-	Datum value = call_recv(valuetypid, buf);
+	int size = pq_getmsgint(buf, 4) ;
+	StringInfoData buf2 = *buf ;
+	buf2.len = buf->cursor + size ;
+	Datum value = call_recv(valuetypid, &buf2);
+	buf->cursor += size ;
 	return temporalinst_make(value, t, valuetypid);
 }
 
