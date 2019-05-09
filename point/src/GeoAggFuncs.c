@@ -215,15 +215,14 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 
 	int count1 = state1->size;
 	int count2 = state2->size;
-	bool hasz;
+
 	if (count1 == 0)
-		hasz = MOBDB_FLAGS_GET_Z(state2->values[0]->flags);
+		PG_RETURN_POINTER(state2) ;
 	else if (count2 == 0)
-		hasz = MOBDB_FLAGS_GET_Z(state1->values[0]->flags);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
-	
+		PG_RETURN_POINTER(state1) ;
+
+	bool hasz = MOBDB_FLAGS_GET_Z(state1->values[0]->flags);
+
 	/* Get a pointer to the first element of the first state */
 	Datum (*func)(Datum, Datum) = hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
