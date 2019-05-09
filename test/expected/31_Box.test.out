@@ -1,0 +1,28 @@
+/*****************************************************************************
+ * Box
+ *****************************************************************************/
+SELECT count(*) FROM tbl_box t1, tbl_box t2 where t1.b && t2.b;
+ count 
+-------
+   236
+(1 row)
+
+SELECT count(*) FROM tbl_box t1, tbl_box t2 where t1.b @> t2.b;
+ count 
+-------
+   104
+(1 row)
+
+SELECT count(*) FROM tbl_box t1, tbl_box t2 where t1.b <@ t2.b;
+ count 
+-------
+   104
+(1 row)
+
+SELECT count(*) FROM tbl_box t1, tbl_box t2 where t1.b ~= t2.b;
+ count 
+-------
+   100
+(1 row)
+
+/*****************************************************************************/
