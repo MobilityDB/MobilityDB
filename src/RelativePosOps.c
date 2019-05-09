@@ -482,7 +482,7 @@ left_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = left_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -496,7 +496,7 @@ overleft_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = overleft_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -510,7 +510,7 @@ right_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = right_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -524,7 +524,7 @@ overright_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = overright_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -538,7 +538,7 @@ before_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = before_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -552,7 +552,7 @@ overbefore_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = overbefore_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -566,7 +566,7 @@ after_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = after_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -580,7 +580,7 @@ overafter_box_temporal(PG_FUNCTION_ARGS)
 	BOX box1;
 	temporal_bbox(&box1, temp);
 	bool result = overafter_box_box_internal(box, &box1);
-	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
 }
 
