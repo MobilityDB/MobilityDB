@@ -65,14 +65,6 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 		period = periodset_bbox(query);
 		PG_FREE_IF_COPY(query, 1);
 	}
-	else if (subtype == BOXOID)
-	{
-		BOX *query = PG_GETARG_BOX_P(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = box_to_period_internal(query);
-		periodfree = true;
-	}
 	else if (temporal_oid(subtype))
 	{
 		Temporal *query = PG_GETARG_TEMPORAL(1);

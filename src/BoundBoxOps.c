@@ -405,18 +405,6 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
- * Transform a box to a <Type> 
- *****************************************************************************/
-
-Period *
-box_to_period_internal(BOX *box)
-{
-	TimestampTz lower = box->low.y;
-	TimestampTz upper = box->high.y;
-	return period_make(lower, upper, true, true);
-}
-
-/*****************************************************************************
  * Transform a <Type> to a BOX
  *****************************************************************************/
 

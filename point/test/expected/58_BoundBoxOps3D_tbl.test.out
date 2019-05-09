@@ -1212,4 +1212,10 @@ WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_spgist_idx;
+DROP INDEX
+DROP TABLE test_geoboundboxops;
+DROP TABLE
 /*****************************************************************************/

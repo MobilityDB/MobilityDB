@@ -979,6 +979,11 @@ WHERE op = '~=' and leftarg = 'tgeogpoint3D' and rightarg = 'tgeogpoint3D';
 /*****************************************************************************/
 
 SELECT * FROM test_geoboundboxops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx; 
+WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
+
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_spgist_idx;
+
+DROP TABLE test_geoboundboxops;
 
 /*****************************************************************************/

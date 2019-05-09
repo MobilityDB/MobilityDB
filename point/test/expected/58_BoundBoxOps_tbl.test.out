@@ -13,6 +13,7 @@ NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
 DROP INDEX
 /*****************************************************************************/
 DROP TABLE if exists test_geoboundboxops;
+NOTICE:  table "test_geoboundboxops" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_geoboundboxops(
 	op char(3), 
@@ -1211,4 +1212,10 @@ WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
+DROP INDEX
+DROP TABLE test_geoboundboxops;
+DROP TABLE
 /*****************************************************************************/

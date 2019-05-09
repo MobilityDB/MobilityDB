@@ -3,14 +3,17 @@ DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 NOTICE:  index "tbl_tgeompoint_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 NOTICE:  index "tbl_tgeogpoint_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
+NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
 DROP INDEX
 /*****************************************************************************/
 DROP TABLE IF EXISTS test_georelativeposops;
+NOTICE:  table "test_georelativeposops" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_georelativeposops(
 	op char(3), 
@@ -1065,4 +1068,10 @@ WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
+DROP INDEX
+DROP TABLE test_georelativeposops;
+DROP TABLE
 /*****************************************************************************/

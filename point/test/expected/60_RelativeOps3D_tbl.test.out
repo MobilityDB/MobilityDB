@@ -3,6 +3,7 @@ DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
 NOTICE:  index "tbl_tgeompoint3d_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+NOTICE:  index "tbl_tgeompoint3d_spgist_idx" does not exist, skipping
 DROP INDEX
 /*****************************************************************************/
 DROP TABLE IF EXISTS test_georelativeposops;
@@ -1187,4 +1188,8 @@ WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+DROP INDEX
+DROP TABLE test_georelativeposops;
+DROP TABLE
 /*****************************************************************************/

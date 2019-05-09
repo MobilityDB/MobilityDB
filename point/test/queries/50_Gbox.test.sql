@@ -14,4 +14,11 @@ SELECT gbox(1,2,3,4,5,6,7,8);
 SELECT gbox3dm(1,2,3,4,5,6);
 SELECT geodbox(1,2,3,4,5,6);
 
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b && t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b @> t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b <@ t2.b;
+SELECT count(*) FROM tbl_gbox t1, tbl_gbox t2 where t1.b ~= t2.b;
+
 /*****************************************************************************/
