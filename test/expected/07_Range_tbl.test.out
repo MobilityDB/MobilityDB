@@ -1,109 +1,109 @@
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i << t2.i;
  count 
 -------
-  4805
+  4580
 (1 row)
 
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i << t2.i;
  count 
 -------
-  4678
+  4950
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i >> t2.i;
  count 
 -------
-  4678
+  4950
 (1 row)
 
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i >> t2.i;
  count 
 -------
-  4805
+  4580
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &< t2.i;
  count 
 -------
-  4805
+  4580
 (1 row)
 
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i &< t2.i;
  count 
 -------
-  4770
+  5050
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i &> t2.i;
  count 
 -------
-  4770
+  5050
 (1 row)
 
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i &> t2.i;
  count 
 -------
-  4805
+  4580
 (1 row)
 
 select count(*) from tbl_intrange t1, tbl_int t2 where t1.i -|- t2.i;
  count 
 -------
-   211
+   200
 (1 row)
 
 select count(*) from tbl_int t1, tbl_intrange t2 where t1.i -|- t2.i;
  count 
 -------
-   211
+   200
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f << t2.f;
  count 
 -------
-  4579
+  4171
 (1 row)
 
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f << t2.f;
  count 
 -------
-  4854
+  5312
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f >> t2.f;
  count 
 -------
-  4854
+  5312
 (1 row)
 
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f >> t2.f;
  count 
 -------
-  4579
+  4171
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &< t2.f;
  count 
 -------
-  4579
+  4171
 (1 row)
 
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f &< t2.f;
  count 
 -------
-  4854
+  5312
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f &> t2.f;
  count 
 -------
-  4854
+  5312
 (1 row)
 
 select count(*) from tbl_float t1, tbl_floatrange t2 where t1.f &> t2.f;
  count 
 -------
-  4579
+  4171
 (1 row)
 
 select count(*) from tbl_floatrange t1, tbl_float t2 where t1.f -|- t2.f;

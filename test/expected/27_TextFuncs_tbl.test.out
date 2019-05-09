@@ -16,7 +16,7 @@ SELECT count(*) FROM tbl_ttext, tbl_text WHERE temp || t IS NOT NULL;
 SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp || t2.temp IS NOT NULL;
  count 
 -------
-   106
+   150
 (1 row)
 
 /*****************************************************************************
