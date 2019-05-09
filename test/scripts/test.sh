@@ -29,9 +29,9 @@ setup)
 	fi
 	echo "max_locks_per_transaction = 128" >> $WORKDIR/db/postgresql.conf
 	echo "timezone = 'UTC'" >> $WORKDIR/db/postgresql.conf
-	echo "parallel_tuple_cost = 0" >> $WORKDIR/db/postgresql.conf
-	echo "parallel_setup_cost = 0" >> $WORKDIR/db/postgresql.conf
-	echo "force_parallel_mode = regress" >> $WORKDIR/db/postgresql.conf
+	echo "parallel_tuple_cost = 100" >> $WORKDIR/db/postgresql.conf
+	echo "parallel_setup_cost = 100" >> $WORKDIR/db/postgresql.conf
+	echo "force_parallel_mode = off" >> $WORKDIR/db/postgresql.conf
 	echo "min_parallel_table_scan_size = 0" >> $WORKDIR/db/postgresql.conf
 	echo "min_parallel_index_scan_size = 0" >> $WORKDIR/db/postgresql.conf
 

@@ -1,5 +1,9 @@
 ﻿-------------------------------------------------------------------------------
 
+set parallel_tuple_cost=0;
+set parallel_setup_cost=0;
+set force_parallel_mode=regress;
+
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompointinst;
 SELECT numInstants(tcount(inst)) FROM tbl_tgeompointinst;
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORDER BY k%10;
@@ -35,3 +39,6 @@ SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoints;
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoints GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------
+set parallel_tuple_cost=100;
+set parallel_setup_cost=100;
+set force_parallel_mode=off;
