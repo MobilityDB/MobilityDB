@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * RelativePosOpsM.c
+ * GeoRelativePosOps.c
  *	  Relative position operators for temporal geometry points.
  *
  * The following operators are defined for the spatial dimension:
@@ -1444,7 +1444,7 @@ before_gbox_tpoint(PG_FUNCTION_ARGS)
 	{
 		GBOX box1;
 		temporal_bbox(&box1, temp);
-		result = before_gbox_gbox_internal(&box1, box);
+		result = before_gbox_gbox_internal(box, &box1);
 	}
 	PG_FREE_IF_COPY(temp, 1);
 	if (!hasm)
@@ -1465,7 +1465,7 @@ overbefore_gbox_tpoint(PG_FUNCTION_ARGS)
 	{
 		GBOX box1;
 		temporal_bbox(&box1, temp);
-		result = overbefore_gbox_gbox_internal(&box1, box);
+		result = overbefore_gbox_gbox_internal(box, &box1);
 	}
 	PG_FREE_IF_COPY(temp, 1);
 	if (!hasm)
@@ -1486,7 +1486,7 @@ after_gbox_tpoint(PG_FUNCTION_ARGS)
 	{
 		GBOX box1;
 		temporal_bbox(&box1, temp);
-		result = after_gbox_gbox_internal(&box1, box);
+		result = after_gbox_gbox_internal(box, &box1);
 	}
 	PG_FREE_IF_COPY(temp, 1);
 	if (!hasm)
@@ -1507,7 +1507,7 @@ overafter_gbox_tpoint(PG_FUNCTION_ARGS)
 	{
 		GBOX box1;
 		temporal_bbox(&box1, temp);
-		result = overafter_gbox_gbox_internal(&box1, box);
+		result = overafter_gbox_gbox_internal(box, &box1);
 	}
 	PG_FREE_IF_COPY(temp, 1);
 	if (!hasm)
