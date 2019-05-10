@@ -50,7 +50,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_eq(value1, value2, inst1->valuetypid))
+	if (datum_point_eq(value1, value2))
 	{
 		result[0] = temporalinst_make(func(point, value1),
 			inst1->t, FLOAT8OID); 

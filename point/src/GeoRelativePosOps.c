@@ -31,6 +31,9 @@
 bool
 left_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->xmax == infinity || box2->xmax == infinity )
+		return false;
 	return (box1->xmax < box2->xmin);
 }
 
@@ -50,6 +53,9 @@ left_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overleft_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->xmax == infinity || box2->xmax == infinity )
+		return false;
 	return (box1->xmax <= box2->xmax);
 }
 
@@ -69,6 +75,9 @@ overleft_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 right_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->xmax == infinity || box2->xmax == infinity )
+		return false;
 	return (box1->xmin > box2->xmax);
 }
 
@@ -88,6 +97,9 @@ right_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overright_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->xmax == infinity || box2->xmax == infinity )
+		return false;
 	return (box1->xmin >= box2->xmin);
 }
 
@@ -107,6 +119,9 @@ overright_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 below_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->ymax == infinity || box2->ymax == infinity )
+		return false;
 	return (box1->ymax < box2->ymin);
 }
 
@@ -126,6 +141,9 @@ below_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overbelow_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->ymax == infinity || box2->ymax == infinity )
+		return false;
 	return (box1->ymax <= box2->ymax);
 }
 
@@ -145,6 +163,9 @@ overbelow_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 above_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->ymax == infinity || box2->ymax == infinity )
+		return false;
 	return (box1->ymin > box2->ymax);
 }
 
@@ -164,6 +185,9 @@ above_gbox_gbox(PG_FUNCTION_ARGS)
 bool
 overabove_gbox_gbox_internal(GBOX *box1, GBOX *box2)
 {
+	double infinity = get_float8_infinity();
+	if ( box1->ymax == infinity || box2->ymax == infinity )
+		return false;
 	return (box1->ymin >= box2->ymin);
 }
 

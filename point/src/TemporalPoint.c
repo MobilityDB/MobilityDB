@@ -544,7 +544,7 @@ tgeompointi_values(TemporalI *ti)
 		bool found = false;
 		for (int j = 0; j < k; j++)
 		{
-			if (datum_eq(value, values[j], ti->valuetypid))
+			if (datum_point_eq(value, values[j]))
 			{
 				found = true;
 				break;
@@ -573,7 +573,6 @@ tgeogpointi_values(TemporalI *ti)
 
 	Datum *values = palloc(sizeof(Datum *) * ti->count);
 	int k = 0;
-	Oid geomoid = type_oid(T_GEOMETRY);
 	for (int i = 0; i < ti->count; i++)
 	{
 		Datum value = temporalinst_value(temporali_inst_n(ti, i));
@@ -581,7 +580,7 @@ tgeogpointi_values(TemporalI *ti)
 		bool found = false;
 		for (int j = 0; j < k; j++)
 		{
-			if (datum_eq(geomvalue, values[j], geomoid))
+			if (datum_point_eq(geomvalue, values[j]))
 			{
 				found = true;
 				break;

@@ -143,7 +143,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	Datum d1 = temporalinst_value(inst1);
 	Datum d2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_eq(d1, d2, inst1->valuetypid))
+	if (datum_point_eq(d1, d2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
@@ -408,7 +408,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	/* Constant segment */
 	Datum d1 = temporalinst_value(inst1);
 	Datum d2 = temporalinst_value(inst2);
-	if (datum_eq(d1, d2, inst1->valuetypid))
+	if (datum_point_eq(d1, d2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		Datum value = invert ? func(d1, geo, param) :
@@ -1065,8 +1065,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 	TemporalInst *instants[2];
 	
 	/* Both segments are constant */
-	if (datum_eq(sv1, ev1, start1->valuetypid) &&
-		datum_eq(sv2, ev2, start2->valuetypid))
+	if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
 	{
 		Datum value = func(sv1, sv2, d);
 		instants[0] = temporalinst_make(value, lower, BOOLOID);

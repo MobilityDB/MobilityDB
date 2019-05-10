@@ -724,6 +724,24 @@ tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 
 /*****************************************************************************/
 
+/* Compute a line from a set of points */
+static Datum
+pointarr_makeline(Datum *points, int n)
+{
+	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * n);
+	for (int i = 0; i < n; i++)
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(points[i]);
+		lwpoints[i] = lwgeom_from_gserialized(gs);
+	}
+	LWLINE *line = lwline_from_lwgeom_array(lwpoints[0]->srid, n, lwpoints);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)line));
+	for (int i = 0; i < n; i++)
+		lwgeom_free(lwpoints[i]);
+	pfree(lwpoints);
+	return result;
+}
+
 /* Compute the trajectory of an array of instants.
  * This function is called by the constructor of a temporal sequence and 
  * returns a single Datum which is a geometry */
@@ -733,12 +751,11 @@ tgeompointseq_make_trajectory(TemporalInst **instants, int count)
 	Datum *points = palloc(sizeof(Datum) * count);
 	Datum value1 = temporalinst_value(instants[0]);
 	points[0] = value1;
-	Oid valuetypid = (instants[0])->valuetypid;
 	int k = 1;
 	for (int i = 1; i < count; i++)
 	{
 		Datum value2 = temporalinst_value(instants[i]);
-		if (datum_ne(value1, value2, valuetypid))
+		if (!datum_point_eq(value1, value2))
 			points[k++] = value2;
 		value1 = value2;
 	}
@@ -747,11 +764,7 @@ tgeompointseq_make_trajectory(TemporalInst **instants, int count)
 		result = PointerGetDatum(gserialized_copy(
 			(GSERIALIZED *)DatumGetPointer(points[0])));
 	else
-	{
-		ArrayType *array = datumarr_to_array(points, k, type_oid(T_GEOMETRY));
-		result = call_function1(LWGEOM_makeline_garray, PointerGetDatum(array));
-		pfree(array);
-	}
+		result = pointarr_makeline(points, k);
 	pfree(points);
 	return result;	
 }
@@ -828,7 +841,7 @@ tgeompoints_trajectory(TemporalS *ts)
 			bool found = false;
 			for (int j = 0; j < l; j++)
 			{
-				if (datum_eq(traj, points[j], ts->valuetypid))
+				if (datum_point_eq(traj, points[j]))
 				{
 					found = true;
 					break;
@@ -2880,8 +2893,16 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 static Datum
 shortestline_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
 {
-	return call_function2(LWGEOM_makeline, temporalinst_value(inst1), 
-		temporalinst_value(inst2));
+	LWGEOM *lwgeoms[2];
+	GSERIALIZED *gs1 = (GSERIALIZED *)PointerGetDatum(temporalinst_value(inst1));
+	GSERIALIZED *gs2 = (GSERIALIZED *)PointerGetDatum(temporalinst_value(inst2));
+	lwgeoms[0] = lwgeom_from_gserialized(gs1);
+	lwgeoms[1] = lwgeom_from_gserialized(gs2);
+	LWLINE *line = lwline_from_lwgeom_array(lwgeoms[0]->srid, 2, lwgeoms);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)line));
+	lwgeom_free(lwgeoms[0]);
+	lwgeom_free(lwgeoms[1]);
+	return result;
 }
 
 static Datum
@@ -2896,8 +2917,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	TimestampTz t = temporali_start_timestamp(mindistance);
 	TemporalInst *inst1 = temporali_at_timestamp(ti1, t);
 	TemporalInst *inst2 = temporali_at_timestamp(ti2, t);
-	Datum result = call_function2(LWGEOM_makeline, temporalinst_value(inst1), 
-		temporalinst_value(inst2));
+	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
 	pfree(dist); pfree(mindistance); pfree(inst1); pfree(inst2);
 	return result;
 }
@@ -2920,8 +2940,7 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	newseq2->period.upper_inc = true;
 	TemporalInst *inst1 = temporalseq_at_timestamp(newseq1, t);
 	TemporalInst *inst2 = temporalseq_at_timestamp(newseq2, t);
-	Datum result = call_function2(LWGEOM_makeline, temporalinst_value(inst1), 
-		temporalinst_value(inst2));
+	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
 	pfree(dist); pfree(mindist); pfree(inst1); pfree(inst2);
 	pfree(newseq1); pfree(newseq2);
 	return result;
@@ -2993,8 +3012,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 			}		
 	}
 	
-	Datum result = call_function2(LWGEOM_makeline, temporalinst_value(inst1), 
-		temporalinst_value(inst2));
+	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
 	pfree(dist); pfree(mindist); 
 	if (freeinst1)
 		pfree(inst1); 

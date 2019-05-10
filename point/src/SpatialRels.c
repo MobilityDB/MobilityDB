@@ -384,8 +384,7 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1,
 	Datum sv2 = temporalinst_value(start2);
 	Datum ev2 = temporalinst_value(end2);
 	/* Both instants are constant */
-	if (datum_eq(sv1, ev1, start1->valuetypid) &&
-		datum_eq(sv2, ev2, start2->valuetypid))
+	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
 	{
 		/* Compute the function at the start instant */
 		return func(sv1, sv2, param);
