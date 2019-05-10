@@ -131,16 +131,16 @@ datum_setprecision(Datum value, Datum size)
 	if (FLAGS_GET_Z(gs->flags))
 	{
 		POINT3DZ point = gs_get_point3dz(gs);
-		Datum x = datum_round(Float8GetDatum(point.x), size);
-		Datum y = datum_round(Float8GetDatum(point.y), size);
-		Datum z = datum_round(Float8GetDatum(point.z), size);
+		double x = DatumGetFloat8(datum_round(Float8GetDatum(point.x), size));
+		double y = DatumGetFloat8(datum_round(Float8GetDatum(point.y), size));
+		double z = DatumGetFloat8(datum_round(Float8GetDatum(point.z), size));
 		lwpoint = lwpoint_make3dz(srid, x, y, z);
 	}
 	else
 	{
 		POINT2D point = gs_get_point2d(gs);
-		Datum x = datum_round(Float8GetDatum(point.x), size);
-		Datum y = datum_round(Float8GetDatum(point.y), size);
+		double x = DatumGetFloat8(datum_round(Float8GetDatum(point.x), size));
+		double y = DatumGetFloat8(datum_round(Float8GetDatum(point.y), size));
 		lwpoint = lwpoint_make2d(srid, x, y);
 	}
 	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
