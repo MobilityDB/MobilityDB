@@ -741,30 +741,6 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
 			else
 				res = index_leaf_consistent_gbox(key, &query, strategy);
 		}
-		else if (subtype == TIMESTAMPTZOID)
-		{
-			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			timestamp_to_gbox_internal(&query, t);
-			res = index_leaf_consistent_gbox(key, &query, strategy);
-		}
-		else if (subtype == type_oid(T_TIMESTAMPSET))
-		{
-			TimestampSet *ts = DatumGetTimestampSet(in->scankeys[i].sk_argument);
-			timestampset_to_gbox_internal(&query, ts);
-			res = index_leaf_consistent_gbox(key, &query, strategy);
-		}
-		else if (subtype == type_oid(T_PERIOD))
-		{
-			Period *p = DatumGetPeriod(in->scankeys[i].sk_argument);
-			period_to_gbox_internal(&query, p);
-			res = index_leaf_consistent_gbox(key, &query, strategy);
-		}
-		else if (subtype == type_oid(T_PERIODSET))
-		{
-			PeriodSet *ps = DatumGetPeriodSet(in->scankeys[i].sk_argument);
-			periodset_to_gbox_internal(&query, ps);
-			res = index_leaf_consistent_gbox(key, &query, strategy);
-		}
 		else if (subtype == type_oid(T_GBOX))
 		{
 			GBOX *box = DatumGetGboxP(in->scankeys[i].sk_argument);

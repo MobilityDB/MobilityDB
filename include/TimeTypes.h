@@ -151,8 +151,6 @@ extern bool period_gt_internal(Period *p1, Period *p2);
 /* Assorted support functions */
 
 extern void period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper);
-extern bool periodarr_find_timestamp(Period **array, int from, int count,
-	TimestampTz t, int *pos, bool ignorebounds);
 extern int period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, 
 	bool lower2, bool inclusive1, bool inclusive2);
 extern bool period_bounds_adjacent(TimestampTz t1, TimestampTz t2, 
@@ -163,7 +161,6 @@ extern void period_set(Period *p, TimestampTz lower, TimestampTz upper,
 	bool lower_inc, bool upper_inc);
 extern Period *period_copy(Period *p);
 extern float8 period_duration_secs(TimestampTz t1, TimestampTz t2);
-extern double period_duration_time(Period *p);
 extern Interval *period_duration_internal(Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 	

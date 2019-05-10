@@ -3,23 +3,39 @@
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
-select memSize(ts) from tbl_timestampset;
-select timespan(ts) from tbl_timestampset;
+-------------------------------------------------------------------------------
+-- Constructor
+-------------------------------------------------------------------------------
 
-select numTimestamps(ts) from tbl_timestampset;
-select startTimestamp(ts) from tbl_timestampset;
-select endTimestamp(ts) from tbl_timestampset;
-select timestampN(ts, 0) from tbl_timestampset;
-select timestamps(ts) from tbl_timestampset;
+SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
 
-select shift(ts, '5 min') from tbl_timestampset;
+-------------------------------------------------------------------------------
+-- Cast
+-------------------------------------------------------------------------------
 
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where timestampset_cmp(t1.ts, t2.ts) = -1;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts = t2.ts;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts <> t2.ts;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts < t2.ts;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts <= t2.ts;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts > t2.ts;
-select count(*) from tbl_timestampset t1, tbl_timestampset t2 where t1.ts >= t2.ts;
+SELECT count(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Functions
+-------------------------------------------------------------------------------
+
+SELECT memSize(ts) FROM tbl_timestampset;
+SELECT timespan(ts) FROM tbl_timestampset;
+
+SELECT numTimestamps(ts) FROM tbl_timestampset;
+SELECT startTimestamp(ts) FROM tbl_timestampset;
+SELECT endTimestamp(ts) FROM tbl_timestampset;
+SELECT timestampN(ts, 0) FROM tbl_timestampset;
+SELECT timestamps(ts) FROM tbl_timestampset;
+
+SELECT shift(ts, '5 min') FROM tbl_timestampset;
+
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <> t2.ts;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts < t2.ts;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.ts;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
+SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
 
 -------------------------------------------------------------------------------

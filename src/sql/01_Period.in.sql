@@ -225,9 +225,16 @@ CREATE OPERATOR CLASS period_ops
 	OPERATOR	5	> ,
 	FUNCTION	1	period_cmp(period, period);
 
+/******************************************************************************/
+
 CREATE FUNCTION period_hash(period)
 	RETURNS integer
 	AS 'MODULE_PATHNAME', 'period_hash'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE FUNCTION period_hash_extended(period)
+	RETURNS integer
+	AS 'MODULE_PATHNAME', 'period_hash_extended'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE OPERATOR CLASS hash_period_ops

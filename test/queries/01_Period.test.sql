@@ -3,61 +3,85 @@
 -- File Period.c
 -------------------------------------------------------------------------------
 
-select tstzrange(period '[2000-01-01,2000-01-01]');
-select tstzrange(period '[2000-01-01,2000-01-02]');
-select tstzrange(period '(2000-01-01,2000-01-02]');
-select tstzrange(period '[2000-01-01,2000-01-02)');
-select tstzrange(period '(2000-01-01,2000-01-02)');
+-------------------------------------------------------------------------------
+-- Constructors
+-------------------------------------------------------------------------------
 
-select period(tstzrange '[2000-01-01,2000-01-01]');
-select period(tstzrange '[2000-01-01,2000-01-02]');
-select period(tstzrange '(2000-01-01,2000-01-02]');
-select period(tstzrange '[2000-01-01,2000-01-02)');
-select period(tstzrange'(2000-01-01,2000-01-02)');
+SELECT period ('2000-01-01','2000-01-02');
+SELECT period ('2000-01-01','2000-01-01', true, true);
+-- Errors
+SELECT period ('2000-01-01','2000-01-01');
+SELECT period ('2000-01-02','2000-01-01');
 
-select lower(period '[2000-01-01,2000-01-01]');
-select lower(period '[2000-01-01,2000-01-02]');
-select lower(period '(2000-01-01,2000-01-02]');
-select lower(period '[2000-01-01,2000-01-02)');
-select lower(period '(2000-01-01,2000-01-02)');
+-------------------------------------------------------------------------------
+-- Casting
+-------------------------------------------------------------------------------
 
-select upper(period '[2000-01-01,2000-01-01]');
-select upper(period '[2000-01-01,2000-01-02]');
-select upper(period '(2000-01-01,2000-01-02]');
-select upper(period '[2000-01-01,2000-01-02)');
-select upper(period '(2000-01-01,2000-01-02)');
+SELECT tstzrange(period '[2000-01-01,2000-01-01]');
+SELECT tstzrange(period '[2000-01-01,2000-01-02]');
+SELECT tstzrange(period '(2000-01-01,2000-01-02]');
+SELECT tstzrange(period '[2000-01-01,2000-01-02)');
+SELECT tstzrange(period '(2000-01-01,2000-01-02)');
 
-select lower_inc(period '[2000-01-01,2000-01-01]');
-select lower_inc(period '[2000-01-01,2000-01-02]');
-select lower_inc(period '(2000-01-01,2000-01-02]');
-select lower_inc(period '[2000-01-01,2000-01-02)');
-select lower_inc(period '(2000-01-01,2000-01-02)');
+SELECT period(tstzrange '[2000-01-01,2000-01-01]');
+SELECT period(tstzrange '[2000-01-01,2000-01-02]');
+SELECT period(tstzrange '(2000-01-01,2000-01-02]');
+SELECT period(tstzrange '[2000-01-01,2000-01-02)');
+SELECT period(tstzrange'(2000-01-01,2000-01-02)');
 
-select upper_inc(period '[2000-01-01,2000-01-01]');
-select upper_inc(period '[2000-01-01,2000-01-02]');
-select upper_inc(period '(2000-01-01,2000-01-02]');
-select upper_inc(period '[2000-01-01,2000-01-02)');
-select upper_inc(period '(2000-01-01,2000-01-02)');
+SELECT period(timestamptz '2000-01-01');
+SELECT timestamptz '2000-01-01'::period;
 
-select duration(period '[2000-01-01,2000-01-01]');
-select duration(period '[2000-01-01,2000-01-02]');
-select duration(period '(2000-01-01,2000-01-02]');
-select duration(period '[2000-01-01,2000-01-02)');
-select duration(period '(2000-01-01,2000-01-02)');
+-------------------------------------------------------------------------------
+-- Functions
+-------------------------------------------------------------------------------
 
-select shift(period '[2000-01-01,2000-01-01]', '5 min');
-select shift(period '[2000-01-01,2000-01-02]', '5 min');
-select shift(period '(2000-01-01,2000-01-02]', '5 min');
-select shift(period '[2000-01-01,2000-01-02)', '5 min');
-select shift(period '(2000-01-01,2000-01-02)', '5 min');
+SELECT lower(period '[2000-01-01,2000-01-01]');
+SELECT lower(period '[2000-01-01,2000-01-02]');
+SELECT lower(period '(2000-01-01,2000-01-02]');
+SELECT lower(period '[2000-01-01,2000-01-02)');
+SELECT lower(period '(2000-01-01,2000-01-02)');
 
-select period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
-select period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' <> period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' < period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' <= period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' > period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' >= period '(2000-01-01,2000-01-02)';
-select period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
+SELECT upper(period '[2000-01-01,2000-01-01]');
+SELECT upper(period '[2000-01-01,2000-01-02]');
+SELECT upper(period '(2000-01-01,2000-01-02]');
+SELECT upper(period '[2000-01-01,2000-01-02)');
+SELECT upper(period '(2000-01-01,2000-01-02)');
+
+SELECT lower_inc(period '[2000-01-01,2000-01-01]');
+SELECT lower_inc(period '[2000-01-01,2000-01-02]');
+SELECT lower_inc(period '(2000-01-01,2000-01-02]');
+SELECT lower_inc(period '[2000-01-01,2000-01-02)');
+SELECT lower_inc(period '(2000-01-01,2000-01-02)');
+
+SELECT upper_inc(period '[2000-01-01,2000-01-01]');
+SELECT upper_inc(period '[2000-01-01,2000-01-02]');
+SELECT upper_inc(period '(2000-01-01,2000-01-02]');
+SELECT upper_inc(period '[2000-01-01,2000-01-02)');
+SELECT upper_inc(period '(2000-01-01,2000-01-02)');
+
+SELECT duration(period '[2000-01-01,2000-01-01]');
+SELECT duration(period '[2000-01-01,2000-01-02]');
+SELECT duration(period '(2000-01-01,2000-01-02]');
+SELECT duration(period '[2000-01-01,2000-01-02)');
+SELECT duration(period '(2000-01-01,2000-01-02)');
+
+SELECT shift(period '[2000-01-01,2000-01-01]', '5 min');
+SELECT shift(period '[2000-01-01,2000-01-02]', '5 min');
+SELECT shift(period '(2000-01-01,2000-01-02]', '5 min');
+SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
+SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
+
+SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
+SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' <> period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' < period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' <= period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' > period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' >= period '(2000-01-01,2000-01-02)';
+SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
+
+SELECT period_hash('[2000-01-01,2000-01-02]');
+SELECT period_hash_extended('[2000-01-01,2000-01-02]');
 
 -------------------------------------------------------------------------------

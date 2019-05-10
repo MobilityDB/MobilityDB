@@ -60,37 +60,6 @@ period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
 	}
 }
 
-/* Binary search of a timestamptz in an array of periods */
-
-bool
-periodarr_find_timestamp(Period **array, int from, int count,
-	TimestampTz t, int *pos, bool ignorebounds)
-{
-	int first = from;
-	int last = count - 1;
-	int middle = -1; /* keep compiler quiet */
-	Period *per = NULL; /* keep compiler quiet */
-	while (first <= last)
-	{
-		middle = (first + last)/2;
-		per = array[middle];
-		if (contains_period_timestamp_internal(per, t) ||
-			(ignorebounds && adjacent_period_timestamp_internal(per, t)))
-		{
-			*pos = middle;
-			return true;
-		}
-		if (timestamp_cmp_internal(t, per->lower) <= 0)
-			last = middle - 1;
-		else
-			first = middle + 1;
-	}
-	if (timestamp_cmp_internal(per->upper, t) <= 0)
-		middle++;
-	*pos = middle;
-	return false;
-}
-
 /*****************************************************************************/
 
 /*
@@ -249,16 +218,6 @@ period_duration_secs(TimestampTz v1, TimestampTz v2)
 
 	result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
 	return result;
-}
-
-/* Duration of the period as a double */
-
-double
-period_duration_time(Period *p)
-{
-	double lower = (double)(p->lower);
-	double upper = (double)(p->upper);
-	return (upper - lower);
 }
 
 /* Duration of the period as an interval */
