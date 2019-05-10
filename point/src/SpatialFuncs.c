@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalGeo.c
- *	  Geospatial functions for temporal points.
+ * SpatialFuncs.c
+ *	  Spatial functions for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -20,9 +20,9 @@
  * Manipulate a geomtry point directly from the GSERIALIZED.
  * These functions consitutute a SERIOUS break of encapsulation but it is the
  * only way to achieve reasonable performance when manipulating mobility data.
- * The datum_* functions suppose that the GSERIALIZED has been already detoasted.
- * This is typically the case when the datum is within a Temporal* that 
- * has been already detoasted with PG_GETARG_TEMPORAL*  
+ * The datum_* functions suppose that the GSERIALIZED has been already 
+ * detoasted. This is typically the case when the datum is within a Temporal* 
+ * that has been already detoasted with PG_GETARG_TEMPORAL*  
  */
 
 /* Get 2D point from a serialized geometry */

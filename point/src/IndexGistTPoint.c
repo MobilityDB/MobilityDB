@@ -255,36 +255,6 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 		if (!geo_to_gbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);										  
 	}
-	else if (subtype == TIMESTAMPTZOID)
-	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
-		TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-		timestamp_to_gbox_internal(&query, t);
-	}
-	else if (subtype == type_oid(T_TIMESTAMPSET))
-	{
-		TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-		if (ts == NULL)
-			PG_RETURN_BOOL(false);
-		timestampset_to_gbox_internal(&query, ts);
-		PG_FREE_IF_COPY(ts, 1);
-	}
-	else if (subtype == type_oid(T_PERIOD))
-	{
-		Period *p = PG_GETARG_PERIOD(1);
-		if (p == NULL)
-			PG_RETURN_BOOL(false);
-		period_to_gbox_internal(&query, p);
-	}
-	else if (subtype == type_oid(T_PERIODSET))
-	{
-		PeriodSet *ps = PG_GETARG_PERIODSET(1);
-		if (ps == NULL)
-			PG_RETURN_BOOL(false);
-		periodset_to_gbox_internal(&query, ps);
-		PG_FREE_IF_COPY(ps, 1);
-	}
 	else if (subtype == type_oid(T_GBOX))
 	{
 		GBOX *box = PG_GETARG_GBOX_P(1);

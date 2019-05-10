@@ -163,68 +163,9 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	
 	/*
-	 * Transform the query into a box initializing the dimensions that must
-	 * not be taken into account by the operators to infinity.
+	 * Transform the query into a box.
 	 */
-	if (subtype == INT4OID)
-	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
-		int_to_box_internal(&query, PG_GETARG_INT32(1));
-	}
-	if (subtype == FLOAT8OID)
-	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
-		float_to_box_internal(&query, PG_GETARG_FLOAT8(1));
-	}
-	else if (subtype == type_oid(T_INTRANGE))
-	{
-		RangeType *range = PG_GETARG_RANGE_P(1);
-		if (range == NULL)
-			PG_RETURN_BOOL(false);
-		intrange_to_box_internal(&query, range);
-		PG_FREE_IF_COPY(range, 1);
-	}
-	else if (subtype == type_oid(T_FLOATRANGE))
-	{
-		RangeType *range = PG_GETARG_RANGE_P(1);
-		if (range == NULL)
-			PG_RETURN_BOOL(false);
-		floatrange_to_box_internal(&query, range);
-		PG_FREE_IF_COPY(range, 1);
-	}
-	else if (subtype == TIMESTAMPTZOID)
-	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
-		TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-		timestamp_to_box_internal(&query, t);
-	}
-	else if (subtype == type_oid(T_TIMESTAMPSET))
-	{
-		TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-		if (ts == NULL)
-			PG_RETURN_BOOL(false);
-		timestampset_to_box_internal(&query, ts);
-		PG_FREE_IF_COPY(ts, 1);
-	}
-	else if (subtype == type_oid(T_PERIOD))
-	{
-		Period *period = PG_GETARG_PERIOD(1);
-		if (period == NULL)
-			PG_RETURN_BOOL(false);
-		period_to_box_internal(&query, period);
-	}
-	else if (subtype == type_oid(T_PERIODSET))
-	{
-		PeriodSet *ps = PG_GETARG_PERIODSET(1);
-		if (ps == NULL)
-			PG_RETURN_BOOL(false);
-		periodset_to_box_internal(&query, ps);
-		PG_FREE_IF_COPY(ps, 1);
-	}
-	else if (subtype == BOXOID)
+	if (subtype == BOXOID)
 	{
 		BOX *box = PG_GETARG_BOX_P(1);
 		if (box == NULL)
@@ -285,18 +226,12 @@ PGDLLEXPORT Datum
 gist_tintinst_fetch(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	BOX		   *in = DatumGetBoxP(entry->key);
-	TemporalInst *inst;
-	
+	BOX *in = DatumGetBoxP(entry->key);
 	GISTENTRY  *retval = palloc(sizeof(GISTENTRY));
-	
-	inst = temporalinst_make(Int32GetDatum((int)in->high.x),
+	TemporalInst *inst = temporalinst_make(Int32GetDatum((int)in->high.x),
 		in->high.y, INT4OID);
-	
 	gistentryinit(*retval, PointerGetDatum(inst),
-				  entry->rel, entry->page,
-				  entry->offset, false);
-	
+		entry->rel, entry->page, entry->offset, false);
 	PG_RETURN_POINTER(retval);
 }
 
@@ -305,18 +240,13 @@ PG_FUNCTION_INFO_V1(gist_tfloatinst_fetch);
 PGDLLEXPORT Datum
 gist_tfloatinst_fetch(PG_FUNCTION_ARGS)
 {
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	BOX		   *in = DatumGetBoxP(entry->key);
-	TemporalInst *inst;
-	GISTENTRY  *retval = palloc(sizeof(GISTENTRY));
-	
-	inst = temporalinst_make(Float8GetDatum(in->high.x), in->high.y, 
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	BOX *in = DatumGetBoxP(entry->key);
+	GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+	TemporalInst *inst = temporalinst_make(Float8GetDatum(in->high.x), in->high.y, 
 		FLOAT8OID);
-	
-	gistentryinit(*retval, PointerGetDatum(inst),
-				  entry->rel, entry->page,
-				  entry->offset, false);
-	
+	gistentryinit(*retval, PointerGetDatum(inst), 
+		entry->rel, entry->page, entry->offset, false);
 	pfree(inst);
 	PG_RETURN_POINTER(retval);
 }

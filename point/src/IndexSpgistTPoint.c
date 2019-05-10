@@ -583,18 +583,6 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 			   initialized to +-infinity */
 			geo_to_gbox_internal(&queries[i], 
 				(GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
-		else if (subtype == TIMESTAMPTZOID)
-			timestamp_to_gbox_internal(&queries[i],
-				DatumGetTimestamp(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_TIMESTAMPSET))
-			timestampset_to_gbox_internal(&queries[i],
-				DatumGetTimestampSet(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_PERIOD))
-			period_to_gbox_internal(&queries[i],
-				DatumGetPeriod(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_PERIODSET))
-			periodset_to_gbox_internal(&queries[i],
-				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_GBOX))
 			memcpy(&queries[i], DatumGetGboxP(in->scankeys[i].sk_argument), sizeof(GBOX));
 		else if (temporal_oid(subtype))
