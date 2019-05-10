@@ -98,7 +98,6 @@ extern Datum LWGEOM_line_substring(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_makeline(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_makeline_garray(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_makepoint(PG_FUNCTION_ARGS);
-extern Datum LWGEOM_makepoint3dm(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_npoints(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_numpoints_linestring(PG_FUNCTION_ARGS);

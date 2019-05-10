@@ -1280,6 +1280,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
 Datum
 tgeompointi_twcentroid(TemporalI *ti)
 {
+	int srid = tpointi_srid_internal(ti);
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsz = NULL ; /* keep compiler quiet */
@@ -1320,14 +1321,14 @@ tgeompointi_twcentroid(TemporalI *ti)
 	double avgz;
 	if (hasz)
 		avgz = temporali_twavg(tiz);
-	Datum result;
+	LWPOINT *lwpoint;
 	if (hasz)
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(avgx), 
-			Float8GetDatum(avgy), Float8GetDatum(avgz));
+		lwpoint = lwpoint_make3dz(srid, avgx, avgy, avgz);
 	else
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(avgx), 
-			Float8GetDatum(avgy));
-		
+		lwpoint = lwpoint_make2d(srid, avgx, avgy);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+
+	pfree(lwpoint);
 	for (int i = 0; i < ti->count; i++)
 	{
 		pfree(instantsx[i]);
@@ -1348,6 +1349,7 @@ tgeompointi_twcentroid(TemporalI *ti)
 Datum
 tgeompointseq_twcentroid(TemporalSeq *seq)
 {
+	int srid = tpointseq_srid_internal(seq);
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst **instantsz;
@@ -1387,16 +1389,17 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 	double twavgx = tfloatseq_twavg(seqx);
 	double twavgy = tfloatseq_twavg(seqy);
 	double twavgz;
+	LWPOINT *lwpoint;
 	if (hasz)
+	{
 		twavgz = tfloatseq_twavg(seqz);
-	Datum result;
-	if (hasz)
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(twavgx), 
-			Float8GetDatum(twavgy), Float8GetDatum(twavgz));
+		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
+	}
 	else
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(twavgx), 
-			Float8GetDatum(twavgy));
-		
+		lwpoint = lwpoint_make2d(srid, twavgx, twavgy);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+
+	pfree(lwpoint);
 	for (int i = 0; i < seq->count; i++)
 	{
 		pfree(instantsx[i]);
@@ -1417,6 +1420,7 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 Datum
 tgeompoints_twcentroid(TemporalS *ts)
 {
+	int srid = tpoints_srid_internal(ts);
 	TemporalSeq **sequencesx = palloc(sizeof(TemporalSeq *) * ts->count);
 	TemporalSeq **sequencesy = palloc(sizeof(TemporalSeq *) * ts->count);
 	TemporalSeq **sequencesz = NULL; /* keep compiler quiet */
@@ -1481,16 +1485,17 @@ tgeompoints_twcentroid(TemporalS *ts)
 	double twavgx = tfloats_twavg(tsx);
 	double twavgy = tfloats_twavg(tsy);
 	double twavgz;
+	LWPOINT *lwpoint;
 	if (hasz)
+	{
 		twavgz = tfloats_twavg(tsz);
-	Datum result;
-	if (hasz)
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(twavgx), 
-			Float8GetDatum(twavgy), Float8GetDatum(twavgz));
+		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
+	}
 	else
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(twavgx), 
-			Float8GetDatum(twavgy));
-	
+		lwpoint = lwpoint_make2d(srid, twavgx, twavgy);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+
+	pfree(lwpoint);
 	for (int i = 0; i < ts->count; i++)
 	{
 		pfree(sequencesx[i]); pfree(sequencesy[i]);
