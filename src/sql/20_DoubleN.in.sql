@@ -60,10 +60,22 @@ CREATE FUNCTION double3_out(double3)
  	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION double3_send(double3)
+	RETURNS bytea
+ 	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION double3_recv(internal)
+	RETURNS double3
+ 	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE double3 (
 	internallength = 24,
 	input = double3_in,
 	output = double3_out,
+	send = double3_send,
+	receive = double3_recv,
 	alignment = double
 );
 

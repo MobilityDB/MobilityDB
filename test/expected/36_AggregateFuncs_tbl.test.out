@@ -1,6 +1,12 @@
 /*****************************************************************************
  * TemporalInst aggregate functions
  *****************************************************************************/
+set parallel_tuple_cost=0;
+SET
+set parallel_setup_cost=0;
+SET
+set force_parallel_mode=regress;
+SET
 select numInstants(tand(inst)) from tbl_tboolinst;
  numinstants 
 -------------
@@ -1355,3 +1361,9 @@ select k%10, numSequences(tcount(ts)) from tbl_ttexts group by k%10 order by k%1
 (10 rows)
 
 /*****************************************************************************/
+set parallel_tuple_cost=100;
+SET
+set parallel_setup_cost=100;
+SET
+set force_parallel_mode=off;
+SET
