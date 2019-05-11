@@ -228,21 +228,16 @@ numrange_to_floatrange_internal(RangeType *range)
 	if (range->rangetypid == type_oid(T_FLOATRANGE))
 		return range_make(lower_datum(range), upper_datum(range), 
 			lower_inc(range), lower_inc(range), FLOAT8OID);
-	/* Function upper_datum subtract 1 to the result of upper(range) */
-	Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
-	Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
-	return range_make(lower, upper, true, true, FLOAT8OID);
-}
-
-PG_FUNCTION_INFO_V1(numrange_to_floatrange);
-
-Datum
-numrange_to_floatrange(PG_FUNCTION_ARGS)
-{
-	RangeType *range = PG_GETARG_RANGE_P(0);
-	RangeType *result = numrange_to_floatrange_internal(range);
-	PG_FREE_IF_COPY(range, 0);
-	PG_RETURN_POINTER(result);
+	else if (range->rangetypid == type_oid(T_INTRANGE))
+	{
+		/* Function upper_datum subtract 1 to the result of upper(range) */
+		Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
+		Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
+		return range_make(lower, upper, true, true, FLOAT8OID);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Operation not supported")));
 }
 
 /*****************************************************************************/
