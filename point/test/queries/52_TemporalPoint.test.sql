@@ -324,7 +324,7 @@ SELECT asewkt(tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
 SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
--- Errors
+/* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamp '2000-01-01'));
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamp '2000-01-01'));
 

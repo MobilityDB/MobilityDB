@@ -107,6 +107,23 @@ SELECT ttext '{A@2001-01-01 08:00:00,B@2001-01-01 08:05:00,C@2001-01-01 08:06:00
  {"A"@2001-01-01 08:00:00+00, "B"@2001-01-01 08:05:00+00, "C"@2001-01-01 08:06:00+00}
 (1 row)
 
+/* Errors */
+SELECT tbooli(tbool '{true@2000-01-01, true@2000-01-03, false@2000-01-02, false@2000-01-04}');
+ERROR:  Invalid timestamps for temporal value
+LINE 2: SELECT tbooli(tbool '{true@2000-01-01, true@2000-01-03, fals...
+                            ^
+SELECT tinti(tint '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+ERROR:  Invalid timestamps for temporal value
+LINE 1: SELECT tinti(tint '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02...
+                          ^
+SELECT tfloati(tfloat '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+ERROR:  Invalid timestamps for temporal value
+LINE 1: SELECT tfloati(tfloat '{1@2000-01-01, 2@2000-01-03, 1@2000-0...
+                              ^
+SELECT ttexti(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-01-02, BB@2000-01-04}');
+ERROR:  Invalid timestamps for temporal value
+LINE 1: SELECT ttexti(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-...
+                            ^
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
                                      tbool                                      
 --------------------------------------------------------------------------------
@@ -216,6 +233,23 @@ SELECT ttext '{[AAA@2001-01-01 08:00:00,BBB@2001-01-01 08:05:00,CCC@2001-01-01 0
  {["AAA"@2001-01-01 08:00:00+00, "BBB"@2001-01-01 08:05:00+00, "CCC"@2001-01-01 08:06:00+00], ["AAA"@2001-01-01 09:00:00+00, "BBB"@2001-01-01 09:05:00+00, "CCC"@2001-01-01 09:06:00+00]}
 (1 row)
 
+/* Errors */
+SELECT tbools(tbool '{[true@2000-01-01, true@2000-01-03], [false@2000-01-02, false@2000-01-04]}');
+ERROR:  Invalid sequence for temporal sequence set
+LINE 2: SELECT tbools(tbool '{[true@2000-01-01, true@2000-01-03], [f...
+                            ^
+SELECT tints(tint '{[1@2000-01-01, 1@2000-01-03], [2@2000-01-02, 2@2000-01-04]}');
+ERROR:  Invalid sequence for temporal sequence set
+LINE 1: SELECT tints(tint '{[1@2000-01-01, 1@2000-01-03], [2@2000-01...
+                          ^
+SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]}');
+ERROR:  Invalid sequence for temporal sequence set
+LINE 1: SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@200...
+                              ^
+SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@2000-01-02, AA@2000-01-04]}');
+ERROR:  Invalid sequence for temporal sequence set
+LINE 1: SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@20...
+                            ^
 SELECT tbool 'true@2000-01-01';
           tbool           
 --------------------------
@@ -590,6 +624,15 @@ ttextinst('C', '2012-01-01 08:20:00')
  {"A"@2012-01-01 08:00:00+00, "B"@2012-01-01 08:10:00+00, "C"@2012-01-01 08:20:00+00}
 (1 row)
 
+/* Errors */ 
+SELECT tbooli('{}'::tbool[]);
+ERROR:  A temporal instant set must have at least one temporal instant
+SELECT tinti('{}'::tint[]);
+ERROR:  A temporal instant set must have at least one temporal instant
+SELECT tfloati('{}'::tfloat[]);
+ERROR:  A temporal instant set must have at least one temporal instant
+SELECT ttexti('{}'::ttext[]);
+ERROR:  A temporal instant set must have at least one temporal instant
 SELECT tboolseq(ARRAY[
 tboolinst(true, '2012-01-01 08:00:00'),
 tboolinst(true, '2012-01-01 08:10:00'),
@@ -694,6 +737,47 @@ ttextinst('C', '2012-01-01 09:20:00')
  {["A"@2012-01-01 08:00:00+00, "B"@2012-01-01 08:10:00+00, "C"@2012-01-01 08:20:00+00], ["A"@2012-01-01 09:00:00+00, "B"@2012-01-01 09:10:00+00, "C"@2012-01-01 09:20:00+00]}
 (1 row)
 
+SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-02]', '[false@2000-01-03, false@2000-01-04]']);
+                                                    tbools                                                    
+--------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], [f@2000-01-03 00:00:00+00, f@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-02]', '[2@2000-01-03, 2@2000-01-04]']);
+                                                    tints                                                     
+--------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00, 1@2000-01-02 00:00:00+00], [2@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-03, 1@2000-01-04]']);
+                                                   tfloats                                                    
+--------------------------------------------------------------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00], [2@2000-01-03 00:00:00+00, 1@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-02]', '[AA@2000-01-03, AA@2000-01-04]']);
+                                                          ttexts                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ {["AA"@2000-01-01 00:00:00+00, "AA"@2000-01-02 00:00:00+00], ["AA"@2000-01-03 00:00:00+00, "AA"@2000-01-04 00:00:00+00]}
+(1 row)
+
+/* Errors */
+SELECT tbools('{}'::tbool[]);
+ERROR:  A temporal sequence set value must at least one sequence
+SELECT tints('{}'::tint[]);
+ERROR:  A temporal sequence set value must at least one sequence
+SELECT tfloats('{}'::tfloat[]);
+ERROR:  A temporal sequence set value must at least one sequence
+SELECT ttexts('{}'::ttext[]);
+ERROR:  A temporal sequence set value must at least one sequence
+SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-02, false@2000-01-04]']);
+ERROR:  Invalid sequence for temporal sequence set
+SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
+ERROR:  Invalid sequence for temporal sequence set
+SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@2000-01-04]']);
+ERROR:  Invalid sequence for temporal sequence set
+SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-03]', '[AA@2000-01-02, AA@2000-01-04]']);
+ERROR:  Invalid sequence for temporal sequence set
 SELECT tfloat(tint '1@2001-01-01');
           tfloat          
 --------------------------
@@ -3753,6 +3837,12 @@ SELECT minusValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@
                                                           minusvalue                                                          
 ------------------------------------------------------------------------------------------------------------------------------
  {["BBB"@2000-01-02 00:00:00+00, "BBB"@2000-01-03 00:00:00+00), ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT minusValue(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5@2000-01-05]}', 1.5);
+ minusvalue 
+------------
+ 
 (1 row)
 
 SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);

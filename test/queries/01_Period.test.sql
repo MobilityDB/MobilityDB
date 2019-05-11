@@ -9,7 +9,7 @@
 
 SELECT period ('2000-01-01','2000-01-02');
 SELECT period ('2000-01-01','2000-01-01', true, true);
--- Errors
+/* Errors */
 SELECT period ('2000-01-01','2000-01-01');
 SELECT period ('2000-01-02','2000-01-01');
 
@@ -31,7 +31,7 @@ SELECT period(tstzrange'(2000-01-01,2000-01-02)');
 
 SELECT period(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::period;
--- Errors
+/* Errors */
 select tstzrange '[2000-01-01,]'::period;
 select tstzrange '[,2000-01-01]'::period;
 select tstzrange 'empty'::period;

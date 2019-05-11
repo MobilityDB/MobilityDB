@@ -429,7 +429,6 @@ extern RangeType *range_make(Datum from, Datum to, bool lower_inc, bool upper_in
 extern RangeType **rangearr_normalize(RangeType **ranges, int *count);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);
-extern Datum numrange_to_floatrange(PG_FUNCTION_ARGS);
 
 extern RangeType *numrange_to_floatrange_internal(RangeType *range);
 
@@ -620,7 +619,6 @@ extern TemporalInst *temporalinst_copy(TemporalInst *inst);
 extern Datum* temporalinst_value_ptr(TemporalInst *inst);
 extern Datum temporalinst_value(TemporalInst *inst);
 extern Datum temporalinst_value_copy(TemporalInst *inst);
-extern RangeType *tnumberinst_floatrange(TemporalInst *inst);
 
 /* Input/output functions */
 
@@ -713,7 +711,6 @@ extern int temporalinstarr_find_timestamp(TemporalInst **array, int from,
 extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
 	int count);
 extern TemporalI *temporali_copy(TemporalI *ti);
-extern RangeType *tnumberi_floatrange(TemporalI *ti);
 
 /* Intersection functions */
 
@@ -858,7 +855,6 @@ extern bool tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
 extern bool temporalseq_intersect_at_timestamp(TemporalInst *start1, 
 	TemporalInst *end1, TemporalInst *start2, TemporalInst *end2, TimestampTz *inter);
-extern RangeType *tnumberseq_floatrange(TemporalSeq *seq);
 
 /* Input/output functions */
 
@@ -1000,7 +996,6 @@ extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
 extern double temporals_duration_time(TemporalS *ts);
 extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
-extern RangeType *tnumbers_floatrange(TemporalS *ts);
 
 /* Intersection functions */
 

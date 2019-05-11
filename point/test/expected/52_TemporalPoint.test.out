@@ -767,6 +767,7 @@ SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
  
 (1 row)
 
+/* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamp '2000-01-01'));
 ERROR:  Only non empty point geometries accepted
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamp '2000-01-01'));

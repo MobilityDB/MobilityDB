@@ -1162,25 +1162,6 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		errmsg("Operation not supported")));
 }
 
-/* Range of a TemporalSeq expressed as floatrange */
-
-RangeType *
-tnumberseq_floatrange(TemporalSeq *seq)
-{
-	if (seq->valuetypid == INT4OID)
-	{
-		RangeType *range = tnumberseq_value_range(seq);
-		RangeType *result = numrange_to_floatrange_internal(range);
-		pfree(range);
-		return result;
-	}
-	else if (seq->valuetypid == FLOAT8OID)
-		return tfloatseq_range(seq);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-}
-
 /* Duration of the TemporalSeq as a double */
 
 static double

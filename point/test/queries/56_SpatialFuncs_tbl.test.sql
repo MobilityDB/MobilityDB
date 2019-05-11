@@ -98,7 +98,7 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
--- Errors with 3D
+/* Errors */ 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 
@@ -108,7 +108,7 @@ SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
--- Errors with 3D
+/* Errors */ 
 SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 

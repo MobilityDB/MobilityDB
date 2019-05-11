@@ -144,15 +144,6 @@ temporalinst_copy(TemporalInst *inst)
 	return result;
 }
 
-/* Convert a temporal number into a float range */
-RangeType *
-tnumberinst_floatrange(TemporalInst *inst)
-{
-	Datum value = temporalinst_value(inst);
-	double d = datum_double(value, inst->valuetypid);
-	return range_make(d, d, true, true, FLOAT8OID);
-}
-
 /*****************************************************************************
  * Intput/output functions
  *****************************************************************************/

@@ -713,6 +713,7 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
    123
 (1 row)
 
+/* Errors */ 
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 ERROR:  3D geometries are not allowed
@@ -737,6 +738,7 @@ WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
    135
 (1 row)
 
+/* Errors */ 
 SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geogcollection3D 
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
 ERROR:  3D geometries are not allowed

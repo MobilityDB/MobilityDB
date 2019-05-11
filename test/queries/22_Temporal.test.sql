@@ -29,6 +29,11 @@ SELECT tfloat ' { 1@2001-01-01 08:00:00 , 2@2001-01-01 08:05:00 , 3@2001-01-01 0
 SELECT tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}';
 SELECT ttext ' { A@2001-01-01 08:00:00 , B@2001-01-01 08:05:00 , C@2001-01-01 08:06:00 } ';
 SELECT ttext '{A@2001-01-01 08:00:00,B@2001-01-01 08:05:00,C@2001-01-01 08:06:00}';
+/* Errors */
+SELECT tbooli(tbool '{true@2000-01-01, true@2000-01-03, false@2000-01-02, false@2000-01-04}');
+SELECT tinti(tint '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+SELECT tfloati(tfloat '{1@2000-01-01, 2@2000-01-03, 1@2000-01-02, 2@2000-01-04}');
+SELECT ttexti(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-01-02, BB@2000-01-04}');
 
 -------------------------------------------------------------------------------
 
@@ -68,6 +73,13 @@ SELECT ttext '  { [ AAA@2001-01-01 08:00:00 , BBB@2001-01-01 08:05:00 , CCC@2001
  [ AAA@2001-01-01 09:00:00 , BBB@2001-01-01 09:05:00 , CCC@2001-01-01 09:06:00 ] } ';
 SELECT ttext '{[AAA@2001-01-01 08:00:00,BBB@2001-01-01 08:05:00,CCC@2001-01-01 08:06:00],
  [AAA@2001-01-01 09:00:00,BBB@2001-01-01 09:05:00,CCC@2001-01-01 09:06:00]}';
+
+/* Errors */
+SELECT tbools(tbool '{[true@2000-01-01, true@2000-01-03], [false@2000-01-02, false@2000-01-04]}');
+SELECT tints(tint '{[1@2000-01-01, 1@2000-01-03], [2@2000-01-02, 2@2000-01-04]}');
+SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]}');
+SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@2000-01-02, AA@2000-01-04]}');
+
 
 -------------------------------------------------------------------------------
 -- typmod
@@ -160,6 +172,7 @@ SELECT ttext(SequenceSet) '[1@2000-01-01, 2@2000-01-02]';
 SELECT ttext(Instant) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT ttext(InstantSet) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
 SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-04]}';
+
 -------------------------------------------------------------------------------
 -- Constructor functions
 -------------------------------------------------------------------------------
@@ -194,6 +207,12 @@ ttextinst('A', '2012-01-01 08:00:00'),
 ttextinst('B', '2012-01-01 08:10:00'),
 ttextinst('C', '2012-01-01 08:20:00')
 ]);
+
+/* Errors */ 
+SELECT tbooli('{}'::tbool[]);
+SELECT tinti('{}'::tint[]);
+SELECT tfloati('{}'::tfloat[]);
+SELECT ttexti('{}'::ttext[]);
 
 -------------------------------------------------------------------------------
 
@@ -264,6 +283,20 @@ ttextinst('A', '2012-01-01 09:00:00'),
 ttextinst('B', '2012-01-01 09:10:00'),
 ttextinst('C', '2012-01-01 09:20:00')
 ])]);
+
+SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-02]', '[false@2000-01-03, false@2000-01-04]']);
+SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-02]', '[2@2000-01-03, 2@2000-01-04]']);
+SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-03, 1@2000-01-04]']);
+SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-02]', '[AA@2000-01-03, AA@2000-01-04]']);
+/* Errors */
+SELECT tbools('{}'::tbool[]);
+SELECT tints('{}'::tint[]);
+SELECT tfloats('{}'::tfloat[]);
+SELECT ttexts('{}'::ttext[]);
+SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-02, false@2000-01-04]']);
+SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
+SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@2000-01-04]']);
+SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-03]', '[AA@2000-01-02, AA@2000-01-04]']);
 
 -------------------------------------------------------------------------------
 -- Cast functions
@@ -883,110 +916,179 @@ SELECT shift(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '5 min');
 SELECT shift(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '5 min');
 SELECT shift(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '5 min');
 
+SELECT isContinuousInValue(tfloat '{[1@2000-01-01, 2@2000-01-02],[1@2000-01-03, 2@2000-01-04]}');
+SELECT isContinuousInValue(tfloat '{[1@2000-01-01, 2@2000-01-02],[2@2000-01-03, 2@2000-01-04]}');
+/* Errors */
+SELECT isContinuousInValue(tfloat '1.5@2000-01-01');
+SELECT isContinuousInValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT isContinuousInValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+
+SELECT isContinuousInTime(tbool '{[t@2000-01-01, t@2000-01-02],[f@2000-01-03, f@2000-01-04]}');
+SELECT isContinuousInTime(tbool '{[t@2000-01-01, f@2000-01-02],(t@2000-01-02, t@2000-01-04]}');
+SELECT isContinuousInTime(tint '{[1@2000-01-01, 1@2000-01-02],[2@2000-01-03, 2@2000-01-04]}');
+SELECT isContinuousInTime(tint '{[1@2000-01-01, 2@2000-01-02],(1@2000-01-02, 2@2000-01-04]}');
+SELECT isContinuousInTime(tfloat '{[1@2000-01-01, 2@2000-01-02],[1@2000-01-03, 2@2000-01-04]}');
+SELECT isContinuousInTime(tfloat '{[1@2000-01-01, 2@2000-01-02],(1@2000-01-02, 2@2000-01-04]}');
+SELECT isContinuousInTime(ttext '{[AA@2000-01-01, AA@2000-01-02],[BB@2000-01-03, BB@2000-01-04]}');
+SELECT isContinuousInTime(ttext '{[AA@2000-01-01, BB@2000-01-02],(AA@2000-01-02, BB@2000-01-04]}');
+/* Errors */
+SELECT isContinuousInTime(tbool 't@2000-01-01');
+SELECT isContinuousInTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT isContinuousInTime(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT isContinuousInTime(tint '1@2000-01-01');
+SELECT isContinuousInTime(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT isContinuousInTime(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT isContinuousInTime(tfloat '1.5@2000-01-01');
+SELECT isContinuousInTime(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT isContinuousInTime(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+
 -------------------------------------------------------------------------------
 -- Restriction functions
 -------------------------------------------------------------------------------
 
 SELECT atValue(tbool 't@2000-01-01', true);
+SELECT atValue(tbool '{t@2000-01-01}', true);
 SELECT atValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
 SELECT atValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
 SELECT atValue(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
 SELECT atValue(tint '1@2000-01-01', 1);
+SELECT atValue(tint '{1@2000-01-01}', 1);
 SELECT atValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
 SELECT atValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
 SELECT atValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
 SELECT atValue(tfloat '1.5@2000-01-01', 1.5);
+SELECT atValue(tfloat '{1.5@2000-01-01}', 1.5);
 SELECT atValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
 SELECT atValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1.5);
 SELECT atValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1.5);
 SELECT atValue(ttext 'AAA@2000-01-01', 'AAA');
+SELECT atValue(ttext '{AAA@2000-01-01}', 'AAA');
 SELECT atValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
 SELECT atValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
 SELECT atValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
 
 SELECT minusValue(tbool 't@2000-01-01', true);
+SELECT minusValue(tbool '{t@2000-01-01}', true);
 SELECT minusValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
 SELECT minusValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
 SELECT minusValue(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
 SELECT minusValue(tint '1@2000-01-01', 1);
+SELECT minusValue(tint '{1@2000-01-01}', 1);
 SELECT minusValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
 SELECT minusValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
 SELECT minusValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
 SELECT minusValue(tfloat '1.5@2000-01-01', 1.5);
+SELECT minusValue(tfloat '{1.5@2000-01-01}', 1.5);
 SELECT minusValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
 SELECT minusValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1.5);
 SELECT minusValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1.5);
 SELECT minusValue(ttext 'AAA@2000-01-01', 'AAA');
+SELECT minusValue(ttext '{AAA@2000-01-01}', 'AAA');
 SELECT minusValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
 SELECT minusValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
 SELECT minusValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
 
+SELECT minusValue(tbool '{[t@2000-01-01, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
+SELECT minusValue(tint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-05]}', 1);
+SELECT minusValue(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5@2000-01-05]}', 1.5);
+SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000-01-05]}', text 'AA');
+
 SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);
+SELECT atValues(tbool '{t@2000-01-01}', ARRAY[true]);
 SELECT atValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
 SELECT atValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
 SELECT atValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
 SELECT atValues(tint '1@2000-01-01', ARRAY[1]);
+SELECT atValues(tint '{1@2000-01-01}', ARRAY[1]);
 SELECT atValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[1]);
 SELECT atValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[1]);
 SELECT atValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[1]);
 SELECT atValues(tfloat '1.5@2000-01-01', ARRAY[1.5]);
+SELECT atValues(tfloat '{1.5@2000-01-01}', ARRAY[1.5]);
 SELECT atValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[1.5]);
 SELECT atValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[1.5]);
 SELECT atValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[1.5]);
 SELECT atValues(ttext 'AAA@2000-01-01', ARRAY[text 'AAA']);
+SELECT atValues(ttext '{AAA@2000-01-01}', ARRAY[text 'AAA']);
 SELECT atValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', ARRAY[text 'AAA']);
 SELECT atValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', ARRAY[text 'AAA']);
 SELECT atValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', ARRAY[text 'AAA']);
 
 SELECT minusValues(tbool 't@2000-01-01', ARRAY[true]);
+SELECT minusValues(tbool '{t@2000-01-01}', ARRAY[true]);
 SELECT minusValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', ARRAY[true]);
 SELECT minusValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', ARRAY[true]);
 SELECT minusValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', ARRAY[true]);
 SELECT minusValues(tint '1@2000-01-01', ARRAY[1]);
+SELECT minusValues(tint '{1@2000-01-01}', ARRAY[1]);
 SELECT minusValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[1]);
 SELECT minusValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[1]);
 SELECT minusValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[1]);
 SELECT minusValues(tfloat '1.5@2000-01-01', ARRAY[1.5]);
+SELECT minusValues(tfloat '{1.5@2000-01-01}', ARRAY[1.5]);
 SELECT minusValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[1.5]);
 SELECT minusValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[1.5]);
 SELECT minusValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[1.5]);
 SELECT minusValues(ttext 'AAA@2000-01-01', ARRAY[text 'AAA']);
+SELECT minusValues(ttext '{AAA@2000-01-01}', ARRAY[text 'AAA']);
 SELECT minusValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', ARRAY[text 'AAA']);
 SELECT minusValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', ARRAY[text 'AAA']);
 SELECT minusValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', ARRAY[text 'AAA']);
 
+SELECT minusValues(tbool '{[t@2000-01-01, t@2000-01-03],[f@2000-01-04, f@2000-01-05]}', ARRAY[true, false]);
+SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[2@2000-01-04, 2@2000-01-05]}', ARRAY[1, 2]);
+SELECT minusValues(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[2.5@2000-01-04, 2.5@2000-01-05]}', ARRAY[1.5, 2.5]);
+SELECT minusValues(ttext '{[AA@2000-01-01, AA@2000-01-03],[BB@2000-01-04, BB@2000-01-05]}', ARRAY[text 'AA', 'BB']);
+
 SELECT atRange(tint '1@2000-01-01', intrange '[1,3]');
+SELECT atRange(tint '{1@2000-01-01}', intrange '[1,3]');
 SELECT atRange(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intrange '[1,3]');
 SELECT atRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intrange '[1,3]');
 SELECT atRange(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intrange '[1,3]');
 SELECT atRange(tfloat '1.5@2000-01-01', floatrange '[1,3]');
+SELECT atRange(tfloat '{1.5@2000-01-01}', floatrange '[1,3]');
 SELECT atRange(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatrange '[1,3]');
 SELECT atRange(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatrange '[1,3]');
 SELECT atRange(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatrange '[1,3]');
 
 SELECT minusRange(tint '1@2000-01-01', intrange '[1,3]');
+SELECT minusRange(tint '{1@2000-01-01}', intrange '[1,3]');
 SELECT minusRange(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', intrange '[1,3]');
 SELECT minusRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', intrange '[1,3]');
 SELECT minusRange(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', intrange '[1,3]');
 SELECT minusRange(tfloat '1.5@2000-01-01', floatrange '[1,3]');
+SELECT minusRange(tfloat '{1.5@2000-01-01}', floatrange '[1,3]');
 SELECT minusRange(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', floatrange '[1,3]');
 SELECT minusRange(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', floatrange '[1,3]');
 SELECT minusRange(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', floatrange '[1,3]');
 
 SELECT atRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);
+SELECT atRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intrange '[1,3]']);
 SELECT atRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[1,3]']);
+SELECT atRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
 SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[1,3]']);
 SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[1,3]']);
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[1,3]']);
 
+SELECT atRanges(tint '1@2000-01-01', ARRAY[intrange '[5,6]']);
+SELECT atRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[5,6]']);
+SELECT atRanges(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intrange '[5,6]']);
+SELECT atRanges(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intrange '[5,6]']);
+SELECT atRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[5,6]']);
+SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[5,6]']);
+SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
+SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
+
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);
+SELECT minusRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', ARRAY[intrange '[1,3]']);
 SELECT minusRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[1,3]']);
+SELECT minusRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
 SELECT minusRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[1,3]']);
 SELECT minusRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[1,3]']);
 SELECT minusRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[1,3]']);
@@ -1057,18 +1159,22 @@ SELECT minusMax(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT minusMax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
 SELECT atTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
 SELECT atTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
 SELECT atTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
 SELECT atTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tint '{1@2000-01-01}', timestamp '2000-01-01');
 SELECT atTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
 SELECT atTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
 SELECT atTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
 SELECT atTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '{1.5@2000-01-01}', timestamp '2000-01-01');
 SELECT atTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
 SELECT atTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
 SELECT atTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
 SELECT atTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(ttext '{AAA@2000-01-01}', timestamp '2000-01-01');
 SELECT atTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
 SELECT atTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
 SELECT atTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
@@ -1091,37 +1197,53 @@ SELECT valueAtTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]'
 SELECT valueAtTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
 
 SELECT minusTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
 SELECT minusTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
 SELECT minusTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestamp '2000-01-01');
 SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
 SELECT minusTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{1@2000-01-01}', timestamp '2000-01-01');
 SELECT minusTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
 SELECT minusTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestamp '2000-01-01');
 SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
 SELECT minusTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{1.5@2000-01-01}', timestamp '2000-01-01');
 SELECT minusTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
 SELECT minusTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestamp '2000-01-01');
 SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
 SELECT minusTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{AAA@2000-01-01}', timestamp '2000-01-01');
 SELECT minusTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
 SELECT minusTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestamp '2000-01-01');
 SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
 
 SELECT atTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tbool '{t@2000-01-01}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tint '1@2000-01-01', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tint '{1@2000-01-01}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tfloat '{1.5@2000-01-01}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
+SELECT atTimestampSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
+SELECT atTimestampSet(ttext '{AAA@2000-01-01}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');
+SELECT atTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT atTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
 
 select atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]',
@@ -1130,88 +1252,128 @@ select atTimestampSet(tfloat '(1@2000-01-02, 2@2000-01-04, 1@2000-01-05)',
   timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
 
 SELECT minusTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tbool '{t@2000-01-01}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tint '1@2000-01-01', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tint '{1@2000-01-01}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tfloat '{1.5@2000-01-01}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(ttext '{AAA@2000-01-01}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestampset '{2000-01-01}');
+SELECT minusTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestampset '{2000-01-01}');
 SELECT minusTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
 
 SELECT atPeriod(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tbool '{t@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tint '1@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tint '{1@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tfloat '1.5@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tfloat '{1.5@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(ttext 'AAA@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(ttext '{AAA@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT atPeriod(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT atPeriod(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 
 SELECT minusPeriod(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tbool '{t@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tint '1@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tint '{1@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tfloat '1.5@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tfloat '{1.5@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(ttext 'AAA@2000-01-01', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(ttext '{AAA@2000-01-01}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', period '[2000-01-01,2000-01-02]');
+SELECT minusPeriod(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', period '[2000-01-01,2000-01-02]');
 SELECT minusPeriod(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', period '[2000-01-01,2000-01-02]');
 
 SELECT atPeriodSet(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tbool '{t@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tint '1@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tint '{1@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tfloat '1.5@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tfloat '{1.5@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(ttext 'AAA@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(ttext '{AAA@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT atPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT atPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 
 SELECT minusPeriodSet(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tbool '{t@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tint '1@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tint '{1@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tfloat '1.5@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tfloat '{1.5@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(ttext 'AAA@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(ttext '{AAA@2000-01-01}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', periodset '{[2000-01-01,2000-01-02]}');
+SELECT minusPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', periodset '{[2000-01-01,2000-01-02]}');
 SELECT minusPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', periodset '{[2000-01-01,2000-01-02]}');
 
 SELECT intersectsTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
@@ -1589,5 +1751,24 @@ SELECT ttext 'AAA@2000-01-01' <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@20
 SELECT ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
 SELECT ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]' <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
 SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}' <> ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SELECT tbool_hash(tbool 't@2000-01-01');
+SELECT tbool_hash(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT tbool_hash(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT tbool_hash(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT tint_hash(tint '1@2000-01-01');
+SELECT tint_hash(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT tint_hash(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT tint_hash(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT tfloat_hash(tfloat '1.5@2000-01-01');
+SELECT tfloat_hash(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT tfloat_hash(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT tfloat_hash(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT ttext_hash(ttext 'AAA@2000-01-01');
+SELECT ttext_hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT ttext_hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT ttext_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 ------------------------------------------------------------------------------

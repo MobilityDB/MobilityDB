@@ -212,17 +212,6 @@ temporalinstarr_find_timestamp(TemporalInst **array, int from, int count,
 	return middle;
 }
 
-/* Range of a Temporali expressed as a floatrange */
-
-RangeType *
-tnumberi_floatrange(TemporalI *ti)
-{
-	BOX *box = temporali_bbox_ptr(ti);
-	Datum min = Float8GetDatum(box->low.x);
-	Datum max = Float8GetDatum(box->high.x);
-	return range_make(min, max, true, true, FLOAT8OID);
-}
-
 /*****************************************************************************
  * Intersection functions
  *****************************************************************************/
@@ -761,9 +750,8 @@ temporali_at_value(TemporalI *ti, Datum value)
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TemporalInst *inst = temporalinst_at_value(temporali_inst_n(ti, 0), 
-			value);
-		if (inst == NULL)
+		if (datum_ne(value, temporalinst_value(temporali_inst_n(ti, 0)), 
+			valuetypid))
 			return NULL;
 		return temporali_copy(ti);
 	}
@@ -802,9 +790,8 @@ temporali_minus_value(TemporalI *ti, Datum value)
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
-		TemporalInst *inst = temporalinst_minus_value(temporali_inst_n(ti, 0), 
-			value);
-		if (inst == NULL)
+		if (datum_eq(value, temporalinst_value(temporali_inst_n(ti, 0)), 
+			valuetypid))
 			return NULL;
 		return temporali_copy(ti);
 	}

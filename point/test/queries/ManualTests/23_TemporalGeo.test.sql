@@ -910,7 +910,7 @@ SELECT astext(((tgeompointinst 'Point(0 0)@2001-01-01')::geometry)::tgeompointin
 
 SELECT astext(((tgeogpointinst 'Point(0 0)@2001-01-01')::geography)::tgeogpointinst);
 
--- ERRORS
+/* Errors */
 SELECT (geometry 'LINESTRING(0 0,0 1)')::tgeompointinst
 SELECT (geography 'LINESTRING(0 0,0 1)')::tgeogpointinst
 SELECT (geometry 'POINTM EMPTY')::tgeompointinst
@@ -922,7 +922,7 @@ SELECT astext(((tgeompoint 'Point(0 0)@Point(0 1)@[2001-01-01, 2001-01-02)')::ge
 
 SELECT astext(((tgeogpoint 'Point(0 0)@Point(0 1)@[2001-01-01, 2001-01-02)')::geography)::tgeogpointper);
 
--- ERRORS
+/* Errors */
 SELECT (geometry 'LINESTRING(0 0,0 1)')::tgeompointper;
 SELECT (geometry 'LINESTRINGM EMPTY')::tgeompointper;
 SELECT (geometry 'LINESTRINGM(0 0 0,0 1 1,1 1 2)')::tgeompointper;
@@ -940,7 +940,7 @@ SELECT astext(((tgeompointp '{Point(0 0)@Point(0 1)@[2001-01-01, 2001-01-02),
 SELECT astext(((tgeogpointp '{Point(0 0)@Point(0 1)@[2001-01-01, 2001-01-02),
     Point(0 1)@Point(1 1)@[2001-01-02, 2001-01-03)}')::geography)::tgeogpointp);
 
--- ERRORS
+/* Errors */
 SELECT (geometry 'LINESTRING(0 0,0 1)')::tgeompointp;
 SELECT (geography 'LINESTRING(0 0,0 1)')::tgeogpointp;
 SELECT (geometry 'LINESTRINGM EMPTY')::tgeompointp;
@@ -958,7 +958,7 @@ SELECT astext(((tgeompointi '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}')::g
 
 SELECT astext(((tgeogpointi '{Point(0 0)@2001-01-01, Point(0 1)@2001-01-02}')::geography)::tgeogpointi);
 
--- ERRORS
+/* Errors */
 SELECT (geometry 'LINESTRINGM(0 0 0,0 1 0)')::tgeompointi;
 SELECT astext((geometry 'POINTM EMPTY')::tgeompointi);
 SELECT astext((geometry 'MULTIPOINTM EMPTY')::tgeompointi);

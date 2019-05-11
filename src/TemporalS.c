@@ -820,25 +820,6 @@ tnumbers_value_range(TemporalS *ts)
 	return range_make(min, max, true, true, ts->valuetypid);
 }
 
-/* Range of a TemporalS expressed as floatrange */
-
-RangeType *
-tnumbers_floatrange(TemporalS *ts)
-{
-	if (ts->valuetypid == INT4OID)
-	{
-		RangeType *range = tnumbers_value_range(ts);
-		RangeType *result = numrange_to_floatrange_internal(range);
-		pfree(range);
-		return result;
-	}
-	else if (ts->valuetypid == FLOAT8OID)
-		return tnumbers_value_range(ts);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-}
-
 /* Minimum value */
 
 Datum
@@ -1254,7 +1235,7 @@ temporals_continuous_value_internal(TemporalS *ts)
 	{
 		TemporalSeq *seq2 = temporals_seq_n(ts, i);
 		Datum value1 = temporalinst_value(temporalseq_inst_n(seq1, seq1->count - 1));
-		Datum value2 = temporalinst_value(temporalseq_inst_n(seq1, 0));
+		Datum value2 = temporalinst_value(temporalseq_inst_n(seq2, 0));
 		if (datum_ne(value1, value2, valuetypid))
 			return false;
 		seq1 = seq2;
@@ -1709,8 +1690,8 @@ temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 	if (ts->count == 1)
 		return temporalseq_minus_timestamp(temporals_seq_n(ts, 0), t);
 
-	/* General case */
-	/* At most one composing sequence can be split into two */
+	/* General case 
+	 * At most one composing sequence can be split into two */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count + 1));
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
@@ -1721,12 +1702,8 @@ temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 		// if (timestamp_cmp_internal(t, seq->period.upper) < 0)
 		// 	break;
 	}
-	if (k == 0)
-	{
-		pfree(sequences);
-		return NULL;
-	}
-
+	/* k is never equal to 0 since in that case it is a singleton sequence set 
+	   and it has been dealt by temporalseq_minus_timestamp above */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);

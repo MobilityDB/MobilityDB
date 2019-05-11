@@ -28,11 +28,6 @@ CREATE TYPE floatrange AS RANGE (
 	SUBTYPE = float8,
 	SUBTYPE_DIFF = float8mi
 );
-
-CREATE FUNCTION floatrange(r intrange)
-	RETURNS floatrange
-	AS 'MODULE_PATHNAME', 'numrange_to_floatrange'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  
 /******************************************************************************/
 

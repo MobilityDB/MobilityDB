@@ -305,21 +305,6 @@ synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	return result;
 }
 
-RangeType *
-tnumber_floatrange(Temporal *temp)
-{
-	RangeType *result = NULL;
-	if (temp->type == TEMPORALINST)
-		result = tnumberinst_floatrange((TemporalInst *)temp);
-	else if (temp->type == TEMPORALI)
-		result = tnumberi_floatrange((TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ)
-		result = tnumberseq_floatrange((TemporalSeq *)temp);
-	else if (temp->type == TEMPORALSEQ)
-		result = tnumbers_floatrange((TemporalS *)temp);
-	return result;
-}
-
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -612,7 +597,7 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 	{
 		PG_FREE_IF_COPY(array, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("A temporal value must at least one sequence")));
+			errmsg("A temporal sequence set value must at least one sequence")));
 	}
 	
 	TemporalSeq **sequences = (TemporalSeq **)temporalarr_extract(array, &count);
