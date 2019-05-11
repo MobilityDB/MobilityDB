@@ -70,6 +70,14 @@ SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01
 ERROR:  Only non-empty point geometries accepted
 LINE 1: SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
+SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+LINE 1: SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Po...
+                                 ^
+SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+LINE 1: SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Po...
+                                 ^
 SELECT astext(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
                                                   astext                                                   
 -----------------------------------------------------------------------------------------------------------
@@ -101,6 +109,14 @@ LINE 2: SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
 ERROR:  Only non-empty point geometries accepted
+LINE 1: SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Po...
+                                 ^
+SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+LINE 1: SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Po...
+                                 ^
+SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
 LINE 1: SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
@@ -141,6 +157,14 @@ SELECT astext(tgeogpoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001
  [ Point(1 1)@2001-01-01 09:00:00 , Point empty@2001-01-01 09:05:00 , Point(1 1)@2001-01-01 09:06:00 ] } ');
 ERROR:  Only non-empty point geometries accepted
 LINE 1: SELECT astext(tgeogpoint '  { [ Point(1 1)@2001-01-01 08:00:...
+                                 ^
+SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+LINE 1: SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],...
+                                 ^
+SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+LINE 1: SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],...
                                  ^
 SELECT asewkt(tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, Point(0 1)@2000-01-02]');
                                       asewkt                                      

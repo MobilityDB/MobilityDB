@@ -1772,6 +1772,13 @@ temporal_at_values(PG_FUNCTION_ARGS)
 	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_NULL();	
+	}
+
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
@@ -1806,9 +1813,17 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
+	if (count == 0)
+	{
+		Temporal *result = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_POINTER(result);
+	}
+
+	Oid valuetypid = temp->valuetypid;
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
@@ -1909,27 +1924,41 @@ tnumber_at_ranges(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
 	int count;
 	RangeType **ranges = rangearr_extract(array, &count);
-	RangeType **normranges = rangearr_normalize(ranges, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_NULL();	
+	}
+
+	RangeType **normranges = ranges;
+	int newcount = count;
+	if (count > 2)
+		normranges = rangearr_normalize(ranges, &newcount);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)tnumberinst_at_ranges(
-			(TemporalInst *)temp, normranges, count);
+			(TemporalInst *)temp, normranges, newcount);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)tnumberi_at_ranges(
-			(TemporalI *)temp, normranges, count);
+			(TemporalI *)temp, normranges, newcount);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)tnumberseq_at_ranges(
-			(TemporalSeq *)temp, normranges, count);
+			(TemporalSeq *)temp, normranges, newcount);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_at_ranges(
-			(TemporalS *)temp, normranges, count);
+			(TemporalS *)temp, normranges, newcount);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
+
 	pfree(ranges);
-	for (int i = 0; i < count; i++)
-		pfree(normranges[i]);
-	pfree(normranges);
+	if (count > 2)
+	{
+		for (int i = 0; i < newcount; i++)
+			pfree(normranges[i]);
+		pfree(normranges);
+	}
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
 	if (result == NULL) 
@@ -1948,27 +1977,42 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
 	int count;
 	RangeType **ranges = rangearr_extract(array, &count);
-	RangeType **normranges = rangearr_normalize(ranges, &count);
+	if (count == 0)
+	{
+		Temporal *result = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_POINTER(result);
+	}
+
+	RangeType **normranges = ranges;
+	int newcount = count;
+	if (count > 2)
+		normranges = rangearr_normalize(ranges, &newcount);
 	Temporal *result;
 	if (temp->type == TEMPORALINST) 
 		result = (Temporal *)tnumberinst_minus_ranges((TemporalInst *)temp,
-			normranges, count);
+			normranges, newcount);
 	else if (temp->type == TEMPORALI) 
 		result = (Temporal *)tnumberi_minus_ranges((TemporalI *)temp,
-			normranges, count);
+			normranges, newcount);
 	else if (temp->type == TEMPORALSEQ) 
 		result = (Temporal *)tnumberseq_minus_ranges((TemporalSeq *)temp,
-			normranges, count);
+			normranges, newcount);
 	else if (temp->type == TEMPORALS) 
 		result = (Temporal *)tnumbers_minus_ranges((TemporalS *)temp,
-			normranges, count);
+			normranges, newcount);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
+
 	pfree(ranges);
-	for (int i = 0; i < count; i++)
-		pfree(normranges[i]);
-	pfree(normranges);
+	if (count > 2)
+	{
+		for (int i = 0; i < newcount; i++)
+			pfree(normranges[i]);
+		pfree(normranges);
+	}
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
 	if (result == NULL)

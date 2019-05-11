@@ -142,7 +142,8 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 
 /*
  * Normalize an array of ranges
- * This function allows the ranges to be non contiguous 
+ * The function allows the ranges to be non contiguous.
+ * The function assumes that count > 0
  */
 RangeType **
 rangearr_normalize(RangeType **ranges, int *count)
@@ -228,16 +229,21 @@ numrange_to_floatrange_internal(RangeType *range)
 	if (range->rangetypid == type_oid(T_FLOATRANGE))
 		return range_make(lower_datum(range), upper_datum(range), 
 			lower_inc(range), lower_inc(range), FLOAT8OID);
-	else if (range->rangetypid == type_oid(T_INTRANGE))
-	{
-		/* Function upper_datum subtract 1 to the result of upper(range) */
-		Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
-		Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
-		return range_make(lower, upper, true, true, FLOAT8OID);
-	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+	/* Function upper_datum subtract 1 to the result of upper(range) */
+	Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
+	Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
+	return range_make(lower, upper, true, true, FLOAT8OID);
+}
+
+PG_FUNCTION_INFO_V1(numrange_to_floatrange);
+
+Datum
+numrange_to_floatrange(PG_FUNCTION_ARGS)
+{
+	RangeType *range = PG_GETARG_RANGE_P(0);
+	RangeType *result = numrange_to_floatrange_internal(range);
+	PG_FREE_IF_COPY(range, 0);
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
