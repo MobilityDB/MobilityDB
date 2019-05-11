@@ -1,168 +1,176 @@
-select timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
                                timestampset                               
 --------------------------------------------------------------------------
  {2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00, 2000-01-03 00:00:00+00}
 (1 row)
 
-select timestampset(ARRAY [timestamp '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-01', '2000-01-03']);
 ERROR:  Invalid value for timestamp set
-select timestampset(timestamp '2000-01-01');
+SELECT timestampset('{}'::timestamptz[]);
+ERROR:  A timestamp set must have at least one timestamp
+SELECT timestampset(timestamp '2000-01-01');
        timestampset       
 --------------------------
  {2000-01-01 00:00:00+00}
 (1 row)
 
-select timestamptz '2000-01-01'::timestampset;
+SELECT timestamptz '2000-01-01'::timestampset;
        timestampset       
 --------------------------
  {2000-01-01 00:00:00+00}
 (1 row)
 
-select memSize(timestampset '{2000-01-01}');
+SELECT memSize(timestampset '{2000-01-01}');
  memsize 
 ---------
       72
 (1 row)
 
-select memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  memsize 
 ---------
      104
 (1 row)
 
-select timespan(timestampset '{2000-01-01}');
+SELECT timespan(timestampset '{2000-01-01}');
                      timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-select timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
                      timespan                     
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-select numTimestamps(timestampset '{2000-01-01}');
+SELECT numTimestamps(timestampset '{2000-01-01}');
  numtimestamps 
 ---------------
              1
 (1 row)
 
-select numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT numTimestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  numtimestamps 
 ---------------
              3
 (1 row)
 
-select startTimestamp(timestampset '{2000-01-01}');
+SELECT startTimestamp(timestampset '{2000-01-01}');
      starttimestamp     
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-select startTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT startTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
      starttimestamp     
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-select endTimestamp(timestampset '{2000-01-01}');
+SELECT endTimestamp(timestampset '{2000-01-01}');
       endtimestamp      
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-select endTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT endTimestamp(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
       endtimestamp      
 ------------------------
  2000-01-03 00:00:00+00
 (1 row)
 
-select timestampN(timestampset '{2000-01-01}', 1);
+SELECT timestampN(timestampset '{2000-01-01}', 1);
        timestampn       
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-select timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
+SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 1);
        timestampn       
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-select timestampN(timestampset '{2000-01-01}', 2);
+SELECT timestampN(timestampset '{2000-01-01}', 2);
  timestampn 
 ------------
  
 (1 row)
 
-select timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
+SELECT timestampN(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', 4);
  timestampn 
 ------------
  
 (1 row)
 
-select timestamps(timestampset '{2000-01-01}');
+SELECT timestamps(timestampset '{2000-01-01}');
          timestamps         
 ----------------------------
  {"2000-01-01 00:00:00+00"}
 (1 row)
 
-select timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+SELECT timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
                                   timestamps                                  
 ------------------------------------------------------------------------------
  {"2000-01-01 00:00:00+00","2000-01-02 00:00:00+00","2000-01-03 00:00:00+00"}
 (1 row)
 
-select shift(timestampset '{2000-01-01}', '5 min');
+SELECT shift(timestampset '{2000-01-01}', '5 min');
           shift           
 --------------------------
  {2000-01-01 00:05:00+00}
 (1 row)
 
-select shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
+SELECT shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
                                   shift                                   
 --------------------------------------------------------------------------
  {2000-01-01 00:05:00+00, 2000-01-02 00:05:00+00, 2000-01-03 00:05:00+00}
 (1 row)
 
-select timestampset_cmp(timestampset '{2000-01-01}', timestampset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
+SELECT timestampset_cmp(timestampset '{2000-01-01}', timestampset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
  ?column? 
 ----------
  t
 (1 row)
 
-select timestampset '{2000-01-01}' = timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestampset '{2000-01-01}' = timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-select timestampset '{2000-01-01}' <> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestampset '{2000-01-01}' <> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-select timestampset '{2000-01-01}' < timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestampset '{2000-01-01}' < timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-select timestampset '{2000-01-01}' <= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
- ?column? 
-----------
- t
-(1 row)
-
-select timestampset '{2000-01-01}' > timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' < timestampset '{2000-01-01}';
  ?column? 
 ----------
  f
 (1 row)
 
-select timestampset '{2000-01-01}' >= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+SELECT timestampset '{2000-01-01}' <= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestampset '{2000-01-01}' > timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestampset '{2000-01-01}' >= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
  ?column? 
 ----------
  f

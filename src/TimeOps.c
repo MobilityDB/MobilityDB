@@ -15,16 +15,6 @@
 /*****************************************************************************/
 /* Functions used for indexes */
 
-PG_FUNCTION_INFO_V1(timestamp_to_period);
-
-PGDLLEXPORT Datum
-timestamp_to_period(PG_FUNCTION_ARGS)
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	Period *result = period_make(t, t, true, true);
-	PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(timestampset_to_period);
 
 PGDLLEXPORT Datum

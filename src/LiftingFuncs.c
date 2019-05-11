@@ -156,7 +156,7 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid,
 			func, valuetypid, mustfree);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -249,7 +249,7 @@ tfunc2_temporal(Temporal *temp, Datum param,
 			param, func, valuetypid, mustfree);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -352,7 +352,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 			func, valuetypid, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -533,7 +533,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 			value, func, datumtypid, valuetypid, inverted);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 

@@ -170,22 +170,6 @@ periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos)
 	return false;
 }
 
-/* Duration of the PeriodSet as a double */
-
-double
-periodset_duration_time(PeriodSet *ps)
-{
-	double result = 0;
-	for (int i = 0; i < ps->count; i++)
-	{
-		Period *p = periodset_per_n(ps, i);
-		double lower = (double)(p->lower);
-		double upper = (double)(p->upper);
-		result += (upper - lower);
-	}
-	return result;
-}
-
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

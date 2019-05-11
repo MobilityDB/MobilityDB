@@ -1326,7 +1326,7 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 			geo, func, valuetypid, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1349,7 +1349,7 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 			geo, param, func, BOOLOID, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1545,7 +1545,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1632,7 +1632,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1764,7 +1764,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1853,7 +1853,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2207,7 +2207,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2299,7 +2299,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2657,7 +2657,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2750,7 +2750,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2820,7 +2820,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);

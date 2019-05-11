@@ -301,7 +301,7 @@ temporal_transform_tcount(Temporal *temp)
 		return (Temporal *)temporals_transform_tcount((TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 /*****************************************************************************/
@@ -905,7 +905,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 			func, crossings);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 static AggregateState *
@@ -1364,7 +1364,7 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 		result = temporals_tavg_transfn(fcinfo, state, (TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }

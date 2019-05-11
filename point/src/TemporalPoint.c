@@ -469,7 +469,8 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 			PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
 	PG_RETURN_BOOL(result);
@@ -519,7 +520,8 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 			PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
 	PG_RETURN_BOOL(result);
@@ -631,7 +633,7 @@ tpoint_values_internal(Temporal *temp)
 		return tpoints_trajectory((TemporalS *)temp);	
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 PG_FUNCTION_INFO_V1(tpoint_values);
@@ -711,7 +713,8 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
 	if (result == NULL)
@@ -795,7 +798,8 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 			(TemporalS *)temp, PointerGetDatum(value));
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
 	if (result == NULL)
@@ -860,7 +864,8 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);
@@ -926,7 +931,8 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 			(TemporalS *)temp, values, count1);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
+
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(array, 1);

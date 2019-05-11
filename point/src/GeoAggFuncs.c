@@ -193,7 +193,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 			func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 			
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);

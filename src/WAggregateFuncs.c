@@ -218,7 +218,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 /*****************************************************************************
@@ -327,7 +327,7 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 /*****************************************************************************/
@@ -473,7 +473,7 @@ temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 }
 
 /*****************************************************************************

@@ -194,7 +194,7 @@ tnot_tbool(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnot_tbools((TemporalS *)temp);	
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

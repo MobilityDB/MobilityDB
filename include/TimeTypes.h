@@ -210,8 +210,6 @@ extern Datum timestampset_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_shift(PG_FUNCTION_ARGS);
 
 extern void timestampset_timespan_internal(Period *p, TimestampSet *ts);
-extern TimestampTz timestampset_start_timestamp_internal(TimestampSet *ts);
-extern TimestampTz timestampset_end_timestamp_internal(TimestampSet *ts);
 extern TimestampTz *timestampset_timestamps_internal(TimestampSet *ts);
 extern TimestampSet *timestampset_shift_internal(TimestampSet *ts, Interval *interval);
 
@@ -241,7 +239,6 @@ extern PeriodSet *periodset_from_periodarr_internal(Period **periods,
 	int count, bool normalize);
 extern PeriodSet *periodset_copy(PeriodSet *ps);
 extern bool periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos);
-extern double periodset_duration_time(PeriodSet *ps);
 
 /* Input/output functions */
 
@@ -307,7 +304,6 @@ extern bool periodset_ne_internal(PeriodSet *ps1, PeriodSet *ps2);
 
 /* Functions needed for indexes */
 
-extern Datum timestamp_to_period(PG_FUNCTION_ARGS);
 extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
 extern Datum periodset_to_period(PG_FUNCTION_ARGS);
 

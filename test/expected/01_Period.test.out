@@ -86,6 +86,12 @@ SELECT timestamptz '2000-01-01'::period;
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
+select tstzrange '[2000-01-01,]'::period;
+ERROR:  Range bounds cannot be infinite
+select tstzrange '[,2000-01-01]'::period;
+ERROR:  Range bounds cannot be infinite
+select tstzrange 'empty'::period;
+ERROR:  Range cannot be empty
 SELECT lower(period '[2000-01-01,2000-01-01]');
          lower          
 ------------------------

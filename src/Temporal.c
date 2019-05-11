@@ -2582,7 +2582,7 @@ tint_integral(PG_FUNCTION_ARGS)
 		result = tints_integral((TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
@@ -2604,7 +2604,7 @@ tfloat_integral(PG_FUNCTION_ARGS)
 		result = tfloats_integral((TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }

@@ -410,7 +410,7 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 		result = (Temporal *)tgeompoints_transform_gk_internal((TemporalS *)temp);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

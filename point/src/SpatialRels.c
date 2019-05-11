@@ -574,7 +574,7 @@ spatialrel_tpoint_geo(Temporal *temp, Datum geo,
 			geo, func, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
  
@@ -597,7 +597,7 @@ spatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 			geo, param, func, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
  
@@ -620,7 +620,7 @@ spatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
 			(TemporalS *)temp2, func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -643,7 +643,7 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 			(TemporalS *)temp2, param, func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -661,7 +661,7 @@ relate2_tpoint_geo(Temporal *temp, Datum geo, bool invert)
 		result = relate2_tpoints_geo((TemporalS *)temp, geo, invert);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -2169,7 +2169,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -2295,7 +2295,7 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 			(TemporalS *)inter1, (TemporalS *)inter2);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Bad temporal type")));
 
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);

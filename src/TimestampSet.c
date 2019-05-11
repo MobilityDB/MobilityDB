@@ -353,13 +353,6 @@ timestampset_num_timestamps(PG_FUNCTION_ARGS)
 
 /* Start timestamptz */
 
-TimestampTz
-timestampset_start_timestamp_internal(TimestampSet *ts)
-{
-	TimestampTz t = timestampset_time_n(ts, 0);
-	return t;
-}
-
 PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
 
 PGDLLEXPORT Datum
@@ -372,13 +365,6 @@ timestampset_start_timestamp(PG_FUNCTION_ARGS)
 }
 
 /* End timestamptz */
-
-TimestampTz
-timestampset_end_timestamp_internal(TimestampSet *ts)
-{
-	TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-	return t;
-}
 
 PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
 
