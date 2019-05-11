@@ -1189,7 +1189,7 @@ temporali_at_timestampset(TemporalI *ti, TimestampSet *ts)
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
 
-	/* Singleton instant set */
+	/* Singleton timestamp set */
 	if (ti->count == 1)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, 0);
@@ -1345,6 +1345,10 @@ temporali_at_periodset(TemporalI *ti, PeriodSet *ps)
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
 
+	/* Singleton period set */
+	if (ps->count == 1)
+		return temporali_at_period(ti, periodset_per_n(ps, 0));
+
 	/* Singleton instant set */
 	if (ti->count == 1)
 	{
@@ -1383,6 +1387,10 @@ temporali_minus_periodset(TemporalI *ti, PeriodSet *ps)
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return temporali_copy(ti);
+
+	/* Singleton period set */
+	if (ps->count == 1)
+		return temporali_minus_period(ti, periodset_per_n(ps, 0));
 
 	/* Singleton instant set */
 	if (ti->count == 1)
