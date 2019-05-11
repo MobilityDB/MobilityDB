@@ -26,6 +26,30 @@ CREATE INDEX tbl_tfloat10K_gist_idx ON tbl_tfloat10K USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_ttext10K_gist_idx ON tbl_ttext10K USING GIST(temp);
 CREATE INDEX
+SELECT count(*) FROM tbl_tbool10K WHERE temp && period '[2001-01-01, 2001-07-01]';
+ count 
+-------
+  5003
+(1 row)
+
+SELECT count(*) FROM tbl_tint10K WHERE temp && intrange '[1,50]';
+ count 
+-------
+  8106
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat10K WHERE temp && floatrange '[1,50]';
+ count 
+-------
+  8164
+(1 row)
+
+SELECT count(*) FROM tbl_ttext10K WHERE temp && period '[2001-01-01, 2001-07-01]';
+ count 
+-------
+  4904
+(1 row)
+
 DROP INDEX IF EXISTS tbl_tbool10K_gist_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tint10K_gist_idx;
@@ -42,3 +66,39 @@ CREATE INDEX tbl_tfloat10K_spgist_idx ON tbl_tfloat10K USING SPGIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_ttext10K_spgist_idx ON tbl_ttext10K USING SPGIST(temp);
 CREATE INDEX
+SELECT count(*) FROM tbl_tbool10K WHERE temp && period '[2001-01-01, 2001-07-01]';
+ count 
+-------
+  5003
+(1 row)
+
+SELECT count(*) FROM tbl_tint10K WHERE temp && intrange '[1,50]';
+ count 
+-------
+  8106
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat10K WHERE temp && floatrange '[1,50]';
+ count 
+-------
+  8164
+(1 row)
+
+SELECT count(*) FROM tbl_ttext10K WHERE temp && period '[2001-01-01, 2001-07-01]';
+ count 
+-------
+  4904
+(1 row)
+
+DROP INDEX IF EXISTS tbl_tbool10K_gist_idx;
+NOTICE:  index "tbl_tbool10k_gist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tint10K_gist_idx;
+NOTICE:  index "tbl_tint10k_gist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tfloat10K_gist_idx;
+NOTICE:  index "tbl_tfloat10k_gist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_ttext10K_gist_idx;
+NOTICE:  index "tbl_ttext10k_gist_idx" does not exist, skipping
+DROP INDEX
