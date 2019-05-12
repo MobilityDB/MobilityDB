@@ -45,6 +45,12 @@ gbox_parse(char **str)
 		*str += 7;
 		hasz = geodetic = 1;
 		p_whitespace(str);
+		if (strncasecmp(*str, "M", 1) == 0)
+		{
+			*str += 1;
+			hasm = 1;
+		}
+		p_whitespace(str);
 	}
 	else
 		return NULL;

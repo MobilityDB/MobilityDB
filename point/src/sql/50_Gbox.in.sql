@@ -50,27 +50,32 @@ CREATE TYPE gbox (
  * Constructors
  ******************************************************************************/
 
- CREATE OR REPLACE FUNCTION gbox(float8, float8, float8, float8)
+ CREATE FUNCTION gbox(float8, float8, float8, float8)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'gbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION gbox(float8, float8, float8, float8, float8, float8)
+CREATE FUNCTION gbox(float8, float8, float8, float8, float8, float8)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'gbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION gbox(float8, float8, float8, float8, float8, float8, float8, float8)
+CREATE FUNCTION gbox(float8, float8, float8, float8, float8, float8, float8, float8)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'gbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION gbox3dm(float8, float8, float8, float8, float8, float8)
+CREATE FUNCTION gbox3dm(float8, float8, float8, float8, float8, float8)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'gbox3dm_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION geodbox(float8, float8, float8, float8, float8, float8)
+CREATE FUNCTION geodbox(float8, float8, float8, float8, float8, float8)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'geodbox_constructor'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geodbox(float8, float8, float8, float8, float8, float8, float8, float8)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'geodbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

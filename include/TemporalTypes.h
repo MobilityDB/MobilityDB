@@ -1852,8 +1852,6 @@ extern Datum gist_tnumberi_compress(PG_FUNCTION_ARGS);
 extern Datum gist_tnumberseq_compress(PG_FUNCTION_ARGS);
 extern Datum gist_tnumbers_compress(PG_FUNCTION_ARGS);
 extern Datum gist_tnumber_compress(PG_FUNCTION_ARGS);
-extern Datum gist_tintinst_fetch(PG_FUNCTION_ARGS);
-extern Datum gist_tfloatinst_fetch(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTnumber.c */
 extern bool index_leaf_consistent_box(BOX *key, BOX *query, StrategyNumber strategy);

@@ -375,6 +375,10 @@ gbox_expand_temporal(PG_FUNCTION_ARGS)
 {
 	GBOX *box = PG_GETARG_GBOX_P(0);
 	Datum interval = PG_GETARG_DATUM(1);
+	if (! FLAGS_GET_M(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("The box must have M dimension")));
+
 	PG_RETURN_POINTER(gbox_expand_temporal_internal(box, interval));
 }
 

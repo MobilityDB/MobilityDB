@@ -70,6 +70,34 @@ CREATE CAST (tgeogpoint AS gbox) WITH FUNCTION gbox(tgeogpoint);
 
 /*****************************************************************************/
 
+CREATE FUNCTION expandSpatial(gbox, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'gbox_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandSpatial(tgeompoint, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandSpatial(tgeogpoint, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION expandTemporal(gbox, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'gbox_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandTemporal(tgeompoint, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandTemporal(tgeogpoint, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
 CREATE FUNCTION overlaps_point_sel(internal, oid, internal, integer)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'overlaps_point_sel'
@@ -94,18 +122,6 @@ CREATE FUNCTION tpoint_join_sel(internal, oid, internal, smallint, internal)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'tpoint_join_sel'
 	LANGUAGE C IMMUTABLE STRICT;
-
-/*****************************************************************************/
-
-CREATE FUNCTION expandSpatial(tgeogpoint, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandTemporal(tgeogpoint, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -163,28 +179,6 @@ CREATE OPERATOR <-> (
 	COMMUTATOR = <->
 );
 */
-
-/*****************************************************************************/
-
-CREATE FUNCTION expandSpatial(gbox, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'gbox_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandTemporal(gbox, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'gbox_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandSpatial(tgeompoint, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandTemporal(tgeompoint, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Contains

@@ -874,7 +874,8 @@ range_oid_from_base(Oid valuetypid)
 		return type_oid(T_INTRANGE);
 	else if (valuetypid == FLOAT8OID)
 		return type_oid(T_FLOATRANGE);
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
+	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
+		errmsg("Operation not supported")));
 }
 
 Oid

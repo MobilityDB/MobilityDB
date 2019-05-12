@@ -1181,6 +1181,8 @@ SELECT minusMax(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT minusMax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
 SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tbool 't@2000-01-02', timestamp '2000-01-01');
+SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-02');
 SELECT atTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
 SELECT atTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
 SELECT atTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');

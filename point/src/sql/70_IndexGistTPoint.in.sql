@@ -166,6 +166,5 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	FUNCTION	6	gist_tpoint_picksplit(internal, internal),
 	FUNCTION	7	gist_tpoint_same(gbox, gbox, internal);
 --	FUNCTION	8	gist_tgeogpoint_distance (internal, tgeogpoint, smallint, oid, internal),
---	FUNCTION	9	gist_tpoint_fetch(internal);
 	
 /******************************************************************************/

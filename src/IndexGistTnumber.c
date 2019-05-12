@@ -214,41 +214,4 @@ gist_tnumber_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
-/*****************************************************************************
- * Fetch methods for temporal numbers (only for tintinst and tfloatinst)
- * Get point coordinates from its bounding box coordinates and form new
- * gistentry.
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_tintinst_fetch);
-
-PGDLLEXPORT Datum
-gist_tintinst_fetch(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	BOX *in = DatumGetBoxP(entry->key);
-	GISTENTRY  *retval = palloc(sizeof(GISTENTRY));
-	TemporalInst *inst = temporalinst_make(Int32GetDatum((int)in->high.x),
-		in->high.y, INT4OID);
-	gistentryinit(*retval, PointerGetDatum(inst),
-		entry->rel, entry->page, entry->offset, false);
-	PG_RETURN_POINTER(retval);
-}
-
-PG_FUNCTION_INFO_V1(gist_tfloatinst_fetch);
-
-PGDLLEXPORT Datum
-gist_tfloatinst_fetch(PG_FUNCTION_ARGS)
-{
-	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	BOX *in = DatumGetBoxP(entry->key);
-	GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-	TemporalInst *inst = temporalinst_make(Float8GetDatum(in->high.x), in->high.y, 
-		FLOAT8OID);
-	gistentryinit(*retval, PointerGetDatum(inst), 
-		entry->rel, entry->page, entry->offset, false);
-	pfree(inst);
-	PG_RETURN_POINTER(retval);
-}
-
 /*****************************************************************************/
