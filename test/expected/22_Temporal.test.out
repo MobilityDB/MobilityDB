@@ -5029,6 +5029,18 @@ SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
  t@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT atTimestamp(tbool 't@2000-01-02', timestamp '2000-01-01');
+ attimestamp 
+-------------
+ 
+(1 row)
+
+SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-02');
+ attimestamp 
+-------------
+ 
+(1 row)
+
 SELECT atTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
        attimestamp        
 --------------------------
