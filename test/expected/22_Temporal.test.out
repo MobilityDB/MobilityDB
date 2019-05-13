@@ -299,6 +299,10 @@ SELECT tbool(SequenceSet) '{[true@2000-01-01, false@2000-01-02], [true@2000-01-0
 (1 row)
 
 /* Errors */
+select tbool(Instan) 'true@2000-01-01';
+ERROR:  Invalid temporal type modifier: instan
+LINE 2: select tbool(Instan) 'true@2000-01-01';
+               ^
 SELECT tbool(InstantSet) 'true@2000-01-01';
 ERROR:  Temporal type (Instant) does not match column type (InstantSet)
 SELECT tbool(Sequence) 'true@2000-01-01';
@@ -633,6 +637,14 @@ SELECT tfloati('{}'::tfloat[]);
 ERROR:  A temporal instant set must have at least one temporal instant
 SELECT ttexti('{}'::ttext[]);
 ERROR:  A temporal instant set must have at least one temporal instant
+select tbooli(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select tinti(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select tfloati(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select ttexti(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
 SELECT tboolseq(ARRAY[
 tboolinst(true, '2012-01-01 08:00:00'),
 tboolinst(true, '2012-01-01 08:10:00'),
@@ -673,6 +685,23 @@ ttextinst('C', '2012-01-01 08:20:00')
  ["A"@2012-01-01 08:00:00+00, "B"@2012-01-01 08:10:00+00, "C"@2012-01-01 08:20:00+00]
 (1 row)
 
+/* Errors */
+SELECT tboolseq('{}'::tbool[]);
+ERROR:  A temporal sequence must have at least one temporal instant
+SELECT tintseq('{}'::tint[]);
+ERROR:  A temporal sequence must have at least one temporal instant
+SELECT tfloatseq('{}'::tfloat[]);
+ERROR:  A temporal sequence must have at least one temporal instant
+SELECT ttextseq('{}'::ttext[]);
+ERROR:  A temporal sequence must have at least one temporal instant
+select tboolseq(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select tintseq(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select tfloatseq(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
+select ttextseq(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+ERROR:  Input values must be of type temporal instant
 SELECT tbools(ARRAY[
 tboolseq(ARRAY[
 tboolinst(true, '2012-01-01 08:00:00'),
@@ -778,6 +807,14 @@ SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@20
 ERROR:  Invalid sequence for temporal sequence set
 SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-03]', '[AA@2000-01-02, AA@2000-01-04]']);
 ERROR:  Invalid sequence for temporal sequence set
+select tbools(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal sequence
+select tints(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal sequence
+select tfloats(ARRAY[tfloat '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
+ERROR:  Input values must be of type temporal sequence
+select ttexts(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]']);
+ERROR:  Input values must be of type temporal sequence
 SELECT tfloat(tint '1@2001-01-01');
           tfloat          
 --------------------------
@@ -1186,6 +1223,9 @@ SELECT appendInstant(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
  {["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "AAA"@2000-01-06 00:00:00+00]}
 (1 row)
 
+/* Errors */
+SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
+ERROR:  The second argument must be of instant duration
 SELECT temporalType(tbool 't@2000-01-01');
  temporaltype 
 --------------
@@ -2325,6 +2365,30 @@ SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
  ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
 (1 row)
 
+SELECT sequenceN(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 3);
+ sequencen 
+-----------
+ 
+(1 row)
+
+SELECT sequenceN(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 3);
+ sequencen 
+-----------
+ 
+(1 row)
+
+SELECT sequenceN(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 3);
+ sequencen 
+-----------
+ 
+(1 row)
+
+SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 3);
+ sequencen 
+-----------
+ 
+(1 row)
+
 /* Errors */
 SELECT sequenceN(tbool 't@2000-01-01', 1);
 ERROR:  Input must be a temporal sequence set
@@ -2781,6 +2845,30 @@ SELECT instantN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
            instantn           
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT instantN(tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]', 4);
+ instantn 
+----------
+ 
+(1 row)
+
+SELECT instantN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+ instantn 
+----------
+ 
+(1 row)
+
+SELECT instantN(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+ instantn 
+----------
+ 
+(1 row)
+
+SELECT instantN(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]', 4);
+ instantn 
+----------
+ 
 (1 row)
 
 SELECT instants(tbool 't@2000-01-01');
@@ -3263,6 +3351,30 @@ SELECT timestampN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@
  2000-01-01 00:00:00+00
 (1 row)
 
+SELECT timestampN(tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]', 4);
+ timestampn 
+------------
+ 
+(1 row)
+
+SELECT timestampN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+ timestampn 
+------------
+ 
+(1 row)
+
+SELECT timestampN(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
+ timestampn 
+------------
+ 
+(1 row)
+
+SELECT timestampN(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]', 4);
+ timestampn 
+------------
+ 
+(1 row)
+
 SELECT timestamps(tbool 't@2000-01-01');
          timestamps         
 ----------------------------
@@ -3383,6 +3495,30 @@ SELECT tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-
  t
 (1 row)
 
+SELECT tbool 't@2000-01-01' &= false;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tbool '{t@2000-01-01, t@2000-01-02}' &= false;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tbool '[t@2000-01-01, t@2000-01-02]' &= false;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tbool '{[t@2000-01-01, t@2000-01-02],[t@2000-01-03, t@2000-01-04]}' &= false;
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tint '1@2000-01-01' &= 1;
  ?column? 
 ----------
@@ -3405,6 +3541,30 @@ SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-0
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT tint '1@2000-01-01' &= 4;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}' &= 4;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]' &= 4;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}' &= 4;
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tfloat '1.5@2000-01-01' &= 1.5;
@@ -3431,6 +3591,30 @@ SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04
  t
 (1 row)
 
+SELECT tfloat '1.5@2000-01-01' &= 4.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}' &= 4.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]' &= 4.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}' &= 4.5;
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT ttext 'AAA@2000-01-01' &= 'AAA';
  ?column? 
 ----------
@@ -3453,6 +3637,30 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT ttext 'AAA@2000-01-01' &= 'DDD';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' &= 'DDD';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]' &= 'DDD';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}' &= 'DDD';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tbool 't@2000-01-01' @= true;
@@ -4441,6 +4649,12 @@ SELECT atRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
  {1@2000-01-01 00:00:00+00}
 (1 row)
 
+SELECT atRanges(tint '{1@2000-01-01}', ARRAY[intrange '[2,3]']);
+ atranges 
+----------
+ 
+(1 row)
+
 SELECT atRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
                                     atranges                                    
 --------------------------------------------------------------------------------
@@ -4469,6 +4683,12 @@ SELECT atRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
            atranges           
 ------------------------------
  {1.5@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT atRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[2,3]']);
+ atranges 
+----------
+ 
 (1 row)
 
 SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[1,3]']);
@@ -4561,6 +4781,12 @@ SELECT minusRanges(tint '{1@2000-01-01}', ARRAY[intrange '[1,3]']);
  
 (1 row)
 
+SELECT minusRanges(tint '{1@2000-01-01}', ARRAY[intrange '[2,3]']);
+        minusranges         
+----------------------------
+ {1@2000-01-01 00:00:00+00}
+(1 row)
+
 SELECT minusRanges(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', ARRAY[intrange '[1,3]']);
  minusranges 
 -------------
@@ -4589,6 +4815,12 @@ SELECT minusRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[1,3]']);
  minusranges 
 -------------
  
+(1 row)
+
+SELECT minusRanges(tfloat '{1.5@2000-01-01}', ARRAY[floatrange '[2,3]']);
+         minusranges          
+------------------------------
+ {1.5@2000-01-01 00:00:00+00}
 (1 row)
 
 SELECT minusRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[1,3]']);
@@ -5053,6 +5285,12 @@ SELECT atTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp
  t@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT atTimestamp(tbool '{t@2000-01-01, t@2000-01-03}', timestamp '2000-01-02');
+ attimestamp 
+-------------
+ 
+(1 row)
+
 SELECT atTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
        attimestamp        
 --------------------------
@@ -5081,6 +5319,12 @@ SELECT atTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp 
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT atTimestamp(tint '{1@2000-01-01, 1@2000-01-03}', timestamp '2000-01-02');
+ attimestamp 
+-------------
+ 
 (1 row)
 
 SELECT atTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
@@ -5113,6 +5357,12 @@ SELECT atTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ti
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT atTimestamp(tfloat '{1.5@2000-01-01, 1.5@2000-01-03}', timestamp '2000-01-02');
+ attimestamp 
+-------------
+ 
+(1 row)
+
 SELECT atTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
         attimestamp         
 ----------------------------
@@ -5141,6 +5391,12 @@ SELECT atTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', tim
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT atTimestamp(ttext '{AAA@2000-01-01, AAA@2000-01-03}', timestamp '2000-01-02');
+ attimestamp 
+-------------
+ 
 (1 row)
 
 SELECT atTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
@@ -7173,6 +7429,18 @@ SELECT tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}' < tint '{1@2000-01-01, 
  f
 (1 row)
 
+SELECT tint '{1@2000-01-01, 2@2000-01-02}' < tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}' < tint '{1@2000-01-01, 2@2000-01-02}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]' < tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}';
  ?column? 
 ----------
@@ -7203,6 +7471,18 @@ SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]' < tint '[1@2000-01-01, 
  f
 (1 row)
 
+SELECT tint '[1@2000-01-01, 2@2000-01-02]' < tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]' < tint '[1@2000-01-01, 2@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}' < tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]';
  ?column? 
 ----------
@@ -7228,6 +7508,18 @@ SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]' < tint '{[1@2000-01-01,
 (1 row)
 
 SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}' < tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tint '{[1@2000-01-01, 2@2000-01-02]}' < tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}' < tint '{[1@2000-01-01, 2@2000-01-02]}';
  ?column? 
 ----------
  f

@@ -54,6 +54,8 @@ contains_gbox_gbox(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	if (FLAGS_GET_GEODETIC(box1->flags) != FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
 	PG_RETURN_BOOL(contains_gbox_gbox_internal(box1, box2));
 }
 
@@ -72,6 +74,8 @@ contained_gbox_gbox(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	if (FLAGS_GET_GEODETIC(box1->flags) != FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
 	PG_RETURN_BOOL(contained_gbox_gbox_internal(box1, box2));
 }
 
@@ -103,6 +107,8 @@ overlaps_gbox_gbox(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	if (FLAGS_GET_GEODETIC(box1->flags) != FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
 	PG_RETURN_BOOL(overlaps_gbox_gbox_internal(box1, box2));
 }
 
@@ -134,6 +140,8 @@ same_gbox_gbox(PG_FUNCTION_ARGS)
 {
 	GBOX *box1 = PG_GETARG_GBOX_P(0);
 	GBOX *box2 = PG_GETARG_GBOX_P(1);
+	if (FLAGS_GET_GEODETIC(box1->flags) != FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
 	PG_RETURN_BOOL(same_gbox_gbox_internal(box1, box2));
 }
 

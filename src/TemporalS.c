@@ -2084,63 +2084,6 @@ temporals_intersects_periodset(TemporalS *ts, PeriodSet *ps)
 	return false;
 }
 
-/* Does the two temporal values intersect on the time dimension? */
-
-bool
-temporals_intersects_temporalinst(TemporalS *ts, TemporalInst *inst)
-{
-	return temporals_intersects_timestamp(ts, inst->t);
-}
-
-bool
-temporals_intersects_temporali(TemporalS *ts, TemporalI *ti)
-{
-	for (int i = 0; i < ti->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (temporals_intersects_timestamp(ts, inst->t))
-			return true;
-	}
-	return false;
-}
-
-bool
-temporals_intersects_temporalseq(TemporalS *ts, TemporalSeq *seq)
-{
-	return temporals_intersects_period(ts, &seq->period);
-}
-
-/* Does the temporal values intersect on the time dimension? */
-
-bool
-temporals_intersects_temporals(TemporalS *ts1, TemporalS *ts2)
-{
-	/* Test whether the bounding timespan of the two temporal values overlap */
-	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
-	if (!overlaps_period_period_internal(&p1, &p2))
-		return false;
-
-	int i = 0, j = 0;
-	while (i < ts1->count && j < ts2->count)
-	{
-		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-		if (overlaps_period_period_internal(&seq1->period, &seq2->period))
-			return true;
-		if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0)
-		{
-			i++; j++;
-		}
-		else if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) < 0)
-			i++;
-		else 
-			j++;
-	}
-	return false;
-}
-
 /*****************************************************************************
  * Local aggregate functions 
  *****************************************************************************/

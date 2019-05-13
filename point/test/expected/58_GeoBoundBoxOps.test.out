@@ -1,3 +1,9 @@
+SELECT geometry 'Point empty'::gbox;
+ gbox 
+------
+ 
+(1 row)
+
 SELECT geometry 'Point(1 1)'::gbox;
              gbox             
 ------------------------------
@@ -44,6 +50,18 @@ SELECT periodset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::gbox;
                    gbox                    
 -------------------------------------------
  GBOX M((-inf,-inf,0),(inf,inf,2.592e+11))
+(1 row)
+
+SELECT gbox(geometry 'Point(1 1)', timestamptz '2000-01-01');
+          gbox           
+-------------------------
+ GBOX M((1,1,0),(1,1,0))
+(1 row)
+
+SELECT gbox(geometry 'Point(1 1)', period '[2000-01-01, 2000-01-02]');
+              gbox              
+--------------------------------
+ GBOX M((1,1,0),(1,1,8.64e+10))
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01'::gbox;
@@ -245,6 +263,39 @@ SELECT expandTemporal(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
  GEODBOX M((0.99726093,0.017449748,0.017452406,-8.64e+10),(0.99969542,0.052264232,0.052335956,4.32e+11))
 (1 row)
 
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' && gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' @> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <@ gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' ~= gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+/* Errors */
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' && gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ERROR:  Cannot compare geodetic and non-geodetic boxes
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' @> gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ERROR:  Cannot compare geodetic and non-geodetic boxes
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <@ gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ERROR:  Cannot compare geodetic and non-geodetic boxes
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' ~= gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ERROR:  Cannot compare geodetic and non-geodetic boxes
 SELECT geometry 'Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------

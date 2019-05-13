@@ -1,10 +1,28 @@
+select intrange 'empty' << 5;
+ ?column? 
+----------
+ f
+(1 row)
+
 select intrange '[3,5)' << 5;
  ?column? 
 ----------
  t
 (1 row)
 
+select 5 << intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5 << intrange '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+select intrange 'empty' >> 5;
  ?column? 
 ----------
  f
@@ -16,10 +34,22 @@ select intrange '[3,5)' >> 5;
  f
 (1 row)
 
+select 5 >> intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5 >> intrange '[3,5)';
  ?column? 
 ----------
  t
+(1 row)
+
+select intrange 'empty' &< 5;
+ ?column? 
+----------
+ f
 (1 row)
 
 select intrange '[3,5)' &< 5;
@@ -28,7 +58,19 @@ select intrange '[3,5)' &< 5;
  t
 (1 row)
 
+select 5 &< intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5 &< intrange '[3,5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+select intrange 'empty' &> 5;
  ?column? 
 ----------
  f
@@ -40,10 +82,22 @@ select intrange '[3,5)' &> 5;
  f
 (1 row)
 
+select 5 &> intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5 &> intrange '[3,5)';
  ?column? 
 ----------
  t
+(1 row)
+
+select intrange 'empty' -|- 5;
+ ?column? 
+----------
+ f
 (1 row)
 
 select intrange '[3,5)' -|- 5;
@@ -52,13 +106,31 @@ select intrange '[3,5)' -|- 5;
  t
 (1 row)
 
+select 5 -|- intrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5 -|- intrange '[3,5)';
  ?column? 
 ----------
  t
 (1 row)
 
+select floatrange 'empty' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
 select floatrange '[3.5, 5.5]' << 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 << floatrange 'empty';
  ?column? 
 ----------
  f
@@ -70,7 +142,19 @@ select 5.5 << floatrange '[3.5, 5.5]';
  f
 (1 row)
 
+select floatrange 'empty' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
 select floatrange '[3.5, 5.5]' >> 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 >> floatrange 'empty';
  ?column? 
 ----------
  f
@@ -82,13 +166,31 @@ select 5.5 >> floatrange '[3.5, 5.5]';
  f
 (1 row)
 
+select floatrange 'empty' &< 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
 select floatrange '[3.5, 5.5]' &< 5.5;
  ?column? 
 ----------
  t
 (1 row)
 
+select 5.5 &< floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5.5 &< floatrange '[3.5, 5.5]';
+ ?column? 
+----------
+ f
+(1 row)
+
+select floatrange 'empty' &> 5.5;
  ?column? 
 ----------
  f
@@ -100,13 +202,31 @@ select floatrange '[3.5, 5.5]' &> 5.5;
  f
 (1 row)
 
+select 5.5 &> floatrange 'empty';
+ ?column? 
+----------
+ f
+(1 row)
+
 select 5.5 &> floatrange '[3.5, 5.5]';
  ?column? 
 ----------
  t
 (1 row)
 
+select floatrange 'empty' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
 select floatrange '[3.5, 5.5]' -|- 5.5;
+ ?column? 
+----------
+ f
+(1 row)
+
+select 5.5 -|- floatrange 'empty';
  ?column? 
 ----------
  f

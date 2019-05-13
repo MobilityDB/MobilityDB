@@ -26,6 +26,7 @@
 #include <access/htup_details.h>
 #include <access/spgist.h>
 #include <access/stratnum.h>
+#include <assert.h>
 #include <catalog/namespace.h>
 #include <catalog/pg_operator.h>
 #include <catalog/pg_type.h>
@@ -430,7 +431,7 @@ extern RangeType **rangearr_normalize(RangeType **ranges, int *count);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);
 
-extern RangeType *numrange_to_floatrange_internal(RangeType *range);
+extern RangeType *numrange_to_floatrange(RangeType *range);
 
 extern Datum range_left_elem(PG_FUNCTION_ARGS);
 extern Datum range_overleft_elem(PG_FUNCTION_ARGS);
@@ -489,7 +490,6 @@ extern Datum gbox_constructor(PG_FUNCTION_ARGS);
 extern Datum gbox_constructor3dm(PG_FUNCTION_ARGS);
 extern Datum geodbox_constructor(PG_FUNCTION_ARGS);
 
-extern int gbox_contains(const GBOX *g1, const GBOX *g2);
 extern int gbox_cmp_internal(const GBOX *g1, const GBOX *g2);
 
 /*****************************************************************************
@@ -591,14 +591,12 @@ extern Datum temporal_intersects_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
-extern Datum temporal_intersects_temporal(PG_FUNCTION_ARGS);
  
 extern Temporal *temporal_at_min_internal(Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
 extern void temporal_timespan_internal(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void temporal_bbox(void *box, const Temporal *temp);
-extern bool temporal_intersects_temporal_internal(Temporal *temp1, Temporal *temp2);
 	
 extern Datum temporal_lt(PG_FUNCTION_ARGS);
 extern Datum temporal_le(PG_FUNCTION_ARGS);
@@ -688,7 +686,6 @@ extern bool temporalinst_intersects_timestamp(TemporalInst *inst, TimestampTz t)
 extern bool temporalinst_intersects_timestampset(TemporalInst *inst, TimestampSet *ts);
 extern bool temporalinst_intersects_period(TemporalInst *inst, Period *p);
 extern bool temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps);
-extern bool temporalinst_intersects_temporalinst(TemporalInst *inst1, TemporalInst *inst2);
 
 /* Functions for defining B-tree index */
 
@@ -792,8 +789,6 @@ extern bool temporali_intersects_timestamp(TemporalI *ti, TimestampTz t);
 extern bool temporali_intersects_timestampset(TemporalI *ti, TimestampSet *ts);
 extern bool temporali_intersects_period(TemporalI *ti, Period *p);
 extern bool temporali_intersects_periodset(TemporalI *ti, PeriodSet *ps);
-extern bool temporali_intersects_temporalinst(TemporalI *ti, TemporalInst *inst);
-extern bool temporali_intersects_temporali(TemporalI *ti1, TemporalI *ti2);
 
 /* Local aggregate functions */
 
@@ -958,9 +953,6 @@ extern bool temporalseq_intersects_timestamp(TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_intersects_timestampset(TemporalSeq *seq, TimestampSet *t);
 extern bool temporalseq_intersects_period(TemporalSeq *seq, Period *p);
 extern bool temporalseq_intersects_periodset(TemporalSeq *seq, PeriodSet *ps);
-extern bool temporalseq_intersects_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2);
-extern bool temporalseq_intersects_temporalinst(TemporalSeq *seq, TemporalInst *inst);
-extern bool temporalseq_intersects_temporali(TemporalSeq *seq, TemporalI *ti);
 
 /* Local aggregate functions */
 
@@ -1109,10 +1101,6 @@ extern bool temporals_intersects_timestamp(TemporalS *ts, TimestampTz t);
 extern bool temporals_intersects_timestampset(TemporalS *ts, TimestampSet *ts1);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
 extern bool temporals_intersects_periodset(TemporalS *ts, PeriodSet *ps);
-extern bool temporals_intersects_temporalinst(TemporalS *ts, TemporalInst *inst);
-extern bool temporals_intersects_temporali(TemporalS *ts, TemporalI *ti);
-extern bool temporals_intersects_temporalseq(TemporalS *ts, TemporalSeq *seq);
-extern bool temporals_intersects_temporals(TemporalS *ts1, TemporalS *ts2);
 
 /* Local aggregate functions */
 

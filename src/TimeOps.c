@@ -129,17 +129,10 @@ contains_period_timestamp(PG_FUNCTION_ARGS)
 bool
 contains_period_timestampset_internal(Period *p, TimestampSet *ts)
 {
-	/* Bounding box test */
+	/* It is sufficient to do a bounding box test */
 	Period *p1 = timestampset_bbox(ts);
 	if (!contains_period_period_internal(p, p1))
 		return false;
-
-	for (int i = 0; i < ts->count; i++)
-	{
-		TimestampTz t = timestampset_time_n(ts, i);
-		if (!contains_period_timestamp_internal(p, t))
-			return false;
-	}
 	return true;
 }
 
@@ -224,11 +217,7 @@ contains_periodset_timestampset_internal(PeriodSet *ps, TimestampSet *ts)
 		else
 		{
 			if (timestamp_cmp_internal(t, p->upper) > 0)
-			{
 				i++;
-				if (i == ps->count)
-					return false;
-			}
 			else
 				return false;
 		}
@@ -308,18 +297,29 @@ contains_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	{
 		p1 = periodset_per_n(ps1, i);
 		p2 = periodset_per_n(ps2, j);
-		if (contains_period_period_internal(p1, p2))
-		{
-			i++; j++;
-			if (j == ps2->count)
-				return true;
-		}
-		else if (timestamp_cmp_internal(p1->lower, p2->lower) < 0)
+		if (before_period_period_internal(p1, p2))
 			i++;
-		else
+		else if (before_period_period_internal(p2, p1))
 			return false;
+		else
+		{
+			/* p1 and p2 overlap */
+			if (contains_period_period_internal(p1, p2))
+			{
+				if (timestamp_cmp_internal(p1->upper, p2->upper) == 0)
+				{
+					i++; j++;
+				}
+				else
+					j++;
+			}
+			else
+				return false;
+		}
 	}
-	return false;
+	/* if j == ps2->count every period in p2 is contained in a period of p1 
+	   but p1 may have additional periods */
+	return (j == ps2->count);
 }
 
 PG_FUNCTION_INFO_V1(contains_periodset_periodset);
@@ -2758,13 +2758,7 @@ union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 		periods[k++] = periodset_per_n(ps1, i++);
 	while (j < ps2->count)
 		periods[k++] = periodset_per_n(ps2, j++);
-
-	if (k == 0)
-	{
-		pfree(periods);
-		return NULL;
-	}
-
+	/* k is never equal to 0 since the periodsets are not empty*/
 	PeriodSet *result = periodset_from_periodarr_internal(periods, k, true);
 
 	pfree(periods);
@@ -2798,7 +2792,7 @@ PGDLLEXPORT Datum
 intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
 {
 	TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(0);
+	TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
 	if (timestamp_cmp_internal(t1, t2) != 0)
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(t1);
@@ -2927,12 +2921,7 @@ intersection_timestampset_period_internal(TimestampSet *ts, Period *p)
 		if (contains_period_timestamp_internal(p, t))
 			times[k++] = t;
 	}
-	if (k == 0)
-	{
-		pfree(times);
-		return NULL;
-	}
-
+	/* k != 0 due to the bounding box text above */
 	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
 	pfree(times);
 	return result;

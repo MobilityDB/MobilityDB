@@ -324,50 +324,6 @@ geodbox_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
-/*
- * Does the first box contains the second one?
- */
-int 
-gbox_contains(const GBOX *g1, const GBOX *g2)
-{
-	/* Make sure our boxes are consistent */
-	if ( FLAGS_GET_GEODETIC(g1->flags) != FLAGS_GET_GEODETIC(g2->flags) )
-		elog(ERROR, "gbox_contains: cannot compare geodetic and non-geodetic boxes");
-
-	/* Check X/Y first */
-	if ( ( g2->xmin < g1->xmin ) || ( g2->xmax > g1->xmax ) ||
-		 ( g2->ymin < g1->ymin ) || ( g2->ymax > g1->ymax ) )
-		return LW_FALSE;
-
-	/* Deal with the geodetic case special: we only compare the geodetic boxes (x/y/z) */
-	/* Never the M dimension */
-	if ( FLAGS_GET_GEODETIC(g1->flags) && FLAGS_GET_GEODETIC(g2->flags) )
-	{
-		if ( g2->zmin < g1->zmin || g2->zmax > g1->zmax )
-			return LW_FALSE;
-		else
-			return LW_TRUE;
-	}
-
-	/* If both geodetic or both have Z, check Z */
-	if ( FLAGS_GET_Z(g1->flags) && FLAGS_GET_Z(g2->flags) )
-	{
-		if ( g2->zmin < g1->zmin || g2->zmax > g1->zmax )
-			return LW_FALSE;
-	}
-
-	/* If both have M, check M */
-	if ( FLAGS_GET_M(g1->flags) && FLAGS_GET_M(g2->flags) )
-	{
-		if ( g2->mmin < g1->mmin || g2->mmax > g1->mmax )
-			return LW_FALSE;
-	}
-
-	return LW_TRUE;
-}
-
 /*
  * Compare two boxes
  */

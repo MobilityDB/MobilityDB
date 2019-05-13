@@ -1,5 +1,6 @@
 ﻿-------------------------------------------------------------------------------
 
+SELECT geometry 'Point empty'::gbox;
 SELECT geometry 'Point(1 1)'::gbox;
 SELECT geometry 'Point(1 1 1)'::gbox;
 SELECT geography 'Point(1 1)'::gbox;
@@ -8,6 +9,8 @@ SELECT timestamptz '2000-01-01'::gbox;
 SELECT timestampset '{2000-01-01, 2000-01-02}'::gbox;
 SELECT period '[2000-01-01, 2000-01-02]'::gbox;
 SELECT periodset '{[2000-01-01, 2000-01-02],[2000-01-03, 2000-01-04]}'::gbox;
+SELECT gbox(geometry 'Point(1 1)', timestamptz '2000-01-01');
+SELECT gbox(geometry 'Point(1 1)', period '[2000-01-01, 2000-01-02]');
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01'::gbox;
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::gbox;
@@ -54,6 +57,18 @@ SELECT expandTemporal(tgeogpoint 'Point(1 1)@2000-01-01', '1 day');
 SELECT expandTemporal(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '1 day');
 SELECT expandTemporal(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '1 day');
 SELECT expandTemporal(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', '1 day');
+
+-------------------------------------------------------------------------------
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' && gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' @> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <@ gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' ~= gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+/* Errors */
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' && gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' @> gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <@ gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' ~= gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 
 -------------------------------------------------------------------------------
 

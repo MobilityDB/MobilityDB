@@ -440,7 +440,7 @@ tnumberinst_at_range(TemporalInst *inst, RangeType *range)
 {
 	/* Operations on range types require that they must be of the same type */
 	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
-	RangeType *range1 = numrange_to_floatrange_internal(range);
+	RangeType *range1 = numrange_to_floatrange(range);
 	TypeCacheEntry* typcache = lookup_type_cache(range1->rangetypid, TYPECACHE_RANGE_INFO);
 	bool contains = range_contains_elem_internal(typcache, range1, d);
 	pfree(range1);
@@ -456,7 +456,7 @@ tnumberinst_minus_range(TemporalInst *inst, RangeType *range)
 {
 	/* Operations on range types require that they must be of the same type */
 	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
-	RangeType *range1 = numrange_to_floatrange_internal(range);
+	RangeType *range1 = numrange_to_floatrange(range);
 	TypeCacheEntry* typcache = lookup_type_cache(range1->rangetypid, TYPECACHE_RANGE_INFO);
 	bool contains = range_contains_elem_internal(typcache, range1, d);
 	pfree(range1);
@@ -476,7 +476,7 @@ tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count)
 	bool contains = false;
 	for (int i = 0; i < count; i++)
 	{
-		RangeType *range = numrange_to_floatrange_internal(normranges[i]);
+		RangeType *range = numrange_to_floatrange(normranges[i]);
 		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, 
 			TYPECACHE_RANGE_INFO);
 		contains = range_contains_elem_internal(typcache, range, d);
@@ -498,7 +498,7 @@ tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count)
 	bool contains = false;
 	for (int i = 0; i < count; i++)
 	{
-		RangeType *range = numrange_to_floatrange_internal(normranges[i]);
+		RangeType *range = numrange_to_floatrange(normranges[i]);
 		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, 
 			TYPECACHE_RANGE_INFO);
 		contains = range_contains_elem_internal(typcache, range, d);
@@ -652,14 +652,6 @@ temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 		if (contains_period_timestamp_internal(periodset_per_n(ps, i), inst->t))
 			return true;
 	return false;
-}
-
-/* Does the temporal values intersect? */
-
-bool
-temporalinst_intersects_temporalinst(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return timestamp_cmp_internal(inst1->t, inst2->t) == 0;
 }
 
 /*****************************************************************************

@@ -2048,8 +2048,7 @@ temporal_at_min(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = temporal_at_min_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
+	/* Never returns null event if min is at an exclusive bound */
 	PG_RETURN_POINTER(result);
 }
 
@@ -2100,8 +2099,7 @@ temporal_at_max(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
+	/* Never returns null event if max is at an exclusive bound */
 	PG_RETURN_POINTER(result);
 }
 
@@ -2509,84 +2507,6 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
 			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ps, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/* Does the temporal values intersect on the time dimension? */
-
-bool
-temporal_intersects_temporal_internal(Temporal *temp1, Temporal *temp2)
-{
-	bool result = false;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
-		result = temporalinst_intersects_temporalinst(
-			(TemporalInst *)temp1, (TemporalInst *)temp2);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
-		result = temporali_intersects_temporalinst(
-			(TemporalI *)temp2, (TemporalInst *)temp1);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
-		result = temporalseq_intersects_temporalinst(
-			(TemporalSeq *)temp2, (TemporalInst *)temp1);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
-		result = temporals_intersects_temporalinst(
-			(TemporalS *)temp2, (TemporalInst *)temp1);
-	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
-		result = temporali_intersects_temporalinst(
-			(TemporalI *)temp1, (TemporalInst *)temp2);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
-		result = temporali_intersects_temporali(
-			(TemporalI *)temp1, (TemporalI *)temp2);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
-		result = temporalseq_intersects_temporali(
-			(TemporalSeq *)temp2, (TemporalI *)temp1);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
-		result = temporals_intersects_temporali(
-			(TemporalS *)temp2, (TemporalI *)temp1);
-	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
-		result = temporalseq_intersects_temporalinst(
-			(TemporalSeq *)temp1, (TemporalInst *)temp2);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
-		result = temporalseq_intersects_temporali(
-			(TemporalSeq *)temp1, (TemporalI *)temp2);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ) 
-		result = temporalseq_intersects_temporalseq(
-			(TemporalSeq *)temp1, (TemporalSeq *)temp2);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
-		result = temporals_intersects_temporalseq(
-			(TemporalS *)temp2, (TemporalSeq *)temp1);
-	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
-		result = temporals_intersects_temporalinst(
-			(TemporalS *)temp1, (TemporalInst *)temp2);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
-		result = temporals_intersects_temporali(
-			(TemporalS *)temp1, (TemporalI *)temp2);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
-		result = temporals_intersects_temporalseq(
-			(TemporalS *)temp1, (TemporalSeq *)temp2);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
-		result = temporals_intersects_temporals(
-			(TemporalS *)temp1, (TemporalS *)temp2);
-
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
-
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(temporal_intersects_temporal);
-
-PGDLLEXPORT Datum
-temporal_intersects_temporal(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool result = temporal_intersects_temporal_internal(temp1, temp2);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
 }
 

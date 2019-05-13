@@ -78,6 +78,8 @@ CREATE FUNCTION box(tfloat)
 CREATE CAST (int AS box) WITH FUNCTION box(int) AS IMPLICIT;
 CREATE CAST (float AS box) WITH FUNCTION box(float) AS IMPLICIT;
 CREATE CAST (numeric AS box) WITH FUNCTION box(numeric) AS IMPLICIT;
+-- We cannot make the castings from range to box implicit since this produces
+-- an ambiguity with the implicit castings to anyrange TODO !!!
 CREATE CAST (intrange AS box) WITH FUNCTION box(intrange) AS IMPLICIT;
 CREATE CAST (floatrange AS box) WITH FUNCTION box(floatrange) AS IMPLICIT;
 CREATE CAST (timestamptz AS box) WITH FUNCTION box(timestamptz) AS IMPLICIT;

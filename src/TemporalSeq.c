@@ -3365,32 +3365,6 @@ temporalseq_intersects_periodset(TemporalSeq *seq, PeriodSet *ps)
 	return false;
 }
 
-/* Does the two temporal values intersect on the time dimension? */
-
-bool
-temporalseq_intersects_temporalinst(TemporalSeq *seq, TemporalInst *inst)
-{
-	return contains_period_timestamp_internal(&seq->period, inst->t);
-}
-
-bool
-temporalseq_intersects_temporali(TemporalSeq *seq, TemporalI *ti)
-{
-	for (int i = 0; i < ti->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (temporalseq_intersects_timestamp(seq, inst->t))
-			return true;
-	};
-	return false;
-}
-
-bool
-temporalseq_intersects_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2)
-{
-	return overlaps_period_period_internal(&seq1->period, &seq2->period);
-}
-
 /*****************************************************************************
  * Local aggregate functions 
  *****************************************************************************/

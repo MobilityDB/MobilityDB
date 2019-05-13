@@ -1,3 +1,20 @@
+/* Errors */
+SELECT geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
+ERROR:  Only point geometries accepted
+SELECT geometry 'srid=5676;Point(2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
+ERROR:  The geometries must be in the same SRID
+SELECT geometry 'Point(2 2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Linestring(1 1,2 2)';
+ERROR:  Only point geometries accepted
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'srid=5676;Point(2 2)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Point(2 2 2)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' <-> tgeompoint 'Point(2 2)@2000-01-01';
                 ?column?                
 ----------------------------------------
@@ -11,6 +28,12 @@ SELECT geometry 'Point(1 1)' <-> tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@
 (1 row)
 
 SELECT geometry 'Point(1 1)' <-> tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]';
+                                                  ?column?                                                  
+------------------------------------------------------------------------------------------------------------
+ [1.4142135623731@2000-01-01 00:00:00+00, 0@2000-01-02 00:00:00+00, 1.4142135623731@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT geometry 'Point(2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
                                                   ?column?                                                  
 ------------------------------------------------------------------------------------------------------------
  [1.4142135623731@2000-01-01 00:00:00+00, 0@2000-01-02 00:00:00+00, 1.4142135623731@2000-01-03 00:00:00+00]

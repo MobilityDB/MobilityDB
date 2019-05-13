@@ -1470,26 +1470,6 @@ temporali_intersects_periodset(TemporalI *ti, PeriodSet *ps)
 	return false;
 }
 
-/* Does the two temporal values intersect on the time dimension? */
-
-bool
-temporali_intersects_temporalinst(TemporalI *ti, TemporalInst *inst)
-{
-	return temporali_intersects_timestamp(ti, inst->t);
-}
-
-bool
-temporali_intersects_temporali(TemporalI *ti1, TemporalI *ti2)
-{
-	for (int i = 0; i < ti2->count; i++)
-	{
-		TemporalInst *inst = temporali_inst_n(ti2, i);
-		if (temporali_intersects_timestamp(ti1, inst->t)) 
-			return true;
-	}
-	return false;
-}
-
 /*****************************************************************************
  * Local aggregate functions 
  *****************************************************************************/

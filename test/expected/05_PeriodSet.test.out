@@ -8,6 +8,12 @@ SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-
 ERROR:  Invalid value for period set
 SELECT periodset('{}'::period[]);
 ERROR:  A period set must have at least one period
+SELECT periodset(timestamptz '2000-01-01');
+                     periodset                      
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]}
+(1 row)
+
 SELECT periodset(timestampset '{2000-01-01,2000-01-02}');
                                               periodset                                               
 ------------------------------------------------------------------------------------------------------
@@ -18,6 +24,12 @@ SELECT periodset(period '[2000-01-01,2000-01-02]');
                      periodset                      
 ----------------------------------------------------
  {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT timestamptz '2000-01-01'::periodset;
+                     periodset                      
+----------------------------------------------------
+ {[2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]}
 (1 row)
 
 SELECT timestampset '{2000-01-01,2000-01-02}'::periodset;
@@ -459,6 +471,12 @@ SELECT timestampN(periodset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2
 (1 row)
 
 SELECT timestampN(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}', 0);
+ timestampn 
+------------
+ 
+(1 row)
+
+SELECT timestampN(periodset '{[2000-01-01,2000-01-01],[2000-01-02,2000-01-02]}',3);
  timestampn 
 ------------
  

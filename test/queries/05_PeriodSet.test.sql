@@ -16,9 +16,11 @@ SELECT periodset('{}'::period[]);
 -- Casting
 -------------------------------------------------------------------------------
 
+SELECT periodset(timestamptz '2000-01-01');
 SELECT periodset(timestampset '{2000-01-01,2000-01-02}');
 SELECT periodset(period '[2000-01-01,2000-01-02]');
 
+SELECT timestamptz '2000-01-01'::periodset;
 SELECT timestampset '{2000-01-01,2000-01-02}'::periodset;
 SELECT period '[2000-01-01,2000-01-02]'::periodset;
 
@@ -109,6 +111,7 @@ SELECT timestampN(periodset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2
 SELECT timestampN(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06)}', 3);
 SELECT timestampN(periodset '{(2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}', 4);
 SELECT timestampN(periodset '{[2000-01-01,2000-01-02),(2000-01-03,2000-01-04),(2000-01-05,2000-01-06]}', 0);
+SELECT timestampN(periodset '{[2000-01-01,2000-01-01],[2000-01-02,2000-01-02]}',3);
 
 SELECT timestamps(periodset '{[2000-01-01,2000-01-01]}');
 SELECT timestamps(periodset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}');

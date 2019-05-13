@@ -260,7 +260,7 @@ SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps - t2.ps IS N
 SELECT count(*) FROM tbl_timestamptz t1, tbl_timestamptz t2 WHERE t1.t * t2.t IS NOT NULL;
  count 
 -------
- 10000
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_timestamptz, tbl_timestampset WHERE t * ts IS NOT NULL;
