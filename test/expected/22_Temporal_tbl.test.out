@@ -1,3 +1,47 @@
+COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY 100
+COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY 100
+COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tbool_tmp;
+NOTICE:  table "tbl_tbool_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tint_tmp;
+NOTICE:  table "tbl_tint_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tfloat_tmp;
+NOTICE:  table "tbl_tfloat_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_ttext_tmp;
+NOTICE:  table "tbl_ttext_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY 100
+COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY 100
+COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY 100
+DROP TABLE tbl_tbool_tmp;
+DROP TABLE
+DROP TABLE tbl_tint_tmp;
+DROP TABLE
+DROP TABLE tbl_tfloat_tmp;
+DROP TABLE
+DROP TABLE tbl_ttext_tmp;
+DROP TABLE
 SELECT DISTINCT temporalType(tboolinst(inst)) FROM tbl_tboolinst;
  temporaltype 
 --------------

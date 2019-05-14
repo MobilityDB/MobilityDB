@@ -186,6 +186,12 @@ SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
  
 (1 row)
 
+SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ contains 
+----------
+ 
+(1 row)
+
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  contains 
 ----------
@@ -195,25 +201,25 @@ SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-
 SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -231,13 +237,13 @@ SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -255,31 +261,30 @@ SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
@@ -289,25 +294,25 @@ SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2
 SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -325,13 +330,13 @@ SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -349,31 +354,47 @@ SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  contains 
 ----------
- f
+ t
 (1 row)
 
 SELECT contains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT contains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "contains" statement 1
+SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "contains" statement 1
+SELECT contains(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT contains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "contains" statement 1
+SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "contains" statement 1
+SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT containsproperly(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
 ------------------
@@ -562,6 +583,12 @@ SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000
  
 (1 row)
 
+SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ containsproperly 
+------------------
+ 
+(1 row)
+
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
 ------------------
@@ -571,25 +598,25 @@ SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 
 SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -607,13 +634,13 @@ SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -631,31 +658,30 @@ SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "containsproperly" statement 1
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
@@ -665,25 +691,25 @@ SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(
 SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -701,13 +727,13 @@ SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -725,31 +751,47 @@ SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  containsproperly 
 ------------------
- f
+ t
 (1 row)
 
 SELECT containsproperly(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT containsproperly(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "containsproperly" statement 1
+SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "containsproperly" statement 1
+SELECT containsproperly(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT containsproperly(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "containsproperly" statement 1
+SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "containsproperly" statement 1
+SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT covers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
 --------
@@ -1130,6 +1172,12 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
  
 (1 row)
 
+SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ covers 
+--------
+ 
+(1 row)
+
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
 --------
@@ -1139,25 +1187,25 @@ SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01
 SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -1175,13 +1223,13 @@ SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -1199,31 +1247,30 @@ SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
@@ -1233,25 +1280,25 @@ SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@200
 SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -1269,13 +1316,13 @@ SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -1293,31 +1340,30 @@ SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
 --------
@@ -1327,25 +1373,25 @@ SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)
 SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
@@ -1369,7 +1415,7 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
@@ -1387,13 +1433,13 @@ SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02,
 SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
@@ -1405,7 +1451,7 @@ SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02,
 SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
@@ -1423,25 +1469,25 @@ SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 
 SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
@@ -1465,7 +1511,7 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
@@ -1483,13 +1529,13 @@ SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@200
 SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
@@ -1501,7 +1547,7 @@ SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@200
 SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
@@ -1510,6 +1556,39 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
  f
 (1 row)
 
+/* Errors */
+SELECT covers(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT covers(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT covers(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT covers(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "covers" statement 1
+SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT coveredby(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
 -----------
@@ -1890,6 +1969,12 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
  
 (1 row)
 
+SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ coveredby 
+-----------
+ 
+(1 row)
+
 SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
 -----------
@@ -1899,19 +1984,19 @@ SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000
 SELECT coveredby(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -1935,7 +2020,7 @@ SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -1959,7 +2044,7 @@ SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
@@ -1983,7 +2068,6 @@ SELECT coveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 SELECT coveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
@@ -1993,19 +2077,19 @@ SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@
 SELECT coveredby(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -2029,7 +2113,7 @@ SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -2053,7 +2137,7 @@ SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
@@ -2077,7 +2161,6 @@ SELECT coveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
 SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
 -----------
@@ -2087,19 +2170,19 @@ SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1
 SELECT coveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
@@ -2147,7 +2230,7 @@ SELECT coveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-
 SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
@@ -2183,19 +2266,19 @@ SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(1
 SELECT coveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
@@ -2243,7 +2326,7 @@ SELECT coveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@
 SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  coveredby 
 -----------
- f
+ t
 (1 row)
 
 SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
@@ -2270,6 +2353,39 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
  f
 (1 row)
 
+/* Errors */
+SELECT coveredby(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT coveredby(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT coveredby(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "coveredby" statement 1
+SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT crosses(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  crosses 
 ---------
@@ -2454,6 +2570,12 @@ SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  
 (1 row)
 
+SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ crosses 
+---------
+ 
+(1 row)
+
 SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  crosses 
 ---------
@@ -2547,7 +2669,6 @@ SELECT crosses(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT crosses(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "crosses" statement 1
 SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  crosses 
 ---------
@@ -2641,7 +2762,23 @@ SELECT crosses(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 SELECT crosses(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT crosses(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "crosses" statement 1
+SELECT crosses(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "crosses" statement 1
+SELECT crosses(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT crosses(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "crosses" statement 1
+SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "crosses" statement 1
+SELECT crosses(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT disjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  disjoint 
 ----------
@@ -2817,6 +2954,12 @@ SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 (1 row)
 
 SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ disjoint 
+----------
+ 
+(1 row)
+
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
  disjoint 
 ----------
  
@@ -3008,6 +3151,19 @@ SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+SELECT disjoint(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT equals(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
@@ -3200,6 +3356,12 @@ SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  
 (1 row)
 
+SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ equals 
+--------
+ 
+(1 row)
+
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
@@ -3209,25 +3371,25 @@ SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01
 SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -3245,13 +3407,13 @@ SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -3269,31 +3431,30 @@ SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "equals" statement 1
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
@@ -3303,25 +3464,25 @@ SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@200
 SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -3339,13 +3500,13 @@ SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -3363,31 +3524,47 @@ SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  equals 
 --------
- f
+ t
 (1 row)
 
 SELECT equals(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT equals(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "equals" statement 1
+SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "equals" statement 1
+SELECT equals(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT equals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "equals" statement 1
+SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "equals" statement 1
+SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT intersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
@@ -3772,6 +3949,12 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5
  
 (1 row)
 
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ intersects 
+------------
+ 
+(1 row)
+
 SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
@@ -3781,25 +3964,25 @@ SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@200
 SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -3811,25 +3994,25 @@ SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
 SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -3841,25 +4024,25 @@ SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
 SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
@@ -3877,25 +4060,25 @@ SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)
 SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -3907,25 +4090,25 @@ SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
 SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -3937,25 +4120,25 @@ SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
 SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
@@ -3973,25 +4156,25 @@ SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
@@ -4003,25 +4186,25 @@ SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
 SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
@@ -4033,25 +4216,25 @@ SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
@@ -4069,25 +4252,25 @@ SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint 'Point(
 SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
@@ -4099,25 +4282,25 @@ SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
 SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
@@ -4129,25 +4312,25 @@ SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
@@ -4156,6 +4339,39 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5
  t
 (1 row)
 
+/* Errors */
+SELECT intersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT intersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT intersects(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT intersects(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "intersects" statement 1
+SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT overlaps(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  overlaps 
 ----------
@@ -4340,6 +4556,12 @@ SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, 
  
 (1 row)
 
+SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ overlaps 
+----------
+ 
+(1 row)
+
 SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  overlaps 
 ----------
@@ -4433,7 +4655,6 @@ SELECT overlaps(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 SELECT overlaps(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  overlaps 
 ----------
@@ -4527,7 +4748,23 @@ SELECT overlaps(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
 SELECT overlaps(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT overlaps(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "overlaps" statement 1
+SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "overlaps" statement 1
+SELECT overlaps(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "overlaps" statement 1
+SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "overlaps" statement 1
+SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT touches(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  touches 
 ---------
@@ -4712,6 +4949,12 @@ SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  
 (1 row)
 
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ touches 
+---------
+ 
+(1 row)
+
 SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  touches 
 ---------
@@ -4805,7 +5048,6 @@ SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
 ---------
@@ -4899,7 +5141,23 @@ SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
 SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT touches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "touches" statement 1
+SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "touches" statement 1
+SELECT touches(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT touches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "touches" statement 1
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "touches" statement 1
+SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT within(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  within 
 --------
@@ -5088,6 +5346,12 @@ SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  
 (1 row)
 
+SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ within 
+--------
+ 
+(1 row)
+
 SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
  within 
 --------
@@ -5097,25 +5361,25 @@ SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01
 SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Point(1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
@@ -5133,13 +5397,13 @@ SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -5157,31 +5421,30 @@ SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1
 SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "within" statement 1
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
@@ -5191,25 +5454,25 @@ SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@200
 SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
@@ -5227,13 +5490,13 @@ SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
@@ -5251,31 +5514,47 @@ SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  within 
 --------
- f
+ t
 (1 row)
 
 SELECT within(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT within(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
 CONTEXT:  SQL function "within" statement 1
+SELECT within(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "within" statement 1
+SELECT within(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT within(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "within" statement 1
+SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "within" statement 1
+SELECT within(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT dwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
  dwithin 
 ---------
@@ -5655,6 +5934,12 @@ SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@20
 (1 row)
 
 SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty', 2);
+ dwithin 
+---------
+ 
+(1 row)
+
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02', 2);
  dwithin 
 ---------
  
@@ -6044,6 +6329,39 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
  t
 (1 row)
 
+/* Errors */
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 2);
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The temporal points must be in the same SRID
+SELECT dwithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 2);
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The temporal points must be of the same dimensionality
+SELECT dwithin(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)', 2);
+ERROR:  The geometries must be in the same SRID
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The temporal points must be in the same SRID
+SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)', 2);
+ERROR:  The geometries must be of the same dimensionality
+CONTEXT:  SQL function "dwithin" statement 1
+SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+ERROR:  The temporal points must be of the same dimensionality
 SELECT relate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
   relate   
 -----------
@@ -6143,18 +6461,18 @@ SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
 SELECT relate(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}',  geometry 'Point(1 1)');
   relate   
 -----------
- 0FFFFF0F2
+ 0F0FFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',  geometry 'Point(1 1)');
   relate   
 -----------
- 0FFFFF1F2
+ 0F1FFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  relate 
 --------
@@ -6188,18 +6506,18 @@ SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
 SELECT relate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
   relate   
 -----------
- 0FFFFF0F2
+ 0F0FFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
   relate   
 -----------
- 0FFFFF1F2
+ 0F1FFFFF2
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
 SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  relate 
 --------
@@ -6219,6 +6537,12 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
  relate 
 --------
  
@@ -6410,6 +6734,19 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT relate(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be in the same SRID
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+ERROR:  The geometries must be in the same SRID
+SELECT relate(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be in the same SRID
+SELECT relate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The geometries must be of the same dimensionality
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
+ERROR:  The geometries must be of the same dimensionality
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  The temporal points must be of the same dimensionality
 SELECT relate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
  relate 
 --------
@@ -6585,6 +6922,12 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty', 'T*****FF*');
+ relate 
+--------
+ 
+(1 row)
+
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02', 'T*****FF*');
  relate 
 --------
  
@@ -6776,3 +7119,16 @@ SELECT relate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Poi
 SELECT relate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
 ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
 HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
+/* Errors */
+SELECT relate(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The geometries must be in the same SRID
+SELECT relate(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)', 'T*****FF*');
+ERROR:  The geometries must be in the same SRID
+SELECT relate(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The temporal points must be in the same SRID
+SELECT relate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The geometries must be of the same dimensionality
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 'T*****FF*');
+ERROR:  The geometries must be of the same dimensionality
+SELECT relate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The temporal points must be of the same dimensionality

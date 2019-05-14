@@ -42,6 +42,39 @@ debugstr(char *msg)
 	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("DEBUG: %s", msg)));
 }
 
+bool 
+temporal_duration_is_valid(int16 duration)
+{
+	if (duration == TEMPORALINST || duration == TEMPORALI || 
+		duration == TEMPORALSEQ || duration == TEMPORALS)
+		return true;
+	return false;
+}
+
+bool 
+temporal_number_is_valid(Oid type)
+{
+	if (type == INT4OID || type == FLOAT8OID)
+		return true;
+	return false;
+}
+
+bool 
+temporal_numrange_is_valid(Oid type)
+{
+	if (type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE))
+		return true;
+	return false;
+}
+
+bool 
+temporal_point_is_valid(Oid type)
+{
+	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+		return true;
+	return false;
+}
+
 /* Align to double */
 
 size_t
@@ -154,12 +187,13 @@ datum_copy(Datum value, Oid type)
 double
 datum_double(Datum d, Oid valuetypid)
 {
+	double result = 0.0;
+	assert(temporal_number_is_valid(valuetypid));
 	if (valuetypid == INT4OID)
-		return (double)(DatumGetInt32(d));
+		result = (double)(DatumGetInt32(d));
 	if (valuetypid == FLOAT8OID)
-		return DatumGetFloat8(d);
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-		errmsg("Operation not supported")));
+		result = DatumGetFloat8(d);
+	return result;
 }
 
 /*****************************************************************************
@@ -870,12 +904,13 @@ datum2_ge2(Datum l, Datum r, Oid typel, Oid typer)
 Oid
 range_oid_from_base(Oid valuetypid)
 {
+	Oid result = 0;
+	assert(temporal_number_is_valid(valuetypid));
 	if (valuetypid == INT4OID)
-		return type_oid(T_INTRANGE);
+		result = type_oid(T_INTRANGE);
 	else if (valuetypid == FLOAT8OID)
-		return type_oid(T_FLOATRANGE);
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-		errmsg("Operation not supported")));
+		result = type_oid(T_FLOATRANGE);
+	return result;
 }
 
 Oid

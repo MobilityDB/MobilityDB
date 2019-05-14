@@ -1,4 +1,33 @@
-﻿-------------------------------------------------------------------------------
+﻿--------------------------------------------------------------------------------
+-- Send/receive functions
+-------------------------------------------------------------------------------
+
+COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
+COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+
+DROP TABLE IF EXISTS tbl_tbool_tmp;
+DROP TABLE IF EXISTS tbl_tint_tmp;
+DROP TABLE IF EXISTS tbl_tfloat_tmp;
+DROP TABLE IF EXISTS tbl_ttext_tmp;
+
+CREATE TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
+CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
+CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
+CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
+
+COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
+COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+
+DROP TABLE tbl_tbool_tmp;
+DROP TABLE tbl_tint_tmp;
+DROP TABLE tbl_tfloat_tmp;
+DROP TABLE tbl_ttext_tmp;
+
+-------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
 

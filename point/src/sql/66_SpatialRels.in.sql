@@ -47,14 +47,10 @@ CREATE FUNCTION contains(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._contains($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _contains(tgeompoint, tgeompoint)
+CREATE FUNCTION contains(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'contains_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION contains(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._contains($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * containsproperly
@@ -78,14 +74,10 @@ CREATE FUNCTION containsproperly(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._containsproperly($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _containsproperly(tgeompoint, tgeompoint)
+CREATE FUNCTION containsproperly(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'containsproperly_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION containsproperly(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._containsproperly($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 		
 /*****************************************************************************
  * covers
@@ -109,14 +101,10 @@ CREATE FUNCTION covers(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._covers($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _covers(tgeompoint, tgeompoint)
+CREATE FUNCTION covers(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'covers_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION covers(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._covers($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************/
 
@@ -138,14 +126,10 @@ CREATE FUNCTION covers(tgeogpoint, geography)
 	AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._covers($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _covers(tgeogpoint, tgeogpoint)
+CREATE FUNCTION covers(tgeogpoint, tgeogpoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'covers_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION covers(tgeogpoint, tgeogpoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._covers($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 			
 /*****************************************************************************
  * coveredby
@@ -169,14 +153,10 @@ CREATE FUNCTION coveredby(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.<@) $2 AND @extschema@._coveredby($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _coveredby(tgeompoint, tgeompoint)
+CREATE FUNCTION coveredby(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'coveredby_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION coveredby(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.<@) $2 AND @extschema@._coveredby($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************/
 
@@ -198,14 +178,10 @@ CREATE FUNCTION coveredby(tgeogpoint, geography)
 	AS 'SELECT $1 OPERATOR(@extschema@.<@) $2 AND @extschema@._coveredby($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _coveredby(tgeogpoint, tgeogpoint)
+CREATE FUNCTION coveredby(tgeogpoint, tgeogpoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'coveredby_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION coveredby(tgeogpoint, tgeogpoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.<@) $2 AND @extschema@._coveredby($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 		
 /*****************************************************************************
  * crosses
@@ -229,14 +205,10 @@ CREATE FUNCTION crosses(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._crosses($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _crosses(tgeompoint, tgeompoint)
+CREATE FUNCTION crosses(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'crosses_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION crosses(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._crosses($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * disjoint
@@ -277,14 +249,10 @@ CREATE FUNCTION equals(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._equals($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _equals(tgeompoint, tgeompoint)
+CREATE FUNCTION equals(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'equals_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION equals(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._equals($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * intersects
@@ -308,14 +276,10 @@ CREATE FUNCTION intersects(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _intersects(tgeompoint, tgeompoint)
+CREATE FUNCTION intersects(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND $1 = $2 AND @extschema@._intersects($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************/
 
@@ -337,14 +301,10 @@ CREATE FUNCTION intersects(tgeogpoint, geography)
 	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _intersects(tgeogpoint, tgeogpoint)
+CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND $1 = $2 AND @extschema@._intersects($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * overlaps
@@ -368,14 +328,10 @@ CREATE FUNCTION overlaps(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._overlaps($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _overlaps(tgeompoint, tgeompoint)
+CREATE FUNCTION overlaps(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overlaps_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION overlaps(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._overlaps($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * touches
@@ -399,14 +355,10 @@ CREATE FUNCTION touches(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _touches(tgeompoint, tgeompoint)
+CREATE FUNCTION touches(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'touches_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION touches(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * within
@@ -430,14 +382,10 @@ CREATE FUNCTION within(tgeompoint, geometry)
 	AS 'SELECT $1 OPERATOR(@extschema@.<@) $2 AND @extschema@._within($1,$2)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _within(tgeompoint, tgeompoint)
+CREATE FUNCTION within(tgeompoint, tgeompoint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'within_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION within(tgeompoint, tgeompoint)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.~=) $2 AND @extschema@._within($1,$2)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * dwithin
@@ -463,15 +411,10 @@ CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
 	AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _dwithin(tgeompoint, tgeompoint, dist float8)
+CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2,$3) 
-	AND @extschema@._dwithin($1, $2, $3)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************/
 
@@ -495,15 +438,10 @@ CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
 	AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
-CREATE FUNCTION _dwithin(tgeogpoint, tgeogpoint, dist float8)
+CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
-	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2,$3) 
-	AND @extschema@._dwithin($1, $2, $3)'
-	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 /*****************************************************************************
  * relate (2 arguments)
@@ -513,7 +451,6 @@ CREATE FUNCTION relate(geometry, tgeompoint)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'relate_geo_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION relate(tgeompoint, geometry)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'relate_tpoint_geo'
@@ -531,7 +468,6 @@ CREATE FUNCTION relate(geometry, tgeompoint, pattern text)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'relate_pattern_geo_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION relate(tgeompoint, geometry, pattern text)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'relate_pattern_tpoint_geo'

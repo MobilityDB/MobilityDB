@@ -117,7 +117,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 		memcpy(value_to, value_from, value_size);
 	}
 	/* Initialize fixed-size values */
-	result->type = TEMPORALINST;
+	result->duration = TEMPORALINST;
 	result->valuetypid = valuetypid;
 	result->t = t;
 	SET_VARSIZE(result, size);
@@ -198,7 +198,7 @@ temporalinst_read(StringInfo buf, Oid valuetypid)
 			.len = size,
 			.maxlen = size,
 			.data = buf->data + buf->cursor
-	} ;
+	} ;	
 	Datum value = call_recv(valuetypid, &buf2);
 	buf->cursor += size ;
 	return temporalinst_make(value, t, valuetypid);

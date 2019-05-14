@@ -35,7 +35,7 @@ Temporal*
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
 	int32 tpoint_srid = tpoint_srid_internal(temp);
-	int32 tpoint_type = temp->type;
+	int32 tpoint_type = temp->duration;
 	int32 duration_type = TYPMOD_GET_DURATION(typmod);
 	TYPMOD_DEL_DURATION(typmod);
 	/* If there is no geometry type */
@@ -454,22 +454,20 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	}
 
-	bool result;
-	if (temp->type == TEMPORALINST) 
+	bool result = false;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_ever_equals((TemporalInst *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = temporali_ever_equals((TemporalI *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = temporalseq_ever_equals((TemporalSeq *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = temporals_ever_equals((TemporalS *)temp, 
 			PointerGetDatum(value));
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
@@ -505,22 +503,20 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 			errmsg("The geometries must be of the same dimensionality")));
 	}
 	
-	bool result;
-	if (temp->type == TEMPORALINST) 
+	bool result = false;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_always_equals((TemporalInst *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = temporali_always_equals((TemporalI *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = temporalseq_always_equals((TemporalSeq *)temp, 
 			PointerGetDatum(value));
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = temporals_always_equals((TemporalS *)temp, 
 			PointerGetDatum(value));
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
@@ -611,29 +607,29 @@ tgeogpointi_values(TemporalI *ti)
 Datum
 tpointi_values(TemporalI *ti)
 {
+	Datum result = 0;
+	assert(temporal_point_is_valid(ti->valuetypid));
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
-		return tgeompointi_values(ti);
+		result = tgeompointi_values(ti);
 	else if (ti->valuetypid == type_oid(T_GEOGRAPHY))
-		return tgeogpointi_values(ti);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+		result = tgeogpointi_values(ti);
+	return result;
 }
 
 Datum
 tpoint_values_internal(Temporal *temp)
 {
-	if (temp->type == TEMPORALINST) 
-		return temporalinst_value_copy((TemporalInst *)temp);
-	else if (temp->type == TEMPORALI) 
-		return tpointi_values((TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ)
-		return tpointseq_trajectory_copy((TemporalSeq *)temp);
-	else if (temp->type == TEMPORALS)
-		return tpoints_trajectory((TemporalS *)temp);	
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
+	Datum result = 0;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
+		result = temporalinst_value_copy((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI) 
+		result = tpointi_values((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ)
+		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS)
+		result = tpoints_trajectory((TemporalS *)temp);
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_values);
@@ -698,22 +694,20 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
 			(TemporalInst *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)temporali_at_value(
 			(TemporalI *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_value(
 			(TemporalSeq *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)temporals_at_value(
 			(TemporalS *)temp, PointerGetDatum(value));
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
@@ -760,7 +754,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!geo_to_gbox_internal(&box2, value))
 	{
 		Temporal *result;
-		if (temp->type == TEMPORALSEQ)
+		if (temp->duration == TEMPORALSEQ)
 			result = (Temporal *)temporals_from_temporalseqarr(
 				(TemporalSeq **)&temp, 1, false);
 		else
@@ -773,7 +767,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	if (!contains_gbox_gbox_internal(&box1, &box2))
 	{
 		Temporal *result;
-		if (temp->type == TEMPORALSEQ)
+		if (temp->duration == TEMPORALSEQ)
 			result = (Temporal *)temporals_from_temporalseqarr(
 				(TemporalSeq **)&temp, 1, false);
 		else
@@ -783,22 +777,20 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
 			(TemporalInst *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)temporali_minus_value(
 			(TemporalI *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_value(
 			(TemporalSeq *)temp, PointerGetDatum(value));
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)temporals_minus_value(
 			(TemporalS *)temp, PointerGetDatum(value));
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(value, 1);
@@ -849,22 +841,20 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
 			(TemporalInst *)temp, values, count1);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)temporali_at_values(
 			(TemporalI *)temp, values, count1);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values(
 			(TemporalSeq *)temp, values, count1);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)temporals_at_values(
 			(TemporalS *)temp, values, count1);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);
@@ -916,22 +906,20 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
-	Temporal *result;
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
 			(TemporalInst *)temp, values, count1);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)temporali_minus_values(
 			(TemporalI *)temp, values, count1);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_values(
 			(TemporalSeq *)temp, values, count1);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)temporals_minus_values(
 			(TemporalS *)temp, values, count1);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	pfree(values);
 	PG_FREE_IF_COPY(temp, 0);

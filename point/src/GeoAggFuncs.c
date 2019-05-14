@@ -176,24 +176,23 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 	if (PG_ARGISNULL(1))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
+
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&datum_sum_double4 : &datum_sum_double3;
-	AggregateState *result;
-	if (temp->type == TEMPORALINST)
+	AggregateState *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = tpointinst_tcentroid_transfn(fcinfo, state, (TemporalInst *)temp,
 			func);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = tpointi_tcentroid_transfn(fcinfo, state, (TemporalI *)temp,
 			func);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_tcentroid_transfn(fcinfo, state, (TemporalSeq *)temp,
 			func);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = tpoints_tcentroid_transfn(fcinfo, state, (TemporalS *)temp,
 			func);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
 			
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -227,9 +226,9 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum) = hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
 	AggregateState *result;
-	if (state1->values[0]->type == TEMPORALINST) 
+	if (state1->values[0]->duration == TEMPORALINST) 
 		result = temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
-	else if (state1->values[0]->type == TEMPORALSEQ) 
+	else if (state1->values[0]->duration == TEMPORALSEQ) 
 		result = temporalseq_tagg_combinefn(fcinfo, state1, state2, func, false);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -346,10 +345,10 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 	if (state->size == 0)
 		PG_RETURN_NULL();
 	Temporal *result = NULL;
-	if (state->values[0]->type == TEMPORALINST)
+	if (state->values[0]->duration == TEMPORALINST)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
 			(TemporalInst **)state->values, state->size);
-	else if (state->values[0]->type == TEMPORALSEQ)
+	else if (state->values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
 			(TemporalSeq **)state->values, state->size);
 	else

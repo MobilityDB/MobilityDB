@@ -160,7 +160,7 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-   116
+   132
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
@@ -181,7 +181,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-   116
+   134
 (1 row)
 
 SELECT count(*) FROM tbl_geogpoint3D, tbl_tgeogpoint3D
@@ -202,7 +202,7 @@ SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 	WHERE intersects(t1.temp, t2.temp);
  count 
 -------
-   120
+   144
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint

@@ -605,7 +605,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
 	result->valuetypid = valuetypid;
-	result->type = TEMPORALSEQ;
+	result->duration = TEMPORALSEQ;
 	period_set(&result->period, newinstants[0]->t, newinstants[newcount-1]->t,
 		lower_inc, upper_inc);
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
@@ -1454,7 +1454,8 @@ RangeType *
 tnumberseq_value_range(TemporalSeq *seq)
 {
 	BOX *box = temporalseq_bbox_ptr(seq);
-	Datum min, max;
+	Datum min = 0, max = 0;
+	assert(temporal_number_is_valid(seq->valuetypid));
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);
@@ -1465,9 +1466,6 @@ tnumberseq_value_range(TemporalSeq *seq)
 		min = Float8GetDatum(box->low.x);
 		max = Float8GetDatum(box->high.x);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	return range_make(min, max, true, true, seq->valuetypid);
 }
 
@@ -1754,7 +1752,7 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		}
 
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeompointseq_trajectory1(inst1, inst2);
+		Datum line = geompoint_trajectory(value1, value2);
 		/* The following approximation is essential for the atGeometry function
 		   instead of calling the function ST_Intersects(line, value)) */
 		bool inter = MOBDB_FLAGS_GET_Z(inst1->flags) ?
@@ -2761,7 +2759,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeompointseq_trajectory1(inst1, inst2);
+		Datum line = geompoint_trajectory(value1, value2);
 		Datum result = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line)); 

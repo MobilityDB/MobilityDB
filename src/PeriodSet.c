@@ -63,9 +63,7 @@ Period *
 periodset_bbox(PeriodSet *ps) 
 {
 	size_t *offsets = periodset_offsets_ptr(ps);
-	if (offsets[ps->count] == 0)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("The period set has no bounding box")));
+	assert(offsets[ps->count] != 0);
 	return (Period *)(periodset_data_ptr(ps) + offsets[ps->count]);
 }
 

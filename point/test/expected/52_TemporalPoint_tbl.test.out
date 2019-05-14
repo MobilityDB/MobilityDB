@@ -1,3 +1,25 @@
+COPY tbl_tgeompoint TO '/tmp/tbl_tgeompoint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tgeogpoint TO '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
+NOTICE:  table "tbl_tgeompoint_tmp" does not exist, skipping
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
+NOTICE:  table "tbl_tgeogpoint_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
+CREATE TABLE AS
+CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tgeompoint_tmp FROM '/tmp/tbl_tgeompoint' (FORMAT BINARY);
+COPY 100
+COPY tbl_tgeogpoint_tmp FROM '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+COPY 100
+DROP TABLE tbl_tgeompoint_tmp;
+DROP TABLE
+DROP TABLE tbl_tgeogpoint_tmp;
+DROP TABLE
 SELECT DISTINCT temporalType(tgeompointinst(inst)) FROM tbl_tgeompointinst;
  temporaltype 
 --------------

@@ -1,6 +1,15 @@
 ﻿-------------------------------------------------------------------------------
 -- Tests for period data type.
 -- File Period.c
+--------------------------------------------------------------------------------
+-- Send/receive functions
+
+COPY tbl_period TO '/tmp/tbl_period' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_period_tmp;
+CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
+COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
+DROP TABLE tbl_period_tmp;
+
 -------------------------------------------------------------------------------
 
 SELECT max(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;

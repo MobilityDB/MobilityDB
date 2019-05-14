@@ -202,6 +202,182 @@ CREATE OPERATOR #&> (
 );
 
 /*****************************************************************************
+ * intrange 
+ *****************************************************************************/
+/* intrange op tint */
+
+CREATE FUNCTION temporal_left(r intrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(r intrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(r intrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(r intrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = intrange, RIGHTARG = tint,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = intrange, RIGHTARG = tint,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = intrange, RIGHTARG = tint,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = intrange, RIGHTARG = tint,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
+/* intrange op tfloat */
+
+CREATE FUNCTION temporal_left(intrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(intrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(intrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(intrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = intrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = intrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = intrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = intrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************
+ * floatrange 
+ *****************************************************************************/
+/* floatrange op tint */
+
+CREATE FUNCTION temporal_left(floatrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(floatrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(floatrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(floatrange, tint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = floatrange, RIGHTARG = tint,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = floatrange, RIGHTARG = tint,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = floatrange, RIGHTARG = tint,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = floatrange, RIGHTARG = tint,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
+/* floatrange op tfloat */
+
+CREATE FUNCTION temporal_left(floatrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(floatrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(floatrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(floatrange, tfloat)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_range_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = floatrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = floatrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = floatrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = floatrange, RIGHTARG = tfloat,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************
  * box 
  *****************************************************************************/
 /* box op tint */
@@ -456,6 +632,92 @@ CREATE OPERATOR #&> (
 /*****************************************************************************
  * tint
  *****************************************************************************/
+/* tint op intrange */
+
+CREATE FUNCTION temporal_left(tint, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tint, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tint, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tint, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = tint, RIGHTARG = intrange,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = tint, RIGHTARG = intrange,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = tint, RIGHTARG = intrange,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = tint, RIGHTARG = intrange,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
+/* tint op floatrange */
+
+CREATE FUNCTION temporal_left(tint, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tint, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tint, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tint, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = tint, RIGHTARG = floatrange,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = tint, RIGHTARG = floatrange,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = tint, RIGHTARG = floatrange,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = tint, RIGHTARG = floatrange,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
 /* tint op box */
 
 CREATE FUNCTION temporal_left(tint, box)
@@ -701,6 +963,92 @@ CREATE OPERATOR #&> (
 /*****************************************************************************
  * tfloat
  *****************************************************************************/
+/* tfloat op intrange */
+
+CREATE FUNCTION temporal_left(tfloat, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tfloat, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tfloat, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tfloat, intrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = tfloat, RIGHTARG = intrange,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = tfloat, RIGHTARG = intrange,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = tfloat, RIGHTARG = intrange,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = tfloat, RIGHTARG = intrange,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
+/* tfloat op floatrange */
+
+CREATE FUNCTION temporal_left(tfloat, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(tfloat, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(tfloat, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(tfloat, floatrange)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_temporal_range'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = tfloat, RIGHTARG = floatrange,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = >>,
+	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &< (
+	LEFTARG = tfloat, RIGHTARG = floatrange,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR >> (
+	LEFTARG = tfloat, RIGHTARG = floatrange,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = <<,
+	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR &> (
+	LEFTARG = tfloat, RIGHTARG = floatrange,
+	PROCEDURE = temporal_overright,
+	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+);
+
+/*****************************************************************************/
 /* tfloat op box */
 
 CREATE FUNCTION temporal_left(tfloat, box)

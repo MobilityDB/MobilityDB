@@ -1,4 +1,23 @@
-﻿------------------------------------------------------------------------------
+﻿--------------------------------------------------------------------------------
+-- Send/receive functions
+--------------------------------------------------------------------------------
+
+COPY tbl_tgeompoint TO '/tmp/tbl_tgeompoint' (FORMAT BINARY);
+COPY tbl_tgeogpoint TO '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+
+DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
+DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
+
+CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
+CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
+
+COPY tbl_tgeompoint_tmp FROM '/tmp/tbl_tgeompoint' (FORMAT BINARY);
+COPY tbl_tgeogpoint_tmp FROM '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+
+DROP TABLE tbl_tgeompoint_tmp;
+DROP TABLE tbl_tgeogpoint_tmp;
+
+------------------------------------------------------------------------------
 -- Transformation functions
 ------------------------------------------------------------------------------
 

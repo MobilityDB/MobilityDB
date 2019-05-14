@@ -21,13 +21,14 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
 			value, func, datumtypid, BOOLOID, invert);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc4_temporali_base((TemporalI *)temp,
 			value, func, datumtypid, BOOLOID, invert);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ?
 			/* Result is a TemporalS */
 			(Temporal *)tfunc4_temporalseq_base_crossdisc((TemporalSeq *)temp,
@@ -35,15 +36,12 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 			/* Result is a TemporalSeq */
 			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ?
 			(Temporal *)tfunc4_temporals_base_crossdisc((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			(Temporal *)tfunc4_temporals_base((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 

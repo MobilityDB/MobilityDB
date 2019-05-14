@@ -150,14 +150,28 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 		gserialized_is_empty(gs))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Only non-empty point geometries accepted")));
-	if (*tpoint_srid != 0 && geo_srid != 0 && *tpoint_srid != geo_srid) 
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
-			geo_srid, *tpoint_srid)));
-	if (*tpoint_srid != 0 && geo_srid == 0)
-		gserialized_set_srid(gs, *tpoint_srid);
-	if (*tpoint_srid == 0 && geo_srid != 0)
-		*tpoint_srid = geo_srid;
+	if (basetype == type_oid(T_GEOMETRY))
+	{
+		if (*tpoint_srid != 0 && geo_srid != 0 && *tpoint_srid != geo_srid)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+				errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
+				geo_srid, *tpoint_srid)));
+		if (*tpoint_srid != 0 && geo_srid == 0)
+			gserialized_set_srid(gs, *tpoint_srid);
+		if (*tpoint_srid == 0 && geo_srid != 0)
+			*tpoint_srid = geo_srid;
+	}
+	else
+	{
+		if (*tpoint_srid != 0 && geo_srid != 4326 && *tpoint_srid != geo_srid)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+				errmsg("Geography SRID (%d) does not match temporal type SRID (%d)", 
+				geo_srid, *tpoint_srid)));
+		if (*tpoint_srid != 0 && geo_srid == 4326)
+			gserialized_set_srid(gs, *tpoint_srid);
+		if (*tpoint_srid == 0 && geo_srid != 4326)
+			*tpoint_srid = geo_srid;
+	}
 	/* The next instruction will throw an exception if it fails */
 	TimestampTz t = timestamp_parse(str);
 	TemporalInst *result = temporalinst_make(PointerGetDatum(gs), t, basetype);

@@ -20,18 +20,16 @@ temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	Datum result = 0;   /* keep compiler quiet */
-	int duration_type = TYPMOD_GET_DURATION(stats->attrtypmod);
+	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
 
-	if (duration_type == TEMPORALINST)
+	assert(temporal_duration_is_valid(type));
+	if (type == TEMPORALINST)
 		result = temporalinst_analyze(stats);
-	else if (duration_type == TEMPORALI)
+	else if (type == TEMPORALI)
 		result = temporali_analyze(stats);
-	else if(duration_type == TEMPORALSEQ || duration_type == TEMPORALS ||
-			duration_type == TEMPORAL)
+	else if(type == TEMPORALSEQ || type == TEMPORALS ||
+			type == TEMPORAL)
 		result = temporal_traj_analyze(stats);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 

@@ -291,17 +291,17 @@ temporals_transform_tcount(TemporalS *ts)
 static Temporal *
 temporal_transform_tcount(Temporal *temp)
 {
-	if (temp->type == TEMPORALINST)
-		return (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
-	else if (temp->type == TEMPORALI)
-		return (Temporal *)temporali_transform_tcount((TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ)
-		return (Temporal *)temporalseq_transform_tcount((TemporalSeq *)temp);
-	else if (temp->type == TEMPORALS)
-		return (Temporal *)temporals_transform_tcount((TemporalS *)temp);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
+	assert(temporal_duration_is_valid(temp->duration));
+    Temporal *result = NULL;
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)temporali_transform_tcount((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_transform_tcount((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS)
+		result = (Temporal *)temporals_transform_tcount((TemporalS *)temp);
+	return result;
 }
 
 /*****************************************************************************/
@@ -404,12 +404,13 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
+    int returnvalue = 0;
+	assert(temporal_number_is_valid(seq->valuetypid));
 	if (seq->valuetypid == INT4OID)
-		return tintseq_transform_tavg(result, seq);
+		returnvalue = tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
-		return tfloatseq_transform_tavg(result, seq);
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-		errmsg("Operation not supported")));
+		returnvalue = tfloatseq_transform_tavg(result, seq);
+	return returnvalue;
 }
 
 static int
@@ -465,8 +466,8 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 	if (count2 == 0)
 		return state1;
 
-	if (state1->values[0]->type != TEMPORALINST || 
-		state2->values[0]->type != TEMPORALINST) 
+	if (state1->values[0]->duration != TEMPORALINST || 
+		state2->values[0]->duration != TEMPORALINST) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
 
@@ -797,8 +798,8 @@ temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 	if (count2 == 0)
 		return state1;
 
-	if (state1->values[0]->type != TEMPORALSEQ || 
-		state2->values[0]->type != TEMPORALSEQ)
+	if (state1->values[0]->duration != TEMPORALSEQ || 
+		state2->values[0]->duration != TEMPORALSEQ)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
 
@@ -891,21 +892,21 @@ static AggregateState *
 temporal_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
-	if (temp->type == TEMPORALINST) 
-		return temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
+	assert(temporal_duration_is_valid(temp->duration));
+	AggregateState *result = NULL;
+	if (temp->duration == TEMPORALINST) 
+		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
 			func);
-	else if (temp->type == TEMPORALI) 
-		return temporali_tagg_transfn(fcinfo, state, (TemporalI *)temp, 
+	else if (temp->duration == TEMPORALI) 
+		result =  temporali_tagg_transfn(fcinfo, state, (TemporalI *)temp, 
 			func);
-	else if (temp->type == TEMPORALSEQ) 
-		return temporalseq_tagg_transfn(fcinfo, state, (TemporalSeq *)temp, 
+	else if (temp->duration == TEMPORALSEQ) 
+		result =  temporalseq_tagg_transfn(fcinfo, state, (TemporalSeq *)temp, 
 			func, crossings);
-	else if (temp->type == TEMPORALS) 
-		return temporals_tagg_transfn(fcinfo, state, (TemporalS *)temp, 
+	else if (temp->duration == TEMPORALS) 
+		result = temporals_tagg_transfn(fcinfo, state, (TemporalS *)temp, 
 			func, crossings);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
+	return result;
 }
 
 static AggregateState *
@@ -920,9 +921,9 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo,
 
 	/* Get a pointer to the first element of the first array */
 	Temporal *temp = (Temporal*) state1->values[0];
-	if (temp->type == TEMPORALINST)
+	if (temp->duration == TEMPORALINST)
 		return temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
-	if (temp->type == TEMPORALSEQ)
+	if (temp->duration == TEMPORALSEQ)
 		return temporalseq_tagg_combinefn(fcinfo, state1, state2, func, crossings);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -1287,15 +1288,12 @@ AggregateState *
 temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
-	int maxcount;
+	int maxcount = 0;
+	assert(temporal_number_is_valid(seq->valuetypid));
 	if (seq->valuetypid == INT4OID)
 		maxcount = seq->count;
 	else if (seq->valuetypid == FLOAT8OID)
 		maxcount = 1;
-    else
-	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-		errmsg("Operation not supported")));
-
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = tnumberseq_transform_tavg(sequences, seq);
 	AggregateState *state2 = aggstate_make(fcinfo, count, (Temporal **)sequences);
@@ -1317,15 +1315,12 @@ AggregateState *
 temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
-	int maxcount;
+	int maxcount = 0;
+	assert(temporal_number_is_valid(ts->valuetypid));
 	if (ts->valuetypid == INT4OID)
 		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)
 		maxcount = ts->count;
-    else
-	    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-		errmsg("Operation not supported")));
-
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = tnumbers_transform_tavg(sequences, ts);
 	AggregateState *state2 = aggstate_make(fcinfo, count, (Temporal **)sequences);
@@ -1354,17 +1349,15 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = NULL;
-	if (temp->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = temporalinst_tavg_transfn(fcinfo, state, (TemporalInst *)temp);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = temporali_tavg_transfn(fcinfo, state, (TemporalI *)temp);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = temporalseq_tavg_transfn(fcinfo, state, (TemporalSeq *)temp);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = temporals_tavg_transfn(fcinfo, state, (TemporalS *)temp);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -1403,10 +1396,10 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	if (state->size == 0)
 		PG_RETURN_NULL();
 	Temporal *result = NULL;
-	if (state->values[0]->type == TEMPORALINST)
+	if (state->values[0]->duration == TEMPORALINST)
 		result = (Temporal *)temporali_from_temporalinstarr(
 			(TemporalInst **)state->values, state->size);
-	else if (state->values[0]->type == TEMPORALSEQ)
+	else if (state->values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_from_temporalseqarr(
 			(TemporalSeq **)state->values, state->size, true);
 	else
@@ -1483,10 +1476,10 @@ temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 	if (state->size == 0)
 		PG_RETURN_NULL();
 	Temporal *result = NULL;
-	if (state->values[0]->type == TEMPORALINST)
+	if (state->values[0]->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_tavg_finalfn(
 			(TemporalInst **)state->values, state->size);
-	else if (state->values[0]->type == TEMPORALSEQ)
+	else if (state->values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporalseq_tavg_finalfn(
 			(TemporalSeq **)state->values, state->size);
 	else

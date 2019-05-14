@@ -65,7 +65,7 @@
 #endif
 
 /*****************************************************************************
- * Type of the temporal types
+ * Duration of temporal types
  *****************************************************************************/
 
 #define TEMPORAL			0
@@ -133,7 +133,7 @@ struct temporaltype_struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID */
 	/* variable-length data follows, if any */
@@ -144,7 +144,7 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID */
 	TimestampTz t;				/* time span */
@@ -156,7 +156,7 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID */
 	int32 		count;			/* number of TemporalInst elements */
@@ -168,7 +168,7 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID */
 	int32 		count;			/* number of TemporalInst elements */
@@ -181,7 +181,7 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID */
 	int32 		count;			/* number of TemporalSeq elements */
@@ -315,6 +315,10 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
+extern bool temporal_duration_is_valid(int16 type);
+extern bool temporal_number_is_valid(Oid type);
+extern bool temporal_numrange_is_valid(Oid type);
+extern bool temporal_point_is_valid(Oid type);
 extern size_t int4_pad(size_t size);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
@@ -498,7 +502,6 @@ extern int gbox_cmp_internal(const GBOX *g1, const GBOX *g2);
 
 /* Internal functions */
 
-extern char dump_toupper(int in);
 extern Temporal *temporal_copy(Temporal *temp);
 extern Temporal *pg_getarg_temporal(Temporal *temp);
 extern bool intersection_temporal_temporal(Temporal *temp1, Temporal *temp2, 
@@ -751,7 +754,6 @@ extern void temporali_bbox(void *box, TemporalI *ti);
 extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
-extern TimestampSet *temporali_time(TemporalI *ti);
 extern void temporali_timespan(Period *p, TemporalI *ti);
 extern TemporalInst **temporali_instantarr(TemporalI *ti);
 extern ArrayType *temporali_instants(TemporalI *ti);

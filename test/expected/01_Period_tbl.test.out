@@ -1,3 +1,14 @@
+COPY tbl_period TO '/tmp/tbl_period' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_period_tmp;
+NOTICE:  table "tbl_period_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
+COPY 100
+DROP TABLE tbl_period_tmp;
+DROP TABLE
 SELECT max(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------

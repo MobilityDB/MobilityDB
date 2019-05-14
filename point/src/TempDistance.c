@@ -57,11 +57,12 @@ distance_tpointseq_geo1(TemporalInst **result,
 		*count = 1;
 		return;
 	}
-	double fraction;
+	double fraction = 0.0;
+	assert(temporal_point_is_valid(inst1->valuetypid));
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* The trajectory is a line */
-		Datum traj = tgeompointseq_trajectory1(inst1, inst2);
+		Datum traj = geompoint_trajectory(value1, value2);
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			traj, point));
 		pfree(DatumGetPointer(traj)); 
@@ -86,9 +87,6 @@ distance_tpointseq_geo1(TemporalInst **result,
 		pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(point1));
 		pfree(DatumGetPointer(point2));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	if (fraction == 0 || fraction == 1)
 	{
@@ -202,6 +200,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
@@ -211,26 +210,21 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_distance;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
 			PointerGetDatum(gs), func);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
 			PointerGetDatum(gs), func);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -273,6 +267,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	
 	Datum (*func)(Datum, Datum);
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
@@ -282,26 +277,21 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_distance;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
 			PointerGetDatum(gs), func);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
 			PointerGetDatum(gs), func);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);

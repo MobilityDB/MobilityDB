@@ -1,6 +1,15 @@
 ﻿-------------------------------------------------------------------------------
 -- Tests for period set data type.
 -- File PeriodSet.c
+--------------------------------------------------------------------------------
+-- Send/receive functions
+
+COPY tbl_periodset TO '/tmp/tbl_periodset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_periodset_tmp;
+CREATE TABLE tbl_periodset_tmp AS TABLE tbl_periodset WITH NO DATA;
+COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
+DROP TABLE tbl_periodset_tmp;
+
 -------------------------------------------------------------------------------
 
 select memSize(ps) from tbl_periodset;

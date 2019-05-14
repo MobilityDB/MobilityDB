@@ -140,14 +140,14 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	bool lower_inc, bool upper_inc, Datum (*func)(Datum, Datum), 
 	Oid valuetypid, int *count, bool invert)
 {
-	Datum d1 = temporalinst_value(inst1);
-	Datum d2 = temporalinst_value(inst2);
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_point_eq(d1, d2))
+	if (datum_point_eq(value1, value2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -159,13 +159,13 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	
 	/* Look for intersections */
-	Datum line = tgeompointseq_trajectory1(inst1, inst2);
+	Datum line = geompoint_trajectory(value1, value2);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -218,7 +218,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	int k = 0;
 	if (before)
 	{
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t, 
 			valuetypid);
@@ -259,7 +259,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	if (after)
 	{
-		Datum value = invert ? func(geo, d2) : func(d2, geo);
+		Datum value = invert ? func(geo, value2) : func(value2, geo);
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t, 
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
@@ -406,13 +406,13 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	Oid valuetypid, int *count, bool invert)
 {
 	/* Constant segment */
-	Datum d1 = temporalinst_value(inst1);
-	Datum d2 = temporalinst_value(inst2);
-	if (datum_point_eq(d1, d2))
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	if (datum_point_eq(value1, value2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		Datum value = invert ? func(d1, geo, param) :
-			func(geo, d1, param);
+		Datum value = invert ? func(value1, geo, param) :
+			func(geo, value1, param);
 		TemporalInst *inst = temporalinst_make(value, inst1->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
 			true, true, false);
@@ -422,14 +422,14 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	
 	/* Look for intersections */
-	Datum line = tgeompointseq_trajectory1(inst1, inst2);
+	Datum line = geompoint_trajectory(value1, value2);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(d1, geo, param) :
-			func(geo, d1, param);
+		Datum value = invert ? func(value1, geo, param) :
+			func(geo, value1, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -483,8 +483,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	int k = 0;
 	if (before)
 	{
-		Datum value = invert ? func(geo, d1, param) :
-			func(d1, geo, param);
+		Datum value = invert ? func(geo, value1, param) :
+			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t, valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
@@ -525,8 +525,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	if (after)
 	{
-		Datum value = invert ? func(geo, d2, param) :
-			func(d2, geo, param);
+		Datum value = invert ? func(geo, value2, param) :
+			func(value2, geo, param);
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t, 
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
@@ -1312,21 +1312,19 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)tspatialrel_tpointseq_geo((TemporalSeq *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)tspatialrel_tpoints_geo((TemporalS *)temp,
 			geo, func, valuetypid, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1335,21 +1333,19 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)tspatialrel3_tpointseq_geo((TemporalSeq *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)tspatialrel3_tpoints_geo((TemporalS *)temp,
 			geo, param, func, BOOLOID, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1493,25 +1489,25 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result = NULL;
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = 0;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
@@ -1522,13 +1518,11 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
@@ -1539,13 +1533,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1580,25 +1568,25 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result = NULL;
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
@@ -1609,13 +1597,11 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
@@ -1626,13 +1612,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1661,15 +1641,12 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
 
@@ -1712,25 +1689,25 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
@@ -1741,13 +1718,11 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
@@ -1758,13 +1733,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1799,25 +1768,25 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq, 
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
@@ -1828,13 +1797,11 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts, 
 				PointerGetDatum(gs), &geom_coveredby, 
@@ -1847,13 +1814,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1882,15 +1843,12 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
 	
@@ -2150,7 +2108,8 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = 0;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2160,20 +2119,19 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), func, BOOLOID, true);
@@ -2184,13 +2142,11 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), func, BOOLOID, true);
@@ -2201,13 +2157,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2242,7 +2192,8 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2252,20 +2203,19 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), func, BOOLOID, false);
@@ -2276,13 +2226,11 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), func, BOOLOID, false);
@@ -2293,13 +2241,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2327,7 +2269,8 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal points must be of the same dimensionality")));
 	}
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -2337,10 +2280,6 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
 
@@ -2600,7 +2539,8 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2610,20 +2550,19 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpointseq_geo(seq,
 				PointerGetDatum(gs), dist);
@@ -2634,13 +2573,11 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpoints_geo(ts,
 				PointerGetDatum(gs), dist);
@@ -2651,13 +2588,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2693,7 +2624,8 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2703,20 +2635,19 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpointseq_geo(seq,
 				PointerGetDatum(gs), dist);
@@ -2727,13 +2658,11 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpoints_geo(ts,
 				PointerGetDatum(gs), dist);
@@ -2744,13 +2673,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2789,7 +2712,8 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -2799,28 +2723,23 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (sync1->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(sync1->duration));
+	if (sync1->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func, 
 			BOOLOID);
-	else if (sync1->type == TEMPORALI)
+	else if (sync1->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc3_temporali_temporali(
 			(TemporalI *)sync1, (TemporalI *)sync2, dist, func, 
 			BOOLOID);
-	else if (sync1->type == TEMPORALSEQ)
+	else if (sync1->duration == TEMPORALSEQ)
 		result = (Temporal *)tdwithin_tpointseq_tpointseq(
 			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
-	else if (sync1->type == TEMPORALS)
+	else if (sync1->duration == TEMPORALS)
 		result = (Temporal *)tdwithin_tpoints_tpoints(
 			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);

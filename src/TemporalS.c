@@ -151,7 +151,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	result->count = newcount;
 	result->totalcount = totalcount;
 	result->valuetypid = valuetypid;
-	result->type = TEMPORALS;
+	result->duration = TEMPORALS;
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(newsequences[0]->flags);
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
 	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, tempcontinuous);
@@ -803,7 +803,8 @@ RangeType *
 tnumbers_value_range(TemporalS *ts)
 {
 	BOX *box = temporals_bbox_ptr(ts);
-	Datum min, max;
+	Datum min = 0, max = 0;
+	assert(temporal_number_is_valid(ts->valuetypid));
 	if (ts->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);
@@ -814,9 +815,6 @@ tnumbers_value_range(TemporalS *ts)
 		min = Float8GetDatum(box->low.x);
 		max = Float8GetDatum(box->high.x);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	return range_make(min, max, true, true, ts->valuetypid);
 }
 

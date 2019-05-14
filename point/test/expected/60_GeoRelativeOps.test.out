@@ -119,11 +119,6 @@ SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> gbox 'GEODBOX((1.0, 2
 ERROR:  Cannot compare geodetic and non-geodetic boxes
 SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  Cannot compare geodetic and non-geodetic boxes
-/* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
 SELECT geometry 'Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -509,10 +504,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -898,10 +901,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1287,10 +1298,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1676,10 +1695,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2065,10 +2092,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2454,10 +2489,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3232,10 +3275,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must have Z dimension
+SELECT geometry 'Point(1 1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'Point(1 1 1)';
+ERROR:  The geometries must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3429,10 +3480,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
+ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3626,10 +3685,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
+ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3823,10 +3890,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
+ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4019,6 +4094,19 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
+/* Errors */
+SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The geometries must be in the same SRID
+SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The geometries must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
+ERROR:  The geometries must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
 LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1)@200...

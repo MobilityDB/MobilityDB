@@ -262,10 +262,7 @@ void
 tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
-	if (gserialized_get_gbox_p(gs, box) == LW_FAILURE)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Cannot obtain the bounding box of the value")));
-	
+	assert(gserialized_get_gbox_p(gs, box) != LW_FAILURE);
 	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(box->flags))
 	{
 		/* Set the value of the missing Z dimension to +-infinity */
@@ -672,10 +669,10 @@ tpoint_to_gbox(PG_FUNCTION_ARGS)
  * overlaps
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-overlaps_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -724,10 +721,10 @@ overlaps_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-overlaps_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -809,10 +806,10 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * contains
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(contains_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-contains_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -861,10 +858,10 @@ contains_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-contains_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -946,10 +943,10 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * contained
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(contained_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-contained_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -998,10 +995,10 @@ contained_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-contained_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -1083,10 +1080,10 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * same
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(same_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-same_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -1135,10 +1132,10 @@ same_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-same_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);

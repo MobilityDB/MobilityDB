@@ -1,3 +1,14 @@
+COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_timestampset_tmp;
+NOTICE:  table "tbl_timestampset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
+COPY 100
+DROP TABLE tbl_timestampset_tmp;
+DROP TABLE
 SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
                                timestampset                               
 --------------------------------------------------------------------------

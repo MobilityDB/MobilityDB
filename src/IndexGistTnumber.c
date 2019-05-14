@@ -165,7 +165,23 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	/*
 	 * Transform the query into a box.
 	 */
-	if (subtype == BOXOID)
+	if (subtype == type_oid(T_INTRANGE))
+	{
+		RangeType *range = PG_GETARG_RANGE_P(1);
+		if (range == NULL)
+			PG_RETURN_BOOL(false);
+		intrange_to_box_internal(&query, range);
+		PG_FREE_IF_COPY(range, 1);
+	}
+	else if (subtype == type_oid(T_FLOATRANGE))
+	{
+		RangeType *range = PG_GETARG_RANGE_P(1);
+		if (range == NULL)
+			PG_RETURN_BOOL(false);
+		floatrange_to_box_internal(&query, range);
+		PG_FREE_IF_COPY(range, 1);
+	}
+	else if (subtype == BOXOID)
 	{
 		BOX *box = PG_GETARG_BOX_P(1);
 		if (box == NULL)

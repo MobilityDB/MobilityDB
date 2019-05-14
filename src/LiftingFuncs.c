@@ -141,22 +141,20 @@ Temporal *
 tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid, 
 	bool mustfree)
 {
-	Temporal *result;
-	if (temp->type == TEMPORALINST)
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc1_temporalinst((TemporalInst *)temp,
 			func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc1_temporali((TemporalI *)temp,
 			func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc1_temporalseq((TemporalSeq *)temp,
 			func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc1_temporals((TemporalS *)temp,
 			func, valuetypid, mustfree);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -234,22 +232,20 @@ Temporal *
 tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
-	Temporal *result;
-	if (temp->type == TEMPORALINST)
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst((TemporalInst *)temp,
 			param, func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali((TemporalI *)temp,
 			param, func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq((TemporalSeq *)temp,
 			param, func, valuetypid, mustfree);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc2_temporals((TemporalS *)temp,
 			param, func, valuetypid, mustfree);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -337,22 +333,20 @@ Temporal *
 tfunc2_temporal_base(Temporal *temp, Datum d, 
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
-	Temporal *result;
-	if (temp->type == TEMPORALINST)
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d, 
 			func, valuetypid, invert);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp, d, 
 			func, valuetypid, invert);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, d, 
 			func, valuetypid, invert);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, d,
 			func, valuetypid, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -518,22 +512,20 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool inverted)
 {
-	Temporal *result;
-	if (temp->type == TEMPORALINST)
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
-	else if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc4_temporali_base((TemporalI *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc4_temporals_base((TemporalS *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1259,77 +1251,76 @@ sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, 
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, 
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, 
 			func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, 
 			func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
 			func, valuetypid, interpoint);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
 			func, valuetypid, interpoint);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
@@ -1815,77 +1806,76 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, 
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, 
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, 
 			param, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, 
 			param, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
 			param, func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
 			param, func, valuetypid, interpoint);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2,
 			param, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
 			param, func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
 			param, func, valuetypid, interpoint);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
@@ -2378,77 +2368,76 @@ sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, 
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, 
 			func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, 
 			func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, 
 			func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
 			func, valuetypid, interpoint);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2,
 			func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
 			func, valuetypid, interpoint);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
 			func, valuetypid, interpoint);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
@@ -2801,73 +2790,72 @@ sync_tfunc2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 {
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc2_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc2_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ) 
 		result = continuous ?
 			(Temporal *)sync_tfunc2_temporalseq_temporalseq_crossdisc(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc2_temporalseq_temporalseq(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc2_temporalseq_temporals_crossdisc(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc2_temporalseq_temporals(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, func, valuetypid, false);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc2_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = continuous ?
 			(Temporal *)sync_tfunc2_temporals_temporalseq_crossdisc(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc2_temporals_temporalseq(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc2_temporals_temporals_crossdisc(
 				(TemporalS *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc2_temporals_temporals(
 				(TemporalS *)temp1, (TemporalS *)temp2, func, valuetypid, false);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
@@ -3234,73 +3222,72 @@ sync_tfunc3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 {
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, param, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc3_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc3_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, param, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ)
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
 		result = continuous ?
 			(Temporal *)sync_tfunc3_temporalseq_temporalseq_crossdisc(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, param, func, valuetypid) :
 			(Temporal *)sync_tfunc3_temporalseq_temporalseq(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, param, func, valuetypid, false);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc3_temporalseq_temporals_crossdisc(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, param, func, valuetypid) :
 			(Temporal *)sync_tfunc3_temporalseq_temporals(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, param, func, valuetypid, false);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc3_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2, param, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = continuous ?
 			(Temporal *)sync_tfunc3_temporals_temporalseq_crossdisc(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, param, func, valuetypid) :
 			(Temporal *)sync_tfunc3_temporals_temporalseq(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, param, func, valuetypid, false);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc3_temporals_temporals_crossdisc(
 				(TemporalS *)temp1, (TemporalS *)temp2, param, func, valuetypid) :
 			(Temporal *)sync_tfunc3_temporals_temporals(
 				(TemporalS *)temp1, (TemporalS *)temp2, param, func, valuetypid, false);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
@@ -3670,73 +3657,72 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 {
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
-	Temporal *result;
-	if (temp1->type == TEMPORALINST && temp2->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp1->duration) &&
+		temporal_duration_is_valid(temp2->duration));
+	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALINST && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = (Temporal *)sync_tfunc4_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALI && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = (Temporal *)sync_tfunc4_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, func, valuetypid);
 	
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALSEQ)
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
 		result = continuous ?
 			(Temporal *)sync_tfunc4_temporalseq_temporalseq_crossdisc(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporalseq_temporalseq(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
-	else if (temp1->type == TEMPORALSEQ && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc4_temporalseq_temporals_crossdisc(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporalseq_temporals(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, func, valuetypid, false);
 	
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALINST) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALI) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = (Temporal *)sync_tfunc4_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2, func, valuetypid);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALSEQ) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = continuous ?
 			(Temporal *)sync_tfunc4_temporals_temporalseq_crossdisc(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporals_temporalseq(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
-	else if (temp1->type == TEMPORALS && temp2->type == TEMPORALS) 
+	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = continuous ?
 			(Temporal *)sync_tfunc4_temporals_temporals_crossdisc(
 				(TemporalS *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporals_temporals(
 				(TemporalS *)temp1, (TemporalS *)temp2, func, valuetypid, false);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	return result;
 }
