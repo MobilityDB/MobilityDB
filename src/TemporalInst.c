@@ -193,8 +193,12 @@ temporalinst_read(StringInfo buf, Oid valuetypid)
 {
 	TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
 	int size = pq_getmsgint(buf, 4) ;
-	StringInfoData buf2 = *buf ;
-	buf2.len = buf->cursor + size ;
+	StringInfoData buf2 = {
+			.cursor = 0,
+			.len = size,
+			.maxlen = size,
+			.data = buf->data + buf->cursor
+	} ;
 	Datum value = call_recv(valuetypid, &buf2);
 	buf->cursor += size ;
 	return temporalinst_make(value, t, valuetypid);
