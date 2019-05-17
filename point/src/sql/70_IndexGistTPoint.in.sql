@@ -114,6 +114,18 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	-- overlaps or after
 	OPERATOR	31		#&> (tgeompoint, gbox),
 	OPERATOR	31		#&> (tgeompoint, tgeompoint),
+	-- overlaps or front
+	OPERATOR	32		&</ (tgeompoint, gbox),
+	OPERATOR	32		&</ (tgeompoint, tgeompoint),
+	-- strictly front
+	OPERATOR	33		<</ (tgeompoint, gbox),
+	OPERATOR	33		<</ (tgeompoint, tgeompoint),
+	-- strictly back
+	OPERATOR	34		/>> (tgeompoint, gbox),
+	OPERATOR	34		/>> (tgeompoint, tgeompoint),
+	-- overlaps or back
+	OPERATOR	35		/&> (tgeompoint, gbox),
+	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
 	FUNCTION	1	gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal),
 	FUNCTION	2	gist_tpoint_union(internal, internal),

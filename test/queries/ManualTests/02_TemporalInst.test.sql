@@ -249,17 +249,17 @@ select intersectsTimestamp(tfloatinst(1, '2012-01-01 08:00:00'),'2012-01-01 08:0
 select intersectsTimestamp(tfloatinst(1, '2012-01-01 08:00:00'),'2012-01-01 08:10:00');
 
 select intersectsTimestampSet(tboolinst(TRUE, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
 select intersectsTimestampSet(tboolinst(TRUE, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:05:00', '2012-01-01 08:10:00']);
+	timestampset(ARRAY[timestamptz '2012-01-01 08:05:00', '2012-01-01 08:10:00']);
 select intersectsTimestampSet(tintinst(1, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
 select intersectsTimestampSet(tintinst(1, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
 select intersectsTimestampSet(tfloatinst(1, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
 select intersectsTimestampSet(tfloatinst(1, '2012-01-01 08:00:00'),
-	timestampset(ARRAY[timestamp '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:05:00', '2012-01-01 08:10:00']));
 
 select intersectsPeriod(tboolinst(true, '2012-01-01 08:00:00'), period('2012-01-01 08:00:00','2012-01-01 08:10:00'));
 select intersectsPeriod(tboolinst(true, '2012-01-01 08:00:00'), period('2012-01-01 08:01:00','2012-01-01 08:10:00'));

@@ -98,7 +98,7 @@ select tgeompoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2
  *****************************************************************************/
  
 select tgeompoint 'Point(0 0)@2012-01-01 08:00:00';
-select tgeompointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00');
+select tgeompointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00');
 
 select tgeompoint 'Point(0 0)->Point(0 1)@[2012-01-01 08:00:00, 2012-01-01 08:05:00)';
 select tgeompointseq(ST_Point(0,0), ST_Point(1,1), period '[2012-01-01 08:00:00, 2012-01-01 08:00:05)');
@@ -118,8 +118,8 @@ select tgeompointi(ARRAY[
 	tgeompoint 'Point(1 1)@2012-01-01 08:05:00'
 ]);
 select tgeompointi(ARRAY[
-	tgeompointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00'),
-	tgeompointinst(ST_Point(1,1), timestamp '2012-01-01 08:00:05')
+	tgeompointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00'),
+	tgeompointinst(ST_Point(1,1), timestamptz '2012-01-01 08:00:05')
 ]);
 
 /*****************************************************************************/
@@ -186,8 +186,8 @@ select astext(shift(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', interval '5 min
 	
 select astext(atValue(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', ST_Point(0,0)));
 select astext(atValue(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', ST_Point(1,1)));
-select astext(atTimestamp(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', timestamp '2012-01-01 08:00:00'));
-select astext(atTimestamp(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', timestamp '2012-01-01 08:05:00'));
+select astext(atTimestamp(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', timestamptz '2012-01-01 08:00:00'));
+select astext(atTimestamp(tgeompoint 'Point(0 0)@2012-01-01 08:00:00', timestamptz '2012-01-01 08:05:00'));
 
 /*****************************************************************************
  * TPointPer
@@ -257,20 +257,20 @@ geometry 'Point(-1 -1)'));
 
 
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestamp '2012-01-01 08:15:00'));
+	timestamptz '2012-01-01 08:15:00'));
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestamp '2012-01-01 08:00:00'));
+	timestamptz '2012-01-01 08:00:00'));
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@(2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestamp '2012-01-01 08:00:00'));
+	timestamptz '2012-01-01 08:00:00'));
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00]', 
-	timestamp '2012-01-01 08:10:00'));
+	timestamptz '2012-01-01 08:10:00'));
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestamp '2012-01-01 08:10:00'));
+	timestamptz '2012-01-01 08:10:00'));
 select astext(atTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestamp '2012-01-01 08:05:00'));
+	timestamptz '2012-01-01 08:05:00'));
 	
 select astext(atTimestampSet(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestampset(ARRAY[timestamp '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00'])));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:10:00'])));
 	
 select astext(atPeriod(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
 	period '[2012-01-01 08:02:00, 2012-01-01 08:05:00]'));
@@ -284,9 +284,9 @@ select intersectsTimestamp(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:
 	timestamptz '2012-01-01 08:10:00');
 		
 select intersectsTimestampSet(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestampset(ARRAY[timestamp '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-01 08:05:00', '2012-01-01 08:15:00']));
 select intersectsTimestampSet(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
-	timestampset(ARRAY[timestamp '2012-01-01 07:00:00', '2012-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2012-01-01 07:00:00', '2012-01-01 08:15:00']));
 	
 select intersectsPeriod(tgeompoint 'Point(0 0)->Point(2 2)@[2012-01-01 08:00:00, 2012-01-01 08:10:00)', 
 	period '[2012-01-01 08:02:00, 2012-01-01 08:05:00]');
@@ -436,8 +436,8 @@ select unnest(sequences(speed(tgeompoints(ARRAY[
 select astext(ARRAY[ST_Point(0,0), ST_Point(1,1)]);
 
 select astext(getValues(tgeompointi(ARRAY[
-	tgeompointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00'),
-	tgeompointinst(ST_Point(1,1), timestamp '2012-01-01 08:00:05')
+	tgeompointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00'),
+	tgeompointinst(ST_Point(1,1), timestamptz '2012-01-01 08:00:05')
 ])));
 
 select astext(getValues(tgeompointi(ARRAY[

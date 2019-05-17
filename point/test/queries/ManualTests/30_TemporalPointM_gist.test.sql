@@ -80,7 +80,7 @@ select * from tgeompointinst_tbl where inst ~= tgeompoints '{Point(50 50)->Point
 select * from tgeompointinst_tbl where inst ~= tgeompointi '{Point(50 50)@2012-03-01 08:00:00, Point(70 70)@2012-05-01 08:00:00}';
 
 --before
-select * from tgeompointinst_tbl where inst <<# timestamp '2012-05-01 08:00:00';
+select * from tgeompointinst_tbl where inst <<# timestamptz '2012-05-01 08:00:00';
 select * from tgeompointinst_tbl where inst <<# tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointinst_tbl where inst <<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointinst_tbl where inst <<# tbools '{true@[2012-05-01 08:00:00, 2012-07-01 08:00:00), false@[2012-07-01 08:00:00, 2012-09-01)}';
@@ -99,7 +99,7 @@ select * from tgeompointinst_tbl where inst <<# tgeompoints '{Point(0 0)->Point(
 select * from tgeompointinst_tbl where inst <<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --overbefore
-select * from tgeompointinst_tbl where inst &<# timestamp '2012-07-01 08:00:00';
+select * from tgeompointinst_tbl where inst &<# timestamptz '2012-07-01 08:00:00';
 select * from tgeompointinst_tbl where inst &<# tboolinst 'true@2012-07-01 08:00:00';
 select * from tgeompointinst_tbl where inst &<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointinst_tbl where inst &<# tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -118,7 +118,7 @@ select * from tgeompointinst_tbl where inst &<# tgeompoints '{Point(0 0)->Point(
 select * from tgeompointinst_tbl where inst &<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --after
-select * from tgeompointinst_tbl where inst #>> timestamp '2012-05-01 08:00:00';
+select * from tgeompointinst_tbl where inst #>> timestamptz '2012-05-01 08:00:00';
 select * from tgeompointinst_tbl where inst #>> tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointinst_tbl where inst #>> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointinst_tbl where inst #>> tbools '{true@[2012-01-01, 2012-03-01 08:00:00), false@[2012-03-01 08:00:00, 2012-05-01 08:00:00)}';
@@ -137,7 +137,7 @@ select * from tgeompointinst_tbl where inst #>> tgeompoints '{Point(0 0)->Point(
 select * from tgeompointinst_tbl where inst #>> tgeompointi '{Point(0 0)@2012-03-01 08:00:00, Point(10 10)@2012-05-01 08:00:00}';
 
 --overafter
-select * from tgeompointinst_tbl where inst #&> timestamp '2012-03-01 08:00:00';
+select * from tgeompointinst_tbl where inst #&> timestamptz '2012-03-01 08:00:00';
 select * from tgeompointinst_tbl where inst #&> tboolinst 'true@2012-03-01 08:00:00';
 select * from tgeompointinst_tbl where inst #&> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointinst_tbl where inst #&> tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -240,7 +240,7 @@ select * from tgeompointi_tbl where ti ~= tgeompoints '{Point(50 50)->Point(70 7
 select * from tgeompointi_tbl where ti ~= tgeompointi '{Point(50 50)@2012-03-01 08:00:00, Point(70 70)@2012-05-01 08:00:00}';
 
 --before
-select * from tgeompointi_tbl where ti <<# timestamp '2012-05-01 08:00:00';
+select * from tgeompointi_tbl where ti <<# timestamptz '2012-05-01 08:00:00';
 select * from tgeompointi_tbl where ti <<# tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointi_tbl where ti <<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointi_tbl where ti <<# tbools '{true@[2012-05-01 08:00:00, 2012-07-01 08:00:00), false@[2012-07-01 08:00:00, 2012-09-01)}';
@@ -259,7 +259,7 @@ select * from tgeompointi_tbl where ti <<# tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompointi_tbl where ti <<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --overbefore
-select * from tgeompointi_tbl where ti &<# timestamp '2012-07-01 08:00:00';
+select * from tgeompointi_tbl where ti &<# timestamptz '2012-07-01 08:00:00';
 select * from tgeompointi_tbl where ti &<# tboolinst 'true@2012-07-01 08:00:00';
 select * from tgeompointi_tbl where ti &<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointi_tbl where ti &<# tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -278,7 +278,7 @@ select * from tgeompointi_tbl where ti &<# tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompointi_tbl where ti &<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --after
-select * from tgeompointi_tbl where ti #>> timestamp '2012-05-01 08:00:00';
+select * from tgeompointi_tbl where ti #>> timestamptz '2012-05-01 08:00:00';
 select * from tgeompointi_tbl where ti #>> tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointi_tbl where ti #>> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointi_tbl where ti #>> tbools '{true@[2012-01-01, 2012-03-01 08:00:00), false@[2012-03-01 08:00:00, 2012-05-01 08:00:00)}';
@@ -297,7 +297,7 @@ select * from tgeompointi_tbl where ti #>> tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompointi_tbl where ti #>> tgeompointi '{Point(0 0)@2012-03-01 08:00:00, Point(10 10)@2012-05-01 08:00:00}';
 
 --overafter
-select * from tgeompointi_tbl where ti #&> timestamp '2012-03-01 08:00:00';
+select * from tgeompointi_tbl where ti #&> timestamptz '2012-03-01 08:00:00';
 select * from tgeompointi_tbl where ti #&> tboolinst 'true@2012-03-01 08:00:00';
 select * from tgeompointi_tbl where ti #&> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointi_tbl where ti #&> tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -400,7 +400,7 @@ select * from tgeompointseq_tbl where per ~= tgeompoints '{Point(50 50)->Point(7
 select * from tgeompointseq_tbl where per ~= tgeompointi '{Point(50 50)@2012-03-01 08:00:00, Point(70 70)@2012-05-01 08:00:00}';
 
 --before
-select * from tgeompointseq_tbl where per <<# timestamp '2012-05-01 08:00:00';
+select * from tgeompointseq_tbl where per <<# timestamptz '2012-05-01 08:00:00';
 select * from tgeompointseq_tbl where per <<# tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointseq_tbl where per <<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointseq_tbl where per <<# tbools '{true@[2012-05-01 08:00:00, 2012-07-01 08:00:00), false@[2012-07-01 08:00:00, 2012-09-01)}';
@@ -419,7 +419,7 @@ select * from tgeompointseq_tbl where per <<# tgeompoints '{Point(0 0)->Point(10
 select * from tgeompointseq_tbl where per <<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --overbefore
-select * from tgeompointseq_tbl where per &<# timestamp '2012-07-01 08:00:00';
+select * from tgeompointseq_tbl where per &<# timestamptz '2012-07-01 08:00:00';
 select * from tgeompointseq_tbl where per &<# tboolinst 'true@2012-07-01 08:00:00';
 select * from tgeompointseq_tbl where per &<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompointseq_tbl where per &<# tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -438,7 +438,7 @@ select * from tgeompointseq_tbl where per &<# tgeompoints '{Point(0 0)->Point(10
 select * from tgeompointseq_tbl where per &<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --after
-select * from tgeompointseq_tbl where per #>> timestamp '2012-05-01 08:00:00';
+select * from tgeompointseq_tbl where per #>> timestamptz '2012-05-01 08:00:00';
 select * from tgeompointseq_tbl where per #>> tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompointseq_tbl where per #>> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointseq_tbl where per #>> tbools '{true@[2012-01-01, 2012-03-01 08:00:00), false@[2012-03-01 08:00:00, 2012-05-01 08:00:00)}';
@@ -457,7 +457,7 @@ select * from tgeompointseq_tbl where per #>> tgeompoints '{Point(0 0)->Point(10
 select * from tgeompointseq_tbl where per #>> tgeompointi '{Point(0 0)@2012-03-01 08:00:00, Point(10 10)@2012-05-01 08:00:00}';
 
 --overafter
-select * from tgeompointseq_tbl where per #&> timestamp '2012-03-01 08:00:00';
+select * from tgeompointseq_tbl where per #&> timestamptz '2012-03-01 08:00:00';
 select * from tgeompointseq_tbl where per #&> tboolinst 'true@2012-03-01 08:00:00';
 select * from tgeompointseq_tbl where per #&> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompointseq_tbl where per #&> tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -561,7 +561,7 @@ select * from tgeompoints_tbl where tp ~= tgeompoints '{Point(50 50)->Point(70 7
 select * from tgeompoints_tbl where tp ~= tgeompointi '{Point(50 50)@2012-03-01 08:00:00, Point(70 70)@2012-05-01 08:00:00}';
 
 --before
-select * from tgeompoints_tbl where tp <<# timestamp '2012-05-01 08:00:00';
+select * from tgeompoints_tbl where tp <<# timestamptz '2012-05-01 08:00:00';
 select * from tgeompoints_tbl where tp <<# tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompoints_tbl where tp <<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompoints_tbl where tp <<# tbools '{true@[2012-05-01 08:00:00, 2012-07-01 08:00:00), false@[2012-07-01 08:00:00, 2012-09-01)}';
@@ -580,7 +580,7 @@ select * from tgeompoints_tbl where tp <<# tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompoints_tbl where tp <<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --overbefore
-select * from tgeompoints_tbl where tp &<# timestamp '2012-07-01 08:00:00';
+select * from tgeompoints_tbl where tp &<# timestamptz '2012-07-01 08:00:00';
 select * from tgeompoints_tbl where tp &<# tboolinst 'true@2012-07-01 08:00:00';
 select * from tgeompoints_tbl where tp &<# tboolseq 'true@[2012-05-01 08:00:00, 2012-07-01 08:00:00)';
 select * from tgeompoints_tbl where tp &<# tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';
@@ -599,7 +599,7 @@ select * from tgeompoints_tbl where tp &<# tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompoints_tbl where tp &<# tgeompointi '{Point(0 0)@2012-05-01 08:00:00, Point(10 10)@2012-07-01 08:00:00}';
 
 --after
-select * from tgeompoints_tbl where tp #>> timestamp '2012-05-01 08:00:00';
+select * from tgeompoints_tbl where tp #>> timestamptz '2012-05-01 08:00:00';
 select * from tgeompoints_tbl where tp #>> tboolinst 'true@2012-05-01 08:00:00';
 select * from tgeompoints_tbl where tp #>> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompoints_tbl where tp #>> tbools '{true@[2012-01-01, 2012-03-01 08:00:00), false@[2012-03-01 08:00:00, 2012-05-01 08:00:00)}';
@@ -618,7 +618,7 @@ select * from tgeompoints_tbl where tp #>> tgeompoints '{Point(0 0)->Point(10 10
 select * from tgeompoints_tbl where tp #>> tgeompointi '{Point(0 0)@2012-03-01 08:00:00, Point(10 10)@2012-05-01 08:00:00}';
 
 --overafter
-select * from tgeompoints_tbl where tp #&> timestamp '2012-03-01 08:00:00';
+select * from tgeompoints_tbl where tp #&> timestamptz '2012-03-01 08:00:00';
 select * from tgeompoints_tbl where tp #&> tboolinst 'true@2012-03-01 08:00:00';
 select * from tgeompoints_tbl where tp #&> tboolseq 'true@[2012-03-01 08:00:00, 2012-05-01 08:00:00)';
 select * from tgeompoints_tbl where tp #&> tbools '{true@[2012-03-01 08:00:00, 2012-05-01 08:00:00), false@[2012-05-01 08:00:00, 2012-07-01 08:00:00)}';

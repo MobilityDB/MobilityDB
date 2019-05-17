@@ -34,36 +34,11 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 	/* Determine whether the operator is exact */
 	*recheck = index_time_bbox_recheck(strategy);
 	
-	if (subtype == TIMESTAMPTZOID)
-	{
-		TimestampTz query;
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
-		query = PG_GETARG_TIMESTAMPTZ(1);
-		period = period_make(query, query, true, true);
-		periodfree = true;
-	}
-	else if (subtype == type_oid(T_TIMESTAMPSET))
-	{
-		TimestampSet *query = PG_GETARG_TIMESTAMPSET(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = timestampset_bbox(query);
-		PG_FREE_IF_COPY(query, 1);
-	}
-	else if (subtype == type_oid(T_PERIOD))
+	if (subtype == type_oid(T_PERIOD))
 	{
 		period = PG_GETARG_PERIOD(1);
 		if (period == NULL)
 			PG_RETURN_BOOL(false);
-	}
-	else if (subtype == type_oid(T_PERIODSET))
-	{
-		PeriodSet *query = PG_GETARG_PERIODSET(1);
-		if (query == NULL)
-			PG_RETURN_BOOL(false);
-		period = periodset_bbox(query);
-		PG_FREE_IF_COPY(query, 1);
 	}
 	else if (temporal_oid(subtype))
 	{

@@ -46,19 +46,6 @@
 #define TYPMOD_SET_DURATION(typmod, durtype) ((typmod) = typmod << 4 | durtype)
 
 /*****************************************************************************
- * Indexing constants
- *****************************************************************************/
-
-/* Strategy number */
-
-#define GeoStrategyNumberGroup			23
-#define GBoxDStrategyNumberGroup		24
-#define TPointInstStrategyNumberGroup	25
-#define TPointIStrategyNumberGroup		26
-#define TPointSeqStrategyNumberGroup	27
-#define TPointSStrategyNumberGroup		28
-
-/*****************************************************************************
  * GBOX macros
  *****************************************************************************/
 
@@ -109,7 +96,7 @@ extern Datum tpoint_minus_values(PG_FUNCTION_ARGS);
 extern Datum tpoints_at_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
- * Spatial functions defined in TemporalGeo.c
+ * Spatial functions defined in SpatialFuncs.c
  *****************************************************************************/
 
 extern POINT2D gs_get_point2d(GSERIALIZED *gs);
@@ -119,6 +106,14 @@ extern POINT4D gs_get_point4d(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
+extern void tpoint_same_srid(Temporal *temp1, Temporal *temp2);
+extern void tpoint_gs_same_srid(Temporal *temp, GSERIALIZED *gs);
+extern void tpoint_same_dimensionality(Temporal *temp1, Temporal *temp2);
+extern void tpoint_gs_same_dimensionality(Temporal *temp, GSERIALIZED *gs);
+extern void tpoint_check_Z_dimension(Temporal *temp1, Temporal *temp2);
+extern void tpoint_gs_check_Z_dimension(Temporal *temp, GSERIALIZED *gs);
+extern void gserialized_check_point(GSERIALIZED *gs);
+extern void gserialized_check_M_dimension(GSERIALIZED *gs);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 /* Functions for output in WKT format */

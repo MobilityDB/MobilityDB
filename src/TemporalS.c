@@ -92,9 +92,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 {
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
-	if (count < 1)
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("A temporal sequence set must have at least one temporal sequence")));
+	assert(count > 0);
 	bool tempcontinuous = true;
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz = false;

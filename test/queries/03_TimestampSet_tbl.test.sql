@@ -1,5 +1,5 @@
 ﻿-------------------------------------------------------------------------------
--- Tests for timestamp set data type.
+-- Tests for timestampset data type.
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ DROP TABLE tbl_timestampset_tmp;
 -------------------------------------------------------------------------------
 -- Constructor
 
-SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT timestampset(array_agg(DISTINCT t ORDER BY t)) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast

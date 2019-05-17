@@ -88,9 +88,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants */
-	if (count < 1)
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("A temporal instant set must have at least one temporal instant")));
+	assert(count > 0);
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz;
 	int srid;

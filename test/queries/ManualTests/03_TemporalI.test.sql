@@ -222,32 +222,32 @@ select atTimestamp(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-0
 
 -- Values
 select atTimestampSet(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
 select atTimestampSet(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
 select atTimestampSet(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:06:00', '2001-01-01 08:15:00']));
 -- NULL
 select atTimestampSet(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 select atTimestampSet(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 select atTimestampSet(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 
 select atTimestampSet(tfloati(ARRAY[
 	tfloatinst(1, '2001-01-01 08:00:00'),
 	tfloatinst(1, '2001-01-01 08:05:00'),
 	tfloatinst(1, '2001-01-01 08:10:00')
 	]),
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:05:00', '2001-01-01 08:08:00', '2001-01-01 08:05:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:05:00', '2001-01-01 08:08:00', '2001-01-01 08:05:00']));
 select atTimestampSet(tfloati(ARRAY[
 tfloatinst(1, '2000-01-01 08:00'),
 tfloatinst(3, '2000-01-01 08:10'),
 tfloatinst(2, '2000-01-01 08:20'),
 tfloatinst(2, '2000-01-01 08:30')
 ]),
-timestampset(ARRAY[timestamp '2000-01-01 08:10', '2000-01-01 08:20', '2000-01-01 08:10'])
+timestampset(ARRAY[timestamptz '2000-01-01 08:10', '2000-01-01 08:20', '2000-01-01 08:10'])
 );
 	
 -- Values
@@ -326,33 +326,33 @@ select minusPeriodSet(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@200
 
 -- true
 select intersectsTimestamp(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:05:00');
+	timestamptz '2001-01-01 08:05:00');
 select intersectsTimestamp(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:05:00');
+	timestamptz '2001-01-01 08:05:00');
 select intersectsTimestamp(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:05:00');
+	timestamptz '2001-01-01 08:05:00');
 -- false
 select intersectsTimestamp(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:10:00');
+	timestamptz '2001-01-01 08:10:00');
 select intersectsTimestamp(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:10:00');
+	timestamptz '2001-01-01 08:10:00');
 select intersectsTimestamp(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestamp '2001-01-01 08:10:00');
+	timestamptz '2001-01-01 08:10:00');
 
 -- true
 select intersectsTimestampSet(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
 select intersectsTimestampSet(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
 select intersectsTimestampSet(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:05:00', '2001-01-01 08:15:00']));
 -- false
 select intersectsTimestampSet(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 select intersectsTimestampSet(tint '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 select intersectsTimestampSet(tfloat '{1@2001-01-01 08:00:00,2@2001-01-01 08:05:00,3@2001-01-01 08:06:00}', 
-	timestampset(ARRAY[timestamp '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
+	timestampset(ARRAY[timestamptz '2001-01-01 08:10:00', '2001-01-01 08:15:00']));
 
 -- true
 select intersectsPeriod(tbool '{true@2001-01-01 08:00:00,false@2001-01-01 08:05:00,true@2001-01-01 08:06:00}', 

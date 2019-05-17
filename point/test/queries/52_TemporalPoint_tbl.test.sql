@@ -281,33 +281,33 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geogpoint3D
 WHERE minusValue(temp, g) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeompoint, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint) tmp 
+( SELECT array_agg(g) AS valuearr FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint) tmp 
+( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint WHERE g IS NOT NULL LIMIT 10) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D) tmp 
+( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeogpoint3D, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D) tmp 
+( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D WHERE g IS NOT NULL LIMIT 10) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM
 ( SELECT * FROM tbl_tgeompoint limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint LIMIT 10) tmp
+( SELECT array_agg(g) AS valuearr FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM
 ( SELECT * FROM tbl_tgeogpoint limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint LIMIT 10) tmp
+( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint WHERE g IS NOT NULL LIMIT 10) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM
 ( SELECT * FROM tbl_tgeompoint3D limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D LIMIT 10) tmp
+( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM
 ( SELECT * FROM tbl_tgeogpoint3D limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D LIMIT 10) tmp
+( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D WHERE g IS NOT NULL LIMIT 10) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz

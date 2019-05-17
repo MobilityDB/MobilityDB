@@ -9,7 +9,7 @@ select srid(tgeogpoint(Instant) 'Point(0 0)@2012-01-01 08:00:00');
 select srid(tgeogpoint(Instant, Point) 'Point(0 0)@2012-01-01 08:00:00');
 -- 4326
 
-select tgeogpointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00');
+select tgeogpointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00');
 /*****************************************************************************
  * TPointI
  *****************************************************************************/
@@ -24,8 +24,8 @@ tgeogpoint(Instant) 'Point(1 1)@2012-01-01 08:05:00'
 ]);
 
 select tgeogpointi(ARRAY[
-tgeogpointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00'),
-tgeogpointinst(ST_Point(1,1), timestamp '2012-01-01 08:00:05')
+tgeogpointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00'),
+tgeogpointinst(ST_Point(1,1), timestamptz '2012-01-01 08:00:05')
 ]);
 
 
@@ -93,8 +93,8 @@ tgeompointper 'srid=4326;Point(1 1)->srid=4326;Point(0 0)@[2012-01-01 08:05:00, 
 select tgeogpointseq(ST_Point(0,0), ST_Point(1,1), period '[2012-01-01 08:00:00, 2012-01-01 08:00:05)');
 
 select tgeogpointi(ARRAY[
-tgeogpointinst(ST_Point(0,0), timestamp '2012-01-01 08:00:00'),
-tgeogpointinst(ST_Point(1,1), timestamp '2012-01-01 08:00:05')
+tgeogpointinst(ST_Point(0,0), timestamptz '2012-01-01 08:00:00'),
+tgeogpointinst(ST_Point(1,1), timestamptz '2012-01-01 08:00:05')
 ]);
 
 */

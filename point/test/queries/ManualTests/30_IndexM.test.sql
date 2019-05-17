@@ -66,7 +66,7 @@ select count(*) from tbl_tgeompointinst where inst |&> tgeompoints '{Point(50 50
 select count(*) from tbl_tgeompointinst where inst |&> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --before
-select count(*) from tbl_tgeompointinst where inst <<# timestamp '2001-05-01';
+select count(*) from tbl_tgeompointinst where inst <<# timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointinst where inst <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointinst where inst <<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointinst where inst <<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -75,7 +75,7 @@ select count(*) from tbl_tgeompointinst where inst <<# tgeompoints '{Point(50 50
 select count(*) from tbl_tgeompointinst where inst <<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overbefore
-select count(*) from tbl_tgeompointinst where inst &<# timestamp '2001-07-01';
+select count(*) from tbl_tgeompointinst where inst &<# timestamptz '2001-07-01';
 select count(*) from tbl_tgeompointinst where inst &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointinst where inst &<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointinst where inst &<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -84,7 +84,7 @@ select count(*) from tbl_tgeompointinst where inst &<# tgeompoints '{Point(50 50
 select count(*) from tbl_tgeompointinst where inst &<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --after
-select count(*) from tbl_tgeompointinst where inst #>> timestamp '2001-05-01';
+select count(*) from tbl_tgeompointinst where inst #>> timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointinst where inst #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointinst where inst #>> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointinst where inst #>> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -93,7 +93,7 @@ select count(*) from tbl_tgeompointinst where inst #>> tgeompoints '{Point(50 50
 select count(*) from tbl_tgeompointinst where inst #>> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overafter
-select count(*) from tbl_tgeompointinst where inst #&> timestamp '2001-03-01';
+select count(*) from tbl_tgeompointinst where inst #&> timestamptz '2001-03-01';
 select count(*) from tbl_tgeompointinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointinst where inst #&> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointinst where inst #&> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -169,7 +169,7 @@ select count(*) from tbl_tgeompointper where per |&> tgeompoints '{Point(50 50)-
 select count(*) from tbl_tgeompointper where per |&> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --before
-select count(*) from tbl_tgeompointper where per <<# timestamp '2001-05-01';
+select count(*) from tbl_tgeompointper where per <<# timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointper where per <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointper where per <<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointper where per <<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -178,7 +178,7 @@ select count(*) from tbl_tgeompointper where per <<# tgeompoints '{Point(50 50)-
 select count(*) from tbl_tgeompointper where per <<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overbefore
-select count(*) from tbl_tgeompointper where per &<# timestamp '2001-07-01';
+select count(*) from tbl_tgeompointper where per &<# timestamptz '2001-07-01';
 select count(*) from tbl_tgeompointper where per &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointper where per &<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointper where per &<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -187,7 +187,7 @@ select count(*) from tbl_tgeompointper where per &<# tgeompoints '{Point(50 50)-
 select count(*) from tbl_tgeompointper where per &<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --after
-select count(*) from tbl_tgeompointper where per #>> timestamp '2001-05-01';
+select count(*) from tbl_tgeompointper where per #>> timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointper where per #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointper where per #>> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointper where per #>> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -196,7 +196,7 @@ select count(*) from tbl_tgeompointper where per #>> tgeompoints '{Point(50 50)-
 select count(*) from tbl_tgeompointper where per #>> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overafter
-select count(*) from tbl_tgeompointper where per #&> timestamp '2001-03-01';
+select count(*) from tbl_tgeompointper where per #&> timestamptz '2001-03-01';
 select count(*) from tbl_tgeompointper where per #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointper where per #&> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointper where per #&> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -272,7 +272,7 @@ select count(*) from tbl_tgeompointp where tp |&> tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointp where tp |&> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --before
-select count(*) from tbl_tgeompointp where tp <<# timestamp '2001-05-01';
+select count(*) from tbl_tgeompointp where tp <<# timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointp where tp <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointp where tp <<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointp where tp <<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -281,7 +281,7 @@ select count(*) from tbl_tgeompointp where tp <<# tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointp where tp <<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overbefore
-select count(*) from tbl_tgeompointp where tp &<# timestamp '2001-07-01';
+select count(*) from tbl_tgeompointp where tp &<# timestamptz '2001-07-01';
 select count(*) from tbl_tgeompointp where tp &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointp where tp &<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointp where tp &<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -290,7 +290,7 @@ select count(*) from tbl_tgeompointp where tp &<# tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointp where tp &<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --after
-select count(*) from tbl_tgeompointp where tp #>> timestamp '2001-05-01';
+select count(*) from tbl_tgeompointp where tp #>> timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointp where tp #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointp where tp #>> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointp where tp #>> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -299,7 +299,7 @@ select count(*) from tbl_tgeompointp where tp #>> tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointp where tp #>> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overafter
-select count(*) from tbl_tgeompointp where tp #&> timestamp '2001-03-01';
+select count(*) from tbl_tgeompointp where tp #&> timestamptz '2001-03-01';
 select count(*) from tbl_tgeompointp where tp #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointp where tp #&> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointp where tp #&> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -367,7 +367,7 @@ select count(*) from tbl_tgeompointi where ti |&> tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointi where ti |&> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --before
-select count(*) from tbl_tgeompointi where ti <<# timestamp '2001-05-01';
+select count(*) from tbl_tgeompointi where ti <<# timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointi where ti <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointi where ti <<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointi where ti <<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -376,7 +376,7 @@ select count(*) from tbl_tgeompointi where ti <<# tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointi where ti <<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overbefore
-select count(*) from tbl_tgeompointi where ti &<# timestamp '2001-07-01';
+select count(*) from tbl_tgeompointi where ti &<# timestamptz '2001-07-01';
 select count(*) from tbl_tgeompointi where ti &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointi where ti &<# gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointi where ti &<# tgeompointinst 'Point(50 50)@2001-05-01';
@@ -385,7 +385,7 @@ select count(*) from tbl_tgeompointi where ti &<# tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointi where ti &<# tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --after
-select count(*) from tbl_tgeompointi where ti #>> timestamp '2001-05-01';
+select count(*) from tbl_tgeompointi where ti #>> timestamptz '2001-05-01';
 select count(*) from tbl_tgeompointi where ti #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointi where ti #>> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointi where ti #>> tgeompointinst 'Point(50 50)@2001-05-01';
@@ -394,7 +394,7 @@ select count(*) from tbl_tgeompointi where ti #>> tgeompoints '{Point(50 50)->Po
 select count(*) from tbl_tgeompointi where ti #>> tgeompointi '{Point(50 50)@2001-05-01, Point(70 70)@2001-07-01}';
 
 --overafter
-select count(*) from tbl_tgeompointi where ti #&> timestamp '2001-03-01';
+select count(*) from tbl_tgeompointi where ti #&> timestamptz '2001-03-01';
 select count(*) from tbl_tgeompointi where ti #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tgeompointi where ti #&> gbox 'GBOX(60 60 47260800000000,40 40 41990400000000)';
 select count(*) from tbl_tgeompointi where ti #&> tgeompointinst 'Point(50 50)@2001-05-01';

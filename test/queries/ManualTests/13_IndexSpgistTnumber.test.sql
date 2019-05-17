@@ -19,10 +19,10 @@ select count(*) from tbl_tintseq
 where seq <@ floatrange '[2,5]';
 
 select count(*) from tbl_tintseq
-where lower(getTime(seq)) = timestamp '2001-01-21 18:43:36';
+where lower(getTime(seq)) = timestamptz '2001-01-21 18:43:36';
 
 select count(*) from tbl_tintseq
-where seq <@ timestamp '2001-01-21 18:43:36';
+where seq <@ timestamptz '2001-01-21 18:43:36';
 
 select count(*) from tbl_tintseq
 where getTime(seq) <@ period('2001-03-01', '2001-07-31');
@@ -89,10 +89,10 @@ select count(*) from tbl_tfloatseq
 where seq <@ floatrange '[2,5]';
 
 select count(*) from tbl_tfloatseq
-where getTime(seq) @> timestamp '2001-06-05 13:14:33';
+where getTime(seq) @> timestamptz '2001-06-05 13:14:33';
 
 select count(*) from tbl_tfloatseq
-where seq <@ timestamp '2001-06-05 13:14:33';
+where seq <@ timestamptz '2001-06-05 13:14:33';
 
 select count(*) from tbl_tfloatseq
 where getTime(seq) <@ period('2001-03-01', '2001-07-31');

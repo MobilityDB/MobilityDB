@@ -560,97 +560,97 @@ SELECT geography 'Point Z empty' && tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' && tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' && tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' && tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT timestamptz '2000-01-01' && tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT timestamptz '2000-01-01' && tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT timestamptz '2000-01-01' && tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' && tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' && tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' && tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' && tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' && tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' && tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' && tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' && tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
@@ -1232,97 +1232,97 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' && timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' && timestamptz '2000-01-01';
  ?column? 
 ----------
  t
@@ -1906,13 +1906,13 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' && geometry 'SRID=5676;Point(1 1)';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01'&& geometry 'Point(1 1 1)';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
@@ -2109,97 +2109,97 @@ SELECT geography 'Point Z empty' @> tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' @> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' @> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' @> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT timestamptz '2000-01-01' @> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' @> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' @> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' @> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' @> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' @> tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' @> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
@@ -2781,97 +2781,97 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @> timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' @> timestamptz '2000-01-01';
  ?column? 
 ----------
  t
@@ -3455,13 +3455,13 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'Point(1 1 1)';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
@@ -3658,97 +3658,97 @@ SELECT geography 'Point Z empty' <@ tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' <@ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' <@ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' <@ tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  t
@@ -4330,97 +4330,97 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <@ timestamptz '2000-01-01';
  ?column? 
 ----------
  f
@@ -5004,13 +5004,13 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'SRID=5676;Point(1 1)';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'Point(1 1 1)';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
@@ -5207,97 +5207,97 @@ SELECT geography 'Point Z empty' ~= tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' ~= tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' ~= tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+SELECT timestamptz '2000-01-01' ~= tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
  f
@@ -5879,97 +5879,97 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= timestamp '2000-01-01';
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestamp '2000-01-01';
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestamp '2000-01-01';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestamp '2000-01-01';
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= timestamp '2000-01-01';
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestamp '2000-01-01';
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' ~= timestamptz '2000-01-01';
  ?column? 
 ----------
  f
@@ -6553,13 +6553,13 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'SRID=5676;Point(1 1)';
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'Point(1 1 1)';
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';

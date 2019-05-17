@@ -99,6 +99,18 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
 	-- overlaps or after
 	OPERATOR	31		#&> (tgeompoint, gbox),
 	OPERATOR	31		#&> (tgeompoint, tgeompoint),
+	-- overlaps or front
+	OPERATOR	32		&</ (tgeompoint, gbox),
+	OPERATOR	32		&</ (tgeompoint, tgeompoint),
+	-- strictly front
+	OPERATOR	33		<</ (tgeompoint, gbox),
+	OPERATOR	33		<</ (tgeompoint, tgeompoint),
+	-- strictly back
+	OPERATOR	34		/>> (tgeompoint, gbox),
+	OPERATOR	34		/>> (tgeompoint, tgeompoint),
+	-- overlaps or back
+	OPERATOR	35		/&> (tgeompoint, gbox),
+	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
 	FUNCTION	1	spgist_tpoint_config(internal, internal),
 	FUNCTION	2	spgist_tpoint_choose(internal, internal),

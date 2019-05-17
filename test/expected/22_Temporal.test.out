@@ -5263,397 +5263,397 @@ SELECT minusMax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
  {["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tbool 't@2000-01-01', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  t@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tbool 't@2000-01-02', timestamp '2000-01-01');
+SELECT atTimestamp(tbool 't@2000-01-02', timestamptz '2000-01-01');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(tbool 't@2000-01-01', timestamp '2000-01-02');
+SELECT atTimestamp(tbool 't@2000-01-01', timestamptz '2000-01-02');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
+SELECT atTimestamp(tbool '{t@2000-01-01}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  t@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
+SELECT atTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  t@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tbool '{t@2000-01-01, t@2000-01-03}', timestamp '2000-01-02');
+SELECT atTimestamp(tbool '{t@2000-01-01, t@2000-01-03}', timestamptz '2000-01-02');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
+SELECT atTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  t@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
+SELECT atTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  t@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tint '1@2000-01-01', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tint '{1@2000-01-01}', timestamp '2000-01-01');
+SELECT atTimestamp(tint '{1@2000-01-01}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
+SELECT atTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tint '{1@2000-01-01, 1@2000-01-03}', timestamp '2000-01-02');
+SELECT atTimestamp(tint '{1@2000-01-01, 1@2000-01-03}', timestamptz '2000-01-02');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
+SELECT atTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
+SELECT atTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
        attimestamp        
 --------------------------
  1@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
         attimestamp         
 ----------------------------
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tfloat '{1.5@2000-01-01}', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '{1.5@2000-01-01}', timestamptz '2000-01-01');
         attimestamp         
 ----------------------------
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
         attimestamp         
 ----------------------------
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tfloat '{1.5@2000-01-01, 1.5@2000-01-03}', timestamp '2000-01-02');
+SELECT atTimestamp(tfloat '{1.5@2000-01-01, 1.5@2000-01-03}', timestamptz '2000-01-02');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
         attimestamp         
 ----------------------------
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
+SELECT atTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
         attimestamp         
 ----------------------------
  1.5@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT atTimestamp(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(ttext '{AAA@2000-01-01}', timestamp '2000-01-01');
+SELECT atTimestamp(ttext '{AAA@2000-01-01}', timestamptz '2000-01-01');
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
+SELECT atTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(ttext '{AAA@2000-01-01, AAA@2000-01-03}', timestamp '2000-01-02');
+SELECT atTimestamp(ttext '{AAA@2000-01-01, AAA@2000-01-03}', timestamptz '2000-01-02');
  attimestamp 
 -------------
  
 (1 row)
 
-SELECT atTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
+SELECT atTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT atTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
+SELECT atTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
          attimestamp          
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT valueAtTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tbool 't@2000-01-01', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  t
 (1 row)
 
-SELECT valueAtTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  t
 (1 row)
 
-SELECT valueAtTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  t
 (1 row)
 
-SELECT valueAtTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  t
 (1 row)
 
-SELECT valueAtTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tint '1@2000-01-01', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
                 1
 (1 row)
 
-SELECT valueAtTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
                 1
 (1 row)
 
-SELECT valueAtTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
                 1
 (1 row)
 
-SELECT valueAtTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
                 1
 (1 row)
 
-SELECT valueAtTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
               1.5
 (1 row)
 
-SELECT valueAtTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
               1.5
 (1 row)
 
-SELECT valueAtTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
               1.5
 (1 row)
 
-SELECT valueAtTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
               1.5
 (1 row)
 
-SELECT valueAtTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT valueAtTimestamp(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  AAA
 (1 row)
 
-SELECT valueAtTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  AAA
 (1 row)
 
-SELECT valueAtTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
+SELECT valueAtTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  AAA
 (1 row)
 
-SELECT valueAtTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
+SELECT valueAtTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
  valueattimestamp 
 ------------------
  AAA
 (1 row)
 
-SELECT minusTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool 't@2000-01-01', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tbool '{t@2000-01-01}', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{t@2000-01-01}', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
                     minustimestamp                    
 ------------------------------------------------------
  {f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT minusTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
                                   minustimestamp                                  
 ----------------------------------------------------------------------------------
  {(t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03]}', timestamptz '2000-01-01');
                                   minustimestamp                                  
 ----------------------------------------------------------------------------------
  {(t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
                                                              minustimestamp                                                             
 ----------------------------------------------------------------------------------------------------------------------------------------
  {(t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '1@2000-01-01', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tint '{1@2000-01-01}', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{1@2000-01-01}', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
                     minustimestamp                    
 ------------------------------------------------------
  {2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT minusTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
                                   minustimestamp                                  
 ----------------------------------------------------------------------------------
  {(1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]}', timestamptz '2000-01-01');
                                   minustimestamp                                  
 ----------------------------------------------------------------------------------
  {(1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
                                                              minustimestamp                                                             
 ----------------------------------------------------------------------------------------------------------------------------------------
  {(1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00], [3@2000-01-04 00:00:00+00, 3@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tfloat '{1.5@2000-01-01}', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{1.5@2000-01-01}', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
                       minustimestamp                      
 ----------------------------------------------------------
  {2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT minusTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
                                      minustimestamp                                     
 ----------------------------------------------------------------------------------------
  {(1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', timestamptz '2000-01-01');
                                      minustimestamp                                     
 ----------------------------------------------------------------------------------------
  {(1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
+SELECT minusTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
                                                                   minustimestamp                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------------
  {(1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00], [3.5@2000-01-04 00:00:00+00, 3.5@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(ttext '{AAA@2000-01-01}', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{AAA@2000-01-01}', timestamptz '2000-01-01');
  minustimestamp 
 ----------------
  
 (1 row)
 
-SELECT minusTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
                         minustimestamp                        
 --------------------------------------------------------------
  {"BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT minusTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
                                         minustimestamp                                        
 ----------------------------------------------------------------------------------------------
  {("AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]}', timestamptz '2000-01-01');
                                         minustimestamp                                        
 ----------------------------------------------------------------------------------------------
  {("AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
+SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
                                                                        minustimestamp                                                                       
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
  {("AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
@@ -5803,18 +5803,22 @@ SELECT atTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[
  {"AAA"@2000-01-01 00:00:00+00}
 (1 row)
 
-select atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]',
-  timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
+select atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]', timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
                                                attimestampset                                               
 ------------------------------------------------------------------------------------------------------------
  {1@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00, 1@2000-01-05 00:00:00+00}
 (1 row)
 
-select atTimestampSet(tfloat '(1@2000-01-02, 2@2000-01-04, 1@2000-01-05)',
-  timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
+select atTimestampSet(tfloat '(1@2000-01-02, 2@2000-01-04, 1@2000-01-05)', timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
                      attimestampset                     
 --------------------------------------------------------
  {1.5@2000-01-03 00:00:00+00, 2@2000-01-04 00:00:00+00}
+(1 row)
+
+select atTimestampSet(tfloat '{[1@2000-01-03, 1@2000-01-04]}', timestampset '{2000-01-01, 2000-01-02}');
+ attimestampset 
+----------------
+ 
 (1 row)
 
 SELECT minusTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
@@ -5959,6 +5963,12 @@ SELECT minusTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03
                                                                      minustimestampset                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
  {("AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
+(1 row)
+
+select minusTimestampSet(tfloat '{[1@2000-01-01], [1@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
+ minustimestampset 
+-------------------
+ 
 (1 row)
 
 SELECT atPeriod(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');
@@ -6393,6 +6403,12 @@ SELECT atPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
  {["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00]}
 (1 row)
 
+select atPeriodSet(tfloat '{[1@2000-01-01, 1@2000-01-02]}', periodset '{[2000-01-03, 2000-01-04]}');
+ atperiodset 
+-------------
+ 
+(1 row)
+
 SELECT minusPeriodSet(tbool 't@2000-01-01', periodset '{[2000-01-01,2000-01-02]}');
  minusperiodset 
 ----------------
@@ -6537,97 +6553,103 @@ SELECT minusPeriodSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[
  {("BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
-SELECT intersectsTimestamp(tbool 't@2000-01-01', timestamp '2000-01-01');
+select minusPeriodSet(tfloat '{[1@2000-01-01, 1@2000-01-02]}', periodset '{[2000-01-01, 2000-01-02]}');
+ minusperiodset 
+----------------
+ 
+(1 row)
+
+SELECT intersectsTimestamp(tbool 't@2000-01-01', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  f
 (1 row)
 
-SELECT intersectsTimestamp(tint '1@2000-01-01', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tint '1@2000-01-01', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  f
 (1 row)
 
-SELECT intersectsTimestamp(tfloat '1.5@2000-01-01', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  f
 (1 row)
 
-SELECT intersectsTimestamp(ttext 'AAA@2000-01-01', timestamp '2000-01-01');
+SELECT intersectsTimestamp(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamp '2000-01-01');
+SELECT intersectsTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  t
 (1 row)
 
-SELECT intersectsTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamp '2000-01-01');
+SELECT intersectsTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
  f
@@ -6991,6 +7013,12 @@ SELECT twAvg(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@
  twavg 
 -------
      2
+(1 row)
+
+SELECT twAvg(tint '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}');
+      twavg       
+------------------
+ 1.33333333333333
 (1 row)
 
 SELECT twAvg(tfloat '1.5@2000-01-01');

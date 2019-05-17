@@ -314,7 +314,8 @@ temporal_in(PG_FUNCTION_ARGS)
 	if (temp_typmod >= 0)
 		result = temporal_valid_typmod(result, temp_typmod);
 	if (result == 0)
-		PG_RETURN_NULL();
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse temporal value")));		
 	PG_RETURN_POINTER(result);
 }
 

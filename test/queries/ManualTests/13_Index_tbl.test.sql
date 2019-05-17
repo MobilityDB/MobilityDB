@@ -2,7 +2,7 @@
 
 /* tboolinst */
 --before
-select count(*) from tbl_tboolinst where inst <<# timestamp '2001-05-01';
+select count(*) from tbl_tboolinst where inst <<# timestamptz '2001-05-01';
 select count(*) from tbl_tboolinst where inst <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolinst where inst <<# tboolinst 'true@2001-05-01';
 select count(*) from tbl_tboolinst where inst <<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -10,7 +10,7 @@ select count(*) from tbl_tboolinst where inst <<# tboolseq '[true@2001-05-01, tr
 select count(*) from tbl_tboolinst where inst <<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tboolinst where inst &<# timestamp '2001-05-01';
+select count(*) from tbl_tboolinst where inst &<# timestamptz '2001-05-01';
 select count(*) from tbl_tboolinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolinst where inst &<# tboolinst 'true@2001-07-01';
 select count(*) from tbl_tboolinst where inst &<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -18,7 +18,7 @@ select count(*) from tbl_tboolinst where inst &<# tboolseq '[true@2001-05-01, tr
 select count(*) from tbl_tboolinst where inst &<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --after
-select count(*) from tbl_tboolinst where inst #>> timestamp '2001-05-01';
+select count(*) from tbl_tboolinst where inst #>> timestamptz '2001-05-01';
 select count(*) from tbl_tboolinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolinst where inst #>> tboolinst 'true@2001-05-01';
 select count(*) from tbl_tboolinst where inst #>> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -26,7 +26,7 @@ select count(*) from tbl_tboolinst where inst #>> tboolseq '[true@2001-05-01, tr
 select count(*) from tbl_tboolinst where inst #>> tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tboolinst where inst #&> timestamp '2001-05-01';
+select count(*) from tbl_tboolinst where inst #&> timestamptz '2001-05-01';
 select count(*) from tbl_tboolinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolinst where inst #&> tboolinst 'true@2001-03-01';
 select count(*) from tbl_tboolinst where inst #&> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -35,7 +35,7 @@ select count(*) from tbl_tboolinst where inst #&> tbools '{[true@2001-05-01, tru
 
 /* tbooli */
 --before
-select count(*) from tbl_tbooli where ti <<# timestamp '2001-05-01';
+select count(*) from tbl_tbooli where ti <<# timestamptz '2001-05-01';
 select count(*) from tbl_tbooli where ti <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbooli where ti <<# tboolinst 'true@2001-05-01';
 select count(*) from tbl_tbooli where ti <<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -43,7 +43,7 @@ select count(*) from tbl_tbooli where ti <<# tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbooli where ti <<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tbooli where ti &<# timestamp '2001-07-01';
+select count(*) from tbl_tbooli where ti &<# timestamptz '2001-07-01';
 select count(*) from tbl_tbooli where ti &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbooli where ti &<# tboolinst 'true@2001-07-01';
 select count(*) from tbl_tbooli where ti &<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -51,7 +51,7 @@ select count(*) from tbl_tbooli where ti &<# tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbooli where ti &<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --after
-select count(*) from tbl_tbooli where ti #>> timestamp '2001-05-01';
+select count(*) from tbl_tbooli where ti #>> timestamptz '2001-05-01';
 select count(*) from tbl_tbooli where ti #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbooli where ti #>> tboolinst 'true@2001-05-01';
 select count(*) from tbl_tbooli where ti #>> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -59,7 +59,7 @@ select count(*) from tbl_tbooli where ti #>> tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbooli where ti #>> tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tbooli where ti #&> timestamp '2001-03-01';
+select count(*) from tbl_tbooli where ti #&> timestamptz '2001-03-01';
 select count(*) from tbl_tbooli where ti #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbooli where ti #&> tboolinst 'true@2001-03-01';
 select count(*) from tbl_tbooli where ti #&> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -68,7 +68,7 @@ select count(*) from tbl_tbooli where ti #&> tbools '{[true@2001-05-01, true@200
 
 /* tboolseq */
 --before
-select count(*) from tbl_tboolseq where seq <<# timestamp '2001-05-01';
+select count(*) from tbl_tboolseq where seq <<# timestamptz '2001-05-01';
 select count(*) from tbl_tboolseq where seq <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolseq where seq <<# tboolinst 'true@2001-05-01';
 select count(*) from tbl_tboolseq where seq <<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -76,7 +76,7 @@ select count(*) from tbl_tboolseq where seq <<# tboolseq '[true@2001-05-01, true
 select count(*) from tbl_tboolseq where seq <<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tboolseq where seq &<# timestamp '2001-07-01';
+select count(*) from tbl_tboolseq where seq &<# timestamptz '2001-07-01';
 select count(*) from tbl_tboolseq where seq &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolseq where seq &<# tboolinst 'true@2001-07-01';
 select count(*) from tbl_tboolseq where seq &<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -84,7 +84,7 @@ select count(*) from tbl_tboolseq where seq &<# tboolseq '[true@2001-05-01, true
 select count(*) from tbl_tboolseq where seq &<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --after
-select count(*) from tbl_tboolseq where seq #>> timestamp '2001-05-01';
+select count(*) from tbl_tboolseq where seq #>> timestamptz '2001-05-01';
 select count(*) from tbl_tboolseq where seq #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolseq where seq #>> tboolinst 'true@2001-05-01';
 select count(*) from tbl_tboolseq where seq #>> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -92,7 +92,7 @@ select count(*) from tbl_tboolseq where seq #>> tboolseq '[true@2001-05-01, true
 select count(*) from tbl_tboolseq where seq #>> tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tboolseq where seq #&> timestamp '2001-03-01';
+select count(*) from tbl_tboolseq where seq #&> timestamptz '2001-03-01';
 select count(*) from tbl_tboolseq where seq #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tboolseq where seq #&> tboolinst 'true@2001-03-01';
 select count(*) from tbl_tboolseq where seq #&> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -101,7 +101,7 @@ select count(*) from tbl_tboolseq where seq #&> tbools '{[true@2001-05-01, true@
 
 /* tbools */
 --before
-select count(*) from tbl_tbools where ts <<# timestamp '2001-05-01';
+select count(*) from tbl_tbools where ts <<# timestamptz '2001-05-01';
 select count(*) from tbl_tbools where ts <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbools where ts <<# tboolinst 'true@2001-05-01';
 select count(*) from tbl_tbools where ts <<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -109,7 +109,7 @@ select count(*) from tbl_tbools where ts <<# tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbools where ts <<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tbools where ts &<# timestamp '2001-07-01';
+select count(*) from tbl_tbools where ts &<# timestamptz '2001-07-01';
 select count(*) from tbl_tbools where ts &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbools where ts &<# tboolinst 'true@2001-07-01';
 select count(*) from tbl_tbools where ts &<# tbooli '{true@2001-05-01, false@2001-07-01}';
@@ -117,7 +117,7 @@ select count(*) from tbl_tbools where ts &<# tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbools where ts &<# tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --after
-select count(*) from tbl_tbools where ts #>> timestamp '2001-05-01';
+select count(*) from tbl_tbools where ts #>> timestamptz '2001-05-01';
 select count(*) from tbl_tbools where ts #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbools where ts #>> tboolinst 'true@2001-05-01';
 select count(*) from tbl_tbools where ts #>> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -125,7 +125,7 @@ select count(*) from tbl_tbools where ts #>> tboolseq '[true@2001-05-01, true@20
 select count(*) from tbl_tbools where ts #>> tbools '{[true@2001-05-01, true@2001-07-01), [false@2001-07-01, false@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tbools where ts #&> timestamp '2001-03-01';
+select count(*) from tbl_tbools where ts #&> timestamptz '2001-03-01';
 select count(*) from tbl_tbools where ts #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tbools where ts #&> tboolinst 'true@2001-03-01';
 select count(*) from tbl_tbools where ts #&> tbooli '{true@2001-03-01, false@2001-05-01}';
@@ -196,7 +196,7 @@ select count(*) from tbl_tintinst where inst &> tfloatseq '[50@2001-05-01, 55@20
 select count(*) from tbl_tintinst where inst &> tfloats '{[50@2001-05-01, 55@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tintinst where inst <<# timestamp '2001-05-01';
+select count(*) from tbl_tintinst where inst <<# timestamptz '2001-05-01';
 select count(*) from tbl_tintinst where inst <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintinst where inst <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintinst where inst <<# tintinst '5@2001-05-01';
@@ -209,7 +209,7 @@ select count(*) from tbl_tintinst where inst <<# tfloatseq '[50@2001-05-01, 55@2
 select count(*) from tbl_tintinst where inst <<# tfloats '{[50@2001-05-01, 55@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tintinst where inst &<# timestamp '2001-07-01';
+select count(*) from tbl_tintinst where inst &<# timestamptz '2001-07-01';
 select count(*) from tbl_tintinst where inst &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintinst where inst &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintinst where inst &<# tintinst '5@2001-07-01';
@@ -222,7 +222,7 @@ select count(*) from tbl_tintinst where inst &<# tfloatseq '[50@2001-05-01, 55@2
 select count(*) from tbl_tintinst where inst &<# tfloats '{[50@2001-05-01, 55@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tintinst where inst #>> timestamp '2001-05-01';
+select count(*) from tbl_tintinst where inst #>> timestamptz '2001-05-01';
 select count(*) from tbl_tintinst where inst #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintinst where inst #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintinst where inst #>> tintinst '5@2001-05-01';
@@ -235,7 +235,7 @@ select count(*) from tbl_tintinst where inst #>> tfloatseq '[50@2001-05-01, 55@2
 select count(*) from tbl_tintinst where inst #>> tfloats '{[50@2001-05-01, 55@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tintinst where inst #&> timestamp '2001-03-01';
+select count(*) from tbl_tintinst where inst #&> timestamptz '2001-03-01';
 select count(*) from tbl_tintinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintinst where inst #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintinst where inst #&> tintinst '5@2001-03-01';
@@ -309,7 +309,7 @@ select count(*) from tbl_tintseq where seq &> tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tintseq where seq &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tintseq where seq <<# timestamp '2001-05-01';
+select count(*) from tbl_tintseq where seq <<# timestamptz '2001-05-01';
 select count(*) from tbl_tintseq where seq <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintseq where seq <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintseq where seq <<# tintinst '5@2001-05-01';
@@ -322,7 +322,7 @@ select count(*) from tbl_tintseq where seq <<# tfloatseq '[50@2001-05-01, 60@200
 select count(*) from tbl_tintseq where seq <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tintseq where seq &<# timestamp '2001-07-01';
+select count(*) from tbl_tintseq where seq &<# timestamptz '2001-07-01';
 select count(*) from tbl_tintseq where seq &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintseq where seq &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintseq where seq &<# tintinst '5@2001-07-01';
@@ -335,7 +335,7 @@ select count(*) from tbl_tintseq where seq &<# tfloatseq '[50@2001-05-01, 60@200
 select count(*) from tbl_tintseq where seq &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tintseq where seq #>> timestamp '2001-05-01';
+select count(*) from tbl_tintseq where seq #>> timestamptz '2001-05-01';
 select count(*) from tbl_tintseq where seq #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintseq where seq #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintseq where seq #>> tintinst '5@2001-05-01';
@@ -348,7 +348,7 @@ select count(*) from tbl_tintseq where seq #>> tfloatseq '[50@2001-05-01, 60@200
 select count(*) from tbl_tintseq where seq #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tintseq where seq #&> timestamp '2001-03-01';
+select count(*) from tbl_tintseq where seq #&> timestamptz '2001-03-01';
 select count(*) from tbl_tintseq where seq #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tintseq where seq #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tintseq where seq #&> tintinst '5@2001-03-01';
@@ -422,7 +422,7 @@ select count(*) from tbl_tints where ts &> tfloatseq '[50@2001-05-01, 60@2001-07
 select count(*) from tbl_tints where ts &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tints where ts <<# timestamp '2001-05-01';
+select count(*) from tbl_tints where ts <<# timestamptz '2001-05-01';
 select count(*) from tbl_tints where ts <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tints where ts <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tints where ts <<# tintinst '5@2001-05-01';
@@ -435,7 +435,7 @@ select count(*) from tbl_tints where ts <<# tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tints where ts <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tints where ts &<# timestamp '2001-07-01';
+select count(*) from tbl_tints where ts &<# timestamptz '2001-07-01';
 select count(*) from tbl_tints where ts &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tints where ts &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tints where ts &<# tintinst '5@2001-07-01';
@@ -448,7 +448,7 @@ select count(*) from tbl_tints where ts &<# tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tints where ts &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tints where ts #>> timestamp '2001-05-01';
+select count(*) from tbl_tints where ts #>> timestamptz '2001-05-01';
 select count(*) from tbl_tints where ts #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tints where ts #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tints where ts #>> tintinst '5@2001-05-01';
@@ -461,7 +461,7 @@ select count(*) from tbl_tints where ts #>> tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tints where ts #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tints where ts #&> timestamp '2001-03-01';
+select count(*) from tbl_tints where ts #&> timestamptz '2001-03-01';
 select count(*) from tbl_tints where ts #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tints where ts #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tints where ts #&> tintinst '5@2001-03-01';
@@ -531,7 +531,7 @@ select count(*) from tbl_tinti where ti &> tfloatseq '[50@2001-05-01, 60@2001-07
 select count(*) from tbl_tinti where ti &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tinti where ti <<# timestamp '2001-05-01';
+select count(*) from tbl_tinti where ti <<# timestamptz '2001-05-01';
 select count(*) from tbl_tinti where ti <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tinti where ti <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tinti where ti <<# tintinst '5@2001-05-01';
@@ -544,7 +544,7 @@ select count(*) from tbl_tinti where ti <<# tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tinti where ti <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tinti where ti &<# timestamp '2001-07-01';
+select count(*) from tbl_tinti where ti &<# timestamptz '2001-07-01';
 select count(*) from tbl_tinti where ti &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tinti where ti &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tinti where ti &<# tintinst '5@2001-07-01';
@@ -557,7 +557,7 @@ select count(*) from tbl_tinti where ti &<# tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tinti where ti &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tinti where ti #>> timestamp '2001-05-01';
+select count(*) from tbl_tinti where ti #>> timestamptz '2001-05-01';
 select count(*) from tbl_tinti where ti #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tinti where ti #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tinti where ti #>> tintinst '5@2001-05-01';
@@ -570,7 +570,7 @@ select count(*) from tbl_tinti where ti #>> tfloatseq '[50@2001-05-01, 60@2001-0
 select count(*) from tbl_tinti where ti #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tinti where ti #&> timestamp '2001-03-01';
+select count(*) from tbl_tinti where ti #&> timestamptz '2001-03-01';
 select count(*) from tbl_tinti where ti #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tinti where ti #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tinti where ti #&> tintinst '5@2001-03-01';
@@ -642,7 +642,7 @@ select count(*) from tbl_tfloatinst where inst &> tfloatseq '[50@2001-05-01, 60@
 select count(*) from tbl_tfloatinst where inst &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tfloatinst where inst <<# timestamp '2001-05-01';
+select count(*) from tbl_tfloatinst where inst <<# timestamptz '2001-05-01';
 select count(*) from tbl_tfloatinst where inst <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatinst where inst <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatinst where inst <<# tintinst '5@2001-05-01';
@@ -655,7 +655,7 @@ select count(*) from tbl_tfloatinst where inst <<# tfloatseq '[50@2001-05-01, 60
 select count(*) from tbl_tfloatinst where inst <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tfloatinst where inst &<# timestamp '2001-07-01';
+select count(*) from tbl_tfloatinst where inst &<# timestamptz '2001-07-01';
 select count(*) from tbl_tfloatinst where inst &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatinst where inst &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatinst where inst &<# tintinst '5@2001-07-01';
@@ -668,7 +668,7 @@ select count(*) from tbl_tfloatinst where inst &<# tfloatseq '[50@2001-05-01, 60
 select count(*) from tbl_tfloatinst where inst &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tfloatinst where inst #>> timestamp '2001-05-01';
+select count(*) from tbl_tfloatinst where inst #>> timestamptz '2001-05-01';
 select count(*) from tbl_tfloatinst where inst #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatinst where inst #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatinst where inst #>> tintinst '5@2001-05-01';
@@ -681,7 +681,7 @@ select count(*) from tbl_tfloatinst where inst #>> tfloatseq '[50@2001-05-01, 60
 select count(*) from tbl_tfloatinst where inst #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tfloatinst where inst #&> timestamp '2001-03-01';
+select count(*) from tbl_tfloatinst where inst #&> timestamptz '2001-03-01';
 select count(*) from tbl_tfloatinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatinst where inst #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatinst where inst #&> tintinst '5@2001-03-01';
@@ -751,7 +751,7 @@ select count(*) from tbl_tfloati where ti &> tfloatseq '[50@2001-05-01, 60@2001-
 select count(*) from tbl_tfloati where ti &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tfloati where ti <<# timestamp '2001-05-01';
+select count(*) from tbl_tfloati where ti <<# timestamptz '2001-05-01';
 select count(*) from tbl_tfloati where ti <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloati where ti <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloati where ti <<# tintinst '5@2001-05-01';
@@ -764,7 +764,7 @@ select count(*) from tbl_tfloati where ti <<# tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloati where ti <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tfloati where ti &<# timestamp '2001-07-01';
+select count(*) from tbl_tfloati where ti &<# timestamptz '2001-07-01';
 select count(*) from tbl_tfloati where ti &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloati where ti &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloati where ti &<# tintinst '5@2001-07-01';
@@ -777,7 +777,7 @@ select count(*) from tbl_tfloati where ti &<# tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloati where ti &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tfloati where ti #>> timestamp '2001-05-01';
+select count(*) from tbl_tfloati where ti #>> timestamptz '2001-05-01';
 select count(*) from tbl_tfloati where ti #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloati where ti #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloati where ti #>> tintinst '5@2001-05-01';
@@ -790,7 +790,7 @@ select count(*) from tbl_tfloati where ti #>> tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloati where ti #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tfloati where ti #&> timestamp '2001-03-01';
+select count(*) from tbl_tfloati where ti #&> timestamptz '2001-03-01';
 select count(*) from tbl_tfloati where ti #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloati where ti #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloati where ti #&> tintinst '5@2001-03-01';
@@ -864,7 +864,7 @@ select count(*) from tbl_tfloatseq where seq &> tfloatseq '[50@2001-05-01, 60@20
 select count(*) from tbl_tfloatseq where seq &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tfloatseq where seq <<# timestamp '2001-05-01';
+select count(*) from tbl_tfloatseq where seq <<# timestamptz '2001-05-01';
 select count(*) from tbl_tfloatseq where seq <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatseq where seq <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatseq where seq <<# tintinst '5@2001-05-01';
@@ -877,7 +877,7 @@ select count(*) from tbl_tfloatseq where seq <<# tfloatseq '[50@2001-05-01, 60@2
 select count(*) from tbl_tfloatseq where seq <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tfloatseq where seq &<# timestamp '2001-07-01';
+select count(*) from tbl_tfloatseq where seq &<# timestamptz '2001-07-01';
 select count(*) from tbl_tfloatseq where seq &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatseq where seq &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatseq where seq &<# tintinst '5@2001-07-01';
@@ -890,7 +890,7 @@ select count(*) from tbl_tfloatseq where seq &<# tfloatseq '[50@2001-05-01, 60@2
 select count(*) from tbl_tfloatseq where seq &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tfloatseq where seq #>> timestamp '2001-05-01';
+select count(*) from tbl_tfloatseq where seq #>> timestamptz '2001-05-01';
 select count(*) from tbl_tfloatseq where seq #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatseq where seq #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatseq where seq #>> tintinst '5@2001-05-01';
@@ -903,7 +903,7 @@ select count(*) from tbl_tfloatseq where seq #>> tfloatseq '[50@2001-05-01, 60@2
 select count(*) from tbl_tfloatseq where seq #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tfloatseq where seq #&> timestamp '2001-03-01';
+select count(*) from tbl_tfloatseq where seq #&> timestamptz '2001-03-01';
 select count(*) from tbl_tfloatseq where seq #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloatseq where seq #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloatseq where seq #&> tintinst '5@2001-03-01';
@@ -977,7 +977,7 @@ select count(*) from tbl_tfloats where ts &> tfloatseq '[50@2001-05-01, 60@2001-
 select count(*) from tbl_tfloats where ts &> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --before
-select count(*) from tbl_tfloats where ts <<# timestamp '2001-05-01';
+select count(*) from tbl_tfloats where ts <<# timestamptz '2001-05-01';
 select count(*) from tbl_tfloats where ts <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloats where ts <<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloats where ts <<# tintinst '5@2001-05-01';
@@ -990,7 +990,7 @@ select count(*) from tbl_tfloats where ts <<# tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloats where ts <<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_tfloats where ts &<# timestamp '2001-07-01';
+select count(*) from tbl_tfloats where ts &<# timestamptz '2001-07-01';
 select count(*) from tbl_tfloats where ts &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloats where ts &<# box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloats where ts &<# tintinst '5@2001-07-01';
@@ -1003,7 +1003,7 @@ select count(*) from tbl_tfloats where ts &<# tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloats where ts &<# tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --after
-select count(*) from tbl_tfloats where ts #>> timestamp '2001-05-01';
+select count(*) from tbl_tfloats where ts #>> timestamptz '2001-05-01';
 select count(*) from tbl_tfloats where ts #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloats where ts #>> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloats where ts #>> tintinst '5@2001-05-01';
@@ -1016,7 +1016,7 @@ select count(*) from tbl_tfloats where ts #>> tfloatseq '[50@2001-05-01, 60@2001
 select count(*) from tbl_tfloats where ts #>> tfloats '{[50@2001-05-01, 60@2001-07-01), [70@2001-07-01, 70@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_tfloats where ts #&> timestamp '2001-03-01';
+select count(*) from tbl_tfloats where ts #&> timestamptz '2001-03-01';
 select count(*) from tbl_tfloats where ts #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_tfloats where ts #&> box '(60,47260800000000),(40,41990400000000)';
 select count(*) from tbl_tfloats where ts #&> tintinst '5@2001-03-01';
@@ -1033,7 +1033,7 @@ select count(*) from tbl_tfloats where ts #&> tfloats '{[50@2001-05-01, 60@2001-
 /* ttextinst */
 
 --before
-select count(*) from tbl_ttextinst where inst <<# timestamp '2001-05-01';
+select count(*) from tbl_ttextinst where inst <<# timestamptz '2001-05-01';
 select count(*) from tbl_ttextinst where inst <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextinst where inst <<# ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttextinst where inst <<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1041,7 +1041,7 @@ select count(*) from tbl_ttextinst where inst <<# ttextseq '[AAA@2001-05-01, AAA
 select count(*) from tbl_ttextinst where inst <<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_ttextinst where inst &<# timestamp '2001-05-01';
+select count(*) from tbl_ttextinst where inst &<# timestamptz '2001-05-01';
 select count(*) from tbl_ttextinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextinst where inst &<# ttextinst 'AAA@2001-07-01';
 select count(*) from tbl_ttextinst where inst &<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1049,7 +1049,7 @@ select count(*) from tbl_ttextinst where inst &<# ttextseq '[AAA@2001-05-01, AAA
 select count(*) from tbl_ttextinst where inst &<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --after
-select count(*) from tbl_ttextinst where inst #>> timestamp '2001-05-01';
+select count(*) from tbl_ttextinst where inst #>> timestamptz '2001-05-01';
 select count(*) from tbl_ttextinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextinst where inst #>> ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttextinst where inst #>> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1057,7 +1057,7 @@ select count(*) from tbl_ttextinst where inst #>> ttextseq '[AAA@2001-05-01, AAA
 select count(*) from tbl_ttextinst where inst #>> ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_ttextinst where inst #&> timestamp '2001-05-01';
+select count(*) from tbl_ttextinst where inst #&> timestamptz '2001-05-01';
 select count(*) from tbl_ttextinst where inst #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextinst where inst #&> ttextinst 'AAA@2001-03-01';
 select count(*) from tbl_ttextinst where inst #&> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1066,7 +1066,7 @@ select count(*) from tbl_ttextinst where inst #&> ttexts '{[AAA@2001-05-01, AAA@
 
 /* ttexti */
 --before
-select count(*) from tbl_ttexti where ti <<# timestamp '2001-05-01';
+select count(*) from tbl_ttexti where ti <<# timestamptz '2001-05-01';
 select count(*) from tbl_ttexti where ti <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexti where ti <<# ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttexti where ti <<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1074,7 +1074,7 @@ select count(*) from tbl_ttexti where ti <<# ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexti where ti <<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_ttexti where ti &<# timestamp '2001-07-01';
+select count(*) from tbl_ttexti where ti &<# timestamptz '2001-07-01';
 select count(*) from tbl_ttexti where ti &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexti where ti &<# ttextinst 'AAA@2001-07-01';
 select count(*) from tbl_ttexti where ti &<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1082,7 +1082,7 @@ select count(*) from tbl_ttexti where ti &<# ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexti where ti &<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --after
-select count(*) from tbl_ttexti where ti #>> timestamp '2001-05-01';
+select count(*) from tbl_ttexti where ti #>> timestamptz '2001-05-01';
 select count(*) from tbl_ttexti where ti #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexti where ti #>> ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttexti where ti #>> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1090,7 +1090,7 @@ select count(*) from tbl_ttexti where ti #>> ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexti where ti #>> ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_ttexti where ti #&> timestamp '2001-03-01';
+select count(*) from tbl_ttexti where ti #&> timestamptz '2001-03-01';
 select count(*) from tbl_ttexti where ti #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexti where ti #&> ttextinst 'AAA@2001-03-01';
 select count(*) from tbl_ttexti where ti #&> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1099,7 +1099,7 @@ select count(*) from tbl_ttexti where ti #&> ttexts '{[AAA@2001-05-01, AAA@2001-
 
 /* ttextseq */
 --before
-select count(*) from tbl_ttextseq where seq <<# timestamp '2001-05-01';
+select count(*) from tbl_ttextseq where seq <<# timestamptz '2001-05-01';
 select count(*) from tbl_ttextseq where seq <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextseq where seq <<# ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttextseq where seq <<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1107,7 +1107,7 @@ select count(*) from tbl_ttextseq where seq <<# ttextseq '[AAA@2001-05-01, AAA@2
 select count(*) from tbl_ttextseq where seq <<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_ttextseq where seq &<# timestamp '2001-07-01';
+select count(*) from tbl_ttextseq where seq &<# timestamptz '2001-07-01';
 select count(*) from tbl_ttextseq where seq &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextseq where seq &<# ttextinst 'AAA@2001-07-01';
 select count(*) from tbl_ttextseq where seq &<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1115,7 +1115,7 @@ select count(*) from tbl_ttextseq where seq &<# ttextseq '[AAA@2001-05-01, AAA@2
 select count(*) from tbl_ttextseq where seq &<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --after
-select count(*) from tbl_ttextseq where seq #>> timestamp '2001-05-01';
+select count(*) from tbl_ttextseq where seq #>> timestamptz '2001-05-01';
 select count(*) from tbl_ttextseq where seq #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextseq where seq #>> ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttextseq where seq #>> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1123,7 +1123,7 @@ select count(*) from tbl_ttextseq where seq #>> ttextseq '[AAA@2001-05-01, AAA@2
 select count(*) from tbl_ttextseq where seq #>> ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_ttextseq where seq #&> timestamp '2001-03-01';
+select count(*) from tbl_ttextseq where seq #&> timestamptz '2001-03-01';
 select count(*) from tbl_ttextseq where seq #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttextseq where seq #&> ttextinst 'AAA@2001-03-01';
 select count(*) from tbl_ttextseq where seq #&> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1132,7 +1132,7 @@ select count(*) from tbl_ttextseq where seq #&> ttexts '{[AAA@2001-05-01, AAA@20
 
 /* ttexts */
 --before
-select count(*) from tbl_ttexts where ts <<# timestamp '2001-05-01';
+select count(*) from tbl_ttexts where ts <<# timestamptz '2001-05-01';
 select count(*) from tbl_ttexts where ts <<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexts where ts <<# ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttexts where ts <<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1140,7 +1140,7 @@ select count(*) from tbl_ttexts where ts <<# ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexts where ts <<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overbefore
-select count(*) from tbl_ttexts where ts &<# timestamp '2001-07-01';
+select count(*) from tbl_ttexts where ts &<# timestamptz '2001-07-01';
 select count(*) from tbl_ttexts where ts &<# period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexts where ts &<# ttextinst 'AAA@2001-07-01';
 select count(*) from tbl_ttexts where ts &<# ttexti '{AAA@2001-05-01, BBB@2001-07-01}';
@@ -1148,7 +1148,7 @@ select count(*) from tbl_ttexts where ts &<# ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexts where ts &<# ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --after
-select count(*) from tbl_ttexts where ts #>> timestamp '2001-05-01';
+select count(*) from tbl_ttexts where ts #>> timestamptz '2001-05-01';
 select count(*) from tbl_ttexts where ts #>> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexts where ts #>> ttextinst 'AAA@2001-05-01';
 select count(*) from tbl_ttexts where ts #>> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';
@@ -1156,7 +1156,7 @@ select count(*) from tbl_ttexts where ts #>> ttextseq '[AAA@2001-05-01, AAA@2001
 select count(*) from tbl_ttexts where ts #>> ttexts '{[AAA@2001-05-01, AAA@2001-07-01), [BBB@2001-07-01, BBB@2001-09-01)}';
 
 --overafter
-select count(*) from tbl_ttexts where ts #&> timestamp '2001-03-01';
+select count(*) from tbl_ttexts where ts #&> timestamptz '2001-03-01';
 select count(*) from tbl_ttexts where ts #&> period '[2001-03-01, 2001-06-01]';
 select count(*) from tbl_ttexts where ts #&> ttextinst 'AAA@2001-03-01';
 select count(*) from tbl_ttexts where ts #&> ttexti '{AAA@2001-03-01, BBB@2001-05-01}';

@@ -721,11 +721,11 @@ tgeompointinst(st_point(2,2), '2000-01-01 00:00:10')
  *****************************************************************************/
 -- TPointInst
 
-SELECT st_astext(tgeompointinst(ST_MakePoint(0,0), timestamp '2012-01-01 08:00:00')::geometry);
-SELECT st_astext(tgeompointinst(ST_MakePoint(0,0,0), timestamp '2012-01-01 08:00:00')::geometry);
+SELECT st_astext(tgeompointinst(ST_MakePoint(0,0), timestamptz '2012-01-01 08:00:00')::geometry);
+SELECT st_astext(tgeompointinst(ST_MakePoint(0,0,0), timestamptz '2012-01-01 08:00:00')::geometry);
 
-SELECT st_astext(tgeogpointinst(ST_MakePoint(0,0), timestamp '2012-01-01 08:00:00')::geography);
-SELECT st_astext(tgeogpointinst(ST_MakePoint(0,0,0), timestamp '2012-01-01 08:00:00')::geography);
+SELECT st_astext(tgeogpointinst(ST_MakePoint(0,0), timestamptz '2012-01-01 08:00:00')::geography);
+SELECT st_astext(tgeogpointinst(ST_MakePoint(0,0,0), timestamptz '2012-01-01 08:00:00')::geography);
 
 SELECT astext((geometry 'POINT M (0 0 1325404800)')::tgeompointinst);
 SELECT astext((geometry 'POINT ZM (0 0 0 1325404800)')::tgeompointinst);

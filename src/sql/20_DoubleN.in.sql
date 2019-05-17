@@ -91,10 +91,22 @@ CREATE FUNCTION double4_out(double4)
  	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION double4_send(double4)
+	RETURNS bytea
+ 	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION double4_recv(internal)
+	RETURNS double4
+ 	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE double4 (
 	internallength = 32,
 	input = double4_in,
 	output = double4_out,
+	send = double4_send,
+	receive = double4_recv,
 	alignment = double
 );
 

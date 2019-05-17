@@ -86,23 +86,23 @@ SELECT count(*) FROM tbl_ttextinst, tbl_text
 WHERE minusValue(inst, t) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintinst, 
-( SELECT array_agg(i) AS valuearr FROM tbl_int ) tmp 
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatinst, 
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp 
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_ttextinst, 
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp 
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(inst, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintinst,
-( SELECT array_agg(i) AS valuearr FROM tbl_int ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatinst,
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_ttextinst,
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(inst, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintinst, tbl_intrange 
@@ -116,17 +116,17 @@ SELECT count(*) FROM tbl_tfloatinst, tbl_floatrange
 WHERE minusRange(inst, f) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintinst,
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE minusRanges(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatinst,
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE minusRanges(inst, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintinst, 
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE atRanges(inst, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatinst, 
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE atRanges(inst, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tboolinst, tbl_timestamptz

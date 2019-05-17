@@ -102,10 +102,8 @@ struct temporaltype_struct
 #define RTOverBackStrategyNumber		35		/* for /&> */
 
 /*****************************************************************************
- * Struct definitions
+ * Macros for manipulating the 'flags' element
  *****************************************************************************/
-
-/* Macros for manipulating the 'flags' element. */
 
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
 /* Only for TemporalInst */
@@ -127,6 +125,10 @@ struct temporaltype_struct
 	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
 	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
+
+/*****************************************************************************
+ * Struct definitions
+ *****************************************************************************/
 
 /* Temporal */
  

@@ -163,7 +163,8 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	
 	/*
-	 * Transform the query into a box.
+	 * Transform the query into a box initializing the dimensions that must
+	 * not be taken into account by the operators to infinity.
 	 */
 	if (subtype == type_oid(T_INTRANGE))
 	{

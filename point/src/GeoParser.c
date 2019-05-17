@@ -156,20 +156,20 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
 				geo_srid, *tpoint_srid)));
-		if (*tpoint_srid != 0 && geo_srid == 0)
+		if (*tpoint_srid != 0 && geo_srid == SRID_UNKNOWN)
 			gserialized_set_srid(gs, *tpoint_srid);
-		if (*tpoint_srid == 0 && geo_srid != 0)
+		if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
 			*tpoint_srid = geo_srid;
 	}
 	else
 	{
-		if (*tpoint_srid != 0 && geo_srid != 4326 && *tpoint_srid != geo_srid)
+		if (*tpoint_srid != 0 && geo_srid != SRID_DEFAULT && *tpoint_srid != geo_srid)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Geography SRID (%d) does not match temporal type SRID (%d)", 
 				geo_srid, *tpoint_srid)));
-		if (*tpoint_srid != 0 && geo_srid == 4326)
+		if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_DEFAULT)
 			gserialized_set_srid(gs, *tpoint_srid);
-		if (*tpoint_srid == 0 && geo_srid != 4326)
+		if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_DEFAULT)
 			*tpoint_srid = geo_srid;
 	}
 	/* The next instruction will throw an exception if it fails */

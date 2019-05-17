@@ -1254,9 +1254,9 @@ SELECT astext(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@200
 
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT astext(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1)'));
  astext 
 --------
@@ -1355,9 +1355,9 @@ SELECT astext(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@
 
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------
@@ -1936,11 +1936,11 @@ SELECT asText(NearestApproachInstant(tgeogpoint '{[Point(1 1 1)@2000-01-01, Poin
 
 /* Errors */
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
 ERROR:  3D geometries are not allowed
 SELECT NearestApproachInstant(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachInstant(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  3D geometries are not allowed
 SELECT NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
@@ -3485,13 +3485,13 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachDistance(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT NearestApproachDistance(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT NearestApproachDistance(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
@@ -4266,13 +4266,13 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
 
 /* Errors */
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1 1,2 2 2)');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT shortestLine(geometry 'SRID=5676;Linestring(1 1,2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometries must be in the same SRID
+ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT shortestLine(geometry 'Linestring(1 1 1,2 2 2)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The geometries must be of the same dimensionality
+ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'SRID=5676;Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');

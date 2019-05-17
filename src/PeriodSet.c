@@ -182,7 +182,8 @@ periodset_in(PG_FUNCTION_ARGS)
 	char *input = PG_GETARG_CSTRING(0);
 	PeriodSet *result = periodset_parse(&input);
 	if (result == 0)
-		PG_RETURN_NULL();
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse period set")));
 	PG_RETURN_POINTER(result);
 }
 

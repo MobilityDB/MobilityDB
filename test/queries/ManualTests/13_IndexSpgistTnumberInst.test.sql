@@ -56,12 +56,12 @@ where inst <@ floatrange '[2,5]'
 select getTime(inst) from tbl_tintinst group by getTime(inst) having count(*) > 1
 
 select count(*) from tbl_tintinst
-where getTime(inst) = timestamp '2001-06-05 13:14:33'
+where getTime(inst) = timestamptz '2001-06-05 13:14:33'
 -- 2
 
 explain
 select count(*) from tbl_tintinst
-where inst <@ timestamp '2001-06-05 13:14:33'
+where inst <@ timestamptz '2001-06-05 13:14:33'
 -- 2 
 
 select count(*) from tbl_tintinst
@@ -153,12 +153,12 @@ where inst <@ floatrange '[2,5]'
 select getTime(inst) from tbl_tfloatinst group by getTime(inst) having count(*) > 1
 
 select count(*) from tbl_tfloatinst
-where getTime(inst) = timestamp '2001-06-05 13:14:33'
+where getTime(inst) = timestamptz '2001-06-05 13:14:33'
 -- 2
 
 explain
 select count(*) from tbl_tfloatinst
-where inst <@ timestamp '2001-06-05 13:14:33'
+where inst <@ timestamptz '2001-06-05 13:14:33'
 -- 2 
 
 select count(*) from tbl_tfloatinst

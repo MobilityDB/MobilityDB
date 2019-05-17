@@ -113,23 +113,23 @@ SELECT count(*) FROM tbl_ttextseq, tbl_text
 WHERE minusValue(seq, t) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintseq, 
-( SELECT array_agg(i) AS valuearr FROM tbl_int ) tmp 
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatseq, 
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp 
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_ttextseq, 
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp 
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(seq, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintseq,
-( SELECT array_agg(i) AS valuearr FROM tbl_int ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatseq,
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_ttextseq,
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(seq, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintseq, tbl_intrange 
@@ -143,17 +143,17 @@ SELECT count(*) FROM tbl_tfloatseq, tbl_floatrange
 WHERE minusRange(seq, f) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintseq, 
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange LIMIT 10 ) tmp
 WHERE atRanges(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatseq, 
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange LIMIT 10 ) tmp
 WHERE atRanges(seq, valuearr) IS NOT NULL;
 
 SELECT count(*) FROM tbl_tintseq,
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange LIMIT 10 ) tmp
 WHERE minusRanges(seq, valuearr) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloatseq,
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange LIMIT 10 ) tmp
 WHERE minusRanges(seq, valuearr) IS NOT NULL;
 
 SELECT atMin(seq) FROM tbl_tintseq LIMIT 100;
