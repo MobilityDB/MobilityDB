@@ -180,8 +180,22 @@ aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
 	for (int i = 0; i < size; i ++)
 		result->values[i] = temporal_copy(values[i]);
 	result->size = size;
+	result->extra = NULL;
 	MemoryContextSwitchTo(oldctx);
 	return result;
+}
+
+void
+aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size)
+{
+	MemoryContext ctx;
+	if (!AggCheckCallContext(fcinfo, &ctx))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Operation not supported")));
+	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+	state->extra = palloc(size) ;
+	memcpy(state->extra, data, size) ;
+	MemoryContextSwitchTo(oldctx);
 }
 
 AggregateState *

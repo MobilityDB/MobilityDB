@@ -227,6 +227,7 @@ typedef struct double4
 typedef struct AggregateState
 {
 	int 		size;
+	void*		extra;
 	Temporal 	*values[];
 } AggregateState;
 
@@ -1237,6 +1238,7 @@ extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
 extern AggregateState *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
+extern void aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size);
 
 extern AggregateState *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));
