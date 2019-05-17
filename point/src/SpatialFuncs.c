@@ -504,6 +504,7 @@ tpoint_srid_internal(Temporal *temp)
 {
 	int result = 0;
 	assert(temporal_duration_is_valid(temp->duration));
+	assert(temp->valuetypid == type_oid(T_GEOMETRY) || temp->valuetypid == type_oid(T_GEOGRAPHY)) ;
 	if (temp->duration == TEMPORALINST) 
 		result = tpointinst_srid_internal((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -584,6 +585,21 @@ tpoints_set_srid_internal(TemporalS *ts, int32 srid)
 	return result;
 }
 
+Temporal* tpoint_set_srid_internal(Temporal* temp, int32 srid) {
+    Temporal *result = NULL;
+    if (temp->duration == TEMPORALINST)
+        result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);
+    else if (temp->duration == TEMPORALI)
+        result = (Temporal *)tpointi_set_srid_internal((TemporalI *)temp, srid);
+    else if (temp->duration == TEMPORALSEQ)
+        result = (Temporal *)tpointseq_set_srid_internal((TemporalSeq *)temp, srid);
+    else if (temp->duration == TEMPORALS)
+        result = (Temporal *)tpoints_set_srid_internal((TemporalS *)temp, srid);
+
+    assert(result != NULL) ;
+    return result ;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_set_srid);
 
 PGDLLEXPORT Datum
@@ -591,16 +607,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 srid = PG_GETARG_INT32(1);
-	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)tpointi_set_srid_internal((TemporalI *)temp, srid);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)tpointseq_set_srid_internal((TemporalSeq *)temp, srid);
-	else if (temp->duration == TEMPORALS) 
-		result = (Temporal *)tpoints_set_srid_internal((TemporalS *)temp, srid);
+	Temporal* result = tpoint_set_srid_internal(temp, srid) ;
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
