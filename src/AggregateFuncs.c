@@ -105,6 +105,10 @@ aggstate_write(AggregateState *state, StringInfo buf)
 	pq_sendint32(buf, valuetypid);
 	for (int i = 0; i < state->size; i ++)
 		temporal_write(state->values[i], buf);
+
+	pq_sendint64(buf, state->extrasize) ;
+	if(state->extra)
+	    pq_sendbytes(buf, state->extra, state->extrasize) ;
 }
 
 AggregateState *
@@ -124,6 +128,12 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	for (int i = 0; i < size; i ++)
 		result->values[i] = temporal_read(buf, valuetypid);
 	result->size = size;
+	result->extrasize = pq_getmsgint64(buf) ;
+	if(result->extrasize) {
+	    const char* extra = pq_getmsgbytes(buf, result->extrasize) ;
+	    result->extra = palloc(result->extrasize) ;
+	    memcpy(result->extra, extra, result->extrasize) ;
+	}
 
 	MemoryContextSwitchTo(oldctx);
 	return result;
@@ -181,6 +191,7 @@ aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
 		result->values[i] = temporal_copy(values[i]);
 	result->size = size;
 	result->extra = NULL;
+	result->extrasize = 0 ;
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }
@@ -194,8 +205,16 @@ aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, s
 				errmsg("Operation not supported")));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 	state->extra = palloc(size) ;
+	state->extrasize = size ;
 	memcpy(state->extra, data, size) ;
 	MemoryContextSwitchTo(oldctx);
+}
+
+void aggstate_move_extra(AggregateState* dest, AggregateState* src) {
+    dest->extra = src->extra ;
+    dest->extrasize = src->extrasize ;
+    src->extra = NULL ;
+    src->extrasize = 0 ;
 }
 
 AggregateState *
@@ -220,6 +239,8 @@ aggstate_splice(FunctionCallInfo fcinfo, AggregateState *state1,
 	for (int i = to; i < state1->size; i ++)
 		result->values[count++] = state1->values[i];
 	result->size = count;
+	result->extra = NULL ;
+	result->extrasize = 0 ;
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }

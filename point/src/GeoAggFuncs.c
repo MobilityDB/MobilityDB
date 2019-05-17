@@ -183,7 +183,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     if (result != state2)
         pfree(state2);
 
-    result->extra = state2->extra ;
+    aggstate_move_extra(result, state2) ;
 
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -217,7 +217,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 	/* Get a pointer to the first element of the first state */
 	Datum (*func)(Datum, Datum) = hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
-	AggregateState *result;
+	AggregateState *result = NULL ;
 	if (state1->values[0]->duration == TEMPORALINST) 
 		result = temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
 	else if (state1->values[0]->duration == TEMPORALSEQ) 
@@ -226,7 +226,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported")));
 
-	result->extra = state1->extra ;
+	aggstate_move_extra(result, state1) ;
 
 	PG_RETURN_POINTER(result);
 }
