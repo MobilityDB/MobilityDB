@@ -394,7 +394,8 @@ tpoint_make_temporalinst(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* Get the precomputed bounding box of a Temporal */
+/* Get the precomputed bounding box of a Temporal (if any) 
+   Notice that TemporalInst do not have a precomputed bounding box */
 
 PG_FUNCTION_INFO_V1(tpoint_gbox);
 

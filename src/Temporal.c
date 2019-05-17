@@ -904,7 +904,8 @@ temporalinst_timestamp(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(result);
 }
 
-/* Get the precomputed bounding box of a Temporal (internal function) */
+/* Get the precomputed bounding box of a Temporal (if any) 
+   Notice that TemporalInst do not have precomputed bonding box */
 
 void 
 temporal_bbox(void *box, const Temporal *temp)

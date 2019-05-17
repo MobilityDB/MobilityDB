@@ -1656,7 +1656,7 @@ front_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	tpoint_check_Z_dimension(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -1674,7 +1674,7 @@ overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	tpoint_check_Z_dimension(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -1692,7 +1692,7 @@ back_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	tpoint_check_Z_dimension(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -1710,7 +1710,7 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	tpoint_check_Z_dimension(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
