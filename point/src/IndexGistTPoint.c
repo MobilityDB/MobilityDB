@@ -241,32 +241,31 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	/* Determine whether the index is lossy depending on the strategy */
 	*recheck = index_tpoint_recheck(strategy);
 	
-	if (key == NULL)
+	assert(key == NULL);
 		PG_RETURN_BOOL(false);
 	
 	/*
 	 * Transform the query into a box initializing the dimensions that must
 	 * not be taken into account by the operators to infinity.
+	 * Since the function is defined as STRICT in SQL the query will never
+	 * be null.
 	 */
 	if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
+		assert(!PG_ARGISNULL(1));
 		if (!geo_to_gbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);										  
 	}
 	else if (subtype == type_oid(T_GBOX))
 	{
 		GBOX *box = PG_GETARG_GBOX_P(1);
-		if (box == NULL)
-			PG_RETURN_BOOL(false);
+		assert(box != NULL);
 		memcpy(&query, box, sizeof(GBOX));
 	}
 	else if (temporal_oid(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
-		if (temp == NULL)
-			PG_RETURN_BOOL(false);
+		assert(temp != NULL);
 		temporal_bbox(&query, temp);
 		PG_FREE_IF_COPY(temp, 1);
 	}

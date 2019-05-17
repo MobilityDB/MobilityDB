@@ -4075,7 +4075,7 @@ ERROR:  The temporal point and the geometry must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4376,7 +4376,7 @@ ERROR:  The temporal point and the geometry must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4677,7 +4677,7 @@ ERROR:  The temporal point and the geometry must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4978,7 +4978,7 @@ ERROR:  The temporal point and the geometry must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal points must have Z dimension
 SELECT timestamptz '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
