@@ -141,12 +141,6 @@ CREATE FUNCTION gbox_same(gbox, gbox)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'same_gbox_gbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-/*
-CREATE FUNCTION gbox_distance(gbox, gbox)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'distance_gbox_gbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-*/
 
 CREATE OPERATOR @> (
 	PROCEDURE = gbox_contains,
