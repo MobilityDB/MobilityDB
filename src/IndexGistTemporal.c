@@ -26,36 +26,41 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid 		subtype = PG_GETARG_OID(3);
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
+				periodfree = false,
 				result;
 	Period	   *key = DatumGetPeriod(entry->key),
-			   *query, period;
+			   *period;
 	
 	/* Determine whether the operator is exact */
 	*recheck = index_time_bbox_recheck(strategy);
 	
-	/* Since the function is defined as STRICT in SQL the query will never
-	 * be null. */
 	if (subtype == type_oid(T_PERIOD))
 	{
-		query = PG_GETARG_PERIOD(1);
-		assert(query != NULL);
+		period = PG_GETARG_PERIOD(1);
+		if (period == NULL)
+			PG_RETURN_BOOL(false);
 	}
 	else if (temporal_oid(subtype))
 	{
-		Temporal *temp = PG_GETARG_TEMPORAL(1);
-		assert(temp != NULL);
-		query = &period;
-		temporal_bbox(query, temp);
-		PG_FREE_IF_COPY(temp, 1);
+		Temporal *query = PG_GETARG_TEMPORAL(1);
+		if (query == NULL)
+			PG_RETURN_BOOL(false);
+		period = palloc(sizeof(Period));
+		temporal_bbox(period, query);
+		periodfree = true;
+		PG_FREE_IF_COPY(query, 1);
 	}
 	else
 		elog(ERROR, "unrecognized strategy number: %d", strategy);
 
 	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_time(key, query, strategy);
+		result = index_leaf_consistent_time(key, period, strategy);
 	else
-		result = index_internal_consistent_time(key, query, strategy);
+		result = index_internal_consistent_time(key, period, strategy);
 	
+	if (periodfree)
+		pfree(period);
+
 	PG_RETURN_BOOL(result);
 }
 
