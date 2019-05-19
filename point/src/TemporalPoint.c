@@ -158,8 +158,10 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE) 
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Invalid geometry type modifier: %s", s)));
+			if (geometry_type != POINTTYPE)
+				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					errmsg("Only point geometries accepted")));
 
-			TYPMOD_SET_TYPE(typmod, geometry_type);
 			if (z)
 				TYPMOD_SET_Z(typmod);
 			if (m)
@@ -195,6 +197,9 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 				if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 							errmsg("Invalid geometry type modifier: %s", s)));
+				if (geometry_type != POINTTYPE)
+					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+						errmsg("Only point geometries accepted")));
 
 				TYPMOD_SET_TYPE(typmod, geometry_type);
 				if (z)
@@ -207,6 +212,10 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			else if (geometry_type_from_string(s, &geometry_type, &z, &m))
 			{
 				/* Type modifier is (Geometry, SRID) */
+				if (geometry_type != POINTTYPE)
+					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+						errmsg("Only point geometries accepted")));
+
 				/* Shift to remove the 4 bits of the duration */
 				TYPMOD_DEL_DURATION(typmod);
 				/* Set default values */
@@ -245,6 +254,10 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			}
 			else if (geometry_type_from_string(s, &geometry_type, &z, &m)) 
 			{
+				if (geometry_type != POINTTYPE)
+					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+						errmsg("Only point geometries accepted")));
+
 				/* Shift to remove the 4 bits of the duration */
 				TYPMOD_DEL_DURATION(typmod);
 				/* Set default values */

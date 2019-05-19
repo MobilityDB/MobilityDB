@@ -1729,8 +1729,8 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
 	bool result = spatialrel3_tpoint_geo(temp, PointerGetDatum(gs), pattern,
