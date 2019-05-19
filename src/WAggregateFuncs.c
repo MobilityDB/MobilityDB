@@ -182,7 +182,7 @@ static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
 	TemporalSeq **result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
@@ -291,7 +291,7 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{
@@ -329,7 +329,7 @@ static int
 temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
 	float8 value = 0.0;
-	assert(temporal_number_is_valid(inst->valuetypid));
+	temporal_number_is_valid(inst->valuetypid);
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(temporalinst_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)
@@ -429,7 +429,7 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 static TemporalSeq **
 temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{	

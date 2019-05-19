@@ -326,7 +326,7 @@ temporals_transform_tcount(TemporalS *ts)
 static Temporal *
 temporal_transform_tcount(Temporal *temp)
 {
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
     Temporal *result = NULL;
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
@@ -440,7 +440,7 @@ static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
     int returnvalue = 0;
-	assert(temporal_number_is_valid(seq->valuetypid));
+	temporal_number_is_valid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		returnvalue = tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
@@ -927,7 +927,7 @@ static AggregateState *
 temporal_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	AggregateState *result = NULL;
 	if (temp->duration == TEMPORALINST) 
 		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
@@ -1324,7 +1324,7 @@ temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
 	int maxcount = 0;
-	assert(temporal_number_is_valid(seq->valuetypid));
+	temporal_number_is_valid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		maxcount = seq->count;
 	else if (seq->valuetypid == FLOAT8OID)
@@ -1351,7 +1351,7 @@ temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
 	int maxcount = 0;
-	assert(temporal_number_is_valid(ts->valuetypid));
+	temporal_number_is_valid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)
@@ -1384,7 +1384,7 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	AggregateState *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = temporalinst_tavg_transfn(fcinfo, state, (TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)

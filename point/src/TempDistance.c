@@ -58,7 +58,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 		return;
 	}
 	double fraction = 0.0;
-	assert(temporal_point_is_valid(inst1->valuetypid));
+	temporal_point_is_valid(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* The trajectory is a line */
@@ -182,7 +182,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
@@ -194,7 +194,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_distance;
 
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
@@ -232,7 +232,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	
 	Datum (*func)(Datum, Datum);
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
@@ -244,7 +244,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		func = &geog_distance;
 
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);

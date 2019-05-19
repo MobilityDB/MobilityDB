@@ -146,10 +146,10 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	Datum geo = p_basetype(str, basetype); 
 	GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
 	int geo_srid = gserialized_get_srid(gs);
-	if ((gserialized_get_type(gs) != POINTTYPE) || 
-		gserialized_is_empty(gs))
+	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
+		FLAGS_GET_M(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only non-empty point geometries accepted")));
+			errmsg("Only non-empty point geometries without M dimension accepted")));
 	if (basetype == type_oid(T_GEOMETRY))
 	{
 		if (*tpoint_srid != 0 && geo_srid != 0 && *tpoint_srid != geo_srid)

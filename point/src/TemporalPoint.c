@@ -158,15 +158,14 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE) 
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Invalid geometry type modifier: %s", s)));
-			if (geometry_type != POINTTYPE)
+			if (geometry_type != POINTTYPE || m)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Only point geometries accepted")));
+					errmsg("Only point geometries without M dimension accepted")));
 
+			TYPMOD_SET_TYPE(typmod, geometry_type);
 			if (z)
 				TYPMOD_SET_Z(typmod);
-			if (m)
-				TYPMOD_SET_M(typmod);
-			
+		
 			/* SRID */
 			s = DatumGetCString(elem_values[2]);
 			int srid = pg_atoi(s, sizeof(int32), '\0');
@@ -191,30 +190,27 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 					TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
 				else
 					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
-				
 				/* Geometry type */
 				s = DatumGetCString(elem_values[1]);
 				if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 							errmsg("Invalid geometry type modifier: %s", s)));
-				if (geometry_type != POINTTYPE)
+				if (geometry_type != POINTTYPE || m)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Only point geometries accepted")));
+						errmsg("Only point geometries without M dimension accepted")));
 
 				TYPMOD_SET_TYPE(typmod, geometry_type);
 				if (z)
 					TYPMOD_SET_Z(typmod);
-				if (m)
-					TYPMOD_SET_M(typmod);
 				/* Shift to restore the 4 bits of the duration */
 				TYPMOD_SET_DURATION(typmod, duration_type);
 			}
 			else if (geometry_type_from_string(s, &geometry_type, &z, &m))
 			{
 				/* Type modifier is (Geometry, SRID) */
-				if (geometry_type != POINTTYPE)
+				if (geometry_type != POINTTYPE || m)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						errmsg("Only point geometries accepted")));
+						errmsg("Only point geometries without M dimension accepted")));
 
 				/* Shift to remove the 4 bits of the duration */
 				TYPMOD_DEL_DURATION(typmod);
@@ -227,9 +223,6 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 				TYPMOD_SET_TYPE(typmod, geometry_type);
 				if (z)
 					TYPMOD_SET_Z(typmod);
-				if (m)
-					TYPMOD_SET_M(typmod);
-
 				/* SRID */
 				s = DatumGetCString(elem_values[1]);
 				int srid = pg_atoi(s, sizeof(int32), '\0');
@@ -269,8 +262,6 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 				TYPMOD_SET_TYPE(typmod, geometry_type);
 				if (z)
 					TYPMOD_SET_Z(typmod);
-				if (m)
-					TYPMOD_SET_M(typmod);
 
 				/* Shift to restore the 4 bits of the duration */
 				TYPMOD_SET_DURATION(typmod, duration_type);
@@ -348,7 +339,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 		str += sprintf(str, "%s", temporal_type_name(duration_type));
 	if (geometry_type)
 	{
-		if (duration_type) str += sprintf(str, ", ");
+		if (duration_type) str += sprintf(str, ",");
 		str += sprintf(str, "%s", lwtype_name(geometry_type));
 		/* Has Z?  */
 		if (hasz) str += sprintf(str, "Z");
@@ -386,20 +377,17 @@ PG_FUNCTION_INFO_V1(tpoint_make_temporalinst);
 PGDLLEXPORT Datum
 tpoint_make_temporalinst(PG_FUNCTION_ARGS) 
 {
-	GSERIALIZED *value = PG_GETARG_GSERIALIZED_P(0);
-	if (gserialized_get_type(value) != POINTTYPE ||
-		gserialized_is_empty(value))
-	{
-		PG_FREE_IF_COPY(value, 0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
+		FLAGS_GET_M(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only non empty point geometries accepted")));		
-	}
+			errmsg("Only non-empty point geometries without M dimension accepted")));
 
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(value),
+	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(gs),
 		t, valuetypid);
-	PG_FREE_IF_COPY(value, 0);
+	PG_FREE_IF_COPY(gs, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -451,7 +439,7 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 	}
 
 	bool result = false;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_ever_equals((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -481,7 +469,7 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	bool result = false;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_always_equals((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -585,7 +573,7 @@ Datum
 tpointi_values(TemporalI *ti)
 {
 	Datum result = 0;
-	assert(temporal_point_is_valid(ti->valuetypid));
+	temporal_point_is_valid(ti->valuetypid);
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointi_values(ti);
 	else if (ti->valuetypid == type_oid(T_GEOGRAPHY))
@@ -597,7 +585,7 @@ Datum
 tpoint_values_internal(Temporal *temp)
 {
 	Datum result = 0;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -653,7 +641,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
 			(TemporalInst *)temp, PointerGetDatum(gs));
@@ -717,7 +705,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
 			(TemporalInst *)temp, PointerGetDatum(gs));
@@ -763,7 +751,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
 			(TemporalInst *)temp, values, count1);
@@ -810,7 +798,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
 			(TemporalInst *)temp, values, count1);

@@ -142,7 +142,7 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid,
 	bool mustfree)
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc1_temporalinst((TemporalInst *)temp,
 			func, valuetypid, mustfree);
@@ -233,7 +233,7 @@ tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst((TemporalInst *)temp,
 			param, func, valuetypid, mustfree);
@@ -334,7 +334,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d, 
 			func, valuetypid, invert);
@@ -513,7 +513,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 	Oid valuetypid, bool inverted)
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
@@ -1252,8 +1252,8 @@ sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -1807,8 +1807,8 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -2369,8 +2369,8 @@ sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -2500,8 +2500,8 @@ sync_tfunc2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	}
 
 	/* If the start or end values are equal */	
-	if (datum_eq2(startvalue1, startvalue2, start1->valuetypid, start2->valuetypid) ||
-		datum_eq2(endvalue1, endvalue2, start1->valuetypid, start2->valuetypid))
+	if (datum_eq(startvalue1, startvalue2, start1->valuetypid) ||
+		datum_eq(endvalue1, endvalue2, start1->valuetypid))
 	{
 		/* Compute the function at the start instant */
 		if (lower_inc)
@@ -2791,8 +2791,8 @@ sync_tfunc2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);
@@ -2919,8 +2919,8 @@ sync_tfunc3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	}
 
 	/* If the start or end values are equal */	
-	if (datum_eq2(startvalue1, startvalue2, start1->valuetypid, start2->valuetypid) ||
-		datum_eq2(endvalue1, endvalue2, start1->valuetypid, start2->valuetypid))
+	if (datum_eq(startvalue1, startvalue2, start1->valuetypid) ||
+		datum_eq(endvalue1, endvalue2, start1->valuetypid))
 	{
 		/* Compute the function at the start instant */
 		if (lower_inc)
@@ -3223,8 +3223,8 @@ sync_tfunc3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
@@ -3658,8 +3658,8 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp1->duration) &&
-		temporal_duration_is_valid(temp2->duration));
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);

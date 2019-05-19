@@ -802,7 +802,7 @@ tnumbers_value_range(TemporalS *ts)
 {
 	BOX *box = temporals_bbox_ptr(ts);
 	Datum min = 0, max = 0;
-	assert(temporal_number_is_valid(ts->valuetypid));
+	temporal_number_is_valid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);

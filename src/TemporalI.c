@@ -503,7 +503,7 @@ tnumberi_value_range(TemporalI *ti)
 {
 	BOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	assert(temporal_number_is_valid(ti->valuetypid));
+	temporal_number_is_valid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->low.x));

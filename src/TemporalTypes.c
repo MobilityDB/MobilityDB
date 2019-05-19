@@ -42,49 +42,34 @@ debugstr(char *msg)
 	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("DEBUG: %s", msg)));
 }
 
-bool 
+/* Tests for assertions */
+
+void 
 temporal_duration_is_valid(int16 duration)
 {
-	if (duration == TEMPORALINST || duration == TEMPORALI || 
-		duration == TEMPORALSEQ || duration == TEMPORALS)
-		return true;
-	return false;
+	assert(duration == TEMPORALINST || duration == TEMPORALI || 
+		duration == TEMPORALSEQ || duration == TEMPORALS);
 }
 
-bool 
+void 
 temporal_number_is_valid(Oid type)
 {
-	if (type == INT4OID || type == FLOAT8OID)
-		return true;
-	return false;
+	assert(type == INT4OID || type == FLOAT8OID);
 }
 
-bool 
+void 
 temporal_numrange_is_valid(Oid type)
 {
-	if (type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE))
-		return true;
-	return false;
+	assert(type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE));
 }
 
-bool 
+void 
 temporal_point_is_valid(Oid type)
 {
-	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-		return true;
-	return false;
+	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY));
 }
 
 /* Align to double */
-
-size_t
-int4_pad(size_t size)
-{
-	if (size % 4)
-		return size + (4 - size % 4);
-	else
-		return size;
-}
 
 size_t
 double_pad(size_t size)
@@ -188,7 +173,7 @@ double
 datum_double(Datum d, Oid valuetypid)
 {
 	double result = 0.0;
-	assert(temporal_number_is_valid(valuetypid));
+	temporal_number_is_valid(valuetypid);
 	if (valuetypid == INT4OID)
 		result = (double)(DatumGetInt32(d));
 	if (valuetypid == FLOAT8OID)
@@ -390,6 +375,7 @@ temporalarr_extract(ArrayType *array, int *count)
 	return result;
 }
 
+/*
 Temporal **
 temporalarr_extract_old(ArrayType *array, int *count)
 {
@@ -397,6 +383,7 @@ temporalarr_extract_old(ArrayType *array, int *count)
 	deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result, NULL, count);
 	return result;
 }
+*/
 
 /*****************************************************************************/
 
@@ -485,24 +472,6 @@ period_sort_cmp(Period **l, Period **r)
 }
 
 static int 
-double2_sort_cmp(double2 **l, double2 **r) 
-{
-	return double2_cmp(*l, *r);
-}
-
-static int 
-double3_sort_cmp(double3 **l, double3 **r) 
-{
-	return double3_cmp(*l, *r);
-}
-
-static int 
-double4_sort_cmp(double4 **l, double4 **r) 
-{
-	return double4_cmp(*l, *r);
-}
-
-static int 
 range_sort_cmp(RangeType **l, RangeType **r) 
 {
 	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l), 
@@ -539,27 +508,6 @@ timestamp_sort(TimestampTz *times, int count)
 {
 	qsort(times, count, sizeof(Timestamp), 
 		(qsort_comparator) &timestamp_sort_cmp);
-}
-
-void
-double2_sort(double2 **doubles, int count)
-{
-	qsort(doubles, count, sizeof(double2 *), 
-		(qsort_comparator) &double2_sort_cmp);
-}
-
-void
-double3_sort(double3 **triples, int count)
-{
-	qsort(triples, count, sizeof(double3 *), 
-		(qsort_comparator) &double3_sort_cmp);
-}
-
-void
-double4_sort(double4 **quadruples, int count)
-{
-	qsort(quadruples, count, sizeof(double4 *), 
-		(qsort_comparator) &double4_sort_cmp);
 }
 
 void
@@ -643,25 +591,6 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 	len2 = VARSIZE_ANY_EXHDR(arg2);
 
 	return varstr_cmp(a1p, len1, a2p, len2, collid);
-}
-
-text *
-text_copy(text *t)
-{
-	/*
-	 * VARSIZE is the total size of the struct in bytes.
-	 */
-	text	   *new_t = (text *) palloc(VARSIZE(t));
-
-	SET_VARSIZE(new_t, VARSIZE(t));
-
-	/*
-	 * VARDATA is a pointer to the data region of the struct.
-	 */
-	memcpy((void *) VARDATA(new_t), /* destination */
-		   (void *) VARDATA(t), /* source */
-		   VARSIZE(t) - VARHDRSZ);	/* how many bytes */
-	return new_t;
 }
 
 /*****************************************************************************
@@ -778,12 +707,7 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 		return DatumGetFloat8(l) == DatumGetInt32(r);
 	else if (typel == TEXTOID && typer == TEXTOID) 
 		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-	else if (typel == type_oid(T_DOUBLE2) && typer == type_oid(T_DOUBLE2)) 
-		return double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
-	else if (typel == type_oid(T_DOUBLE3) && typer == type_oid(T_DOUBLE3)) 
-		return double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
-	else if (typel == type_oid(T_DOUBLE4) && typer == type_oid(T_DOUBLE4)) 
-		return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
+	/* This function is never called with doubleN */
 #ifdef WITH_POSTGIS
 	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
 	//	return DatumGetBool(call_function2(lwgeom_eq, l, r));	
@@ -822,13 +746,8 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 		return DatumGetFloat8(l) < DatumGetFloat8(r);
 	else if (typel == TEXTOID && typer == TEXTOID) 
 		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-#ifdef WITH_POSTGIS
-	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-		return DatumGetBool(call_function2(lwgeom_lt, l, r));	
-	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
-		return DatumGetBool(call_function2(geography_lt, l, r));
-#endif
-	
+	/* This function is never called with doubleN, geometry, or geography */
+
 	List *lst = list_make1(makeString("<")); 
 	ereport(WARNING, (errcode(ERRCODE_WARNING), 
 		errmsg("Using slow comparison for unknown data type")));
@@ -905,7 +824,7 @@ Oid
 range_oid_from_base(Oid valuetypid)
 {
 	Oid result = 0;
-	assert(temporal_number_is_valid(valuetypid));
+	temporal_number_is_valid(valuetypid);
 	if (valuetypid == INT4OID)
 		result = type_oid(T_INTRANGE);
 	else if (valuetypid == FLOAT8OID)
@@ -935,14 +854,6 @@ temporal_oid_from_base(Oid valuetypid)
  * Obtain the Oid of the base type from the Oid of the range type or the 
  * temporal type  
  */
-
-Oid
-base_oid_from_range(Oid rangetypid)
-{
-	if (rangetypid == type_oid(T_INTRANGE)) return INT4OID;
-	if (rangetypid == type_oid(T_FLOATRANGE)) return FLOAT8OID;		
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
-}
 
 Oid
 base_oid_from_temporal(Oid temptypid)

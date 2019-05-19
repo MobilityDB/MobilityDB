@@ -319,11 +319,10 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
-extern bool temporal_duration_is_valid(int16 type);
-extern bool temporal_number_is_valid(Oid type);
-extern bool temporal_numrange_is_valid(Oid type);
-extern bool temporal_point_is_valid(Oid type);
-extern size_t int4_pad(size_t size);
+extern void temporal_duration_is_valid(int16 type);
+extern void temporal_number_is_valid(Oid type);
+extern void temporal_numrange_is_valid(Oid type);
+extern void temporal_point_is_valid(Oid type);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
 extern bool type_byval_fast(Oid type);
@@ -366,9 +365,6 @@ extern ArrayType *temporalarr_to_array(Temporal **temporals, int count);
 
 extern void datum_sort(Datum *values, int count, Oid valuetypid);
 extern void timestamp_sort(TimestampTz *values, int count);
-extern void double2_sort(double2 **doubles, int count);
-extern void double3_sort(double3 **triples, int count);
-extern void double4_sort(double4 **quadruples, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
 extern void temporalinstarr_sort(TemporalInst **instants, int count);
@@ -411,10 +407,7 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
-
-extern Oid base_oid_from_range(Oid temptypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-
 extern bool temporal_oid(Oid temptypid);
 
 /* Catalog functions */

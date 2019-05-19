@@ -206,19 +206,19 @@ CREATE OPERATOR #&> (
  *****************************************************************************/
 /* intrange op tint */
 
-CREATE FUNCTION temporal_left(r intrange, tint)
+CREATE FUNCTION temporal_left(intrange, tint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'left_range_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(r intrange, tint)
+CREATE FUNCTION temporal_overleft(intrange, tint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overleft_range_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(r intrange, tint)
+CREATE FUNCTION temporal_right(intrange, tint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'right_range_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(r intrange, tint)
+CREATE FUNCTION temporal_overright(intrange, tint)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overright_range_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -22,7 +22,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	Datum result = 0;   /* keep compiler quiet */
 	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
 
-	assert(temporal_duration_is_valid(type));
+	temporal_duration_is_valid(type);
 	if (type == TEMPORALINST)
 		result = temporalinst_analyze(stats);
 	else if (type == TEMPORALI)

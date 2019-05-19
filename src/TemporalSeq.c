@@ -1456,7 +1456,7 @@ tnumberseq_value_range(TemporalSeq *seq)
 {
 	BOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = 0, max = 0;
-	assert(temporal_number_is_valid(seq->valuetypid));
+	temporal_number_is_valid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);

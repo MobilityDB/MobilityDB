@@ -81,7 +81,7 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 				errmsg("Invalid value for timestamp set")));
 	}
 
-	size_t memsize = double_pad(sizeof(TimestampTz) * count + int4_pad(sizeof(Period)));
+	size_t memsize = double_pad(sizeof(TimestampTz) * count + double_pad(sizeof(Period)));
 	/* Array of pointers containing the pointers to the component timestamps,
 	   and a pointer to the bbox */
 	size_t pdata = double_pad(sizeof(TimestampSet) + (count + 1) * sizeof(size_t));
@@ -102,7 +102,7 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 	period_set(&bbox, times[0], times[count-1], true, true);
 	offsets[count] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += int4_pad(sizeof(Period));
+	pos += double_pad(sizeof(Period));
 	return result;
 }
 
