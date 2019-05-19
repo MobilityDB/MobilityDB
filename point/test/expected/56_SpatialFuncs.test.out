@@ -1276,6 +1276,7 @@ SELECT astext(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@200
  
 (1 row)
 
+<<<<<<< HEAD
 SELECT astext(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
                 astext                 
 ---------------------------------------
@@ -1300,6 +1301,8 @@ SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-
  
 (1 row)
 
+=======
+>>>>>>> origin
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -1401,6 +1404,7 @@ SELECT astext(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
+<<<<<<< HEAD
 SELECT astext(minusGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(0 1,2 1)'));
                                   astext                                  
 --------------------------------------------------------------------------
@@ -1413,6 +1417,8 @@ SELECT astext(minusGeometry(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000
  {[POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
 (1 row)
 
+=======
+>>>>>>> origin
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -4324,6 +4330,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
  LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
+<<<<<<< HEAD
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], (Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]}', 
 tgeompoint '{[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02], (Point(2 2)@2000-01-04, Point(3 3)@2000-01-05]}'));
       st_astext      
@@ -4331,6 +4338,8 @@ tgeompoint '{[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02], (Point(2 2)@2000-01
  LINESTRING(2 2,2 2)
 (1 row)
 
+=======
+>>>>>>> origin
 /* Errors */
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID

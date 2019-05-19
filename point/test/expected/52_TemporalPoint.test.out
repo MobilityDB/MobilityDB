@@ -466,6 +466,7 @@ select asewkt(tgeogpoint(Instant,PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01
 (1 row)
 
 /* Errors */
+<<<<<<< HEAD
 select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid duration type modifier: instan
 LINE 2: select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
@@ -477,6 +478,11 @@ LINE 1: select tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0...
 SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
 ERROR:  Invalid temporal point type modifier: 1
 LINE 1: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
+=======
+SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
+ERROR:  Invalid temporal point type modifier: 1
+LINE 2: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
+>>>>>>> origin
                ^
 SELECT tgeompoint(InstantSet, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
 ERROR:  Invalid geometry type modifier: 2
