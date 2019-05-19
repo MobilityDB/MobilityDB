@@ -384,21 +384,12 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
-<<<<<<< HEAD
 CONTEXT:  SQL function "contains" statement 1
 SELECT contains(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT contains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "contains" statement 1
-=======
-CONTEXT:  SQL function "contains" statement 1
-SELECT contains(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be in the same SRID
-SELECT contains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "contains" statement 1
->>>>>>> origin
 SELECT contains(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "contains" statement 1
@@ -787,7 +778,6 @@ HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3)
 /* Errors */
 SELECT containsproperly(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
-<<<<<<< HEAD
 CONTEXT:  SQL function "containsproperly" statement 1
 SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -797,17 +787,6 @@ ERROR:  The temporal points must be in the same SRID
 SELECT containsproperly(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "containsproperly" statement 1
-=======
-CONTEXT:  SQL function "containsproperly" statement 1
-SELECT containsproperly(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-ERROR:  The temporal point and the geometry must be in the same SRID
-CONTEXT:  SQL function "containsproperly" statement 1
-SELECT containsproperly(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be in the same SRID
-SELECT containsproperly(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "containsproperly" statement 1
->>>>>>> origin
 SELECT containsproperly(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "containsproperly" statement 1
@@ -1602,17 +1581,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-<<<<<<< HEAD
 SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
-=======
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "covers" statement 1
-SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
->>>>>>> origin
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -2406,17 +2378,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-<<<<<<< HEAD
 SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
-=======
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "coveredby" statement 1
-SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
->>>>>>> origin
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -3586,7 +3551,6 @@ HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3)
 /* Errors */
 SELECT equals(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
-<<<<<<< HEAD
 CONTEXT:  SQL function "equals" statement 1
 SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -3596,17 +3560,6 @@ ERROR:  The temporal points must be in the same SRID
 SELECT equals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "equals" statement 1
-=======
-CONTEXT:  SQL function "equals" statement 1
-SELECT equals(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-ERROR:  The temporal point and the geometry must be in the same SRID
-CONTEXT:  SQL function "equals" statement 1
-SELECT equals(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be in the same SRID
-SELECT equals(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "equals" statement 1
->>>>>>> origin
 SELECT equals(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "equals" statement 1
@@ -4411,17 +4364,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "intersects" statement 1
 SELECT intersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-<<<<<<< HEAD
 SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "intersects" statement 1
 SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
-=======
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "intersects" statement 1
-SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
->>>>>>> origin
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "intersects" statement 1
 SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -4808,21 +4754,12 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
-<<<<<<< HEAD
 CONTEXT:  SQL function "overlaps" statement 1
 SELECT overlaps(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "overlaps" statement 1
-=======
-CONTEXT:  SQL function "overlaps" statement 1
-SELECT overlaps(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be in the same SRID
-SELECT overlaps(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "overlaps" statement 1
->>>>>>> origin
 SELECT overlaps(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "overlaps" statement 1
@@ -5210,7 +5147,6 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
-<<<<<<< HEAD
 CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
@@ -5220,17 +5156,6 @@ CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "touches" statement 1
-=======
-CONTEXT:  SQL function "touches" statement 1
-SELECT touches(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be in the same SRID
-SELECT touches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "touches" statement 1
-SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "touches" statement 1
->>>>>>> origin
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be of the same dimensionality
 SELECT within(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
@@ -6441,17 +6366,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "dwithin" statement 1
 SELECT dwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal points must be in the same SRID
-<<<<<<< HEAD
 SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "dwithin" statement 1
 SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)', 2);
-=======
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
-ERROR:  The temporal point and the geometry must be of the same dimensionality
-CONTEXT:  SQL function "dwithin" statement 1
-SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)', 2);
->>>>>>> origin
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "dwithin" statement 1
 SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
