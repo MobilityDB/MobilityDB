@@ -1,5 +1,5 @@
 ﻿-------------------------------------------------------------------------------
--- Tests for timestamp set data type.
+-- Tests for timestampset data type.
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
@@ -7,16 +7,16 @@
 -- Constructor
 -------------------------------------------------------------------------------
 
-SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
--- Error
-SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-01', '2000-01-03']);
+SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
+/* Errors */
+SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-01', '2000-01-03']);
 SELECT timestampset('{}'::timestamptz[]);
 
 -------------------------------------------------------------------------------
 -- Casting
 -------------------------------------------------------------------------------
 
-SELECT timestampset(timestamp '2000-01-01');
+SELECT timestampset(timestamptz '2000-01-01');
 SELECT timestamptz '2000-01-01'::timestampset;
 
 -------------------------------------------------------------------------------

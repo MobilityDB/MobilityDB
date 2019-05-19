@@ -71,11 +71,11 @@ CREATE FUNCTION period(timestamptz)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION period(tstzrange)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'range_as_period'
+	AS 'MODULE_PATHNAME', 'tstzrange_as_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION tstzrange(period)
 	RETURNS tstzrange
-	AS 'MODULE_PATHNAME', 'period_as_range'
+	AS 'MODULE_PATHNAME', 'period_as_tstzrange'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz) AS IMPLICIT;

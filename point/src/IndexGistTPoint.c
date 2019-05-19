@@ -1145,32 +1145,4 @@ gist_tpoint_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
-/*****************************************************************************
- * Distance method
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(gist_tpoint_distance);
-
-PGDLLEXPORT Datum
-gist_tpoint_distance(PG_FUNCTION_ARGS)
-{
-	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	GBOX	   *key = (GBOX *)DatumGetPointer(entry->key);
-	
-	/* Oid subtype = PG_GETARG_OID(3); */
-	bool* recheck = (bool *) PG_GETARG_POINTER(4);
-	
-	/* Bounding box distance is always inexact. */
-	*recheck = true;
-	
-	Temporal *query = PG_GETARG_TEMPORAL(1);
-	if (query == NULL)
-		PG_RETURN_NULL();
-	GBOX box;
-	temporal_bbox(&box, query);
-	double result = distance_gbox_gbox_internal(key, &box);
-	PG_FREE_IF_COPY(query, 1);
-	PG_RETURN_FLOAT8(result);
-}
-
 /*****************************************************************************/

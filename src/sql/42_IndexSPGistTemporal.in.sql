@@ -91,34 +91,50 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 CREATE OPERATOR CLASS spgist_tint_ops
 	DEFAULT FOR TYPE tint USING spgist AS
 	-- strictly left
+	OPERATOR	1		<< (tint, intrange),
+	OPERATOR	1		<< (tint, floatrange),
 	OPERATOR	1		<< (tint, box),
 	OPERATOR	1		<< (tint, tint),
 	OPERATOR	1		<< (tint, tfloat),
  	-- overlaps or left
+	OPERATOR	2		&< (tint, intrange),
+	OPERATOR	2		&< (tint, floatrange),
 	OPERATOR	2		&< (tint, box),
 	OPERATOR	2		&< (tint, tint),
 	OPERATOR	2		&< (tint, tfloat),
 	-- overlaps
+	OPERATOR	3		&& (tint, intrange),
+	OPERATOR	3		&& (tint, floatrange),
 	OPERATOR	3		&& (tint, box),
 	OPERATOR	3		&& (tint, tint),
 	OPERATOR	3		&& (tint, tfloat),
 	-- overlaps or right
+	OPERATOR	4		&> (tint, intrange),
+	OPERATOR	4		&> (tint, floatrange),
 	OPERATOR	4		&> (tint, box),
 	OPERATOR	4		&> (tint, tint),
 	OPERATOR	4		&> (tint, tfloat),
 	-- strictly right
+	OPERATOR	5		>> (tint, intrange),
+	OPERATOR	5		>> (tint, floatrange),
 	OPERATOR	5		>> (tint, box),
 	OPERATOR	5		>> (tint, tint),
 	OPERATOR	5		>> (tint, tfloat),
   	-- same
+	OPERATOR	6		~= (tint, intrange),
+	OPERATOR	6		~= (tint, floatrange),
 	OPERATOR	6		~= (tint, box),
 	OPERATOR	6		~= (tint, tint),
 	OPERATOR	6		~= (tint, tfloat),
 	-- contains
+	OPERATOR	7		@> (tint, intrange),
+	OPERATOR	7		@> (tint, floatrange),
 	OPERATOR	7		@> (tint, box),
 	OPERATOR	7		@> (tint, tint),
 	OPERATOR	7		@> (tint, tfloat),
 	-- contained by
+	OPERATOR	8		<@ (tint, intrange),
+	OPERATOR	8		<@ (tint, floatrange),
 	OPERATOR	8		<@ (tint, box),
 	OPERATOR	8		<@ (tint, tint),
 	OPERATOR	8		<@ (tint, tfloat),
@@ -151,34 +167,50 @@ CREATE OPERATOR CLASS spgist_tint_ops
 CREATE OPERATOR CLASS spgist_tfloat_ops
 	DEFAULT FOR TYPE tfloat USING spgist AS
 	-- strictly left
+	OPERATOR	1		<< (tfloat, intrange),
+	OPERATOR	1		<< (tfloat, floatrange),
 	OPERATOR	1		<< (tfloat, box),
 	OPERATOR	1		<< (tfloat, tint),
 	OPERATOR	1		<< (tfloat, tfloat),
  	-- overlaps or left
+	OPERATOR	2		&< (tfloat, intrange),
+	OPERATOR	2		&< (tfloat, floatrange),
 	OPERATOR	2		&< (tfloat, box),
 	OPERATOR	2		&< (tfloat, tint),
 	OPERATOR	2		&< (tfloat, tfloat),
 	-- overlaps
+	OPERATOR	3		&& (tfloat, intrange),
+	OPERATOR	3		&& (tfloat, floatrange),
 	OPERATOR	3		&& (tfloat, box),
 	OPERATOR	3		&& (tfloat, tint),
 	OPERATOR	3		&& (tfloat, tfloat),
 	-- overlaps or right
+	OPERATOR	4		&> (tfloat, intrange),
+	OPERATOR	4		&> (tfloat, floatrange),
 	OPERATOR	4		&> (tfloat, box),
 	OPERATOR	4		&> (tfloat, tint),
 	OPERATOR	4		&> (tfloat, tfloat),
 	-- strictly right
+	OPERATOR	5		>> (tfloat, intrange),
+	OPERATOR	5		>> (tfloat, floatrange),
 	OPERATOR	5		>> (tfloat, box),
 	OPERATOR	5		>> (tfloat, tint),
 	OPERATOR	5		>> (tfloat, tfloat),
   	-- same
+	OPERATOR	6		~= (tfloat, intrange),
+	OPERATOR	6		~= (tfloat, floatrange),
 	OPERATOR	6		~= (tfloat, box),
 	OPERATOR	6		~= (tfloat, tint),
 	OPERATOR	6		~= (tfloat, tfloat),
 	-- contains
+	OPERATOR	7		@> (tfloat, intrange),
+	OPERATOR	7		@> (tfloat, floatrange),
 	OPERATOR	7		@> (tfloat, box),
 	OPERATOR	7		@> (tfloat, tint),
 	OPERATOR	7		@> (tfloat, tfloat),
 	-- contained by
+	OPERATOR	8		<@ (tfloat, intrange),
+	OPERATOR	8		<@ (tfloat, floatrange),
 	OPERATOR	8		<@ (tfloat, box),
 	OPERATOR	8		<@ (tfloat, tint),
 	OPERATOR	8		<@ (tfloat, tfloat),

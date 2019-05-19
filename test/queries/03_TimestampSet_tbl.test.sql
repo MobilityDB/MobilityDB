@@ -1,23 +1,28 @@
 ﻿-------------------------------------------------------------------------------
--- Tests for timestamp set data type.
+-- Tests for timestampset data type.
 -- File TimestampSet.c
 -------------------------------------------------------------------------------
 
+-- Send/receive functions
+
+COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_timestampset_tmp;
+CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
+COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
+DROP TABLE tbl_timestampset_tmp;
+
 -------------------------------------------------------------------------------
 -- Constructor
--------------------------------------------------------------------------------
 
-SELECT timestampset(ARRAY [timestamp '2000-01-01', '2000-01-02', '2000-01-03']);
+SELECT timestampset(array_agg(DISTINCT t ORDER BY t)) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;
 
 -------------------------------------------------------------------------------
 -- Cast
--------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Functions
--------------------------------------------------------------------------------
 
 SELECT memSize(ts) FROM tbl_timestampset;
 SELECT timespan(ts) FROM tbl_timestampset;

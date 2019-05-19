@@ -530,9 +530,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants and the bounds */
-	if (count < 1)
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("A temporal sequence must have at least one temporal instant")));
+	assert(count > 0);
 	if (count == 1 && (!lower_inc || !upper_inc))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Instant sequence must have inclusive bounds")));
@@ -605,7 +603,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
 	result->valuetypid = valuetypid;
-	result->type = TEMPORALSEQ;
+	result->duration = TEMPORALSEQ;
 	period_set(&result->period, newinstants[0]->t, newinstants[newcount-1]->t,
 		lower_inc, upper_inc);
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
@@ -1110,14 +1108,17 @@ bool
 tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
 {
+	bool result;
 	if (!tpointseq_min_dist_at_timestamp(start1, end1, start2, end2, t))
 		return false;
 	Datum value1 = temporalseq_value_at_timestamp1(start1, end1, *t);
 	Datum value2 = temporalseq_value_at_timestamp1(start2, end2, *t);
 	if (datum_eq(value1, value2, start1->valuetypid))
-		return true;
+		result = true;
 	else
-		return false;
+		result = false;
+	pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
+	return result;
 }
 #endif
 
@@ -1454,7 +1455,8 @@ RangeType *
 tnumberseq_value_range(TemporalSeq *seq)
 {
 	BOX *box = temporalseq_bbox_ptr(seq);
-	Datum min, max;
+	Datum min = 0, max = 0;
+	assert(temporal_number_is_valid(seq->valuetypid));
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);
@@ -1465,9 +1467,6 @@ tnumberseq_value_range(TemporalSeq *seq)
 		min = Float8GetDatum(box->low.x);
 		max = Float8GetDatum(box->high.x);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	return range_make(min, max, true, true, seq->valuetypid);
 }
 
@@ -1698,13 +1697,26 @@ TemporalSeq *
 temporalseq_shift(TemporalSeq *seq, Interval *interval)
 {
 	TemporalSeq *result = temporalseq_copy(seq);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(result, i);
+		TemporalInst *inst = instants[i] = temporalseq_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
+	/* Shift period */
+	result->period.lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+	result->period.upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+	/* Recompute the bounding box */
+    void *bbox = temporalseq_bbox_ptr(result); 
+    temporalseq_make_bbox(bbox, instants, seq->count, 
+		seq->period.lower_inc, seq->period.upper_inc);
+	pfree(instants);
 	return result;
 }
 
@@ -1754,7 +1766,7 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		}
 
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeompointseq_trajectory1(inst1, inst2);
+		Datum line = geompoint_trajectory(value1, value2);
 		/* The following approximation is essential for the atGeometry function
 		   instead of calling the function ST_Intersects(line, value)) */
 		bool inter = MOBDB_FLAGS_GET_Z(inst1->flags) ?
@@ -2761,7 +2773,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeompointseq_trajectory1(inst1, inst2);
+		Datum line = geompoint_trajectory(value1, value2);
 		Datum result = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line)); 

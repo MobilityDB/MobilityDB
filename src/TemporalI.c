@@ -88,9 +88,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants */
-	if (count < 1)
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("A temporal instant set must have at least one temporal instant")));
+	assert(count > 0);
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz;
 	int srid;
@@ -133,7 +131,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
 	result->valuetypid = valuetypid;
-	result->type = TEMPORALI;
+	result->duration = TEMPORALI;
 #ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
@@ -504,7 +502,8 @@ RangeType *
 tnumberi_value_range(TemporalI *ti)
 {
 	BOX *box = temporali_bbox_ptr(ti);
-	Datum min, max;
+	Datum min = 0, max = 0;
+	assert(temporal_number_is_valid(ti->valuetypid));
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->low.x));
@@ -515,9 +514,6 @@ tnumberi_value_range(TemporalI *ti)
 		min = Float8GetDatum(box->low.x);
 		max = Float8GetDatum(box->high.x);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	return range_make(min, max, true, true, ti->valuetypid);
 }
 
@@ -585,19 +581,6 @@ temporali_max_value(TemporalI *ti)
 		}
 		return temporalinst_value(temporali_inst_n(ti, idx));
 	}
-}
-
-/* Set of instants on which the temporal value is defined */
-
-TimestampSet *
-temporali_time(TemporalI *ti)
-{
-	TimestampTz *times = palloc(sizeof(Timestamp) * ti->count);
-	for (int i = 0; i < ti->count; i++) 
-		times[i] = (temporali_inst_n(ti, i))->t;
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, ti->count);
-	pfree(times);
-	return result;
 }
 
 /* Bounding period on which the temporal value is defined */
@@ -716,14 +699,19 @@ temporali_always_equals(TemporalI *ti, Datum value)
 TemporalI *
 temporali_shift(TemporalI *ti, Interval *interval)
 {
-	TemporalI *result = temporali_copy(ti);
+   	TemporalI *result = temporali_copy(ti);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst = temporali_inst_n(result, i);
+		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
+	/* Recompute the bounding box */
+    void *bbox = temporali_bbox_ptr(result); 
+    temporali_make_bbox(bbox, instants, ti->count);
+    pfree(instants);
 	return result;
 }
 

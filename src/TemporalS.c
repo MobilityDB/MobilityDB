@@ -92,9 +92,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 {
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
-	if (count < 1)
-		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-			errmsg("A temporal sequence set must have at least one temporal sequence")));
+	assert(count > 0);
 	bool tempcontinuous = true;
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz = false;
@@ -151,7 +149,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	result->count = newcount;
 	result->totalcount = totalcount;
 	result->valuetypid = valuetypid;
-	result->type = TEMPORALS;
+	result->duration = TEMPORALS;
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(newsequences[0]->flags);
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
 	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, tempcontinuous);
@@ -803,7 +801,8 @@ RangeType *
 tnumbers_value_range(TemporalS *ts)
 {
 	BOX *box = temporals_bbox_ptr(ts);
-	Datum min, max;
+	Datum min = 0, max = 0;
+	assert(temporal_number_is_valid(ts->valuetypid));
 	if (ts->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);
@@ -814,9 +813,6 @@ tnumbers_value_range(TemporalS *ts)
 		min = Float8GetDatum(box->low.x);
 		max = Float8GetDatum(box->high.x);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	return range_make(min, max, true, true, ts->valuetypid);
 }
 
@@ -1210,17 +1206,35 @@ TemporalS *
 temporals_shift(TemporalS *ts, Interval *interval)
 {
 	TemporalS *result = temporals_copy(ts);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ts->totalcount);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(result, i);
-		for (int j = 0; j < seq->count; j++)
-		{
-			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			inst->t = DatumGetTimestampTz(
-				DirectFunctionCall2(timestamptz_pl_interval,
-				TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-		}
+		TemporalSeq *seq = sequences[i] = temporals_seq_n(result, i);
+        for (int j = 0; j < seq->count; j++)
+        {
+            TemporalInst *inst = instants[j] = temporalseq_inst_n(seq, j);
+            inst->t = DatumGetTimestampTz(
+                DirectFunctionCall2(timestamptz_pl_interval,
+                TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+        }
+        /* Shift period */
+        seq->period.lower = DatumGetTimestampTz(
+                DirectFunctionCall2(timestamptz_pl_interval,
+                TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+        seq->period.upper = DatumGetTimestampTz(
+                DirectFunctionCall2(timestamptz_pl_interval,
+                TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+        /* Recompute the bounding box of the sequence */
+        void *bbox = temporalseq_bbox_ptr(seq); 
+        temporalseq_make_bbox(bbox, instants, seq->count, 
+            seq->period.lower_inc, seq->period.upper_inc);		
 	}
+	/* Recompute the bounding box of the sequence set */
+    void *bbox = temporals_bbox_ptr(result); 
+    temporals_make_bbox(bbox, sequences, ts->count);
+	pfree(sequences);
+	pfree(instants);
 	return result;
 }
 

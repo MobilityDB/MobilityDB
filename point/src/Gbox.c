@@ -108,15 +108,15 @@ PG_FUNCTION_INFO_V1(gbox_constructor);
 PGDLLEXPORT Datum
 gbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin, xmax, ymin, ymax, 
-		zmin = 0, zmax = 0, mmin = 0, mmax = 0, /* keep compiler quiet */
+	assert(PG_NARGS() == 4 || PG_NARGS() == 6 || PG_NARGS() == 8);
+	double zmin = 0, zmax = 0, mmin = 0, mmax = 0, /* keep compiler quiet */
 		tmp;
 	int hasz = 0, hasm = 0;
 
-	xmin = PG_GETARG_FLOAT8(0);
-	xmax = PG_GETARG_FLOAT8(1);
-	ymin = PG_GETARG_FLOAT8(2);
-	ymax = PG_GETARG_FLOAT8(3);
+	double xmin = PG_GETARG_FLOAT8(0);
+	double xmax = PG_GETARG_FLOAT8(1);
+	double ymin = PG_GETARG_FLOAT8(2);
+	double ymax = PG_GETARG_FLOAT8(3);
 
 	if (PG_NARGS() == 4)
 		;
@@ -134,11 +134,6 @@ gbox_constructor(PG_FUNCTION_ARGS)
 		mmax = PG_GETARG_FLOAT8(7);
 		hasz = 1;
 		hasm = 1;
-	}
-	else
-	{
-		elog(ERROR, "Unsupported number of args: %d", PG_NARGS());
-		PG_RETURN_NULL();
 	}
 
 	GBOX *result = gbox_new(gflags(hasz, hasm, 0));
@@ -250,15 +245,16 @@ PG_FUNCTION_INFO_V1(geodbox_constructor);
 PGDLLEXPORT Datum
 geodbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax, mmin, mmax, tmp;
+	assert(PG_NARGS() == 6 || PG_NARGS() == 8);
+	double mmin, mmax, tmp;
 	int hasm = 0;
 
-	xmin = PG_GETARG_FLOAT8(0);
-	xmax = PG_GETARG_FLOAT8(1);
-	ymin = PG_GETARG_FLOAT8(2);
-	ymax = PG_GETARG_FLOAT8(3);
-	zmin = PG_GETARG_FLOAT8(4);
-	zmax = PG_GETARG_FLOAT8(5);
+	double xmin = PG_GETARG_FLOAT8(0);
+	double xmax = PG_GETARG_FLOAT8(1);
+	double ymin = PG_GETARG_FLOAT8(2);
+	double ymax = PG_GETARG_FLOAT8(3);
+	double zmin = PG_GETARG_FLOAT8(4);
+	double zmax = PG_GETARG_FLOAT8(5);
 	if (PG_NARGS() == 6)
 		;
 	else if (PG_NARGS() == 8)
@@ -266,11 +262,6 @@ geodbox_constructor(PG_FUNCTION_ARGS)
 		mmin = PG_GETARG_FLOAT8(6);
 		mmax = PG_GETARG_FLOAT8(7);
 		hasm = 1;
-	}
-	else
-	{
-		elog(ERROR, "Unsupported number of args: %d", PG_NARGS());
-		PG_RETURN_NULL();
 	}
 
 	GBOX *result = gbox_new(gflags(1, hasm, 1));

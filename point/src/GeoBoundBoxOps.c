@@ -147,125 +147,13 @@ same_gbox_gbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/*-------------------------------------------------------------------------
- * Determine the 3D hypotenuse.
- *
- * If required, x, y, and z are swapped to make x the larger number. The
- * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the 
- * sqrt. This allows computation of the hypotenuse for significantly
- * larger values, and with a higher precision than when using the naive
- * formula.  In particular, this cannot overflow unless the final result
- * would be out-of-range.
- *
- * sqrt( x^2 + y^2 + z^2 ) 	= sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
- * 							= x * sqrt( 1 + y^2/x^2 + z^2/x^2)
- * 					 		= x * sqrt( 1 + y/x * y/x + z/x * z/x)
- *-----------------------------------------------------------------------
- */
-static double
-pg_hypot3D(double x, double y, double z)
-{
-	double		yx;
-	double		zx;
-
-	/* Handle INF and NaN properly */
-	if (isinf(x) || isinf(y)|| isinf(z))
-		return get_float8_infinity();
-
-	if (isnan(x) || isnan(y) || isnan(z))
-		return get_float8_nan();
-
-	/* Else, drop any minus signs */
-	x = fabs(x);
-	y = fabs(y);
-	z = fabs(z);
-
-	/* Swap x, y and z if needed to make x the larger one */
-	if (FPlt(x, y))
-	{
-		double		temp1 = x;
-		x = y;
-		y = temp1;
-	}
-	if (FPlt(x, z))
-	{
-		double		temp2 = x;
-		x = z;
-		z = temp2;
-	}
-	/*
-	 * If x is zero, the hypotenuse is computed with the 2D case.  
-	 * This test saves a few cycles in such cases, but more importantly 
-	 * it also protects against divide-by-zero errors, since now x >= y.
-	 */
-	if (FPzero(x))
-		return pg_hypot(y,z);
-
-	/* Determine the hypotenuse */
-	yx = y / x;
-	zx = z / x;
-	return x * sqrt(1.0 + (yx * yx) + (zx * zx));
-}
-
-/* Minimum distance between 2 bounding boxes */
-
-double
-distance_gbox_gbox_internal(GBOX *box1, GBOX *box2)
-{
-	double		x = 0, y = 0, z = 0;
-
-	if (overlaps_gbox_gbox_internal(box1, box2))
-		return 0.0;
-
-	/* The two boxes must overlap on the M axis, which corresponds to time */
-	if (box1->mmax < box2->mmin || box2->mmax < box1->mmin)
-		return DBL_MAX;
-
-	/* X axis */
-	if (box1->xmax < box2->xmin)
-		x = box2->xmin - box1->xmax;
-	else if (box2->xmax < box1->xmin)
-		x = box1->xmin - box2->xmax;
-	/* Y axis */
-	if (box1->ymax < box2->ymin)
-		y = box2->ymin - box1->ymax;
-	else if (box2->ymax < box1->ymin)
-		y = box1->ymin - box2->ymax;
-	/* Z axis */
-	if (FLAGS_GET_Z(box1->flags) && FLAGS_GET_Z(box2->flags))
-	{
-		if (box1->zmax < box2->zmin)
-			z = box2->zmin - box1->zmax;
-		else if (box2->zmax < box1->zmin)
-			z = box1->zmin - box2->zmax;
-		return pg_hypot3D(x, y, z);
-	}
-	else
-		return pg_hypot(x, y);
-}
-
-PG_FUNCTION_INFO_V1(distance_gbox_gbox);
-
-PGDLLEXPORT Datum
-distance_gbox_gbox(PG_FUNCTION_ARGS)
-{
-	GBOX *box1 = PG_GETARG_GBOX_P(0);
-	GBOX *box2 = PG_GETARG_GBOX_P(1);
-	PG_RETURN_FLOAT8(distance_gbox_gbox_internal(box1, box2));
-}
-
-/*****************************************************************************/
-
 /* Functions computing the bounding box at the creation of a temporal point */
 
 void
 tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
-	if (gserialized_get_gbox_p(gs, box) == LW_FAILURE)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Cannot obtain the bounding box of the value")));
-	
+	assert(gserialized_get_gbox_p(gs, box) != LW_FAILURE);
 	if (! FLAGS_GET_Z(gs->flags) && ! FLAGS_GET_GEODETIC(box->flags))
 	{
 		/* Set the value of the missing Z dimension to +-infinity */
@@ -656,44 +544,19 @@ geo_period_to_gbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_to_gbox);
-
-PGDLLEXPORT Datum
-tpoint_to_gbox(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GBOX *result = palloc0(sizeof(GBOX));
-	temporal_bbox(result, temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * overlaps
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-overlaps_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box1, gs))
 	{
@@ -724,28 +587,15 @@ overlaps_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(overlaps_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-overlaps_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp);
 	if (!geo_to_gbox_internal(&box2, gs))
@@ -781,21 +631,8 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -809,28 +646,15 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * contains
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(contains_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-contains_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box1, gs))
 	{
@@ -861,28 +685,15 @@ contains_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(contains_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-contains_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box2, gs))
 	{
@@ -918,21 +729,8 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -946,28 +744,15 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * contained
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(contained_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-contained_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box1, gs))
 	{
@@ -998,28 +783,15 @@ contained_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(contained_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-contained_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box2, gs))
 	{
@@ -1055,21 +827,8 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
@@ -1083,28 +842,15 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
  * same
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_geom_tpoint);
+PG_FUNCTION_INFO_V1(same_bbox_geo_tpoint);
 
 PGDLLEXPORT Datum
-same_bbox_geom_tpoint(PG_FUNCTION_ARGS)
+same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box1, gs))
 	{
@@ -1135,28 +881,15 @@ same_bbox_gbox_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_tpoint_geom);
+PG_FUNCTION_INFO_V1(same_bbox_tpoint_geo);
 
 PGDLLEXPORT Datum
-same_bbox_tpoint_geom(PG_FUNCTION_ARGS)
+same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
-
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	GBOX box1, box2;
 	if (!geo_to_gbox_internal(&box2, gs))
 	{
@@ -1192,21 +925,8 @@ same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	GBOX box1, box2;
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);

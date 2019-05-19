@@ -7,7 +7,7 @@ src/BooleanOps.c
 src/BoundBoxOps.c
 src/ComparisonOps.c
 src/DoubleN.c
-src/indexesstat.c
+src/debug/indexesstat.c
 src/IndexGistTemporal.c
 src/IndexGistTime.c
 src/IndexGistTnumber.c

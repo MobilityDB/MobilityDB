@@ -1,4 +1,33 @@
-﻿-------------------------------------------------------------------------------
+﻿--------------------------------------------------------------------------------
+-- Send/receive functions
+-------------------------------------------------------------------------------
+
+COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
+COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+
+DROP TABLE IF EXISTS tbl_tbool_tmp;
+DROP TABLE IF EXISTS tbl_tint_tmp;
+DROP TABLE IF EXISTS tbl_tfloat_tmp;
+DROP TABLE IF EXISTS tbl_ttext_tmp;
+
+CREATE TABLE tbl_tbool_tmp AS TABLE tbl_tbool WITH NO DATA;
+CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
+CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
+CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
+
+COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
+COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+
+DROP TABLE tbl_tbool_tmp;
+DROP TABLE tbl_tint_tmp;
+DROP TABLE tbl_tfloat_tmp;
+DROP TABLE tbl_ttext_tmp;
+
+-------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
 
@@ -108,10 +137,10 @@ SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT temporalType(temp) FROM tbl_tbool;
-SELECT DISTINCT temporalType(temp) FROM tbl_tint;
-SELECT DISTINCT temporalType(temp) FROM tbl_tfloat;
-SELECT DISTINCT temporalType(temp) FROM tbl_ttext;
+SELECT DISTINCT temporalType(temp) FROM tbl_tbool ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tint ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_tfloat ORDER BY 1;
+SELECT DISTINCT temporalType(temp) FROM tbl_ttext ORDER BY 1;
 
 SELECT MAX(memSize(temp)) FROM tbl_tbool;
 SELECT MAX(memSize(temp)) FROM tbl_tint;
@@ -285,23 +314,23 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text
 WHERE minusValue(temp, t) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint, 
-( SELECT array_agg(i) AS valuearr FROM tbl_int) tmp 
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat, 
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp 
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext, 
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp 
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp 
 WHERE atValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint,
-( SELECT array_agg(i) AS valuearr FROM tbl_int) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_int WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat,
-( SELECT array_agg(f) AS valuearr FROM tbl_float ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_float WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext,
-( SELECT array_agg(t) AS valuearr FROM tbl_text ) tmp
+( SELECT array_agg(t) AS valuearr FROM tbl_text WHERE t IS NOT NULL LIMIT 10 ) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint, tbl_intrange 
@@ -315,17 +344,17 @@ SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange
 WHERE minusRange(temp, f) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint, 
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE atRanges(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat, 
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE atRanges(temp, valuearr) IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_tint,
-( SELECT array_agg(i) AS valuearr FROM tbl_intrange ) tmp
+( SELECT array_agg(i) AS valuearr FROM tbl_intrange WHERE i IS NOT NULL LIMIT 10 ) tmp
 WHERE minusRanges(temp, valuearr) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tfloat,
-( SELECT array_agg(f) AS valuearr FROM tbl_floatrange ) tmp
+( SELECT array_agg(f) AS valuearr FROM tbl_floatrange WHERE f IS NOT NULL LIMIT 10 ) tmp
 WHERE minusRanges(temp, valuearr) IS NOT NULL;
 
 SELECT MAX(numInstants(atMin(temp))) FROM tbl_tint;

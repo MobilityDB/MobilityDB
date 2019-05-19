@@ -22,6 +22,30 @@ SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0
  t
 (1 row)
 
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' << gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' &< gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' >> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' &> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<| gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
  ?column? 
 ----------
@@ -41,6 +65,30 @@ SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |>> gbox 'GBOX M((1.0, 2.0, 3.0), (1.
 (1 row)
 
 SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |&> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' <<| gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' &<| gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' |>> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' |&> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
  ?column? 
 ----------
  f
@@ -70,6 +118,30 @@ SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> gbox 'GBOX Z((1.0, 2.
  f
 (1 row)
 
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' <</ gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' &</ gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' />> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))' /&> gbox 'GBOX M((-inf,-inf,-3.6e+09),(inf,inf,8.28e+10))';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
  ?column? 
 ----------
@@ -89,6 +161,30 @@ SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> gbox 'GBOX M((1.0, 2.
 (1 row)
 
 SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &<# gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> gbox 'GBOX M((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
  ?column? 
 ----------
  f
@@ -119,11 +215,6 @@ SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> gbox 'GEODBOX((1.0, 2
 ERROR:  Cannot compare geodetic and non-geodetic boxes
 SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  Cannot compare geodetic and non-geodetic boxes
-/* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
 SELECT geometry 'Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -314,6 +405,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' << tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' << gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' << gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' << gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
@@ -509,10 +648,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' << geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' << tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -703,6 +850,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' >> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' >> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' >> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' >> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
@@ -898,10 +1093,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' >> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' >> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1092,6 +1295,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &< tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &< gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &< gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &< gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
@@ -1287,10 +1538,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &< geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &< tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1481,6 +1740,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
@@ -1676,10 +1983,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1870,6 +2185,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -2065,10 +2428,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <<| geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2259,6 +2630,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
@@ -2454,10 +2873,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |>> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |>> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -2648,6 +3075,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<| tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<| gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
@@ -2843,10 +3318,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be of the same dimensionality
+SELECT geometry 'SRID=5676;Point(1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' &<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &<| geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<| tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3037,6 +3520,54 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' |&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' |&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' |&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' |&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
@@ -3232,10 +3763,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must have Z dimension
+SELECT geometry 'SRID=5676;Point(1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' |&> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must be of the same dimensionality
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' |&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be of the same dimensionality
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3330,6 +3869,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -3429,10 +4064,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must have Z dimension
+SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3527,6 +4170,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' />> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' />> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' />> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' />> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -3626,10 +4365,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must have Z dimension
+SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3724,6 +4471,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &</ gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -3823,10 +4666,18 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 (1 row)
 
 /* Errors */
-SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must be in the same SRID
-SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The geometries must have Z dimension
+SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3921,6 +4772,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  ?column? 
 ----------
  
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' /&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' /&> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' /&> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' /&> gbox 'GBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
@@ -4019,86 +4966,115 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1)@200...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '{Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '[Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '{[Point(1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint 'Point(1.5 1.5)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint 'Point(1.5 1.5)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '{Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '[Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '{[Point(1.5 1....
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeompoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' <<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone <<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' <<# tgeogpoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+/* Errors */
+SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
+ERROR:  The temporal point and the geometry must be in the same SRID
+SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
+ERROR:  The temporal point and the geometry must have Z dimension
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must be in the same SRID
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
+ERROR:  The temporal points must have Z dimension
+SELECT timestamptz '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' <<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT timestampset '{2000-01-01, 2000-01-03}' <<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4387,86 +5363,198 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' <<# tgeogpo
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01' <<# timestamp '200...
-                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <<# timestamp ...
-                                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint <<# timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <<# timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint <<# timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' <<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <<# timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
@@ -4947,86 +6035,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' #>> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint 'Point(1 1)@200...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '{Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '[Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '{[Point(1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint 'Point(1.5 1.5)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '{Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '[Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '{[Point(1.5 1....
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeompoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #>> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #>> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #>> tgeogpoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT timestamptz '2000-01-01' #>> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT timestamptz '2000-01-01' #>> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT timestampset '{2000-01-01, 2000-01-03}' #>> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -5315,86 +6419,198 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #>> tgeogpo
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01' #>> timestamp '200...
-                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #>> timestamp ...
-                                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #>> timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #>> timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #>> timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #>> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #>> timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' #>> timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
@@ -5875,86 +7091,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  f
 (1 row)
 
-SELECT timestamp '2000-01-01' &<# tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint 'Point(1 1)@200...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '{Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '[Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '{[Point(1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint 'Point(1.5 1.5)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint 'Point(1.5 1.5)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '{Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '[Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '{[Point(1.5 1....
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeompoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' &<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone &<# tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' &<# tgeogpoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT timestamptz '2000-01-01' &<# tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' &<# tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT timestampset '{2000-01-01, 2000-01-03}' &<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6243,86 +7475,198 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' &<# tgeogpo
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01' &<# timestamp '200...
-                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' &<# timestamp ...
-                                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint &<# timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' &<# timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint &<# timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &<# tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &<# tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &<# tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &<# tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' &<# timestamptz '2000-01-01';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &<# timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
@@ -6803,86 +8147,102 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
  t
 (1 row)
 
-SELECT timestamp '2000-01-01' #&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint 'Point(1 1)@200...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '{Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '[Point(1 1)@20...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '{[Point(1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint 'Point(1.5 1.5)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '{Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '[Point(1.5 1.5...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '{[Point(1.5 1....
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeompoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeompoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint 'Point(1 1 1)@2000-01-01';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint 'Point(1 1 1)@2...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '{Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '[Point(1 1 1)@...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT timestamp '2000-01-01' #&> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-ERROR:  operator does not exist: timestamp without time zone #&> tgeogpoint
-LINE 1: SELECT timestamp '2000-01-01' #&> tgeogpoint '{[Point(1 1 1)...
-                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT timestamptz '2000-01-01' #&> tgeompoint 'Point(1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint 'Point(1.5 1.5)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT timestamptz '2000-01-01' #&> tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT timestampset '{2000-01-01, 2000-01-03}' #&> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -7171,86 +8531,198 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' #&> tgeogpo
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01' #&> timestamp '200...
-                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...1, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...,[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #&> timestamp ...
-                                                      ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeompoint #&> timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #&> timestamp '2...
-                                                    ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...oint(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
-SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timestamp '2000-01-01';
-ERROR:  operator does not exist: tgeogpoint #&> timestamp without time zone
-LINE 1: ...int(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timest...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX((1.0, 1.0), (2.0, 2.0))' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> tgeompoint 'Point(1 1 1)@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' #&> tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> gbox 'GBOX((1.0, 1.0), (2.0, 2.0))';
+ ?column? 
+----------
+ 
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> gbox 'GBOX M((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Point(1 1)@2000-01-01' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #&> timestamptz '2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' #&> timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------

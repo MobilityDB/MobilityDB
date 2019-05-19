@@ -181,22 +181,21 @@ tempconts_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool m
 static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
-	TemporalSeq **result;
-	if (temp->type == TEMPORALINST)
+	TemporalSeq **result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
 		result = palloc(sizeof(TemporalSeq *));
 		*count = temporalinst_extend(result, inst, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 	{
 		TemporalI *ti = (TemporalI *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ti->count);
 		*count = temporali_extend(result, ti, interval);
-		return result;
 	}
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
@@ -204,9 +203,8 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 			*count = tempdiscseq_extend(result, seq, interval);
 		else
 			*count = tempcontseq_extend(result, seq, interval, min);
-		return result;
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
@@ -214,11 +212,8 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 			*count = tempdiscs_extend(result, ts, interval);
 		else
 			*count = tempconts_extend(result, ts, interval, min);
-		return result;
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
+	return result;
 }
 
 /*****************************************************************************
@@ -296,38 +291,33 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
-	TemporalSeq **result;
-	if (temp->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(temp->duration));
+	TemporalSeq **result = NULL;
+	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
 		result = palloc(sizeof(TemporalSeq *));
 		*count = temporalinst_transform_wcount(result, inst, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 	{
 		TemporalI *ti = (TemporalI *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ti->count);
 		*count = temporali_transform_wcount(result, ti, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
 		*count = temporalseq_transform_wcount(result, seq, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
 		*count = temporals_transform_wcount(result, ts, interval);
-		return result;
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
+	return result;
 }
 
 /*****************************************************************************/
@@ -338,15 +328,12 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 static int
 temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
-	float8 value;
+	float8 value = 0.0;
+	assert(temporal_number_is_valid(inst->valuetypid));
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(temporalinst_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)
 		value = DatumGetFloat8(temporalinst_value(inst)); 
-	else 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	double2 *dvalue = double2_construct(value, 1);
 	TimestampTz upper = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
@@ -442,38 +429,33 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 static TemporalSeq **
 temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
-	TemporalSeq **result;
-	if (temp->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(temp->duration));
+	TemporalSeq **result = NULL;
+	if (temp->duration == TEMPORALINST)
 	{	
 		TemporalInst *inst = (TemporalInst *)temp;
 		result = palloc(sizeof(TemporalSeq *));
 		*count = temporalinst_transform_wavg(result, inst, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALI)
+	else if (temp->duration == TEMPORALI)
 	{	
 		TemporalI *ti = (TemporalI *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ti->count);
 		*count = temporali_transform_wavg(result, ti, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
 		*count = tintseq_transform_wavg(result, seq, interval);
-		return result;
 	}
-	if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
 		*count = tints_transform_wavg(result, ts, interval);
-		return result;
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Bad temporal type")));
+	return result;
 }
 
 /*****************************************************************************
@@ -606,7 +588,7 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if ((temp->type == TEMPORALSEQ || temp->type == TEMPORALS) &&
+	if ((temp->duration == TEMPORALSEQ || temp->duration == TEMPORALS) &&
 		temp->valuetypid == FLOAT8OID)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported for temporal float sequences")));

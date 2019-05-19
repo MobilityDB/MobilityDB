@@ -442,10 +442,10 @@ timestamp_as_period(PG_FUNCTION_ARGS)
 
 /* Conversion functions period <-> range */
 
-PG_FUNCTION_INFO_V1(period_as_range);
+PG_FUNCTION_INFO_V1(period_as_tstzrange);
 
 PGDLLEXPORT Datum
-period_as_range(PG_FUNCTION_ARGS)
+period_as_tstzrange(PG_FUNCTION_ARGS)
 {
 	Period	   *period = PG_GETARG_PERIOD(0);
 	RangeType  *range;
@@ -455,10 +455,10 @@ period_as_range(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(range);
 }
 
-PG_FUNCTION_INFO_V1(range_as_period);
+PG_FUNCTION_INFO_V1(tstzrange_as_period);
 
 PGDLLEXPORT Datum
-range_as_period(PG_FUNCTION_ARGS)
+tstzrange_as_period(PG_FUNCTION_ARGS)
 {
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 	TypeCacheEntry *typcache;
@@ -469,9 +469,7 @@ range_as_period(PG_FUNCTION_ARGS)
 	Period	   *period;
 	
 	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
-	if (typcache->rngelemtype->type_id != TIMESTAMPTZOID)
-		ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
-			errmsg("Range subtype must be timestamp with time zone")));
+	assert(typcache->rngelemtype->type_id == TIMESTAMPTZOID);
 	if (flags & RANGE_EMPTY)
 		ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
 			errmsg("Range cannot be empty")));
@@ -659,14 +657,13 @@ period_lt(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int	cmp = period_cmp_internal(p1, p2);
-	PG_RETURN_BOOL(cmp < 0);
+	PG_RETURN_BOOL(period_lt_internal(p1, p2));
 }
 
 bool
 period_le_internal(Period *p1, Period *p2)
 {
-	int	cmp = period_cmp_internal(p1, p2);
+	int cmp = period_cmp_internal(p1, p2);
 	return (cmp <= 0);
 }
 
@@ -677,14 +674,13 @@ period_le(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int	cmp = period_cmp_internal(p1, p2);
-	PG_RETURN_BOOL(cmp <= 0);
+	PG_RETURN_BOOL(period_le_internal(p1, p2));
 }
 
 bool
 period_ge_internal(Period *p1, Period *p2)
 {
-	int	cmp = period_cmp_internal(p1, p2);
+	int cmp = period_cmp_internal(p1, p2);
 	return (cmp >= 0);
 }
 
@@ -695,14 +691,13 @@ period_ge(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int	cmp = period_cmp_internal(p1, p2);
-	PG_RETURN_BOOL(cmp >= 0);
+	PG_RETURN_BOOL(period_ge_internal(p1, p2));
 }
 
 bool
 period_gt_internal(Period *p1, Period *p2)
 {
-	int	cmp = period_cmp_internal(p1, p2);
+	int cmp = period_cmp_internal(p1, p2);
 	return (cmp > 0);
 }
 
@@ -713,8 +708,7 @@ period_gt(PG_FUNCTION_ARGS)
 {
 	Period *p1 = PG_GETARG_PERIOD(0);
 	Period *p2 = PG_GETARG_PERIOD(1);
-	int	cmp = period_cmp_internal(p1, p2);
-	PG_RETURN_BOOL(cmp > 0);
+	PG_RETURN_BOOL(period_gt_internal(p1, p2));
 }
 
 /*****************************************************************************

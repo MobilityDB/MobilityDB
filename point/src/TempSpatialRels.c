@@ -140,14 +140,14 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	bool lower_inc, bool upper_inc, Datum (*func)(Datum, Datum), 
 	Oid valuetypid, int *count, bool invert)
 {
-	Datum d1 = temporalinst_value(inst1);
-	Datum d2 = temporalinst_value(inst2);
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment */
-	if (datum_point_eq(d1, d2))
+	if (datum_point_eq(value1, value2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -159,13 +159,13 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	
 	/* Look for intersections */
-	Datum line = tgeompointseq_trajectory1(inst1, inst2);
+	Datum line = geompoint_trajectory(value1, value2);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -188,7 +188,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	{
 		/* There may be an intersection at an exclusive bound.
 		 * Find the middle time between inst1 and inst2 
-	   * and compute the func at that point */
+		 * and compute the func at that point */
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
 		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
 		Datum intvalue1 = invert ? func(geo, intvalue) :
@@ -218,7 +218,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	int k = 0;
 	if (before)
 	{
-		Datum value = invert ? func(geo, d1) : func(d1, geo);
+		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t, 
 			valuetypid);
@@ -259,7 +259,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	if (after)
 	{
-		Datum value = invert ? func(geo, d2) : func(d2, geo);
+		Datum value = invert ? func(geo, value2) : func(value2, geo);
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t, 
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
@@ -406,13 +406,13 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	Oid valuetypid, int *count, bool invert)
 {
 	/* Constant segment */
-	Datum d1 = temporalinst_value(inst1);
-	Datum d2 = temporalinst_value(inst2);
-	if (datum_point_eq(d1, d2))
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	if (datum_point_eq(value1, value2))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		Datum value = invert ? func(d1, geo, param) :
-			func(geo, d1, param);
+		Datum value = invert ? func(value1, geo, param) :
+			func(geo, value1, param);
 		TemporalInst *inst = temporalinst_make(value, inst1->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
 			true, true, false);
@@ -422,14 +422,14 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	
 	/* Look for intersections */
-	Datum line = tgeompointseq_trajectory1(inst1, inst2);
+	Datum line = geompoint_trajectory(value1, value2);
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(d1, geo, param) :
-			func(geo, d1, param);
+		Datum value = invert ? func(value1, geo, param) :
+			func(geo, value1, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
@@ -453,7 +453,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	{	
 		/* There may be an intersection at an exclusive bound.
 		 * Find the middle time between inst1 and inst2 
-	   * and compute the func at that point */
+		 * and compute the func at that point */
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
 		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
 		Datum intvalue1 = invert ? func(geo, intvalue, param) :
@@ -483,8 +483,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	int k = 0;
 	if (before)
 	{
-		Datum value = invert ? func(geo, d1, param) :
-			func(d1, geo, param);
+		Datum value = invert ? func(geo, value1, param) :
+			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t, valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
@@ -525,8 +525,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 	if (after)
 	{
-		Datum value = invert ? func(geo, d2, param) :
-			func(d2, geo, param);
+		Datum value = invert ? func(geo, value2, param) :
+			func(value2, geo, param);
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t, 
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
@@ -1123,14 +1123,10 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		if (t1 == upper) /* && upper_inc */
 		{	
 			instants[0] = temporalinst_make(BoolGetDatum(false), lower, BOOLOID);
-			instants[1] = temporalinst_make(BoolGetDatum(false), upper, BOOLOID);
+			instants[1] = temporalinst_make(BoolGetDatum(true), upper, BOOLOID);
 			result[0] = temporalseq_from_temporalinstarr(instants, 2,
-				lower_inc, false, false);			
+				lower_inc, true, false);			
 			pfree(instants[0]); pfree(instants[1]);
-			instants[0] = temporalinst_make(BoolGetDatum(true), upper, BOOLOID);
-			result[1] = temporalseq_from_temporalinstarr(instants, 1,
-				true, true, false);
-			pfree(instants[0]); 
 			*count = 1;
 			return;
 		}
@@ -1312,21 +1308,19 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)tspatialrel_tpointseq_geo((TemporalSeq *)temp,
 			geo, func, valuetypid, invert);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)tspatialrel_tpoints_geo((TemporalS *)temp,
 			geo, func, valuetypid, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1335,21 +1329,19 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)tspatialrel3_tpointseq_geo((TemporalSeq *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 		result = (Temporal *)tspatialrel3_tpoints_geo((TemporalS *)temp,
 			geo, param, func, BOOLOID, invert);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	return result;
 }
 
@@ -1364,30 +1356,16 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_contains, BOOLOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1400,30 +1378,16 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_contains, BOOLOID, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -1436,24 +1400,10 @@ tcontains_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_contains, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1472,46 +1422,33 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
-	Temporal *result = NULL;
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = 0;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
@@ -1522,13 +1459,11 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
@@ -1539,13 +1474,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1559,46 +1488,32 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
-	Temporal *result = NULL;
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
-	if (temp->type == TEMPORALINST) 
+	Temporal *result = NULL;
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
@@ -1609,13 +1524,11 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
@@ -1626,13 +1539,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1646,33 +1553,16 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
-	Datum (*func)(Datum, Datum);
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1691,20 +1581,8 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1712,25 +1590,25 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
@@ -1741,13 +1619,11 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
@@ -1758,13 +1634,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1778,20 +1648,8 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1799,25 +1657,25 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq, 
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
@@ -1828,13 +1686,11 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts, 
 				PointerGetDatum(gs), &geom_coveredby, 
@@ -1847,13 +1703,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -1867,33 +1717,16 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
-	Datum (*func)(Datum, Datum);
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
-	
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1913,30 +1746,16 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_disjoint, BOOLOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1949,30 +1768,16 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
 		&geom_disjoint, BOOLOID, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -1985,24 +1790,10 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_disjoint, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2021,30 +1812,16 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_equals, BOOLOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2057,30 +1834,16 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_equals, BOOLOID, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -2093,24 +1856,10 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_equals, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2129,20 +1878,8 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2150,7 +1887,8 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = 0;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2160,20 +1898,19 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ) 
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), func, BOOLOID, true);
@@ -2184,13 +1921,11 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}	
-	else if (temp->type == TEMPORALS) 
+	else if (temp->duration == TEMPORALS) 
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), func, BOOLOID, true);
@@ -2201,13 +1936,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2221,20 +1950,8 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2242,7 +1959,8 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2252,20 +1970,18 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				PointerGetDatum(gs), func, BOOLOID, false);
@@ -2276,13 +1992,11 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				PointerGetDatum(gs), func, BOOLOID, false);
@@ -2293,13 +2007,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2313,21 +2021,10 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-	Datum (*func)(Datum, Datum);
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
+	Datum (*func)(Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -2337,13 +2034,8 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		func, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2362,30 +2054,16 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_touches, BOOLOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2398,30 +2076,16 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_touches, BOOLOID, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -2434,24 +2098,10 @@ ttouches_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_touches, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2470,30 +2120,16 @@ twithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_within, BOOLOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2506,30 +2142,16 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_within, BOOLOID, true);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -2542,24 +2164,10 @@ twithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_within, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2579,20 +2187,8 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2600,7 +2196,8 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2610,20 +2207,18 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, true);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, true);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpointseq_geo(seq,
 				PointerGetDatum(gs), dist);
@@ -2634,13 +2229,11 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpoints_geo(ts,
 				PointerGetDatum(gs), dist);
@@ -2651,13 +2244,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 	
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
@@ -2672,20 +2259,8 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum dist = PG_GETARG_DATUM(2);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2693,7 +2268,8 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp->valuetypid));
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2703,20 +2279,18 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
 	Temporal *result = NULL;
-	if (temp->type == TEMPORALINST) 
+	assert(temporal_duration_is_valid(temp->duration));
+	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->type == TEMPORALI) 
+	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
-	else if (temp->type == TEMPORALSEQ)
+	else if (temp->duration == TEMPORALSEQ)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
+		/* Validity of temporal point has been already verified */
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpointseq_geo(seq,
 				PointerGetDatum(gs), dist);
@@ -2727,13 +2301,11 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else if (temp->type == TEMPORALS)
+	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
+		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpoints_geo(ts,
 				PointerGetDatum(gs), dist);
@@ -2744,13 +2316,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 			pfree(ts1);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
@@ -2765,20 +2331,8 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *sync1, *sync2;
 	/* Return false if the temporal points do not intersect in time
 	   The last parameter crossing must be set to false  */
@@ -2789,7 +2343,8 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum);
+	Datum (*func)(Datum, Datum, Datum) = NULL;
+	assert(temporal_point_is_valid(temp1->valuetypid));
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -2799,28 +2354,23 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	Temporal *result = NULL;
-	if (sync1->type == TEMPORALINST)
+	assert(temporal_duration_is_valid(sync1->duration));
+	if (sync1->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func, 
 			BOOLOID);
-	else if (sync1->type == TEMPORALI)
+	else if (sync1->duration == TEMPORALI)
 		result = (Temporal *)sync_tfunc3_temporali_temporali(
 			(TemporalI *)sync1, (TemporalI *)sync2, dist, func, 
 			BOOLOID);
-	else if (sync1->type == TEMPORALSEQ)
+	else if (sync1->duration == TEMPORALSEQ)
 		result = (Temporal *)tdwithin_tpointseq_tpointseq(
 			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
-	else if (sync1->type == TEMPORALS)
+	else if (sync1->duration == TEMPORALS)
 		result = (Temporal *)tdwithin_tpoints_tpoints(
 			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Bad temporal type")));
 
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
@@ -2839,30 +2389,16 @@ trelate_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_relate, TEXTOID, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2875,30 +2411,16 @@ trelate_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		&geom_relate, TEXTOID, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -2911,24 +2433,10 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
 		&geom_relate, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -2948,30 +2456,16 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
-	if (gserialized_get_srid(gs) != tpoint_srid_internal(temp))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (FLAGS_GET_Z(gs->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		PG_FREE_IF_COPY(temp, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs), 
 		pattern, &geom_relate_pattern, true);
-
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2985,30 +2479,16 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum pattern = PG_GETARG_DATUM(2);
-	if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The geometries must be of the same dimensionality")));
-	}
+	tpoint_gs_same_srid(temp, gs);
+	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-
 	Temporal *result = tspatialrel3_tpoint_geo(temp, PointerGetDatum(gs), 
 		pattern, &geom_relate_pattern, false);
-
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -3022,24 +2502,10 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
-	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be in the same SRID")));
-	}
-	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
-	{
-		PG_FREE_IF_COPY(temp1, 0);
-		PG_FREE_IF_COPY(temp2, 1);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The temporal points must be of the same dimensionality")));
-	}
-
+	tpoint_same_srid(temp1, temp2);
+	tpoint_same_dimensionality(temp1, temp2);
 	Temporal *result = sync_tfunc3_temporal_temporal_crossdisc(temp1, temp2, 
 		pattern, &geom_relate_pattern, BOOLOID);
-
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

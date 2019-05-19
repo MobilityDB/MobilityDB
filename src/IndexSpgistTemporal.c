@@ -24,11 +24,9 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-	int			which;
-	int			i;
-	Period 	   *centroid;
-	PeriodBound	centroidLower,
-				centroidUpper;
+	int	which, i;
+	Period *centroid;
+	PeriodBound	centroidLower, centroidUpper;
 
 	if (in->allTheSame)
 	{
@@ -56,9 +54,8 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		PeriodBound	lower,
-					upper;
-		Period	   *period = NULL;
+		PeriodBound	lower, upper;
+		Period *period = NULL;
 
 		/* Restrictions on period bounds according to scan strategy */
 		PeriodBound *minLower = NULL,
@@ -67,7 +64,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 				   *maxUpper = NULL;
 
 		/* Are the restrictions on period bounds inclusive? */
-		bool		inclusive = true;
+		bool inclusive = true;
 
 		/*
 		 * Cast the query to Period for ease of the following operations.
@@ -76,20 +73,8 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 		bool mustfree = false;
 		Oid subtype = in->scankeys[i].sk_subtype;
 
-		if (subtype == TIMESTAMPTZOID)
-		{
-			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			period = period_make(t, t, true, true);
-			mustfree = true;
-		}
-		else if (subtype == type_oid(T_TIMESTAMPSET))
-			period = timestampset_bbox(
-				DatumGetTimestampSet(in->scankeys[i].sk_argument));
-		else if (subtype == type_oid(T_PERIOD))
+		if (subtype == type_oid(T_PERIOD))
 			period = DatumGetPeriod(in->scankeys[i].sk_argument);
-		else if (subtype == type_oid(T_PERIODSET))
-			period = periodset_bbox(
-				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		else if (temporal_oid(subtype))
 		{
 			period = palloc(sizeof(Period));
@@ -302,28 +287,9 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
 		Period	   *query;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
-		if (subtype == TIMESTAMPTZOID)
-		{
-			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			Period *period = period_make(t, t, true, true);
-			res = index_leaf_consistent_time(key, period, strategy);
-			pfree(period);
-		}
-		else if (subtype == type_oid(T_TIMESTAMPSET))
-		{
-			query = timestampset_bbox(
-				DatumGetTimestampSet(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_time(key, query, strategy);
-		}
-		else if (subtype == type_oid(T_PERIOD))
+		if (subtype == type_oid(T_PERIOD))
 		{
 			query = DatumGetPeriod(in->scankeys[i].sk_argument);
-			res = index_leaf_consistent_time(key, query, strategy);
-		}
-		else if (subtype == type_oid(T_PERIODSET))
-		{
-			query = periodset_bbox(
-				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 			res = index_leaf_consistent_time(key, query, strategy);
 		}
 		else if (temporal_oid(subtype))

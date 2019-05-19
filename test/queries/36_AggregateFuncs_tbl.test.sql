@@ -1,10 +1,12 @@
-﻿/*****************************************************************************
- * TemporalInst aggregate functions
- *****************************************************************************/
+﻿-------------------------------------------------------------------------------
 
 set parallel_tuple_cost=0;
 set parallel_setup_cost=0;
 set force_parallel_mode=regress;
+
+-------------------------------------------------------------------------------
+-- TemporalInst aggregate functions
+-------------------------------------------------------------------------------
 
 select numInstants(tand(inst)) from tbl_tboolinst;
 select numInstants(tor(inst)) from tbl_tboolinst;
@@ -46,9 +48,9 @@ select k%10, numInstants(tmin(inst)) from tbl_ttextinst group by k%10 order by k
 select k%10, numInstants(tmax(inst)) from tbl_ttextinst group by k%10 order by k%10;
 select k%10, numInstants(tcount(inst)) from tbl_ttextinst group by k%10 order by k%10;
 
-/*****************************************************************************
- * TemporalI aggregate functions
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalI aggregate functions
+-------------------------------------------------------------------------------
 
 select numInstants(tand(ti)) from tbl_tbooli;
 select numInstants(tor(ti)) from tbl_tbooli;
@@ -90,9 +92,9 @@ select k%10, numInstants(tmin(ti)) from tbl_ttexti group by k%10 order by k%10;
 select k%10, numInstants(tmax(ti)) from tbl_ttexti group by k%10 order by k%10;
 select k%10, numInstants(tcount(ti)) from tbl_ttexti group by k%10 order by k%10;
 
-/*****************************************************************************
- * TemporalSeq aggregate functions
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalSeq aggregate functions
+-------------------------------------------------------------------------------
 
 select numSequences(tand(seq)) from tbl_tboolseq;
 select numSequences(tor(seq)) from tbl_tboolseq;
@@ -134,9 +136,9 @@ select k%10, numSequences(tmin(seq)) from tbl_ttextseq group by k%10 order by k%
 select k%10, numSequences(tmax(seq)) from tbl_ttextseq group by k%10 order by k%10;
 select k%10, numSequences(tcount(seq)) from tbl_ttextseq group by k%10 order by k%10;
 
-/*****************************************************************************
- * TemporalS aggregate functions
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalS aggregate functions
+-------------------------------------------------------------------------------
 
 select numSequences(tand(ts)) from tbl_tbools;
 select numSequences(tor(ts)) from tbl_tbools;
@@ -178,9 +180,16 @@ select k%10, numSequences(tmin(ts)) from tbl_ttexts group by k%10 order by k%10;
 select k%10, numSequences(tmax(ts)) from tbl_ttexts group by k%10 order by k%10;
 select k%10, numSequences(tcount(ts)) from tbl_ttexts group by k%10 order by k%10;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
+
+/* Errors */
+select tsum(temp) from tbl_tint;
+
+-------------------------------------------------------------------------------
 
 set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
 set force_parallel_mode=off;
+
+-------------------------------------------------------------------------------
 

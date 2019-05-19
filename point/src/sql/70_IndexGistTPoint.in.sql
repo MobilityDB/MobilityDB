@@ -38,14 +38,6 @@ CREATE FUNCTION gist_tpoint_same(gbox, gbox, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_tpoint_same'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tgeompoint_distance(internal, tgeompoint, smallint, oid, internal)
-	RETURNS float8
-	AS 'MODULE_PATHNAME', 'gist_tpoint_distance'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tgeogpoint_distance(internal, tgeogpoint, smallint, oid, internal)
-	RETURNS float8
-	AS 'MODULE_PATHNAME', 'gist_tpoint_distance'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS gist_tgeompoint_ops
 	DEFAULT FOR TYPE tgeompoint USING gist AS
@@ -114,14 +106,25 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	-- overlaps or after
 	OPERATOR	31		#&> (tgeompoint, gbox),
 	OPERATOR	31		#&> (tgeompoint, tgeompoint),
+	-- overlaps or front
+	OPERATOR	32		&</ (tgeompoint, gbox),
+	OPERATOR	32		&</ (tgeompoint, tgeompoint),
+	-- strictly front
+	OPERATOR	33		<</ (tgeompoint, gbox),
+	OPERATOR	33		<</ (tgeompoint, tgeompoint),
+	-- strictly back
+	OPERATOR	34		/>> (tgeompoint, gbox),
+	OPERATOR	34		/>> (tgeompoint, tgeompoint),
+	-- overlaps or back
+	OPERATOR	35		/&> (tgeompoint, gbox),
+	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
 	FUNCTION	1	gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal),
 	FUNCTION	2	gist_tpoint_union(internal, internal),
 	FUNCTION	3	gist_tpoint_compress(internal),
 	FUNCTION	5	gist_tpoint_penalty(internal, internal, internal),
 	FUNCTION	6	gist_tpoint_picksplit(internal, internal),
-	FUNCTION	7	gist_tpoint_same(gbox, gbox, internal),
-	FUNCTION	8	gist_tgeompoint_distance(internal, tgeompoint, smallint, oid, internal);
+	FUNCTION	7	gist_tpoint_same(gbox, gbox, internal);
 	
 CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	DEFAULT FOR TYPE tgeogpoint USING gist AS
@@ -165,6 +168,5 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	FUNCTION	5	gist_tpoint_penalty(internal, internal, internal),
 	FUNCTION	6	gist_tpoint_picksplit(internal, internal),
 	FUNCTION	7	gist_tpoint_same(gbox, gbox, internal);
---	FUNCTION	8	gist_tgeogpoint_distance (internal, tgeogpoint, smallint, oid, internal),
 	
 /******************************************************************************/

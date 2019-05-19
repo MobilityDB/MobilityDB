@@ -65,7 +65,7 @@
 #endif
 
 /*****************************************************************************
- * Type of the temporal types
+ * Duration of temporal types
  *****************************************************************************/
 
 #define TEMPORAL			0
@@ -102,10 +102,8 @@ struct temporaltype_struct
 #define RTOverBackStrategyNumber		35		/* for /&> */
 
 /*****************************************************************************
- * Struct definitions
+ * Macros for manipulating the 'flags' element
  *****************************************************************************/
-
-/* Macros for manipulating the 'flags' element. */
 
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
 /* Only for TemporalInst */
@@ -128,14 +126,18 @@ struct temporaltype_struct
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
 	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 
+/*****************************************************************************
+ * Struct definitions
+ *****************************************************************************/
+
 /* Temporal */
  
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	/* variable-length data follows, if any */
 } Temporal;
 
@@ -144,9 +146,9 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID  (4 bytes) */
 	TimestampTz t;				/* time span */
 	/* variable-length data follows */
 } TemporalInst;
@@ -156,9 +158,9 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
 	/* variable-length data follows */
 } TemporalI;
@@ -168,11 +170,11 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
-	Period 		period;			/* time span */
+	Period 		period;			/* time span (24 bytes) */
 	/* variable-length data follows */
 } TemporalSeq;
 
@@ -181,9 +183,9 @@ typedef struct
 typedef struct 
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int16		type;			/* type */
+	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalSeq elements */
 	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
 	/* variable-length data follows */
@@ -227,6 +229,8 @@ typedef struct double4
 typedef struct AggregateState
 {
 	int 		size;
+	void*		extra;
+	size_t      extrasize ;
 	Temporal 	*values[];
 } AggregateState;
 
@@ -315,6 +319,10 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
+extern bool temporal_duration_is_valid(int16 type);
+extern bool temporal_number_is_valid(Oid type);
+extern bool temporal_numrange_is_valid(Oid type);
+extern bool temporal_point_is_valid(Oid type);
 extern size_t int4_pad(size_t size);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
@@ -498,7 +506,6 @@ extern int gbox_cmp_internal(const GBOX *g1, const GBOX *g2);
 
 /* Internal functions */
 
-extern char dump_toupper(int in);
 extern Temporal *temporal_copy(Temporal *temp);
 extern Temporal *pg_getarg_temporal(Temporal *temp);
 extern bool intersection_temporal_temporal(Temporal *temp1, Temporal *temp2, 
@@ -751,7 +758,6 @@ extern void temporali_bbox(void *box, TemporalI *ti);
 extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
-extern TimestampSet *temporali_time(TemporalI *ti);
 extern void temporali_timespan(Period *p, TemporalI *ti);
 extern TemporalInst **temporali_instantarr(TemporalI *ti);
 extern ArrayType *temporali_instants(TemporalI *ti);
@@ -1235,6 +1241,8 @@ extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
 extern AggregateState *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
+extern void aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size);
+extern void aggstate_move_extra(AggregateState* dest, AggregateState* src) ;
 
 extern AggregateState *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));

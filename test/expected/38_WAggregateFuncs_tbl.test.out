@@ -5,35 +5,35 @@ select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wmax(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wsum(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wcount(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wavg(inst, interval '5 minutes'))
 from tbl_tintinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 /*****************************************************************************/
@@ -41,35 +41,35 @@ select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wmax(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wsum(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wcount(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 select numSequences(wavg(inst, interval '5 minutes'))
 from tbl_tfloatinst;
  numsequences 
 --------------
-           96
+           97
 (1 row)
 
 /*****************************************************************************
@@ -79,35 +79,35 @@ select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
 --------------
-          337
+          352
 (1 row)
 
 select numSequences(wmax(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
 --------------
-          349
+          355
 (1 row)
 
 select numSequences(wsum(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
 --------------
-          455
+          466
 (1 row)
 
 select numSequences(wcount(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
 --------------
-          455
+          466
 (1 row)
 
 select numSequences(wavg(ti, interval '5 minutes'))
 from tbl_tinti;
  numsequences 
 --------------
-          653
+          680
 (1 row)
 
 /*****************************************************************************/
@@ -115,35 +115,35 @@ select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
 --------------
-          456
+          486
 (1 row)
 
 select numSequences(wmax(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
 --------------
-          458
+          490
 (1 row)
 
 select numSequences(wsum(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
 --------------
-          690
+          753
 (1 row)
 
 select numSequences(wcount(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
 --------------
-          474
+          503
 (1 row)
 
 select numSequences(wavg(ti, interval '5 minutes'))
 from tbl_tfloati;
  numsequences 
 --------------
-          688
+          753
 (1 row)
 
 /*****************************************************************************
@@ -153,35 +153,35 @@ select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
 --------------
-           93
+           95
 (1 row)
 
 select numSequences(wmax(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
 --------------
-           93
+           96
 (1 row)
 
 select numSequences(wsum(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
 --------------
-           94
+           97
 (1 row)
 
 select numSequences(wcount(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
 --------------
-           94
+           97
 (1 row)
 
 select numSequences(wavg(seq, interval '5 minutes'))
 from tbl_tintseq;
  numsequences 
 --------------
-          660
+          650
 (1 row)
 
 /*****************************************************************************/
@@ -189,21 +189,21 @@ select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tfloatseq;
  numsequences 
 --------------
-          113
+          117
 (1 row)
 
 select numSequences(wmax(seq, interval '5 minutes'))
 from tbl_tfloatseq;
  numsequences 
 --------------
-          123
+          119
 (1 row)
 
 select numSequences(wcount(seq, interval '5 minutes'))
 from tbl_tfloatseq;
  numsequences 
 --------------
-           95
+           98
 (1 row)
 
 /*****************************************************************************
@@ -213,35 +213,35 @@ select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
 --------------
-          420
+          427
 (1 row)
 
 select numSequences(wmax(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
 --------------
-          406
+          424
 (1 row)
 
 select numSequences(wsum(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
 --------------
-          445
+          451
 (1 row)
 
 select numSequences(wcount(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
 --------------
-          441
+          447
 (1 row)
 
 select numSequences(wavg(ts, interval '5 minutes'))
 from tbl_tints;
  numsequences 
 --------------
-         2973
+         3130
 (1 row)
 
 /*****************************************************************************/
@@ -249,21 +249,21 @@ select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 
 --------------
-          603
+          646
 (1 row)
 
 select numSequences(wmax(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 
 --------------
-          588
+          628
 (1 row)
 
 select numSequences(wcount(ts, interval '5 minutes'))
 from tbl_tfloats;
  numsequences 
 --------------
-          460
+          475
 (1 row)
 
 /*****************************************************************************/

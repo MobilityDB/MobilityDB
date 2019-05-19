@@ -10,6 +10,12 @@ SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' @> timestampset '{200
  t
 (1 row)
 
+SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' @> timestampset '{2000-01-02, 2000-01-04}';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT period '[2000-01-01, 2000-01-02]' @> timestamptz '2000-01-01';
  ?column? 
 ----------
@@ -206,6 +212,12 @@ SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' && timestampset '{200
  ?column? 
 ----------
  t
+(1 row)
+
+SELECT timestampset '{2000-01-01, 2000-01-03}' && timestampset '{2000-01-02, 2000-01-04}';
+ ?column? 
+----------
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-02, 2000-01-03}' && period '[2000-01-01, 2000-01-02]';

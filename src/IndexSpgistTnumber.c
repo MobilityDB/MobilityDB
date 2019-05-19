@@ -438,7 +438,13 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
-		if (subtype == BOXOID)
+		if (subtype == type_oid(T_INTRANGE))
+			intrange_to_box_internal(&queries[i],
+				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+		else if (subtype == type_oid(T_FLOATRANGE))
+			floatrange_to_box_internal(&queries[i],
+				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+		else if (subtype == BOXOID)
 			memcpy(&queries[i], DatumGetBoxP(in->scankeys[i].sk_argument), sizeof(BOX));
 		else if (temporal_oid(subtype))
 			temporal_bbox(&queries[i],
@@ -561,7 +567,19 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;	
 		
-		if (subtype == BOXOID)
+		if (subtype == type_oid(T_INTRANGE))
+		{
+			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+			intrange_to_box_internal(&query, range);									  
+			res = index_leaf_consistent_box(key, &query, strategy);
+		}
+		else if (subtype == type_oid(T_FLOATRANGE))
+		{
+			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+			floatrange_to_box_internal(&query, range);									  
+			res = index_leaf_consistent_box(key, &query, strategy);
+		}
+		else if (subtype == BOXOID)
 		{
 			BOX *box = DatumGetBoxP(in->scankeys[i].sk_argument);
 			res = index_leaf_consistent_box(key, box, strategy);
