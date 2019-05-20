@@ -503,7 +503,7 @@ tnumberi_value_range(TemporalI *ti)
 {
 	BOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	assert(temporal_number_is_valid(ti->valuetypid));
+	temporal_number_is_valid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->low.x));
@@ -699,14 +699,19 @@ temporali_always_equals(TemporalI *ti, Datum value)
 TemporalI *
 temporali_shift(TemporalI *ti, Interval *interval)
 {
-	TemporalI *result = temporali_copy(ti);
+   	TemporalI *result = temporali_copy(ti);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst = temporali_inst_n(result, i);
+		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
+	/* Recompute the bounding box */
+    void *bbox = temporali_bbox_ptr(result); 
+    temporali_make_bbox(bbox, instants, ti->count);
+    pfree(instants);
 	return result;
 }
 

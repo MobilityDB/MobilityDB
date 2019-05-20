@@ -34,11 +34,11 @@ LINE 1: SELECT astext(tgeogpoint 'ABC@2012-01-01 08:00:00');
                                  ^
 HINT:  "AB" <-- parse error at position 2 within geometry
 SELECT astext(tgeompoint 'Point empty@2012-01-01 08:00:00');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 1: SELECT astext(tgeompoint 'Point empty@2012-01-01 08:00:00');
                                  ^
 SELECT astext(tgeogpoint 'Point empty@2012-01-01 08:00:00');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 1: SELECT astext(tgeogpoint 'Point empty@2012-01-01 08:00:00');
                                  ^
 SELECT astext(tgeompoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
@@ -67,11 +67,11 @@ SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 
 
 /* Errors */
 SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 2: SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 1: SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
@@ -108,11 +108,11 @@ SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 
 
 /* Errors */
 SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 2: SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 1: SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Po...
                                  ^
 SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
@@ -154,12 +154,12 @@ SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01
 /* Errors */
 SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
  [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 2: SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, ...
                                  ^
 SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
  [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
-ERROR:  Only non-empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 LINE 1: SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, ...
                                  ^
 SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
@@ -257,18 +257,24 @@ SELECT astext(tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],SRID=4326;
 ERROR:  Only lon/lat coordinate systems are supported in geography.
 LINE 1: SELECT astext(tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 ...
                                  ^
-SELECT asewkt(tgeompoint 'Point(0 1)@2000-01-01');
-              asewkt               
------------------------------------
- POINT(0 1)@2000-01-01 00:00:00+00
+SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
+ format_type 
+-------------
+ tgeompoint
 (1 row)
 
-SELECT asewkt(tgeompoint 'Point(0 1 1)@2000-01-01');
-                 asewkt                 
-----------------------------------------
- POINT Z (0 1 1)@2000-01-01 00:00:00+00
+SELECT format_type(oid, tgeompoint_typmod_in(ARRAY[cstring 'Instant','PointZ','5676']))
+FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
+           format_type           
+---------------------------------
+ tgeompoint(Instant,PointZ,5676)
 (1 row)
 
+/* Errors */
+select tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
+ERROR:  typmod array must not contain nulls
+select tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
+ERROR:  typmod array must be one-dimensional
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1)@2000-01-01');
               asewkt               
 -----------------------------------
@@ -293,6 +299,18 @@ SELECT asewkt(tgeompoint(Instant, PointZ) 'Point(0 1 0)@2000-01-01');
  POINT Z (0 1 0)@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT asewkt(tgeompoint(Point, 4326) 'SRID=4326;Point(0 1)@2000-01-01');
+                   asewkt                    
+---------------------------------------------
+ SRID=4326;POINT(0 1)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT asewkt(tgeompoint(PointZ, 4326) 'SRID=4326;Point(0 1 0)@2000-01-01');
+                      asewkt                      
+--------------------------------------------------
+ SRID=4326;POINT Z (0 1 0)@2000-01-01 00:00:00+00
+(1 row)
+
 SELECT asewkt(tgeompoint(Instant, Point, 4326) 'SRID=4326;Point(0 1)@2000-01-01');
                    asewkt                    
 ---------------------------------------------
@@ -303,18 +321,6 @@ SELECT asewkt(tgeompoint(Instant, PointZ, 4326) 'SRID=4326;Point(0 1 0)@2000-01-
                       asewkt                      
 --------------------------------------------------
  SRID=4326;POINT Z (0 1 0)@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT asewkt(tgeompoint '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
-                                 asewkt                                 
-------------------------------------------------------------------------
- {POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00}
-(1 row)
-
-SELECT asewkt(tgeompoint '{Point(0 1 1)@2000-01-01, Point(1 1 1)@2000-01-02}');
-                                      asewkt                                      
-----------------------------------------------------------------------------------
- {POINT Z (0 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00}
 (1 row)
 
 SELECT asewkt(tgeompoint(InstantSet) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
@@ -341,6 +347,18 @@ SELECT asewkt(tgeompoint(InstantSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 
  {POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00}
 (1 row)
 
+SELECT asewkt(tgeompoint(Point, 4326) 'SRID=4326;{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
+                                      asewkt                                      
+----------------------------------------------------------------------------------
+ SRID=4326;{POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT asewkt(tgeompoint(PointZ, 4326) 'SRID=4326;{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
+                                           asewkt                                           
+--------------------------------------------------------------------------------------------
+ SRID=4326;{POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00}
+(1 row)
+
 SELECT asewkt(tgeompoint(InstantSet, Point, 4326) 'SRID=4326;{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
                                       asewkt                                      
 ----------------------------------------------------------------------------------
@@ -351,18 +369,6 @@ SELECT asewkt(tgeompoint(InstantSet, PointZ, 4326) 'SRID=4326;{Point(0 1 0)@2000
                                            asewkt                                           
 --------------------------------------------------------------------------------------------
  SRID=4326;{POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00}
-(1 row)
-
-SELECT asewkt(tgeompoint '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
-                                 asewkt                                 
-------------------------------------------------------------------------
- [POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00]
-(1 row)
-
-SELECT asewkt(tgeompoint '[Point(0 1 1)@2000-01-01, Point(1 1 1)@2000-01-02]');
-                                      asewkt                                      
-----------------------------------------------------------------------------------
- [POINT Z (0 1 1)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00]
 (1 row)
 
 SELECT asewkt(tgeompoint(Sequence) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
@@ -389,6 +395,18 @@ SELECT asewkt(tgeompoint(Sequence, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 
  [POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00]
 (1 row)
 
+SELECT asewkt(tgeompoint(Point, 4326) 'SRID=4326;[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
+                                      asewkt                                      
+----------------------------------------------------------------------------------
+ SRID=4326;[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00]
+(1 row)
+
+SELECT asewkt(tgeompoint(PointZ, 4326) 'SRID=4326;[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
+                                           asewkt                                           
+--------------------------------------------------------------------------------------------
+ SRID=4326;[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00]
+(1 row)
+
 SELECT asewkt(tgeompoint(Sequence, Point, 4326) 'SRID=4326;[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
                                       asewkt                                      
 ----------------------------------------------------------------------------------
@@ -401,70 +419,124 @@ SELECT asewkt(tgeompoint(Sequence, PointZ, 4326) 'SRID=4326;[Point(0 1 0)@2000-0
  SRID=4326;[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00]
 (1 row)
 
-SELECT asewkt(tgeompoint '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(SequenceSet) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
                                                                       asewkt                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-SELECT asewkt(tgeompoint '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(SequenceSet) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02], [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
                                                                                 asewkt                                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-SELECT asewkt(tgeompoint(SequenceSet) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(SequenceSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
                                                                       asewkt                                                                      
 --------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-SELECT asewkt(tgeompoint(SequenceSet) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02], [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
                                                                                 asewkt                                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-SELECT asewkt(tgeompoint(SequenceSet, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
-                                                                      asewkt                                                                      
---------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
-(1 row)
-
-SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
-                                                                                asewkt                                                                                
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
-(1 row)
-
-SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) 'SRID=4326;{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
-	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(Point, 4326) 'SRID=4326;{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
                                                                            asewkt                                                                           
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=4326;{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+SELECT asewkt(tgeompoint(PointZ, 4326) 'SRID=4326;{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02], [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
                                                                                      asewkt                                                                                     
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;{[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
+SELECT asewkt(tgeompoint(SequenceSet, Point, 4326) 'SRID=4326;{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
+                                                                           asewkt                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(0 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00], [POINT(0 1)@2000-01-03 00:00:00+00, POINT(1 1)@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=4326;{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02], [Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
+                                                                                     asewkt                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
+(1 row)
+
+select asewkt(tgeogpoint(Instant,PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
+                      asewkt                      
+--------------------------------------------------
+ SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
+(1 row)
+
+select asewkt(tgeogpoint(PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
+                      asewkt                      
+--------------------------------------------------
+ SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
+(1 row)
+
+select asewkt(tgeompoint(Point) 'Point(0 0)@2000-01-01');
+              asewkt               
+-----------------------------------
+ POINT(0 0)@2000-01-01 00:00:00+00
+(1 row)
+
+select asewkt(tgeogpoint(PointZ) 'Point(0 0 0)@2000-01-01');
+                      asewkt                      
+--------------------------------------------------
+ SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
+(1 row)
+
 /* Errors */
+select tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid temporal point type modifier:
+LINE 2: select tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
+               ^
+select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid duration type modifier: instan
+LINE 1: select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
+               ^
+select tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid geometry type modifier: pointzz
+LINE 1: select tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0...
+               ^
+select tgeompoint(Instant,Point,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Temporal type has Z dimension but column does not
+select tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Only point geometries without M dimension accepted
+LINE 1: select tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0...
+               ^
+select tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid temporal point type modifier: pointzz
+LINE 1: select tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000...
+               ^
+select tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Only point geometries without M dimension accepted
+LINE 1: select tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000...
+               ^
+select tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid geometry type modifier: pointzz
+LINE 1: select tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2...
+               ^
+select tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Only point geometries without M dimension accepted
+LINE 1: select tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2...
+               ^
+select tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Invalid temporal point type modifier: pointzz
+LINE 1: select tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-0...
+               ^
+select tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
+ERROR:  Only point geometries accepted
+LINE 1: select tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-0...
+               ^
 SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
 ERROR:  Invalid temporal point type modifier: 1
-LINE 2: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
-               ^
-SELECT tgeompoint(InstantSet, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
-ERROR:  Invalid geometry type modifier: 2
-LINE 1: SELECT tgeompoint(InstantSet, 2) '{Point(1 1)@2000-01-01, Po...
+LINE 1: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
                ^
 SELECT asewkt(tgeompoint(Instant, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Column has Z dimension but temporal point does not
@@ -831,9 +903,9 @@ SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
 
 /* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamptz '2000-01-01'));
-ERROR:  Only non empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamptz '2000-01-01'));
-ERROR:  Only non empty point geometries accepted
+ERROR:  Only non-empty point geometries without M dimension accepted
 SELECT asewkt(tgeompointi(ARRAY[
 tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeompointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
@@ -1337,6 +1409,12 @@ SELECT st_asewkt(getValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5
                st_asewkt               
 ---------------------------------------
  SRID=4326;MULTIPOINT(1.5 1.5,2.5 2.5)
+(1 row)
+
+SELECT st_asewkt(getValues(tgeogpoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 1)
 (1 row)
 
 SELECT st_asewkt(getValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));

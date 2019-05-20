@@ -1,4 +1,10 @@
 ﻿-------------------------------------------------------------------------------
+
+-- NULL
+SELECT tgeompoint '[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)' <-> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(2 2)@2000-01-04}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)}' <-> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(2 2)@2000-01-04}';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}' <-> tgeompoint '(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}' <-> tgeompoint '{(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)}';
 /* Errors */
 SELECT geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';
 SELECT geometry 'srid=5676;Point(2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]';

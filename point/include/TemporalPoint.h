@@ -382,7 +382,6 @@ extern Datum tpoint_expand_temporal(PG_FUNCTION_ARGS);
 extern Datum geo_to_gbox(PG_FUNCTION_ARGS);
 extern Datum geo_timestamp_to_gbox(PG_FUNCTION_ARGS);
 extern Datum geo_period_to_gbox(PG_FUNCTION_ARGS);
-extern Datum tpoint_to_gbox(PG_FUNCTION_ARGS);
 
 extern bool geo_to_gbox_internal(GBOX *box, GSERIALIZED *gs);
 extern void timestamp_to_gbox_internal(GBOX *box, TimestampTz t);

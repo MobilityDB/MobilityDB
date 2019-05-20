@@ -43,12 +43,7 @@ char* gbox_to_string_mdb(const GBOX *gbox)
 {
 	static int sz = 256;
 	char *str = NULL;
-
-	if ( ! gbox )
-		return strdup("NULL POINTER");
-
 	str = (char *)palloc(sz);
-
 	if ( FLAGS_GET_GEODETIC(gbox->flags) )
 	{
 		if (FLAGS_GET_M(gbox->flags))

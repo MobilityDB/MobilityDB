@@ -166,13 +166,6 @@ CREATE OPERATOR ~= (
 	COMMUTATOR = ~=,
 	RESTRICT = same_point_sel, JOIN = positionjoinseltemp
 );
-/*
-CREATE OPERATOR <-> (
-	PROCEDURE = gbox_distance,
-	LEFTARG = gbox, RIGHTARG = gbox,
-	COMMUTATOR = <->
-);
-*/
 
 /*****************************************************************************
  * Contains

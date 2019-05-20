@@ -1,3 +1,11 @@
+VACUUM ANALYZE tbl_tbool_big;
+VACUUM
+VACUUM ANALYZE tbl_tint_big;
+VACUUM
+VACUUM ANALYZE tbl_tfloat_big;
+VACUUM
+VACUUM ANALYZE tbl_ttext_big;
+VACUUM
 DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
 NOTICE:  index "tbl_tbool_big_gist_idx" does not exist, skipping
 DROP INDEX

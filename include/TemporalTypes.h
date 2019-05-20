@@ -137,7 +137,7 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	/* variable-length data follows, if any */
 } Temporal;
 
@@ -148,7 +148,7 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID  (4 bytes) */
 	TimestampTz t;				/* time span */
 	/* variable-length data follows */
 } TemporalInst;
@@ -160,7 +160,7 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
 	/* variable-length data follows */
 } TemporalI;
@@ -172,9 +172,9 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
-	Period 		period;			/* time span */
+	Period 		period;			/* time span (24 bytes) */
 	/* variable-length data follows */
 } TemporalSeq;
 
@@ -185,7 +185,7 @@ typedef struct
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
-	Oid 		valuetypid;		/* base type's OID */
+	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalSeq elements */
 	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
 	/* variable-length data follows */
@@ -319,11 +319,10 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
-extern bool temporal_duration_is_valid(int16 type);
-extern bool temporal_number_is_valid(Oid type);
-extern bool temporal_numrange_is_valid(Oid type);
-extern bool temporal_point_is_valid(Oid type);
-extern size_t int4_pad(size_t size);
+extern void temporal_duration_is_valid(int16 type);
+extern void temporal_number_is_valid(Oid type);
+extern void temporal_numrange_is_valid(Oid type);
+extern void temporal_point_is_valid(Oid type);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
 extern bool type_byval_fast(Oid type);
@@ -366,9 +365,6 @@ extern ArrayType *temporalarr_to_array(Temporal **temporals, int count);
 
 extern void datum_sort(Datum *values, int count, Oid valuetypid);
 extern void timestamp_sort(TimestampTz *values, int count);
-extern void double2_sort(double2 **doubles, int count);
-extern void double3_sort(double3 **triples, int count);
-extern void double4_sort(double4 **quadruples, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
 extern void temporalinstarr_sort(TemporalInst **instants, int count);
@@ -411,10 +407,7 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
-
-extern Oid base_oid_from_range(Oid temptypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-
 extern bool temporal_oid(Oid temptypid);
 
 /* Catalog functions */
@@ -1618,6 +1611,7 @@ sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 extern TemporalI *
 sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+/* These functions are currently not used
 extern TemporalSeq *
 sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1634,7 +1628,7 @@ extern TemporalS *
 sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
-
+*/
 extern Temporal *
 sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1757,11 +1751,12 @@ extern TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, D
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+/* These functions are not currently used
 extern TemporalSeq *tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalS *tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
-	
+*/
 extern TemporalInst *tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum dist, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalI *tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 

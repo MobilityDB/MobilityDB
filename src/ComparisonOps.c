@@ -21,7 +21,7 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
 	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
 			value, func, datumtypid, BOOLOID, invert);

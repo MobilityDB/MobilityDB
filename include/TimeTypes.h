@@ -27,36 +27,36 @@ typedef struct
 {
 	TimestampTz	lower;			/* the lower bound value */
 	TimestampTz	upper;			/* the upper bound value */
-	char 		lower_inc;		/* the lower bound is inclusive (vs exclusive) */
-	char 		upper_inc;		/* the upper bound is inclusive (vs exclusive) */
+	bool lower_inc;				/* the lower bound is inclusive (vs exclusive) */
+	bool upper_inc;				/* the upper bound is inclusive (vs exclusive) */
 } Period;
 
 /* Internal representation of either bound of a period (not what's on disk) */
 typedef struct
 {
 	TimestampTz val;			/* the bound value */
-	bool		inclusive;		/* bound is inclusive (vs exclusive) */
-	bool		lower;			/* this is the lower (vs upper) bound */
+	bool inclusive;				/* bound is inclusive (vs exclusive) */
+	bool lower;					/* this is the lower (vs upper) bound */
 } PeriodBound;
 
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int32		count;			/* number of Period elements */
+	int32 vl_len_;				/* varlena header (do not touch directly!) */
+	int32 count;				/* number of Period elements */
  	/* variable-length data follows */
 } PeriodSet;
 
 typedef struct 
 {
-	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int32		count;			/* number of Period elements */
-	double		padding1;		/* Test for solving index problems */
-	double		padding2;		/* Test for solving index problems */
+	int32 vl_len_;				/* varlena header (do not touch directly!) */
+	int32 count;				/* number of Period elements */
+	double padding1;			/* Test for solving index problems */
+	double padding2;			/* Test for solving index problems */
  	/* variable-length data follows */
 } TimestampSet;
 
 /*
- * fmgr macros for period objects
+ * fmgr macros for time types
  */
 
 #define DatumGetTimestampSet(X)		((TimestampSet *) DatumGetPointer(X))

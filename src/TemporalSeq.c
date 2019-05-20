@@ -1108,14 +1108,17 @@ bool
 tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
 {
+	bool result;
 	if (!tpointseq_min_dist_at_timestamp(start1, end1, start2, end2, t))
 		return false;
 	Datum value1 = temporalseq_value_at_timestamp1(start1, end1, *t);
 	Datum value2 = temporalseq_value_at_timestamp1(start2, end2, *t);
 	if (datum_eq(value1, value2, start1->valuetypid))
-		return true;
+		result = true;
 	else
-		return false;
+		result = false;
+	pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
+	return result;
 }
 #endif
 
@@ -1453,7 +1456,7 @@ tnumberseq_value_range(TemporalSeq *seq)
 {
 	BOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = 0, max = 0;
-	assert(temporal_number_is_valid(seq->valuetypid));
+	temporal_number_is_valid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->low.x);
@@ -1694,13 +1697,26 @@ TemporalSeq *
 temporalseq_shift(TemporalSeq *seq, Interval *interval)
 {
 	TemporalSeq *result = temporalseq_copy(seq);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(result, i);
+		TemporalInst *inst = instants[i] = temporalseq_inst_n(result, i);
 		inst->t = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
+	/* Shift period */
+	result->period.lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+	result->period.upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+	/* Recompute the bounding box */
+    void *bbox = temporalseq_bbox_ptr(result); 
+    temporalseq_make_bbox(bbox, instants, seq->count, 
+		seq->period.lower_inc, seq->period.upper_inc);
+	pfree(instants);
 	return result;
 }
 

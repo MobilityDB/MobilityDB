@@ -1,3 +1,9 @@
+VACUUM ANALYZE tbl_timestampset_big;
+VACUUM
+VACUUM ANALYZE tbl_period_big;
+VACUUM
+VACUUM ANALYZE tbl_periodset_big;
+VACUUM
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
 NOTICE:  index "tbl_timestampset_big_gist_idx" does not exist, skipping
 DROP INDEX

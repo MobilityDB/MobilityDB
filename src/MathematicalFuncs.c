@@ -15,6 +15,9 @@
 
 /*****************************************************************************
  * Mathematical functions on datums
+ * Since these functions are static, there is no need to verify the validity
+ * of the Oids passed as arguments as this has been done in the calling
+ * function.
  *****************************************************************************/
 
 /* Addition */
@@ -22,8 +25,6 @@
 static Datum
 datum_add(Datum l, Datum r, Oid typel, Oid typer)
 {
-	assert(temporal_number_is_valid(typel) &&
-		temporal_number_is_valid(typer));
 	Datum result = 0;
 	if (typel == INT4OID && typer == INT4OID)
 		result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
@@ -42,8 +43,6 @@ datum_add(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 {
-	assert(temporal_number_is_valid(typel) &&
-		temporal_number_is_valid(typer));
 	Datum result = 0;
 	if (typel == INT4OID && typer == INT4OID)
 		result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
@@ -61,8 +60,6 @@ datum_sub(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 {
-	assert(temporal_number_is_valid(typel) &&
-		temporal_number_is_valid(typer));
 	Datum result = 0;
 	if (typel == INT4OID && typer == INT4OID)
 		result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
@@ -80,8 +77,6 @@ datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 static Datum
 datum_div(Datum l, Datum r, Oid typel, Oid typer)
 {
-	assert(temporal_number_is_valid(typel) &&
-		temporal_number_is_valid(typer));
 	Datum result = 0;
 	if (typel == INT4OID && typer == INT4OID)
 		result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
@@ -127,7 +122,9 @@ add_base_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value, 
@@ -139,9 +136,6 @@ add_base_temporal(PG_FUNCTION_ARGS)
 		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -158,7 +152,9 @@ add_temporal_base(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -170,9 +166,6 @@ add_temporal_base(PG_FUNCTION_ARGS)
 		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -185,7 +178,9 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
@@ -209,9 +204,6 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 		 	&datum_add, FLOAT8OID, NULL);
 		pfree(ftemp2);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -234,7 +226,9 @@ sub_base_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -246,9 +240,6 @@ sub_base_temporal(PG_FUNCTION_ARGS)
 		 	&datum_sub, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -264,7 +255,9 @@ sub_temporal_base(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -276,9 +269,6 @@ sub_temporal_base(PG_FUNCTION_ARGS)
 		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -291,7 +281,9 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
@@ -315,9 +307,6 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 		 	&datum_sub, FLOAT8OID, NULL);
 		pfree(ftemp2);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -340,7 +329,9 @@ mult_base_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -352,9 +343,6 @@ mult_base_temporal(PG_FUNCTION_ARGS)
 		 	&datum_mult, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -370,7 +358,9 @@ mult_temporal_base(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -382,9 +372,6 @@ mult_temporal_base(PG_FUNCTION_ARGS)
 		 	&datum_mult, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -399,7 +386,9 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
@@ -432,9 +421,6 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 		 		&datum_mult, FLOAT8OID, NULL);
 		pfree(ftemp2);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -462,7 +448,9 @@ div_base_temporal(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -474,9 +462,6 @@ div_base_temporal(PG_FUNCTION_ARGS)
 		 	&datum_div, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -497,7 +482,9 @@ div_temporal_base(PG_FUNCTION_ARGS)
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	temporal_number_is_valid(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -509,9 +496,6 @@ div_temporal_base(PG_FUNCTION_ARGS)
 		 	&datum_div, FLOAT8OID, FLOAT8OID, true);
 		pfree(ftemp);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -526,7 +510,9 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
 		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result;
+	Temporal *result = NULL;
+	temporal_duration_is_valid(temp1->duration);
+	temporal_duration_is_valid(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
@@ -559,9 +545,6 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 		 		&datum_div, FLOAT8OID, NULL);
 		pfree(ftemp2);
 	}
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

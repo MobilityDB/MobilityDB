@@ -373,7 +373,7 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1,
 	TimestampTz upper = start2->t;
 	/* Determine whether there is a local minimum between lower and upper */
 	TimestampTz crosstime;
-	bool cross = temporalseq_intersect_at_timestamp(start1, end1, 
+	bool cross = tpointseq_min_dist_at_timestamp(start1, end1, 
 		start2, end2, &crosstime);
 	/* If there is no local minimum or if there is one at a bound */	
 	if (!cross || crosstime == lower || crosstime == upper)
@@ -386,8 +386,7 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1,
 	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
 	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
 	/* Compute the function at the start instant and at the local minimum */
-	bool result = func(sv1, sv2, param) || 
-		func(crossvalue1, crossvalue2, param);
+	bool result = func(crossvalue1, crossvalue2, param);
 	
 	pfree(DatumGetPointer(crossvalue1));
 	pfree(DatumGetPointer(crossvalue2));
@@ -441,46 +440,42 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 
 /* TemporalInst relate <Type> */
 
-static text *
-relate2_tpointinst_geo(TemporalInst *inst, Datum geo, bool invert)
+static Datum
+relate_tpointinst_geo(TemporalInst *inst, Datum geo, bool invert)
 {
 	Datum value = temporalinst_value(inst);
-	text *result = invert ? DatumGetTextP(geom_relate(geo, value)) :
-		DatumGetTextP(geom_relate(value, geo));
-	return result;
+	return invert ? geom_relate(geo, value) : geom_relate(value, geo);
 }
 
-static text *
-relate2_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
+/* This function assumes that inst1->t == inst2-> t */
+static Datum
+relate_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
 {
-	if (inst1->t != inst2->t)
-		return NULL;
-	
-	return DatumGetTextP(geom_relate(temporalinst_value(inst1), 
-		temporalinst_value(inst2)));
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	return geom_relate(value1, value2);
 }
 
 /*****************************************************************************/
 
 /* TemporalI relate <Type> */
 
-static text *
-relate2_tpointi_geo(TemporalI *ti, Datum geo, bool invert)
+static Datum
+relate_tpointi_geo(TemporalI *ti, Datum geo, bool invert)
 {
-	Datum geo1 = tpointi_values(ti);
-	text *result = invert ? DatumGetTextP(geom_relate(geo, geo1)) :
-		DatumGetTextP(geom_relate(geo1, geo));
-	pfree(DatumGetPointer(geo1));
-	return DatumGetTextP(result);
+	Datum values = tpointi_values(ti);
+	Datum result = invert ? geom_relate(geo, values) : geom_relate(values, geo);
+	pfree(DatumGetPointer(values));
+	return result;
 }
 
-static text *
-relate2_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2)
+static Datum
+relate_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2)
 {
-	Datum geo1 = tpointi_values(ti1);
-	Datum geo2 = tpointi_values(ti2);
-	text *result = DatumGetTextP(geom_relate(geo1, geo2));
-	pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2)); 
+	Datum values1 = tpointi_values(ti1);
+	Datum values2 = tpointi_values(ti2);
+	Datum result = geom_relate(values1, values2);
+	pfree(DatumGetPointer(values1)); pfree(DatumGetPointer(values2)); 
 	return result;
 }
 
@@ -488,44 +483,38 @@ relate2_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2)
 
 /* TemporalSeq relate <Type> */
 
-static text *
-relate2_tpointseq_geo(TemporalSeq *seq, Datum geo, bool invert)
+static Datum
+relate_tpointseq_geo(TemporalSeq *seq, Datum geo, bool invert)
 {
 	Datum traj = tpointseq_trajectory(seq);
-	text *result = invert ? DatumGetTextP(geom_relate(geo, traj)) :
-		DatumGetTextP(geom_relate(traj, geo));
-	return result;
+	return invert ? geom_relate(geo, traj) : geom_relate(traj, geo);
 }
 
-static text *
-relate2_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2)
+static Datum
+relate_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2)
 {
 	Datum traj1 = tpointseq_trajectory(seq1);
 	Datum traj2 = tpointseq_trajectory(seq2);
-	text *result = DatumGetTextP(geom_relate(traj1, traj2));
-	return result;
+	return geom_relate(traj1, traj2);
 }
 
 /*****************************************************************************/
 
 /* TemporalS relate <Type> */
 
-static text *
-relate2_tpoints_geo(TemporalS *ts, Datum geo, bool invert)
+static Datum
+relate_tpoints_geo(TemporalS *ts, Datum geo, bool invert)
 {
 	Datum traj = tpoints_trajectory(ts);
-	text *result = invert ? DatumGetTextP(geom_relate(geo, traj)) :
-		DatumGetTextP(geom_relate(traj, geo));
-	return result;
+	return invert ? geom_relate(geo, traj) : geom_relate(traj, geo);
 }
 
-static text *
-relate2_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2)
+static Datum
+relate_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2)
 {
 	Datum traj1 = tpoints_trajectory(ts1);
 	Datum traj2 = tpoints_trajectory(ts2);
-	text *result = DatumGetTextP(geom_relate(traj1, traj2));
-	return result;
+	return geom_relate(traj1, traj2);
 }
 
 /*****************************************************************************
@@ -539,7 +528,7 @@ spatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), bool invert)
 {
 	bool result = false;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_geo((TemporalInst *)temp,
 			geo, func, invert);
@@ -560,7 +549,7 @@ spatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	bool result = false;
-	assert(temporal_duration_is_valid(temp->duration));
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_geo((TemporalInst *)temp,
 			geo, param, func, invert);
@@ -581,7 +570,7 @@ spatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum))
 {
 	bool result = false;
-	assert(temporal_duration_is_valid(temp1->duration));
+	temporal_duration_is_valid(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, func);
@@ -602,7 +591,7 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	bool result = false;
-	assert(temporal_duration_is_valid(temp1->duration));
+	temporal_duration_is_valid(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, param, func);
@@ -618,19 +607,19 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 	return result;
 }
 
-static text *
-relate2_tpoint_geo(Temporal *temp, Datum geo, bool invert)
+static Datum
+relate_tpoint_geo_internal(Temporal *temp, Datum geo, bool invert)
 {
-	text *result = NULL;
-	assert(temporal_duration_is_valid(temp->duration));
+	Datum result = 0;
+	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = relate2_tpointinst_geo((TemporalInst *)temp, geo, invert);
+		result = relate_tpointinst_geo((TemporalInst *)temp, geo, invert);
 	else if (temp->duration == TEMPORALI)
-		result = relate2_tpointi_geo((TemporalI *)temp, geo, invert);
+		result = relate_tpointi_geo((TemporalI *)temp, geo, invert);
 	else if (temp->duration == TEMPORALSEQ)
-		result = relate2_tpointseq_geo((TemporalSeq *)temp, geo, invert);
+		result = relate_tpointseq_geo((TemporalSeq *)temp, geo, invert);
 	else if (temp->duration == TEMPORALS)
-		result = relate2_tpoints_geo((TemporalS *)temp, geo, invert);
+		result = relate_tpoints_geo((TemporalS *)temp, geo, invert);
 	return result;
 }
 
@@ -803,7 +792,7 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -833,7 +822,7 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -865,7 +854,7 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp1->valuetypid));
+	temporal_point_is_valid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -899,7 +888,7 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -929,7 +918,7 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -961,7 +950,7 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp1->valuetypid));
+	temporal_point_is_valid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1216,7 +1205,7 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1249,7 +1238,7 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1285,7 +1274,7 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp1->valuetypid));
+	temporal_point_is_valid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_intersects2d;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1535,7 +1524,7 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1570,7 +1559,7 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp->valuetypid));
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1607,7 +1596,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	assert(temporal_point_is_valid(temp1->valuetypid));
+	temporal_point_is_valid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -1619,7 +1608,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_dwithin;
 
 	bool result = false;
-	assert(temporal_duration_is_valid(sync1->duration));
+	temporal_duration_is_valid(sync1->duration);
 	if (sync1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func);
@@ -1658,10 +1647,10 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	text *result = relate2_tpoint_geo(temp, PointerGetDatum(gs), true);
+	Datum result = relate_tpoint_geo_internal(temp, PointerGetDatum(gs), true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_TEXT_P(result);
+	PG_RETURN_DATUM(result);
 }
 
 PG_FUNCTION_INFO_V1(relate_tpoint_geo);
@@ -1679,10 +1668,10 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	text *result = relate2_tpoint_geo(temp, PointerGetDatum(gs), false);
+	Datum result = relate_tpoint_geo_internal(temp, PointerGetDatum(gs), false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_TEXT_P(result);
+	PG_RETURN_DATUM(result);
 }
  
 PG_FUNCTION_INFO_V1(relate_tpoint_tpoint);
@@ -1703,27 +1692,25 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	
-	Temporal *result = NULL;
-	assert(temporal_duration_is_valid(inter1->duration));
+	Datum result = 0;
+	temporal_duration_is_valid(inter1->duration);
 	if (inter1->duration == TEMPORALINST)
-		result = (Temporal *)relate2_tpointinst_tpointinst(
+		result = relate_tpointinst_tpointinst(
 			(TemporalInst *)inter1, (TemporalInst *)inter2);
 	else if (inter1->duration == TEMPORALI)
-		result = (Temporal *)relate2_tpointi_tpointi(
+		result = relate_tpointi_tpointi(
 			(TemporalI *)inter1, (TemporalI *)inter2);			
 	else if (inter1->duration == TEMPORALSEQ)
-		result = (Temporal *)relate2_tpointseq_tpointseq(
+		result = relate_tpointseq_tpointseq(
 			(TemporalSeq *)inter1, (TemporalSeq *)inter2);
 	else if (inter1->duration == TEMPORALS)
-		result = (Temporal *)relate2_tpoints_tpoints(
+		result = relate_tpoints_tpoints(
 			(TemporalS *)inter1, (TemporalS *)inter2);
 
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
+	PG_RETURN_DATUM(result);
 }
  
 /*****************************************************************************
@@ -1742,8 +1729,8 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	tpoint_gs_same_dimensionality(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
+		PG_FREE_IF_COPY(gs, 0);
+		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
 	bool result = spatialrel3_tpoint_geo(temp, PointerGetDatum(gs), pattern,

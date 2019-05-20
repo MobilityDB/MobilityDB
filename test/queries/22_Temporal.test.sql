@@ -82,6 +82,11 @@ SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@2000-01-02, AA@2000-01
 -- typmod
 -------------------------------------------------------------------------------
 
+SELECT format_type(oid, temporal_typmod_in(ARRAY[cstring 'Instant']))
+FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
+/* Errors */
+select temporal_typmod_in(ARRAY[[cstring 'Instant']]);
+
 SELECT tbool 'true@2000-01-01';
 SELECT tbool '{true@2000-01-01, false@2000-01-02}';
 SELECT tbool '[true@2000-01-01, false@2000-01-02]';

@@ -492,7 +492,7 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 void
 base_to_box(BOX *box, Datum value, Oid valuetypid)
 {
-	assert(temporal_number_is_valid(valuetypid));
+	temporal_number_is_valid(valuetypid);
 	if (valuetypid == INT4OID)
 		box->low.x = box->high.x = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -568,7 +568,7 @@ numeric_to_box(PG_FUNCTION_ARGS)
 void
 range_to_box_internal(BOX *box, RangeType *range)
 {
-	assert(temporal_numrange_is_valid(range->rangetypid));
+	temporal_numrange_is_valid(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->low.x = (double)(DatumGetInt32(lower_datum(range)));

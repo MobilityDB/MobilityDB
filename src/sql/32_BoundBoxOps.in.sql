@@ -203,6 +203,51 @@ CREATE OPERATOR CLASS box_ops
 	OPERATOR	5	> ,
 	FUNCTION	1	box_cmp(box, box);
 
+
+/*****************************************************************************/
+
+CREATE FUNCTION box_contains(box, box)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'contains_box_box'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION box_contained(box, box)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'contained_box_box'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION box_overlaps(box, box)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overlaps_box_box'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION box_same(box, box)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'same_box_box'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+	PROCEDURE = box_contains,
+	LEFTARG = box, RIGHTARG = box,
+	COMMUTATOR = <@,
+	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR <@ (
+	PROCEDURE = box_contained,
+	LEFTARG = box, RIGHTARG = box,
+	COMMUTATOR = @>,
+	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR && (
+	PROCEDURE = box_overlaps,
+	LEFTARG = box, RIGHTARG = box,
+	COMMUTATOR = &&,
+	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+);
+CREATE OPERATOR ~= (
+	PROCEDURE = box_same,
+	LEFTARG = box, RIGHTARG = box,
+	COMMUTATOR = ~=,
+	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+);
+
 /*****************************************************************************
  * Temporal boolean
  *****************************************************************************/

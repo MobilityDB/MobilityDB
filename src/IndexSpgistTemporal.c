@@ -54,9 +54,8 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		PeriodBound	lower,
-					upper;
-		Period	   *period = NULL;
+		PeriodBound	lower, upper;
+		Period *period = NULL;
 
 		/* Restrictions on period bounds according to scan strategy */
 		PeriodBound *minLower = NULL,
@@ -65,7 +64,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 				   *maxUpper = NULL;
 
 		/* Are the restrictions on period bounds inclusive? */
-		bool		inclusive = true;
+		bool inclusive = true;
 
 		/*
 		 * Cast the query to Period for ease of the following operations.

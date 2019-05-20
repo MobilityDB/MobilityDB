@@ -598,6 +598,18 @@ SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2
  GEOMETRYCOLLECTION Z (LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5,1.5 1.5 1.5),POINT Z (3.5 3.5 3.5))
 (1 row)
 
+SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
 SELECT length(tgeompoint 'Point(1 1)@2000-01-01');
  length 
 --------
@@ -1030,6 +1042,18 @@ SELECT azimuth(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  {[0.788373427642399@2000-01-01 00:00:00+00, -2.35276232286813@2000-01-02 00:00:00+00, -2.35276232286813@2000-01-03 00:00:00+00]}
 (1 row)
 
+SELECT azimuth(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}');
+                                                             azimuth                                                              
+----------------------------------------------------------------------------------------------------------------------------------
+ {[0.788373427642399@2000-01-01 00:00:00+00, -2.35276232286813@2000-01-02 00:00:00+00, -2.35276232286813@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT azimuth(tgeogpoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(1 1)@2000-01-03]}');
+ azimuth 
+---------
+ 
+(1 row)
+
 select degrees(azimuth(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-01-02]'));
  degrees 
 ---------
@@ -1252,6 +1276,30 @@ SELECT astext(atGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@200
  
 (1 row)
 
+SELECT astext(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(0 0,1 1)'));
+                astext                 
+---------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00]}
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(2 2,3 3)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', geometry 'Linestring(0 1,1 2)'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(1 1,2 2)'));
+ astext 
+--------
+ 
+(1 row)
+
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -1353,6 +1401,18 @@ SELECT astext(minusGeometry(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (2 2 2)@2000-01-02 00:00:00+00, POINT Z (1 1 1)@2000-01-03 00:00:00+00], [POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT astext(minusGeometry(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)', geometry 'Linestring(0 1,2 1)'));
+                                  astext                                  
+--------------------------------------------------------------------------
+ {[POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
+(1 row)
+
+SELECT astext(minusGeometry(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02)}', geometry 'Linestring(0 1,2 1)'));
+                                  astext                                  
+--------------------------------------------------------------------------
+ {[POINT(0 0)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00)}
+(1 row)
+
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -1379,7 +1439,7 @@ SELECT asText(NearestApproachInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2
 SELECT asText(NearestApproachInstant(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Linestring(0 0,3 3)'));
               astext               
 -----------------------------------
- POINT(3 3)@2000-01-04 00:00:00+00
+ POINT(2 2)@2000-01-02 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring empty'));
@@ -1475,7 +1535,7 @@ SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint 
 SELECT asText(NearestApproachInstant(geometry 'Linestring(0 0,3 3)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
               astext               
 -----------------------------------
- POINT(3 3)@2000-01-04 00:00:00+00
+ POINT(2 2)@2000-01-02 00:00:00+00
 (1 row)
 
 SELECT asText(NearestApproachInstant(geometry 'Linestring empty', tgeompoint 'Point(1 1)@2000-01-01'));
@@ -4264,6 +4324,13 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
  LINESTRING Z (3 3 3,3 3 3)
 (1 row)
 
+SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], (Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]}', 
+tgeompoint '{[Point(3 3)@2000-01-01, Point(3 3)@2000-01-02], (Point(2 2)@2000-01-04, Point(3 3)@2000-01-05]}'));
+      st_astext      
+---------------------
+ LINESTRING(2 2,2 2)
+(1 row)
+
 /* Errors */
 SELECT shortestLine(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -4469,3 +4536,17 @@ SELECT astext((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
  {[POINT Z (1.5 1.5 1.5)@2000-01-01 00:00:00+00, POINT Z (2.5 2.5 2.5)@2000-01-02 00:00:00+00, POINT Z (1.5 1.5 1.5)@2000-01-03 00:00:00+00], [POINT Z (3.5 3.5 3.5)@2000-01-04 00:00:00+00, POINT Z (3.5 3.5 3.5)@2000-01-05 00:00:00+00]}
 (1 row)
 
+/* Errors */
+SELECT geometry 'POINT empty'::tgeompoint;
+ERROR:  Input trajectory cannot be empty
+SELECT geometry 'POINT(1 1)'::tgeompoint;
+ERROR:  Input trajectory do not have M values
+SELECT geometry 'POLYGON M((1 1 946681200,1 2 946681200,2 2 946681200,2 1 946681200,1 1 946681200))'::tgeompoint;
+ERROR:  Operation not supported
+SELECT geometry 'MULTIPOINT M (1 1 946767600,1 1 946681200)'::tgeompoint;
+ERROR:  Trajectory must be valid
+SELECT geometry 'LINESTRING M (1 1 946767600,1 1 946681200)'::tgeompoint;
+ERROR:  Trajectory must be valid
+SELECT geometry 'GEOMETRYCOLLECTION M (LINESTRING M (1 1 946681200,2 2 946767600),
+POLYGON M((1 1 946681200,1 2 946681200,2 2 946681200,2 1 946681200,1 1 946681200)))'::tgeompoint;
+ERROR:  Component geometry/geography must be of type Point(Z)M or Linestring(Z)M

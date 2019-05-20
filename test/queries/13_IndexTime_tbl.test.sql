@@ -1,5 +1,9 @@
 ﻿-------------------------------------------------------------------------------
 
+VACUUM ANALYZE tbl_timestampset_big;
+VACUUM ANALYZE tbl_period_big;
+VACUUM ANALYZE tbl_periodset_big;
+
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
 DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
 

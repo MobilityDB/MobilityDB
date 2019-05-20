@@ -110,7 +110,7 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 		{
 			period = DatumGetPeriod(value);
 			/* Adjust the size */
-			total_width += 24;
+			total_width += sizeof(Period);
 		}
 		else if (time_type == T_TIMESTAMPSET)
 		{
@@ -300,8 +300,8 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 		/* We found only nulls; assume the column is entirely null */
 		stats->stats_valid = true;
 		stats->stanullfrac = 1.0;
-		stats->stawidth = 0;	/* "unknown" */
-		stats->stadistinct = 0.0;		/* "unknown" */
+		stats->stawidth = 0;		/* "unknown" */
+		stats->stadistinct = 0.0;	/* "unknown" */
 	}
 
 	/*

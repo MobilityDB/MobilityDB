@@ -544,18 +544,6 @@ geo_period_to_gbox(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_to_gbox);
-
-PGDLLEXPORT Datum
-tpoint_to_gbox(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GBOX *result = palloc0(sizeof(GBOX));
-	temporal_bbox(result, temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * overlaps
  *****************************************************************************/

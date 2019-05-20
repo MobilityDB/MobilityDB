@@ -1,5 +1,8 @@
 ﻿-------------------------------------------------------------------------------
 
+VACUUM ANALYZE tbl_tgeompoint3D_big;
+VACUUM ANALYZE tbl_tgeogpoint3D_big;
+
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_spgist_idx;
 

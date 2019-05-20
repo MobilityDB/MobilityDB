@@ -1,3 +1,7 @@
+VACUUM ANALYZE tbl_tgeompoint3D_big;
+VACUUM
+VACUUM ANALYZE tbl_tgeogpoint3D_big;
+VACUUM
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_gist_idx;
 NOTICE:  index "tbl_tgeompoint3d_big_gist_idx" does not exist, skipping
 DROP INDEX
@@ -17,13 +21,13 @@ CREATE INDEX
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  2099
+  2199
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp @> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-    49
+   149
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <@ geometry 'Linestring(1 1 1,10 10 10)';
@@ -59,7 +63,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp >> geometry 'Linestring(1 1
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp &> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9222
+  9322
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<| geometry 'Linestring(1 1 1,10 10 10)';
@@ -83,7 +87,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |>> geometry 'Linestring(1 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9125
+  9225
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <</ geometry 'Linestring(1 1 1,10 10 10)';
@@ -107,13 +111,13 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp />> geometry 'Linestring(1 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp /&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9218
+  9318
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9125
+  9225
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
@@ -125,7 +129,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<# period '[2001-01-01, 20
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4901
+  5001
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
@@ -199,13 +203,13 @@ CREATE INDEX
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp && geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  2099
+  2199
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp @> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-    49
+   149
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <@ geometry 'Linestring(1 1 1,10 10 10)';
@@ -241,7 +245,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp >> geometry 'Linestring(1 1
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp &> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9222
+  9322
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<| geometry 'Linestring(1 1 1,10 10 10)';
@@ -265,7 +269,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |>> geometry 'Linestring(1 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9125
+  9225
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <</ geometry 'Linestring(1 1 1,10 10 10)';
@@ -289,13 +293,13 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp />> geometry 'Linestring(1 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp /&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9218
+  9318
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp |&> geometry 'Linestring(1 1 1,10 10 10)';
  count 
 -------
-  9125
+  9225
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
@@ -307,7 +311,7 @@ SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp <<# period '[2001-01-01, 20
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4901
+  5001
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint3D_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';

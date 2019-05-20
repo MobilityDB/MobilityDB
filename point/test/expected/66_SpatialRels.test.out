@@ -888,25 +888,25 @@ SELECT covers(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, P
  
 (1 row)
 
-SELECT covers(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT covers(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ covers 
+--------
+ t
+(1 row)
+
+SELECT covers(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  covers 
 --------
  f
 (1 row)
 
-SELECT covers(geography 'Point(1 1)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+SELECT covers(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  covers 
 --------
  f
 (1 row)
 
-SELECT covers(geography 'Point(1 1)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- covers 
---------
- f
-(1 row)
-
-SELECT covers(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+SELECT covers(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  covers 
 --------
  f
@@ -936,25 +936,25 @@ SELECT covers(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, 
  
 (1 row)
 
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ covers 
+--------
+ t
+(1 row)
+
+SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  covers 
 --------
  f
 (1 row)
 
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  covers 
 --------
  f
 (1 row)
 
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- covers 
---------
- f
-(1 row)
-
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  covers 
 --------
  f
@@ -1076,28 +1076,28 @@ SELECT covers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  
 (1 row)
 
-SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
+SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1 1)');
+SELECT covers(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1 1)');
+SELECT covers(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1 1)');
+SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
@@ -1124,28 +1124,28 @@ SELECT covers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
  
 (1 row)
 
-SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
+SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)');
+SELECT covers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)');
+SELECT covers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
-SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)');
+SELECT covers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
  covers 
 --------
- f
+ t
 (1 row)
 
 SELECT covers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
@@ -1581,10 +1581,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT covers(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT covers(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "covers" statement 1
-SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "covers" statement 1
 SELECT covers(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -1681,25 +1681,25 @@ SELECT coveredby(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01
  
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT coveredby(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+ coveredby 
+-----------
+ t
+(1 row)
+
+SELECT coveredby(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+SELECT coveredby(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- coveredby 
------------
- f
-(1 row)
-
-SELECT coveredby(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+SELECT coveredby(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  coveredby 
 -----------
  f
@@ -1729,25 +1729,25 @@ SELECT coveredby(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-0
  
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+ coveredby 
+-----------
+ t
+(1 row)
+
+SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- coveredby 
------------
- f
-(1 row)
-
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  coveredby 
 -----------
  f
@@ -1873,25 +1873,25 @@ SELECT coveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02,
  
 (1 row)
 
-SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
+SELECT coveredby(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
+ coveredby 
+-----------
+ t
+(1 row)
+
+SELECT coveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1 1)');
+SELECT coveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1 1)');
- coveredby 
------------
- f
-(1 row)
-
-SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1 1)');
+SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
  coveredby 
 -----------
  f
@@ -1921,25 +1921,25 @@ SELECT coveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01
  
 (1 row)
 
-SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
+SELECT coveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
+ coveredby 
+-----------
+ t
+(1 row)
+
+SELECT coveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)');
+SELECT coveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
  coveredby 
 -----------
  f
 (1 row)
 
-SELECT coveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)');
- coveredby 
------------
- f
-(1 row)
-
-SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)');
+SELECT coveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
  coveredby 
 -----------
  f
@@ -2378,10 +2378,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT coveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT coveredby(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "coveredby" statement 1
-SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "coveredby" statement 1
 SELECT coveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -3661,28 +3661,28 @@ SELECT intersects(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-0
  
 (1 row)
 
-SELECT intersects(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+SELECT intersects(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01');
@@ -3709,28 +3709,28 @@ SELECT intersects(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-
  
 (1 row)
 
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
@@ -3853,28 +3853,28 @@ SELECT intersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02
  
 (1 row)
 
-SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)');
+SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1 1)');
+SELECT intersects(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1 1)');
+SELECT intersects(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1 1)');
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty');
@@ -3901,28 +3901,28 @@ SELECT intersects(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
  
 (1 row)
 
-SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
+SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)');
+SELECT intersects(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)');
+SELECT intersects(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
-SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)');
+SELECT intersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)');
  intersects 
 ------------
- f
+ t
 (1 row)
 
 SELECT intersects(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
@@ -4364,10 +4364,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "intersects" statement 1
 SELECT intersects(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
-SELECT intersects(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
+SELECT intersects(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "intersects" statement 1
-SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
+SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)');
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "intersects" statement 1
 SELECT intersects(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01');
@@ -5651,28 +5651,28 @@ SELECT dwithin(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, 
  
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
+SELECT dwithin(geography 'Point(1.5 1.5)', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
+SELECT dwithin(geography 'Point(1.5 1.5)', tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
+SELECT dwithin(geography 'Point(1.5 1.5)', tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
+SELECT dwithin(geography 'Point(1.5 1.5)', tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
 SELECT dwithin(geography 'Point empty', tgeogpoint 'Point(1.5 1.5)@2000-01-01', 2);
@@ -5699,28 +5699,28 @@ SELECT dwithin(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
 SELECT dwithin(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', 2);
@@ -5843,28 +5843,28 @@ SELECT dwithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  
 (1 row)
 
-SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1 1)', 2);
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1 1)', 2);
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1 1)', 2);
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1 1)', 2);
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5)@2000-01-01',  geography 'Point empty', 2);
@@ -5891,28 +5891,28 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)', 2);
+SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1.5 1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)', 2);
+SELECT dwithin(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1.5 1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)', 2);
+SELECT dwithin(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1.5 1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
-SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)', 2);
+SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1.5 1.5 1.5)', 2);
  dwithin 
 ---------
- f
+ t
 (1 row)
 
 SELECT dwithin(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty', 2);
@@ -6036,6 +6036,18 @@ SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 (1 row)
 
 SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 2);
+ dwithin 
+---------
+ t
+(1 row)
+
+SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-02]', tgeompoint '[Point(0 2)@2000-01-01, Point(1 1)@2000-01-02]', 2);
  dwithin 
 ---------
  t
@@ -6354,10 +6366,10 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 CONTEXT:  SQL function "dwithin" statement 1
 SELECT dwithin(tgeogpoint 'SRID=4283;Point(1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal points must be in the same SRID
-SELECT dwithin(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
+SELECT dwithin(geography 'Point(1.5 1.5 1.5)', tgeogpoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "dwithin" statement 1
-SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)', 2);
+SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1.5 1.5)', 2);
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 CONTEXT:  SQL function "dwithin" statement 1
 SELECT dwithin(tgeogpoint 'Point(1 1 1)@2000-01-01', tgeogpoint 'Point(1 1)@2000-01-01', 2);

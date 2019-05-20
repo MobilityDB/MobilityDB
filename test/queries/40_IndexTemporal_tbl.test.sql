@@ -1,5 +1,10 @@
 ﻿-------------------------------------------------------------------------------
 
+VACUUM ANALYZE tbl_tbool_big;
+VACUUM ANALYZE tbl_tint_big;
+VACUUM ANALYZE tbl_tfloat_big;
+VACUUM ANALYZE tbl_ttext_big;
+
 DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tbool_big_spgist_idx;
 

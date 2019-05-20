@@ -84,7 +84,7 @@ index_leaf_consistent_box(BOX *key, BOX *query, StrategyNumber strategy)
 }
 		
 /*****************************************************************************
- * Internal-page consistent method for temporal points using a box.
+ * Internal-page consistent method for temporal numbers using a box.
  *
  * Should return false if for all data items x below entry, the predicate 
  * x op query must be false, where op is the oper corresponding to strategy 
