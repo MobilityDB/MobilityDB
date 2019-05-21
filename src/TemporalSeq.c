@@ -3203,9 +3203,8 @@ temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		if (!contains_periodset_timestamp_internal(ps, inst->t))
-			return 0;
+		/* Due to the bounding box test above the instantaneous sequence satisfies 
+		   the condition */
 		result[0] = temporalseq_copy(seq);
 		return 1;
 	}
@@ -3310,14 +3309,9 @@ temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_minus_periodset(inst, ps);
-		if (inst1 == NULL)
-			return NULL;
-		pfree(inst1); 
-		return temporals_from_temporalseqarr(&seq, 1, false);
-	}
+		/* Due to the bounding box test above the instantaneous sequence does not
+		   satisfy the condition */
+		return NULL;
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ps->count + 1));
