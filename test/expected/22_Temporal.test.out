@@ -1587,6 +1587,12 @@ SELECT getValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
  {AAA,BBB,CCC}
 (1 row)
 
+SELECT getValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
+ getvalues 
+-----------
+ {"[1,2]"}
+(1 row)
+
 SELECT valueRange(tint '1@2000-01-01');
  valuerange 
 ------------

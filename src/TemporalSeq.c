@@ -1389,14 +1389,14 @@ tfloatseq_range(TemporalSeq *seq)
 	BOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = Float8GetDatum(box->low.x);
 	Datum max = Float8GetDatum(box->high.x);
-	if (datum_eq(min, max, FLOAT8OID))
+	if (box->low.x == box->high.x)
 		return range_make(min, max, true, true, FLOAT8OID);
 
 	Datum start = temporalinst_value(temporalseq_inst_n(seq, 0));
 	Datum end = temporalinst_value(temporalseq_inst_n(seq, seq->count-1));
 	Datum lower, upper;
 	bool lower_inc, upper_inc;
-	if (datum_lt(start, end, FLOAT8OID))
+	if (DatumGetFloat8(start) < DatumGetFloat8(end))
 	{
 		lower = start; lower_inc = seq->period.lower_inc;
 		upper = end; upper_inc = seq->period.upper_inc;
@@ -1406,18 +1406,18 @@ tfloatseq_range(TemporalSeq *seq)
 		lower = end; lower_inc = seq->period.upper_inc;
 		upper = start; upper_inc = seq->period.lower_inc;
 	}
-	bool min_inc = datum_lt(min, lower, FLOAT8OID) ||
-		(datum_eq(min, lower, FLOAT8OID) && lower_inc);
-	bool max_inc = datum_gt(max, upper, FLOAT8OID) ||
-		(datum_eq(max, upper, FLOAT8OID) && upper_inc);
+	bool min_inc = DatumGetFloat8(min) < DatumGetFloat8(lower) ||
+		(DatumGetFloat8(min) == DatumGetFloat8(lower) && lower_inc);
+	bool max_inc = DatumGetFloat8(max) > DatumGetFloat8(upper) ||
+		(DatumGetFloat8(max) == DatumGetFloat8(upper) && upper_inc);
 	if (!min_inc || !max_inc)
 	{
 		for (int i = 1; i < seq->count-1; i++)
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, i);
-			if (min_inc || datum_eq(min, temporalinst_value(inst), FLOAT8OID))
+			if (min_inc || DatumGetFloat8(min) == DatumGetFloat8(temporalinst_value(inst)))
 				min_inc = true;
-			if (max_inc || datum_eq(max, temporalinst_value(inst), FLOAT8OID))
+			if (max_inc || DatumGetFloat8(max) == DatumGetFloat8(temporalinst_value(inst)))
 				max_inc = true;
 			if (min_inc && max_inc)
 				break;

@@ -507,6 +507,8 @@ SELECT getValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT getValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT getValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+SELECT getValues(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 2@2000-01-04)');
+
 SELECT valueRange(tint '1@2000-01-01');
 SELECT valueRange(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
 SELECT valueRange(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
