@@ -36,6 +36,7 @@ SELECT astext(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01
 SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
 SELECT astext(tgeogpoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
 SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT astext(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]');
 /* Errors */
 SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
 SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
@@ -373,6 +374,10 @@ tgeogpointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 ]));
 
+/* Errors */
+SELECT tgeompointi(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
+SELECT tgeompointi(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
+
 -------------------------------------------------------------------------------
 
 SELECT asewkt(tgeompointseq(ARRAY[
@@ -385,6 +390,10 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeogpointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 ]));
+
+/* Errors */
+SELECT tgeompointseq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
+SELECT tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
 
 -------------------------------------------------------------------------------
 
@@ -410,6 +419,10 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 09:00:00'),
 tgeogpointinst(ST_Point(2,2), '2012-01-01 09:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 09:20:00')
 ])]));
+
+/* Errors */
+SELECT tgeompoints(ARRAY[tgeompoint '[SRID=5676;Point(1 1)@2001-01-01]', '[SRID=4326;Point(2 2)@2001-01-02]']);
+SELECT tgeompoints(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
 
 -------------------------------------------------------------------------------
 -- Cast functions

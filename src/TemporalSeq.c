@@ -912,11 +912,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		inst1 = temporalseq_inst_n(seq1, i);
 		inst2 = temporalseq_inst_n(seq2, j);
 	}
-	if (k == 0)
-	{
-		pfree(instants1); pfree(instants2); pfree(inter);
-		return false;
-	}
+	/* We are sure that k != 0 due to the period intersection test above */
 	/* The last two values of discrete sequences with exclusive upper bound 
 	   must be equal */
 	if (! inter->upper_inc && k > 1 && ! MOBDB_FLAGS_GET_CONTINUOUS(seq1->flags))
