@@ -615,18 +615,25 @@ temporalseq_tagg1(TemporalSeq **result,
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
 	if (intersect == NULL)
 	{
+		TemporalSeq *sequences[2];
 		/* The two sequences do not intersect: copy the sequences in the right order */
 		if (period_cmp_internal(&seq1->period, &seq2->period) < 0)
 		{
-			result[0] = temporalseq_copy(seq1);
-			result[1] = temporalseq_copy(seq2);
+			sequences[0] = seq1;
+			sequences[1] = seq2;
 		}
 		else
 		{
-			result[0] = temporalseq_copy(seq2);
-			result[1] = temporalseq_copy(seq1);
+			sequences[0] = seq2;
+			sequences[1] = seq1;
 		}
-		*newcount = 2;	
+		/* Normalization */
+		int l;
+		TemporalSeq **normsequences = temporalseqarr_normalize(sequences, 2, &l);
+		for (int i = 0; i < l; i++)
+			result[i] = normsequences[i];
+		pfree(normsequences);
+		*newcount = l;	
 		return;
 	}
 
