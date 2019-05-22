@@ -3272,7 +3272,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 		result = (Temporal *)geo_to_tpoints(gs);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Invalid geometry type for trajectory")));
 	
 	PG_FREE_IF_COPY(gs, 0);
 	PG_RETURN_POINTER(result);

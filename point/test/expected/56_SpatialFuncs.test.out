@@ -4554,7 +4554,7 @@ ERROR:  Input trajectory cannot be empty
 SELECT geometry 'POINT(1 1)'::tgeompoint;
 ERROR:  Input trajectory do not have M values
 SELECT geometry 'POLYGON M((1 1 946681200,1 2 946681200,2 2 946681200,2 1 946681200,1 1 946681200))'::tgeompoint;
-ERROR:  Operation not supported
+ERROR:  Invalid geometry type for trajectory
 SELECT geometry 'MULTIPOINT M (1 1 946767600,1 1 946681200)'::tgeompoint;
 ERROR:  Trajectory must be valid
 SELECT geometry 'LINESTRING M (1 1 946767600,1 1 946681200)'::tgeompoint;

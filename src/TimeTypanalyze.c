@@ -106,21 +106,22 @@ compute_time_stats(CachedType timetype, VacAttrStats *stats,
 		}
 
 		/* Get the (bounding) period and deserialize it for further analysis. */
-		assert(time_type_oid(timetype));
-		if (timetype == type_oid(T_PERIOD))
+		assert(timetype ==  T_PERIOD || timetype == T_TIMESTAMPSET || 
+			timetype == T_PERIODSET);
+		if (timetype == T_PERIOD)
 		{
 			period = DatumGetPeriod(value);
 			/* Adjust the size */
 			total_width += sizeof(Period);
 		}
-		else if (timetype == type_oid(T_TIMESTAMPSET))
+		else if (timetype == T_TIMESTAMPSET)
 		{
 			TimestampSet *ts= DatumGetTimestampSet(value);
 			period = timestampset_bbox(ts);
 			/* Adjust the size */
 			total_width += VARSIZE(ts);
 		}
-		else if (timetype == type_oid(T_PERIODSET))
+		else if (timetype == T_PERIODSET)
 		{
 			PeriodSet *ps= DatumGetPeriodSet(value);
 			period = periodset_bbox(ps);

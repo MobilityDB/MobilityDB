@@ -65,16 +65,15 @@ upper_inc(RangeType *range)
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid subtypid)
 {
-	Oid range_oid;
+	Oid range_oid = 0;
+	assert (subtypid == INT4OID || subtypid == FLOAT8OID || 
+		subtypid == TIMESTAMPTZOID);
 	if (subtypid == INT4OID)
 		range_oid = type_oid(T_INTRANGE);
 	else if (subtypid == FLOAT8OID)
 		range_oid = type_oid(T_FLOATRANGE);
 	else if (subtypid == TIMESTAMPTZOID)
 		range_oid = TSTZRANGEOID;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	
 	TypeCacheEntry* typcache = lookup_type_cache(range_oid, TYPECACHE_RANGE_INFO);
 
