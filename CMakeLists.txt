@@ -19,7 +19,6 @@ src/MathematicalFuncs.c
 src/OidCache.c
 src/Parser.c
 src/Period.c
-src/PeriodSelfuncs.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
@@ -31,12 +30,12 @@ src/TemporalS.c
 src/TemporalSelFuncs.c
 src/TemporalSeq.c
 src/TemporalTypes.c
-src/TempSelFuncs.c
 src/TextFuncs.c
 src/TimeOps.c
 src/TimeSelFuncs.c
 src/TimestampSet.c
 src/TimeTypanalyze.c
+src/TnumberSelFuncs.c
 src/WAggregateFuncs.c
 )
 

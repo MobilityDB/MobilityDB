@@ -302,10 +302,12 @@ extern bool periodset_ne_internal(PeriodSet *ps1, PeriodSet *ps2);
  * Prototypes for functions defined in TimeTypesOps.c
  *****************************************************************************/
 
-/* Functions needed for indexes */
+/* Miscellaneous */
 
 extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
 extern Datum periodset_to_period(PG_FUNCTION_ARGS);
+
+extern bool time_type_oid(Oid timetypid);
 
 /* contains? */
 

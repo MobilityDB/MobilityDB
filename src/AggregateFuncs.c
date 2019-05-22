@@ -963,13 +963,13 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo,
 
 	/* Get a pointer to the first element of the first array */
 	Temporal *temp = (Temporal*) state1->values[0];
+	AggregateState *result = NULL;
+	assert(temp->duration == TEMPORALINST || temp->duration == TEMPORALSEQ);
 	if (temp->duration == TEMPORALINST)
-		return temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
+		result = temporalinst_tagg_combinefn(fcinfo, state1, state2, func);
 	if (temp->duration == TEMPORALSEQ)
-		return temporalseq_tagg_combinefn(fcinfo, state1, state2, func, crossings);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
+		result = temporalseq_tagg_combinefn(fcinfo, state1, state2, func, crossings);
+	return result;
 }
 
 /*****************************************************************************
@@ -1438,16 +1438,14 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	if (state->size == 0)
 		PG_RETURN_NULL();
 	Temporal *result = NULL;
+	assert(state->values[0]->duration == TEMPORALINST || 
+		state->values[0]->duration == TEMPORALSEQ);
 	if (state->values[0]->duration == TEMPORALINST)
 		result = (Temporal *)temporali_from_temporalinstarr(
 			(TemporalInst **)state->values, state->size);
 	else if (state->values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_from_temporalseqarr(
 			(TemporalSeq **)state->values, state->size, true);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
-
 	PG_RETURN_POINTER(result);
 }
 
@@ -1518,16 +1516,14 @@ temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 	if (state->size == 0)
 		PG_RETURN_NULL();
 	Temporal *result = NULL;
+	assert(state->values[0]->duration == TEMPORALINST || 
+		state->values[0]->duration == TEMPORALSEQ);
 	if (state->values[0]->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_tavg_finalfn(
 			(TemporalInst **)state->values, state->size);
 	else if (state->values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporalseq_tavg_finalfn(
 			(TemporalSeq **)state->values, state->size);
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
-
 	PG_RETURN_POINTER(result);
 }
 

@@ -13,7 +13,20 @@
 #include <TemporalTypes.h>
 
 /*****************************************************************************/
-/* Functions used for indexes */
+
+/* 
+ * Is the Oid a time type ?
+ */
+bool
+time_type_oid(Oid timetypid)
+{
+	if (timetypid == type_oid(T_TIMESTAMPSET) || 
+		timetypid == type_oid(T_PERIOD) || timetypid == type_oid(T_PERIODSET))
+		return true;
+	return false;
+}
+
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(timestampset_to_period);
 

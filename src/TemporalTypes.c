@@ -893,7 +893,7 @@ base_type_oid(Oid valuetypid)
  */
 
 bool
-continous_base_type_oid(Oid valuetypid)
+continuous_base_type_oid(Oid valuetypid)
 {
 	if (valuetypid == FLOAT8OID
 #ifdef WITH_POSTGIS

@@ -8,8 +8,7 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *	XXX These are totally bogus.  Perhaps someone will make them do
- *	something reasonable, someday.
+ *	XXX These are totally bogus. TODO
  *
  *****************************************************************************/
  
