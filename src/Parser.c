@@ -109,7 +109,7 @@ p_comma(char **str)
 }
 
 Datum 
-p_basetype(char **str, Oid basetype)
+basetype_parse(char **str, Oid basetype)
 { // ugly
 	p_whitespace(str);
 	int delim = 0;
@@ -277,7 +277,7 @@ temporalinst_parse(char **str, Oid basetype, bool end)
 {
 	p_whitespace(str);
 	/* The next two instructions will throw an exception if they fail */
-	Datum elem = p_basetype(str, basetype);
+	Datum elem = basetype_parse(str, basetype);
 	TimestampTz t = timestamp_parse(str);
 	if (end)
 	{

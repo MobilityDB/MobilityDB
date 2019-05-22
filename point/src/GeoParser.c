@@ -143,7 +143,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 {
 	p_whitespace(str);
 	/* The next instruction will throw an exception if it fails */
-	Datum geo = p_basetype(str, basetype); 
+	Datum geo = basetype_parse(str, basetype); 
 	GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
 	int geo_srid = gserialized_get_srid(gs);
 	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||

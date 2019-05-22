@@ -677,18 +677,8 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 }
 
 /* 
- * Inequality operator
- */
-bool
-temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return !temporalinst_eq(inst1, inst2);
-}
-
-/* 
  * B-tree comparator
  */
-
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
@@ -716,11 +706,12 @@ uint32
 temporalinst_hash(TemporalInst *inst)
 {
 	uint32		result;
-	uint32		value_hash;
 	uint32		time_hash;
 
 	Datum value = temporalinst_value(inst);
-	/* Apply the hash function to each bound */
+	/* Apply the hash function according to the subtype */
+	uint32 value_hash = 0; 
+	assert(base_type_oid(inst->valuetypid));
 	if (inst->valuetypid == BOOLOID)
 		value_hash = DatumGetUInt32(call_function1(hashchar, value));
 	else if (inst->valuetypid == INT4OID)
@@ -734,13 +725,10 @@ temporalinst_hash(TemporalInst *inst)
 		inst->valuetypid == type_oid(T_GEOGRAPHY))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
 #endif
-	else 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Invalid Oid")));
-
+	/* Apply the hash function according to the timestamp */
 	time_hash = DatumGetUInt32(call_function1(hashint8, inst->t));
 
-	/* Merge hashes of value and time */
+	/* Merge hashes of value and timestamp */
 	result = value_hash;
 	result = (result << 1) | (result >> 31);
 	result ^= time_hash;

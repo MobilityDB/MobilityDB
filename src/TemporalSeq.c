@@ -3472,20 +3472,9 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 	return true;
 }
 
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
- */
-bool
-temporalseq_ne(TemporalSeq *seq1, TemporalSeq *seq2)
-{
-	return !temporalseq_eq(seq1, seq2);
-}
-
 /*
  * B-tree comparator
  */
-
 int
 temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 {

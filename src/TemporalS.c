@@ -1593,7 +1593,7 @@ temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 		return 0;
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
-		if (temporalseq_ne(sequences[newcount], sequences[i]))
+		if (! temporalseq_eq(sequences[newcount], sequences[i]))
 			sequences[++ newcount] = sequences[i];
 		else 
 			pfree(sequences[i]);
@@ -2191,16 +2191,6 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 			return false;
 	}
 	return true;
-}
-
-/* 
- * Inequality operator
- * The internal B-tree comparator is not used to increase efficiency 
- */
-bool
-temporals_ne(TemporalS *ts1, TemporalS *ts2)
-{
-	return !temporals_eq(ts1, ts2);
 }
 
 /* 

@@ -871,19 +871,36 @@ base_oid_from_temporal(Oid temptypid)
 
 /*****************************************************************************/
 /* 
- * Is the Oid a temporal type 
+ * Is the Oid an external base type ?
  */
 
 bool
-temporal_oid(Oid temptypid)
+base_type_oid(Oid valuetypid)
+{
+	if (valuetypid == BOOLOID ||
+		valuetypid == INT4OID ||
+		valuetypid == FLOAT8OID ||
+		valuetypid == TEXTOID
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+#endif
+		)
+		return true;
+	return false;
+}
+
+/* 
+ * Is the Oid a temporal type ?
+ */
+
+bool
+temporal_type_oid(Oid temptypid)
 {
 	if (temptypid == type_oid(T_TBOOL) ||
 		temptypid == type_oid(T_TINT) ||
 		temptypid == type_oid(T_TFLOAT) ||
-		temptypid == type_oid(T_TTEXT) ||
-		temptypid == type_oid(T_TDOUBLE2) ||
-		temptypid == type_oid(T_TDOUBLE3) ||
-		temptypid == type_oid(T_TDOUBLE4)
+		temptypid == type_oid(T_TTEXT)
 #ifdef WITH_POSTGIS
 		|| temptypid == type_oid(T_TGEOMPOINT)
 		|| temptypid == type_oid(T_TGEOGPOINT)

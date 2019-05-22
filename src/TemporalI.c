@@ -1510,18 +1510,8 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 }
 
 /* 
- * Inequality operator
- */
-bool
-temporali_ne(TemporalI *ti1, TemporalI *ti2)
-{
-	return !temporali_eq(ti1, ti2);
-}
-
-/* 
  * B-tree comparator
  */
-
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {
