@@ -9131,6 +9131,12 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
  f
 (1 row)
 
+SELECT tfloat '{1@2000-01-01, 1@2000-01-02}' = tfloat '{[1@2000-01-01], [1@2000-01-02]}';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tbool_hash(tbool 't@2000-01-01');
  tbool_hash 
 ------------
