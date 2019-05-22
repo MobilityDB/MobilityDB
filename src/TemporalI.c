@@ -676,13 +676,14 @@ temporali_always_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
-		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, ti->valuetypid);
-		if (same_box_box_internal(&box1, &box2))
-			return true;
+		BOX box;
+		temporali_bbox(&box, ti);
+		if (ti->valuetypid == INT4OID)
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetInt32(value);
 		else
-			return false;
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ti->count; i++) 

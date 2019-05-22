@@ -1666,13 +1666,14 @@ temporalseq_always_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
-		temporalseq_bbox(&box1, seq);
-		base_to_box(&box2, value, seq->valuetypid);
-		if (same_box_box_internal(&box1, &box2))
-			return true;
+		BOX box;
+		temporalseq_bbox(&box, seq);
+		if (seq->valuetypid == INT4OID)
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetInt32(value);
 		else
-			return false;
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetFloat8(value);
 	}
 
 	/* The following test assumes that the sequence is in normal form */

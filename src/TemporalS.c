@@ -1183,13 +1183,14 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
-		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, ts->valuetypid);
-		if (same_box_box_internal(&box1, &box2))
-			return true;
+		BOX box;
+		temporals_bbox(&box, ts);
+		if (ts->valuetypid == INT4OID)
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetInt32(value);
 		else
-			return false;
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ts->count; i++) 
