@@ -119,9 +119,6 @@ tpoint_in(PG_FUNCTION_ARGS)
 	Oid valuetypid;
 	temporal_typinfo(temptypid, &valuetypid);
 	Temporal *result = tpoint_parse(&input, valuetypid);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal point")));
 	PG_RETURN_POINTER(result);
 }
 

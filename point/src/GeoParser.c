@@ -148,12 +148,12 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	int geo_srid = gserialized_get_srid(gs);
 	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
 		FLAGS_GET_M(gs->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Only non-empty point geometries without M dimension accepted")));
 	if (basetype == type_oid(T_GEOMETRY))
 	{
 		if (*tpoint_srid != 0 && geo_srid != 0 && *tpoint_srid != geo_srid)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
 				geo_srid, *tpoint_srid)));
 		if (*tpoint_srid != 0 && geo_srid == SRID_UNKNOWN)
@@ -164,7 +164,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	else
 	{
 		if (*tpoint_srid != 0 && geo_srid != SRID_DEFAULT && *tpoint_srid != geo_srid)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Geography SRID (%d) does not match temporal type SRID (%d)", 
 				geo_srid, *tpoint_srid)));
 		if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_DEFAULT)

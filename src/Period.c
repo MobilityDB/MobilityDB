@@ -294,8 +294,6 @@ period_in(PG_FUNCTION_ARGS)
 {
 	char *input = PG_GETARG_CSTRING(0);
 	Period *result = period_parse(&input);
-	if (result == 0)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
