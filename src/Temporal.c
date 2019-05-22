@@ -1405,10 +1405,7 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = temporalseq_inst_n((TemporalSeq *)temp, ((TemporalSeq *)temp)->count - 1)->t;
 	else if (temp->duration == TEMPORALS) 
-	{
-		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, ((TemporalS *)temp)->count - 1);
-		result = temporalseq_inst_n(seq, seq->count - 1)->t;
-	}
+		result = temporals_end_timestamp((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TIMESTAMPTZ(result);
 }
@@ -2472,9 +2469,7 @@ tfloat_twavg(PG_FUNCTION_ARGS)
 int
 temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
-	if (t1->valuetypid != t2->valuetypid) 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	assert(t1->valuetypid == t2->valuetypid);
 
 	/* If both are of the same duration use the specific comparison */
 	if (t1->duration == t2->duration)
@@ -2536,10 +2531,7 @@ temporal_cmp(PG_FUNCTION_ARGS)
 bool
 temporal_eq_internal(Temporal *t1, Temporal *t2)
 {
-	if (t1->valuetypid != t2->valuetypid) 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
+	assert(t1->valuetypid == t2->valuetypid);
 	temporal_duration_is_valid(t1->duration);
 	temporal_duration_is_valid(t2->duration);
 

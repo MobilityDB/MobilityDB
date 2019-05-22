@@ -954,7 +954,10 @@ SELECT ttext 'AAA@2000-01-01' @= 'AAA';
 SELECT ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}' @= 'AAA';
 SELECT ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]' @= 'AAA';
 SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}' @= 'AAA';
- 
+
+SELECT tfloat '{[1@2000-01-01, 1@2000-01-02]}' @= 1;
+SELECT tfloat '{[1@2000-01-01, 1@2000-01-02]}' @= 2;
+
 SELECT shift(tbool 't@2000-01-01', '5 min');
 SELECT shift(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '5 min');
 SELECT shift(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '5 min');

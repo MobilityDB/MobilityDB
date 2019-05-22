@@ -969,9 +969,6 @@ temporals_num_instants(TemporalS *ts)
 TemporalInst *
 temporals_instant_n(TemporalS *ts, int n)
 {
-	if (n < 1) 
-		return NULL;
-	
 	TemporalInst *result = NULL;
 	int i = 0, count = 0, prevcount = 0;
 	while (i < ts->count && prevcount < n)
@@ -1190,7 +1187,7 @@ temporals_always_equals(TemporalS *ts, Datum value)
 				(int)(box.high.x) == DatumGetInt32(value);
 		else
 			return box.low.x == box.high.x &&
-				(int)(box.high.x) == DatumGetFloat8(value);
+				box.high.x == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ts->count; i++) 

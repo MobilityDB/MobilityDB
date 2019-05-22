@@ -877,10 +877,25 @@ base_oid_from_temporal(Oid temptypid)
 bool
 base_type_oid(Oid valuetypid)
 {
-	if (valuetypid == BOOLOID ||
-		valuetypid == INT4OID ||
-		valuetypid == FLOAT8OID ||
-		valuetypid == TEXTOID
+	if (valuetypid == BOOLOID || valuetypid == INT4OID || 
+		valuetypid == FLOAT8OID || valuetypid == TEXTOID
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+#endif
+		)
+		return true;
+	return false;
+}
+
+/* 
+ * Is the Oid an external continuous base type ?
+ */
+
+bool
+continous_base_type_oid(Oid valuetypid)
+{
+	if (valuetypid == FLOAT8OID
 #ifdef WITH_POSTGIS
 		|| valuetypid == type_oid(T_GEOMETRY)
 		|| valuetypid == type_oid(T_GEOGRAPHY)

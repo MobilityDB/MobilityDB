@@ -1124,13 +1124,15 @@ bool
 temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *inter)
 {
+    bool result = false;
+	assert(base_type_oid(start1->valuetypid));
 	if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
 		(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
-		return tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
+		result = tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
 #ifdef WITH_POSTGIS
-	if (start1->valuetypid == type_oid(T_GEOMETRY))
-		return tpointseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
-	if (start1->valuetypid == type_oid(T_GEOGRAPHY))
+	else if (start1->valuetypid == type_oid(T_GEOMETRY))
+		result = tpointseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
+	else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* For geographies we do as the ST_Intersection function, e.g.
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
@@ -1147,16 +1149,14 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		TemporalInst *end1geom2 = tgeompointinst_transform(start1, bestsrid);
 		TemporalInst *start2geom2 = tgeompointinst_transform(start2, bestsrid);
 		TemporalInst *end2geom2 = tgeompointinst_transform(start2, bestsrid);
-		bool result = tpointseq_intersect_at_timestamp(start1geom2, end1geom2, 
+		result = tpointseq_intersect_at_timestamp(start1geom2, end1geom2, 
 			start2geom2, end2geom2, inter);
 		pfree(DatumGetPointer(line1)); pfree(DatumGetPointer(line2)); 
 		pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
 		pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
-		return result;
 	}
 #endif
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-		errmsg("Operation not supported")));
+	return result;
 }
 
 /* Duration of the TemporalSeq as a double */
@@ -1733,8 +1733,8 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	
-	/* Continuous base type: Interpolation */
+    assert(continuous_base_type_oid(inst1->valuetypid));
+	/* Interpolation */
 	double fraction;
 	if (inst1->valuetypid == FLOAT8OID)
 	{ 
@@ -1818,9 +1818,6 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(value2));
 	}
 #endif
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 
 	if (fabs(fraction) < EPSILON || fabs(fraction-1.0) < EPSILON)
 		return false;
@@ -2297,17 +2294,14 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Ensure continuous data type */
-	if (valuetypid != FLOAT8OID)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-			
+	assert(valuetypid == FLOAT8OID);
 	RangeType *valuerange;
-	if (datum_eq(value1, value2, valuetypid))
-		valuerange = range_make(value1, value2, true, true, valuetypid);
-	if (datum_le(value1, value2, valuetypid))
-		valuerange = range_make(value1, value2, lower_incl, upper_incl, valuetypid);	
+	if (DatumGetFloat8(value1) == DatumGetFloat8(value2))
+		valuerange = range_make(value1, value2, true, true, FLOAT8OID);
+	if (DatumGetFloat8(value1) < DatumGetFloat8(value2))
+		valuerange = range_make(value1, value2, lower_incl, upper_incl, FLOAT8OID);	
 	else
-		valuerange = range_make(value2, value1, upper_incl, lower_incl, valuetypid);	
+		valuerange = range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);	
 	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect, 
 		RangeTypePGetDatum(valuerange), RangeTypePGetDatum(range)));
 	if (RangeIsEmpty(intersect))
