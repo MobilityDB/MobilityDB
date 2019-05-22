@@ -1442,29 +1442,29 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 	bool found = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
+	{
 		if (n == 1)
 		{
 			found = true;
 			result = ((TemporalInst *)temp)->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALI) 
+	{
 		if (n >= 1 && n <= ((TemporalI *)temp)->count)
 		{
 			found = true;
 			result = (temporali_inst_n((TemporalI *)temp, n - 1))->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALSEQ) 
+	{
 		if (n >= 1 && n <= ((TemporalSeq *)temp)->count)
 		{
 			found = true;
 			result = (temporalseq_inst_n((TemporalSeq *)temp, n - 1))->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALS) 
 		found = temporals_timestamp_n((TemporalS *)temp, n, &result);
 	PG_FREE_IF_COPY(temp, 0);
