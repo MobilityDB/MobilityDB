@@ -2934,7 +2934,11 @@ intersection_timestampset_period_internal(TimestampSet *ts, Period *p)
 		if (contains_period_timestamp_internal(p, t))
 			times[k++] = t;
 	}
-	/* k != 0 due to the bounding box text above */
+	if (k == 0)
+	{
+		pfree(times);
+		return NULL;
+	}
 	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
 	pfree(times);
 	return result;

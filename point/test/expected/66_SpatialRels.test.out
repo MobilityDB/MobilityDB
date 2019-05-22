@@ -4357,6 +4357,12 @@ SELECT intersects(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),[P
  
 (1 row)
 
+SELECT intersects(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}', tgeompoint '{[Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)}');
+ intersects 
+------------
+ 
+(1 row)
+
 /* Errors */
 SELECT intersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
