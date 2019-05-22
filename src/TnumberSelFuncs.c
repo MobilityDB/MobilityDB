@@ -36,18 +36,18 @@
  * Selectivity for operators that depend on volume, such as "overlap".
  */
 
-PG_FUNCTION_INFO_V1(volumesel);
+PG_FUNCTION_INFO_V1(overlapsel);
 
 PGDLLEXPORT Datum
-volumesel(PG_FUNCTION_ARGS)
+overlapsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
 
-PG_FUNCTION_INFO_V1(volumejoinsel);
+PG_FUNCTION_INFO_V1(overlapjoinsel);
 
 PGDLLEXPORT Datum
-volumejoinsel(PG_FUNCTION_ARGS)
+overlapjoinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
@@ -79,7 +79,7 @@ positionjoinseltemp(PG_FUNCTION_ARGS)
  *	contseltemp: How likely is a box to contain (be contained by) a given box?
  *
  * This is a tighter constraint than "overlap", so produce a smaller
- * estimate than volumesel does.
+ * estimate than overlapsel does.
  */
 
 PG_FUNCTION_INFO_V1(contseltemp);
