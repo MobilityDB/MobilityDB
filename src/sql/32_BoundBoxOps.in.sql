@@ -11,7 +11,7 @@
  *****************************************************************************/
 
  /*****************************************************************************
- * Period
+ * Casting for period
  *****************************************************************************/
 
 CREATE FUNCTION period(tbool)
@@ -27,7 +27,7 @@ CREATE CAST (tbool AS period) WITH FUNCTION period(tbool);
 CREATE CAST (ttext AS period) WITH FUNCTION period(ttext);
 
  /*****************************************************************************
- * BOX
+ * Casting for box
  *****************************************************************************/
 
 CREATE FUNCTION box(integer)
@@ -123,7 +123,73 @@ CREATE FUNCTION box(floatrange, period)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Comparison
+ * Selectively functions for operators
+ *****************************************************************************/
+
+CREATE FUNCTION temporal_overlaps_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_overlaps_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_overlaps_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_overlaps_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_contains_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_contains_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_contains_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_contains_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_same_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_same_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION temporal_same_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'temporal_same_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+/*****************************************************************************/
+
+CREATE FUNCTION tnumber_overlaps_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_overlaps_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION tnumber_overlaps_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_overlaps_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION tnumber_contains_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_contains_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION tnumber_contains_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_contains_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION tnumber_same_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_same_sel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION tnumber_same_joinsel(internal, oid, internal, smallint, internal)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_same_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+
+/*****************************************************************************
+ * Box operators
  *****************************************************************************/
 
 CREATE FUNCTION box_eq(box, box)
@@ -227,25 +293,25 @@ CREATE OPERATOR @> (
 	PROCEDURE = box_contains,
 	LEFTARG = box, RIGHTARG = box,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = box_contained,
 	LEFTARG = box, RIGHTARG = box,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = box_overlaps,
 	LEFTARG = box, RIGHTARG = box,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = box_same,
 	LEFTARG = box, RIGHTARG = box,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 
 /*****************************************************************************
@@ -269,19 +335,19 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = period, RIGHTARG = tbool,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tbool, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tbool, RIGHTARG = tbool,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 
 /*****************************************************************************/
@@ -303,19 +369,19 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = period, RIGHTARG = tbool,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tbool, RIGHTARG = period,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tbool, RIGHTARG = tbool,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -337,19 +403,19 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = period, RIGHTARG = tbool,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tbool, RIGHTARG = period,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tbool, RIGHTARG = tbool,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -371,19 +437,19 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = period, RIGHTARG = tbool,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tbool, RIGHTARG = period,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tbool, RIGHTARG = tbool,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 
 /*****************************************************************************
@@ -429,50 +495,50 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = intrange, RIGHTARG = tint,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tint, RIGHTARG = intrange,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = floatrange, RIGHTARG = tint,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tint, RIGHTARG = floatrange,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = box, RIGHTARG = tint,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tint, RIGHTARG = box,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tint, RIGHTARG = tint,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tint, RIGHTARG = tfloat,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 
 /*****************************************************************************/
@@ -515,50 +581,50 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = intrange, RIGHTARG = tint,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tint, RIGHTARG = intrange,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = floatrange, RIGHTARG = tint,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tint, RIGHTARG = floatrange,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = box, RIGHTARG = tint,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tint, RIGHTARG = box,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tint, RIGHTARG = tint,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tint, RIGHTARG = tfloat,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -601,50 +667,50 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = intrange, RIGHTARG = tint,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tint, RIGHTARG = intrange,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = floatrange, RIGHTARG = tint,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tint, RIGHTARG = floatrange,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = box, RIGHTARG = tint,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tint, RIGHTARG = box,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tint, RIGHTARG = tint,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tint, RIGHTARG = tfloat,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -687,50 +753,50 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = intrange, RIGHTARG = tint,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tint, RIGHTARG = intrange,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = floatrange, RIGHTARG = tint,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tint, RIGHTARG = floatrange,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = box, RIGHTARG = tint,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tint, RIGHTARG = box,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tint, RIGHTARG = tint,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tint, RIGHTARG = tfloat,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 
 /*****************************************************************************
@@ -775,50 +841,50 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = box, RIGHTARG = tfloat,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tfloat, RIGHTARG = box,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tfloat, RIGHTARG = tint,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_overlaps_sel, JOIN = tnumber_overlaps_joinsel
 );
 
 /*****************************************************************************/
@@ -861,50 +927,50 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = box, RIGHTARG = tfloat,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tfloat, RIGHTARG = box,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tfloat, RIGHTARG = tint,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -947,50 +1013,50 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = box, RIGHTARG = tfloat,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tfloat, RIGHTARG = box,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tfloat, RIGHTARG = tint,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_contains_sel, JOIN = tnumber_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -1033,50 +1099,50 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = box, RIGHTARG = tfloat,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tfloat, RIGHTARG = box,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tfloat, RIGHTARG = tint,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_same_sel, JOIN = tnumber_same_joinsel
 );
 
 /*****************************************************************************
@@ -1100,19 +1166,19 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = period, RIGHTARG = ttext,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = ttext, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = ttext, RIGHTARG = ttext,
 	COMMUTATOR = &&,
-	RESTRICT = overlaps_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_overlaps_sel, JOIN = temporal_overlaps_joinsel
 );
 
 /*****************************************************************************/
@@ -1134,19 +1200,19 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = period, RIGHTARG = ttext,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = ttext, RIGHTARG = period,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = ttext, RIGHTARG = ttext,
 	COMMUTATOR = <@,
-	RESTRICT = contains_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -1168,19 +1234,19 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = period, RIGHTARG = ttext,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = ttext, RIGHTARG = period,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = ttext, RIGHTARG = ttext,
 	COMMUTATOR = @>,
-	RESTRICT = contained_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_contains_sel, JOIN = temporal_contains_joinsel
 );
 
 /*****************************************************************************/
@@ -1202,19 +1268,19 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = period, RIGHTARG = ttext,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = ttext, RIGHTARG = period,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = ttext, RIGHTARG = ttext,
 	COMMUTATOR = ~=,
-	RESTRICT = same_bbox_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_same_sel, JOIN = temporal_same_joinsel
 );
 
 /*****************************************************************************/

@@ -307,7 +307,7 @@ extern bool periodset_ne_internal(PeriodSet *ps1, PeriodSet *ps2);
 extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
 extern Datum periodset_to_period(PG_FUNCTION_ARGS);
 
-extern bool time_type_oid(Oid timetypid);
+extern void time_type_oid(Oid timetypid);
 
 /* contains? */
 

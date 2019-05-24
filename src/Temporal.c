@@ -1365,12 +1365,9 @@ temporal_start_timestamp_internal(Temporal *temp)
 	else if (temp->duration == TEMPORALI) 
 		result = temporali_inst_n((TemporalI *)temp, 0)->t;
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_inst_n((TemporalSeq *)temp, 0)->t;
+		result = temporalseq_start_timestamp((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-	{
-		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, 0);
-		result = temporalseq_inst_n(seq, 0)->t;
-	}
+		result = temporals_start_timestamp((TemporalS *)temp);
 	return result;
 }
 
@@ -1400,7 +1397,7 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALI) 
 		result = temporali_inst_n((TemporalI *)temp, ((TemporalI *)temp)->count - 1)->t;
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_inst_n((TemporalSeq *)temp, ((TemporalSeq *)temp)->count - 1)->t;
+		result = temporalseq_end_timestamp((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = temporals_end_timestamp((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);

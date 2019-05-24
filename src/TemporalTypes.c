@@ -905,6 +905,22 @@ continuous_base_type_oid(Oid valuetypid)
 	return false;
 }
 
+bool
+continuous_base_type_all_oid(Oid valuetypid)
+{
+	if (valuetypid == FLOAT8OID ||
+		valuetypid ==  type_oid(T_DOUBLE2)
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+		|| valuetypid == type_oid(T_DOUBLE3)
+		|| valuetypid == type_oid(T_DOUBLE4)
+#endif
+		)
+		return true;
+	return false;
+}
+
 /* 
  * Is the Oid a temporal type ?
  */

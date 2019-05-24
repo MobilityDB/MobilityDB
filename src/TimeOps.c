@@ -15,15 +15,14 @@
 /*****************************************************************************/
 
 /* 
- * Is the Oid a time type ?
+ * Ensure the Oid a time type
  */
-bool
+void
 time_type_oid(Oid timetypid)
 {
-	if (timetypid == type_oid(T_TIMESTAMPSET) || 
-		timetypid == type_oid(T_PERIOD) || timetypid == type_oid(T_PERIODSET))
-		return true;
-	return false;
+	assert(timetypid == type_oid(T_TIMESTAMPTZ) ||
+		timetypid == type_oid(T_TIMESTAMPSET) || 
+		timetypid == type_oid(T_PERIOD) || timetypid == type_oid(T_PERIODSET));
 }
 
 /*****************************************************************************/

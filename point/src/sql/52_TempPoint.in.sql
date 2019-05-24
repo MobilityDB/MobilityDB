@@ -48,7 +48,12 @@ CREATE OR REPLACE FUNCTION tgeogpoint_typmod_in(cstring[])
 CREATE OR REPLACE FUNCTION tpoint_typmod_out(integer)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME','tpoint_typmod_out'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpoint_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE TYPE tgeompoint (
 	internallength = variable,
@@ -59,8 +64,8 @@ CREATE TYPE tgeompoint (
 	typmod_in = tgeompoint_typmod_in,
 	typmod_out = tpoint_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = tpoint_analyze
 );
 
 CREATE FUNCTION tgeogpoint_in(cstring, oid, integer)
@@ -89,19 +94,19 @@ CREATE TYPE tgeogpoint (
 	typmod_in = tgeogpoint_typmod_in,
 	typmod_out = tpoint_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = tpoint_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
 CREATE OR REPLACE FUNCTION tgeompoint(tgeompoint, integer)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OR REPLACE FUNCTION tgeogpoint(tgeogpoint, integer)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;
 CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer) AS IMPLICIT;

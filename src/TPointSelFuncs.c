@@ -12,7 +12,7 @@
  *
  *****************************************************************************/
  
-#include "TemporalTypes.h"
+#include "TemporalPoint.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 
@@ -42,50 +42,50 @@
  * equals is a tighter constrain tha contains and contained.
  */
 
-PG_FUNCTION_INFO_V1(tnumber_overlaps_sel);
+PG_FUNCTION_INFO_V1(tpoint_overlaps_sel);
 
 PGDLLEXPORT Datum
-tnumber_overlaps_sel(PG_FUNCTION_ARGS)
+tpoint_overlaps_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_overlaps_joinsel);
+PG_FUNCTION_INFO_V1(tpoint_overlaps_joinsel);
 
 PGDLLEXPORT Datum
-tnumber_overlaps_joinsel(PG_FUNCTION_ARGS)
+tpoint_overlaps_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_contains_sel);
+PG_FUNCTION_INFO_V1(tpoint_contains_sel);
 
 PGDLLEXPORT Datum
-tnumber_contains_sel(PG_FUNCTION_ARGS)
+tpoint_contains_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.002);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_contains_joinsel);
+PG_FUNCTION_INFO_V1(tpoint_contains_joinsel);
 
 PGDLLEXPORT Datum
-tnumber_contains_joinsel(PG_FUNCTION_ARGS)
+tpoint_contains_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.002);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_same_sel);
+PG_FUNCTION_INFO_V1(tpoint_same_sel);
 
 PGDLLEXPORT Datum
-tnumber_same_sel(PG_FUNCTION_ARGS)
+tpoint_same_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_same_joinsel);
+PG_FUNCTION_INFO_V1(tpoint_same_joinsel);
 
 PGDLLEXPORT Datum
-tnumber_same_joinsel(PG_FUNCTION_ARGS)
+tpoint_same_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }
@@ -98,18 +98,18 @@ tnumber_same_joinsel(PG_FUNCTION_ARGS)
  * overbefore (&<#), after (#>>), overafter (#&>). 
  */
 
-PG_FUNCTION_INFO_V1(tnumber_position_sel);
+PG_FUNCTION_INFO_V1(tpoint_position_sel);
 
 PGDLLEXPORT Datum
-tnumber_position_sel(PG_FUNCTION_ARGS)
+tpoint_position_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_position_joinsel);
+PG_FUNCTION_INFO_V1(tpoint_position_joinsel);
 
 PGDLLEXPORT Datum
-tnumber_position_joinsel(PG_FUNCTION_ARGS)
+tpoint_position_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }

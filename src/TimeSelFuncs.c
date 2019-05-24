@@ -3,7 +3,8 @@
  * TimeSelfuncs.c
  *	  Functions for selectivity estimation of time types operators
  *
- * Estimates are based on histograms of lower and upper bounds.
+ * These functions are based on those of the file rangetypes_selfuncs.c.
+ * Estimates are based on histograms of lower and upper bounds. 
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -85,19 +86,11 @@ double
 calc_period_hist_selectivity(VariableStatData *vardata,
 	Period *constval, Oid operator, StatisticsStrategy strategy)
 {
-	AttStatsSlot hslot;
-	AttStatsSlot lslot;
-	int			nhist;
-	PeriodBound *hist_lower;
-	PeriodBound *hist_upper;
-	int			i;
-	PeriodBound	const_lower;
-	PeriodBound	const_upper;
+	AttStatsSlot hslot, lslot;
+	PeriodBound *hist_lower, *hist_upper;
+	PeriodBound	const_lower, const_upper;
 	double		hist_selec;
-	int kind_type = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-	/* Try to get histogram of periods */
-	if (vardata->atttypmod == TEMPORALINST)
-		kind_type = STATISTIC_KIND_HISTOGRAM;
+	int			nhist, i, kind_type = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_internal(&hslot, vardata->statsTuple,
@@ -329,7 +322,6 @@ calc_period_hist_selectivity(VariableStatData *vardata,
 	return hist_selec;
 }
 
-
 /*
  * Look up the fraction of values less than (or equal, if 'equal' argument
  * is true) a given const in a histogram of period bounds.
@@ -389,7 +381,6 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 	}
 	return lower;
 }
-
 
 /*
  * Binary search on length histogram. Returns greatest index of period length in
@@ -654,8 +645,7 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
 	 */
 	if (upper_index >= 0 && upper_index < hist_nvalues - 1)
 		upper_bin_width = get_period_position(upper,
-									   &hist_lower[upper_index],
-									   &hist_lower[upper_index + 1]);
+			&hist_lower[upper_index], &hist_lower[upper_index + 1]);
 	else
 		upper_bin_width = 0.0;
 
@@ -708,8 +698,7 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
 		 * to not exceed the distance to the upper bound of the query period.
 		 */
 		length_hist_frac = calc_length_hist_frac(length_hist_values,
-												 length_hist_nvalues,
-												 prev_dist, dist, true);
+			length_hist_nvalues, prev_dist, dist, true);
 
 		/*
 		 * Add the fraction of tuples in this bin, with a suitable length, to
@@ -844,7 +833,8 @@ double calc_period_hist_selectivity_adjacent(PeriodBound *lower, PeriodBound *up
 
 bool
 get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
-						  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy) {
+		int reqkind, Oid reqop, int flags, StatisticsStrategy strategy) 
+{
 	Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
 	int i, start = 0, end = 0;  /* keep compiler quiet */
 	Datum val;
@@ -855,23 +845,28 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	HeapTuple typeTuple;
 	Form_pg_type typeForm;
 
-	switch (strategy) {
-		case VALUE_STATISTICS: {
+	switch (strategy) 
+	{
+		case VALUE_STATISTICS: 
+		{
 			start = 0;
 			end = 2;
 			break;
 		}
-		case TEMPORAL_STATISTICS: {
+		case TEMPORAL_STATISTICS: 
+		{
 			start = 2;
 			end = 5;
 			break;
 		}
-		case DEFAULT_STATISTICS: {
+		case DEFAULT_STATISTICS: 
+		{
 			start = 0;
 			end = STATISTIC_NUM_SLOTS;
 			break;
 		}
-		default: {
+		default: 
+		{
 			break;
 		}
 	}
@@ -879,7 +874,8 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	/* initialize *sslot properly */
 	memset(sslot, 0, sizeof(AttStatsSlot));
 
-	for (i = start; i < end; i++) {
+	for (i = start; i < end; i++) 
+	{
 		if ((&stats->stakind1)[i] == reqkind &&
 			(reqop == InvalidOid || (&stats->staop1)[i] == reqop))
 			break;
@@ -889,10 +885,10 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 
 	sslot->staop = (&stats->staop1)[i];
 
-	if (flags & ATTSTATSSLOT_VALUES) {
+	if (flags & ATTSTATSSLOT_VALUES)
+	{
 		val = SysCacheGetAttr(STATRELATTINH, statstuple,
-							  Anum_pg_statistic_stavalues1 + i,
-							  &isnull);
+			Anum_pg_statistic_stavalues1 + i, &isnull);
 		if (isnull)
 			elog(ERROR, "stavalues is null");
 
@@ -933,7 +929,8 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 		ReleaseSysCache(typeTuple);
 	}
 
-	if (flags & ATTSTATSSLOT_NUMBERS) {
+	if (flags & ATTSTATSSLOT_NUMBERS) 
+	{
 		val = SysCacheGetAttr(STATRELATTINH, statstuple,
 			Anum_pg_statistic_stanumbers1 + i, &isnull);
 		if (isnull)
@@ -1042,7 +1039,7 @@ periodsel(PG_FUNCTION_ARGS)
 	 */
 	 
 	Oid timetype = ((Const *) other)->consttype;
-	assert (timetype == TIMESTAMPTZOID || time_type_oid(timetype));
+	time_type_oid(timetype);
 	if (timetype == TIMESTAMPTZOID)
 	{
 		/* the right argument is a constant TIMESTAMPTZ. We convert it into
@@ -1057,7 +1054,7 @@ periodsel(PG_FUNCTION_ARGS)
 		 * a period, which is its bounding box.
 		 */
 		constperiod =  timestampset_bbox(
-				DatumGetTimestampSet(((Const *) other)->constvalue));
+			DatumGetTimestampSet(((Const *) other)->constvalue));
 	}
 	else if (timetype == type_oid(T_PERIOD))
 	{
@@ -1070,7 +1067,7 @@ periodsel(PG_FUNCTION_ARGS)
 		 * a period, which is its bounding box.
 		 */
 		constperiod =  periodset_bbox(
-				DatumGetPeriodSet(((Const *) other)->constvalue));
+			DatumGetPeriodSet(((Const *) other)->constvalue));
 	}
 
 	/*

@@ -1,3 +1,11 @@
+SELECT timestampset '2000-01-01, 2000-01-02';
+ERROR:  Could not parse timestamp set
+LINE 1: SELECT timestampset '2000-01-01, 2000-01-02';
+                            ^
+SELECT timestampset '{2000-01-01, 2000-01-02';
+ERROR:  Could not parse timestamp set
+LINE 1: SELECT timestampset '{2000-01-01, 2000-01-02';
+                            ^
 SELECT timestampset(ARRAY [timestamptz '2000-01-01', '2000-01-02', '2000-01-03']);
                                timestampset                               
 --------------------------------------------------------------------------

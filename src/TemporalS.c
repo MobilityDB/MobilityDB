@@ -1587,8 +1587,7 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 static int
 temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 {
-	if (count == 0)
-		return 0;
+	assert(count != 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
 		if (! temporalseq_eq(sequences[newcount], sequences[i]))
@@ -1613,8 +1612,8 @@ temporals_at_minmax(TemporalS *ts, Datum value)
 			k += countstep;
 		}
 		/* The minimum/maximum could be at the upper exclusive bound of one
-		* sequence and at the lower exclusive bound of the next one
-		* e.g., .... min@t) (min@t .... */
+		 * sequence and at the lower exclusive bound of the next one
+		 * e.g., .... min@t) (min@t .... */
 		temporalseqarr_sort(sequences, k);
 		int count = temporalseqarr_remove_duplicates(sequences, k);
 		result = temporals_from_temporalseqarr(sequences, count, true);
@@ -1769,10 +1768,13 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 			instants[count++] = temporalseq_at_timestamp(seq, t);
 			i++;
 		}
-		if (timestamp_cmp_internal(t, seq->period.lower) <= 0)
-			i++;
-		if (timestamp_cmp_internal(t, seq->period.upper) >= 0)
-			j++;
+		else
+		{
+			if (timestamp_cmp_internal(t, seq->period.lower) <= 0)
+				i++;
+			if (timestamp_cmp_internal(t, seq->period.upper) >= 0)
+				j++;
+		}
 	}
 	if (count == 0)
 	{

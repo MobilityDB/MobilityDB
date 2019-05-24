@@ -59,6 +59,14 @@ SELECT tfloat 'ABC@2012-01-01 08:00:00';
 ERROR:  invalid input syntax for type double precision: "ABC"
 LINE 1: SELECT tfloat 'ABC@2012-01-01 08:00:00';
                       ^
+SELECT tfloat '25';
+ERROR:  Could not parse element value
+LINE 1: SELECT tfloat '25';
+                      ^
+SELECT tbool '2@2012-01-01 08:00:00,';
+ERROR:  invalid input syntax for type boolean: "2"
+LINE 1: SELECT tbool '2@2012-01-01 08:00:00,';
+                     ^
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
                                      tbool                                      
 --------------------------------------------------------------------------------
@@ -124,6 +132,14 @@ SELECT ttexti(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-01-02, BB@2000-01-04
 ERROR:  Invalid timestamps for temporal value
 LINE 1: SELECT ttexti(ttext '{AA@2000-01-01, BB@2000-01-03, AA@2000-...
                             ^
+SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03';
+                    ^
+SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tint '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03},';
+                    ^
 SELECT tbool ' [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ] ';
                                      tbool                                      
 --------------------------------------------------------------------------------
@@ -184,6 +200,14 @@ LINE 1: SELECT tbool '[true@2001-01-01 08:00:00, true@2001-01-01 08:...
 SELECT tbool '[true@2001-01-01 08:00:00, false@2001-01-01 08:05:00, true@2001-01-01 08:06:00)';
 ERROR:  Invalid end value for temporal sequence
 LINE 1: SELECT tbool '[true@2001-01-01 08:00:00, false@2001-01-01 08...
+                     ^
+SELECT tbool '[true@2001-01-01, true@2001-01-02';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02';
+                     ^
+SELECT tbool '[true@2001-01-01, true@2001-01-02],';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tbool '[true@2001-01-01, true@2001-01-02],';
                      ^
 SELECT tbool '  { [ true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 ],
  [ true@2001-01-01 09:00:00 , false@2001-01-01 09:05:00 , true@2001-01-01 09:06:00 ] } ';
@@ -258,6 +282,14 @@ SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@2000-01-02, AA@2000-01
 ERROR:  Invalid sequence for temporal sequence set
 LINE 1: SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@20...
                             ^
+SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]');
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@200...
+                              ^
+SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]},');
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@200...
+                              ^
 SELECT format_type(oid, temporal_typmod_in(ARRAY[cstring 'Instant']))
 FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
    format_type   
@@ -3087,6 +3119,12 @@ SELECT numTimestamps(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
              5
 (1 row)
 
+SELECT numTimestamps(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03),[3.5@2000-01-03, 3.5@2000-01-05]}');
+ numtimestamps 
+---------------
+             4
+(1 row)
+
 SELECT startTimestamp(tbool 't@2000-01-01');
      starttimestamp     
 ------------------------
@@ -3399,6 +3437,18 @@ SELECT timestampN(ttext '[AA@2000-01-01, BB@2000-01-02, AA@2000-01-03]', 4);
  
 (1 row)
 
+SELECT timestampN(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03),[3.5@2000-01-03, 3.5@2000-01-05]}',0);
+ timestampn 
+------------
+ 
+(1 row)
+
+SELECT timestampN(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03),[3.5@2000-01-03, 3.5@2000-01-05]}',10);
+ timestampn 
+------------
+ 
+(1 row)
+
 SELECT timestamps(tbool 't@2000-01-01');
          timestamps         
 ----------------------------
@@ -3687,6 +3737,18 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
  f
 (1 row)
 
+SELECT tfloat '[1@2000-01-01, 1@2000-01-03]' &= 1;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tfloat '[1@2000-01-01, 2@2000-01-03]' &= 2;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tbool 't@2000-01-01' @= true;
  ?column? 
 ----------
@@ -3781,6 +3843,12 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
  ?column? 
 ----------
  f
+(1 row)
+
+SELECT tint '{[1@2000-01-01, 1@2000-01-02]}' @= 1;
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT tfloat '{[1@2000-01-01, 1@2000-01-02]}' @= 1;
@@ -4613,6 +4681,12 @@ SELECT atRange(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@20
  {[1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]}
 (1 row)
 
+SELECT atRange(tfloat '[1@2000-01-01, 2@2000-01-02]', floatrange '[2, 3]');
+           atrange            
+------------------------------
+ {[2@2000-01-02 00:00:00+00]}
+(1 row)
+
 SELECT minusRange(tint '1@2000-01-01', intrange '[1,3]');
  minusrange 
 ------------
@@ -4743,6 +4817,12 @@ SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2
                                         atranges                                        
 ----------------------------------------------------------------------------------------
  {[1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT atRanges(tfloat '[1@2000-01-01]', ARRAY[floatrange '(1, 3]']);
+ atranges 
+----------
+ 
 (1 row)
 
 SELECT atRanges(tint '{1@2000-01-01}', '{}'::intrange[]);
@@ -4923,6 +5003,12 @@ SELECT minusRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', AR
                                      minusranges                                      
 --------------------------------------------------------------------------------------
  {1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT minusRanges(tfloat '[1@2000-01-01]', ARRAY[floatrange '(1, 3]']);
+         minusranges          
+------------------------------
+ {[1@2000-01-01 00:00:00+00]}
 (1 row)
 
 SELECT minusRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
@@ -5687,6 +5773,12 @@ SELECT minusTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[
  {("AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00], ["CCC"@2000-01-04 00:00:00+00, "CCC"@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT minusTimestamp(tfloat '[1@2000-01-01]', timestamptz '2000-01-01');
+ minustimestamp 
+----------------
+ 
+(1 row)
+
 SELECT atTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
       attimestampset      
 --------------------------
@@ -5847,6 +5939,18 @@ SELECT atTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01}');
        attimestampset       
 ----------------------------
  {1@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT atTimestampSet(tfloat '[1@2000-01-02]', '{2000-01-01, 2000-01-03}');
+ attimestampset 
+----------------
+ 
+(1 row)
+
+SELECT atTimestampSet(tfloat '[1@2000-01-02, 1@2000-01-03]', '{2000-01-01, 2000-01-04}');
+ attimestampset 
+----------------
+ 
 (1 row)
 
 SELECT atTimestampSet(tfloat '[1@2000-01-02, 2@2000-01-04, 1@2000-01-05]', timestampset '{2000-01-01, 2000-01-02, 2000-01-03, 2000-01-04, 2000-01-05, 2000-01-06}');
@@ -6033,6 +6137,12 @@ SELECT minusTimestampSet(tfloat '[1@2000-01-01]', timestampset '{2000-01-01}');
  minustimestampset 
 -------------------
  
+(1 row)
+
+SELECT minusTimestampSet(tfloat '[1@2000-01-02]', '{2000-01-01, 2000-01-03}');
+      minustimestampset       
+------------------------------
+ {[1@2000-01-02 00:00:00+00]}
 (1 row)
 
 SELECT minusTimestampSet(tfloat '{[1@2000-01-01], [1@2000-01-02]}', timestampset '{2000-01-01, 2000-01-02}');
@@ -6669,6 +6779,18 @@ SELECT minusPeriodSet(tfloat '[1@2000-01-01]', periodset '{[2000-01-01, 2000-01-
  minusperiodset 
 ----------------
  
+(1 row)
+
+SELECT minusPeriodSet(tfloat '[1@2000-01-03]', periodset '{[2000-01-01, 2000-01-02],[2000-01-04, 2000-01-05]}');
+        minusperiodset        
+------------------------------
+ {[1@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT minusPeriodSet(tfloat '[1@2000-01-01,1@2000-01-03]', periodset '{[2000-01-02, 2000-01-03],[2000-01-04, 2000-01-05]}');
+                     minusperiodset                     
+--------------------------------------------------------
+ {[1@2000-01-01 00:00:00+00, 1@2000-01-02 00:00:00+00)}
 (1 row)
 
 SELECT minusPeriodSet(tfloat '{[1@2000-01-01, 1@2000-01-02]}', periodset '{[2000-01-01, 2000-01-02]}');

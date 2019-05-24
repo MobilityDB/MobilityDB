@@ -1,7 +1,8 @@
 /*****************************************************************************
  *
  * RelativePosOps.sql
- *	  Relative position operations for 2D (1D value + 1D time) temporal types.
+ *		Relative position operators for 1D (time) and 2D (1D value + 1D time) 
+ *		temporal types.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -10,107 +11,26 @@
  *
  *****************************************************************************/
 
-/* operators selectively functions */
+/* Selectively functions for operators */
 
-CREATE FUNCTION left_value_sel(internal, oid, internal, integer)
+CREATE FUNCTION temporal_position_sel(internal, oid, internal, integer)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'left_value_sel'
+	AS 'MODULE_PATHNAME', 'temporal_position_sel'
 	LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION overleft_value_sel(internal, oid, internal, integer)
+CREATE FUNCTION temporal_position_joinsel(internal, oid, internal, smallint, internal)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'overleft_value_sel'
+	AS 'MODULE_PATHNAME', 'temporal_position_joinsel'
+	LANGUAGE C IMMUTABLE STRICT;
+	
+CREATE FUNCTION tnumber_position_sel(internal, oid, internal, integer)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tnumber_position_sel'
 	LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION right_value_sel(internal, oid, internal, integer)
-    RETURNS float
-    AS 'MODULE_PATHNAME', 'right_value_sel'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION overright_value_sel(internal, oid, internal, integer)
-    RETURNS float
-    AS 'MODULE_PATHNAME', 'overright_value_sel'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION before_temporal_sel(internal, oid, internal, integer)
+CREATE FUNCTION tnumber_position_joinsel(internal, oid, internal, smallint, internal)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'before_temporal_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION overbefore_temporal_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overbefore_temporal_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION after_temporal_sel(internal, oid, internal, integer)
-    RETURNS float
-    AS 'MODULE_PATHNAME', 'after_temporal_sel'
-    LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION overafter_temporal_sel(internal, oid, internal, integer)
-    RETURNS float
-    AS 'MODULE_PATHNAME', 'overafter_temporal_sel'
-    LANGUAGE C IMMUTABLE STRICT;
-
-
-CREATE FUNCTION left_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'left_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overleft_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overleft_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION right_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'right_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overright_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overright_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION above_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'above_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overabove_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overabove_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION below_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'below_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overbelow_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overbelow_point_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION back_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'back_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overback_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overback_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION front_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'front_point_sel'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION overfront_point_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'overfront_point_sel'
+	AS 'MODULE_PATHNAME', 'tnumber_position_joinsel'
 	LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
@@ -139,23 +59,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = period, RIGHTARG = tbool,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = period, RIGHTARG = tbool,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = period, RIGHTARG = tbool,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = period, RIGHTARG = tbool,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 
 /*****************************************************************************/
@@ -182,23 +102,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = period, RIGHTARG = ttext,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = period, RIGHTARG = ttext,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = period, RIGHTARG = ttext,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = period, RIGHTARG = ttext,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 
 /*****************************************************************************
@@ -227,23 +147,23 @@ CREATE OPERATOR << (
 	LEFTARG = intrange, RIGHTARG = tint,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = intrange, RIGHTARG = tint,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = intrange, RIGHTARG = tint,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = intrange, RIGHTARG = tint,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -270,23 +190,23 @@ CREATE OPERATOR << (
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = intrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************
@@ -315,23 +235,23 @@ CREATE OPERATOR << (
 	LEFTARG = floatrange, RIGHTARG = tint,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = floatrange, RIGHTARG = tint,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = floatrange, RIGHTARG = tint,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = floatrange, RIGHTARG = tint,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -358,23 +278,23 @@ CREATE OPERATOR << (
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = floatrange, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************
@@ -419,45 +339,45 @@ CREATE OPERATOR << (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = box, RIGHTARG = tint,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );  
 
 /*****************************************************************************/
@@ -500,45 +420,45 @@ CREATE OPERATOR << (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = box, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );  
 
 /*****************************************************************************
@@ -567,23 +487,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -610,23 +530,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************
@@ -655,23 +575,23 @@ CREATE OPERATOR << (
 	LEFTARG = tint, RIGHTARG = intrange,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tint, RIGHTARG = intrange,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tint, RIGHTARG = intrange,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tint, RIGHTARG = intrange,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -698,23 +618,23 @@ CREATE OPERATOR << (
 	LEFTARG = tint, RIGHTARG = floatrange,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tint, RIGHTARG = floatrange,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tint, RIGHTARG = floatrange,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tint, RIGHTARG = floatrange,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -757,45 +677,45 @@ CREATE OPERATOR << (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tint, RIGHTARG = box,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -838,45 +758,45 @@ CREATE OPERATOR << (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tint, RIGHTARG = tint,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -919,45 +839,45 @@ CREATE OPERATOR << (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tint, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************
@@ -986,23 +906,23 @@ CREATE OPERATOR << (
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tfloat, RIGHTARG = intrange,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -1029,23 +949,23 @@ CREATE OPERATOR << (
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tfloat, RIGHTARG = floatrange,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -1088,45 +1008,45 @@ CREATE OPERATOR << (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tfloat, RIGHTARG = box,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -1169,45 +1089,45 @@ CREATE OPERATOR << (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tfloat, RIGHTARG = tint,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -1250,45 +1170,45 @@ CREATE OPERATOR << (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_left,
 	COMMUTATOR = >>,
-	RESTRICT = left_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &< (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overleft,
-	RESTRICT = overleft_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR >> (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_right,
 	COMMUTATOR = <<,
-	RESTRICT = right_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &> (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overright,
-	RESTRICT = overright_value_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR <<# (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tfloat, RIGHTARG = tfloat,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************
@@ -1318,23 +1238,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = ttext, RIGHTARG = period,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = ttext, RIGHTARG = period,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = ttext, RIGHTARG = period,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = ttext, RIGHTARG = period,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/
@@ -1361,23 +1281,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = before_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = overbefore_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = after_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = ttext, RIGHTARG = ttext,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = overafter_temporal_sel, JOIN = positionjoinseltemp
+	RESTRICT = temporal_position_sel, JOIN = tnumber_position_joinsel
 );
 
 /*****************************************************************************/

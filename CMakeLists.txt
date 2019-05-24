@@ -22,8 +22,8 @@ src/Period.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
-src/TemporalAnalyze.c
 src/Temporal.c
+src/TemporalAnalyze.c
 src/TemporalI.c
 src/TemporalInst.c
 src/TemporalS.c
@@ -52,9 +52,8 @@ src/sql/20_DoubleN.in.sql
 src/sql/22_Temporal.in.sql
 src/sql/24_MathematicalFuncs.in.sql
 src/sql/26_BooleanOps.in.sql
-src/sql/27_TextFuncs.in.sql
-src/sql/28_ComparisonOps.in.sql
-src/sql/30_TempSelFuncs.in.sql
+src/sql/28_TextFuncs.in.sql
+src/sql/30_ComparisonOps.in.sql
 src/sql/32_BoundBoxOps.in.sql
 src/sql/34_RelativePosOps.in.sql
 src/sql/36_AggregateFuncs.in.sql

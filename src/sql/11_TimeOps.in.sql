@@ -261,55 +261,55 @@ CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 
 CREATE FUNCTION temporal_before(timestamptz, timestampset)

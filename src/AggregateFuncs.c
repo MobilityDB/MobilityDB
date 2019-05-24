@@ -831,7 +831,7 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
  */
 AggregateState *
 temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*func)(Datum, Datum), bool crossings)
+	AggregateState *state2, Datum (*func)(Datum, Datum), bool crossings)
 {
 	int count1 = state1->size;
 	int count2 = state2->size;
