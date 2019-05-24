@@ -33,9 +33,6 @@ gbox_in(PG_FUNCTION_ARGS)
 {
 	char *input = PG_GETARG_CSTRING(0);
 	GBOX *result = gbox_parse(&input);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse gbox")));
 	PG_RETURN_POINTER(result);
 }
 

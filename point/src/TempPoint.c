@@ -18,9 +18,34 @@
 
 /* Initialize the extension */
 
+#define PGC_ERRMSG_MAXLEN 2048
+
+static void
+pg_error(const char *fmt, va_list ap)
+{
+    char errmsg[PGC_ERRMSG_MAXLEN+1];
+
+    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+
+    errmsg[PGC_ERRMSG_MAXLEN]='\0';
+    ereport(ERROR, (errmsg_internal("%s", errmsg)));
+}
+
+static void
+pg_notice(const char *fmt, va_list ap)
+{
+    char errmsg[PGC_ERRMSG_MAXLEN+1];
+
+    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+
+    errmsg[PGC_ERRMSG_MAXLEN]='\0';
+    ereport(NOTICE, (errmsg_internal("%s", errmsg)));
+}
+
+
 void temporalgeom_init()
 {
-	lwgeom_set_handlers(palloc, repalloc, pfree, NULL, NULL);
+	lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
 }
 
 /*****************************************************************************
@@ -94,9 +119,6 @@ tpoint_in(PG_FUNCTION_ARGS)
 	Oid valuetypid;
 	temporal_typinfo(temptypid, &valuetypid);
 	Temporal *result = tpoint_parse(&input, valuetypid);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal point")));
 	PG_RETURN_POINTER(result);
 }
 

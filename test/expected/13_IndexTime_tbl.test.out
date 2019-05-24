@@ -1,3 +1,9 @@
+VACUUM ANALYZE tbl_timestampset_big;
+VACUUM
+VACUUM ANALYZE tbl_period_big;
+VACUUM
+VACUUM ANALYZE tbl_periodset_big;
+VACUUM
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
 NOTICE:  index "tbl_timestampset_big_gist_idx" does not exist, skipping
 DROP INDEX
@@ -61,6 +67,48 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001
   9899
 (1 row)
 
+SELECT count(*) FROM tbl_period_big WHERE p && timestamptz '2001-01-01';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p @> timestamptz '2001-01-01';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p <@ timestamptz '2001-01-01';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p <<# timestamptz '2001-01-01';
+ count 
+-------
+     3
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
+ count 
+-------
+     3
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p #>> timestamptz '2001-01-01';
+ count 
+-------
+  9897
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
+ count 
+-------
+  9897
+(1 row)
+
 SELECT count(*) FROM tbl_period_big WHERE p && period '[2001-01-01, 2001-07-01]';
  count 
 -------
@@ -98,6 +146,48 @@ SELECT count(*) FROM tbl_period_big WHERE p #>> period '[2001-01-01, 2001-07-01]
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #&> period '[2001-01-01, 2001-07-01]';
+ count 
+-------
+  9897
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p && periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+  4944
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p @> periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p <@ periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+  4944
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p <<# periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+     3
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p &<# periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+  4947
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p #>> periodset '{[2001-01-01, 2001-07-01]}';
+ count 
+-------
+  4953
+(1 row)
+
+SELECT count(*) FROM tbl_period_big WHERE p #&> periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
   9897
@@ -289,3 +379,20 @@ DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
 DROP INDEX
+DROP TABLE IF EXISTS tbl_period_test;
+NOTICE:  table "tbl_period_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_period_test AS
+SELECT period '[2000-01-01,2000-01-02]';
+SELECT 1
+VACUUM ANALYZE tbl_period_test;
+VACUUM
+DELETE FROM tbl_period_test;
+DELETE 1
+INSERT INTO tbl_period_test
+SELECT NULL::period UNION SELECT NULL::period;
+INSERT 0 1
+VACUUM ANALYZE tbl_period_test;
+VACUUM
+DROP TABLE tbl_period_test;
+DROP TABLE

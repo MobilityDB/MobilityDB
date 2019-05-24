@@ -463,7 +463,7 @@ tpoint_srid_internal(Temporal *temp)
 {
 	int result = 0;
 	temporal_duration_is_valid(temp->duration);
-	assert(temp->valuetypid == type_oid(T_GEOMETRY) || temp->valuetypid == type_oid(T_GEOGRAPHY)) ;
+	temporal_point_is_valid(temp->valuetypid) ;
 	if (temp->duration == TEMPORALINST) 
 		result = tpointinst_srid_internal((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -792,8 +792,8 @@ Datum
 tpointseq_make_trajectory(TemporalInst **instants, int count)
 {
 	Oid valuetypid = instants[0]->valuetypid;
-	temporal_point_is_valid(valuetypid);
 	Datum result = 0;
+	temporal_point_is_valid(valuetypid);
 	if (valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointseq_make_trajectory(instants, count);
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
@@ -2350,6 +2350,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
@@ -2396,6 +2397,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
@@ -2502,6 +2504,7 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2548,6 +2551,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
+	temporal_point_is_valid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2877,8 +2881,8 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	
-	temporal_point_is_valid(temp1->valuetypid);
 	Datum (*func)(Datum, Datum);
+	temporal_point_is_valid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))
@@ -2888,7 +2892,6 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_distance;
-
 	Datum result = 0;
 	temporal_duration_is_valid(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
@@ -3269,7 +3272,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 		result = (Temporal *)geo_to_tpoints(gs);
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+			errmsg("Invalid geometry type for trajectory")));
 	
 	PG_FREE_IF_COPY(gs, 0);
 	PG_RETURN_POINTER(result);

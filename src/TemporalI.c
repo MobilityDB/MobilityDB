@@ -110,7 +110,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 		{
 			if (tpoint_srid_internal((Temporal *)instants[i]) != srid)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same srid")));
+					errmsg("All geometries composing a temporal point must be of the same SRID")));
 			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
@@ -676,13 +676,14 @@ temporali_always_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
-		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, ti->valuetypid);
-		if (same_box_box_internal(&box1, &box2))
-			return true;
+		BOX box;
+		temporali_bbox(&box, ti);
+		if (ti->valuetypid == INT4OID)
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetInt32(value);
 		else
-			return false;
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ti->count; i++) 
@@ -1510,18 +1511,8 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 }
 
 /* 
- * Inequality operator
- */
-bool
-temporali_ne(TemporalI *ti1, TemporalI *ti2)
-{
-	return !temporali_eq(ti1, ti2);
-}
-
-/* 
  * B-tree comparator
  */
-
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {

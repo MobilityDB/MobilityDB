@@ -99,13 +99,16 @@ CREATE FUNCTION temporal_typmod_in(cstring[])
 CREATE FUNCTION temporal_typmod_out(integer)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME','temporal_typmod_out'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
-
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION temporal_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION tnumber_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE TYPE tbool (
 	internallength = variable,
@@ -116,8 +119,8 @@ CREATE TYPE tbool (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = temporal_analyze
 );
 CREATE TYPE tint (
 	internallength = variable,
@@ -128,8 +131,8 @@ CREATE TYPE tint (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = tnumber_analyze
 );
 CREATE TYPE tfloat (
 	internallength = variable,
@@ -140,8 +143,8 @@ CREATE TYPE tfloat (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = tnumber_analyze
 );
 CREATE TYPE ttext (
 	internallength = variable,
@@ -152,27 +155,27 @@ CREATE TYPE ttext (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = temporal_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tbool(tbool, integer)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat(tfloat, integer)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext(ttext, integer)
 	RETURNS ttext
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tbool AS tbool) WITH FUNCTION tbool(tbool, integer) AS IMPLICIT;
 CREATE CAST (tint AS tint) WITH FUNCTION tint(tint, integer) AS IMPLICIT;

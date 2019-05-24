@@ -367,8 +367,8 @@ extern double distance_gbox_gbox_internal(GBOX *box1, GBOX *box2);
 /* Functions computing the bounding box at the creation of the temporal point */
 
 extern void tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t);
-extern void tpointinstarr_to_gbox(GBOX *box, TemporalInst **inst, int count) ;
-extern void tpointseqarr_to_gbox(GBOX *box, TemporalSeq **seq, int count) ;
+extern void tpointinstarr_to_gbox(GBOX *box, TemporalInst **inst, int count);
+extern void tpointseqarr_to_gbox(GBOX *box, TemporalSeq **seq, int count);
 
 /* Functions for expanding the bounding box */
 

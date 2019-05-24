@@ -262,7 +262,7 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		memcpy(&query, box, sizeof(GBOX));
 	}
-	else if (temporal_oid(subtype))
+	else if (temporal_type_oid(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)

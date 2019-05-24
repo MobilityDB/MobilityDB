@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * TemporalAnalyze.c
+ * TempPointAnalyze.c
  *	  Functions for gathering statistics from temporal columns
  *
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
@@ -14,16 +14,9 @@
 /*****************************************************************************/
 
 
-PG_FUNCTION_INFO_V1(temporal_analyze);
+PG_FUNCTION_INFO_V1(tpoint_analyze);
 Datum
-temporal_analyze(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_BOOL(true);
-}
-
-PG_FUNCTION_INFO_V1(tnumber_analyze);
-Datum
-tnumber_analyze(PG_FUNCTION_ARGS)
+tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(true);
 }

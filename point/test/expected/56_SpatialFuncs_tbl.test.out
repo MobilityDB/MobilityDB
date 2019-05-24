@@ -756,7 +756,7 @@ SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
-   129
+   130
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection 

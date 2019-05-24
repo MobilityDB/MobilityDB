@@ -408,7 +408,10 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-extern bool temporal_oid(Oid temptypid);
+extern bool base_type_oid(Oid valuetypid);
+extern bool continuous_base_type_oid(Oid valuetypid);
+extern bool continuous_base_type_all_oid(Oid valuetypid);
+extern bool temporal_type_oid(Oid temptypid);
 
 /* Catalog functions */
 
@@ -470,13 +473,12 @@ extern bool p_cbracket(char **str);
 extern bool p_oparen(char **str);
 extern bool p_cparen(char **str);
 extern bool p_comma(char **str);
-extern Datum p_basetype(char **str, Oid basetype);
 
+extern Datum basetype_parse(char **str, Oid basetype);
 extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str);
 extern PeriodSet *periodset_parse(char **str);
-
 extern TemporalInst *temporalinst_parse(char **str, Oid basetype, bool end);
 extern TemporalI *temporali_parse(char **str, Oid basetype);
 extern Temporal *temporal_parse(char **str, Oid basetype);
@@ -691,7 +693,6 @@ extern bool temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 
 extern int temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2);
 extern bool temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2);
-extern bool temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2);
 
 /* Function for defining hash index */
 
@@ -797,7 +798,6 @@ extern double temporali_twavg(TemporalI *ti);
 
 extern int temporali_cmp(TemporalI *ti1, TemporalI *ti2);
 extern bool temporali_eq(TemporalI *ti1, TemporalI *ti2);
-extern bool temporali_ne(TemporalI *ti1, TemporalI *ti2);
 
 /* Function for defining hash index */
 
@@ -964,7 +964,6 @@ extern double tfloatseq_twavg(TemporalSeq *seq);
 
 extern int temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2);
 extern bool temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2);
-extern bool temporalseq_ne(TemporalSeq *seq1, TemporalSeq *seq2);
 
 /* Function for defining hash index */
 
@@ -1112,7 +1111,6 @@ extern double tfloats_twavg(TemporalS *ts);
 
 extern int temporals_cmp(TemporalS *ts1, TemporalS *ts2);
 extern bool temporals_eq(TemporalS *ts1, TemporalS *ts2);
-extern bool temporals_ne(TemporalS *ts1, TemporalS *ts2);
 
 /* Function for defining hash index */
 
@@ -1611,6 +1609,7 @@ sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 extern TemporalI *
 sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+/* These functions are currently not used
 extern TemporalSeq *
 sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1627,7 +1626,7 @@ extern TemporalS *
 sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
-
+*/
 extern Temporal *
 sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1750,11 +1749,12 @@ extern TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, D
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+/* These functions are not currently used
 extern TemporalSeq *tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalS *tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
-	
+*/
 extern TemporalInst *tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum dist, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalI *tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 

@@ -313,9 +313,6 @@ temporal_in(PG_FUNCTION_ARGS)
 		temp_typmod = PG_GETARG_INT32(2);
 	if (temp_typmod >= 0)
 		result = temporal_valid_typmod(result, temp_typmod);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));		
 	PG_RETURN_POINTER(result);
 }
 
@@ -1368,12 +1365,9 @@ temporal_start_timestamp_internal(Temporal *temp)
 	else if (temp->duration == TEMPORALI) 
 		result = temporali_inst_n((TemporalI *)temp, 0)->t;
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_inst_n((TemporalSeq *)temp, 0)->t;
+		result = temporalseq_start_timestamp((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-	{
-		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, 0);
-		result = temporalseq_inst_n(seq, 0)->t;
-	}
+		result = temporals_start_timestamp((TemporalS *)temp);
 	return result;
 }
 
@@ -1403,12 +1397,9 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALI) 
 		result = temporali_inst_n((TemporalI *)temp, ((TemporalI *)temp)->count - 1)->t;
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_inst_n((TemporalSeq *)temp, ((TemporalSeq *)temp)->count - 1)->t;
+		result = temporalseq_end_timestamp((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-	{
-		TemporalSeq *seq = temporals_seq_n((TemporalS *)temp, ((TemporalS *)temp)->count - 1);
-		result = temporalseq_inst_n(seq, seq->count - 1)->t;
-	}
+		result = temporals_end_timestamp((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TIMESTAMPTZ(result);
 }
@@ -1448,29 +1439,29 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 	bool found = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
+	{
 		if (n == 1)
 		{
 			found = true;
 			result = ((TemporalInst *)temp)->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALI) 
+	{
 		if (n >= 1 && n <= ((TemporalI *)temp)->count)
 		{
 			found = true;
 			result = (temporali_inst_n((TemporalI *)temp, n - 1))->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALSEQ) 
+	{
 		if (n >= 1 && n <= ((TemporalSeq *)temp)->count)
 		{
 			found = true;
 			result = (temporalseq_inst_n((TemporalSeq *)temp, n - 1))->t;
 		}
-		else
-			found = false;
+	}
 	else if (temp->duration == TEMPORALS) 
 		found = temporals_timestamp_n((TemporalS *)temp, n, &result);
 	PG_FREE_IF_COPY(temp, 0);
@@ -2472,9 +2463,7 @@ tfloat_twavg(PG_FUNCTION_ARGS)
 int
 temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
-	if (t1->valuetypid != t2->valuetypid) 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	assert(t1->valuetypid == t2->valuetypid);
 
 	/* If both are of the same duration use the specific comparison */
 	if (t1->duration == t2->duration)
@@ -2536,10 +2525,7 @@ temporal_cmp(PG_FUNCTION_ARGS)
 bool
 temporal_eq_internal(Temporal *t1, Temporal *t2)
 {
-	if (t1->valuetypid != t2->valuetypid) 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
-
+	assert(t1->valuetypid == t2->valuetypid);
 	temporal_duration_is_valid(t1->duration);
 	temporal_duration_is_valid(t2->duration);
 
