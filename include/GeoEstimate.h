@@ -3,11 +3,13 @@
  * TemporalPointSelFuncs.h
  * 		Selectivity functions for the temporal point types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi,
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
+ * IDENTIFICATION
+ *	include/GeoEstimate.h
  *****************************************************************************/
 
 #ifndef __GEO_ESTIMATE_H__
