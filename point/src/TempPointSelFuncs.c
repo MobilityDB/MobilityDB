@@ -117,4 +117,21 @@ tpoint_position_joinsel(PG_FUNCTION_ARGS)
 	PG_RETURN_FLOAT8(0.001);
 }
 
+CachedOp
+get_cacheOp(Oid operator)
+{
+	for (int i = LEFT_OP; i <= OVERAFTER_OP; i++)
+	{
+		if (operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT)	||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY)	||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX)	||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOGPOINT)	||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOGRAPHY)	||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX))
+			return (CachedOp)i;
+	}
+	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Operation not supported")));
+}
+
 /*****************************************************************************/
