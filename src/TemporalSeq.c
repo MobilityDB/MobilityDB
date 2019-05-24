@@ -3184,8 +3184,9 @@ temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		/* Due to the bounding box test above the instantaneous sequence satisfies 
-		   the condition */
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
+		if (!contains_periodset_timestamp_internal(ps, inst->t))
+			return 0;
 		result[0] = temporalseq_copy(seq);
 		return 1;
 	}
