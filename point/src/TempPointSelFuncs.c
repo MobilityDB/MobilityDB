@@ -16,6 +16,7 @@
  
 #include "TemporalTypes.h"
 #include "TemporalPoint.h"
+#include "TimeSelFuncs.h"
 #include "TempPointSelFuncs.h"
 
 /*
