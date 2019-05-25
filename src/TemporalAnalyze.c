@@ -3,13 +3,14 @@
  * TemporalAnalyze.c
  *	  Functions for gathering statistics from temporal columns
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
  *	src/TemporalAnalyze.c
+ *
  *****************************************************************************/
 #include <TemporalTypes.h>
 #include <TemporalAnalyze.h>
@@ -25,13 +26,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
 	assert(type == TEMPORAL || type == TEMPORALINST || type == TEMPORALI ||
 		   type == TEMPORALSEQ || type == TEMPORALS);
-	if (type == TEMPORALINST)
-		result = temporalinst_analyze(stats);
-	else if (type == TEMPORALI)
-		result = temporali_analyze(stats);
-	else if(type == TEMPORALSEQ || type == TEMPORALS ||
-			type == TEMPORAL)
-		result = temporal_traj_analyze(stats);
+	result = temporal_analyze_internal(stats, type, TEMPORAL_STATISTIC);
 	return result;
 }
 
@@ -39,14 +34,34 @@ PG_FUNCTION_INFO_V1(tnumber_analyze);
 Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_BOOL(true);
+	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+	Datum result = 0;   /* keep compiler quiet */
+	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(type == TEMPORAL || type == TEMPORALINST || type == TEMPORALI ||
+		   type == TEMPORALSEQ || type == TEMPORALS);
+	result = temporal_analyze_internal(stats, type, TNUMBER_STATISTIC);
+	return result;
+}
+
+Datum
+temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalType)
+{
+    Datum result = 0;   /* keep compiler quiet */
+    if (durationType == TEMPORALINST)
+        result = temporalinst_analyze(stats, temporalType);
+    else if (durationType == TEMPORALI)
+        result = temporali_analyze(stats, temporalType);
+    else if(durationType == TEMPORALSEQ || durationType == TEMPORALS ||
+            durationType == TEMPORAL)
+        result = temporal_traj_analyze(stats, temporalType);
+    return result;
 }
 
 /*****************************************************************************
  * Statistics functions for TemporalInst type
  *****************************************************************************/
 Datum
-temporalinst_analyze(VacAttrStats *stats)
+temporalinst_analyze(VacAttrStats *stats, int temporalType)
 {
 	Oid ltopr;
 	Oid eqopr;
@@ -62,52 +77,17 @@ temporalinst_analyze(VacAttrStats *stats)
 							 false, false, false,
 							 &ltopr, &eqopr, NULL,
 							 NULL);
-
-	stats->compute_stats = compute_temporalinst_stats;
+	if (temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_stats;
+	else if (temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_temporalinst_twodim_stats;
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Operation not supported")));
 
 	stats->minrows = 300 * attr->attstattarget;
 
 	PG_RETURN_BOOL(true);
-}
-
-void
-compute_temporalinst_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						   int samplerows, double totalrows)
-{
-	int dim = get_statype_num_dims(stats);
-	switch (dim)
-	{
-		case 1:
-		{
-			compute_timestamptz_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 2:
-		{
-			compute_temporalinst_twodim_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 3:
-		{
-			/* Temporal Statistics */
-			compute_timestamptz_stats(stats, fetchfunc, samplerows, totalrows);
-			int stawidth = stats->stawidth;
-
-			/* Geometry Statistics */
-#ifdef WITH_POSTGIS
-			call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
-			stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
-#endif
-
-			/* Put the total width of the column, variable size */
-			stats->stawidth = stawidth;
-			break;
-		}
-		default:
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("Operation not supported")));
-			break;
-	}
 }
 
 void
@@ -1298,7 +1278,7 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
  *****************************************************************************/
 TemporalArrayAnalyzeExtraData *array_extra_data;
 Datum
-temporali_analyze(VacAttrStats *stats)
+temporali_analyze(VacAttrStats *stats, int temporalType)
 {
 	Form_pg_attribute attr = stats->attr;
 
@@ -1371,11 +1351,15 @@ temporali_analyze(VacAttrStats *stats)
 	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
 	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
 
-	/* Save old compute_stats and extra_data for scalar statistics ... */
-	//extra_data->std_compute_stats = stats->compute_stats;
 	extra_data->std_extra_data = stats->extra_data;
 
-	stats->compute_stats = compute_temporali_stats;
+	if (temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_set_stats;
+	else if (temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_temporali_twodim_stats;
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Operation not supported")));
 	stats->extra_data = extra_data;
 
 	/*
@@ -1383,45 +1367,6 @@ temporali_analyze(VacAttrStats *stats)
 	 * be increased for array analysis purposes?
 	 */
 	PG_RETURN_BOOL(true);
-}
-
-void
-compute_temporali_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						int samplerows, double totalrows)
-{
-	int dim = get_statype_num_dims(stats);
-	switch (dim)
-	{
-		case 1:
-		{
-			compute_timestamptz_set_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 2:
-		{
-			compute_temporali_twodim_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 3:
-		{
-			/* Temporal Statistics */
-			compute_timestamptz_set_stats(stats, fetchfunc, samplerows, totalrows);
-			int stawidth = stats->stawidth;
-			/* Geometry Statistics */
-#ifdef WITH_POSTGIS
-			call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
-			stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
-#endif
-			/* Put the total width of the column, variable size */
-			stats->stawidth = stawidth;
-
-			break;
-		}
-		default:
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("Operation not supported")));
-			break;
-	}
 }
 
 void
@@ -2530,7 +2475,7 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
  * Statistics functions for Trajectory types (TemporalSeq and TemporalS)
  *****************************************************************************/
 Datum
-temporal_traj_analyze(VacAttrStats *stats)
+temporal_traj_analyze(VacAttrStats *stats, int temporalType)
 {
 	Form_pg_attribute attr = stats->attr;
 
@@ -2603,11 +2548,15 @@ temporal_traj_analyze(VacAttrStats *stats)
 	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
 	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
 
-	/* Save old compute_stats and extra_data for scalar statistics ... */
-	//extra_data->std_compute_stats = stats->compute_stats;
 	extra_data->std_extra_data = stats->extra_data;
 
-	stats->compute_stats = compute_temporal_traj_stats;
+	if (temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_traj_stats;
+	else if (temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_twodim_traj_stats;
+	else
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Operation not supported")));
 	stats->extra_data = extra_data;
 
 	/*
@@ -2615,45 +2564,6 @@ temporal_traj_analyze(VacAttrStats *stats)
 	 * be increased for array analysis purposes?
 	 */
 	PG_RETURN_BOOL(true);
-}
-
-void
-compute_temporal_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-							int samplerows, double totalrows)
-{
-	int dim = get_statype_num_dims(stats);
-	switch (dim)
-	{
-		case 1:
-		{
-			compute_timestamptz_traj_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 2:
-		{
-			compute_twodim_traj_stats(stats, fetchfunc, samplerows, totalrows);
-			break;
-		}
-		case 3:
-		{
-			/* Temporal Statistics */
-			compute_timestamptz_traj_stats(stats, fetchfunc, samplerows, totalrows);
-			int stawidth = stats->stawidth;
-			/* Geometry Statistics */
-#ifdef WITH_POSTGIS
-			call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
-			stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
-#endif
-			/* Put the total width of the column, variable size */
-			stats->stawidth = stawidth;
-
-			break;
-		}
-		default:
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-					errmsg("Operation not supported")));
-			break;
-	}
 }
 
 void
@@ -3523,29 +3433,6 @@ compare_mcvs(const void *a, const void *b)
 /*****************************************************************************
  * Different functions used for 1D, 2D, and 3D types.
  *****************************************************************************/
-
-/*
- * Comparison function for checking the dimension type.
- */
-int
-get_statype_num_dims(VacAttrStats *stats)
-{
-	if (stats->attrtypid == type_oid(T_PERIOD) ||
-		stats->attrtypid == type_oid(T_TBOOL) ||
-		stats->attrtypid == type_oid(T_TTEXT) )
-		return 1;
-
-	if (stats->attrtypid == type_oid(T_TINT) ||
-		stats->attrtypid == type_oid(T_TFLOAT)  )
-		return 2;
-
-	if (stats->attrtypid == type_oid(T_TGEOMPOINT) ||
-		stats->attrtypid == type_oid(T_TGEOGPOINT)  )
-		return 3;
-	else
-		return -1;
-}
-
 /*
  * get_bbox_onedim()--returns the bbox of a one dimensional temporal object
  */
