@@ -37,7 +37,7 @@ src/TimestampSet.c
 src/TimeTypanalyze.c
 src/TnumberSelFuncs.c
 src/WAggregateFuncs.c
-)
+        include/TimeSelFuncs.h)
 
 set(SQL
 src/sql/00_Catalog.in.sql
