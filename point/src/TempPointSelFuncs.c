@@ -4,13 +4,14 @@
  *      Functions for selectivity estimation of operators on temporal point 
  *      types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
  *	point/src/TempPointSelFuncs.c
+ *
  *****************************************************************************/
  
 #include "TemporalTypes.h"
@@ -50,7 +51,16 @@ PG_FUNCTION_INFO_V1(tpoint_overlaps_sel);
 PGDLLEXPORT Datum
 tpoint_overlaps_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.005);
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, OVERLAPS_OP);
+	if (selec < 0.0)
+		selec = 0.005;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_overlaps_joinsel);
@@ -66,7 +76,16 @@ PG_FUNCTION_INFO_V1(tpoint_contains_sel);
 PGDLLEXPORT Datum
 tpoint_contains_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.002);
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_cacheOp(operator));
+	if (selec < 0.0)
+		selec = 0.002;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_contains_joinsel);
@@ -82,7 +101,17 @@ PG_FUNCTION_INFO_V1(tpoint_same_sel);
 PGDLLEXPORT Datum
 tpoint_same_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, SAME_OP);
+	if (selec < 0.0)
+		selec = 0.001;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
+
 }
 
 PG_FUNCTION_INFO_V1(tpoint_same_joinsel);
@@ -112,12 +141,34 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_cacheOp(operator));
+	if (selec < 0.0)
+		selec = 0.001;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_position_joinsel);
+
+PGDLLEXPORT Datum
+tpoint_position_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.001);
+}
+
+/*****************************************************************************
+ * Helper functions for calculating the selectivity.
+ *****************************************************************************/
+/** Generic selectivity function for all operators */
+Selectivity
+tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+{
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
 	bool selec2Flag = false;
 	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
-	CachedOp cachedOp = get_cacheOp(operator);
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -177,28 +228,10 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 	else
 		selec = selec1 * selec2;
 
-	if (selec < 0.0)
-		selec = 0.01;
-	else if (selec > 1.0)
-		selec = 1.0;
-
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8(selec);
+	return selec;
 }
-
-PG_FUNCTION_INFO_V1(tpoint_position_joinsel);
-
-PGDLLEXPORT Datum
-tpoint_position_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.001);
-}
-
-/*****************************************************************************
- * Helper functions for calculating the selectivity.
- *****************************************************************************/
-
 /** Estimate the selectivity of geometry/geography types */
 Selectivity
 estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
@@ -243,7 +276,7 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 	 * histogram.
 	 */
 
-	int ndims_max = 2;
+	int ndims_max = (int)nd_stats->ndims;
 
 	/*
 	 * Search box completely misses histogram extent?
@@ -252,14 +285,14 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 	 * to short circuit in this case, as some of the tests below
 	 * will return junk results when run on non-intersecting inputs.
 	 */
-	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP) &&
+	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP) &&
 		!nd_box_intersects(&nd_box, &(nd_stats->extent), ndims_max))
 	{
 		return 0.0;
 	}
 
 	/* Search box completely contains histogram extent! */
-	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP) &&
+	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP) &&
 		nd_box_contains(&nd_box, &(nd_stats->extent), ndims_max) )
 	{
 		return 1.0;
@@ -271,7 +304,7 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 		return FALLBACK_ND_SEL;
 	}
 
-	if (op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP)
+	if (op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP)
 	{
 		/* Work out some measurements of the histogram */
 		for (d = 0; d < nd_stats->ndims; d++)
@@ -289,6 +322,7 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 	switch (op)
 	{
 		case OVERLAPS_OP:
+		case SAME_OP:
 		{
 			double total_count = 0.0;
 			do
@@ -734,7 +768,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 CachedOp
 get_cacheOp(Oid operator)
 {
-	for (int i = LEFT_OP; i <= OVERAFTER_OP; i++)
+	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
 		if (operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT)	||
 			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY)	||

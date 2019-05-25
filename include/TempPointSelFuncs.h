@@ -115,7 +115,7 @@ typedef struct ND_STATS_T {
 #define STATISTIC_SLOT_ND 0
 #define STATISTIC_SLOT_2D 1
 
-
+extern Selectivity tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
 extern double xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
 							  CachedOp cacheOp, int dim);
 extern double z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
