@@ -91,9 +91,13 @@ typedef struct
 
 extern Datum temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalType);
 /*****************************************************************************
+ * Statistics information for Temporal types
+ *****************************************************************************/
+extern void temporalinst_info(VacAttrStats *stats);
+extern void temporal_extra_info(VacAttrStats *stats);
+/*****************************************************************************
  * Statistics functions for TemporalInst type
  *****************************************************************************/
-extern Datum temporalinst_analyze(VacAttrStats *stats, int temporalType);
 extern void compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  	 	 	 	 	 	 	 	 	  int samplerows, double totalrows);
 extern void compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -101,7 +105,6 @@ extern void compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFe
 /*****************************************************************************
  * Statistics functions for TemporalI type
  *****************************************************************************/
-extern Datum temporali_analyze(VacAttrStats *stats, int temporalType);
 extern void compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									  int samplerows, double totalrows);
 extern void compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -109,11 +112,16 @@ extern void compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetch
 /*****************************************************************************
  * Statistics functions for Trajectory types (TemporalSeq and TemporalS)
  *****************************************************************************/
-extern Datum temporal_traj_analyze(VacAttrStats *stats, int temporalType);
 extern void compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  	 	 	 	 	 	 	 	 	 	   int samplerows, double totalrows);
 extern void compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									 int samplerows, double totalrows);
+/*****************************************************************************
+ * Statistics functions for TPOINT types
+ *****************************************************************************/
+extern Datum tpoint_analyze_internal(VacAttrStats *stats);
+extern void tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+								 int samplerows, double totalrows);
 /*****************************************************************************
  * Comparison functions for different data types
  *****************************************************************************/
@@ -144,4 +152,4 @@ extern void gbox_deserialize(GBOX *box, RangeBound *lowerdim1, RangeBound *upper
 							 RangeBound *lowerdim2, RangeBound *upperdim2,
 							 PeriodBound *lowerdim3, PeriodBound *upperdim3);
 
-#endif //MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
+#endif MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H

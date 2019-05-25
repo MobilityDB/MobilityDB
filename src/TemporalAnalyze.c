@@ -46,22 +46,40 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 Datum
 temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalType)
 {
-    Datum result = 0;   /* keep compiler quiet */
+	/*
+	 * Call the standard typanalyze function.  It may fail to find needed
+	 * operators, in which case we also can't do anything, so just fail.
+	 */
+	if (!std_typanalyze(stats))
+		PG_RETURN_BOOL(false);
+
     if (durationType == TEMPORALINST)
-        result = temporalinst_analyze(stats, temporalType);
-    else if (durationType == TEMPORALI)
-        result = temporali_analyze(stats, temporalType);
-    else if(durationType == TEMPORALSEQ || durationType == TEMPORALS ||
-            durationType == TEMPORAL)
-        result = temporal_traj_analyze(stats, temporalType);
-    return result;
+        temporalinst_info(stats);
+    else
+        temporal_extra_info(stats);
+
+	if (durationType == TEMPORALINST && temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_stats;
+	else if (durationType == TEMPORALINST && temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_temporalinst_twodim_stats;
+	else if (durationType == TEMPORALI && temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_set_stats;
+	else if (durationType == TEMPORALI && temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_temporali_twodim_stats;
+	else if (temporalType == TEMPORAL_STATISTIC)
+		stats->compute_stats = compute_timestamptz_traj_stats;
+	else if (temporalType == TNUMBER_STATISTIC)
+		stats->compute_stats = compute_twodim_traj_stats;
+
+	PG_RETURN_BOOL(true);
 }
 
 /*****************************************************************************
- * Statistics functions for TemporalInst type
+ * Statistics information for Temporal types
  *****************************************************************************/
-Datum
-temporalinst_analyze(VacAttrStats *stats, int temporalType)
+TemporalArrayAnalyzeExtraData *array_extra_data;
+void
+temporalinst_info(VacAttrStats *stats)
 {
 	Oid ltopr;
 	Oid eqopr;
@@ -77,19 +95,82 @@ temporalinst_analyze(VacAttrStats *stats, int temporalType)
 							 false, false, false,
 							 &ltopr, &eqopr, NULL,
 							 NULL);
-	if (temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_stats;
-	else if (temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_temporalinst_twodim_stats;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
+}
+void
+temporal_extra_info(VacAttrStats *stats)
+{
+	Form_pg_attribute attr = stats->attr;
+
+	if (attr->attstattarget < 0)
+		attr->attstattarget = default_statistics_target;
+
+	Oid element_typeid;
+	TypeCacheEntry *typentry;
+	TypeCacheEntry *value_typentry;
+	TypeCacheEntry *temporal_typentry;
+	TemporalArrayAnalyzeExtraData *extra_data;
+
+	/*
+	 * Check attribute data type is a varlena array (or a domain over one).
+	 */
+	element_typeid = stats->attrtypid;
+	if (!OidIsValid(element_typeid))
+		elog(ERROR, "array_typanalyze was invoked for non-array type %u",
+			 stats->attrtypid);
+
+	/*
+	 * Gather information about the element type.  If we fail to find
+	 * something, return leaving the state from std_typanalyze() in place.
+	 */
+	typentry = lookup_type_cache(element_typeid,
+								 TYPECACHE_EQ_OPR |
+								 TYPECACHE_CMP_PROC_FINFO |
+								 TYPECACHE_HASH_PROC_FINFO);
+
+	value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
+									   TYPECACHE_EQ_OPR |
+									   TYPECACHE_CMP_PROC_FINFO |
+									   TYPECACHE_HASH_PROC_FINFO);
+
+	temporal_typentry = lookup_type_cache(type_oid(T_TIMESTAMPTZ),
+										  TYPECACHE_EQ_OPR |
+										  TYPECACHE_CMP_PROC_FINFO |
+										  TYPECACHE_HASH_PROC_FINFO);
+
+	/* Store our findings for use by compute_array_stats() */
+	extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
+	extra_data->type_id = typentry->type_id;
+	extra_data->eq_opr = typentry->eq_opr;
+	extra_data->typbyval = typentry->typbyval;
+	extra_data->typlen = typentry->typlen;
+	extra_data->typalign = typentry->typalign;
+	extra_data->cmp = &typentry->cmp_proc_finfo;
+	extra_data->hash = &typentry->hash_proc_finfo;
+
+	extra_data->value_type_id = value_typentry->type_id;
+	extra_data->value_eq_opr = value_typentry->eq_opr;
+	extra_data->value_typbyval = value_typentry->typbyval;
+	extra_data->value_typlen = value_typentry->typlen;
+	extra_data->value_typalign = value_typentry->typalign;
+	extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
+	extra_data->value_hash = &value_typentry->hash_proc_finfo;
+
+	extra_data->temporal_type_id = temporal_typentry->type_id;
+	extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
+	extra_data->temporal_typbyval = temporal_typentry->typbyval;
+	extra_data->temporal_typlen = temporal_typentry->typlen;
+	extra_data->temporal_typalign = temporal_typentry->typalign;
+	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
+	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
+
+	extra_data->std_extra_data = stats->extra_data;
+	stats->extra_data = extra_data;
 
 	stats->minrows = 300 * attr->attstattarget;
-
-	PG_RETURN_BOOL(true);
 }
-
+/*****************************************************************************
+ * Statistics functions for TemporalInst type
+ *****************************************************************************/
 void
 compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 						  int samplerows, double totalrows)
@@ -528,7 +609,6 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
-
 void
 compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 								  int samplerows, double totalrows)
@@ -1272,103 +1352,9 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 		stats->stadistinct = 0.0;		/* "unknown" */
 	}
 }
-
 /*****************************************************************************
  * Statistics functions for TemporalI type
  *****************************************************************************/
-TemporalArrayAnalyzeExtraData *array_extra_data;
-Datum
-temporali_analyze(VacAttrStats *stats, int temporalType)
-{
-	Form_pg_attribute attr = stats->attr;
-
-	if (attr->attstattarget < 0)
-		attr->attstattarget = default_statistics_target;
-
-	Oid element_typeid;
-	TypeCacheEntry *typentry;
-	TypeCacheEntry *value_typentry;
-	TypeCacheEntry *temporal_typentry;
-	TemporalArrayAnalyzeExtraData *extra_data;
-
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	/*
-	 * Check attribute data type is a varlena array (or a domain over one).
-	 */
-	element_typeid = stats->attrtypid;
-	if (!OidIsValid(element_typeid))
-		elog(ERROR, "array_typanalyze was invoked for non-array type %u",
-			 stats->attrtypid);
-
-	/*
-	 * Gather information about the element type.  If we fail to find
-	 * something, return leaving the state from std_typanalyze() in place.
-	 */
-	typentry = lookup_type_cache(element_typeid,
-								 TYPECACHE_EQ_OPR |
-								 TYPECACHE_CMP_PROC_FINFO |
-								 TYPECACHE_HASH_PROC_FINFO);
-
-	value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
-									   TYPECACHE_EQ_OPR |
-									   TYPECACHE_CMP_PROC_FINFO |
-									   TYPECACHE_HASH_PROC_FINFO);
-
-	temporal_typentry = lookup_type_cache(type_oid(T_TIMESTAMPTZ),
-										  TYPECACHE_EQ_OPR |
-										  TYPECACHE_CMP_PROC_FINFO |
-										  TYPECACHE_HASH_PROC_FINFO);
-
-	/* Store our findings for use by compute_array_stats() */
-	extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
-	extra_data->type_id = typentry->type_id;
-	extra_data->eq_opr = typentry->eq_opr;
-	extra_data->typbyval = typentry->typbyval;
-	extra_data->typlen = typentry->typlen;
-	extra_data->typalign = typentry->typalign;
-	extra_data->cmp = &typentry->cmp_proc_finfo;
-	extra_data->hash = &typentry->hash_proc_finfo;
-
-	extra_data->value_type_id = value_typentry->type_id;
-	extra_data->value_eq_opr = value_typentry->eq_opr;
-	extra_data->value_typbyval = value_typentry->typbyval;
-	extra_data->value_typlen = value_typentry->typlen;
-	extra_data->value_typalign = value_typentry->typalign;
-	extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
-	extra_data->value_hash = &value_typentry->hash_proc_finfo;
-
-	extra_data->temporal_type_id = temporal_typentry->type_id;
-	extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
-	extra_data->temporal_typbyval = temporal_typentry->typbyval;
-	extra_data->temporal_typlen = temporal_typentry->typlen;
-	extra_data->temporal_typalign = temporal_typentry->typalign;
-	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
-	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
-
-	extra_data->std_extra_data = stats->extra_data;
-
-	if (temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_set_stats;
-	else if (temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_temporali_twodim_stats;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
-	stats->extra_data = extra_data;
-
-	/*
-	 * Note we leave stats->minrows set as std_typanalyze set it.  Should it
-	 * be increased for array analysis purposes?
-	 */
-	PG_RETURN_BOOL(true);
-}
-
 void
 compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							  int samplerows, double totalrows)
@@ -1779,7 +1765,6 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
-
 void
 compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							   int samplerows, double totalrows)
@@ -2470,102 +2455,9 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
-
 /*****************************************************************************
  * Statistics functions for Trajectory types (TemporalSeq and TemporalS)
  *****************************************************************************/
-Datum
-temporal_traj_analyze(VacAttrStats *stats, int temporalType)
-{
-	Form_pg_attribute attr = stats->attr;
-
-	if (attr->attstattarget < 0)
-		attr->attstattarget = default_statistics_target;
-
-	Oid element_typeid;
-	TypeCacheEntry *typentry;
-	TypeCacheEntry *value_typentry;
-	TypeCacheEntry *temporal_typentry;
-	TemporalArrayAnalyzeExtraData *extra_data;
-
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	/*
-	 * Check attribute data type is a varlena array (or a domain over one).
-	 */
-	element_typeid = stats->attrtypid;
-	if (!OidIsValid(element_typeid))
-		elog(ERROR, "array_typanalyze was invoked for non-array type %u",
-			 stats->attrtypid);
-
-	/*
-	 * Gather information about the element type.  If we fail to find
-	 * something, return leaving the state from std_typanalyze() in place.
-	 */
-	typentry = lookup_type_cache(element_typeid,
-								 TYPECACHE_EQ_OPR |
-								 TYPECACHE_CMP_PROC_FINFO |
-								 TYPECACHE_HASH_PROC_FINFO);
-
-	value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
-									   TYPECACHE_EQ_OPR |
-									   TYPECACHE_CMP_PROC_FINFO |
-									   TYPECACHE_HASH_PROC_FINFO);
-
-	temporal_typentry = lookup_type_cache(type_oid(T_TIMESTAMPTZ),
-										  TYPECACHE_EQ_OPR |
-										  TYPECACHE_CMP_PROC_FINFO |
-										  TYPECACHE_HASH_PROC_FINFO);
-
-	/* Store our findings for use by compute_array_stats() */
-	extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
-	extra_data->type_id = typentry->type_id;
-	extra_data->eq_opr = typentry->eq_opr;
-	extra_data->typbyval = typentry->typbyval;
-	extra_data->typlen = typentry->typlen;
-	extra_data->typalign = typentry->typalign;
-	extra_data->cmp = &typentry->cmp_proc_finfo;
-	extra_data->hash = &typentry->hash_proc_finfo;
-
-	extra_data->value_type_id = value_typentry->type_id;
-	extra_data->value_eq_opr = value_typentry->eq_opr;
-	extra_data->value_typbyval = value_typentry->typbyval;
-	extra_data->value_typlen = value_typentry->typlen;
-	extra_data->value_typalign = value_typentry->typalign;
-	extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
-	extra_data->value_hash = &value_typentry->hash_proc_finfo;
-
-	extra_data->temporal_type_id = temporal_typentry->type_id;
-	extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
-	extra_data->temporal_typbyval = temporal_typentry->typbyval;
-	extra_data->temporal_typlen = temporal_typentry->typlen;
-	extra_data->temporal_typalign = temporal_typentry->typalign;
-	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
-	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
-
-	extra_data->std_extra_data = stats->extra_data;
-
-	if (temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_traj_stats;
-	else if (temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_twodim_traj_stats;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
-	stats->extra_data = extra_data;
-
-	/*
-	 * Note we leave stats->minrows set as std_typanalyze set it.  Should it
-	 * be increased for array analysis purposes?
-	 */
-	PG_RETURN_BOOL(true);
-}
-
 void
 compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							   int samplerows, double totalrows)
