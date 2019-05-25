@@ -93,7 +93,7 @@ extern Datum temporal_analyze_internal(VacAttrStats *stats, int durationType, in
 /*****************************************************************************
  * Statistics information for Temporal types
  *****************************************************************************/
-extern void temporalinst_info(VacAttrStats *stats);
+extern void temporal_info(VacAttrStats *stats);
 extern void temporal_extra_info(VacAttrStats *stats);
 /*****************************************************************************
  * Statistics functions for TemporalInst type
@@ -119,7 +119,7 @@ extern void compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc 
 /*****************************************************************************
  * Statistics functions for TPOINT types
  *****************************************************************************/
-extern Datum tpoint_analyze_internal(VacAttrStats *stats);
+extern Datum tpoint_analyze_internal(VacAttrStats *stats, int durationType);
 extern void tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 								 int samplerows, double totalrows);
 /*****************************************************************************
@@ -152,4 +152,4 @@ extern void gbox_deserialize(GBOX *box, RangeBound *lowerdim1, RangeBound *upper
 							 RangeBound *lowerdim2, RangeBound *upperdim2,
 							 PeriodBound *lowerdim3, PeriodBound *upperdim3);
 
-#endif MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
+#endif //MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H

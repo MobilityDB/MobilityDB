@@ -36,10 +36,10 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	Datum result = 0;   /* keep compiler quiet */
-	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(type == TEMPORAL || type == TEMPORALINST || type == TEMPORALI ||
-		   type == TEMPORALSEQ || type == TEMPORALS);
-	result = temporal_analyze_internal(stats, type, TNUMBER_STATISTIC);
+	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(durationType == TEMPORAL || durationType == TEMPORALINST || durationType == TEMPORALI ||
+		   durationType == TEMPORALSEQ || durationType == TEMPORALS);
+	result = temporal_analyze_internal(stats, durationType, TNUMBER_STATISTIC);
 	return result;
 }
 
@@ -54,7 +54,7 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
 		PG_RETURN_BOOL(false);
 
     if (durationType == TEMPORALINST)
-        temporalinst_info(stats);
+		temporal_info(stats);
     else
         temporal_extra_info(stats);
 
@@ -79,7 +79,7 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
  *****************************************************************************/
 TemporalArrayAnalyzeExtraData *array_extra_data;
 void
-temporalinst_info(VacAttrStats *stats)
+temporal_info(VacAttrStats *stats)
 {
 	Oid ltopr;
 	Oid eqopr;

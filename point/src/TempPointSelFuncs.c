@@ -15,7 +15,7 @@
  
 #include "TemporalTypes.h"
 #include "TemporalPoint.h"
-#include "GeoEstimate.h"
+#include "TempPointSelFuncs.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 

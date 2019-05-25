@@ -1,19 +1,18 @@
 /*****************************************************************************
  *
- * TemporalPointSelFuncs.h
+ * TempPointSelFuncs.h
  * 		Selectivity functions for the temporal point types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	include/GeoEstimate.h
+ *	include/TempPointSelFuncs.h
  *****************************************************************************/
-
-#ifndef __GEO_ESTIMATE_H__
-#define __GEO_ESTIMATE_H__
+#ifndef MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
+#define MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
 
 #include <postgres.h>
 #include <datatype/timestamp.h>
@@ -137,4 +136,4 @@ extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, Va
 extern CachedOp get_cacheOp(Oid operator);
 extern GBOX get_gbox(Node *node);
 
-#endif
+#endif //MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
