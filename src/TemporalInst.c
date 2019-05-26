@@ -135,6 +135,17 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	return result;
 }
 
+ /* Append an instant to another instant resulting in a TemporalI */
+
+TemporalI *
+temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
+{
+	TemporalInst *instants[2];
+	instants[0] = inst1;
+	instants[1] = inst2;
+	return temporali_from_temporalinstarr(instants, 2);
+}
+
 /* Copy a temporal value */
 TemporalInst *
 temporalinst_copy(TemporalInst *inst)
@@ -218,21 +229,6 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	*inter1 = temporalinst_copy(inst1);
 	*inter2 = temporalinst_copy(inst2);
 	return true;
-}
-
-/*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-
-TemporalI *
-temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
-{
-	TemporalInst *instants[2];
-	instants[0] = inst1;
-	instants[1] = inst2;
-	return temporali_from_temporalinstarr(instants, 2);
 }
 
 /*****************************************************************************

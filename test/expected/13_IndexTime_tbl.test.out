@@ -8,16 +8,19 @@ DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
 NOTICE:  index "tbl_timestampset_big_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
+NOTICE:  index "tbl_timestampset_big_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_period_big_gist_idx;
 NOTICE:  index "tbl_period_big_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
+NOTICE:  index "tbl_period_big_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_big_gist_idx;
 NOTICE:  index "tbl_periodset_big_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
+NOTICE:  index "tbl_periodset_big_spgist_idx" does not exist, skipping
 DROP INDEX
 CREATE INDEX tbl_timestampset_big_gist_idx ON tbl_timestampset_big USING GIST(ts);
 CREATE INDEX
@@ -28,7 +31,7 @@ CREATE INDEX
 SELECT count(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4854
+  5943
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-07-01]';
@@ -40,7 +43,7 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4853
+  5941
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-07-01]';
@@ -52,19 +55,19 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001
 SELECT count(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4854
+  5942
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  5046
+  5937
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9899
+ 11879
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p && timestamptz '2001-01-01';
@@ -88,31 +91,31 @@ SELECT count(*) FROM tbl_period_big WHERE p <@ timestamptz '2001-01-01';
 SELECT count(*) FROM tbl_period_big WHERE p <<# timestamptz '2001-01-01';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #>> timestamptz '2001-01-01';
  count 
 -------
-  9897
+ 11880
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
  count 
 -------
-  9897
+ 11880
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p @> period '[2001-01-01, 2001-07-01]';
@@ -124,37 +127,37 @@ SELECT count(*) FROM tbl_period_big WHERE p @> period '[2001-01-01, 2001-07-01]'
 SELECT count(*) FROM tbl_period_big WHERE p <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p <<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4947
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4953
+  5879
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9897
+ 11880
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p && periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p @> periodset '{[2001-01-01, 2001-07-01]}';
@@ -166,37 +169,37 @@ SELECT count(*) FROM tbl_period_big WHERE p @> periodset '{[2001-01-01, 2001-07-
 SELECT count(*) FROM tbl_period_big WHERE p <@ periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p <<# periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p &<# periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-  4947
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #>> periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-  4953
+  5879
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #&> periodset '{[2001-01-01, 2001-07-01]}';
  count 
 -------
-  9897
+ 11880
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5814
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-07-01]';
@@ -208,31 +211,31 @@ SELECT count(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-07-
 SELECT count(*) FROM tbl_periodset_big WHERE ps <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5812
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps <<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5815
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4967
+  6065
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9900
+ 11877
 (1 row)
 
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
@@ -250,7 +253,7 @@ CREATE INDEX
 SELECT count(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4854
+  5943
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-07-01]';
@@ -262,7 +265,7 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4853
+  5941
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-07-01]';
@@ -274,25 +277,25 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001
 SELECT count(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4854
+  5942
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  5046
+  5937
 (1 row)
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9899
+ 11879
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p @> period '[2001-01-01, 2001-07-01]';
@@ -304,37 +307,37 @@ SELECT count(*) FROM tbl_period_big WHERE p @> period '[2001-01-01, 2001-07-01]'
 SELECT count(*) FROM tbl_period_big WHERE p <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4944
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p <<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4947
+  6001
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4953
+  5879
 (1 row)
 
 SELECT count(*) FROM tbl_period_big WHERE p #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9897
+ 11880
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps && period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5814
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-07-01]';
@@ -346,31 +349,31 @@ SELECT count(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-07-
 SELECT count(*) FROM tbl_periodset_big WHERE ps <@ period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5812
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps <<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps &<# period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4933
+  5815
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps #>> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  4967
+  6065
 (1 row)
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-07-01]';
  count 
 -------
-  9900
+ 11877
 (1 row)
 
 DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;

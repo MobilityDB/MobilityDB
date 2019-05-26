@@ -153,7 +153,7 @@ typedef struct
 	/* variable-length data follows */
 } TemporalInst;
 
-/* Temporal Set Instant */
+/* Temporal Instant Set */
 
 typedef struct 
 {
@@ -1403,6 +1403,9 @@ extern bool temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
 extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
 	bool lower_inc, bool upper_inc);
 extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+
+extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
+extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
 
 extern bool contains_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool contained_box_timestamp_internal(BOX *box, TimestampTz t);

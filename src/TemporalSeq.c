@@ -660,6 +660,133 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	return result;
 }
 
+/* Append a TemporalInst to a TemporalSeq */
+
+TemporalSeq *
+temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
+{
+	Oid valuetypid = seq->valuetypid;
+	/* Test the validity of the instant */
+	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count-1);
+	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("Invalid timestamps for temporal value")));
+#ifdef WITH_POSTGIS
+	bool isgeo = false, hasz;
+	int srid;
+	if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		isgeo = true;
+		hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+		srid = tpoint_srid_internal((Temporal *)seq);
+		if (tpoint_srid_internal((Temporal *)inst) != srid)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("All geometries composing a temporal point must be of the same SRID")));
+		if (MOBDB_FLAGS_GET_Z(inst->flags) != hasz)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+	}
+#endif
+	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(seq->flags);
+	/* Normalize the result */
+	int newcount = seq->count + 1;
+	if (seq->count > 1)
+	{
+		inst1 = temporalseq_inst_n(seq, seq->count-2);
+		Datum value1 = temporalinst_value(inst1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count-1);
+		Datum value2 = temporalinst_value(inst2);
+		Datum value3 = temporalinst_value(inst);
+		if (
+			/* discrete sequences and 2 consecutive instants that have the same value 
+				... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
+			*/
+			(!continuous && datum_eq(value1, value2, valuetypid))
+			||
+			/* 3 consecutive float/point instants that have the same value 
+				... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
+			*/
+			(datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
+			||
+			/* collinear float/point instants that have the same duration
+				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
+			*/
+			(datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
+			)
+		{
+			/* The new instant replaces the last instant of the sequence */
+			newcount--;
+		} 
+	}
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	memsize += double_pad(VARSIZE(inst))  * newcount;
+	/* Expand the trajectory */
+#ifdef WITH_POSTGIS
+	bool trajectory = false; /* keep compiler quiet */
+	Datum traj = 0; /* keep compiler quiet */
+	if (isgeo)
+	{
+		trajectory = type_has_precomputed_trajectory(valuetypid);  
+		if (trajectory)
+		{
+			bool replace = newcount != seq->count+1;
+			traj = tpointseq_trajectory_append(seq, inst, replace);
+			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
+		}
+	}
+#endif
+	/* Add the size of the struct and the offset array */
+	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	/* Create the TemporalSeq */
+	TemporalSeq *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = newcount;
+	result->valuetypid = valuetypid;
+	result->duration = TEMPORALSEQ;
+	period_set(&result->period, seq->period.lower, inst->t, 
+		seq->period.lower_inc, true);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+#ifdef WITH_POSTGIS
+	if (isgeo)
+		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+#endif
+	/* Initialization of the variable-length part */
+	size_t *offsets = temporalseq_offsets_ptr(result);
+	size_t pos = 0;
+	for (int i = 0; i < newcount-1; i++)
+	{
+		inst1 = temporalseq_inst_n(seq, i);
+		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
+		offsets[i] = pos;
+		pos += double_pad(VARSIZE(inst1));
+	}
+	/* Append the instant */
+	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
+	offsets[newcount-1] = pos;
+	pos += double_pad(VARSIZE(inst));
+	/* Expand the bounding box */
+	if (bboxsize != 0) 
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		temporalseq_expand_bbox(bbox, seq, inst);
+		offsets[newcount] = pos;
+	}
+#ifdef WITH_POSTGIS
+	if (isgeo && trajectory)
+	{
+		offsets[newcount+1] = pos;
+		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
+			VARSIZE(DatumGetPointer(traj)));
+		pfree(DatumGetPointer(traj));
+	}
+#endif
+	return result;
+}
+
 /* Copy a temporal sequence */
 
 TemporalSeq *
@@ -1246,7 +1373,7 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
  *****************************************************************************/
 
  /* Append an instant to the end of a temporal */
-
+/*
 TemporalSeq *
 temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 {
@@ -1257,7 +1384,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	return temporalseq_from_temporalinstarr(instants, seq->count + 1, 
 		seq->period.lower_inc, seq->period.upper_inc, true);
 }
-
+*/
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/

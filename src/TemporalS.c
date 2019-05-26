@@ -186,6 +186,35 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	return result;
 }
 
+ /* Append an TemporalInst to to the last sequence of a TemporalS */
+
+TemporalS *
+temporals_append_instant(TemporalS *ts, TemporalInst *inst)
+{
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count));
+	for (int i = 0; i < ts->count - 1; i++)
+		sequences[i] = temporals_seq_n(ts, i);
+	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
+	TemporalSeq *seq1 = temporalseq_append_instant(seq, inst);
+	sequences[ts->count - 1] = seq1;
+	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
+		false);
+	pfree(sequences[ts->count - 1]);
+	return result;
+}
+
+
+/* Copy a TemporalS */
+TemporalS *
+temporals_copy(TemporalS *ts)
+{
+	TemporalS *result = palloc0(VARSIZE(ts));
+	memcpy(result, ts, VARSIZE(ts));
+	return result;
+}
+
+/*****************************************************************************/
+
 /*
  * Binary search of a timestamptz in a TemporalS or in an array of TemporalSeq.
  * If the timestamp is found, the position of the sequence is returned in pos.
@@ -253,15 +282,6 @@ temporalseqarr_find_timestamp(TemporalSeq **sequences, int from, int count,
 		middle++;
 	*pos = middle;
 	return false;
-}
-
-/* Copy a TemporalS */
-TemporalS *
-temporals_copy(TemporalS *ts)
-{
-	TemporalS *result = palloc0(VARSIZE(ts));
-	memcpy(result, ts, VARSIZE(ts));
-	return result;
 }
 
 /*****************************************************************************
@@ -640,31 +660,6 @@ temporals_read(StringInfo buf, Oid valuetypid)
 		pfree(sequences[i]);
 	pfree(sequences);	
 	
-	return result;
-}
-
-/*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-
-TemporalS *
-temporals_append_instant(TemporalS *ts, TemporalInst *inst)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (ts->totalcount + 1));
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count));
-	for (int i = 0; i < ts->count - 1; i++)
-		sequences[i] = temporals_seq_n(ts, i);
-	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
-	for (int i = 0; i < seq->count; i++)
-		instants[i] = temporalseq_inst_n(seq, i);
-	instants[seq->count] = inst;
-	sequences[ts->count - 1] = temporalseq_from_temporalinstarr(instants, 
-		seq->count + 1, seq->period.lower_inc, seq->period.upper_inc, true);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
-		false);
-	pfree(sequences[ts->count - 1]);
 	return result;
 }
 

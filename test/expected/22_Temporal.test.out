@@ -63,10 +63,10 @@ SELECT tfloat '25';
 ERROR:  Could not parse element value
 LINE 1: SELECT tfloat '25';
                       ^
-SELECT tbool '2@2012-01-01 08:00:00,';
-ERROR:  invalid input syntax for type boolean: "2"
-LINE 1: SELECT tbool '2@2012-01-01 08:00:00,';
-                     ^
+SELECT tfloat '2@2012-01-01 08:00:00,';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tfloat '2@2012-01-01 08:00:00,';
+                      ^
 SELECT tbool ' { true@2001-01-01 08:00:00 , false@2001-01-01 08:05:00 , true@2001-01-01 08:06:00 } ';
                                      tbool                                      
 --------------------------------------------------------------------------------
@@ -7295,6 +7295,102 @@ SELECT twAvg(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000
  twavg 
 -------
    2.5
+(1 row)
+
+SELECT tbool_cmp(tbool 't@2000-01-01', tbool 't@2000-01-01');
+ tbool_cmp 
+-----------
+         0
+(1 row)
+
+SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool 't@2000-01-01');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool 't@2000-01-01');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool 't@2000-01-01');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool 't@2000-01-01', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ tbool_cmp 
+-----------
+         0
+(1 row)
+
+SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool 't@2000-01-01', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ tbool_cmp 
+-----------
+         0
+(1 row)
+
+SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ tbool_cmp 
+-----------
+         1
+(1 row)
+
+SELECT tbool_cmp(tbool 't@2000-01-01', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ tbool_cmp 
+-----------
+        -1
+(1 row)
+
+SELECT tbool_cmp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ tbool_cmp 
+-----------
+         0
 (1 row)
 
 SELECT tbool 't@2000-01-01' = tbool 't@2000-01-01';

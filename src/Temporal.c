@@ -70,10 +70,9 @@ temporal_type_from_string(const char *str, uint8_t *type)
 			break;
 		}
 	}
-	/* Copy and convert to upper case for comparison  */
 	tmpstr = palloc(tmpendpos - tmpstartpos + 2);
 	for (i = tmpstartpos; i <= tmpendpos; i++)
-		tmpstr[i - tmpstartpos] = toupper(str[i]);
+		tmpstr[i - tmpstartpos] = str[i];
 	/* Add NULL to terminate */
 	tmpstr[i - tmpstartpos] = '\0';
 	size_t len = strlen(tmpstr);
@@ -81,7 +80,7 @@ temporal_type_from_string(const char *str, uint8_t *type)
 	for (i = 0; i < TEMPORALTYPE_STRUCT_ARRAY_LEN; i++)
 	{
 		if (len == strlen(temporaltype_struct_array[i].typename) && 
-			!strcmp(tmpstr, temporaltype_struct_array[i].typename))
+			!strcasecmp(tmpstr, temporaltype_struct_array[i].typename))
 		{
 			*type = temporaltype_struct_array[i].type;
 			pfree(tmpstr);
@@ -497,7 +496,7 @@ temporal_make_temporali(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count < 1)
+	if (count == 0)
 	{
 		PG_FREE_IF_COPY(array, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -533,7 +532,7 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 	bool lower_inc = PG_GETARG_BOOL(1);
 	bool upper_inc = PG_GETARG_BOOL(2);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (count < 1)
+	if (count == 0)
 	{
 		PG_FREE_IF_COPY(array, 0);
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -2498,11 +2497,20 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	/* Compare memory size */
 	size_t size1 = VARSIZE(DatumGetPointer(t1));
 	size_t size2 = VARSIZE(DatumGetPointer(t2));
-	if (size1 != size2)
-		return (size1 < size2) ? -1 : 1;
+	if (size1 < size2)
+		return -1;
+	else if (size1 > size2)
+		return 1;
+	else
+		return 0;
 	
 	/* Finally compare temporal type */
-	return (t1->duration < t2->duration) ? -1 : 1;
+	if (t1->duration < t2->duration)
+		return -1;
+	else if (t1->duration > t2->duration)
+		return 1;
+	else
+		return 0;
 }
 
 PG_FUNCTION_INFO_V1(temporal_cmp);

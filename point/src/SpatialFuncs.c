@@ -382,6 +382,11 @@ tpointarr_astext(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
 	Temporal **temparr = temporalarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_astext_internal(temparr[i]);
@@ -406,6 +411,11 @@ tpointarr_asewkt(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
 	Temporal **temparr = temporalarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_asewkt_internal(temparr[i]);
@@ -809,6 +819,33 @@ tpointseq_trajectory(TemporalSeq *seq)
 	size_t *offsets = temporalseq_offsets_ptr(seq);
 	void *traj = temporalseq_data_ptr(seq) + offsets[(seq->count) + 1];
 	return PointerGetDatum(traj);
+}
+
+/* Add or replace a point to the trajectory of a sequence */
+
+Datum 
+tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
+{
+	Datum traj = tpointseq_trajectory(seq);
+	Datum point = temporalinst_value(inst);
+	GSERIALIZED *gstraj = (GSERIALIZED *)PointerGetDatum(traj);
+	if (gserialized_get_type(gstraj) == POINTTYPE)
+	{
+		if (datum_point_eq(traj, point))
+			return PointerGetDatum(gserialized_copy(gstraj)); 
+		else
+			return geompoint_trajectory(traj, point); 
+	}
+	else
+	{
+		if (replace)
+		{
+			int numpoints = call_function1(LWGEOM_numpoints_linestring, traj);
+			return call_function3(LWGEOM_setpoint_linestring, traj, numpoints-1, point);
+		}
+		else
+			return call_function2(LWGEOM_addpoint, traj, point);
+	}
 }
 
 /* Copy the precomputed trajectory of a tpointseq */

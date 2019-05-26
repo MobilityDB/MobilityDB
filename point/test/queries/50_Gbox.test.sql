@@ -9,6 +9,21 @@ SELECT gbox 'GBOX ZM((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))';
 SELECT gbox 'GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT gbox 'GEODBOX M((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))';
 
+/* Errors */
+SELECT gbox 'AAA(1, 2, 3)';
+SELECT gbox 'gbox(1, 2, 3)';
+SELECT gbox 'gbox((AA, 2, 3))';
+SELECT gbox 'gbox((1, AA, 3))';
+SELECT gbox 'gbox z((1, 2, AA))';
+SELECT gbox 'gbox m((1, 2, AA))';
+SELECT gbox 'gbox((1, 2, 3))';
+SELECT gbox 'gbox m((1, 2, 3))';
+SELECT gbox 'gbox m((1, 2, 3),()';
+SELECT gbox 'gbox m((1, 2, 3),(1)'; 
+SELECT gbox 'gbox z((1, 2, 3),(1,2)'; 
+SELECT gbox 'gbox m((1, 2, 3),(1,2)'; 
+SELECT gbox 'gbox m((1, 2, 3),(1,2,3)'; 
+
 SELECT gbox(1,2,3,4);
 SELECT gbox(1,2,3,4,5,6);
 SELECT gbox(1,2,3,4,5,6,7,8);

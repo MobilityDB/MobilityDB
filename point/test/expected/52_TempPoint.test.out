@@ -23,24 +23,32 @@ SELECT astext(tgeogpoint '  Point(2 2) @ 2012-01-01 08:00:00  ');
 (1 row)
 
 /* Errors */
-SELECT astext(tgeompoint 'TRUE@2012-01-01 08:00:00');
+SELECT tgeompoint 'TRUE@2012-01-01 08:00:00';
 ERROR:  parse error - invalid geometry
-LINE 2: SELECT astext(tgeompoint 'TRUE@2012-01-01 08:00:00');
-                                 ^
+LINE 2: SELECT tgeompoint 'TRUE@2012-01-01 08:00:00';
+                          ^
 HINT:  "TR" <-- parse error at position 2 within geometry
-SELECT astext(tgeogpoint 'ABC@2012-01-01 08:00:00');
+SELECT tgeogpoint 'ABC@2012-01-01 08:00:00';
 ERROR:  parse error - invalid geometry
-LINE 1: SELECT astext(tgeogpoint 'ABC@2012-01-01 08:00:00');
-                                 ^
+LINE 1: SELECT tgeogpoint 'ABC@2012-01-01 08:00:00';
+                          ^
 HINT:  "AB" <-- parse error at position 2 within geometry
-SELECT astext(tgeompoint 'Point empty@2012-01-01 08:00:00');
+SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 1: SELECT astext(tgeompoint 'Point empty@2012-01-01 08:00:00');
-                                 ^
-SELECT astext(tgeogpoint 'Point empty@2012-01-01 08:00:00');
+LINE 1: SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
+                          ^
+SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 1: SELECT astext(tgeogpoint 'Point empty@2012-01-01 08:00:00');
-                                 ^
+LINE 1: SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
+                          ^
+SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+                          ^
+SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+                          ^
 SELECT astext(tgeompoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
                                                   astext                                                   
 -----------------------------------------------------------------------------------------------------------
@@ -66,22 +74,38 @@ SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 
 (1 row)
 
 /* Errors */
-SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 2: SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+LINE 2: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
+                          ^
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 1: SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
+                          ^
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
+LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
 SELECT astext(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
                                                   astext                                                   
 -----------------------------------------------------------------------------------------------------------
@@ -113,22 +137,38 @@ SELECT astext(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Poi
 (1 row)
 
 /* Errors */
-SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 2: SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+LINE 2: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
+                          ^
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 1: SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
+                          ^
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
-SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Po...
-                                 ^
+LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
+                          ^
 SELECT astext(tgeompoint '  { [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ],
  [ Point(1 1)@2001-01-01 09:00:00 , Point(2 2)@2001-01-01 09:05:00 , Point(1 1)@2001-01-01 09:06:00 ] } ');
                                                                                                          astext                                                                                                         
@@ -158,24 +198,40 @@ SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01
 (1 row)
 
 /* Errors */
-SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
- [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
+ [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 2: SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, ...
-                                 ^
-SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
- [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
+LINE 2: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
+                          ^
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
+ [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
 ERROR:  Only non-empty point geometries without M dimension accepted
-LINE 1: SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, ...
-                                 ^
-SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
+                          ^
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],...
-                                 ^
-SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-LINE 1: SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],...
-                                 ^
+LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
+ERROR:  Could not parse temporal value
+LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
+                          ^
 SELECT asewkt(tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, Point(0 1)@2000-01-02]');
                                       asewkt                                      
 ----------------------------------------------------------------------------------
@@ -237,32 +293,38 @@ SELECT tgeompoint 'SRID=4326;{[Point(0 1)@2000-01-01], [SRID=5434;Point(0 1)@200
 ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
 LINE 1: SELECT tgeompoint 'SRID=4326;{[Point(0 1)@2000-01-01], [SRID...
                           ^
-SELECT astext(tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT astext(tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 0...
-                                 ^
-SELECT astext(tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-                                                  astext                                                   
------------------------------------------------------------------------------------------------------------
- {POINT(1 1)@2001-01-01 08:00:00+00, POINT(2 2)@2001-01-01 08:05:00+00, POINT(3 3)@2001-01-01 08:06:00+00}
-(1 row)
-
-SELECT astext(tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT astext(tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 0...
-                                 ^
-SELECT astext(tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
 ERROR:  Only lon/lat coordinate systems are supported in geography.
-LINE 1: SELECT astext(tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 0...
-                                 ^
-SELECT astext(tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],SRID=4326;[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-ERROR:  Could not parse temporal value
-LINE 1: SELECT astext(tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 ...
-                                 ^
-SELECT astext(tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],SRID=4326;[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-ERROR:  Only lon/lat coordinate systems are supported in geography.
-LINE 1: SELECT astext(tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 ...
-                                 ^
+LINE 1: SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
+                          ^
+SELECT tgeogpoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=4283;Point(0 1)@2000-01-02]';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (4283)
+LINE 1: SELECT tgeogpoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=42...
+                          ^
+SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
+                          ^
+SELECT tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
+                          ^
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
  format_type 
 -------------
