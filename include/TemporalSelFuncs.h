@@ -57,23 +57,27 @@ extern Selectivity scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bo
 extern Selectivity mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo *opproc,
 											Datum constval, Oid atttype, bool varonleft, double *sumcommonp,
 											StatisticsStrategy strategy);
-extern double bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
+										 FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
+										 StatisticsStrategy strategy);
+//extern double bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+//extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+//extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+//extern double bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/
 extern double default_temporaltypes_selectivity(Oid operator);
 extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);
-extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
-										 FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
-										 StatisticsStrategy strategy);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 						   bool negate, StatisticsStrategy strategy);
-
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_FIRST_DIM  500;
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_SECOND_DIM 501;
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_THIRD_DIM  502;
+extern bool convert_to_scalar(Oid valuetypid, Datum value, double *scaledvalue,
+							  Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
+							  double *scaledhibound);
+extern double convert_numeric_to_scalar(Oid typid, Datum value);
+extern double convert_timevalue_to_scalar(Oid typid, Datum value);
+extern bool get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
+									  Oid sortop, Datum *min, Datum *max);
+#define BTREE_AM_OID   403
 #endif
