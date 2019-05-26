@@ -548,8 +548,7 @@ temporalseqarr_sort(TemporalSeq **sequences, int count)
 int
 datum_remove_duplicates(Datum *values, int count, Oid type)
 {
-	if (count == 0)
-		return 0;
+	assert (count != 0)
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
 		if (datum_ne(values[newcount], values[i], type))
@@ -562,8 +561,7 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 int
 timestamp_remove_duplicates(TimestampTz *values, int count)
 {
-	if (count == 0)
-		return 0;
+	assert (count != 0)
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
 		if (values[newcount] != values[i])
