@@ -44,6 +44,7 @@ typedef struct
 /*****************************************************************************
  * Internal selectivity functions for the operators.
  *****************************************************************************/
+
 extern double bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
 extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
 extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);

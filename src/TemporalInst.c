@@ -135,6 +135,17 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	return result;
 }
 
+ /* Append an instant to another instant resulting in a TemporalI */
+
+TemporalI *
+temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
+{
+	TemporalInst *instants[2];
+	instants[0] = inst1;
+	instants[1] = inst2;
+	return temporali_from_temporalinstarr(instants, 2);
+}
+
 /* Copy a temporal value */
 TemporalInst *
 temporalinst_copy(TemporalInst *inst)
@@ -218,21 +229,6 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	*inter1 = temporalinst_copy(inst1);
 	*inter2 = temporalinst_copy(inst2);
 	return true;
-}
-
-/*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-
-TemporalI *
-temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
-{
-	TemporalInst *instants[2];
-	instants[0] = inst1;
-	instants[1] = inst2;
-	return temporali_from_temporalinstarr(instants, 2);
 }
 
 /*****************************************************************************
@@ -349,10 +345,10 @@ temporalinst_timestamps(TemporalInst *inst)
 	return timestamparr_to_array(&t, 1);
 }
 
-/* Timestamps */
+/* Instants */
 
 ArrayType *
-temporalinst_instants(TemporalInst *inst)
+temporalinst_instants_array(TemporalInst *inst)
 {
 	return temporalarr_to_array((Temporal **)(&inst), 1);
 }
@@ -677,18 +673,8 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 }
 
 /* 
- * Inequality operator
- */
-bool
-temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2)
-{
-	return !temporalinst_eq(inst1, inst2);
-}
-
-/* 
  * B-tree comparator
  */
-
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
@@ -716,11 +702,12 @@ uint32
 temporalinst_hash(TemporalInst *inst)
 {
 	uint32		result;
-	uint32		value_hash;
 	uint32		time_hash;
 
 	Datum value = temporalinst_value(inst);
-	/* Apply the hash function to each bound */
+	/* Apply the hash function according to the subtype */
+	uint32 value_hash = 0; 
+	base_type_oid(inst->valuetypid);
 	if (inst->valuetypid == BOOLOID)
 		value_hash = DatumGetUInt32(call_function1(hashchar, value));
 	else if (inst->valuetypid == INT4OID)
@@ -734,13 +721,10 @@ temporalinst_hash(TemporalInst *inst)
 		inst->valuetypid == type_oid(T_GEOGRAPHY))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
 #endif
-	else 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Invalid Oid")));
-
+	/* Apply the hash function according to the timestamp */
 	time_hash = DatumGetUInt32(call_function1(hashint8, inst->t));
 
-	/* Merge hashes of value and time */
+	/* Merge hashes of value and timestamp */
 	result = value_hash;
 	result = (result << 1) | (result >> 31);
 	result ^= time_hash;

@@ -40,7 +40,7 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 		if (period == NULL)
 			PG_RETURN_BOOL(false);
 	}
-	else if (temporal_oid(subtype))
+	else if (temporal_type_oid(subtype))
 	{
 		Temporal *query = PG_GETARG_TEMPORAL(1);
 		if (query == NULL)

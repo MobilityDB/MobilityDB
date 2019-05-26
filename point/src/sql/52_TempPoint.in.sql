@@ -48,7 +48,12 @@ CREATE OR REPLACE FUNCTION tgeogpoint_typmod_in(cstring[])
 CREATE OR REPLACE FUNCTION tpoint_typmod_out(integer)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME','tpoint_typmod_out'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpoint_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE TYPE tgeompoint (
 	internallength = variable,
@@ -59,8 +64,8 @@ CREATE TYPE tgeompoint (
 	typmod_in = tgeompoint_typmod_in,
 	typmod_out = tpoint_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = tpoint_analyze
 );
 
 CREATE FUNCTION tgeogpoint_in(cstring, oid, integer)
@@ -89,19 +94,19 @@ CREATE TYPE tgeogpoint (
 	typmod_in = tgeogpoint_typmod_in,
 	typmod_out = tpoint_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = tpoint_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
 CREATE OR REPLACE FUNCTION tgeompoint(tgeompoint, integer)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE OR REPLACE FUNCTION tgeogpoint(tgeogpoint, integer)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;
 CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer) AS IMPLICIT;
@@ -435,47 +440,47 @@ CREATE FUNCTION timestamps(tgeogpoint)
 
 CREATE FUNCTION numSequences(tgeompoint)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numSequences(tgeogpoint)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startSequence(tgeompoint)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startSequence(tgeogpoint)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endSequence(tgeompoint)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSequence(tgeogpoint)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequenceN(tgeompoint, integer)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequenceN(tgeogpoint, integer)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequences(tgeompoint)
 	RETURNS tgeompoint[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequences(tgeogpoint)
 	RETURNS tgeogpoint[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atValue(tgeompoint, geometry(Point))

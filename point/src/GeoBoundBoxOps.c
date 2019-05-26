@@ -196,6 +196,21 @@ tpointseqarr_to_gbox(GBOX *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
+ * Expand the bounding box of a Temporal with a TemporalInst
+ * The functions assume that the argument box is set to 0 before with palloc0
+ *****************************************************************************/
+
+void
+tpoint_expand_gbox(GBOX *box, Temporal *temp, TemporalInst *inst)
+{
+	temporal_bbox(box, temp);
+	GBOX box1;
+	temporalinst_bbox(&box1, inst);
+	gbox_merge(&box1, box);
+	return;
+}
+
+/*****************************************************************************
  * Functions for expanding the bounding box
  *****************************************************************************/
 

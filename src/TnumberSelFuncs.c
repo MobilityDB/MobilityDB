@@ -8,8 +8,7 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *	XXX These are totally bogus.  Perhaps someone will make them do
- *	something reasonable, someday.
+ *	These functions are only stubs, they need to be written TODO
  *
  *****************************************************************************/
  
@@ -33,68 +32,84 @@
  *	realistic numbers here, it hardly matters...
  */
 
+/*****************************************************************************/
+
 /*
- * Selectivity for operators that depend on volume, such as "overlap".
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&), 
+ * contains (@>), contained (<@), and, same (~=). These operators depend on 
+ * volume. Contains and contained are tighter contraints than overlaps, so 
+ * the former should produce lower estimates than the latter. Similarly, 
+ * equals is a tighter constrain tha contains and contained.
  */
 
-PG_FUNCTION_INFO_V1(volumesel);
+PG_FUNCTION_INFO_V1(tnumber_overlaps_sel);
 
 PGDLLEXPORT Datum
-volumesel(PG_FUNCTION_ARGS)
+tnumber_overlaps_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
 
-PG_FUNCTION_INFO_V1(volumejoinsel);
+PG_FUNCTION_INFO_V1(tnumber_overlaps_joinsel);
 
 PGDLLEXPORT Datum
-volumejoinsel(PG_FUNCTION_ARGS)
+tnumber_overlaps_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.005);
 }
 
-/*
- *	positionseltemp
- *
- * How likely is a box to be strictly left of (right of, above, below,
- * before, after) a given box?
- */
-
-PG_FUNCTION_INFO_V1(positionseltemp);
+PG_FUNCTION_INFO_V1(tnumber_contains_sel);
 
 PGDLLEXPORT Datum
-positionseltemp(PG_FUNCTION_ARGS)
+tnumber_contains_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.1);
+	PG_RETURN_FLOAT8(0.002);
 }
 
-PG_FUNCTION_INFO_V1(positionjoinseltemp);
+PG_FUNCTION_INFO_V1(tnumber_contains_joinsel);
 
 PGDLLEXPORT Datum
-positionjoinseltemp(PG_FUNCTION_ARGS)
+tnumber_contains_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.1);
+	PG_RETURN_FLOAT8(0.002);
 }
 
-/*
- *	contseltemp: How likely is a box to contain (be contained by) a given box?
- *
- * This is a tighter constraint than "overlap", so produce a smaller
- * estimate than volumesel does.
- */
-
-PG_FUNCTION_INFO_V1(contseltemp);
+PG_FUNCTION_INFO_V1(tnumber_same_sel);
 
 PGDLLEXPORT Datum
-contseltemp(PG_FUNCTION_ARGS)
+tnumber_same_sel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }
 
-PG_FUNCTION_INFO_V1(contjoinseltemp);
+PG_FUNCTION_INFO_V1(tnumber_same_joinsel);
 
 PGDLLEXPORT Datum
-contjoinseltemp(PG_FUNCTION_ARGS)
+tnumber_same_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.001);
+}
+
+/*****************************************************************************/
+
+/*
+ * Selectivity for operators for relative position box operators, i.e., 
+ * left (<<), overleft (&<), right (>>), overright (&>), before (<<#), 
+ * overbefore (&<#), after (#>>), overafter (#&>). 
+ */
+
+PG_FUNCTION_INFO_V1(tnumber_position_sel);
+
+PGDLLEXPORT Datum
+tnumber_position_sel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.001);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_position_joinsel);
+
+PGDLLEXPORT Datum
+tnumber_position_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(0.001);
 }

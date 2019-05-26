@@ -21,7 +21,7 @@
  *****************************************************************************/
 
 /* 
- * The memory structure of a TemporalI with, e.g., 3 instants is as follows
+ * The memory structure of a TemporalI with, e.g., 2 instants is as follows
  *
  * 	------------------------------------------------------
  * 	( TemporalI | offset_0 | offset_1 | offset_2 )_X | ...
@@ -110,7 +110,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 		{
 			if (tpoint_srid_internal((Temporal *)instants[i]) != srid)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same srid")));
+					errmsg("All geometries composing a temporal point must be of the same SRID")));
 			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
@@ -155,6 +155,72 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_make_bbox(bbox, instants, count);
 		offsets[count] = pos;
+	}
+	return result;
+}
+
+/* Append a TemporalInst to a TemporalI */
+
+TemporalI *
+temporali_append_instant(TemporalI *ti, TemporalInst *inst)
+{
+	Oid valuetypid = ti->valuetypid;
+	/* Test the validity of the instant */
+	TemporalInst *inst1 = temporali_inst_n(ti, ti->count-1);
+	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("Invalid timestamps for temporal value")));
+#ifdef WITH_POSTGIS
+	bool isgeo = false, hasz;
+	int srid;
+	if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		isgeo = true;
+		hasz = MOBDB_FLAGS_GET_Z(ti->flags);
+		srid = tpoint_srid_internal((Temporal *)ti);
+		if (tpoint_srid_internal((Temporal *)inst) != srid)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("All geometries composing a temporal point must be of the same SRID")));
+		if (MOBDB_FLAGS_GET_Z(inst->flags) != hasz)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+	}
+#endif
+	/* Compute the new size */
+	size_t tisize = VARSIZE(ti) - 
+		double_pad(sizeof(TemporalI) + (ti->count + 1) * sizeof(size_t));
+	size_t instsize = VARSIZE(inst);
+	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 2) * sizeof(size_t));
+	/* Create the TemporalI */
+	TemporalI *result = palloc0(pdata + tisize + instsize);
+	SET_VARSIZE(result, pdata + tisize + instsize);
+	result->count = ti->count + 1;
+	result->valuetypid = valuetypid;
+	result->duration = TEMPORALI;
+#ifdef WITH_POSTGIS
+	if (isgeo)
+		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+#endif
+	/* Initialization of the variable-length part */
+	size_t *offsets = temporali_offsets_ptr(result);
+	size_t pos = 0;
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst1 = temporali_inst_n(ti, i);
+		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
+		offsets[i] = pos;
+		pos += double_pad(VARSIZE(inst1));
+	}
+	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
+	offsets[ti->count] = pos;
+	pos += double_pad(VARSIZE(inst));
+	/* Expand the bounding box */
+	if (temporal_bbox_size(valuetypid) != 0) 
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		temporali_expand_bbox(bbox, ti, inst);
+		offsets[ti->count+1] = pos;
 	}
 	return result;
 }
@@ -359,7 +425,7 @@ temporali_read(StringInfo buf, Oid valuetypid)
  *****************************************************************************/
 
  /* Append an instant to the end of a temporal */
-
+/*
 TemporalI *
 temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 {
@@ -369,7 +435,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	instants[ti->count] = inst;
 	return temporali_from_temporalinstarr(instants, ti->count + 1);
 }
-
+*/
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
@@ -503,7 +569,7 @@ tnumberi_value_range(TemporalI *ti)
 {
 	BOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	temporal_number_is_valid(ti->valuetypid);
+	number_base_type_oid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->low.x));
@@ -596,7 +662,7 @@ temporali_timespan(Period *p, TemporalI *ti)
 /* Instants */
 
 TemporalInst **
-temporali_instantarr(TemporalI *ti)
+temporali_instants(TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++) 
@@ -605,7 +671,7 @@ temporali_instantarr(TemporalI *ti)
 }
 
 ArrayType *
-temporali_instants(TemporalI *ti)
+temporali_instants_array(TemporalI *ti)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++) 
@@ -676,13 +742,14 @@ temporali_always_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
-		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, ti->valuetypid);
-		if (same_box_box_internal(&box1, &box2))
-			return true;
+		BOX box;
+		temporali_bbox(&box, ti);
+		if (ti->valuetypid == INT4OID)
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetInt32(value);
 		else
-			return false;
+			return box.low.x == box.high.x &&
+				(int)(box.high.x) == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ti->count; i++) 
@@ -1510,18 +1577,8 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 }
 
 /* 
- * Inequality operator
- */
-bool
-temporali_ne(TemporalI *ti1, TemporalI *ti2)
-{
-	return !temporali_eq(ti1, ti2);
-}
-
-/* 
  * B-tree comparator
  */
-
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {

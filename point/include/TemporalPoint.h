@@ -18,7 +18,7 @@
 #include "GeoEstimate.h"
 
 /*****************************************************************************
- * Macros for manipulating the 'typemod' int. An int32_t used as follows:
+ * Macros for manipulating the 'typmod' int. An int32_t used as follows:
  * Plus/minus = Top bit.
  * Spare bits = Next 2 bits.
  * SRID = Next 21 bits.
@@ -150,6 +150,7 @@ extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
+extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
 extern Datum tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2);
@@ -367,8 +368,10 @@ extern double distance_gbox_gbox_internal(GBOX *box1, GBOX *box2);
 /* Functions computing the bounding box at the creation of the temporal point */
 
 extern void tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t);
-extern void tpointinstarr_to_gbox(GBOX *box, TemporalInst **inst, int count) ;
-extern void tpointseqarr_to_gbox(GBOX *box, TemporalSeq **seq, int count) ;
+extern void tpointinstarr_to_gbox(GBOX *box, TemporalInst **inst, int count);
+extern void tpointseqarr_to_gbox(GBOX *box, TemporalSeq **seq, int count);
+
+extern void tpoint_expand_gbox(GBOX *box, Temporal *temp, TemporalInst *inst);
 
 /* Functions for expanding the bounding box */
 

@@ -109,7 +109,7 @@ p_comma(char **str)
 }
 
 Datum 
-p_basetype(char **str, Oid basetype)
+basetype_parse(char **str, Oid basetype)
 { // ugly
 	p_whitespace(str);
 	int delim = 0;
@@ -277,7 +277,7 @@ temporalinst_parse(char **str, Oid basetype, bool end)
 {
 	p_whitespace(str);
 	/* The next two instructions will throw an exception if they fail */
-	Datum elem = p_basetype(str, basetype);
+	Datum elem = basetype_parse(str, basetype);
 	TimestampTz t = timestamp_parse(str);
 	if (end)
 	{
@@ -287,7 +287,6 @@ temporalinst_parse(char **str, Oid basetype, bool end)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse temporal value")));
 	}
-
 	return temporalinst_make(elem, t, basetype);
 }
 
@@ -295,9 +294,9 @@ TemporalI *
 temporali_parse(char **str, Oid basetype) 
 {
 	p_whitespace(str);
-	if (!p_obrace(str))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	/* We are sure to find an opening brace because that was the condition 
+	 * to call this function in the dispatch function temporal_parse */
+	p_obrace(str);
 
 	//FIXME: parsing twice
 	char *bak = *str;
@@ -341,13 +340,12 @@ temporalseq_parse(char **str, Oid basetype, bool end)
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
+	/* We are sure to find an opening bracket or parenthesis because that was the
+	 * condition to call this function in the dispatch function temporal_parse */
 	if (p_obracket(str))
 		lower_inc = true;
 	else if (p_oparen(str))
 		lower_inc = false;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
 
 	// FIXME: I pre-parse to have the count, then re-parse. This is the only
 	// approach I see at the moment which is both correct and simple
@@ -400,9 +398,9 @@ static TemporalS *
 temporals_parse(char **str, Oid basetype) 
 {
 	p_whitespace(str);
-	if (!p_obrace(str))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+	/* We are sure to find an opening brace because that was the condition 
+	 * to call this function in the dispatch function temporal_parse */
+	p_obrace(str);
 
 	//FIXME: parsing twice
 	char *bak = *str;
@@ -445,10 +443,11 @@ Temporal *
 temporal_parse(char **str, Oid basetype) 
 {
 	p_whitespace(str);
+	Temporal *result = NULL;  /* keep compiler quiet */
 	if (**str != '{' && **str != '[' && **str != '(')
-		return (Temporal *)temporalinst_parse(str, basetype, true);
+		result = (Temporal *)temporalinst_parse(str, basetype, true);
 	else if (**str == '[' || **str == '(')
-		return (Temporal *)temporalseq_parse(str, basetype, true);		
+		result = (Temporal *)temporalseq_parse(str, basetype, true);		
 	else if (**str == '{')
 	{
 		char *bak = *str;
@@ -457,15 +456,15 @@ temporal_parse(char **str, Oid basetype)
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			return (Temporal *)temporals_parse(str, basetype);
+			result = (Temporal *)temporals_parse(str, basetype);
 		}
 		else
 		{
 			*str = bak;
-			return (Temporal *)temporali_parse(str, basetype);		
+			result = (Temporal *)temporali_parse(str, basetype);		
 		}
 	}
-	return NULL; /* keep compiler quiet */
+	return result;
 }
 
 /*****************************************************************************/

@@ -25,6 +25,7 @@
  * 		GBOX ZM((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))
  * 		GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))
  * 		GEODBOX M((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))
+ * where the commas are optional
  */
 PG_FUNCTION_INFO_V1(gbox_in);
 
@@ -33,9 +34,6 @@ gbox_in(PG_FUNCTION_ARGS)
 {
 	char *input = PG_GETARG_CSTRING(0);
 	GBOX *result = gbox_parse(&input);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse gbox")));
 	PG_RETURN_POINTER(result);
 }
 

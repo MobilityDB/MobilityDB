@@ -446,7 +446,7 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == BOXOID)
 			memcpy(&queries[i], DatumGetBoxP(in->scankeys[i].sk_argument), sizeof(BOX));
-		else if (temporal_oid(subtype))
+		else if (temporal_type_oid(subtype))
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
 		else
@@ -584,7 +584,7 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 			BOX *box = DatumGetBoxP(in->scankeys[i].sk_argument);
 			res = index_leaf_consistent_box(key, box, strategy);
 		}
-		else if (temporal_oid(subtype))
+		else if (temporal_type_oid(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));

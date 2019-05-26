@@ -18,9 +18,34 @@
 
 /* Initialize the extension */
 
+#define PGC_ERRMSG_MAXLEN 2048
+
+static void
+pg_error(const char *fmt, va_list ap)
+{
+    char errmsg[PGC_ERRMSG_MAXLEN+1];
+
+    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+
+    errmsg[PGC_ERRMSG_MAXLEN]='\0';
+    ereport(ERROR, (errmsg_internal("%s", errmsg)));
+}
+
+static void
+pg_notice(const char *fmt, va_list ap)
+{
+    char errmsg[PGC_ERRMSG_MAXLEN+1];
+
+    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+
+    errmsg[PGC_ERRMSG_MAXLEN]='\0';
+    ereport(NOTICE, (errmsg_internal("%s", errmsg)));
+}
+
+
 void temporalgeom_init()
 {
-	lwgeom_set_handlers(palloc, repalloc, pfree, NULL, NULL);
+	lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
 }
 
 /*****************************************************************************
@@ -94,9 +119,6 @@ tpoint_in(PG_FUNCTION_ARGS)
 	Oid valuetypid;
 	temporal_typinfo(temptypid, &valuetypid);
 	Temporal *result = tpoint_parse(&input, valuetypid);
-	if (result == 0)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal point")));
 	PG_RETURN_POINTER(result);
 }
 
@@ -573,7 +595,7 @@ Datum
 tpointi_values(TemporalI *ti)
 {
 	Datum result = 0;
-	temporal_point_is_valid(ti->valuetypid);
+	point_base_type_oid(ti->valuetypid);
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointi_values(ti);
 	else if (ti->valuetypid == type_oid(T_GEOGRAPHY))
@@ -737,9 +759,14 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_NULL();
+	}
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
@@ -748,6 +775,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 		tpoint_gs_same_dimensionality(temp, gs);
 	}
 	
+	Oid valuetypid = temp->valuetypid;
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;
@@ -784,9 +812,14 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
-	Oid valuetypid = temp->valuetypid;
 	int count;
 	Datum *values = datumarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(array, 1);
+		PG_RETURN_NULL();
+	}
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
@@ -795,6 +828,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 		tpoint_gs_same_dimensionality(temp, gs);
 	}
 	
+	Oid valuetypid = temp->valuetypid;
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;

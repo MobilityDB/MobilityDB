@@ -9,10 +9,12 @@ SELECT astext(tgeompoint '  Point(2 2)@2012-01-01 08:00:00  ');
 SELECT astext(tgeogpoint 'Point(1 1)@2012-01-01 08:00:00');
 SELECT astext(tgeogpoint '  Point(2 2) @ 2012-01-01 08:00:00  ');
 /* Errors */
-SELECT astext(tgeompoint 'TRUE@2012-01-01 08:00:00');
-SELECT astext(tgeogpoint 'ABC@2012-01-01 08:00:00');
-SELECT astext(tgeompoint 'Point empty@2012-01-01 08:00:00');
-SELECT astext(tgeogpoint 'Point empty@2012-01-01 08:00:00');
+SELECT tgeompoint 'TRUE@2012-01-01 08:00:00';
+SELECT tgeogpoint 'ABC@2012-01-01 08:00:00';
+SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
+SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
+SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 
 -------------------------------------------------------------------------------
 
@@ -23,10 +25,14 @@ SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 
 SELECT astext(tgeogpoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
 SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
 /* Errors */
-SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-SELECT astext(tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-SELECT astext(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
+SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00} xxx';
 
 -------------------------------------------------------------------------------
 
@@ -36,11 +42,16 @@ SELECT astext(tgeompoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01
 SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
 SELECT astext(tgeogpoint ' [ Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 ] ');
 SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT astext(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03]');
 /* Errors */
-SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
+SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00] xxx';
 
 -------------------------------------------------------------------------------
 
@@ -57,12 +68,16 @@ SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01
  [Point(1 1)@2001-01-01 09:00:00,Point(2 2)@2001-01-01 09:05:00,Point(1 1)@2001-01-01 09:06:00]}');
 
 /* Errors */
-SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
- [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
-SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
- [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}');
-SELECT astext(tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
+ [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
+ [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
+SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]} xxx';
 
 -------------------------------------------------------------------------------
 -- SRID
@@ -83,13 +98,14 @@ SELECT tgeompoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-0
 SELECT tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-01-02]';
 SELECT tgeompoint '{[SRID=4326;Point(0 1)@2000-01-01], [SRID=5434;Point(0 1)@2000-01-02]';
 SELECT tgeompoint 'SRID=4326;{[Point(0 1)@2000-01-01], [SRID=5434;Point(0 1)@2000-01-02]}';
-
-SELECT astext(tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-SELECT astext(tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}');
-SELECT astext(tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],SRID=4326;[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
-SELECT astext(tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],SRID=4326;[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]');
+SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
+SELECT tgeogpoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=4283;Point(0 1)@2000-01-02]';
+SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+SELECT tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
 
 -------------------------------------------------------------------------------
 -- typmod
@@ -101,7 +117,6 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
 /* Errors */
 select tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
 select tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
-
 
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1)@2000-01-01');
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1 1)@2000-01-01');
@@ -373,6 +388,10 @@ tgeogpointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 ]));
 
+/* Errors */
+SELECT tgeompointi(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
+SELECT tgeompointi(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
+
 -------------------------------------------------------------------------------
 
 SELECT asewkt(tgeompointseq(ARRAY[
@@ -385,6 +404,10 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeogpointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 ]));
+
+/* Errors */
+SELECT tgeompointseq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
+SELECT tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
 
 -------------------------------------------------------------------------------
 
@@ -410,6 +433,10 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 09:00:00'),
 tgeogpointinst(ST_Point(2,2), '2012-01-01 09:10:00'),
 tgeogpointinst(ST_Point(1,1), '2012-01-01 09:20:00')
 ])]));
+
+/* Errors */
+SELECT tgeompoints(ARRAY[tgeompoint '[SRID=5676;Point(1 1)@2001-01-01]', '[SRID=4326;Point(2 2)@2001-01-02]']);
+SELECT tgeompoints(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
 
 -------------------------------------------------------------------------------
 -- Cast functions

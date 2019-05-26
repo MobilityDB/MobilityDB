@@ -153,7 +153,7 @@ typedef struct
 	/* variable-length data follows */
 } TemporalInst;
 
-/* Temporal Set Instant */
+/* Temporal Instant Set */
 
 typedef struct 
 {
@@ -319,16 +319,23 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
-extern void temporal_duration_is_valid(int16 type);
-extern void temporal_number_is_valid(Oid type);
-extern void temporal_numrange_is_valid(Oid type);
-extern void temporal_point_is_valid(Oid type);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
 extern bool type_byval_fast(Oid type);
 extern int get_typlen_fast(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);
+
+/* Assertion tests */
+
+extern void temporal_duration_is_valid(int16 type);
+extern void numrange_type_oid(Oid type);
+extern void base_type_oid(Oid valuetypid);
+extern void base_type_all_oid(Oid valuetypid);
+extern void continuous_base_type_oid(Oid valuetypid);
+extern void continuous_base_type_all_oid(Oid valuetypid);
+extern void number_base_type_oid(Oid type);
+extern void point_base_type_oid(Oid type);
 
 /* PostgreSQL call helpers */
 
@@ -405,10 +412,9 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 /* Oid functions */
 
-extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-extern bool temporal_oid(Oid temptypid);
+extern bool temporal_type_oid(Oid temptypid);
 
 /* Catalog functions */
 
@@ -470,13 +476,12 @@ extern bool p_cbracket(char **str);
 extern bool p_oparen(char **str);
 extern bool p_cparen(char **str);
 extern bool p_comma(char **str);
-extern Datum p_basetype(char **str, Oid basetype);
 
+extern Datum basetype_parse(char **str, Oid basetype);
 extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str);
 extern PeriodSet *periodset_parse(char **str);
-
 extern TemporalInst *temporalinst_parse(char **str, Oid basetype, bool end);
 extern TemporalI *temporali_parse(char **str, Oid basetype);
 extern Temporal *temporal_parse(char **str, Oid basetype);
@@ -655,7 +660,7 @@ extern bool temporalinst_ever_equals(TemporalInst *inst, Datum value);
 extern bool temporalinst_always_equals(TemporalInst *inst, Datum value);
 extern void temporalinst_timespan(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
-extern ArrayType *temporalinst_instants(TemporalInst *inst);
+extern ArrayType *temporalinst_instants_array(TemporalInst *inst);
 extern TemporalInst *temporalinst_shift(TemporalInst *inst, Interval *interval);
 
 /* Restriction Functions */
@@ -691,7 +696,6 @@ extern bool temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 
 extern int temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2);
 extern bool temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2);
-extern bool temporalinst_ne(TemporalInst *inst1, TemporalInst *inst2);
 
 /* Function for defining hash index */
 
@@ -752,8 +756,8 @@ extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
 extern void temporali_timespan(Period *p, TemporalI *ti);
-extern TemporalInst **temporali_instantarr(TemporalI *ti);
-extern ArrayType *temporali_instants(TemporalI *ti);
+extern TemporalInst **temporali_instants(TemporalI *ti);
+extern ArrayType *temporali_instants_array(TemporalI *ti);
 extern Timestamp temporali_start_timestamp(TemporalI *ti);
 extern TimestampTz temporali_end_timestamp(TemporalI *ti);
 extern ArrayType *temporali_timestamps(TemporalI *ti);
@@ -797,7 +801,6 @@ extern double temporali_twavg(TemporalI *ti);
 
 extern int temporali_cmp(TemporalI *ti1, TemporalI *ti2);
 extern bool temporali_eq(TemporalI *ti1, TemporalI *ti2);
-extern bool temporali_ne(TemporalI *ti1, TemporalI *ti2);
 
 /* Function for defining hash index */
 
@@ -964,7 +967,6 @@ extern double tfloatseq_twavg(TemporalSeq *seq);
 
 extern int temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2);
 extern bool temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2);
-extern bool temporalseq_ne(TemporalSeq *seq1, TemporalSeq *seq2);
 
 /* Function for defining hash index */
 
@@ -1055,12 +1057,11 @@ extern Datum temporals_max_value(TemporalS *ts);
 extern PeriodSet *temporals_get_time(TemporalS *ts);
 extern Datum temporals_duration(TemporalS *ts);
 extern void temporals_timespan(Period *p, TemporalS *ts);
-extern TemporalSeq **temporals_sequencearr(TemporalS *ts);
-extern ArrayType *temporals_sequences_internal(TemporalS *ts);
+extern TemporalSeq **temporals_sequences(TemporalS *ts);
+extern ArrayType *temporals_sequences_array(TemporalS *ts);
 extern int temporals_num_instants(TemporalS *ts);
 extern TemporalInst *temporals_instant_n(TemporalS *ts, int n);
-extern TemporalInst **temporals_instants1(TemporalS *ts, int *count);
-extern ArrayType *temporals_instants(TemporalS *ts);
+extern ArrayType *temporals_instants_array(TemporalS *ts);
 extern TimestampTz temporals_start_timestamp(TemporalS *ts);
 extern TimestampTz temporals_end_timestamp(TemporalS *ts);
 extern int temporals_num_timestamps(TemporalS *ts);
@@ -1112,7 +1113,6 @@ extern double tfloats_twavg(TemporalS *ts);
 
 extern int temporals_cmp(TemporalS *ts1, TemporalS *ts2);
 extern bool temporals_eq(TemporalS *ts1, TemporalS *ts2);
-extern bool temporals_ne(TemporalS *ts1, TemporalS *ts2);
 
 /* Function for defining hash index */
 
@@ -1406,6 +1406,9 @@ extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count,
 	bool lower_inc, bool upper_inc);
 extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
+extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
+extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
+
 extern bool contains_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool contained_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool overlaps_box_timestamp_internal(BOX *box, TimestampTz t);
@@ -1611,6 +1614,7 @@ sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 extern TemporalI *
 sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+/* These functions are currently not used
 extern TemporalSeq *
 sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1627,7 +1631,7 @@ extern TemporalS *
 sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
-
+*/
 extern Temporal *
 sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
@@ -1750,11 +1754,12 @@ extern TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, D
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+/* These functions are not currently used
 extern TemporalSeq *tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalS *tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
-	
+*/
 extern TemporalInst *tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum dist, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalI *tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 

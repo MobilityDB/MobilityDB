@@ -19,13 +19,13 @@ CREATE FUNCTION intrange_canonical(r intrange)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE TYPE intrange AS RANGE (
-	SUBTYPE = integer,
+	subtype = integer,
 	SUBTYPE_DIFF = int4range_subdiff,
 	CANONICAL = intrange_canonical
 ); 
 	
 CREATE TYPE floatrange AS RANGE (
-	SUBTYPE = float8,
+	subtype = float8,
 	SUBTYPE_DIFF = float8mi
 );
  

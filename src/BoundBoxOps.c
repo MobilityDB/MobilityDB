@@ -483,6 +483,85 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
+ * Expand the bounding box of a Temporal with a TemporalInst
+ * The functions assume that the argument box is set to 0 before with palloc0
+ *****************************************************************************/
+
+static void
+temporali_expand_period(Period *period, TemporalI *ti, TemporalInst *inst)
+{
+	TemporalInst *inst1 = temporali_inst_n(ti, 0);
+	period_set(period, inst1->t, inst->t, true, true);
+	return;
+}
+
+static void
+temporalseq_expand_period(Period *period, TemporalSeq *seq, TemporalInst *inst)
+{
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
+	return;
+}
+
+static void
+tnumber_expand_box(BOX *box, Temporal *temp, TemporalInst *inst)
+{
+	temporal_bbox(box, temp);
+	BOX box1;
+	temporalinst_bbox(&box1, inst);
+	box_expand_internal(box, &box1);
+	return;
+}
+
+bool 
+temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
+{
+	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
+	{
+		temporali_expand_period((Period *)box, ti, inst);
+		return true;
+	}
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		tnumber_expand_box((BOX *)box, (Temporal *)ti, inst);
+		return true;
+	}
+#ifdef WITH_POSTGIS
+	if (ti->valuetypid == type_oid(T_GEOGRAPHY) || 
+		ti->valuetypid == type_oid(T_GEOMETRY)) 
+	{
+		tpoint_expand_gbox((GBOX *)box, (Temporal *)ti, inst);
+		return true;
+	}
+#endif
+	return false;
+}
+
+bool 
+temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
+{
+	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
+	{
+		temporalseq_expand_period((Period *)box, seq, inst);
+		return true;
+	}
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		tnumber_expand_box((BOX *)box, (Temporal *)seq, inst);
+		return true;
+	}
+#ifdef WITH_POSTGIS
+	if (seq->valuetypid == type_oid(T_GEOGRAPHY) || 
+		seq->valuetypid == type_oid(T_GEOMETRY)) 
+	{
+		tpoint_expand_gbox((GBOX *)box, (Temporal *)seq, inst);
+		return true;
+	}
+#endif
+	return false;
+}
+
+/*****************************************************************************
  * Transform a <Type> to a BOX
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
@@ -492,7 +571,7 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 void
 base_to_box(BOX *box, Datum value, Oid valuetypid)
 {
-	temporal_number_is_valid(valuetypid);
+	number_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)
 		box->low.x = box->high.x = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -568,7 +647,7 @@ numeric_to_box(PG_FUNCTION_ARGS)
 void
 range_to_box_internal(BOX *box, RangeType *range)
 {
-	temporal_numrange_is_valid(range->rangetypid);
+	numrange_type_oid(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->low.x = (double)(DatumGetInt32(lower_datum(range)));
@@ -871,70 +950,6 @@ floatrange_period_to_box(PG_FUNCTION_ARGS)
  * The inclusive/exclusive bounds are taken into account for the comparisons 
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_timestamp_temporal);
-
-PGDLLEXPORT Datum
-overlaps_bbox_timestamp_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = contains_period_timestamp_internal(&p, t);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_timestamp);
-
-PGDLLEXPORT Datum
-overlaps_bbox_temporal_timestamp(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = contains_period_timestamp_internal(&p, t);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_timestampset_temporal);
-
-PGDLLEXPORT Datum
-overlaps_bbox_timestampset_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = timestampset_bbox(ts);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = overlaps_period_period_internal(p1, &p2);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_timestampset);
-
-PGDLLEXPORT Datum
-overlaps_bbox_temporal_timestampset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = timestampset_bbox(ts);
-	bool result = overlaps_period_period_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ts, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(overlaps_bbox_period_temporal);
 
 PGDLLEXPORT Datum
@@ -963,42 +978,6 @@ overlaps_bbox_temporal_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_periodset_temporal);
-
-PGDLLEXPORT Datum
-overlaps_bbox_periodset_temporal(PG_FUNCTION_ARGS) 
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = periodset_bbox(ps);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = overlaps_period_period_internal(p1, &p2);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_periodset);
-
-PGDLLEXPORT Datum
-overlaps_bbox_temporal_periodset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = periodset_bbox(ps);
-	bool result = overlaps_period_period_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ps, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
 
 PGDLLEXPORT Datum
@@ -1019,71 +998,6 @@ overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  * Contains for temporal types wrt the time dimension
  * The inclusive/exclusive bounds are taken into account for the comparisons 
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contains_bbox_timestamp_temporal);
-
-PGDLLEXPORT Datum
-contains_bbox_timestamp_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = timestamp_cmp_internal(p.lower, t) == 0 &&
-		timestamp_cmp_internal(p.upper, t) == 0;
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_timestamp);
-
-PGDLLEXPORT Datum
-contains_bbox_temporal_timestamp(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = contains_period_timestamp_internal(&p, t);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contains_bbox_timestampset_temporal);
-
-PGDLLEXPORT Datum
-contains_bbox_timestampset_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = timestampset_bbox(ts);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = contains_period_period_internal(p1, &p2);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_timestampset);
-
-PGDLLEXPORT Datum
-contains_bbox_temporal_timestampset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = timestampset_bbox(ts);
-	bool result = contains_period_period_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ts, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_period_temporal);
 
@@ -1113,42 +1027,6 @@ contains_bbox_temporal_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contains_bbox_periodset_temporal);
-
-PGDLLEXPORT Datum
-contains_bbox_periodset_temporal(PG_FUNCTION_ARGS) 
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = periodset_bbox(ps);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = contains_period_period_internal(p1, &p2);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_periodset);
-
-PGDLLEXPORT Datum
-contains_bbox_temporal_periodset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = periodset_bbox(ps);
-	bool result = contains_period_period_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ps, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
 
 PGDLLEXPORT Datum
@@ -1169,71 +1047,6 @@ contains_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  * Contained for temporal types wrt the time dimension
  * The inclusive/exclusive bounds are taken into account for the comparisons 
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contained_bbox_timestamp_temporal);
-
-PGDLLEXPORT Datum
-contained_bbox_timestamp_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = contains_period_timestamp_internal(&p, t);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_timestamp);
-
-PGDLLEXPORT Datum
-contained_bbox_temporal_timestamp(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = timestamp_cmp_internal(p.lower, t) == 0 &&
-		timestamp_cmp_internal(p.upper, t) == 0;
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contained_bbox_timestampset_temporal);
-
-PGDLLEXPORT Datum
-contained_bbox_timestampset_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = timestampset_bbox(ts);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = contains_period_period_internal(&p2, p1);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_timestampset);
-
-PGDLLEXPORT Datum
-contained_bbox_temporal_timestampset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = timestampset_bbox(ts);
-	bool result = contains_period_period_internal(p2, &p1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ts, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_period_temporal);
 
@@ -1263,42 +1076,6 @@ contained_bbox_temporal_period(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contained_bbox_periodset_temporal);
-
-PGDLLEXPORT Datum
-contained_bbox_periodset_temporal(PG_FUNCTION_ARGS) 
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = periodset_bbox(ps);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = contains_period_period_internal(&p2, p1);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_periodset);
-
-PGDLLEXPORT Datum
-contained_bbox_temporal_periodset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = periodset_bbox(ps);
-	bool result = contains_period_period_internal(p2, &p1);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ps, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
 
 PGDLLEXPORT Datum
@@ -1319,72 +1096,6 @@ contained_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  * Same for temporal types wrt the time dimension
  * The inclusive/exclusive bounds are taken into account for the comparisons 
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_timestamp_temporal);
-
-PGDLLEXPORT Datum
-same_bbox_timestamp_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = timestamp_cmp_internal(p.lower, t) == 0 &&
-		timestamp_cmp_internal(p.upper, t) == 0;
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_temporal_timestamp);
-
-PGDLLEXPORT Datum
-same_bbox_temporal_timestamp(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	Period p;
-	temporal_timespan_internal(&p, temp);
-	bool result = timestamp_cmp_internal(p.lower, t) == 0 &&
-		timestamp_cmp_internal(p.upper, t) == 0;
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_timestampset_temporal);
-
-PGDLLEXPORT Datum
-same_bbox_timestampset_temporal(PG_FUNCTION_ARGS) 
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = timestampset_bbox(ts);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = period_eq_internal(p1, &p2);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_temporal_timestampset);
-
-PGDLLEXPORT Datum
-same_bbox_temporal_timestampset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = timestampset_bbox(ts);
-	bool result = period_eq_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ts, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_period_temporal);
 
@@ -1413,42 +1124,6 @@ same_bbox_temporal_period(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
 }
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_periodset_temporal);
-
-PGDLLEXPORT Datum
-same_bbox_periodset_temporal(PG_FUNCTION_ARGS) 
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Period *p1 = periodset_bbox(ps);
-	Period p2;
-	temporal_timespan_internal(&p2, temp);
-	bool result = period_eq_internal(p1, &p2);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_temporal_periodset);
-
-PGDLLEXPORT Datum
-same_bbox_temporal_periodset(PG_FUNCTION_ARGS) 
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Period p1;
-	temporal_timespan_internal(&p1, temp);
-	Period *p2 = periodset_bbox(ps);
-	bool result = period_eq_internal(&p1, p2);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_FREE_IF_COPY(ps, 1);
-	PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
 
