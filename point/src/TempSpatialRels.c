@@ -1431,7 +1431,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = 0;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1497,7 +1497,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1556,7 +1556,7 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp1->valuetypid);
+	point_base_type_oid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1591,7 +1591,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1658,7 +1658,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1720,7 +1720,7 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp1->valuetypid);
+	point_base_type_oid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1888,7 +1888,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = 0;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1960,7 +1960,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2024,7 +2024,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
 	Datum (*func)(Datum, Datum) = NULL;
-	temporal_point_is_valid(temp1->valuetypid);
+	point_base_type_oid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -2197,7 +2197,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2269,7 +2269,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2344,7 +2344,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	temporal_point_is_valid(temp1->valuetypid);
+	point_base_type_oid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))

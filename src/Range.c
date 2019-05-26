@@ -147,6 +147,7 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 RangeType **
 rangearr_normalize(RangeType **ranges, int *count)
 {
+	assert(*count != 0);
 	rangearr_sort(ranges, *count);
 	int newcount = 0;
 	RangeType **result = palloc(sizeof(RangeType *) * *count);

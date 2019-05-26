@@ -100,6 +100,7 @@ extern Datum LWGEOM_npoints(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_numgeometries_collection(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_numpoints_linestring(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_pointn_linestring(PG_FUNCTION_ARGS);
+extern Datum LWGEOM_setpoint_linestring(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_shortestline2d(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum LWGEOM_shortestline3d(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum LWGEOM_reverse(PG_FUNCTION_ARGS);

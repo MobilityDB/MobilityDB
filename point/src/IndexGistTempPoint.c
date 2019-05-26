@@ -250,8 +250,7 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	 */
 	if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
+		/* Since function gist_tpoint_consistent is strict, query is not NULL */
 		if (!geo_to_gbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);										  
 	}

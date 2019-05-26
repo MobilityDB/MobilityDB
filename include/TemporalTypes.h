@@ -153,7 +153,7 @@ typedef struct
 	/* variable-length data follows */
 } TemporalInst;
 
-/* Temporal Set Instant */
+/* Temporal Instant Set */
 
 typedef struct 
 {
@@ -319,16 +319,23 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 extern void _PG_init(void);
 extern void debugstr(char *msg);
-extern void temporal_duration_is_valid(int16 type);
-extern void temporal_number_is_valid(Oid type);
-extern void temporal_numrange_is_valid(Oid type);
-extern void temporal_point_is_valid(Oid type);
 extern size_t double_pad(size_t size);
 extern bool type_is_continuous(Oid type);
 extern bool type_byval_fast(Oid type);
 extern int get_typlen_fast(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);
+
+/* Assertion tests */
+
+extern void temporal_duration_is_valid(int16 type);
+extern void numrange_type_oid(Oid type);
+extern void base_type_oid(Oid valuetypid);
+extern void base_type_all_oid(Oid valuetypid);
+extern void continuous_base_type_oid(Oid valuetypid);
+extern void continuous_base_type_all_oid(Oid valuetypid);
+extern void number_base_type_oid(Oid type);
+extern void point_base_type_oid(Oid type);
 
 /* PostgreSQL call helpers */
 
@@ -405,12 +412,8 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 /* Oid functions */
 
-extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-extern bool base_type_oid(Oid valuetypid);
-extern bool continuous_base_type_oid(Oid valuetypid);
-extern bool continuous_base_type_all_oid(Oid valuetypid);
 extern bool temporal_type_oid(Oid temptypid);
 
 /* Catalog functions */
@@ -657,7 +660,7 @@ extern bool temporalinst_ever_equals(TemporalInst *inst, Datum value);
 extern bool temporalinst_always_equals(TemporalInst *inst, Datum value);
 extern void temporalinst_timespan(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
-extern ArrayType *temporalinst_instants(TemporalInst *inst);
+extern ArrayType *temporalinst_instants_array(TemporalInst *inst);
 extern TemporalInst *temporalinst_shift(TemporalInst *inst, Interval *interval);
 
 /* Restriction Functions */
@@ -753,8 +756,8 @@ extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
 extern void temporali_timespan(Period *p, TemporalI *ti);
-extern TemporalInst **temporali_instantarr(TemporalI *ti);
-extern ArrayType *temporali_instants(TemporalI *ti);
+extern TemporalInst **temporali_instants(TemporalI *ti);
+extern ArrayType *temporali_instants_array(TemporalI *ti);
 extern Timestamp temporali_start_timestamp(TemporalI *ti);
 extern TimestampTz temporali_end_timestamp(TemporalI *ti);
 extern ArrayType *temporali_timestamps(TemporalI *ti);
@@ -1054,12 +1057,11 @@ extern Datum temporals_max_value(TemporalS *ts);
 extern PeriodSet *temporals_get_time(TemporalS *ts);
 extern Datum temporals_duration(TemporalS *ts);
 extern void temporals_timespan(Period *p, TemporalS *ts);
-extern TemporalSeq **temporals_sequencearr(TemporalS *ts);
-extern ArrayType *temporals_sequences_internal(TemporalS *ts);
+extern TemporalSeq **temporals_sequences(TemporalS *ts);
+extern ArrayType *temporals_sequences_array(TemporalS *ts);
 extern int temporals_num_instants(TemporalS *ts);
 extern TemporalInst *temporals_instant_n(TemporalS *ts, int n);
-extern TemporalInst **temporals_instants1(TemporalS *ts, int *count);
-extern ArrayType *temporals_instants(TemporalS *ts);
+extern ArrayType *temporals_instants_array(TemporalS *ts);
 extern TimestampTz temporals_start_timestamp(TemporalS *ts);
 extern TimestampTz temporals_end_timestamp(TemporalS *ts);
 extern int temporals_num_timestamps(TemporalS *ts);
@@ -1403,6 +1405,9 @@ extern bool temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
 extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
 	bool lower_inc, bool upper_inc);
 extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+
+extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
+extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
 
 extern bool contains_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool contained_box_timestamp_internal(BOX *box, TimestampTz t);

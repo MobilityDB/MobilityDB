@@ -58,7 +58,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 		return;
 	}
 	double fraction = 0.0;
-	temporal_point_is_valid(inst1->valuetypid);
+	point_base_type_oid(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* The trajectory is a line */
@@ -182,7 +182,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
@@ -232,7 +232,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))

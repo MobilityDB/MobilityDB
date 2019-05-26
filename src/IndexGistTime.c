@@ -675,9 +675,8 @@ gist_time_consistent(PG_FUNCTION_ARGS)
 	
 	if (subtype == TIMESTAMPTZOID)
 	{
+		/* Since function gist_time_consistent is strict, query is not NULL */
 		TimestampTz query;
-		if (PG_ARGISNULL(1))
-			PG_RETURN_BOOL(false);
 		query = PG_GETARG_TIMESTAMPTZ(1);
 		period = period_make(query, query, true, true);
 		periodfree = true;

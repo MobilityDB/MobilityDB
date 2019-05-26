@@ -382,6 +382,11 @@ tpointarr_astext(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
 	Temporal **temparr = temporalarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_astext_internal(temparr[i]);
@@ -406,6 +411,11 @@ tpointarr_asewkt(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
 	Temporal **temparr = temporalarr_extract(array, &count);
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		PG_RETURN_NULL();
+	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
 		textarr[i] = tpoint_asewkt_internal(temparr[i]);
@@ -463,7 +473,7 @@ tpoint_srid_internal(Temporal *temp)
 {
 	int result = 0;
 	temporal_duration_is_valid(temp->duration);
-	temporal_point_is_valid(temp->valuetypid) ;
+	point_base_type_oid(temp->valuetypid) ;
 	if (temp->duration == TEMPORALINST) 
 		result = tpointinst_srid_internal((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -793,7 +803,7 @@ tpointseq_make_trajectory(TemporalInst **instants, int count)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	Datum result = 0;
-	temporal_point_is_valid(valuetypid);
+	point_base_type_oid(valuetypid);
 	if (valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointseq_make_trajectory(instants, count);
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
@@ -809,6 +819,33 @@ tpointseq_trajectory(TemporalSeq *seq)
 	size_t *offsets = temporalseq_offsets_ptr(seq);
 	void *traj = temporalseq_data_ptr(seq) + offsets[(seq->count) + 1];
 	return PointerGetDatum(traj);
+}
+
+/* Add or replace a point to the trajectory of a sequence */
+
+Datum 
+tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
+{
+	Datum traj = tpointseq_trajectory(seq);
+	Datum point = temporalinst_value(inst);
+	GSERIALIZED *gstraj = (GSERIALIZED *)PointerGetDatum(traj);
+	if (gserialized_get_type(gstraj) == POINTTYPE)
+	{
+		if (datum_point_eq(traj, point))
+			return PointerGetDatum(gserialized_copy(gstraj)); 
+		else
+			return geompoint_trajectory(traj, point); 
+	}
+	else
+	{
+		if (replace)
+		{
+			int numpoints = call_function1(LWGEOM_numpoints_linestring, traj);
+			return call_function3(LWGEOM_setpoint_linestring, traj, numpoints-1, point);
+		}
+		else
+			return call_function2(LWGEOM_addpoint, traj, point);
+	}
 }
 
 /* Copy the precomputed trajectory of a tpointseq */
@@ -932,7 +969,7 @@ Datum
 tpoints_trajectory(TemporalS *ts) 
 {
 	Datum result = 0;
-	temporal_point_is_valid(ts->valuetypid);
+	point_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompoints_trajectory(ts);
 	else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
@@ -996,7 +1033,7 @@ tpointseq_length(TemporalSeq *seq)
 	
 	/* We are sure that the trajectory is a line */
 	double result = 0.0;
-	temporal_point_is_valid(seq->valuetypid);
+	point_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == type_oid(T_GEOMETRY))
 		/* The next function call works for 2D and 3D */
 		result = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
@@ -1169,7 +1206,7 @@ tpointseq_speed1(TemporalSeq *seq)
 		{
 			Datum traj = geompoint_trajectory(value1, value2);
 			double length = 0.0;
-			temporal_point_is_valid(seq->valuetypid);
+			point_base_type_oid(seq->valuetypid);
 			if (seq->valuetypid == type_oid(T_GEOMETRY))
 				/* The next function works for 2D and 3D */
 				length = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
@@ -1542,7 +1579,7 @@ static Datum
 tpointseq_azimuth1(TemporalInst *inst1, TemporalInst *inst2)
 {
 	Datum result = 0;
-	temporal_point_is_valid(inst1->valuetypid);
+	point_base_type_oid(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 		result = call_function2(LWGEOM_azimuth, temporalinst_value(inst1), 
 			temporalinst_value(inst2));
@@ -2212,7 +2249,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	}
 
 	double fraction = 0.0;
-	temporal_point_is_valid(inst1->valuetypid);
+	point_base_type_oid(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* The trajectory is a line */
@@ -2350,7 +2387,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
@@ -2397,7 +2434,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_distance2d;
 	else
@@ -2504,7 +2541,7 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2551,7 +2588,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp->valuetypid);
+	point_base_type_oid(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -2882,7 +2919,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	
 	Datum (*func)(Datum, Datum);
-	temporal_point_is_valid(temp1->valuetypid);
+	point_base_type_oid(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))

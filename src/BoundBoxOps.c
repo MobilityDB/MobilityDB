@@ -483,6 +483,85 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
+ * Expand the bounding box of a Temporal with a TemporalInst
+ * The functions assume that the argument box is set to 0 before with palloc0
+ *****************************************************************************/
+
+static void
+temporali_expand_period(Period *period, TemporalI *ti, TemporalInst *inst)
+{
+	TemporalInst *inst1 = temporali_inst_n(ti, 0);
+	period_set(period, inst1->t, inst->t, true, true);
+	return;
+}
+
+static void
+temporalseq_expand_period(Period *period, TemporalSeq *seq, TemporalInst *inst)
+{
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
+	return;
+}
+
+static void
+tnumber_expand_box(BOX *box, Temporal *temp, TemporalInst *inst)
+{
+	temporal_bbox(box, temp);
+	BOX box1;
+	temporalinst_bbox(&box1, inst);
+	box_expand_internal(box, &box1);
+	return;
+}
+
+bool 
+temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
+{
+	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
+	{
+		temporali_expand_period((Period *)box, ti, inst);
+		return true;
+	}
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		tnumber_expand_box((BOX *)box, (Temporal *)ti, inst);
+		return true;
+	}
+#ifdef WITH_POSTGIS
+	if (ti->valuetypid == type_oid(T_GEOGRAPHY) || 
+		ti->valuetypid == type_oid(T_GEOMETRY)) 
+	{
+		tpoint_expand_gbox((GBOX *)box, (Temporal *)ti, inst);
+		return true;
+	}
+#endif
+	return false;
+}
+
+bool 
+temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
+{
+	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
+	{
+		temporalseq_expand_period((Period *)box, seq, inst);
+		return true;
+	}
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		tnumber_expand_box((BOX *)box, (Temporal *)seq, inst);
+		return true;
+	}
+#ifdef WITH_POSTGIS
+	if (seq->valuetypid == type_oid(T_GEOGRAPHY) || 
+		seq->valuetypid == type_oid(T_GEOMETRY)) 
+	{
+		tpoint_expand_gbox((GBOX *)box, (Temporal *)seq, inst);
+		return true;
+	}
+#endif
+	return false;
+}
+
+/*****************************************************************************
  * Transform a <Type> to a BOX
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
@@ -492,7 +571,7 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 void
 base_to_box(BOX *box, Datum value, Oid valuetypid)
 {
-	temporal_number_is_valid(valuetypid);
+	number_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)
 		box->low.x = box->high.x = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -568,7 +647,7 @@ numeric_to_box(PG_FUNCTION_ARGS)
 void
 range_to_box_internal(BOX *box, RangeType *range)
 {
-	temporal_numrange_is_valid(range->rangetypid);
+	numrange_type_oid(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->low.x = (double)(DatumGetInt32(lower_datum(range)));

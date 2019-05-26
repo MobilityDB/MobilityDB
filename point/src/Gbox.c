@@ -25,6 +25,7 @@
  * 		GBOX ZM((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))
  * 		GEODBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))
  * 		GEODBOX M((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))
+ * where the commas are optional
  */
 PG_FUNCTION_INFO_V1(gbox_in);
 

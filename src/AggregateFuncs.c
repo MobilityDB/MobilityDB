@@ -440,7 +440,7 @@ static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
     int returnvalue = 0;
-	temporal_number_is_valid(seq->valuetypid);
+	number_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		returnvalue = tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
@@ -582,7 +582,7 @@ static AggregateState *
 temporali_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	TemporalI *ti, Datum (*func)(Datum, Datum))
 {
-	TemporalInst **instants = temporali_instantarr(ti);
+	TemporalInst **instants = temporali_instants(ti);
 	AggregateState *state2 = aggstate_make(fcinfo, ti->count, (Temporal **)instants);
 	if (state->size == 0)
 		return state2;
@@ -908,7 +908,7 @@ static AggregateState *
 temporals_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
 	TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
 {
-	TemporalSeq **sequences = temporals_sequencearr(ts);
+	TemporalSeq **sequences = temporals_sequences(ts);
 	AggregateState *state2 = aggstate_make(fcinfo, ts->count, 
 		(Temporal **)sequences);
 	pfree(sequences);
@@ -1331,7 +1331,7 @@ temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
 	int maxcount = 0;
-	temporal_number_is_valid(seq->valuetypid);
+	number_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		maxcount = seq->count;
 	else if (seq->valuetypid == FLOAT8OID)
@@ -1358,7 +1358,7 @@ temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
 	int maxcount = 0;
-	temporal_number_is_valid(ts->valuetypid);
+	number_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)
