@@ -74,7 +74,16 @@ PG_FUNCTION_INFO_V1(temporal_contains_sel);
 PGDLLEXPORT Datum
 temporal_contains_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.002);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    if (selec < 0.0)
+        selec = 0.002;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
