@@ -548,7 +548,7 @@ temporalseqarr_sort(TemporalSeq **sequences, int count)
 int
 datum_remove_duplicates(Datum *values, int count, Oid type)
 {
-	assert (count != 0)
+	assert (count != 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
 		if (datum_ne(values[newcount], values[i], type))
@@ -561,7 +561,7 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 int
 timestamp_remove_duplicates(TimestampTz *values, int count)
 {
-	assert (count != 0)
+	assert (count != 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++) 
 		if (values[newcount] != values[i])
@@ -602,8 +602,7 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 bool
 datum_eq(Datum l, Datum r, Oid type)
 {
-	if (type == 0)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
+	assert(type != 0);
 	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID || 
 		type == TIMESTAMPOID || type == TIMESTAMPTZOID)
 		return l == r;
@@ -693,8 +692,7 @@ datum_ge(Datum l, Datum r, Oid type)
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
-	if (typel == 0 || typer == 0)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
+	assert(typel != 0 && typer != 0);
 	if ((typel == BOOLOID && typer == BOOLOID) ||
 		(typel == INT4OID && typer == INT4OID) ||
 		(typel == FLOAT8OID && typer == FLOAT8OID))
@@ -732,9 +730,7 @@ datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
 bool
 datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 {
-	if (typel == BOOLOID && typer == BOOLOID)
-		return DatumGetBool(l) < DatumGetBool(r);
-	else if (typel == INT4OID && typer == INT4OID)
+	if (typel == INT4OID && typer == INT4OID)
 		return DatumGetInt32(l) < DatumGetInt32(r);
 	else if (typel == INT4OID && typer == FLOAT8OID)
 		return DatumGetInt32(l) < DatumGetFloat8(r);
@@ -744,7 +740,7 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 		return DatumGetFloat8(l) < DatumGetFloat8(r);
 	else if (typel == TEXTOID && typer == TEXTOID) 
 		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-	/* This function is never called with doubleN, geometry, or geography */
+	/* This function is never called with boolean, doubleN, geometry, or geography */
 
 	List *lst = list_make1(makeString("<")); 
 	ereport(WARNING, (errcode(ERRCODE_WARNING), 
@@ -833,16 +829,25 @@ range_oid_from_base(Oid valuetypid)
 Oid
 temporal_oid_from_base(Oid valuetypid)
 {
-	if (valuetypid == BOOLOID) return type_oid(T_TBOOL);
-	if (valuetypid == INT4OID) return type_oid(T_TINT);
-	if (valuetypid == FLOAT8OID) return type_oid(T_TFLOAT);
-	if (valuetypid == TEXTOID) return type_oid(T_TTEXT);
-	if (valuetypid == type_oid(T_DOUBLE2)) return type_oid(T_TDOUBLE2);
-	if (valuetypid == type_oid(T_DOUBLE3)) return type_oid(T_TDOUBLE3);
-	if (valuetypid == type_oid(T_DOUBLE4)) return type_oid(T_TDOUBLE4);
+	if (valuetypid == BOOLOID) 
+		return type_oid(T_TBOOL);
+	if (valuetypid == INT4OID) 
+		return type_oid(T_TINT);
+	if (valuetypid == FLOAT8OID) 
+		return type_oid(T_TFLOAT);
+	if (valuetypid == TEXTOID) 
+		return type_oid(T_TTEXT);
+	if (valuetypid == type_oid(T_DOUBLE2)) 
+		return type_oid(T_TDOUBLE2);
+	if (valuetypid == type_oid(T_DOUBLE3)) 
+		return type_oid(T_TDOUBLE3);
+	if (valuetypid == type_oid(T_DOUBLE4)) 
+		return type_oid(T_TDOUBLE4);
 #ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY)) return type_oid(T_TGEOMPOINT);
-	if (valuetypid == type_oid(T_GEOGRAPHY)) return type_oid(T_TGEOGPOINT);
+	if (valuetypid == type_oid(T_GEOMETRY)) 
+		return type_oid(T_TGEOMPOINT);
+	if (valuetypid == type_oid(T_GEOGRAPHY)) 
+		return type_oid(T_TGEOGPOINT);
 #endif			
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
 }
