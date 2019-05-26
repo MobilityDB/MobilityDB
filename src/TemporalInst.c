@@ -707,7 +707,7 @@ temporalinst_hash(TemporalInst *inst)
 	Datum value = temporalinst_value(inst);
 	/* Apply the hash function according to the subtype */
 	uint32 value_hash = 0; 
-	assert(base_type_oid(inst->valuetypid));
+	base_type_oid(inst->valuetypid);
 	if (inst->valuetypid == BOOLOID)
 		value_hash = DatumGetUInt32(call_function1(hashchar, value));
 	else if (inst->valuetypid == INT4OID)

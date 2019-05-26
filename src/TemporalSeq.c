@@ -1252,7 +1252,7 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *inter)
 {
 	bool result = false;
-	assert(base_type_oid(start1->valuetypid));
+	base_type_oid(start1->valuetypid);
 	if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
 		(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
 		result = tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
@@ -1860,9 +1860,9 @@ tempcontseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	assert(continuous_base_type_oid(inst1->valuetypid));
 	/* Interpolation */
 	double fraction = 0.0;
+	continuous_base_type_oid(inst1->valuetypid);
 	if (inst1->valuetypid == FLOAT8OID)
 	{ 
 		double dvalue1 = DatumGetFloat8(value1);
@@ -2843,7 +2843,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	double partial = (double)t - (double)inst1->t;
 	double ratio = partial / duration;
 	Datum result = 0;
-	assert(continuous_base_type_all_oid(valuetypid));
+	continuous_base_type_all_oid(valuetypid);
 	if (valuetypid == FLOAT8OID)
 	{ 
 		double start = DatumGetFloat8(value1);

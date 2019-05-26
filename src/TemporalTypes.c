@@ -861,15 +861,13 @@ temporal_oid_from_base(Oid valuetypid)
 Oid
 base_oid_from_temporal(Oid temptypid)
 {
-	if (temptypid == type_oid(T_TBOOL)) return BOOLOID;
-	if (temptypid == type_oid(T_TINT)) return INT4OID;
-	if (temptypid == type_oid(T_TFLOAT)) return FLOAT8OID;
-	if (temptypid == type_oid(T_TTEXT)) return TEXTOID;
-#ifdef WITH_POSTGIS
-	if (temptypid == type_oid(T_TGEOMPOINT)) return type_oid(T_GEOMETRY);
-	if (temptypid == type_oid(T_TGEOGPOINT)) return type_oid(T_GEOGRAPHY);
-#endif			
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("Invalid Oid")));
+	assert(temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT));
+	int result = 0;
+	if (temptypid == type_oid(T_TINT)) 
+		result = INT4OID;
+	if (temptypid == type_oid(T_TFLOAT)) 
+		result = FLOAT8OID;
+	return result;
 }
 
 /*****************************************************************************/
@@ -877,41 +875,37 @@ base_oid_from_temporal(Oid temptypid)
  * Is the Oid an external base type ?
  */
 
-bool
+void
 base_type_oid(Oid valuetypid)
 {
-	if (valuetypid == BOOLOID || valuetypid == INT4OID || 
+	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
 		valuetypid == FLOAT8OID || valuetypid == TEXTOID
 #ifdef WITH_POSTGIS
 		|| valuetypid == type_oid(T_GEOMETRY)
 		|| valuetypid == type_oid(T_GEOGRAPHY)
 #endif
-		)
-		return true;
-	return false;
+		);
 }
 
 /* 
  * Is the Oid an external continuous base type ?
  */
 
-bool
+void
 continuous_base_type_oid(Oid valuetypid)
 {
-	if (valuetypid == FLOAT8OID
+	assert(valuetypid == FLOAT8OID
 #ifdef WITH_POSTGIS
 		|| valuetypid == type_oid(T_GEOMETRY)
 		|| valuetypid == type_oid(T_GEOGRAPHY)
 #endif
-		)
-		return true;
-	return false;
+		);
 }
 
-bool
+void
 continuous_base_type_all_oid(Oid valuetypid)
 {
-	if (valuetypid == FLOAT8OID ||
+	assert(valuetypid == FLOAT8OID ||
 		valuetypid ==  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
 		|| valuetypid == type_oid(T_GEOMETRY)
@@ -919,9 +913,7 @@ continuous_base_type_all_oid(Oid valuetypid)
 		|| valuetypid == type_oid(T_DOUBLE3)
 		|| valuetypid == type_oid(T_DOUBLE4)
 #endif
-		)
-		return true;
-	return false;
+		);
 }
 
 /* 

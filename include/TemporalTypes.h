@@ -408,9 +408,9 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
-extern bool base_type_oid(Oid valuetypid);
-extern bool continuous_base_type_oid(Oid valuetypid);
-extern bool continuous_base_type_all_oid(Oid valuetypid);
+extern void base_type_oid(Oid valuetypid);
+extern void continuous_base_type_oid(Oid valuetypid);
+extern void continuous_base_type_all_oid(Oid valuetypid);
 extern bool temporal_type_oid(Oid temptypid);
 
 /* Catalog functions */
