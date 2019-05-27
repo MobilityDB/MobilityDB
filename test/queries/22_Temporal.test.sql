@@ -750,6 +750,8 @@ SELECT numInstants(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT numInstants(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT numInstants(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}');
+
 SELECT startInstant(tbool 't@2000-01-01');
 SELECT startInstant(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT startInstant(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
@@ -800,6 +802,9 @@ SELECT instantN(ttext 'AAA@2000-01-01', 1);
 SELECT instantN(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 1);
 SELECT instantN(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 1);
 SELECT instantN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 1);
+
+SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 3);
+SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 4);
 -- NULL
 SELECT instantN(tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]', 4);
 SELECT instantN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 4);
