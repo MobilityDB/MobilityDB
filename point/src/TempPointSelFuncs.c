@@ -507,7 +507,7 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 	switch (operator)
 	{
 		case OVERLAPS_OP:
-			//selec = bbox_overlaps_sel_internal(root, vardata, constantData);
+			selec = calc_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
 			break;
 		case SAME_OP:
 			//selec = bbox_same_sel_internal(root, vardata, constantData);
