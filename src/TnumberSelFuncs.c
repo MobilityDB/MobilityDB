@@ -409,15 +409,6 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
     {
         hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
     }
-<<<<<<< HEAD
-=======
-    else
-    {
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                errmsg("unknown range operator")));
-        hist_selec = -1.0;	/* keep compiler quiet */
-    }
->>>>>>> master
 
     free_attstatsslot(&hslot);
 
