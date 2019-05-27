@@ -2615,6 +2615,12 @@ SELECT numInstants(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
            5
 (1 row)
 
+SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}');
+ numinstants 
+-------------
+           3
+(1 row)
+
 SELECT startInstant(tbool 't@2000-01-01');
        startinstant       
 --------------------------
@@ -2901,6 +2907,18 @@ SELECT instantN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
            instantn           
 ------------------------------
  "AAA"@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 3);
+         instantn         
+--------------------------
+ 3@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02),(2@2000-01-02, 3@2000-01-03]}', 4);
+ instantn 
+----------
+ 
 (1 row)
 
 SELECT instantN(tbool '[true@2000-01-01, false@2000-01-02, true@2000-01-03]', 4);

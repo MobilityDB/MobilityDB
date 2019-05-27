@@ -1323,8 +1323,11 @@ temporal_instant_n(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALS)
 	{
 		if (n >= 1 && n <= ((TemporalS *)temp)->totalcount)
-			result = (Temporal *)temporalinst_copy(temporals_instant_n(
-				(TemporalS *)temp, n));
+		{
+			TemporalInst *inst = temporals_instant_n((TemporalS *)temp, n);
+			if (inst != NULL)
+				result = (Temporal *)temporalinst_copy(inst);
+		}
 	}
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL) 

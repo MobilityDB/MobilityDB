@@ -266,23 +266,23 @@ temporal_oid_from_base(Oid valuetypid)
 }
 
 /* 
- * Obtain the Oid of the base type from the Oid of the temporal number type  
+ * Obtain the Oid of the range type from the Oid of the base type 
  */
 Oid
-base_oid_from_temporal(Oid temptypid)
+range_oid_from_base(Oid valuetypid)
 {
-	assert(temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT));
-	int result = 0;
-	if (temptypid == type_oid(T_TINT)) 
-		result = INT4OID;
-	if (temptypid == type_oid(T_TFLOAT)) 
-		result = FLOAT8OID;
+	Oid result = 0;
+	number_base_type_oid(valuetypid);
+	if (valuetypid == INT4OID)
+		result = type_oid(T_INTRANGE);
+	else if (valuetypid == FLOAT8OID)
+		result = type_oid(T_FLOATRANGE);
 	return result;
 }
 
 /* 
  * Is the Oid a temporal type ? 
- * Function used in the indexes.
+ * Function used in particular in the indexes.
  */
 bool
 temporal_type_oid(Oid temptypid)
@@ -298,6 +298,31 @@ temporal_type_oid(Oid temptypid)
 		)
 		return true;
 	return false;
+}
+
+/* 
+ * Obtain the Oid of the base type from the Oid of the temporal type  
+ */
+Oid
+base_oid_from_temporal(Oid temptypid)
+{
+	assert(temporal_type_oid(temptypid));
+	int result = 0;
+	if (temptypid == type_oid(T_TBOOL)) 
+		result = BOOLOID;
+	else if (temptypid == type_oid(T_TINT)) 
+		result = INT4OID;
+	else if (temptypid == type_oid(T_TFLOAT)) 
+		result = FLOAT8OID;
+	else if (temptypid == type_oid(T_TTEXT)) 
+		result = TEXTOID;
+#ifdef WITH_POSTGIS
+	else if (temptypid == type_oid(T_TGEOMPOINT)) 
+		result = type_oid(T_GEOMETRY);
+	else if (temptypid == type_oid(T_TGEOGPOINT)) 
+		result = type_oid(T_GEOGRAPHY);
+#endif
+	return result;
 }
 
 /*****************************************************************************
