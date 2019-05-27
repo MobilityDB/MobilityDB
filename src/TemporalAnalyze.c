@@ -2856,7 +2856,7 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			}
 
 			TypeCacheEntry *typentry;
-			typentry = lookup_type_cache(valueRangeType,
+			typentry = lookup_type_cache(range_oid_from_base(extra_data->value_type_id),
 										 TYPECACHE_EQ_OPR |
 										 TYPECACHE_CMP_PROC_FINFO |
 										 TYPECACHE_HASH_PROC_FINFO);
