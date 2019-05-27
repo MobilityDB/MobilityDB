@@ -204,8 +204,8 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 
 	Oid timestampType = TIMESTAMPTZOID;
-	bool timestamp_typbyval = type_byval_fast(timestampType);
-	int timestamp_typlen = get_typlen_fast(timestampType);
+	bool timestamp_typbyval = true;
+	int timestamp_typlen = sizeof(TimestampTz);
 
 
 	get_sort_group_operators(timestampType,
@@ -654,8 +654,8 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 		valueType = INT8OID;
 
 	Oid timestampType = TIMESTAMPTZOID;
-	bool timestamp_typbyval = type_byval_fast(timestampType);
-	int timestamp_typlen = get_typlen_fast(timestampType);
+	bool timestamp_typbyval = true;
+	int timestamp_typlen = sizeof(TimestampTz);
 
 	get_sort_group_operators(valueType,
 							 false, false, false,
