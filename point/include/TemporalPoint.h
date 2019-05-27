@@ -15,7 +15,7 @@
 
 #include "TemporalTypes.h"
 #include "PostGIS.h"
-#include "GeoEstimate.h"
+#include "TempPointSelFuncs.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

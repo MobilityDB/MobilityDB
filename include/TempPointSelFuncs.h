@@ -1,17 +1,18 @@
 /*****************************************************************************
  *
- * TemporalPointSelFuncs.h
+ * TempPointSelFuncs.h
  * 		Selectivity functions for the temporal point types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, Anas Al Bassit
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
+ * IDENTIFICATION
+ *	include/TempPointSelFuncs.h
  *****************************************************************************/
-
-#ifndef __GEO_ESTIMATE_H__
-#define __GEO_ESTIMATE_H__
+#ifndef MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
+#define MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
 
 #include <postgres.h>
 #include <datatype/timestamp.h>
@@ -21,6 +22,10 @@
 * We'll use this to statically allocate a bunch of
 * arrays below.
 */
+#define X_DIMS  0
+#define Y_DIMS  1
+#define Z_DIMS  2
+#define T_DIMS  3
 #define ND_DIMS 4
 
 /**
@@ -110,54 +115,25 @@ typedef struct ND_STATS_T {
 #define STATISTIC_SLOT_ND 0
 #define STATISTIC_SLOT_2D 1
 
-
-extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
+extern Selectivity tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
+extern double xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
+							  CachedOp cacheOp, int dim);
+extern double z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
+							 CachedOp cacheOp, int dim);
 extern int nd_box_init(ND_BOX *a);
-extern int nd_box_init_bounds(ND_BOX *a);
 extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
-extern int nd_box_expand(ND_BOX *nd_box, double expansion_factor);
-extern int nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims,
- 	 	 	 	 	 	 	 	 	 double *distribution);
-extern int range_quintile(int *vals, int nvals);
-extern int cmp_int(const void *a, const void *b);
-extern double total_double(const double *vals, int nvals);
 extern int nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox);
 extern double nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims);
 extern int nd_stats_value_index(const ND_STATS *stats, int *indexes);
 extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
 
-extern float8 estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op);
+extern Selectivity estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
-	Oid operator);
-extern int gbox_ndims(const GBOX* gbox);
+														   Oid operator);
 
-/*****************************************************************************
- * Join functions
- *****************************************************************************/
-#define DEFAULT_ND_JOINSEL 0.001
-#define FALLBACK_ND_JOINSEL 0.3
-/*
- * 	  rt_fetch
- *
- * NB: this will crash and burn if handed an out-of-range RT index
- */
-#define rt_fetch(rangetable_index, rangetable) \
- 	 ((RangeTblEntry *) list_nth(rangetable, (rangetable_index)-1))
-
-extern ND_STATS* pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_parent);
-extern ND_STATS* pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode);
 extern CachedOp get_cacheOp(Oid operator);
-extern double calc_period_hist_join_selectivity_scalar(PeriodBound *constbound, PeriodBound *hist,
- 	 	 	 	 	 	 	 	 	 	 	 	 	   int hist_nvalues1, int hist_nvalues2, bool equal);
-extern double timestamp_join_sel(AttStatsSlot hslot1, AttStatsSlot hslot2, CachedOp cachedOp);
-extern double check_mcv(PlannerInfo *root, CachedOp cacheOp, VariableStatData *vardata1, 
-	VariableStatData *vardata2, double nd1, double nd2, AttStatsSlot *sslot1, 
-	AttStatsSlot *sslot2, Form_pg_statistic stats1, Form_pg_statistic stats2,
-	bool have_mcvs1, bool have_mcvs2);
-extern float8 estimate_join_selectivity(const ND_STATS *s1, const ND_STATS *s2);
-extern Selectivity estimate_join_selectivity_temporal_dimension(PlannerInfo *root, List *args, SpecialJoinInfo *sjinfo, Oid operator, CachedOp cacheOp);
+extern GBOX get_gbox(Node *node);
 
-
-#endif
+#endif //MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
