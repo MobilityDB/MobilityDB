@@ -296,8 +296,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
                 {
                     hasTemporal = true;
                     selec2 = period_sel_internal(root, &vardata, constantData.period,
-                                                 oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-
+                                                 oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
                 }
                 break;
             }

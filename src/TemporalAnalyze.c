@@ -2704,11 +2704,7 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	TemporalArrayAnalyzeExtraData *extra_data = (TemporalArrayAnalyzeExtraData *)stats->extra_data;
 
-	//valueRangeType = range_oid_from_base(extra_data->value_type_id);
-	if (extra_data->value_type_id == INT4OID)
-		valueRangeType = type_oid(T_INTRANGE);
-	else if (extra_data->value_type_id == FLOAT8OID)
-		valueRangeType = type_oid(T_FLOATRANGE);
+	valueRangeType = range_oid_from_base(extra_data->value_type_id);
 
 	value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 	value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
