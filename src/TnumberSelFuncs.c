@@ -50,7 +50,16 @@ PG_FUNCTION_INFO_V1(tnumber_overlaps_sel);
 PGDLLEXPORT Datum
 tnumber_overlaps_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.005);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
+    if (selec < 0.0)
+        selec = 0.005;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_overlaps_joinsel);
@@ -226,7 +235,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
             case SNCONST_STCONST:
             case SNCONST_DTCONST:
             {
-                if(vardata.atttypmod == TEMPORALINST)
+                if(durationType == TEMPORALINST)
                 {
                     hasNumeric = true;
                     Oid op = oper_oid(EQ_OP, vartype, vartype);
@@ -276,7 +285,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
             case SNCONST_DTCONST:
             case DNCONST_DTCONST:
             {
-                if(vardata.atttypmod == TEMPORALINST)
+                if(durationType == TEMPORALINST)
                 {
                     hasTemporal = true;
                     Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
@@ -312,7 +321,7 @@ range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
                    bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy)
 {
     double hist_selec;
-    double selec;
+    Selectivity selec;
     float4 empty_frac, null_frac;
 
     /*
@@ -357,10 +366,10 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
     RangeBound *hist_upper;
     int i;
     bool empty;
-    double hist_selec;
+    Selectivity hist_selec = -1; /* keep compiler quiet */
     AttStatsSlot hslot;
 
-/* Try to get histogram of ranges */
+    /* Try to get histogram of ranges */
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
           get_attstatsslot_internal(&hslot, vardata->statsTuple,
                                     STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
@@ -399,12 +408,6 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
     else if (isgt && iseq)
     {
         hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
-    }
-    else
-    {
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                errmsg("unknown range operator")));
-        hist_selec = -1.0;	/* keep compiler quiet */
     }
 
     free_attstatsslot(&hslot);
