@@ -70,6 +70,15 @@ extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *va
 extern Selectivity tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
 extern Selectivity estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
 											 CachedOp cachedOp);
+extern Selectivity range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
+                                      bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy);
+extern Selectivity calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
+											   TypeCacheEntry *typcache, bool isgt, bool iseq,
+											   StatisticsStrategy strategy);
+extern Selectivity calc_hist_selectivity_scalar(TypeCacheEntry *typcache, Datum constbound,
+												RangeBound *hist, int hist_nvalues, bool equal);
+extern int rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
+						  int hist_length, bool equal);
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/

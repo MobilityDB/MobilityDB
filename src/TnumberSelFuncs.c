@@ -14,6 +14,7 @@
  *****************************************************************************/
  
 #include "TemporalTypes.h"
+#include "TimeSelFuncs.h"
 #include "TemporalSelFuncs.h"
 
 /*
@@ -304,4 +305,183 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
             selec = 0.0;
     }
     return selec;
+}
+
+Selectivity
+range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
+                   bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy)
+{
+    double hist_selec;
+    double selec;
+    float4 empty_frac, null_frac;
+
+    /*
+     * First look up the fraction of NULLs and empty ranges from pg_statistic.
+     */
+    if (HeapTupleIsValid(vardata->statsTuple))
+    {
+        Form_pg_statistic stats;
+        stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+        null_frac = stats->stanullfrac;
+        empty_frac = 0.0;
+    }
+    else
+    {
+        /*
+         * No stats are available. Follow through the calculations below
+         * anyway, assuming no NULLs and no empty ranges. This still allows us
+         * to give a better-than-nothing estimate based on whether the
+         * constant is an empty range or not.
+         */
+        null_frac = 0.0;
+        empty_frac = 0.0;
+    }
+    hist_selec = calc_range_hist_selectivity(vardata, constval, typcache, isgt, iseq, strategy);
+    selec = (1.0 - empty_frac) * hist_selec;
+    selec *= (1.0 - null_frac);
+    return selec;
+}
+
+/*
+ * Calculate range operator selectivity using histograms of range bounds.
+ *
+ * This estimate is for the portion of values that are not empty and not
+ * NULL.
+ */
+Selectivity
+calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
+                            TypeCacheEntry *typcache, bool isgt, bool iseq, StatisticsStrategy strategy)
+{
+    int nhist;
+    RangeBound *hist_lower;
+    RangeBound *hist_upper;
+    int i;
+    bool empty;
+    Selectivity hist_selec;
+    AttStatsSlot hslot;
+
+/* Try to get histogram of ranges */
+    if (!(HeapTupleIsValid(vardata->statsTuple) &&
+          get_attstatsslot_internal(&hslot, vardata->statsTuple,
+                                    STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
+                                    ATTSTATSSLOT_VALUES, strategy)))
+        return -1.0;
+
+    /*
+     * Convert histogram of ranges into histograms of its lower and upper
+     * bounds.
+     */
+    nhist = hslot.nvalues;
+    hist_lower = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
+    hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
+
+    for (i = 0; i < nhist; i++)
+    {
+        range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
+                          &hist_lower[i], &hist_upper[i], &empty);
+        /* The histogram should not contain any empty ranges */
+        if (empty)
+            elog(ERROR, "bounds histogram contains an empty range");
+    }
+
+    if (!isgt && !iseq)
+    {
+        hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, false);
+    }
+    else if (!isgt && iseq)
+    {
+        hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, true);
+    }
+    else if (isgt && !iseq)
+    {
+        hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, false);
+    }
+    else if (isgt && iseq)
+    {
+        hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
+    }
+    else
+    {
+        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                errmsg("unknown range operator")));
+        hist_selec = -1.0;	/* keep compiler quiet */
+    }
+
+    free_attstatsslot(&hslot);
+
+    return hist_selec;
+}
+
+/*
+ * Look up the fraction of values less than (or equal, if 'equal' argument
+ * is true) a given const in a histogram of range bounds.
+ */
+Selectivity
+calc_hist_selectivity_scalar(TypeCacheEntry *typcache, Datum constbound,
+                             RangeBound *hist, int hist_nvalues, bool equal)
+{
+    Selectivity selec;
+    int index;
+
+/*
+ * Find the histogram bin the given constant falls into. Estimate
+ * selectivity as the number of preceding whole bins.
+ */
+    index = rbound_bsearch(typcache, constbound, hist, hist_nvalues, equal);
+    selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues - 1);
+
+    /* Adjust using linear interpolation within the bin */
+    if (index >= 0 && index < hist_nvalues - 1)
+    {
+        float8 bin_width, position;
+        bin_width = DatumGetFloat8(FunctionCall2Coll(
+                &typcache->rng_subdiff_finfo,
+                typcache->rng_collation,
+                hist[index + 1].val,
+                hist[index].val));
+        if (bin_width <= 0.0)
+            return 0.5;			/* zero width bin */
+
+        position = DatumGetFloat8(FunctionCall2Coll(
+                &typcache->rng_subdiff_finfo,
+                typcache->rng_collation,
+                constbound,
+                hist[index].val)) / bin_width;
+        /* Relative position must be in [0,1] range */
+        position = Max(position, 0.0);
+        position = Min(position, 1.0);
+        selec += position / (Selectivity) (hist_nvalues - 1);
+    }
+
+    return selec;
+}
+
+/*
+ * Binary search on an array of range bounds. Returns greatest index of range
+ * bound in array which is less(less or equal) than given range bound. If all
+ * range bounds in array are greater or equal(greater) than given range bound,
+ * return -1. When "equal" flag is set conditions in brackets are used.
+ *
+ * This function is used in scalar operator selectivity estimation. Another
+ * goal of this function is to find a histogram bin where to stop
+ * interpolation of portion of bounds which are less or equal to given bound.
+ */
+int
+rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
+               int hist_length, bool equal)
+{
+    int lower = -1, upper = hist_length - 1, cmp, middle;
+
+    while (lower < upper)
+    {
+        middle = (lower + upper + 1) / 2;
+        cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+                                              typcache->rng_collation,
+                                              (&hist[middle])->val, value));
+        if (cmp < 0 || (equal && cmp == 0))
+            lower = middle;
+        else
+            upper = middle - 1;
+    }
+    return lower;
 }
