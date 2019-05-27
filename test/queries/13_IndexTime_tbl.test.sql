@@ -77,6 +77,14 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-07-01]';
 
+SELECT count(*) FROM tbl_period_big WHERE p && timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p @> timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p <@ timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p <<# timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p #>> timestamptz '2001-01-01';
+SELECT count(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
+
 SELECT count(*) FROM tbl_period_big WHERE p && period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_period_big WHERE p @> period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_period_big WHERE p <@ period '[2001-01-01, 2001-07-01]';
@@ -84,6 +92,14 @@ SELECT count(*) FROM tbl_period_big WHERE p <<# period '[2001-01-01, 2001-07-01]
 SELECT count(*) FROM tbl_period_big WHERE p &<# period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_period_big WHERE p #>> period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_period_big WHERE p #&> period '[2001-01-01, 2001-07-01]';
+
+SELECT count(*) FROM tbl_period_big WHERE p && periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p @> periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p <@ periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p <<# periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p &<# periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p #>> periodset '{[2001-01-01, 2001-07-01]}';
+SELECT count(*) FROM tbl_period_big WHERE p #&> periodset '{[2001-01-01, 2001-07-01]}';
 
 SELECT count(*) FROM tbl_periodset_big WHERE ps && period '[2001-01-01, 2001-07-01]';
 SELECT count(*) FROM tbl_periodset_big WHERE ps @> period '[2001-01-01, 2001-07-01]';
