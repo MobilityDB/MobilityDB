@@ -54,7 +54,7 @@ tnumber_overlaps_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
+    Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
     if (selec < 0.0)
         selec = 0.005;
     else if (selec > 1.0)
@@ -281,9 +281,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
             case STCONST:
             case SNCONST_STCONST:
             case DNCONST_STCONST:
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
             {
                 if(durationType == TEMPORALINST)
                 {
@@ -299,6 +296,20 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
                                                  oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
                 }
                 break;
+            }
+            case DTCONST:
+            case SNCONST_DTCONST:
+            case DNCONST_DTCONST:
+            {
+                Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+                Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ , T_TIMESTAMPTZ);
+                hasTemporal = true;
+                selec2 = scalarineq_sel(root, opl, false, false, &vardata, (Datum)constantData.period->lower,
+                                        TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+                selec2 += scalarineq_sel(root, opg, true, false, &vardata, (Datum)constantData.period->upper,
+                                         TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+                selec2 = 1 - selec2;
+                selec2 = selec2 < 0 ? 0 : selec2;
             }
             default:
                 break;

@@ -12,7 +12,7 @@
  *	src/TemporalSelFuncs.c
  *
  *****************************************************************************/
- 
+
 #include "TemporalTypes.h"
 #include "TimeSelFuncs.h"
 
@@ -1122,16 +1122,6 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *bBoxBounds = DNCONST;
 
     }
-    else if (consttype == BOXOID)
-    {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        *numeric = true;
-        *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        *period = period_make(box->low.y, box->high.y, true, true);
-        *bBoxBounds = DNCONST_DTCONST;
-    }
     else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     {
         Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
@@ -1165,5 +1155,22 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *temporal = true;
         *period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
         *bBoxBounds = DTCONST;
+    }
+    else if (consttype == BOXOID)
+    {
+        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
+        if (box->high.x == INFINITY && box->low.x == -INFINITY)
+        {
+            *bBoxBounds = DTCONST;
+        }
+        else
+        {
+            *numeric = true;
+            *lower = box->low.x;
+            *upper = box->high.x;
+            *bBoxBounds = DNCONST_DTCONST;
+        }
+        *temporal = true;
+        *period = period_make(box->low.y, box->high.y, true, true);
     }
 }
