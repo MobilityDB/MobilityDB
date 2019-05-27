@@ -44,10 +44,10 @@ typedef struct
 } ConstantData;
 
 /*****************************************************************************
- * Internal selectivity functions for the operators.
+ * Internal selectivity functions for Temporal types.
  *****************************************************************************/
-extern Selectivity bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
-extern Selectivity calc_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
+extern Selectivity temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
+extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
 								 CachedOp cachedOp);
 extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 									   Oid operator, StatisticsStrategy strategy);
@@ -64,6 +64,12 @@ extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *va
 //extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
 //extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
 //extern double bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+/*****************************************************************************
+ * Internal selectivity functions for Tnumber types.
+ *****************************************************************************/
+extern Selectivity tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
+extern Selectivity estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
+											 CachedOp cachedOp);
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/

@@ -53,7 +53,7 @@ temporal_overlaps_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
     if (selec < 0.0)
         selec = 0.005;
     else if (selec > 1.0)
@@ -78,7 +78,7 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
     if (selec < 0.0)
         selec = 0.002;
     else if (selec > 1.0)
@@ -137,7 +137,7 @@ temporal_position_joinsel(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 Selectivity
-bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
 {
     VariableStatData vardata;
     Node *other;
@@ -212,7 +212,7 @@ bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cac
         constantData.period = period;
     }
 
-    selec = calc_bbox_sel(root, vardata, constantData, cachedOp);
+    selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
 
     if (selec < 0.0)
         selec = default_temporaltypes_selectivity(operator);
@@ -225,7 +225,7 @@ bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cac
 }
 
 Selectivity
-calc_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
+estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
 {
     // Check the temporal types and inside each one check the cachedOp
     Selectivity  selec = 0.0;
