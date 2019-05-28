@@ -771,12 +771,17 @@ get_cacheOp(Oid operator)
 {
 	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
-		if (operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX)	||
-			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOGPOINT)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOGRAPHY)	||
-			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX))
+		if (operator == oper_oid((CachedOp)i, T_GBOX, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_GEOMETRY, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GEOGRAPHY, T_TGEOGPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOGPOINT) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GEOGRAPHY) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOMPOINT))
 			return (CachedOp)i;
 	}
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
