@@ -133,7 +133,7 @@ extern Selectivity estimate_selectivity(VariableStatData *vardata, const GBOX *b
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
 														   Oid operator);
 
-extern CachedOp get_cacheOp(Oid operator);
+extern CachedOp get_tpoint_cacheOp(Oid operator);
 extern GBOX get_gbox(Node *node);
 
 #endif //MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
