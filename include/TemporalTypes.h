@@ -438,8 +438,6 @@ extern RangeType **rangearr_normalize(RangeType **ranges, int *count);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);
 
-extern RangeType *numrange_to_floatrange(RangeType *range);
-
 extern Datum range_left_elem(PG_FUNCTION_ARGS);
 extern Datum range_overleft_elem(PG_FUNCTION_ARGS);
 extern Datum range_right_elem(PG_FUNCTION_ARGS);
