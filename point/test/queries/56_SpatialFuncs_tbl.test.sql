@@ -1,5 +1,11 @@
 ﻿-------------------------------------------------------------------------------
 
+-- set parallel_tuple_cost=0;
+-- set parallel_setup_cost=0;
+-- set force_parallel_mode=regress;
+
+-------------------------------------------------------------------------------
+
 SELECT astext(temp) FROM tbl_tgeompoint LIMIT 10;
 SELECT astext(temp) FROM tbl_tgeogpoint LIMIT 10;
 SELECT astext(temp) FROM tbl_tgeompoint3D LIMIT 10;
@@ -198,3 +204,8 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
+-- set parallel_tuple_cost=100;
+-- set parallel_setup_cost=100;
+-- set force_parallel_mode=off;
+
+-------------------------------------------------------------------------------
