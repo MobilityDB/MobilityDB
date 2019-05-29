@@ -973,12 +973,11 @@ temporals_num_instants(TemporalS *ts)
 TemporalInst *
 temporals_instant_n(TemporalS *ts, int n)
 {
-	if (n < 1)
-		return NULL;
+	assert (n >= 1 && n <= ts->totalcount);
 	if (n == 1)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, 0);
-		return temporalinst_copy(temporalseq_inst_n(seq, 0));
+		return temporalseq_inst_n(seq, 0);
 	}
 	
 	/* Continue the search 0-based */

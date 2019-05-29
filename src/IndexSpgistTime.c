@@ -234,7 +234,7 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		PeriodBound	lower,
 					upper;
-		Period	   *period = NULL;
+		Period	   *query = NULL, period;
 
 		/* Restrictions on period bounds according to scan strategy */
 		PeriodBound *minLower = NULL,
@@ -249,25 +249,24 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
 		 * Cast the query to Period for ease of the following operations.
 		 */
 		
-		bool mustfree = false;
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{
 			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			period = period_make(t, t, true, true);
-			mustfree = true;
+			period_set(&period, t, t, true, true);
+			query = &period;
 		}
 		else if (in->scankeys[i].sk_subtype == type_oid(T_TIMESTAMPSET))
-			period = timestampset_bbox(
+			query = timestampset_bbox(
 				DatumGetTimestampSet(in->scankeys[i].sk_argument));
 		else if (in->scankeys[i].sk_subtype == type_oid(T_PERIOD))
-			period = DatumGetPeriod(in->scankeys[i].sk_argument);
+			query = DatumGetPeriod(in->scankeys[i].sk_argument);
 		else if (in->scankeys[i].sk_subtype == type_oid(T_PERIODSET))
-			period = periodset_bbox(
+			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
 		
-		period_deserialize(period, &lower, &upper);
+		period_deserialize(query, &lower, &upper);
 
 		/*
 		 * Most strategies are handled by forming a bounding box from the
@@ -309,7 +308,7 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
 				 * Equal period can be only in the same quadrant where
 				 * argument would be placed to.
 				 */
-				which &= (1 << getQuadrant(centroid, period));
+				which &= (1 << getQuadrant(centroid, query));
 				break;
 
 			case RTBeforeStrategyNumber:
@@ -349,8 +348,6 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
 			default:
 				elog(ERROR, "unrecognized strategy: %d", strategy);
 		}
-		if (mustfree)
-			pfree(period);
 		
 		/*
 		 * Using the bounding box, see which quadrants we have to descend
@@ -466,8 +463,7 @@ spgist_time_leaf_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		Period	   *query;
-		bool 		mustfree = false;
+		Period	   *query, period;
 
 		/* Update the recheck flag according to the strategy */
 		out->recheck |= index_time_bbox_recheck(strategy);
@@ -475,32 +471,21 @@ spgist_time_leaf_consistent(PG_FUNCTION_ARGS)
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{
 			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
-			query = period_make(t, t, true, true);
-			res = index_leaf_consistent_time(key, query, strategy);
-			mustfree = true;
+			period_set(&period, t, t, true, true);
+			query = &period;
 		}
 		else if (in->scankeys[i].sk_subtype == type_oid(T_TIMESTAMPSET))
-		{
 			query = timestampset_bbox(
 				DatumGetTimestampSet(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_time(key, query, strategy);
-		}
 		else if (in->scankeys[i].sk_subtype == type_oid(T_PERIOD))
-		{
 			query = DatumGetPeriod(in->scankeys[i].sk_argument);
-			res = index_leaf_consistent_time(key, query, strategy);
-		}
 		else if (in->scankeys[i].sk_subtype ==  type_oid(T_PERIODSET))
-		{
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_time(key, query, strategy);
-		}
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
 
-		if (mustfree)
-			pfree(query);
+		res = index_leaf_consistent_time(key, query, strategy);
 
 		/* If any check is failed, we have found our answer. */
 		if (!res)
