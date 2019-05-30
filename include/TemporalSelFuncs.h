@@ -97,7 +97,10 @@ extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower,
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/
-extern double default_temporaltypes_selectivity(Oid operator);
+extern bool get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
+									  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
+
+		extern double default_temporaltypes_selectivity(Oid operator);
 extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
