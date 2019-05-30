@@ -1164,25 +1164,7 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
         *bBoxBounds = DTCONST;
     }
-    else if (consttype == BOXOID)
-    {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        if (box->high.x == INFINITY && box->low.x == -INFINITY)
-        {
-            *bBoxBounds = DTCONST;
-        }
-        else
-        {
-            *numeric = true;
-            *lower = box->low.x;
-            *upper = box->high.x;
-            *bBoxBounds = DNCONST_DTCONST;
-        }
-        *temporal = true;
-        *period = period_make(box->low.y, box->high.y, true, true);
-    }
 }
-
 bool
 get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
                           int reqkind, Oid reqop, int flags, StatisticsStrategy strategy)
