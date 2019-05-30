@@ -215,6 +215,8 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 
     if (selec < 0.0)
         selec = default_temporaltypes_selectivity(operator);
+    else if (selec > 1.0)
+        selec = 1.0;
 
     ReleaseVariableStats(vardata);
 
