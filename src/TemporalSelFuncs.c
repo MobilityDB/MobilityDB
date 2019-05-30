@@ -1104,7 +1104,7 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *temporal = true;
         *lower = box->low.x;
         *upper = box->high.x;
-        temporal_timespan_internal(*period, temp);
+        *period = period_make((TimestampTz)box->low.y, (TimestampTz)box->high.y, true, true);
         *bBoxBounds = DNCONST_DTCONST;
         pfree(box);
     }
