@@ -45,14 +45,14 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
 void
 period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
 {
-	if (lower) 
+	if (lower)
 	{
 		lower->val = p->lower;
 		lower->inclusive = p->lower_inc;
 		lower->lower = true;
 	}
 
-	if (upper) 
+	if (upper)
 	{
 		upper->val = p->upper;
 		upper->inclusive = p->upper_inc;

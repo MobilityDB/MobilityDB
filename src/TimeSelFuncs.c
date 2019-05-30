@@ -140,7 +140,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	CachedOp opname = get_time_cacheOp(operator);
 
 	/* @> and @< also need a histogram of period lengths */
-	if (opname == OVERLAPS_OP || opname == CONTAINS_OP || opname == CONTAINED_OP)
+	if (opname == CONTAINS_OP || opname == CONTAINED_OP)
 	{
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
 			get_attstatsslot(&lslot, vardata->statsTuple,
@@ -158,12 +158,11 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 			free_attstatsslot(&hslot);
 			return -1.0;
 		}
+        /* Extract the bounds of the constant value. */
+        period_deserialize(constval, &const_lower, &const_upper);
 	}
 	else
 		memset(&lslot, 0, sizeof(lslot));
-
-	/* Extract the bounds of the constant value. */
-	period_deserialize(constval, &const_lower, &const_upper);
 
 	/*
 	 * Calculate selectivity comparing the lower or upper bound of the
