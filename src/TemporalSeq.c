@@ -1367,23 +1367,6 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 }
 
 /*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-/*
-TemporalSeq *
-temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (seq->count + 1));
-	for (int i = 0; i < seq->count; i++)
-		instants[i] = temporalseq_inst_n(seq, i);
-	instants[seq->count] = inst;
-	return temporalseq_from_temporalinstarr(instants, seq->count + 1, 
-		seq->period.lower_inc, seq->period.upper_inc, true);
-}
-*/
-/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 

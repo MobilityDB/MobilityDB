@@ -28,7 +28,7 @@
  *
  * where the X are unused bytes added for double padding, the Y are unused bytes 
  * added for int4 padding, offset_0 to offset_2 are offsets for the corresponding 
- * periods, and offset_3 is the offset for the bounding box.
+ * periods, and offset_3 is the offset for the bounding box which is a Period.
  */
  
 /* Pointer to array of offsets of the PeriodSet */
