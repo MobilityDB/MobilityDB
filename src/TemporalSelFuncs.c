@@ -1134,7 +1134,7 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
     {
         Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
         *period = palloc(sizeof(Period));
-        temporal_bbox(period, temp);
+        temporal_bbox(*period, temp);
         *temporal = true;
         *bBoxBounds = DTCONST;
     }
