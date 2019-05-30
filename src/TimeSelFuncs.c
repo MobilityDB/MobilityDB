@@ -140,7 +140,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	CachedOp opname = get_time_cacheOp(operator);
 
 	/* @> and @< also need a histogram of period lengths */
-	if (opname == CONTAINS_OP || opname == CONTAINED_OP)
+	if (opname == OVERLAPS_OP || opname == CONTAINS_OP || opname == CONTAINED_OP)
 	{
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
 			get_attstatsslot(&lslot, vardata->statsTuple,
