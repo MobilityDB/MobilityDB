@@ -237,7 +237,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 			&const_upper, hist_lower, hist_upper,nhist);
 	else
 	{
-		elog(ERROR, "unknown period operator %u", operator);
+		//elog(ERROR, "unknown period operator %u", operator);
 		hist_selec = -1.0;  /* keep compiler quiet */
 	}
 
