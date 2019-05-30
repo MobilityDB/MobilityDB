@@ -1183,3 +1183,133 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *period = period_make(box->low.y, box->high.y, true, true);
     }
 }
+
+bool
+get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
+                          int reqkind, Oid reqop, int flags, StatisticsStrategy strategy)
+{
+    Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
+    int i, start = 0, end = 0;  /* keep compiler quiet */
+    Datum val;
+    bool isnull;
+    ArrayType *statarray;
+    Oid arrayelemtype;
+    int narrayelem;
+    HeapTuple typeTuple;
+    Form_pg_type typeForm;
+
+    switch (strategy) {
+        case VALUE_STATISTICS: {
+            start = 0;
+            end = 2;
+            break;
+        }
+        case TEMPORAL_STATISTICS: {
+            start = 2;
+            end = 5;
+            break;
+        }
+        case DEFAULT_STATISTICS: {
+            start = 0;
+            end = STATISTIC_NUM_SLOTS;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    /* initialize *sslot properly */
+    memset(sslot, 0, sizeof(AttStatsSlot));
+
+    for (i = start; i < end; i++) {
+        if ((&stats->stakind1)[i] == reqkind &&
+            (reqop == InvalidOid || (&stats->staop1)[i] == reqop))
+            break;
+    }
+    if (i >= end)
+        return false;			/* not there */
+
+    sslot->staop = (&stats->staop1)[i];
+
+    if (flags & ATTSTATSSLOT_VALUES) {
+        val = SysCacheGetAttr(STATRELATTINH, statstuple,
+                              Anum_pg_statistic_stavalues1 + i,
+                              &isnull);
+        if (isnull)
+            elog(ERROR, "stavalues is null");
+
+        /*
+         * Detoast the array if needed, and in any case make a copy that's
+         * under control of this AttStatsSlot.
+         */
+        statarray = DatumGetArrayTypePCopy(val);
+
+        /*
+         * Extract the actual array element type, and pass it after in case the
+         * caller needs it.
+         */
+        sslot->valuetype = arrayelemtype = ARR_ELEMTYPE(statarray);
+
+        /* Need info about element type */
+        typeTuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(arrayelemtype));
+        if (!HeapTupleIsValid(typeTuple))
+            elog(ERROR, "cache lookup failed for type %u", arrayelemtype);
+        typeForm = (Form_pg_type) GETSTRUCT(typeTuple);
+
+        /* Deconstruct array into Datum elements; NULLs not expected */
+        deconstruct_array(statarray,
+                          arrayelemtype,
+                          typeForm->typlen,
+                          typeForm->typbyval,
+                          typeForm->typalign,
+                          &sslot->values, NULL, &sslot->nvalues);
+
+        /*
+         * If the element type is pass-by-reference, we now have a bunch of
+         * Datums that are pointers into the statarray, so we need to keep
+         * that until free_attstatsslot.  Otherwise, all the useful info is in
+         * sslot->values[], so we can free the array object immediately.
+         */
+        if (!typeForm->typbyval)
+            sslot->values_arr = statarray;
+        else
+            pfree(statarray);
+
+        ReleaseSysCache(typeTuple);
+    }
+
+    if (flags & ATTSTATSSLOT_NUMBERS) {
+        val = SysCacheGetAttr(STATRELATTINH, statstuple,
+                              Anum_pg_statistic_stanumbers1 + i,
+                              &isnull);
+        if (isnull)
+            elog(ERROR, "stanumbers is null");
+
+        /*
+         * Detoast the array if needed, and in any case make a copy that's
+         * under control of this AttStatsSlot.
+         */
+        statarray = DatumGetArrayTypePCopy(val);
+
+        /*
+         * We expect the array to be a 1-D float4 array; verify that. We don't
+         * need to use deconstruct_array() since the array data is just going
+         * to look like a C array of float4 values.
+         */
+        narrayelem = ARR_DIMS(statarray)[0];
+        if (ARR_NDIM(statarray) != 1 || narrayelem <= 0 ||
+            ARR_HASNULL(statarray) ||
+            ARR_ELEMTYPE(statarray) != FLOAT4OID)
+            elog(ERROR, "stanumbers is not a 1-D float4 array");
+
+        /* Give caller a pointer directly into the statarray */
+        sslot->numbers = (float4 *) ARR_DATA_PTR(statarray);
+        sslot->nnumbers = narrayelem;
+
+        /* We'll free the statarray in free_attstatsslot */
+        sslot->numbers_arr = statarray;
+    }
+
+    return true;
+}
