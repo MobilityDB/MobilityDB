@@ -1,5 +1,0 @@
-comment = 'Temporal datatypes and functions'
-default_version = '0.0.1'
-module_pathname = '$libdir/libMobilityDB'
-
-requires = 'postgis'
