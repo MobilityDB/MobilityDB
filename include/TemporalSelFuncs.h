@@ -44,10 +44,10 @@ typedef struct
 } ConstantData;
 
 /*****************************************************************************
- * Internal selectivity functions for the operators.
+ * Internal selectivity functions for Temporal types.
  *****************************************************************************/
-extern Selectivity bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
-extern Selectivity calc_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
+extern Selectivity temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
+extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
 								 CachedOp cachedOp);
 extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 									   Oid operator, StatisticsStrategy strategy);
@@ -60,12 +60,6 @@ extern Selectivity mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo 
 extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
 										 FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
 										 StatisticsStrategy strategy);
-
-extern double bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-
 /*****************************************************************************
  * Helper functions for calculating selectivity of time types.
  *****************************************************************************/
@@ -95,12 +89,53 @@ extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower,
 	PeriodBound *upper, PeriodBound *hist_lower, PeriodBound *hist_upper, 
 	int hist_nvalues);
 /*****************************************************************************
+ * Internal selectivity functions for Tnumber types.
+ *****************************************************************************/
+extern Selectivity tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
+extern Selectivity estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
+											 CachedOp cachedOp);
+extern Selectivity range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
+                                      bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy);
+extern Selectivity calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
+											   TypeCacheEntry *typcache, bool isgt, bool iseq,
+											   StatisticsStrategy strategy);
+extern Selectivity calc_hist_selectivity_scalar(TypeCacheEntry *typcache, Datum constbound,
+												RangeBound *hist, int hist_nvalues, bool equal);
+extern int rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
+						  int hist_length, bool equal);
+/*****************************************************************************
+ * Helper functions for calculating selectivity of time types.
+ *****************************************************************************/
+extern double default_period_selectivity(Oid operator);
+extern int period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
+								 int hist_length, bool equal);
+extern float8 get_period_position(PeriodBound *value, PeriodBound *hist1,
+								  PeriodBound *hist2);
+extern float8 get_len_position(double value, double hist1, double hist2);
+extern float8 get_period_distance(PeriodBound *bound1, PeriodBound *bound2);
+extern int length_hist_bsearch(Datum *length_hist_values,
+							   int length_hist_nvalues, double value, bool equal);
+extern double calc_period_hist_selectivity(VariableStatData *vardata,
+										   Period *constval, Oid operator);
+extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
+												  PeriodBound *hist, int hist_nvalues, bool equal);
+extern double calc_length_hist_frac(Datum *length_hist_values,
+									int length_hist_nvalues, double length1, double length2, bool equal);
+extern double calc_period_hist_selectivity_contained(PeriodBound *lower,
+													 PeriodBound *upper, PeriodBound *hist_lower, int hist_nvalues,
+													 Datum *length_hist_values, int length_hist_nvalues);
+extern double calc_period_hist_selectivity_contains(PeriodBound *lower,
+													PeriodBound *upper,	PeriodBound *hist_lower, int hist_nvalues,
+													Datum *length_hist_values, int length_hist_nvalues);
+extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower,
+													PeriodBound *upper, PeriodBound *hist_lower, PeriodBound *hist_upper,
+													int hist_nvalues);
+/*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/
 extern bool get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 									  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
-
-		extern double default_temporaltypes_selectivity(Oid operator);
+extern double default_temporaltypes_selectivity(Oid operator);
 extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,

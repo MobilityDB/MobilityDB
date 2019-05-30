@@ -12,7 +12,7 @@
  *	src/TemporalSelFuncs.c
  *
  *****************************************************************************/
- 
+
 #include "TemporalTypes.h"
 
 /*
@@ -52,7 +52,7 @@ temporal_overlaps_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
     if (selec < 0.0)
         selec = 0.005;
     else if (selec > 1.0)
@@ -73,7 +73,16 @@ PG_FUNCTION_INFO_V1(temporal_contains_sel);
 PGDLLEXPORT Datum
 temporal_contains_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.002);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    if (selec < 0.0)
+        selec = 0.002;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
@@ -89,7 +98,16 @@ PG_FUNCTION_INFO_V1(temporal_same_sel);
 PGDLLEXPORT Datum
 temporal_same_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
+    if (selec < 0.0)
+        selec = 0.001;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_same_joinsel);
@@ -127,7 +145,7 @@ temporal_position_joinsel(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 Selectivity
-bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
 {
     VariableStatData vardata;
     Node *other;
@@ -202,7 +220,7 @@ bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cac
         constantData.period = period;
     }
 
-    selec = calc_bbox_sel(root, vardata, constantData, cachedOp);
+    selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
 
     if (selec < 0.0)
         selec = default_temporaltypes_selectivity(operator);
@@ -215,7 +233,7 @@ bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cac
 }
 
 Selectivity
-calc_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
+estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
 {
     // Check the temporal types and inside each one check the cachedOp
     Selectivity  selec = 0.0;
@@ -1111,16 +1129,6 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *upper = (double) DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
         *bBoxBounds = DNCONST;
 
-    }
-    else if (consttype == BOXOID)
-    {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        *numeric = true;
-        *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        *period = period_make(box->low.y, box->high.y, true, true);
-        *bBoxBounds = DNCONST_DTCONST;
     }
     else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     {

@@ -81,7 +81,7 @@ tpoint_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_cacheOp(operator));
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_tpoint_cacheOp(operator));
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -142,7 +142,7 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_cacheOp(operator));
+	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_tpoint_cacheOp(operator));
 	if (selec < 0.0)
 		selec = 0.001;
 	else if (selec > 1.0)
@@ -507,7 +507,7 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 	switch (operator)
 	{
 		case OVERLAPS_OP:
-			//selec = bbox_overlaps_sel_internal(root, vardata, constantData);
+			selec = estimate_temporal_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
 			break;
 		case SAME_OP:
 			//selec = bbox_same_sel_internal(root, vardata, constantData);
@@ -767,16 +767,21 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 
 /** Get the name of the operator from different cases */
 CachedOp
-get_cacheOp(Oid operator)
+get_tpoint_cacheOp(Oid operator)
 {
 	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
-		if (operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX)	||
-			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOGPOINT)	||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOGRAPHY)	||
-			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX))
+		if (operator == oper_oid((CachedOp)i, T_GBOX, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_GEOMETRY, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GEOGRAPHY, T_TGEOGPOINT) ||
+			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOGPOINT) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GEOGRAPHY) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOGPOINT))
 			return (CachedOp)i;
 	}
 	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
