@@ -51,7 +51,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	 * returning the default estimate, because this still takes into 
 	 * account the fraction of NULL tuples, if we had statistics for them.
 	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, 
+	hist_selec = calc_period_hist_selectivity(vardata, constval, operator,
 		DEFAULT_STATISTICS);
 	if (hist_selec < 0.0)
 		hist_selec = default_period_selectivity(operator);

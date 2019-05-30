@@ -14,7 +14,6 @@
  *****************************************************************************/
  
 #include "TemporalTypes.h"
-#include "TimeSelFuncs.h"
 #include "TemporalSelFuncs.h"
 
 /*

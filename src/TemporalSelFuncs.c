@@ -14,7 +14,6 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
-#include "TimeSelFuncs.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 
@@ -325,7 +324,7 @@ period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constv
         null_frac = 0.0;
         empty_frac = 0.0;
     }
-    hist_selec = calc_period_hist_selectivity(vardata, constval, operator, strategy);
+    hist_selec = calc_period_hist_selectivity(vardata, constval, operator);
     selec = (1.0 - empty_frac) * hist_selec;
     selec *= (1.0 - null_frac);
     return selec;
