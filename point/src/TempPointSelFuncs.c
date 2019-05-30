@@ -510,13 +510,13 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 			selec = estimate_temporal_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
 			break;
 		case SAME_OP:
-			//selec = bbox_same_sel_internal(root, vardata, constantData);
+			selec = estimate_temporal_bbox_sel(root, vardata, constantData, SAME_OP);
 			break;
 		case CONTAINS_OP:
-			//selec = bbox_contains_sel_internal(root, vardata, constantData);
+			selec = estimate_temporal_bbox_sel(root, vardata, constantData, CONTAINS_OP);
 			break;
 		case CONTAINED_OP:
-			//selec = bbox_contained_sel_internal(root, vardata, constantData);
+			selec = estimate_temporal_bbox_sel(root, vardata, constantData, CONTAINED_OP);
 			break;
 		default:
 			selec = 0.0;
