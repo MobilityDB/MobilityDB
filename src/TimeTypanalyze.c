@@ -23,8 +23,8 @@
 
 #include "TemporalTypes.h"
 
-static int	float8_qsort_cmp(const void *a1, const void *a2);
-static int	period_bound_qsort_cmp(const void *a1, const void *a2);
+static int float8_qsort_cmp(const void *a1, const void *a2);
+static int period_bound_qsort_cmp(const void *a1, const void *a2);
 static void compute_time_stats(CachedType type, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void compute_period_stats(VacAttrStats *stats,
