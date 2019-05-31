@@ -1,18 +1,21 @@
 /*****************************************************************************
  *
- * ProjectionOps.c
+ * ProjectionGK.c
  *	  Implementation of the Gauss Krueger projection that is used in Secondo
  * 
  * This projection does not correspond to any standard projection in
  * http://www.epsg.org/
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
+ * IDENTIFICATION
+ *	point/src/ProjectionGK.c
  *****************************************************************************/
 
+#include <liblwgeom.h>
 #include "TemporalPoint.h"
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
@@ -261,43 +264,54 @@ gk(Datum inst)
 static GSERIALIZED *
 geometry_transform_gk_internal(GSERIALIZED *gs)
 {
-	GSERIALIZED *result;
+	GSERIALIZED *result = NULL; /* keep compiler quiet */
 	int geometryType = gserialized_get_type(gs);
 	if(geometryType == POINTTYPE)
 	{
-		POINT2D point2D	= gs_get_point2d(gs);
-		Datum geom = gk(point2d_get_datum(point2D));
-		point2D	= datum_get_point2d(geom);
-		LWPOINT *lwpoint = lwpoint_make2d(4326, point2D.x, point2D.y);
+        LWPOINT *lwpoint;
+	    if (gserialized_is_empty(gs))
+            lwpoint = lwpoint_construct_empty(0, false, false);
+	    else
+        {
+            POINT2D point2D	= gs_get_point2d(gs);
+            Datum geom = gk(point2d_get_datum(point2D));
+            point2D	= datum_get_point2d(geom);
+            lwpoint = lwpoint_make2d(4326, point2D.x, point2D.y);
+        }
 		result = geometry_serialize((LWGEOM *)lwpoint);
+        lwpoint_free(lwpoint);
 	}
 	else if(geometryType == LINETYPE)
 	{
-		LWPOINT *lwpoint = NULL;
-		LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-		LWLINE *line = lwgeom_as_lwline(lwgeom);
-		if(line->points->npoints < 1)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Invalid arguments for LineString")));
+        LWLINE *line;
+		if (gserialized_is_empty(gs))
+        {
+            line = lwline_construct_empty(0, false, false);
+            result = geometry_serialize(lwline_as_lwgeom(line));
+        }
+        else
+        {
+            LWPOINT *lwpoint = NULL;
+            LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+            line = lwgeom_as_lwline(lwgeom);
+            uint32_t numPoints = line->points->npoints;
+            LWPOINT **points = palloc(sizeof(LWPOINT *) * numPoints);
+            for (uint32_t i = 0; i < numPoints; i++)
+            {
+                lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, i);
+                Datum point2d_datum = PointerGetDatum(gserialized_from_lwgeom(lwpoint_as_lwgeom(lwpoint), 0));
+                Datum geom = gk(point2d_datum);
+                POINT2D point2D	= datum_get_point2d(geom);
+                points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
+            }
 
-		uint32_t numPoints = line->points->npoints;
-		LWPOINT **points = palloc(sizeof(LWPOINT *) * numPoints);
-		for (uint32_t i = 0; i < numPoints; i++)
-		{
-			lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, i);
-			Datum point2d_datum = PointerGetDatum(gserialized_from_lwgeom(lwpoint_as_lwgeom(lwpoint), 0));
-			Datum geom = gk(point2d_datum);
-			POINT2D point2D	= datum_get_point2d(geom);
-			points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
-		}
-
-		line = lwline_from_ptarray(4326, numPoints, points);
-		result = geometry_serialize(lwline_as_lwgeom(line));
-
-		lwline_free(line);lwpoint_free(lwpoint);lwgeom_free(lwgeom);
-		for( uint32_t i = 0; i < numPoints; i++)
-			lwpoint_free(points[i]);
-		pfree(points);
+            line = lwline_from_ptarray(4326, numPoints, points);
+            result = geometry_serialize(lwline_as_lwgeom(line));
+            lwline_free(line);lwpoint_free(lwpoint);lwgeom_free(lwgeom);
+            for( uint32_t i = 0; i < numPoints; i++)
+                lwpoint_free(points[i]);
+            pfree(points);
+        }
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
