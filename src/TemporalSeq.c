@@ -2483,7 +2483,7 @@ tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporalseq_bbox(&box1, seq);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return 0;
 
@@ -2537,7 +2537,7 @@ tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range
 	/* Bounding box test */
 	BOX box1, box2;
 	temporalseq_bbox(&box1, seq);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
 		result[0] = temporalseq_copy(seq);

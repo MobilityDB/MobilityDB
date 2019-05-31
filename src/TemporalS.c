@@ -1501,7 +1501,7 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return NULL;
 
@@ -1539,7 +1539,7 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return temporals_copy(ts);
 

@@ -62,6 +62,18 @@ extern GBOX *gbox_parse(char **str);
 extern Temporal *tpoint_parse(char **str, Oid basetype);
 
 /*****************************************************************************
+ * GBOX routines: File Gbox.c
+ *****************************************************************************/
+
+extern Datum gbox_in(PG_FUNCTION_ARGS);
+extern Datum gbox_out(PG_FUNCTION_ARGS);
+extern Datum gbox_constructor(PG_FUNCTION_ARGS);
+extern Datum gbox_constructor3dm(PG_FUNCTION_ARGS);
+extern Datum geodbox_constructor(PG_FUNCTION_ARGS);
+
+extern int gbox_cmp_internal(const GBOX *g1, const GBOX *g2);
+
+/*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c
  *****************************************************************************/
 
