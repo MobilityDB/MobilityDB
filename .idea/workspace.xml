@@ -42,7 +42,36 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dac58647-b685-4d66-9a86-311d9c259eb8" name="Default" comment="" />
+    <list default="true" id="dac58647-b685-4d66-9a86-311d9c259eb8" name="Default" comment="">
+      <change afterPath="$PROJECT_DIR$/point/src/debug/create_test_tables_tpoint.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/point/src/debug/create_test_tables_tpoint_big.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/point/src/debug/random_tpoint.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/debug/create_test_tables_big_dup.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/debug/create_test_tables_temporal.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/debug/create_test_tables_temporal_big.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/debug/random_temporal.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/TemporalSelFuncs.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/TemporalSelFuncs.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/TemporalTypes.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/TemporalTypes.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/TimeTypes.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/TimeTypes.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point/include/TemporalPoint.h" beforeDir="false" afterPath="$PROJECT_DIR$/point/include/TemporalPoint.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/point/src/sql/60_GeoRelativePosOps.in.sql" beforeDir="false" afterPath="$PROJECT_DIR$/point/src/sql/60_GeoRelativePosOps.in.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/BoundBoxOps.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/BoundBoxOps.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DoubleN.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/DoubleN.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PeriodSet.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/PeriodSet.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/RelativePosOps.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/RelativePosOps.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TemporalI.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TemporalI.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TemporalS.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TemporalS.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TemporalSeq.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TemporalSeq.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TemporalTypes.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TemporalTypes.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TimeSelFuncs.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TimeSelFuncs.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/TimeTypanalyze.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/TimeTypanalyze.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sql/01_Period.in.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/sql/01_Period.in.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sql/03_TimestampSet.in.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/sql/03_TimestampSet.in.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sql/05_PeriodSet.in.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/sql/05_PeriodSet.in.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sql/34_RelativePosOps.in.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/sql/34_RelativePosOps.in.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/expected/03_TimestampSet.test.out" beforeDir="false" afterPath="$PROJECT_DIR$/test/expected/03_TimestampSet.test.out" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/expected/03_TimestampSet_tbl.test.out" beforeDir="false" afterPath="$PROJECT_DIR$/test/expected/03_TimestampSet_tbl.test.out" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -57,10 +86,38 @@
       <file leaf-file-name="TemporalSelFuncs.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TemporalSelFuncs.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="1287" column="1" selection-start-line="1287" selection-start-column="1" selection-end-line="1287" selection-end-column="1" />
+            <state relative-caret-position="-17063">
+              <caret line="134" column="1" selection-start-line="134" selection-start-column="1" selection-end-line="134" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TemporalTypes.c" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/TemporalTypes.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="246">
+              <caret line="277" column="1" selection-start-line="277" selection-start-column="1" selection-end-line="277" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TemporalTypes.h" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/TemporalTypes.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="168">
+              <caret line="413" selection-start-line="413" selection-end-line="413" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TemporalAnalyze.c" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/TemporalAnalyze.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30">
+              <caret line="2684" selection-start-line="2684" selection-end-line="2684" />
               <folding>
-                <element signature="e#43143#46638#0" />
+                <element signature="e#97059#97096#0" expanded="true" />
+                <element signature="e#101268#101305#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -69,68 +126,28 @@
       <file leaf-file-name="TnumberSelFuncs.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/TnumberSelFuncs.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1155">
-              <caret line="77" column="21" selection-start-line="77" selection-start-column="21" selection-end-line="77" selection-end-column="21" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TimeSelFuncs.c" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/TimeSelFuncs.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
+            <state relative-caret-position="150">
+              <caret line="10" column="17" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
               <folding>
-                <element signature="e#641#667#0" expanded="true" />
+                <element signature="e#568#594#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="TemporalAnalyze.c" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/TemporalAnalyze.c">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20445">
-              <caret line="2456" column="1" selection-start-line="2456" selection-start-column="1" selection-end-line="2456" selection-end-column="1" />
-              <folding>
-                <element signature="e#43417#57301#0" />
-                <element signature="e#57302#81857#0" />
-                <element signature="e#81858#89253#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TempPointSelFuncs.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/TempPointSelFuncs.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1815">
-              <caret line="122" column="34" selection-start-line="122" selection-start-column="34" selection-end-line="122" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TemporalSelFuncs.h" pinned="false" current-in-tab="false">
+      <file leaf-file-name="TemporalSelFuncs.h" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/include/TemporalSelFuncs.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="100" column="101" selection-start-line="100" selection-start-column="101" selection-end-line="100" selection-end-column="101" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="OidCache.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/OidCache.h">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
-      <file leaf-file-name="TempPointSelFuncs.c" pinned="false" current-in-tab="true">
+      <file leaf-file-name="TempPointSelFuncs.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/point/src/TempPointSelFuncs.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="485" column="39" selection-start-line="485" selection-end-line="485" selection-end-column="39" />
+            <state relative-caret-position="15">
+              <caret line="758" column="63" selection-start-line="758" selection-start-column="63" selection-end-line="758" selection-end-column="63" />
               <folding>
                 <element signature="e#596#622#0" expanded="true" />
+                <element signature="e#6999#13964#0" />
               </folding>
             </state>
           </provider>
@@ -154,6 +171,8 @@
       <find>get_att</find>
       <find>heap_getattr</find>
       <find>get_attstatsslot_internal</find>
+      <find>temporal_ty</find>
+      <find>get_te</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -166,8 +185,9 @@
         <option value="$PROJECT_DIR$/src/TnumberSelFuncs.c" />
         <option value="$PROJECT_DIR$/src/TimeSelFuncs.c" />
         <option value="$PROJECT_DIR$/point/src/TempPointSelFuncs.c" />
-        <option value="$PROJECT_DIR$/include/TemporalSelFuncs.h" />
         <option value="$PROJECT_DIR$/src/TemporalSelFuncs.c" />
+        <option value="$PROJECT_DIR$/include/TemporalTypes.h" />
+        <option value="$PROJECT_DIR$/include/TemporalSelFuncs.h" />
       </list>
     </option>
   </component>
@@ -178,9 +198,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="67" />
-    <option name="width" value="885" />
-    <option name="height" value="872" />
+    <option name="x" value="579" />
+    <option name="y" value="151" />
+    <option name="width" value="1119" />
+    <option name="height" value="500" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -208,11 +229,6 @@
               <item name="MobilityDB" type="b2602c69:ProjectViewProjectNode" />
               <item name="stats" type="462c0819:PsiDirectoryNode" />
               <item name="point" type="462c0819:PsiDirectoryNode" />
-              <item name="include" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="MobilityDB" type="b2602c69:ProjectViewProjectNode" />
-              <item name="stats" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -328,49 +344,60 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24104000" />
+    <option name="totallyTimeSpent" value="24229000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-3" y="0" width="1606" height="878" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1375" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1375" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info active="true" anchor="bottom" id="Messages" order="7" visible="true" weight="0.32988358" />
+      <window_info anchor="bottom" id="Messages" order="7" visible="true" weight="0.32988358" />
       <window_info anchor="bottom" id="CMake" order="7" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39974126" />
+      <window_info anchor="bottom" x="3" y="546" width="1594" height="317" id="Debug" order="3" side_tool="true" type="WINDOWED" weight="0.39974126" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1375" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="CMake" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39974126" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" />
+      <window_info active="true" anchor="bottom" id="Messages" order="7" visible="true" weight="0.32988358" />
+      <window_info id="Favorites" order="2" side_tool="true" />
     </layout>
     <layout-to-restore>
-      <window_info anchor="bottom" id="CMake" order="11" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Version Control" order="10" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="10" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.39974126" />
+      <window_info anchor="bottom" id="Messages" order="7" weight="0.32988358" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Messages" order="7" weight="0.32988358" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="CMake" order="11" />
       <window_info id="Favorites" order="2" side_tool="true" />
     </layout-to-restore>
   </component>
@@ -392,13 +419,107 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/include/TimeSelFuncs.h" />
+    <entry file="file://$PROJECT_DIR$/src/TimeSelFuncs.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="27" selection-start-line="22" selection-start-column="27" selection-end-line="22" selection-end-column="27" />
+          <folding>
+            <element signature="e#641#667#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/TempPointSelFuncs.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1815">
+          <caret line="122" column="34" selection-start-line="122" selection-start-column="34" selection-end-line="122" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/point/src/SpatialFuncs.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="217">
+          <caret line="2713" column="39" lean-forward="true" selection-start-line="2713" selection-start-column="39" selection-end-line="2713" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TemporalTypes.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="280" column="1" selection-start-line="280" selection-start-column="1" selection-end-line="280" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TemporalSelFuncs.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-17348">
+          <caret line="143" column="1" selection-start-line="143" selection-start-column="1" selection-end-line="143" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/point/src/ProjectionGK.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="438">
+          <caret line="296" lean-forward="true" selection-start-line="296" selection-end-line="296" />
+          <folding>
+            <element signature="e#9685#10138#0" />
+            <element signature="e#10140#10665#0" />
+            <element signature="e#10667#11509#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/TemporalSelFuncs.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="109" column="80" lean-forward="true" selection-start-line="109" selection-start-column="80" selection-end-line="109" selection-end-column="80" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/point/src/TempPointSelFuncs.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="758" column="63" selection-start-line="758" selection-start-column="63" selection-end-line="758" selection-end-column="63" />
+          <folding>
+            <element signature="e#596#622#0" expanded="true" />
+            <element signature="e#6999#13964#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TnumberSelFuncs.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="17" lean-forward="true" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+          <folding>
+            <element signature="e#568#594#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TemporalAnalyze.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="2683" lean-forward="true" selection-start-line="2683" selection-end-line="2683" />
+          <folding>
+            <element signature="e#97059#97096#0" expanded="true" />
+            <element signature="e#101268#101305#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/TemporalTypes.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="412" column="3" lean-forward="true" selection-start-line="412" selection-start-column="3" selection-end-line="412" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/TemporalSelFuncs.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1665">
           <caret line="111" column="1" selection-start-line="111" selection-start-column="1" selection-end-line="111" selection-end-column="1" />
-          <folding>
-            <element signature="e#43143#46638#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -424,9 +545,8 @@
         <state relative-caret-position="36840">
           <caret line="2456" column="1" selection-start-line="2456" selection-start-column="1" selection-end-line="2456" selection-end-column="1" />
           <folding>
-            <element signature="e#43417#57301#0" />
-            <element signature="e#57302#81857#0" />
-            <element signature="e#81858#89253#0" />
+            <element signature="e#97059#97096#0" expanded="true" />
+            <element signature="e#101268#101305#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -444,6 +564,7 @@
           <caret line="92" selection-start-line="92" selection-end-line="92" />
           <folding>
             <element signature="e#596#622#0" expanded="true" />
+            <element signature="e#6999#13964#0" />
           </folding>
         </state>
       </provider>
@@ -481,9 +602,8 @@
         <state relative-caret-position="36840">
           <caret line="2456" column="1" selection-start-line="2456" selection-start-column="1" selection-end-line="2456" selection-end-column="1" />
           <folding>
-            <element signature="e#43417#57301#0" />
-            <element signature="e#57302#81857#0" />
-            <element signature="e#81858#89253#0" />
+            <element signature="e#97059#97096#0" expanded="true" />
+            <element signature="e#101268#101305#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -549,9 +669,8 @@
         <state relative-caret-position="40500">
           <caret line="2700" column="29" lean-forward="true" selection-start-line="2700" selection-start-column="29" selection-end-line="2700" selection-end-column="29" />
           <folding>
-            <element signature="e#43417#57301#0" />
-            <element signature="e#57302#81857#0" />
-            <element signature="e#81858#89253#0" />
+            <element signature="e#97059#97096#0" expanded="true" />
+            <element signature="e#101268#101305#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -598,13 +717,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/TemporalTypes.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="346">
-          <caret line="111" column="25" selection-start-line="111" selection-start-column="16" selection-end-line="111" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/pgsql/include/server/access/heapam.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1290">
@@ -628,21 +740,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/TemporalTypes.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="71" lean-forward="true" selection-start-line="71" selection-end-line="71" />
+        <state relative-caret-position="168">
+          <caret line="413" selection-start-line="413" selection-end-line="413" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/OidCache.h">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/TimeSelFuncs.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="28" selection-start-line="28" selection-end-line="28" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/include/TimeSelFuncs.h" />
     <entry file="file://$PROJECT_DIR$/src/TimeSelFuncs.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
@@ -655,19 +758,21 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TnumberSelFuncs.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1155">
-          <caret line="77" column="21" selection-start-line="77" selection-start-column="21" selection-end-line="77" selection-end-column="21" />
+        <state relative-caret-position="150">
+          <caret line="10" column="17" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+          <folding>
+            <element signature="e#568#594#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TemporalAnalyze.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20445">
-          <caret line="2456" column="1" selection-start-line="2456" selection-start-column="1" selection-end-line="2456" selection-end-column="1" />
+        <state relative-caret-position="30">
+          <caret line="2684" selection-start-line="2684" selection-end-line="2684" />
           <folding>
-            <element signature="e#43417#57301#0" />
-            <element signature="e#57302#81857#0" />
-            <element signature="e#81858#89253#0" />
+            <element signature="e#97059#97096#0" expanded="true" />
+            <element signature="e#101268#101305#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -679,32 +784,33 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/TemporalSelFuncs.h">
+    <entry file="file://$PROJECT_DIR$/point/src/TempPointSelFuncs.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="100" column="101" selection-start-line="100" selection-start-column="101" selection-end-line="100" selection-end-column="101" />
+        <state relative-caret-position="15">
+          <caret line="758" column="63" selection-start-line="758" selection-start-column="63" selection-end-line="758" selection-end-column="63" />
+          <folding>
+            <element signature="e#596#622#0" expanded="true" />
+            <element signature="e#6999#13964#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/TemporalTypes.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="246">
+          <caret line="277" column="1" selection-start-line="277" selection-start-column="1" selection-end-line="277" selection-end-column="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/TemporalSelFuncs.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="1287" column="1" selection-start-line="1287" selection-start-column="1" selection-end-line="1287" selection-end-column="1" />
-          <folding>
-            <element signature="e#43143#46638#0" />
-          </folding>
+        <state relative-caret-position="-17063">
+          <caret line="134" column="1" selection-start-line="134" selection-start-column="1" selection-end-line="134" selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/point/src/TempPointSelFuncs.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="485" column="39" selection-start-line="485" selection-end-line="485" selection-end-column="39" />
-          <folding>
-            <element signature="e#596#622#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/include/TemporalSelFuncs.h">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>

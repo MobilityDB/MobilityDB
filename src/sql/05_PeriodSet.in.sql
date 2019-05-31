@@ -39,7 +39,7 @@ CREATE FUNCTION periodset_send(periodset)
 CREATE FUNCTION periodset_typanalyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE periodset (
 	internallength = variable,

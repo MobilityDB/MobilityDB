@@ -32,13 +32,13 @@ SELECT timestamptz '2000-01-01'::timestampset;
 SELECT memSize(timestampset '{2000-01-01}');
  memsize 
 ---------
-      72
+      56
 (1 row)
 
 SELECT memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
  memsize 
 ---------
-     104
+      88
 (1 row)
 
 SELECT timespan(timestampset '{2000-01-01}');

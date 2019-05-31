@@ -50,8 +50,6 @@ typedef struct
 {
 	int32 vl_len_;				/* varlena header (do not touch directly!) */
 	int32 count;				/* number of Period elements */
-	double padding1;			/* Test for solving index problems */
-	double padding2;			/* Test for solving index problems */
  	/* variable-length data follows */
 } TimestampSet;
 

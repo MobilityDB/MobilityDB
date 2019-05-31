@@ -779,8 +779,8 @@ periodsel(PG_FUNCTION_ARGS)
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
 	 */
-	if (!get_restriction_variable(root, args, varRelid,
-								  &vardata, &other, &varonleft))
+	if (!get_restriction_variable(root, args, varRelid, &vardata, &other, 
+		&varonleft))
 		PG_RETURN_FLOAT8(default_period_selectivity(operator));
 
 	/*
