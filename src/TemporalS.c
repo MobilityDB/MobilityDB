@@ -195,18 +195,19 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+2) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+1) * sizeof(size_t));
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	for (int i = 0; i < ts->count; i++)
+	for (int i = 0; i < ts->count-1; i++)
 		memsize += double_pad(VARSIZE(temporals_seq_n(ts, i)));
+	memsize += double_pad(VARSIZE(newseq));
 	/* Create the TemporalS */
 	TemporalS *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
-	result->count = ts->count+2;
-	result->totalcount = ts->totalcount + newseq->count;
+	result->count = ts->count;
+	result->totalcount = ts->totalcount - seq->count + newseq->count;
 	result->valuetypid = ts->valuetypid;
 	result->duration = TEMPORALS;
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(ts->flags));
