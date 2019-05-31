@@ -78,7 +78,7 @@ tnumber_contains_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, get_tnumber_cacheOp(operator));
     if (selec < 0.0)
         selec = 0.002;
     else if (selec > 1.0)
@@ -507,4 +507,28 @@ rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
             upper = middle - 1;
     }
     return lower;
+}
+
+/* Get the name of the operator from different cases */
+CachedOp
+get_tnumber_cacheOp(Oid operator)
+{
+    for (int i = LT_OP; i <= OVERAFTER_OP; i++)
+    {
+        if (operator == oper_oid((CachedOp)i, T_INTRANGE, T_TINT) ||
+            operator == oper_oid((CachedOp)i, T_BOX, T_TINT) ||
+            operator == oper_oid((CachedOp)i, T_TINT, T_INTRANGE) ||
+            operator == oper_oid((CachedOp)i, T_TINT, T_BOX) ||
+            operator == oper_oid((CachedOp)i, T_TINT, T_TINT) ||
+            operator == oper_oid((CachedOp)i, T_TINT, T_TFLOAT) ||
+            operator == oper_oid((CachedOp)i, T_FLOATRANGE, T_TFLOAT) ||
+            operator == oper_oid((CachedOp)i, T_BOX, T_TFLOAT) ||
+            operator == oper_oid((CachedOp)i, T_TFLOAT, T_FLOATRANGE) ||
+            operator == oper_oid((CachedOp)i, T_TFLOAT, T_BOX) ||
+            operator == oper_oid((CachedOp)i, T_TFLOAT, T_TINT) ||
+            operator == oper_oid((CachedOp)i, T_TFLOAT, T_TFLOAT))
+            return (CachedOp)i;
+    }
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Operation not supported")));
 }
