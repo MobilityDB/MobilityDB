@@ -187,14 +187,18 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
 #endif
-	/* Compute the new size */
-	size_t tisize = VARSIZE(ti) - 
-		double_pad(sizeof(TemporalI) + (ti->count + 1) * sizeof(size_t));
-	size_t instsize = VARSIZE(inst);
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	for (int i = 0; i < ti->count; i++)
+		memsize += double_pad(VARSIZE(temporali_inst_n(ti, i)));
+	memsize += double_pad(VARSIZE(inst));
+	/* Add the size of the struct and the offset array */
 	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 2) * sizeof(size_t));
 	/* Create the TemporalI */
-	TemporalI *result = palloc0(pdata + tisize + instsize);
-	SET_VARSIZE(result, pdata + tisize + instsize);
+	TemporalI *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
@@ -216,7 +220,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	offsets[ti->count] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
-	if (temporal_bbox_size(valuetypid) != 0) 
+	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_expand_bbox(bbox, ti, inst);

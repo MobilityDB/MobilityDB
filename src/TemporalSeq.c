@@ -721,7 +721,9 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	memsize += double_pad(VARSIZE(inst)) * newcount;
+	for (int i = 0; i < newcount; i++)
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq, i)));
+	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
 #ifdef WITH_POSTGIS
 	bool trajectory = false; /* keep compiler quiet */

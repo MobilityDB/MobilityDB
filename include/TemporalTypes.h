@@ -1406,6 +1406,7 @@ extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
 extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
 extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
+extern bool temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst);
 
 extern bool contains_box_timestamp_internal(BOX *box, TimestampTz t);
 extern bool contained_box_timestamp_internal(BOX *box, TimestampTz t);

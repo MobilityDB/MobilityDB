@@ -504,6 +504,15 @@ temporalseq_expand_period(Period *period, TemporalSeq *seq, TemporalInst *inst)
 }
 
 static void
+temporals_expand_period(Period *period, TemporalS *ts, TemporalInst *inst)
+{
+	TemporalSeq *seq = temporals_seq_n(ts, 0);
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
+	return;
+}
+
+static void
 tnumber_expand_box(BOX *box, Temporal *temp, TemporalInst *inst)
 {
 	temporal_bbox(box, temp);
@@ -555,6 +564,30 @@ temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 		seq->valuetypid == type_oid(T_GEOMETRY)) 
 	{
 		tpoint_expand_gbox((GBOX *)box, (Temporal *)seq, inst);
+		return true;
+	}
+#endif
+	return false;
+}
+
+bool 
+temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
+{
+	if (ts->valuetypid == BOOLOID || ts->valuetypid == TEXTOID)
+	{
+		temporals_expand_period((Period *)box, ts, inst);
+		return true;
+	}
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		tnumber_expand_box((BOX *)box, (Temporal *)ts, inst);
+		return true;
+	}
+#ifdef WITH_POSTGIS
+	if (ts->valuetypid == type_oid(T_GEOGRAPHY) || 
+		ts->valuetypid == type_oid(T_GEOMETRY)) 
+	{
+		tpoint_expand_gbox((GBOX *)box, (Temporal *)ts, inst);
 		return true;
 	}
 #endif
