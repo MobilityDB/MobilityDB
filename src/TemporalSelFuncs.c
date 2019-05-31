@@ -77,7 +77,7 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
     if (selec < 0.0)
         selec = 0.002;
     else if (selec > 1.0)
@@ -131,7 +131,16 @@ PG_FUNCTION_INFO_V1(temporal_position_sel);
 PGDLLEXPORT Datum
 temporal_position_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
+    if (selec < 0.0)
+        selec = 0.001;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_position_joinsel);
@@ -1293,4 +1302,22 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
     }
 
     return true;
+}
+
+/** Get the name of the operator from different cases */
+CachedOp
+get_temporal_cacheOp(Oid operator)
+{
+    for (int i = LT_OP; i <= OVERAFTER_OP; i++)
+    {
+        if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
+            operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
+            operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
+            operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
+            return (CachedOp)i;
+    }
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Operation not supported")));
 }

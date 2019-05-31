@@ -60,6 +60,8 @@ extern Selectivity mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo 
 extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
 										 FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
 										 StatisticsStrategy strategy);
+extern CachedOp get_temporal_cacheOp(Oid operator);
+
 /*****************************************************************************
  * Helper functions for calculating selectivity of time types.
  *****************************************************************************/
