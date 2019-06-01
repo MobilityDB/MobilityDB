@@ -672,18 +672,16 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Invalid timestamps for temporal value")));
 #ifdef WITH_POSTGIS
-	bool isgeo = false, hasz;
-	int srid;
+	bool isgeo = false;
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-		srid = tpoint_srid_internal((Temporal *)seq);
-		if (tpoint_srid_internal((Temporal *)inst) != srid)
+		if (tpoint_srid_internal((Temporal *)inst) != 
+			tpoint_srid_internal((Temporal *)seq))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same SRID")));
-		if (MOBDB_FLAGS_GET_Z(inst->flags) != hasz)
+		if (MOBDB_FLAGS_GET_Z(inst->flags) != MOBDB_FLAGS_GET_Z(seq->flags))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
@@ -723,7 +721,9 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	memsize += double_pad(VARSIZE(inst))  * newcount;
+	for (int i = 0; i < newcount; i++)
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq, i)));
+	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
 #ifdef WITH_POSTGIS
 	bool trajectory = false; /* keep compiler quiet */
@@ -749,10 +749,10 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	result->duration = TEMPORALSEQ;
 	period_set(&result->period, seq->period.lower, inst->t, 
 		seq->period.lower_inc, true);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(seq->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
 #endif
 	/* Initialization of the variable-length part */
 	size_t *offsets = temporalseq_offsets_ptr(result);
@@ -1368,23 +1368,6 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 	return result;
 }
 
-/*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-/*
-TemporalSeq *
-temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (seq->count + 1));
-	for (int i = 0; i < seq->count; i++)
-		instants[i] = temporalseq_inst_n(seq, i);
-	instants[seq->count] = inst;
-	return temporalseq_from_temporalinstarr(instants, seq->count + 1, 
-		seq->period.lower_inc, seq->period.upper_inc, true);
-}
-*/
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
@@ -2500,7 +2483,7 @@ tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporalseq_bbox(&box1, seq);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return 0;
 
@@ -2554,7 +2537,7 @@ tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range
 	/* Bounding box test */
 	BOX box1, box2;
 	temporalseq_bbox(&box1, seq);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 	{
 		result[0] = temporalseq_copy(seq);

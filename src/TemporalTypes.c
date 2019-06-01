@@ -79,19 +79,17 @@ bool
 type_byval_fast(Oid type) 
 {
 	base_type_all_oid(type);
+	bool result = false;
 	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
-		return true;
-	if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
-		return false;
+		result = true;
+	else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
+		result = false;
 #ifdef WITH_POSTGIS
-	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-		return false;
-	if (type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
-		return false;
+	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
+		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+		result = false;
 #endif
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow get_typbyval function for unknown data type")));
-	return (get_typbyval(type));
+	return result;
 }
 
 /* 
@@ -105,27 +103,26 @@ int
 get_typlen_fast(Oid type) 
 {
 	base_type_all_oid(type);
+	int result = 0;
 	if (type == BOOLOID)
-		return 1;
-	if (type == INT4OID)
-		return 4;
-	if (type == FLOAT8OID)
-		return 8;
-	if (type == type_oid(T_DOUBLE2))
-		return 16;
-	if (type == TEXTOID)
-		return -1;
+		result = 1;
+	else if (type == INT4OID)
+		result = 4;
+	else if (type == FLOAT8OID)
+		result = 8;
+	else if (type == type_oid(T_DOUBLE2))
+		result = 16;
+	else if (type == TEXTOID)
+		result = -1;
 #ifdef WITH_POSTGIS
-	if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-		return -1;
-	if (type == type_oid(T_DOUBLE3))
-		return 24;
-	if (type == type_oid(T_DOUBLE4))
-		return 32;
+	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+		result = -1;
+	else if (type == type_oid(T_DOUBLE3))
+		result = 24;
+	else if (type == type_oid(T_DOUBLE4))
+		result = 32;
 #endif
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow get_typlen function for unknown data type")));
-	return get_typlen(type);
+	return result;
 }
 
 /* Copy a Datum if it is passed by reference */
@@ -504,30 +501,13 @@ rangearr_extract(ArrayType *array, int *count)
 	return (RangeType **) datumarr_extract(array, count);
 }
 
-#define NEXTVAL(x) ( (Temporal *)( (char*)(x) + DOUBLEALIGN( VARSIZE(x) ) ) )
-
 Temporal **
 temporalarr_extract(ArrayType *array, int *count)
-{
-	*count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-	if (*count == 0)
-		return NULL;
-	Temporal **result = palloc(sizeof(Temporal *) * *count);
-	result[0] = (Temporal *)ARR_DATA_PTR(array);
-	for (int i = 1; i < *count; i++)
-		result[i] = NEXTVAL(result[i-1]);
-	return result;
-}
-
-/*
-Temporal **
-temporalarr_extract_old(ArrayType *array, int *count)
 {
 	Temporal **result;
 	deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result, NULL, count);
 	return result;
 }
-*/
 
 /*****************************************************************************/
 
@@ -748,31 +728,26 @@ bool
 datum_eq(Datum l, Datum r, Oid type)
 {
 	base_type_all_oid(type);
+	bool result = false;
 	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
-		return l == r;
+		result = l == r;
 	else if (type == TEXTOID) 
-		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
 	else if (type == type_oid(T_DOUBLE2)) 
-		return double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
+		result = double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
 	else if (type == type_oid(T_DOUBLE3)) 
-		return double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
+		result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
 	else if (type == type_oid(T_DOUBLE4)) 
-		return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
+		result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
-	//	return DatumGetBool(call_function2(lwgeom_eq, l, r));
-		return datum_point_eq(l, r);
+	//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
+		result = datum_point_eq(l, r);
 	else if (type == type_oid(T_GEOGRAPHY)) 
-	//	return DatumGetBool(call_function2(geography_eq, l, r));
-		return datum_point_eq(l, r);
+	//	result = DatumGetBool(call_function2(geography_eq, l, r));
+		result = datum_point_eq(l, r);
 #endif
-
-	List *lst = list_make1(makeString("="));
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow comparison for unknown data type")));
-	RegProcedure oper = get_opcode(OpernameGetOprid(lst, type, type));
-	pfree(lst);
-	return DatumGetBool(OidFunctionCall2Coll(oper, DEFAULT_COLLATION_OID, l, r));
+	return result;
 }
 
 bool
@@ -784,28 +759,23 @@ datum_ne(Datum l, Datum r, Oid type)
 bool
 datum_lt(Datum l, Datum r, Oid type)
 {
+	base_type_oid(type);
+	bool result = false;
 	if (type == BOOLOID)
-		return DatumGetBool(l) < DatumGetBool(r);
+		result = DatumGetBool(l) < DatumGetBool(r);
 	else if (type == INT4OID)
-		return DatumGetInt32(l) < DatumGetInt32(r);
+		result = DatumGetInt32(l) < DatumGetInt32(r);
 	else if (type == FLOAT8OID)
-		return DatumGetFloat8(l) < DatumGetFloat8(r);
+		result = DatumGetFloat8(l) < DatumGetFloat8(r);
 	else if (type == TEXTOID) 
-		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
-		return DatumGetBool(call_function2(lwgeom_lt, l, r));
+		result = DatumGetBool(call_function2(lwgeom_lt, l, r));
 	else if (type == type_oid(T_GEOGRAPHY))
-		return DatumGetBool(call_function2(geography_lt, l, r));
+		result = DatumGetBool(call_function2(geography_lt, l, r));
 #endif
-	
-	/* All supported temporal types should have been considered before */
-	List *lst = list_make1(makeString("<"));
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow comparison for unknown data type")));
-	RegProcedure oper = get_opcode(OpernameGetOprid(lst, type, type));
-	pfree(lst);
-	return DatumGetBool(OidFunctionCall2Coll(oper, DEFAULT_COLLATION_OID, l, r));
+	return result;
 }
 
 bool
@@ -838,32 +808,27 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	base_type_all_oid(typel);
 	base_type_all_oid(typer);	
+	bool result = false;
 	if ((typel == BOOLOID && typer == BOOLOID) ||
 		(typel == INT4OID && typer == INT4OID) ||
 		(typel == FLOAT8OID && typer == FLOAT8OID))
-		return l == r;
+		result = l == r;
 	else if (typel == INT4OID && typer == FLOAT8OID)
-		return DatumGetInt32(l) == DatumGetFloat8(r);
+		result = DatumGetInt32(l) == DatumGetFloat8(r);
 	else if (typel == FLOAT8OID && typer == INT4OID)
-		return DatumGetFloat8(l) == DatumGetInt32(r);
+		result = DatumGetFloat8(l) == DatumGetInt32(r);
 	else if (typel == TEXTOID && typer == TEXTOID) 
-		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
 	/* This function is never called with doubleN */
 #ifdef WITH_POSTGIS
 	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-	//	return DatumGetBool(call_function2(lwgeom_eq, l, r));	
-		return datum_point_eq(l, r);
+	//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));	
+		result = datum_point_eq(l, r);
 	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
-	//	return DatumGetBool(call_function2(geography_eq, l, r));
-		return datum_point_eq(l, r);
+	//	result = DatumGetBool(call_function2(geography_eq, l, r));
+		result = datum_point_eq(l, r);
 #endif
-
-	List *lst = list_make1(makeString("="));
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow comparison for unknown data type")));
-	RegProcedure oper = get_opcode(OpernameGetOprid(lst, typel, typer));
-	pfree(lst);
-	return DatumGetBool(OidFunctionCall2Coll(oper, DEFAULT_COLLATION_OID, l, r));
+	return result;
 }
 
 bool
@@ -875,24 +840,20 @@ datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
 bool
 datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 {
+	assert(typel == INT4OID || typel == FLOAT8OID || typel == TEXTOID);
+	assert(typer == INT4OID || typer == FLOAT8OID || typer == TEXTOID);
+	bool result = false;
 	if (typel == INT4OID && typer == INT4OID)
-		return DatumGetInt32(l) < DatumGetInt32(r);
+		result = DatumGetInt32(l) < DatumGetInt32(r);
 	else if (typel == INT4OID && typer == FLOAT8OID)
-		return DatumGetInt32(l) < DatumGetFloat8(r);
+		result = DatumGetInt32(l) < DatumGetFloat8(r);
 	else if (typel == FLOAT8OID && typer == INT4OID)
-		return DatumGetFloat8(l) < DatumGetInt32(r);
+		result = DatumGetFloat8(l) < DatumGetInt32(r);
 	else if (typel == FLOAT8OID && typer == FLOAT8OID)
-		return DatumGetFloat8(l) < DatumGetFloat8(r);
+		result = DatumGetFloat8(l) < DatumGetFloat8(r);
 	else if (typel == TEXTOID && typer == TEXTOID) 
-		return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-	/* This function is never called with boolean, doubleN, geometry, or geography */
-
-	List *lst = list_make1(makeString("<")); 
-	ereport(WARNING, (errcode(ERRCODE_WARNING), 
-		errmsg("Using slow comparison for unknown data type")));
-	RegProcedure oper = get_opcode(OpernameGetOprid(lst, typel, typer));
-	pfree(lst);
-	return DatumGetBool(OidFunctionCall2Coll(oper, DEFAULT_COLLATION_OID, l, r));
+		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+	return result;
 }
 
 bool

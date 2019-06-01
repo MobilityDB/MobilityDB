@@ -191,18 +191,60 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 TemporalS *
 temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 {
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count));
-	for (int i = 0; i < ts->count - 1; i++)
-		sequences[i] = temporals_seq_n(ts, i);
+	/* Add the instant to the last sequence */
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
-	TemporalSeq *seq1 = temporalseq_append_instant(seq, inst);
-	sequences[ts->count - 1] = seq1;
-	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
-		false);
-	pfree(sequences[ts->count - 1]);
+	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
+	/* Compute the size of the TemporalS */
+	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+1) * sizeof(size_t));
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	for (int i = 0; i < ts->count-1; i++)
+		memsize += double_pad(VARSIZE(temporals_seq_n(ts, i)));
+	memsize += double_pad(VARSIZE(newseq));
+	/* Create the TemporalS */
+	TemporalS *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = ts->count;
+	result->totalcount = ts->totalcount - seq->count + newseq->count;
+	result->valuetypid = ts->valuetypid;
+	result->duration = TEMPORALS;
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(ts->flags));
+	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, MOBDB_FLAGS_GET_TEMPCONTINUOUS(ts->flags));
+#ifdef WITH_POSTGIS
+	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
+		ts->valuetypid == type_oid(T_GEOGRAPHY))
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
+#endif
+	/* Initialization of the variable-length part */
+	size_t *offsets = temporals_offsets_ptr(result);
+	size_t pos = 0;	
+	for (int i = 0; i < ts->count-1; i++)
+	{
+		seq = temporals_seq_n(ts,i);
+		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
+		offsets[i] = pos;
+		pos += double_pad(VARSIZE(seq));
+	}
+	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
+	offsets[ts->count-1] = pos;
+	pos += double_pad(VARSIZE(seq));
+	/*
+	 * Precompute the bounding box 
+	 * Only external types have precomputed bounding box, internal types such
+	 * as double2, double3, or double4 do not have precomputed bounding box
+	 */
+	if (bboxsize != 0) 
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		memcpy(bbox, temporals_bbox_ptr(ts), bboxsize);
+		temporals_expand_bbox(bbox, ts, inst);
+		offsets[ts->count] = pos;
+	}
+	pfree(newseq);
 	return result;
 }
-
 
 /* Copy a TemporalS */
 TemporalS *
@@ -1459,7 +1501,7 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return NULL;
 
@@ -1497,7 +1539,7 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 	/* Bounding box test */
 	BOX box1, box2;
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
+	range_to_box(&box2, range);
 	if (!overlaps_box_box_internal(&box1, &box2))
 		return temporals_copy(ts);
 
