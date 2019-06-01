@@ -139,7 +139,7 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
     VariableStatData vardata;
     Node *other;
     bool varonleft;
-    Selectivity selec = 0.0;
+    Selectivity selec;
     CachedOp cachedOp = get_tnumber_cacheOp(operator);
 
     /*

@@ -49,6 +49,8 @@ typedef struct
 extern Selectivity temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
 extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
 								 CachedOp cachedOp);
+extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
+												  Node *other, bool isgt, bool iseq, CachedOp operator);
 extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 									   Oid operator, StatisticsStrategy strategy);
 extern Selectivity scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
@@ -110,6 +112,7 @@ extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower,
  * Helper functions for calculating selectivity.
  *****************************************************************************/
 extern double lower_or_higher_value_bound(Node *other, bool higher);
+extern PeriodBound *lower_or_higher_temporal_bound(Node *other, bool higher);
 extern bool get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 									  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
 extern double default_temporaltypes_selectivity(Oid operator);
