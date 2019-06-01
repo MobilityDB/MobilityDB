@@ -46,9 +46,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<', 'floatrange', 'tfloat', count(*) FROM tbl_floatrange, tbl_tfloat WHERE f << temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b << temp;
+SELECT '<<', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b << temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b << temp;
+SELECT '<<', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b << temp;
 
 -------------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ SELECT '<<', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp << f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'tint', 'intrange', count(*) FROM tbl_tint, tbl_intrange WHERE temp << i;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp << b;
+SELECT '<<', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp << b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -72,7 +72,7 @@ SELECT '<<', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp <
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'tfloat', 'floatrange', count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp << f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp << b;
+SELECT '<<', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp << b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp << t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -99,9 +99,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '&<', 'floatrange', 'tfloat', count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &< temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b &< temp;
+SELECT '&<', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b &< temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b &< temp;
+SELECT '&<', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b &< temp;
 
 -------------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ SELECT '&<', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp &< f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<', 'tint', 'intrange', count(*) FROM tbl_tint, tbl_intrange WHERE temp &< i;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp &< b;
+SELECT '&<', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp &< b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -125,7 +125,7 @@ SELECT '&<', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp &
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<', 'tfloat', 'floatrange', count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp &< f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp &< b;
+SELECT '&<', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &< b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &< t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -152,9 +152,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '>>', 'floatrange', 'tfloat', count(*) FROM tbl_floatrange, tbl_tfloat WHERE f >> temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '>>', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b >> temp;
+SELECT '>>', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b >> temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '>>', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b >> temp;
+SELECT '>>', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b >> temp;
 
 -------------------------------------------------------------------------------
 
@@ -165,7 +165,7 @@ SELECT '>>', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp >> f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '>>', 'tint', 'intrange', count(*) FROM tbl_tint, tbl_intrange WHERE temp >> i;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '>>', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp >> b;
+SELECT '>>', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp >> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '>>', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -178,7 +178,7 @@ SELECT '>>', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp >
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '>>', 'tfloat', 'floatrange', count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp >> f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '>>', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp >> b;
+SELECT '>>', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp >> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '>>', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp >> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -205,9 +205,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '&>', 'floatrange', 'tfloat', count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &> temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&>', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b &> temp;
+SELECT '&>', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b &> temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&>', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b &> temp;
+SELECT '&>', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b &> temp;
 
 -------------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ SELECT '&>', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp &> f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&>', 'tint', 'intrange', count(*) FROM tbl_tint, tbl_intrange WHERE temp &> i;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&>', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp &> b;
+SELECT '&>', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp &> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&>', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -231,7 +231,7 @@ SELECT '&>', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp &
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&>', 'tfloat', 'floatrange', count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp &> f;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&>', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp &> b;
+SELECT '&>', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&>', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -278,9 +278,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'periodset', 'ttext', count(*) FROM tbl_periodset, tbl_ttext WHERE ps <<# temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<#', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b <<# temp;
+SELECT '<<#', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b <<# temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<#', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b <<# temp;
+SELECT '<<#', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b <<# temp;
 
 -------------------------------------------------------------------------------
 
@@ -304,7 +304,7 @@ SELECT '<<#', 'tint', 'period', count(*) FROM tbl_tint, tbl_period WHERE temp <<
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<#', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp <<# ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<#', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp <<# b;
+SELECT '<<#', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp <<# b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<#', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -319,7 +319,7 @@ SELECT '<<#', 'tfloat', 'period', count(*) FROM tbl_tfloat, tbl_period WHERE tem
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<#', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <<# ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '<<#', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp <<# b;
+SELECT '<<#', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <<# b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<#', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <<# t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -377,9 +377,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '&<#', 'periodset', 'ttext', count(*) FROM tbl_periodset, tbl_ttext WHERE ps &<# temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<#', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b &<# temp;
+SELECT '&<#', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b &<# temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<#', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b &<# temp;
+SELECT '&<#', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b &<# temp;
 
 -------------------------------------------------------------------------------
 
@@ -403,7 +403,7 @@ SELECT '&<#', 'tint', 'period', count(*) FROM tbl_tint, tbl_period WHERE temp &<
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<#', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp &<# ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<#', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp &<# b;
+SELECT '&<#', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp &<# b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<#', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -418,7 +418,7 @@ SELECT '&<#', 'tfloat', 'period', count(*) FROM tbl_tfloat, tbl_period WHERE tem
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<#', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp &<# ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '&<#', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp &<# b;
+SELECT '&<#', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &<# b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '&<#', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &<# t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -476,9 +476,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '#>>', 'periodset', 'ttext', count(*) FROM tbl_periodset, tbl_ttext WHERE ps #>> temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#>>', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b #>> temp;
+SELECT '#>>', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b #>> temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#>>', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b #>> temp;
+SELECT '#>>', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b #>> temp;
 
 -------------------------------------------------------------------------------
 
@@ -502,7 +502,7 @@ SELECT '#>>', 'tint', 'period', count(*) FROM tbl_tint, tbl_period WHERE temp #>
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#>>', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp #>> ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#>>', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp #>> b;
+SELECT '#>>', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp #>> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#>>', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -517,7 +517,7 @@ SELECT '#>>', 'tfloat', 'period', count(*) FROM tbl_tfloat, tbl_period WHERE tem
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#>>', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #>> ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#>>', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp #>> b;
+SELECT '#>>', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #>> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#>>', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #>> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -575,9 +575,9 @@ INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'ttext', count(*) FROM tbl_periodset, tbl_ttext WHERE ps #&> temp;
 
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#&>', 'box', 'tint', count(*) FROM tbl_box, tbl_tint WHERE b #&> temp;
+SELECT '#&>', 'tbox', 'tint', count(*) FROM tbl_tbox, tbl_tint WHERE b #&> temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#&>', 'box', 'tfloat', count(*) FROM tbl_box, tbl_tfloat WHERE b #&> temp;
+SELECT '#&>', 'tbox', 'tfloat', count(*) FROM tbl_tbox, tbl_tfloat WHERE b #&> temp;
 
 -------------------------------------------------------------------------------
 
@@ -601,7 +601,7 @@ SELECT '#&>', 'tint', 'period', count(*) FROM tbl_tint, tbl_period WHERE temp #&
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp #&> ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#&>', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp #&> b;
+SELECT '#&>', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp #&> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #&> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -616,7 +616,7 @@ SELECT '#&>', 'tfloat', 'period', count(*) FROM tbl_tfloat, tbl_period WHERE tem
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #&> ps;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
-SELECT '#&>', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp #&> b;
+SELECT '#&>', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #&> b;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #&> t2.temp;
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
@@ -669,11 +669,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f << temp 
 WHERE op = '<<' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b << temp )
-WHERE op = '<<' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b << temp )
+WHERE op = '<<' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b << temp )
-WHERE op = '<<' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b << temp )
+WHERE op = '<<' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -687,8 +687,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp << i )
 WHERE op = '<<' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp << b )
-WHERE op = '<<' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp << b )
+WHERE op = '<<' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' and leftarg = 'tint' and rightarg = 'tint';
@@ -706,8 +706,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp << f )
 WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp << b )
-WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp << b )
+WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -742,11 +742,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &< temp 
 WHERE op = '&<' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &< temp )
-WHERE op = '&<' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &< temp )
+WHERE op = '&<' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &< temp )
-WHERE op = '&<' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &< temp )
+WHERE op = '&<' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -760,8 +760,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp &< i )
 WHERE op = '&<' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &< b )
-WHERE op = '&<' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &< b )
+WHERE op = '&<' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' and leftarg = 'tint' and rightarg = 'tint';
@@ -779,8 +779,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp &< f )
 WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &< b )
-WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &< b )
+WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -815,11 +815,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f >> temp 
 WHERE op = '>>' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b >> temp )
-WHERE op = '>>' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b >> temp )
+WHERE op = '>>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b >> temp )
-WHERE op = '>>' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b >> temp )
+WHERE op = '>>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -833,8 +833,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp >> i )
 WHERE op = '>>' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp >> b )
-WHERE op = '>>' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp >> b )
+WHERE op = '>>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' and leftarg = 'tint' and rightarg = 'tint';
@@ -852,8 +852,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp >> f )
 WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp >> b )
-WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp >> b )
+WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -888,11 +888,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &> temp 
 WHERE op = '&>' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &> temp )
-WHERE op = '&>' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &> temp )
+WHERE op = '&>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &> temp )
-WHERE op = '&>' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &> temp )
+WHERE op = '&>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -906,8 +906,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp &> i )
 WHERE op = '&>' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &> b )
-WHERE op = '&>' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &> b )
+WHERE op = '&>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' and leftarg = 'tint' and rightarg = 'tint';
@@ -925,8 +925,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp &> f )
 WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &> b )
-WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &> b )
+WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -991,11 +991,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps <<# temp 
 WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b <<# temp )
-WHERE op = '<<#' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b <<# temp )
+WHERE op = '<<#' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b <<# temp )
-WHERE op = '<<#' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b <<# temp )
+WHERE op = '<<#' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1028,8 +1028,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp <<# ps )
 WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp <<# b )
-WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp <<# b )
+WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'tint';
@@ -1050,8 +1050,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <<# ps )
 WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp <<# b )
-WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <<# b )
+WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1133,11 +1133,11 @@ WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'ttext';
 
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &<# temp )
-WHERE op = '&<#' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &<# temp )
+WHERE op = '&<#' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &<# temp )
-WHERE op = '&<#' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &<# temp )
+WHERE op = '&<#' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1170,8 +1170,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp &<# ps )
 WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &<# b )
-WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &<# b )
+WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'tint';
@@ -1192,8 +1192,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp &<# ps )
 WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &<# b )
-WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &<# b )
+WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1274,11 +1274,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps #>> temp 
 WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b #>> temp )
-WHERE op = '#>>' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b #>> temp )
+WHERE op = '#>>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b #>> temp )
-WHERE op = '#>>' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b #>> temp )
+WHERE op = '#>>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1311,8 +1311,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp #>> ps )
 WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp #>> b )
-WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp #>> b )
+WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'tint';
@@ -1333,8 +1333,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #>> ps )
 WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp #>> b )
-WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #>> b )
+WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1415,11 +1415,11 @@ SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps #&> temp 
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b #&> temp )
-WHERE op = '#&>' and leftarg = 'box' and rightarg = 'tint';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b #&> temp )
+WHERE op = '#&>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b #&> temp )
-WHERE op = '#&>' and leftarg = 'box' and rightarg = 'tfloat';
+SET gistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b #&> temp )
+WHERE op = '#&>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1452,8 +1452,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp #&> b )
-WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp #&> b )
+WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'tint';
@@ -1474,8 +1474,8 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp #&> b )
-WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #&> b )
+WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1540,11 +1540,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f << tem
 WHERE op = '<<' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b << temp )
-WHERE op = '<<' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b << temp )
+WHERE op = '<<' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b << temp )
-WHERE op = '<<' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b << temp )
+WHERE op = '<<' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1558,8 +1558,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp << i )
 WHERE op = '<<' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp << b )
-WHERE op = '<<' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp << b )
+WHERE op = '<<' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' and leftarg = 'tint' and rightarg = 'tint';
@@ -1577,8 +1577,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp << f )
 WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp << b )
-WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp << b )
+WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp << t2.temp )
 WHERE op = '<<' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1613,11 +1613,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &< tem
 WHERE op = '&<' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &< temp )
-WHERE op = '&<' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &< temp )
+WHERE op = '&<' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &< temp )
-WHERE op = '&<' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &< temp )
+WHERE op = '&<' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1631,8 +1631,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp &< i )
 WHERE op = '&<' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &< b )
-WHERE op = '&<' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &< b )
+WHERE op = '&<' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' and leftarg = 'tint' and rightarg = 'tint';
@@ -1650,8 +1650,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp &< f )
 WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &< b )
-WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &< b )
+WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &< t2.temp )
 WHERE op = '&<' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1686,11 +1686,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f >> tem
 WHERE op = '>>' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b >> temp )
-WHERE op = '>>' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b >> temp )
+WHERE op = '>>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b >> temp )
-WHERE op = '>>' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b >> temp )
+WHERE op = '>>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1704,8 +1704,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp >> i )
 WHERE op = '>>' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp >> b )
-WHERE op = '>>' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp >> b )
+WHERE op = '>>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' and leftarg = 'tint' and rightarg = 'tint';
@@ -1723,8 +1723,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp >> f )
 WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp >> b )
-WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp >> b )
+WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp >> t2.temp )
 WHERE op = '>>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1759,11 +1759,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE f &> tem
 WHERE op = '&>' and leftarg = 'floatrange' and rightarg = 'tfloat';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &> temp )
-WHERE op = '&>' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &> temp )
+WHERE op = '&>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &> temp )
-WHERE op = '&>' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &> temp )
+WHERE op = '&>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1777,8 +1777,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp &> i )
 WHERE op = '&>' and leftarg = 'tint' and rightarg = 'intrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &> b )
-WHERE op = '&>' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &> b )
+WHERE op = '&>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' and leftarg = 'tint' and rightarg = 'tint';
@@ -1796,8 +1796,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_floatrange, tbl_tfloat WHERE temp &> f )
 WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'floatrange';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &> b )
-WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &> b )
+WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &> t2.temp )
 WHERE op = '&>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -1862,11 +1862,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps <<# tem
 WHERE op = '<<#' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b <<# temp )
-WHERE op = '<<#' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b <<# temp )
+WHERE op = '<<#' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b <<# temp )
-WHERE op = '<<#' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b <<# temp )
+WHERE op = '<<#' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -1899,8 +1899,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp <<# ps )
 WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp <<# b )
-WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp <<# b )
+WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' and leftarg = 'tint' and rightarg = 'tint';
@@ -1921,8 +1921,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <<# ps )
 WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp <<# b )
-WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <<# b )
+WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <<# t2.temp )
 WHERE op = '<<#' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -2004,11 +2004,11 @@ WHERE op = '&<#' and leftarg = 'periodset' and rightarg = 'ttext';
 
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b &<# temp )
-WHERE op = '&<#' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b &<# temp )
+WHERE op = '&<#' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b &<# temp )
-WHERE op = '&<#' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b &<# temp )
+WHERE op = '&<#' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -2041,8 +2041,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp &<# ps )
 WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp &<# b )
-WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp &<# b )
+WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' and leftarg = 'tint' and rightarg = 'tint';
@@ -2063,8 +2063,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp &<# ps )
 WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp &<# b )
-WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp &<# b )
+WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp &<# t2.temp )
 WHERE op = '&<#' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -2145,11 +2145,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps #>> tem
 WHERE op = '#>>' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b #>> temp )
-WHERE op = '#>>' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b #>> temp )
+WHERE op = '#>>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b #>> temp )
-WHERE op = '#>>' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b #>> temp )
+WHERE op = '#>>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -2182,8 +2182,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp #>> ps )
 WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp #>> b )
-WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp #>> b )
+WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' and leftarg = 'tint' and rightarg = 'tint';
@@ -2204,8 +2204,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #>> ps )
 WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp #>> b )
-WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #>> b )
+WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #>> t2.temp )
 WHERE op = '#>>' and leftarg = 'tfloat' and rightarg = 'tint';
@@ -2286,11 +2286,11 @@ SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps #&> tem
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'ttext';
 
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tint WHERE b #&> temp )
-WHERE op = '#&>' and leftarg = 'box' and rightarg = 'tint';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tint WHERE b #&> temp )
+WHERE op = '#&>' and leftarg = 'tbox' and rightarg = 'tint';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_box, tbl_tfloat WHERE b #&> temp )
-WHERE op = '#&>' and leftarg = 'box' and rightarg = 'tfloat';
+SET spgistidx = ( SELECT count(*) FROM tbl_tbox, tbl_tfloat WHERE b #&> temp )
+WHERE op = '#&>' and leftarg = 'tbox' and rightarg = 'tfloat';
 
 -------------------------------------------------------------------------------
 
@@ -2323,8 +2323,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp #&> b )
-WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp #&> b )
+WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tint' and rightarg = 'tint';
@@ -2345,8 +2345,8 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE test_relativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp #&> b )
-WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp #&> b )
+WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tfloat' and rightarg = 'tint';

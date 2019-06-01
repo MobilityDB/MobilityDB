@@ -43,12 +43,12 @@ from generate_series(1, perc) as k union
 select k, random_text(10)
 from generate_series(perc+1, size) as k;
 
-drop table if exists tbl_box;
-create table tbl_box as
+drop table if exists tbl_tbox;
+create table tbl_tbox as
 /* Add perc NULL values */
 select k, NULL as b
 from generate_series(1, perc) as k union
-select k, random_box(0, 100, 0, 100, 10)
+select k, random_tbox(0, 100, 0, 100, 10)
 from generate_series(perc+1, size) as k;
 
 drop table if exists tbl_interval;

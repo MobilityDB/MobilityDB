@@ -835,18 +835,18 @@ tfloats_ranges(TemporalS *ts)
 RangeType *
 tnumbers_value_range(TemporalS *ts)
 {
-	BOX *box = temporals_bbox_ptr(ts);
+	TBOX *box = temporals_bbox_ptr(ts);
 	Datum min = 0, max = 0;
 	number_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 	{
-		min = Int32GetDatum(box->low.x);
-		max = Int32GetDatum(box->high.x);
+		min = Int32GetDatum(box->xmin);
+		max = Int32GetDatum(box->xmax);
 	}
 	else if (ts->valuetypid == FLOAT8OID)
 	{
-		min = Float8GetDatum(box->low.x);
-		max = Float8GetDatum(box->high.x);
+		min = Float8GetDatum(box->xmin);
+		max = Float8GetDatum(box->xmax);
 	}
 	return range_make(min, max, true, true, ts->valuetypid);
 }
@@ -859,13 +859,13 @@ temporals_min_value(TemporalS *ts)
 	Oid valuetypid = ts->valuetypid;
 	if (valuetypid == INT4OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum((int)(box->low.x));
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Int32GetDatum((int)(box->xmin));
 	}
 	if (valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Float8GetDatum(box->low.x);
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Float8GetDatum(box->xmin);
 	}
 	Datum result = temporalseq_min_value(temporals_seq_n(ts, 0));
 	for (int i = 1; i < ts->count; i++)
@@ -885,13 +885,13 @@ temporals_max_value(TemporalS *ts)
 	Oid valuetypid = ts->valuetypid;
 	if (valuetypid == INT4OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum((int)(box->high.x));
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Int32GetDatum((int)(box->xmax));
 	}
 	if (valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Float8GetDatum(box->high.x);
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Float8GetDatum(box->xmax);
 	}
 	Datum result = temporalseq_max_value(temporals_seq_n(ts, 0));
 	for (int i = 1; i < ts->count; i++)
@@ -1219,10 +1219,10 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0}, box2 = {0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, ts->valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, ts->valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
 
@@ -1240,14 +1240,14 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		BOX box;
+		TBOX box = {0};
 		temporals_bbox(&box, ts);
 		if (ts->valuetypid == INT4OID)
-			return box.low.x == box.high.x &&
-				(int)(box.high.x) == DatumGetInt32(value);
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetInt32(value);
 		else
-			return box.low.x == box.high.x &&
-				box.high.x == DatumGetFloat8(value);
+			return box.xmin == box.xmax &&
+				box.xmax == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1342,10 +1342,10 @@ temporals_at_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0}, box2 = {0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
 
@@ -1384,10 +1384,10 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0}, box2 = {0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporals_copy(ts);
 	}
 
@@ -1499,10 +1499,10 @@ TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0}, box2 = {0};
 	temporals_bbox(&box1, ts);
-	range_to_box(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return NULL;
 
 	/* Singleton sequence set */
@@ -1537,10 +1537,10 @@ TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0}, box2 = {0};
 	temporals_bbox(&box1, ts);
-	range_to_box(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return temporals_copy(ts);
 
 	/* Singleton sequence set */
@@ -1687,8 +1687,8 @@ TemporalS *
 temporals_at_min(TemporalS *ts)
 {
 	/* General case */
-	Datum minvalue = temporals_min_value(ts);
-	return temporals_at_minmax(ts, minvalue);
+	Datum xmin = temporals_min_value(ts);
+	return temporals_at_minmax(ts, xmin);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1696,8 +1696,8 @@ temporals_at_min(TemporalS *ts)
 TemporalS *
 temporals_minus_min(TemporalS *ts)
 {
-	Datum minvalue = temporals_min_value(ts);
-	return temporals_minus_value(ts, minvalue);
+	Datum xmin = temporals_min_value(ts);
+	return temporals_minus_value(ts, xmin);
 }
 
 /* Restriction to the maximum value */
@@ -1705,8 +1705,8 @@ temporals_minus_min(TemporalS *ts)
 TemporalS *
 temporals_at_max(TemporalS *ts)
 {
-	Datum maxvalue = temporals_max_value(ts);
-	return temporals_at_minmax(ts, maxvalue);
+	Datum xmax = temporals_max_value(ts);
+	return temporals_at_minmax(ts, xmax);
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1714,8 +1714,8 @@ temporals_at_max(TemporalS *ts)
 TemporalS *
 temporals_minus_max(TemporalS *ts)
 {
-	Datum maxvalue = temporals_max_value(ts);
-	return temporals_minus_value(ts, maxvalue);
+	Datum xmax = temporals_max_value(ts);
+	return temporals_minus_value(ts, xmax);
 }
 
 /*
