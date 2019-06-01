@@ -25,7 +25,6 @@
 typedef enum 
 {
 	T_BOOL,
-	T_BOX,
 	T_DOUBLE2,
 	T_DOUBLE3,
 	T_DOUBLE4,
@@ -37,6 +36,7 @@ typedef enum
 	T_PERIOD,
 	T_PERIODSET,
 	T_TBOOL,
+	T_TBOX,
 	T_TDOUBLE2,
 	T_TDOUBLE3,
 	T_TDOUBLE4,

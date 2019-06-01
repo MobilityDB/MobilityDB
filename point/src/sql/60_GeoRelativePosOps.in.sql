@@ -25,126 +25,6 @@ CREATE FUNCTION tpoint_position_joinsel(internal, oid, internal, smallint, inter
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Geometry
- *****************************************************************************/
-
-CREATE FUNCTION temporal_left(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'left_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overleft(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overleft_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_right(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'right_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overright(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overright_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_below(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'below_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overbelow(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overbelow_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_above(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'above_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overabove(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overabove_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_front(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'front_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overfront(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overfront_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_back(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'back_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overback(geometry, tgeompoint)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overback_geom_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR << (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_left,
-	COMMUTATOR = '>>',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &< (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overleft,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR >> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_right,
-	COMMUTATOR = '<<',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overright,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR <<| (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_below,
-	COMMUTATOR = '|>>',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &<| (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overbelow,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR |>> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_above,
-	COMMUTATOR = '<<|',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR |&> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overabove,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR <</ (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_front,
-	COMMUTATOR = '/>>',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &</ (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overfront,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR />> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_back,
-	COMMUTATOR = '<</',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR /&> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overback,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-
-/*****************************************************************************
  * gbox
  *****************************************************************************/
 
@@ -301,6 +181,127 @@ CREATE OPERATOR #&> (
 	LEFTARG = gbox, RIGHTARG = gbox,
 	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
 );
+
+/*****************************************************************************
+ * Geometry
+ *****************************************************************************/
+
+CREATE FUNCTION temporal_left(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'left_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overleft(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overleft_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_right(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'right_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overright(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overright_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_below(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'below_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbelow(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overbelow_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_above(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'above_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overabove(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overabove_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_front(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'front_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overfront(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overfront_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_back(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'back_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overback(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'overback_geom_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_left,
+	COMMUTATOR = '>>',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR &< (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overleft,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR >> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_right,
+	COMMUTATOR = '<<',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR &> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overright,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR <<| (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_below,
+	COMMUTATOR = '|>>',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR &<| (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overbelow,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR |>> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_above,
+	COMMUTATOR = '<<|',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR |&> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overabove,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR <</ (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_front,
+	COMMUTATOR = '/>>',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR &</ (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overfront,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR />> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_back,
+	COMMUTATOR = '<</',
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+CREATE OPERATOR /&> (
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	PROCEDURE = temporal_overback,
+	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
+);
+
 
 /******************************************************************************/
 

@@ -10,6 +10,10 @@
  *
  *****************************************************************************/
 
+/*****************************************************************************
+ * Casting for tbox
+ *****************************************************************************/
+
 CREATE FUNCTION gbox(geometry)
 	RETURNS gbox
 	AS 'MODULE_PATHNAME', 'geo_to_gbox'
@@ -68,35 +72,9 @@ CREATE CAST (periodset AS gbox) WITH FUNCTION gbox(periodset) AS IMPLICIT;
 CREATE CAST (tgeompoint AS gbox) WITH FUNCTION gbox(tgeompoint);
 CREATE CAST (tgeogpoint AS gbox) WITH FUNCTION gbox(tgeogpoint);
 
-/*****************************************************************************/
-
-CREATE FUNCTION expandSpatial(gbox, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'gbox_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandSpatial(tgeompoint, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandSpatial(tgeogpoint, float)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION expandTemporal(gbox, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'gbox_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tgeompoint, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tgeogpoint, interval)
-	RETURNS gbox
-	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
+/*****************************************************************************
+ * Selectively functions for operators
+ *****************************************************************************/
 
 CREATE FUNCTION tpoint_overlaps_sel(internal, oid, internal, integer)
 	RETURNS float
@@ -128,7 +106,9 @@ CREATE FUNCTION tpoint_same_joinsel(internal, oid, internal, smallint, internal)
 	AS 'MODULE_PATHNAME', 'tpoint_same_joinsel'
 	LANGUAGE C IMMUTABLE STRICT;
 
-/*****************************************************************************/
+/*****************************************************************************
+* gbox operators
+*****************************************************************************/
 
 CREATE FUNCTION gbox_contains(gbox, gbox)
 	RETURNS boolean
@@ -171,6 +151,34 @@ CREATE OPERATOR ~= (
 	COMMUTATOR = ~=,
 	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
 );
+
+/*****************************************************************************/
+
+CREATE FUNCTION expandSpatial(gbox, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'gbox_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandSpatial(tgeompoint, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandSpatial(tgeogpoint, float)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION expandTemporal(gbox, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'gbox_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandTemporal(tgeompoint, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandTemporal(tgeogpoint, interval)
+	RETURNS gbox
+	AS 'MODULE_PATHNAME', 'tpoint_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Contains

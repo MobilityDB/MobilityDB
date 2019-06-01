@@ -110,8 +110,10 @@ struct temporaltype_struct
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
 /* Only for TemporalS */
 #define MOBDB_FLAGS_GET_TEMPCONTINUOUS(flags) 	(((flags) & 0x04)>>2)
-#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
-#define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x10)>>4)
+#define MOBDB_FLAGS_GET_X(flags) 				(((flags) & 0x08)>>3)
+#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x10)>>4)
+#define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
+#define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x40)>>6)
 
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
@@ -121,14 +123,29 @@ struct temporaltype_struct
 /* Only for TemporalS */
 #define MOBDB_FLAGS_SET_TEMPCONTINUOUS(flags, value) \
 	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
-#define MOBDB_FLAGS_SET_Z(flags, value) \
+#define MOBDB_FLAGS_SET_X(flags, value) \
 	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
-#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+#define MOBDB_FLAGS_SET_Z(flags, value) \
 	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
+#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+	((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+#define MOBDB_FLAGS_SET_T(flags, value) \
+	((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
 
 /*****************************************************************************
  * Struct definitions
  *****************************************************************************/
+
+/* TBOX */
+
+typedef struct 
+{
+	double		xmin;			/* minimum numeric value */
+	double		xmax;			/* maximum numeric value */
+	double		tmin;			/* minimum timestamp */
+	double		tmax;			/* maximum timestamp */
+	int32		flags;			/* flags */
+} TBOX;
 
 /* Temporal */
  
@@ -195,7 +212,7 @@ typedef struct
 
 union bboxunion {
 	Period p;
-	BOX b;
+	TBOX b;
 	GBOX g;
 } bboxunion;
 
@@ -258,6 +275,13 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 /*****************************************************************************
  * fmgr macros temporal types
  *****************************************************************************/
+
+/* TBOX */
+
+#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)    PointerGetDatum(X)
+#define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
+#define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
 /* doubleN */
 
@@ -471,6 +495,7 @@ extern bool p_oparen(char **str);
 extern bool p_cparen(char **str);
 extern bool p_comma(char **str);
 
+extern TBOX *tbox_parse(char **str);
 extern Datum basetype_parse(char **str, Oid basetype);
 extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
@@ -527,7 +552,7 @@ extern Datum tempdisc_get_values(PG_FUNCTION_ARGS);
 extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
 extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
-extern Datum tnumber_box(PG_FUNCTION_ARGS);
+extern Datum tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum tnumber_value_range(PG_FUNCTION_ARGS);
 extern Datum temporal_start_value(PG_FUNCTION_ARGS);
 extern Datum temporal_end_value(PG_FUNCTION_ARGS);
@@ -1267,16 +1292,21 @@ extern Datum ttext_tmax_combinefn(PG_FUNCTION_ARGS);
  * Relative position operators defined in RelativePosOps.c
  *****************************************************************************/
 
+
+/*****************************************************************************
+ * Relative position operators defined in RelativePosOps.c
+ *****************************************************************************/
+
 /* Internal functions used for the indexes */
 
-extern bool left_box_box_internal(BOX *box1, BOX *box2);
-extern bool overleft_box_box_internal(BOX *box1, BOX *box2);
-extern bool right_box_box_internal(BOX *box1, BOX *box2);
-extern bool overright_box_box_internal(BOX *box1, BOX *box2);
-extern bool before_box_box_internal(BOX *box1, BOX *box2);
-extern bool overbefore_box_box_internal(BOX *box1, BOX *box2);
-extern bool after_box_box_internal(BOX *box1, BOX *box2);
-extern bool overafter_box_box_internal(BOX *box1, BOX *box2);
+extern bool left_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overleft_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool right_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overright_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool before_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overbefore_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool after_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overafter_tbox_tbox_internal(TBOX *box1, TBOX *box2);
 
 /*****************************************************************************/
 
@@ -1285,11 +1315,58 @@ extern Datum overbefore_period_temporal(PG_FUNCTION_ARGS);
 extern Datum after_period_temporal(PG_FUNCTION_ARGS);
 extern Datum overafter_period_temporal(PG_FUNCTION_ARGS);
 
+extern Datum before_periodset_temporal(PG_FUNCTION_ARGS);
+extern Datum overbefore_periodset_temporal(PG_FUNCTION_ARGS);
+extern Datum after_periodset_temporal(PG_FUNCTION_ARGS);
+extern Datum overafter_periodset_temporal(PG_FUNCTION_ARGS);
+
+extern Datum left_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum overleft_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum right_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum overright_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum before_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum overbefore_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum after_tbox_temporal(PG_FUNCTION_ARGS);
+extern Datum overafter_tbox_temporal(PG_FUNCTION_ARGS);
+
+extern Datum left_temporal_datum(PG_FUNCTION_ARGS);
+extern Datum overleft_temporal_datum(PG_FUNCTION_ARGS);
+extern Datum overright_temporal_datum(PG_FUNCTION_ARGS);
+extern Datum right_temporal_datum(PG_FUNCTION_ARGS);
+
+extern Datum before_temporal_timestamp(PG_FUNCTION_ARGS);
+extern Datum overbefore_temporal_timestamp(PG_FUNCTION_ARGS);
+extern Datum after_temporal_timestamp(PG_FUNCTION_ARGS);
+extern Datum overafter_temporal_timestamp(PG_FUNCTION_ARGS);
+
+extern Datum before_temporal_timestampset(PG_FUNCTION_ARGS);
+extern Datum overbefore_temporal_timestampset(PG_FUNCTION_ARGS);
+extern Datum after_temporal_timestampset(PG_FUNCTION_ARGS);
+extern Datum overafter_temporal_timestampset(PG_FUNCTION_ARGS);
+
 extern Datum before_temporal_period(PG_FUNCTION_ARGS);
 extern Datum overbefore_temporal_period(PG_FUNCTION_ARGS);
 extern Datum after_temporal_period(PG_FUNCTION_ARGS);
 extern Datum overafter_temporal_period(PG_FUNCTION_ARGS);
 
+extern Datum before_temporal_periodset(PG_FUNCTION_ARGS);
+extern Datum overbefore_temporal_periodset(PG_FUNCTION_ARGS);
+extern Datum after_temporal_periodset(PG_FUNCTION_ARGS);
+extern Datum overafter_temporal_periodset(PG_FUNCTION_ARGS);
+
+extern Datum left_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum overleft_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum overright_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum right_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum before_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum overbefore_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum after_temporal_tbox(PG_FUNCTION_ARGS);
+extern Datum overafter_temporal_tbox(PG_FUNCTION_ARGS);
+
+extern Datum left_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum overleft_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum overright_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum right_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum before_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum overbefore_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum after_temporal_temporal(PG_FUNCTION_ARGS);
@@ -1339,25 +1416,59 @@ extern Datum overafter_tnumber_tnumber(PG_FUNCTION_ARGS);
  * File BoundBoxOps.c
  *****************************************************************************/
 
-/* BOX functions */
-extern Datum contains_box_box(PG_FUNCTION_ARGS);
-extern Datum contained_box_box(PG_FUNCTION_ARGS);
-extern Datum overlaps_box_box(PG_FUNCTION_ARGS);
-extern Datum same_box_box(PG_FUNCTION_ARGS);
+extern Datum tbox_in(PG_FUNCTION_ARGS);
+extern Datum tbox_out(PG_FUNCTION_ARGS);
+extern Datum tbox_constructor(PG_FUNCTION_ARGS);
 
-extern bool contains_box_box_internal(const BOX *box1, const BOX *box2);
-extern bool contained_box_box_internal(const BOX *box1, const BOX *box2);
-extern bool overlaps_box_box_internal(const BOX *box1, const BOX *box2);
-extern bool same_box_box_internal(const BOX *box1, const BOX *box2);
+extern Datum tbox_lt(PG_FUNCTION_ARGS);
+extern Datum tbox_le(PG_FUNCTION_ARGS);
+extern Datum tbox_gt(PG_FUNCTION_ARGS);
+extern Datum tbox_ge(PG_FUNCTION_ARGS);
+extern Datum tbox_eq(PG_FUNCTION_ARGS);
+extern Datum tbox_ne(PG_FUNCTION_ARGS);
+extern Datum tbox_cmp(PG_FUNCTION_ARGS);
 
-extern Datum box_cmp(PG_FUNCTION_ARGS);
-extern Datum box_lt(PG_FUNCTION_ARGS);
-extern Datum box_le(PG_FUNCTION_ARGS);
-extern Datum box_gt(PG_FUNCTION_ARGS);
-extern Datum box_ge(PG_FUNCTION_ARGS);
-extern Datum box_eq(PG_FUNCTION_ARGS);
-extern Datum box_ne(PG_FUNCTION_ARGS);
+extern int tbox_cmp_internal(const TBOX *box1, const TBOX *box2);
+extern bool tbox_eq_internal(const TBOX *box1, const TBOX *box2);
 
+extern Datum left_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum overleft_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum right_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum overright_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum before_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum overbefore_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum after_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum overafter_tbox_tbox(PG_FUNCTION_ARGS);
+
+extern bool left_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overleft_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool right_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overright_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool before_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overbefore_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool after_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+extern bool overafter_tbox_tbox_internal(TBOX *box1, TBOX *box2);
+
+/*****************************************************************************
+ * Bounding box operators
+ * File BoundBoxOps.c
+ *****************************************************************************/
+
+extern void base_to_tbox(TBOX *box, Datum value, Oid valuetypid);
+extern void range_to_tbox_internal(TBOX *box, RangeType *r);
+extern void int_to_tbox_internal(TBOX *box, int i);
+extern void float_to_tbox_internal(TBOX *box, double d);
+extern void intrange_to_tbox_internal(TBOX *box, RangeType *range);
+extern void floatrange_to_tbox_internal(TBOX *box, RangeType *range);
+extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
+extern void timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts);
+extern void period_to_tbox_internal(TBOX *box, Period *p);
+extern void periodset_to_tbox_internal(TBOX *box, PeriodSet *ps);
+
+extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern size_t temporal_bbox_size(Oid valuetypid);
 
 /* Comparison of bounding boxes of temporal types */
@@ -1380,37 +1491,33 @@ extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
 extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
 extern bool temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst);
 
-/* Transform one or two types to a BOX */
+extern bool contains_tbox_timestamp_internal(TBOX *box, TimestampTz t);
+extern bool contained_tbox_timestamp_internal(TBOX *box, TimestampTz t);
+extern bool overlaps_tbox_timestamp_internal(TBOX *box, TimestampTz t);
+extern bool same_tbox_timestamp_internal(TBOX *box, TimestampTz t);
 
-extern Datum int_to_box(PG_FUNCTION_ARGS);
-extern Datum float_to_box(PG_FUNCTION_ARGS);
-extern Datum numeric_to_box(PG_FUNCTION_ARGS);
-extern Datum intrange_to_box(PG_FUNCTION_ARGS);
-extern Datum floatrange_to_box(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_box(PG_FUNCTION_ARGS);
-extern Datum period_to_box(PG_FUNCTION_ARGS);
-extern Datum periodset_to_box(PG_FUNCTION_ARGS);
+extern bool contains_tbox_period_internal(TBOX *box, Period *p);
+extern bool contained_tbox_period_internal(TBOX *box, Period *p);
+extern bool overlaps_tbox_period_internal(TBOX *box, Period *p);
+extern bool same_tbox_period_internal(TBOX *box, Period *p);
 
-extern void base_to_box(BOX *box, Datum value, Oid valuetypid);
-extern void range_to_box(BOX *box, RangeType *r);
-extern void int_to_box_internal(BOX *box, int i);
-extern void float_to_box_internal(BOX *box, double d);
-extern void intrange_to_box_internal(BOX *box, RangeType *range);
-extern void floatrange_to_box_internal(BOX *box, RangeType *range);
-extern void timestamp_to_box_internal(BOX *box, TimestampTz t);
-extern void timestampset_to_box_internal(BOX *box, TimestampSet *ts);
-extern void period_to_box_internal(BOX *box, Period *p);
-extern void periodset_to_box_internal(BOX *box, PeriodSet *ps);
-
-extern Datum int_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum float_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum int_period_to_box(PG_FUNCTION_ARGS);
-extern Datum float_period_to_box(PG_FUNCTION_ARGS);
-extern Datum intrange_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum floatrange_timestamp_to_box(PG_FUNCTION_ARGS);
-extern Datum intrange_period_to_box(PG_FUNCTION_ARGS);
-extern Datum floatrange_period_to_box(PG_FUNCTION_ARGS);
+extern Datum int_to_tbox(PG_FUNCTION_ARGS);
+extern Datum float_to_tbox(PG_FUNCTION_ARGS);
+extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
+extern Datum intrange_to_tbox(PG_FUNCTION_ARGS);
+extern Datum floatrange_to_tbox(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_tbox(PG_FUNCTION_ARGS);
+extern Datum periodset_to_tbox(PG_FUNCTION_ARGS);
+extern Datum int_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum float_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum int_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum intrange_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum intrange_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum floatrange_period_to_tbox(PG_FUNCTION_ARGS);
 
 /* Bounding box operators for temporal types */
 
@@ -1454,22 +1561,28 @@ extern Datum same_bbox_temporal_period(PG_FUNCTION_ARGS);
 extern Datum same_bbox_temporal_periodset(PG_FUNCTION_ARGS);
 extern Datum same_bbox_temporal_temporal(PG_FUNCTION_ARGS);
 
-/* Bounding box operators for temporal number types */
+extern Datum overlaps_bbox_datum_tnumber(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tnumber_datum(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum contains_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_box_tnumber(PG_FUNCTION_ARGS);
+extern Datum contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnumber_box(PG_FUNCTION_ARGS);
+extern Datum contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum contained_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_box_tnumber(PG_FUNCTION_ARGS);
+extern Datum contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnumber_box(PG_FUNCTION_ARGS);
+extern Datum contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum overlaps_bbox_datum_tnumber(PG_FUNCTION_ARGS);
@@ -1482,10 +1595,10 @@ extern Datum overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum same_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum same_bbox_box_tnumber(PG_FUNCTION_ARGS);
+extern Datum same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnumber_box(PG_FUNCTION_ARGS);
+extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
  
 /*****************************************************************************
@@ -1831,7 +1944,7 @@ extern Datum gist_tnumbers_compress(PG_FUNCTION_ARGS);
 extern Datum gist_tnumber_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTnumber.c */
-extern bool index_leaf_consistent_box(BOX *key, BOX *query, StrategyNumber strategy);
+extern bool index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy);
 
 /*****************************************************************************
  * Functions for SP-GiST indexes defined in IndexSpgistTemporal.c
