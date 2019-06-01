@@ -409,6 +409,7 @@ extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
 
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
+extern Oid range_oid_from_base(Oid valuetypid);
 extern bool temporal_type_oid(Oid temptypid);
 
 /* Catalog functions */
