@@ -132,7 +132,101 @@ PG_FUNCTION_INFO_V1(tnumber_position_sel);
 PGDLLEXPORT Datum
 tnumber_position_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    VariableStatData vardata;
+    Node *other;
+    bool varonleft;
+    Selectivity selec = 0.0;
+    CachedOp cachedOp = get_tnumber_cacheOp(operator);
+
+    /*
+     * If expression is not (variable op something) or (something op
+     * variable), then punt and return a default estimate.
+     */
+    if (!get_restriction_variable(root, args, varRelid,
+                                  &vardata, &other, &varonleft))
+        PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+
+    /*
+     * Can't do anything useful if the something is not a constant, either.
+     */
+    if (!IsA(other, Const))
+    {
+        ReleaseVariableStats(vardata);
+        PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+    }
+
+    /*
+     * All the period operators are strict, so we can cope with a NULL constant
+     * right away.
+     */
+    if (((Const *) other)->constisnull)
+    {
+        ReleaseVariableStats(vardata);
+        PG_RETURN_FLOAT8(0.0);
+    }
+
+    /*
+     * If var is on the right, commute the operator, so that we can assume the
+     * var is on the left in what follows.
+     */
+    if (!varonleft)
+    {
+        /* we have other Op var, commute to make var Op other */
+        operator = get_commutator(operator);
+        if (!operator)
+        {
+            /* Use default selectivity (should we raise an error instead?) */
+            ReleaseVariableStats(vardata);
+            PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+        }
+        switch (cachedOp)
+        {
+            case LEFT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
+                break;
+            case RIGHT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
+                break;
+            case OVERLEFT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, true, true, GE_OP);
+                break;
+            case OVERRIGHT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, false, true, LE_OP);
+                break;
+            default:
+                selec = 0.001;
+        }
+    }
+    else
+    {
+        switch (cachedOp)
+        {
+            case LEFT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
+                break;
+            case RIGHT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
+                break;
+            case OVERLEFT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, false, true, LE_OP);
+                break;
+            case OVERRIGHT_OP:
+                selec = estimate_tnumber_position_sel(root, vardata, other, true, true, GE_OP);
+                break;
+            default:
+                selec = 0.001;
+        }
+    }
+
+    if (selec < 0.0)
+        selec = default_temporaltypes_selectivity(operator);
+    ReleaseVariableStats(vardata);
+    CLAMP_PROBABILITY(selec);
+    PG_RETURN_FLOAT8((float8) selec);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_position_joinsel);
@@ -359,6 +453,58 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
 }
 
 Selectivity
+estimate_tnumber_position_sel(PlannerInfo *root, VariableStatData vardata,
+                              Node *other, bool isgt, bool iseq, CachedOp operator)
+{
+    double selec = 0.0;
+    if (vardata.vartype == type_oid(T_TINT) ||
+        vardata.vartype == type_oid(T_INT4))
+    {
+        Oid op = oper_oid(operator, T_INT4, T_INT4);
+        int constant = (int) ceil(lower_or_higher_value_bound(other, isgt));
+        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, constant, type_oid(T_INT4), VALUE_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_TFLOAT) || vardata.vartype == type_oid(T_FLOAT8))
+    {
+        Oid op = oper_oid(operator, T_FLOAT8, T_FLOAT8);
+        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, lower_or_higher_value_bound(other, isgt),
+                               type_oid(T_FLOAT8), VALUE_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_TFLOAT))
+    {
+        TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
+        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
+                           VALUE_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+    {
+        TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
+                                                     TYPECACHE_RANGE_INFO);
+        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt),
+                           isgt, iseq, typcache, VALUE_STATISTICS);
+
+    }
+    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+    {
+        TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
+                                                     TYPECACHE_RANGE_INFO);
+        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
+                           VALUE_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
+    {
+        TypeCacheEntry *typcache = lookup_type_cache(vardata.vartype, TYPECACHE_RANGE_INFO);
+        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
+                           DEFAULT_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_BOX))
+    {
+
+    }
+    return selec;
+}
+
+Selectivity
 range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
                    bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy)
 {
@@ -392,6 +538,72 @@ range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
     selec *= (1.0 - null_frac);
     return selec;
 }
+
+double
+lower_or_higher_value_bound(Node *other, bool higher)
+{
+    double result = 0.0;
+    Oid consttype = ((Const *) other)->consttype;
+    if (higher)
+    {
+        if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+        {
+            Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+            BOX *box = palloc(sizeof(BOX));
+            temporal_bbox(box, temporal);
+            result = box->high.x;
+            pfree(box);
+        }
+        else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
+        {
+            result = (double) ((Const *) other)->constvalue;
+        }
+        else if (consttype == type_oid(T_INTRANGE))
+        {
+            result = DatumGetInt32(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+        }
+        else if (consttype == type_oid(T_FLOATRANGE))
+        {
+            result = DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+        }
+        else if (consttype == BOXOID)
+        {
+            BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
+            result = box->high.x;
+        }
+    }
+    else
+    {
+        if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+        {
+            Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+            BOX *box = palloc(sizeof(BOX));
+            temporal_bbox(box, temporal);
+            result = box->low.x;
+            pfree(box);
+        }
+        else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
+        {
+            result = (double) ((Const *) other)->constvalue;
+        }
+        else if (consttype == type_oid(T_INTRANGE))
+        {
+            result = DatumGetInt32(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+        }
+        else if (consttype == type_oid(T_FLOATRANGE))
+        {
+            result = DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
+        }
+        else if (consttype == BOXOID)
+        {
+            BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
+            result = box->low.x;
+        }
+    }
+    return result;
+}
+
+
 
 /*
  * Calculate range operator selectivity using histograms of range bounds.
