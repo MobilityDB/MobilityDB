@@ -409,7 +409,7 @@ SELECT asEWKT(transform_gk(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:
 SELECT ST_AsText(transform_gk(geometry 'Point Empty'));
                  st_astext                 
 -------------------------------------------
- POINT(1830913.78622022 -406.643499073008)
+ POINT EMPTY
 (1 row)
 
 SELECT ST_AsText(transform_gk(geometry 'Point(13.43593 52.41721)'));
