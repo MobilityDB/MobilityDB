@@ -21,7 +21,6 @@
 const char *_type_names[] = 
 {
 	"bool",
-	"box",
 	"double2",
 	"double3",
 	"double4",
@@ -33,6 +32,7 @@ const char *_type_names[] =
 	"period",
 	"periodset",
 	"tbool",
+	"tbox",
 	"tdouble2",
 	"tdouble3",
 	"tdouble4",

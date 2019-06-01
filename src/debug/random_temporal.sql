@@ -162,7 +162,7 @@ FROM generate_series (1, 15) AS k;
 -- Box Types
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_box(lowx float, highx float, 
+CREATE OR REPLACE FUNCTION random_tbox(lowx float, highx float, 
 	lowy float, highy float, maxsize float) 
 	RETURNS box AS $$
 DECLARE
@@ -178,7 +178,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_box(0, 100, 0, 100, 10) AS b
+SELECT k, random_tbox(0, 100, 0, 100, 10) AS b
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------

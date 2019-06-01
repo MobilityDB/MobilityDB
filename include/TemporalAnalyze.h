@@ -138,9 +138,9 @@ extern int get_statype_num_dims(VacAttrStats *stats);
 extern HeapTuple remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, Oid attrtypid,
  	 	 	 	 	 	 	 	 	bool geom, Datum value);
 extern Period* get_bbox_onedim(Datum value, Oid oid);
-extern BOX* get_bbox_twodim(Datum value, Oid oid);
+extern TBOX* get_bbox_twodim(Datum value, Oid oid);
 extern GBOX* get_bbox_threedim(Datum value, Oid oid);
-extern void box_deserialize(BOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+extern void box_deserialize(TBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
 							PeriodBound *lowerdim2, PeriodBound *upperdim2);
 extern void gbox_deserialize(GBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
 							 RangeBound *lowerdim2, RangeBound *upperdim2,

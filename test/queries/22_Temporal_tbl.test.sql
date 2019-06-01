@@ -177,13 +177,13 @@ SELECT MAX(endValue(temp)) FROM tbl_tint;
 SELECT MAX(endValue(temp)) FROM tbl_tfloat;
 SELECT MAX(endValue(temp)) FROM tbl_ttext;
 
-SELECT MAX(minValue(temp)) FROM tbl_tint;
-SELECT MAX(minValue(temp)) FROM tbl_tfloat;
-SELECT MAX(minValue(temp)) FROM tbl_ttext;
+SELECT MAX(xmin(temp)) FROM tbl_tint;
+SELECT MAX(xmin(temp)) FROM tbl_tfloat;
+SELECT MAX(xmin(temp)) FROM tbl_ttext;
 
-SELECT MAX(maxValue(temp)) FROM tbl_tint;
-SELECT MAX(maxValue(temp)) FROM tbl_tfloat;
-SELECT MAX(maxValue(temp)) FROM tbl_ttext;
+SELECT MAX(xmax(temp)) FROM tbl_tint;
+SELECT MAX(xmax(temp)) FROM tbl_tfloat;
+SELECT MAX(xmax(temp)) FROM tbl_ttext;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tboolinst;
 SELECT MAX(getTimestamp(inst)) FROM tbl_tintinst;

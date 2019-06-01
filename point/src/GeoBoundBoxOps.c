@@ -270,12 +270,12 @@ static GBOX *
 gbox_expand_temporal_internal(GBOX *box, Datum interval)
 {
 	GBOX *result = gbox_copy(box);
-	Datum mint = TimestampGetDatum((Timestamp)box->mmin);
-	Datum maxt = TimestampGetDatum((Timestamp)box->mmax);
+	Datum tmin = TimestampGetDatum((Timestamp)box->mmin);
+	Datum tmax = TimestampGetDatum((Timestamp)box->mmax);
 	result->mmin = DatumGetTimestamp(call_function2(timestamp_mi_interval, 
-		mint, interval));
+		tmin, interval));
 	result->mmax = DatumGetTimestamp(call_function2(timestamp_pl_interval, 
-		maxt, interval));
+		tmax, interval));
 	return result;
 }
 
