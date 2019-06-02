@@ -23,8 +23,8 @@
 
 #include "TemporalTypes.h"
 
-static int	float8_qsort_cmp(const void *a1, const void *a2);
-static int	period_bound_qsort_cmp(const void *a1, const void *a2);
+static int float8_qsort_cmp(const void *a1, const void *a2);
+static int period_bound_qsort_cmp(const void *a1, const void *a2);
 static void compute_time_stats(CachedType type, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void compute_period_stats(VacAttrStats *stats,
@@ -66,15 +66,15 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 static void
-compute_time_stats(CachedType time_type, VacAttrStats *stats, 
+compute_time_stats(CachedType timetype, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows)
 {
-	int			null_cnt = 0;
-	int			non_null_cnt = 0;
-	int			timetype_no;
-	int			slot_idx;
-	int			num_bins = stats->attr->attstattarget;
-	int			num_hist;
+	int			null_cnt = 0,
+				non_null_cnt = 0,
+				timetype_no,
+				slot_idx,
+				num_bins = stats->attr->attstattarget,
+				num_hist;
 	float8	   *lengths;
 	PeriodBound *lowers,
 			   *uppers;
@@ -90,10 +90,9 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 	{
 		Datum		value;
 		bool		isnull;
-		Period	   *period;
+		Period	   *period = NULL;
 		PeriodBound	lower,
 					upper;
-		float8		length;
 
 		vacuum_delay_point();
 
@@ -105,40 +104,36 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 			continue;
 		}
 
-		/* Get the period or the bbox period and deserialize it for further analysis. */
-		if (time_type == T_PERIOD)
+		/* Get the (bounding) period and deserialize it for further analysis. */
+		assert(timetype ==  T_PERIOD || timetype == T_TIMESTAMPSET || 
+			timetype == T_PERIODSET);
+		if (timetype == T_PERIOD)
 		{
 			period = DatumGetPeriod(value);
 			/* Adjust the size */
 			total_width += sizeof(Period);
 		}
-		else if (time_type == T_TIMESTAMPSET)
+		else if (timetype == T_TIMESTAMPSET)
 		{
 			TimestampSet *ts= DatumGetTimestampSet(value);
 			period = timestampset_bbox(ts);
 			/* Adjust the size */
 			total_width += VARSIZE(ts);
 		}
-		else if (time_type == T_PERIODSET)
+		else if (timetype == T_PERIODSET)
 		{
 			PeriodSet *ps= DatumGetPeriodSet(value);
 			period = periodset_bbox(ps);
 			/* Adjust the size */
 			total_width += VARSIZE(ps);
 		}
-		else
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-				errmsg("Operation not supported")));
-			
+	
 		period_deserialize(period, &lower, &upper);
 
 		/* Remember bounds and length for further usage in histograms */
 		lowers[non_null_cnt] = lower;
 		uppers[non_null_cnt] = upper;
-		/* Use subdiff function between upper and lower bound values. */
-		length = period_duration_secs(upper.val, lower.val);
-		lengths[non_null_cnt] = length;
-
+		lengths[non_null_cnt] = period_duration_secs(upper.val, lower.val);
 		non_null_cnt++;
 	}
 
@@ -168,12 +163,15 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
 		/*
-		 * Generate a bounds histogram slot entry if there are at least two
-		 * values.
+		 * Generate a bounds histogram and a a length histogram slot entries 
+		 * if there are at least two values.
 		 */
 		if (non_null_cnt >= 2)
 		{
-			/* Sort bound values */
+			/*
+			 * Generate a length histogram slot entry.
+			 * Sort bound values 
+			 */
 			qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
 			qsort(uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
 
@@ -221,15 +219,9 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 			stats->statypbyval[slot_idx] = false;
 			stats->statypalign[slot_idx] = 'd';
 			slot_idx++;
-		}
 
-		/*
-		 * Generate a length histogram slot entry if there are at least two
-		 * values.
-		 */
-		if (non_null_cnt >= 2)
-		{
 			/*
+			 * Generate a length histogram slot entry.
 			 * Ascending sort of period lengths for further filling of
 			 * histogram
 			 */
@@ -284,11 +276,7 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statypid[slot_idx] = FLOAT8OID;
 		stats->statyplen[slot_idx] = sizeof(float8);
-#ifdef USE_FLOAT8_BYVAL
 		stats->statypbyval[slot_idx] = true;
-#else
-		stats->statypbyval[slot_idx] = false;
-#endif
 		stats->statypalign[slot_idx] = 'd';
 
 		slot_idx++;
@@ -318,7 +306,7 @@ compute_time_stats(CachedType time_type, VacAttrStats *stats,
 
 static void
 compute_period_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
 	compute_time_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
 }

@@ -99,13 +99,16 @@ CREATE FUNCTION temporal_typmod_in(cstring[])
 CREATE FUNCTION temporal_typmod_out(integer)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME','temporal_typmod_out'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
-
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION temporal_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION tnumber_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE TYPE tbool (
 	internallength = variable,
@@ -116,8 +119,8 @@ CREATE TYPE tbool (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = temporal_analyze
 );
 CREATE TYPE tint (
 	internallength = variable,
@@ -128,8 +131,8 @@ CREATE TYPE tint (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = tnumber_analyze
 );
 CREATE TYPE tfloat (
 	internallength = variable,
@@ -140,8 +143,8 @@ CREATE TYPE tfloat (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+	analyze = tnumber_analyze
 );
 CREATE TYPE ttext (
 	internallength = variable,
@@ -152,27 +155,27 @@ CREATE TYPE ttext (
 	typmod_in = temporal_typmod_in,
 	typmod_out = temporal_typmod_out,
 	storage = extended,
-	alignment = double
-    --,analyze = temporal_analyze
+	alignment = double,
+    analyze = temporal_analyze
 );
 
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tbool(tbool, integer)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat(tfloat, integer)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext(ttext, integer)
 	RETURNS ttext
 	AS 'MODULE_PATHNAME','temporal_enforce_typmod'
-	LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tbool AS tbool) WITH FUNCTION tbool(tbool, integer) AS IMPLICIT;
 CREATE CAST (tint AS tint) WITH FUNCTION tint(tint, integer) AS IMPLICIT;
@@ -411,12 +414,12 @@ CREATE FUNCTION period(tbool)
 	AS 'MODULE_PATHNAME', 'temporal_timespan'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box(tint)
-	RETURNS box
-	AS 'MODULE_PATHNAME', 'temporal_box'
+	RETURNS tbox
+	AS 'MODULE_PATHNAME', 'temporal_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION box(tfloat)
-	RETURNS box
-	AS 'MODULE_PATHNAME', 'temporal_box'
+	RETURNS tbox
+	AS 'MODULE_PATHNAME', 'temporal_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(ttext)
 	RETURNS period
@@ -503,28 +506,28 @@ CREATE FUNCTION endValue(ttext)
 	AS 'MODULE_PATHNAME', 'temporal_end_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minValue(tint)
+CREATE FUNCTION xmin(tint)
 	RETURNS integer
 	AS 'MODULE_PATHNAME', 'temporal_min_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minValue(tfloat)
+CREATE FUNCTION xmin(tfloat)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'temporal_min_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minValue(ttext)
+CREATE FUNCTION xmin(ttext)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'temporal_min_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION maxValue(tint)
+CREATE FUNCTION xmax(tint)
 	RETURNS integer
 	AS 'MODULE_PATHNAME', 'temporal_max_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION maxValue(tfloat)
+CREATE FUNCTION xmax(tfloat)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'temporal_max_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION maxValue(ttext)
+CREATE FUNCTION xmax(ttext)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'temporal_max_value'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -601,87 +604,87 @@ CREATE FUNCTION duration(ttext)
 
 CREATE FUNCTION numSequences(tbool)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numSequences(tint)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numSequences(tfloat)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION numSequences(ttext)
 	RETURNS integer
-	AS 'MODULE_PATHNAME', 'temporals_num_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_num_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startSequence(tbool)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startSequence(tint)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startSequence(tfloat)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION startSequence(ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporals_start_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_start_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endSequence(tbool)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSequence(tint)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSequence(tfloat)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION endSequence(ttext)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporals_end_sequence'
+	AS 'MODULE_PATHNAME', 'temporal_end_sequence'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequenceN(tbool, integer)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequenceN(tint, integer)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequenceN(tfloat, integer)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequenceN(ttext, integer)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporals_sequence_n'
+	AS 'MODULE_PATHNAME', 'temporal_sequence_n'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequences(tbool)
 	RETURNS tbool[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequences(tint)
 	RETURNS tint[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequences(tfloat)
 	RETURNS tfloat[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION sequences(ttext)
 	RETURNS ttext[]
-	AS 'MODULE_PATHNAME', 'temporals_sequences'
+	AS 'MODULE_PATHNAME', 'temporal_sequences'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numInstants(tbool)

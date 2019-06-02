@@ -1,3 +1,11 @@
+VACUUM ANALYZE tbl_tbool_big;
+VACUUM
+VACUUM ANALYZE tbl_tint_big;
+VACUUM
+VACUUM ANALYZE tbl_tfloat_big;
+VACUUM
+VACUUM ANALYZE tbl_ttext_big;
+VACUUM
 DROP INDEX IF EXISTS tbl_tbool_big_gist_idx;
 NOTICE:  index "tbl_tbool_big_gist_idx" does not exist, skipping
 DROP INDEX
@@ -42,55 +50,55 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp && NULL::tbool;
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
  count 
 -------
-  4840
+   871
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp && period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp && period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4840
+   871
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp @> period '[2001-01-01, 2001-07-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tbool_big WHERE temp <@ period '[2001-01-01, 2001-07-01]';
- count 
--------
-  4839
-(1 row)
-
-SELECT count(*) FROM tbl_tbool_big WHERE temp ~= period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp @> period '[2001-01-01, 2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp <@ period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   871
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp ~= period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4840
+   872
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4759
+  8728
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599
@@ -144,28 +152,52 @@ SELECT count(*) FROM tbl_tint_big WHERE temp &> intrange '[1,50]';
   9600
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4703
+   811
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4897
+  8789
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9600
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+   324
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+    22
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,50]';
@@ -216,73 +248,97 @@ SELECT count(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[1,50]';
   9600
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4753
+   841
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4847
+  8759
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp && period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  4788
+   334
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp @> period '[2001-01-01, 2001-07-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_ttext_big WHERE temp <@ period '[2001-01-01, 2001-07-01]';
- count 
--------
-  4785
-(1 row)
-
-SELECT count(*) FROM tbl_ttext_big WHERE temp ~= period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+    21
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp && period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4786
+   822
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp @> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4812
+     0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp <@ period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   820
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp ~= period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   821
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  8778
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599
@@ -316,55 +372,55 @@ SELECT count(*) FROM tbl_tbool_big WHERE temp && NULL::tbool;
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp && tbool '[true@2001-01-01, true@2001-02-01]';
  count 
 -------
-  4840
+   871
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp && period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp && period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4840
+   871
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp @> period '[2001-01-01, 2001-07-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tbool_big WHERE temp <@ period '[2001-01-01, 2001-07-01]';
- count 
--------
-  4839
-(1 row)
-
-SELECT count(*) FROM tbl_tbool_big WHERE temp ~= period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp @> period '[2001-01-01, 2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp <@ period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   871
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp ~= period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tbool_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4840
+   872
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4759
+  8728
 (1 row)
 
-SELECT count(*) FROM tbl_tbool_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tbool_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599
@@ -418,28 +474,52 @@ SELECT count(*) FROM tbl_tint_big WHERE temp &> intrange '[1,50]';
   9600
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4703
+   811
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4897
+  8789
 (1 row)
 
-SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tint_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9600
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp && tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+   324
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp @> tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp <@ tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+    22
+(1 row)
+
+SELECT count(*) FROM tbl_tint_big WHERE temp ~= tint '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_tfloat_big WHERE temp && floatrange '[1,50]';
@@ -490,73 +570,97 @@ SELECT count(*) FROM tbl_tfloat_big WHERE temp &> floatrange '[1,50]';
   9600
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4753
+   841
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4847
+  8759
 (1 row)
 
-SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp && period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp && tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
-  4788
+   334
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp @> period '[2001-01-01, 2001-07-01]';
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_ttext_big WHERE temp <@ period '[2001-01-01, 2001-07-01]';
- count 
--------
-  4785
-(1 row)
-
-SELECT count(*) FROM tbl_ttext_big WHERE temp ~= period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp @> tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp <<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_tfloat_big WHERE temp <@ tfloat '[1@2001-01-01, 10@2001-02-01]';
+ count 
+-------
+    21
+(1 row)
+
+SELECT count(*) FROM tbl_tfloat_big WHERE temp ~= tfloat '[1@2001-01-01, 10@2001-02-01]';
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp &<# period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp && period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4786
+   822
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp #>> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp @> period '[2001-01-01, 2001-02-01]';
  count 
 -------
-  4812
+     0
 (1 row)
 
-SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-07-01]';
+SELECT count(*) FROM tbl_ttext_big WHERE temp <@ period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   820
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp ~= period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp <<# period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp &<# period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+   821
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp #>> period '[2001-01-01, 2001-02-01]';
+ count 
+-------
+  8778
+(1 row)
+
+SELECT count(*) FROM tbl_ttext_big WHERE temp #&> period '[2001-01-01, 2001-02-01]';
  count 
 -------
   9599

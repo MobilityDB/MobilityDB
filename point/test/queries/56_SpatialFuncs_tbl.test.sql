@@ -1,5 +1,11 @@
 ﻿-------------------------------------------------------------------------------
 
+-- set parallel_tuple_cost=0;
+-- set parallel_setup_cost=0;
+-- set force_parallel_mode=regress;
+
+-------------------------------------------------------------------------------
+
 SELECT astext(temp) FROM tbl_tgeompoint LIMIT 10;
 SELECT astext(temp) FROM tbl_tgeogpoint LIMIT 10;
 SELECT astext(temp) FROM tbl_tgeompoint3D LIMIT 10;
@@ -65,13 +71,13 @@ SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
 SELECT count(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
 SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeompoint;
+SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(xmax(speed(temp))) FROM tbl_tgeompoint;
+SELECT MAX(xmax(speed(temp))) FROM tbl_tgeompoint3D;
 -- Tests intended to avoid floating point precision errors
 SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
@@ -198,3 +204,8 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
+-- set parallel_tuple_cost=100;
+-- set parallel_setup_cost=100;
+-- set force_parallel_mode=off;
+
+-------------------------------------------------------------------------------

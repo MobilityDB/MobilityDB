@@ -75,7 +75,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 
 		if (subtype == type_oid(T_PERIOD))
 			period = DatumGetPeriod(in->scankeys[i].sk_argument);
-		else if (temporal_oid(subtype))
+		else if (temporal_type_oid(subtype))
 		{
 			period = palloc(sizeof(Period));
 			temporal_bbox(period,
@@ -284,7 +284,7 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
-		Period	   *query;
+		Period *query;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
 		if (subtype == type_oid(T_PERIOD))
@@ -292,7 +292,7 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
 			query = DatumGetPeriod(in->scankeys[i].sk_argument);
 			res = index_leaf_consistent_time(key, query, strategy);
 		}
-		else if (temporal_oid(subtype))
+		else if (temporal_type_oid(subtype))
 		{
 			Period period;
 			temporal_bbox(&period,

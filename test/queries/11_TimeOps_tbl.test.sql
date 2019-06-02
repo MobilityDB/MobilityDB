@@ -14,6 +14,8 @@ SELECT count(*) FROM tbl_period, tbl_timestampset WHERE p -|- ts;
 SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p -|- t2.p;
 SELECT count(*) FROM tbl_period, tbl_periodset WHERE p -|- ps;
 
+select count(*) from tbl_period_big where p -|- '[2000-06-01 00:00:00+02, 2000-07-01 00:00:00+02]';
+
 SELECT count(*) FROM tbl_periodset, tbl_timestamptz WHERE ps -|- t;
 SELECT count(*) FROM tbl_periodset, tbl_timestampset WHERE ps -|- ts;
 SELECT count(*) FROM tbl_periodset, tbl_period WHERE ps -|- p;

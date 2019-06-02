@@ -65,16 +65,15 @@ upper_inc(RangeType *range)
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid subtypid)
 {
-	Oid range_oid;
+	Oid range_oid = 0;
+	assert (subtypid == INT4OID || subtypid == FLOAT8OID || 
+		subtypid == TIMESTAMPTZOID);
 	if (subtypid == INT4OID)
 		range_oid = type_oid(T_INTRANGE);
 	else if (subtypid == FLOAT8OID)
 		range_oid = type_oid(T_FLOATRANGE);
 	else if (subtypid == TIMESTAMPTZOID)
 		range_oid = TSTZRANGEOID;
-	else
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
 	
 	TypeCacheEntry* typcache = lookup_type_cache(range_oid, TYPECACHE_RANGE_INFO);
 
@@ -148,6 +147,7 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
 RangeType **
 rangearr_normalize(RangeType **ranges, int *count)
 {
+	assert(*count != 0);
 	rangearr_sort(ranges, *count);
 	int newcount = 0;
 	RangeType **result = palloc(sizeof(RangeType *) * *count);
@@ -219,20 +219,6 @@ intrange_canonical(PG_FUNCTION_ARGS)
 		upper.inclusive = false;
 	}
 	PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
-}
-
-/* Convert an integer range into a float range */
-
-RangeType *
-numrange_to_floatrange(RangeType *range)
-{
-	if (range->rangetypid == type_oid(T_FLOATRANGE))
-		return range_make(lower_datum(range), upper_datum(range), 
-			lower_inc(range), lower_inc(range), FLOAT8OID);
-	/* Function upper_datum subtract 1 to the result of upper(range) */
-	Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
-	Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
-	return range_make(lower, upper, true, true, FLOAT8OID);
 }
 
 /*****************************************************************************/

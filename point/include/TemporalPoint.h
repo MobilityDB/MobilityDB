@@ -18,7 +18,7 @@
 #include "GeoEstimate.h"
 
 /*****************************************************************************
- * Macros for manipulating the 'typemod' int. An int32_t used as follows:
+ * Macros for manipulating the 'typmod' int. An int32_t used as follows:
  * Plus/minus = Top bit.
  * Spare bits = Next 2 bits.
  * SRID = Next 21 bits.
@@ -45,21 +45,36 @@
 #define TYPMOD_DEL_DURATION(typmod) (typmod = typmod >> 4 )
 #define TYPMOD_SET_DURATION(typmod, durtype) ((typmod) = typmod << 4 | durtype)
 
+
 /*****************************************************************************
- * GBOX macros
+ * STBOX macros
  *****************************************************************************/
 
-#define DatumGetGboxP(X)    ((GBOX *) DatumGetPointer(X))
-#define GboxPGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_GBOX_P(n) DatumGetGboxP(PG_GETARG_DATUM(n))
-#define PG_RETURN_GBOX_P(x) return GboxPGetDatum(x)
+#define DatumGetSTboxP(X)    ((STBOX *) DatumGetPointer(X))
+#define STboxPGetDatum(X)    PointerGetDatum(X)
+#define PG_GETARG_STBOX_P(n) DatumGetSTboxP(PG_GETARG_DATUM(n))
+#define PG_RETURN_STBOX_P(x) return STboxPGetDatum(x)
 
 /*****************************************************************************
  * Parsing routines: File Parser.c
  *****************************************************************************/
 
-extern GBOX *gbox_parse(char **str);
+extern STBOX *stbox_parse(char **str);
 extern Temporal *tpoint_parse(char **str, Oid basetype);
+
+/*****************************************************************************
+ * STBOX routines: File STbox.c
+ *****************************************************************************/
+
+extern Datum stbox_in(PG_FUNCTION_ARGS);
+extern Datum stbox_out(PG_FUNCTION_ARGS);
+extern Datum stbox_constructor(PG_FUNCTION_ARGS);
+extern Datum stboxzt_constructor(PG_FUNCTION_ARGS);
+extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
+
+extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic);
+extern STBOX *stbox_copy(const STBOX *box);
+extern int stbox_cmp_internal(const STBOX *box1, const STBOX *box2);
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c
@@ -75,7 +90,7 @@ extern Datum tpoint_in(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
-extern Datum tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_ever_equals(PG_FUNCTION_ARGS);
 extern Datum tpoint_always_equals(PG_FUNCTION_ARGS);
 
@@ -150,6 +165,7 @@ extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
+extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
 extern Datum tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2);
@@ -350,110 +366,112 @@ extern Datum trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS);
  * Bounding box operators defined in BoundBoxOps.c
  *****************************************************************************/
 
-/* GBOX functions */
+/* STBOX functions */
 
-extern Datum contains_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum contained_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum same_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum distance_gbox_gbox(PG_FUNCTION_ARGS);
+extern Datum contains_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum contained_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overlaps_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum same_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum distance_stbox_stbox(PG_FUNCTION_ARGS);
 
-extern bool contains_gbox_gbox_internal(const GBOX *box1, const GBOX *box2);
-extern bool contained_gbox_gbox_internal(const GBOX *box1, const GBOX *box2);
-extern bool overlaps_gbox_gbox_internal(const GBOX *box1, const GBOX *box2);
-extern bool same_gbox_gbox_internal(const GBOX *box1, const GBOX *box2);
-extern double distance_gbox_gbox_internal(GBOX *box1, GBOX *box2);
+extern bool contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern bool contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern bool overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern bool same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern double distance_stbox_stbox_internal(STBOX *box1, STBOX *box2);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
-extern void tpointinst_make_gbox(GBOX *box, Datum value, TimestampTz t);
-extern void tpointinstarr_to_gbox(GBOX *box, TemporalInst **inst, int count) ;
-extern void tpointseqarr_to_gbox(GBOX *box, TemporalSeq **seq, int count) ;
+extern void tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t);
+extern void tpointinstarr_to_stbox(STBOX *box, TemporalInst **inst, int count);
+extern void tpointseqarr_to_stbox(STBOX *box, TemporalSeq **seq, int count);
+
+extern void tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst);
 
 /* Functions for expanding the bounding box */
 
-extern Datum gbox_expand_spatial(PG_FUNCTION_ARGS);
+extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum gbox_expand_temporal(PG_FUNCTION_ARGS);
+extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
 extern Datum tpoint_expand_temporal(PG_FUNCTION_ARGS);
 
-/* Transform a <Type> to a GBOX */
+/* Transform a <Type> to a STBOX */
 
-extern Datum geo_to_gbox(PG_FUNCTION_ARGS);
-extern Datum geo_timestamp_to_gbox(PG_FUNCTION_ARGS);
-extern Datum geo_period_to_gbox(PG_FUNCTION_ARGS);
+extern Datum geo_to_stbox(PG_FUNCTION_ARGS);
+extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
+extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
 
-extern bool geo_to_gbox_internal(GBOX *box, GSERIALIZED *gs);
-extern void timestamp_to_gbox_internal(GBOX *box, TimestampTz t);
-extern void timestampset_to_gbox_internal(GBOX *box, TimestampSet *ps);
-extern void period_to_gbox_internal(GBOX *box, Period *p);
-extern void periodset_to_gbox_internal(GBOX *box, PeriodSet *ps);
-extern bool geo_timestamp_to_gbox_internal(GBOX *box, GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_gbox_internal(GBOX *box, GSERIALIZED* geom, Period *p);
+extern bool geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs);
+extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
+extern void timestampset_to_stbox_internal(STBOX *box, TimestampSet *ps);
+extern void period_to_stbox_internal(STBOX *box, Period *p);
+extern void periodset_to_stbox_internal(STBOX *box, PeriodSet *ps);
+extern bool geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED* geom, TimestampTz t);
+extern bool geo_period_to_stbox_internal(STBOX *box, GSERIALIZED* geom, Period *p);
 
 /*****************************************************************************/
 
 extern Datum overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_gbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_gbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_gbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_gbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
  * Relative position functions defined in RelativePosOpsM.c
  *****************************************************************************/
 
-extern Datum left_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overleft_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum right_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overright_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum below_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overbelow_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum above_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overabove_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum front_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overfront_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum back_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overback_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum before_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overbefore_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum after_gbox_gbox(PG_FUNCTION_ARGS);
-extern Datum overafter_gbox_gbox(PG_FUNCTION_ARGS);
+extern Datum left_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overleft_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum right_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overright_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum below_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overbelow_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum above_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overabove_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum front_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overfront_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum back_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overback_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum before_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overbefore_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum after_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum overafter_stbox_stbox(PG_FUNCTION_ARGS);
 
-extern bool left_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overleft_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool right_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overright_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool below_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overbelow_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool above_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overabove_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool front_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overfront_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool back_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overback_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool before_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overbefore_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool after_gbox_gbox_internal(GBOX *box1, GBOX *box2);
-extern bool overafter_gbox_gbox_internal(GBOX *box1, GBOX *box2);
+extern bool left_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overleft_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool right_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overright_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool below_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overbelow_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool above_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overabove_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool front_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overfront_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool back_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overback_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool before_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overbefore_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool after_stbox_stbox_internal(STBOX *box1, STBOX *box2);
+extern bool overafter_stbox_stbox_internal(STBOX *box1, STBOX *box2);
 
 extern Datum left_geom_tpoint(PG_FUNCTION_ARGS);
 extern Datum overleft_geom_tpoint(PG_FUNCTION_ARGS);
@@ -481,39 +499,39 @@ extern Datum overfront_tpoint_geom(PG_FUNCTION_ARGS);
 extern Datum back_tpoint_geom(PG_FUNCTION_ARGS);
 extern Datum overback_tpoint_geom(PG_FUNCTION_ARGS);
 
-extern Datum left_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overleft_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum right_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overright_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum below_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overbelow_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum above_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overabove_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum front_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overfront_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum back_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overback_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum before_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overbefore_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum after_gbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overafter_gbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum left_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overleft_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum right_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overright_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum below_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overbelow_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum above_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overabove_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum front_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overfront_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum back_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overback_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum before_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overbefore_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum after_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum overafter_stbox_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum left_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overleft_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum right_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overright_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum above_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overabove_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum below_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overbelow_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum front_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overfront_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum back_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overback_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum before_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overbefore_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum after_tpoint_gbox(PG_FUNCTION_ARGS);
-extern Datum overafter_tpoint_gbox(PG_FUNCTION_ARGS);
+extern Datum left_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overleft_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum right_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overright_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum above_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overabove_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum below_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overbelow_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum front_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overfront_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum back_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overback_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum before_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overbefore_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum after_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum overafter_tpoint_stbox(PG_FUNCTION_ARGS);
 
 extern Datum left_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum overleft_tpoint_tpoint(PG_FUNCTION_ARGS);
@@ -557,15 +575,15 @@ extern Datum gist_tpoint_distance(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTPoint.c */
 extern bool index_tpoint_bbox_recheck(StrategyNumber strategy);
-extern bool index_leaf_consistent_gbox_box2D(GBOX *key, GBOX *query, 
+extern bool index_leaf_consistent_stbox_box2D(STBOX *key, STBOX *query, 
 	StrategyNumber strategy);
-extern bool index_leaf_consistent_gbox_period(GBOX *key, Period *query, 
+extern bool index_leaf_consistent_stbox_period(STBOX *key, Period *query, 
 	StrategyNumber strategy);
-extern bool index_leaf_consistent_gbox_gbox(GBOX *key, GBOX *query, 
+extern bool index_leaf_consistent_stbox_stbox(STBOX *key, STBOX *query, 
 	StrategyNumber strategy);
 
 extern bool index_tpoint_recheck(StrategyNumber strategy);
-extern bool index_leaf_consistent_gbox(GBOX *key, GBOX *query, 
+extern bool index_leaf_consistent_stbox(STBOX *key, STBOX *query, 
 	StrategyNumber strategy);
 
 /*****************************************************************************

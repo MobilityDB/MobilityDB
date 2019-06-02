@@ -261,55 +261,55 @@ CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = timestampset, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = period, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = timestampset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = period,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = temporal_overlaps,
 	LEFTARG = periodset, RIGHTARG = periodset,
 	COMMUTATOR = &&,
-	RESTRICT = periodsel, JOIN = contjoinsel
+	RESTRICT = periodsel, JOIN = areajoinsel
 );
 
 CREATE FUNCTION temporal_before(timestamptz, timestampset)
@@ -375,92 +375,92 @@ CREATE FUNCTION temporal_before(periodset, periodset)
 
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
-	LEFTARG = timestamptz, RIGHTARG = period,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	LEFTARG = timestamptz, RIGHTARG = timestampset,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
-	LEFTARG = timestamptz, RIGHTARG = timestampset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	LEFTARG = timestamptz, RIGHTARG = period,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = timestamptz, RIGHTARG = periodset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = timestampset, RIGHTARG = timestamptz,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = timestampset, RIGHTARG = timestampset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = timestampset, RIGHTARG = period,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = timestampset, RIGHTARG = periodset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = period, RIGHTARG = timestamptz,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = period, RIGHTARG = timestampset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = period, RIGHTARG = period,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = period, RIGHTARG = periodset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = periodset, RIGHTARG = timestamptz,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = periodset, RIGHTARG = timestampset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = periodset, RIGHTARG = period,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <<# (
 	PROCEDURE = temporal_before,
 	LEFTARG = periodset, RIGHTARG = periodset,
-	COMMUTATOR = #>>, NEGATOR = #&>,
+	COMMUTATOR = #>>, 
 	RESTRICT = periodsel, JOIN = scalarltjoinsel
 );
 
@@ -527,13 +527,13 @@ CREATE FUNCTION temporal_after(periodset, periodset)
 
 CREATE OPERATOR #>> (
 	PROCEDURE = temporal_after,
-	LEFTARG = timestamptz, RIGHTARG = period,
+	LEFTARG = timestamptz, RIGHTARG = timestampset,
 	COMMUTATOR = <<#,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #>> (
 	PROCEDURE = temporal_after,
-	LEFTARG = timestamptz, RIGHTARG = timestampset,
+	LEFTARG = timestamptz, RIGHTARG = period,
 	COMMUTATOR = <<#,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
@@ -765,7 +765,6 @@ CREATE FUNCTION temporal_overafter(timestamptz, periodset)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overafter_timestamp_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION temporal_overafter(timestampset, timestamptz)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overafter_timestampset_timestamp'
@@ -798,7 +797,6 @@ CREATE FUNCTION temporal_overafter(period, periodset)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overafter_period_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION temporal_overafter(periodset, timestampset)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'overafter_periodset_timestampset'
@@ -818,12 +816,7 @@ CREATE FUNCTION temporal_overafter(periodset, periodset)
 
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
-	LEFTARG = period, RIGHTARG = period,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = period, RIGHTARG = timestamptz,
+	LEFTARG = timestamptz, RIGHTARG = timestampset,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
@@ -833,32 +826,12 @@ CREATE OPERATOR #&> (
 );
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
+	LEFTARG = timestamptz, RIGHTARG = periodset,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
 	LEFTARG = timestampset, RIGHTARG = timestamptz,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = timestamptz, RIGHTARG = timestampset,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = timestampset, RIGHTARG = period,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = period, RIGHTARG = timestampset,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = timestampset, RIGHTARG = periodset,
-	RESTRICT = periodsel, JOIN = scalargtjoinsel
-);
-CREATE OPERATOR #&> (
-	PROCEDURE = temporal_overafter,
-	LEFTARG = periodset, RIGHTARG = timestampset,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
@@ -868,22 +841,47 @@ CREATE OPERATOR #&> (
 );
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
-	LEFTARG = periodset, RIGHTARG = timestamptz,
+	LEFTARG = timestampset, RIGHTARG = period,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
-	LEFTARG = timestamptz, RIGHTARG = periodset,
+	LEFTARG = timestampset, RIGHTARG = periodset,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
-	LEFTARG = periodset, RIGHTARG = period,
+	LEFTARG = period, RIGHTARG = timestamptz,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
+	LEFTARG = period, RIGHTARG = timestampset,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
+	LEFTARG = period, RIGHTARG = period,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
 	PROCEDURE = temporal_overafter,
 	LEFTARG = period, RIGHTARG = periodset,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
+	LEFTARG = periodset, RIGHTARG = timestamptz,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
+	LEFTARG = periodset, RIGHTARG = timestampset,
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+);
+CREATE OPERATOR #&> (
+	PROCEDURE = temporal_overafter,
+	LEFTARG = periodset, RIGHTARG = period,
 	RESTRICT = periodsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR #&> (
