@@ -140,7 +140,7 @@ temporal_position_sel(PG_FUNCTION_ARGS)
     Node *other;
     bool varonleft;
     Selectivity selec;
-    CachedOp cachedOp = get_tnumber_cacheOp(operator);
+    CachedOp cachedOp = get_temporal_cacheOp(operator);
 
     /*
      * If expression is not (variable op something) or (something op
@@ -593,7 +593,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
         }
         else if (consttype == type_oid(T_TBOX))
         {
-            result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmin;
+            result->val = (TimestampTz)DatumGetTboxP(((Const *) other)->constvalue)->tmin;
         }
         else if (consttype == type_oid(T_GBOX))
         {
