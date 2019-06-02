@@ -2482,7 +2482,7 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	}
 	
 	/* Compare bounding box */
-	union bboxunion box1, box2;
+	union bboxunion box1 = {{0}}, box2 = {{0}};
 	temporal_bbox(&box1, t1);
 	temporal_bbox(&box2, t2);
 	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);

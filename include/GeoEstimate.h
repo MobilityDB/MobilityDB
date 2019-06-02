@@ -30,7 +30,7 @@
 
 /**
 * N-dimensional box type for calculations, to avoid doing
-* explicit axis conversions from GBOX in all calculations
+* explicit axis conversions from STBOX in all calculations
 * at every step.
 */
 typedef struct ND_BOX_T {
@@ -114,7 +114,7 @@ typedef struct ND_STATS_T {
 extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
 extern int nd_box_init(ND_BOX *a);
 extern int nd_box_init_bounds(ND_BOX *a);
-extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
+extern void nd_box_from_stbox(const STBOX *stbox, ND_BOX *nd_box);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern int nd_box_expand(ND_BOX *nd_box, double expansion_factor);
 extern int nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims,
@@ -128,10 +128,10 @@ extern int nd_stats_value_index(const ND_STATS *stats, int *indexes);
 extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
 
-extern float8 estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op);
+extern float8 estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
 	Oid operator);
-extern int gbox_ndims(const GBOX* gbox);
+extern int stbox_ndims(const STBOX* stbox);
 
 /*****************************************************************************
  * Join functions

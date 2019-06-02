@@ -140,7 +140,7 @@ temporal_bbox_size(Oid valuetypid)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
-		return sizeof(GBOX);
+		return sizeof(STBOX);
 #endif
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -160,7 +160,7 @@ temporal_bbox_eq(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2) == 0;
+		return stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return false;
@@ -176,7 +176,7 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2);
+		return stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return 0;
@@ -212,7 +212,7 @@ temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid)
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpointinst_make_gbox((GBOX *)box, value, t);
+		tpointinst_make_stbox((STBOX *)box, value, t);
 		return true;
 	}
 #endif
@@ -233,7 +233,7 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 /* Expand the first box with the second one */
 
 static void
-tbox_expand_internal(TBOX *box1, const TBOX *box2)
+tbox_expand(TBOX *box1, const TBOX *box2)
 {
 	box1->xmin = Min(box1->xmin, box2->xmin);
 	box1->xmax = Max(box1->xmax, box2->xmax);
@@ -254,7 +254,7 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 		TBOX box1 = {0};
 		value = temporalinst_value(instants[i]);
 		temporalinst_make_bbox(&box1, value, instants[i]->t, valuetypid);
-		tbox_expand_internal(box, &box1);
+		tbox_expand(box, &box1);
 	}
 	return;
 }
@@ -279,7 +279,7 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 	if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpointinstarr_to_gbox((GBOX *)box, instants, count);
+		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 		return true;
 	}
 #endif
@@ -310,7 +310,7 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 	if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpointinstarr_to_gbox((GBOX *)box, instants, count);
+		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 		return true;
 	}
 #endif
@@ -337,7 +337,7 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 	for (int i = 1; i < count; i++)
 	{
 		TBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
-		tbox_expand_internal(box, box1);
+		tbox_expand(box, box1);
 	}
 	return;
 }
@@ -361,7 +361,7 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 	if (sequences[0]->valuetypid == type_oid(T_GEOMETRY) || 
 		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY)) 
 	{
-		tpointseqarr_to_gbox((GBOX *)box, sequences, count);
+		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 		return true;
 	}
 #endif
@@ -404,7 +404,7 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 	temporal_bbox(box, temp);
 	TBOX box1 = {0};
 	temporalinst_bbox(&box1, inst);
-	tbox_expand_internal(box, &box1);
+	tbox_expand(box, &box1);
 	return;
 }
 
@@ -425,7 +425,7 @@ temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 	if (ti->valuetypid == type_oid(T_GEOGRAPHY) || 
 		ti->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)ti, inst);
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)ti, inst);
 		return true;
 	}
 #endif
@@ -449,7 +449,7 @@ temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 	if (seq->valuetypid == type_oid(T_GEOGRAPHY) || 
 		seq->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)seq, inst);
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)seq, inst);
 		return true;
 	}
 #endif
@@ -473,7 +473,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 	if (ts->valuetypid == type_oid(T_GEOGRAPHY) || 
 		ts->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)ts, inst);
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)ts, inst);
 		return true;
 	}
 #endif

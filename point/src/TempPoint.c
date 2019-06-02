@@ -420,13 +420,13 @@ tpoint_make_temporalinst(PG_FUNCTION_ARGS)
 /* Get the precomputed bounding box of a Temporal (if any) 
    Notice that TemporalInst do not have a precomputed bounding box */
 
-PG_FUNCTION_INFO_V1(tpoint_gbox);
+PG_FUNCTION_INFO_V1(tpoint_stbox);
 
 PGDLLEXPORT Datum
-tpoint_gbox(PG_FUNCTION_ARGS)
+tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GBOX *result = palloc0(sizeof(GBOX));
+	STBOX *result = palloc0(sizeof(STBOX));
 	temporal_bbox(result, temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -445,15 +445,15 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	/* Bounding box test */
-	GBOX box1, box2;
-	if (!geo_to_gbox_internal(&box2, gs))
+	STBOX box1 = {0}, box2 = {0};
+	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_BOOL(false);
 	}
 	temporal_bbox(&box1, temp);
-	if (!contains_gbox_gbox_internal(&box1, &box2))
+	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -647,15 +647,15 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	/* Bounding box test */
-	GBOX box1, box2;
-	if (!geo_to_gbox_internal(&box2, gs))
+	STBOX box1 = {0}, box2 = {0};
+	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
 	temporal_bbox(&box1, temp);
-	if (!contains_gbox_gbox_internal(&box1, &box2))
+	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -699,8 +699,8 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	/* Bounding box test */
-	GBOX box1, box2;
-	if (!geo_to_gbox_internal(&box2, gs))
+	STBOX box1 = {0}, box2 = {0};
+	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)
@@ -713,7 +713,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 	temporal_bbox(&box1, temp);
-	if (!contains_gbox_gbox_internal(&box1, &box2))
+	if (!contains_stbox_stbox_internal(&box1, &box2))
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)

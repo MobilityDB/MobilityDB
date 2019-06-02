@@ -1,28 +1,28 @@
 ﻿-------------------------------------------------------------------------------
--- GBox Type
+-- STBox Type
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_gbox(lowx float, highx float, lowy float, 
-	highy float, lowz float, highz float, lowm float, highm float, maxsize float) 
-	RETURNS gbox AS $$
+CREATE OR REPLACE FUNCTION random_stbox(lowx float, highx float, lowy float, 
+	highy float, lowz float, highz float, lowt float, hight float, maxsize float) 
+	RETURNS stbox AS $$
 DECLARE
 	xmin float;
 	ymin float;
 	zmin float;
-	mmin float;
+	tmin float;
 	size float;
 BEGIN
 	xmin = random_float(lowx, highx);
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
-	mmin = random_float(lowm, highm);
+	tmin = random_float(lowt, hight);
 	size = random_float(1, maxsize);
-	RETURN gbox(xmin, xmin + size, ymin, ymin + size, zmin, zmin + size, mmin, mmin + size);
+	RETURN stbox(xmin, xmin + size, ymin, ymin + size, zmin, zmin + size, tmin, tmin + size);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_gbox(0, 100, 0, 100, 0, 100, 0, 100, 10) AS b
+SELECT k, random_stbox(0, 100, 0, 100, 0, 100, 0, 100, 10) AS b
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
