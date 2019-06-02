@@ -545,10 +545,10 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
             consttype == type_oid(T_TGEOMPOINT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            BOX *box = palloc(sizeof(BOX));
-            temporal_bbox(box, temporal);
-            result->val = box->high.y;
-            pfree(box);
+            TBOX *tbox = palloc(sizeof(TBOX));
+            temporal_bbox(tbox, temporal);
+            result->val = tbox->tmax;
+            pfree(tbox);
         }
         else if (consttype == TIMESTAMPTZOID)
         {
@@ -578,10 +578,10 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
             consttype == type_oid(T_TGEOMPOINT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            BOX *box = palloc(sizeof(BOX));
-            temporal_bbox(box, temporal);
-            result->val = box->low.y;
-            pfree(box);
+            TBOX *tbox = palloc(sizeof(TBOX));
+            temporal_bbox(tbox, temporal);
+            result->val = tbox->tmin;
+            pfree(tbox);
         }
         else if (consttype == TIMESTAMPTZOID)
         {
@@ -1406,15 +1406,17 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
     if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
     {
         Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-        BOX *box = palloc(sizeof(BOX));
-        temporal_bbox(box, temp);
+        TBOX *tbox = palloc(sizeof(TBOX));
+        temporal_bbox(tbox, temp);
+        /* The boxes should have both dimensions X and T  */
+        assert(MOBDB_FLAGS_GET_X(tbox->flags) && MOBDB_FLAGS_GET_T(tbox->flags));
         *numeric = true;
         *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        *period = period_make((TimestampTz)box->low.y, (TimestampTz)box->high.y, true, true);
+        *lower = tbox->xmin;
+        *upper = tbox->xmax;
+        *period = period_make((TimestampTz)tbox->tmin, (TimestampTz)tbox->tmax, true, true);
         *bBoxBounds = DNCONST_DTCONST;
-        pfree(box);
+        pfree(tbox);
     }
     else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
     {
@@ -1472,23 +1474,26 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
         *bBoxBounds = DTCONST;
     }
-    else if (consttype == BOXOID)
+    else if (consttype == type_oid(T_TBOX))
     {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        if (box->low.x == -INFINITY || box->high.x == INFINITY)
-        {
-            *numeric = false;
-            *bBoxBounds = DTCONST;
-        }
-        else
+        TBOX *tbox = DatumGetTboxP(((Const *) other)->constvalue);
+        if (MOBDB_FLAGS_GET_X(tbox->flags))
         {
             *numeric = true;
-            *lower = box->low.x;
-            *upper = box->high.x;
-            *bBoxBounds = DNCONST_DTCONST;
+            *lower = tbox->xmin;
+            *upper = tbox->xmax;
         }
-        *temporal = true;
-        *period = period_make((TimestampTz)box->low.y, (TimestampTz)box->high.y, true, true);
+        if (MOBDB_FLAGS_GET_T(tbox->flags))
+        {
+            *temporal = true;
+            *period = period_make((TimestampTz)tbox->tmin, (TimestampTz)tbox->tmax, true, true);
+        }
+        if (*numeric && *temporal)
+            *bBoxBounds = DNCONST_DTCONST;
+        else if (*numeric)
+            *bBoxBounds = DNCONST;
+        else if (*temporal)
+            *bBoxBounds = DTCONST;
     }
 }
 bool

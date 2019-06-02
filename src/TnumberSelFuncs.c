@@ -12,7 +12,8 @@
  *	src/TnumberSelFuncs.c
  *
  *****************************************************************************/
- 
+
+#include <TemporalTypes.h>
 #include "TemporalTypes.h"
 #include "TemporalSelFuncs.h"
 
@@ -561,10 +562,10 @@ lower_or_higher_value_bound(Node *other, bool higher)
         if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            BOX *box = palloc(sizeof(BOX));
-            temporal_bbox(box, temporal);
-            result = box->high.x;
-            pfree(box);
+            TBOX *tbox = palloc(sizeof(TBOX));
+            temporal_bbox(tbox, temporal);
+            result = tbox->xmax;
+            pfree(tbox);
         }
         else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
         {
@@ -578,10 +579,11 @@ lower_or_higher_value_bound(Node *other, bool higher)
         {
             result = DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
         }
-        else if (consttype == BOXOID)
+        else if (consttype == type_oid(T_TBOX))
         {
-            BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-            result = box->high.x;
+            TBOX *tbox = DatumGetTboxP(((Const *) other)->constvalue);
+            assert(MOBDB_FLAGS_GET_X(tbox->flags));
+            result = tbox->xmax;
         }
     }
     else
@@ -589,10 +591,10 @@ lower_or_higher_value_bound(Node *other, bool higher)
         if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            BOX *box = palloc(sizeof(BOX));
-            temporal_bbox(box, temporal);
-            result = box->low.x;
-            pfree(box);
+            TBOX *tbox = palloc(sizeof(TBOX));
+            temporal_bbox(tbox, temporal);
+            result = tbox->xmin;
+            pfree(tbox);
         }
         else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
         {
@@ -606,10 +608,11 @@ lower_or_higher_value_bound(Node *other, bool higher)
         {
             result = DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
         }
-        else if (consttype == BOXOID)
+        else if (consttype == type_oid(T_TBOX))
         {
-            BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-            result = box->low.x;
+            TBOX *tbox = DatumGetTboxP(((Const *) other)->constvalue);
+            assert(MOBDB_FLAGS_GET_X(tbox->flags));
+            result = tbox->xmin;
         }
     }
     return result;
