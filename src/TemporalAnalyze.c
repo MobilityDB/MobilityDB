@@ -12,6 +12,7 @@
  *	src/TemporalAnalyze.c
  *
  *****************************************************************************/
+#include <TemporalTypes.h>
 #include "TemporalAnalyze.h"
 /*****************************************************************************/
 
@@ -2718,7 +2719,7 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	for (array_no = 0; array_no < samplerows; array_no++) {
 		Datum value;
 		bool isnull;
-		BOX *box;
+		TBOX *tbox;
 		RangeBound lower1,
 				upper1;
 		PeriodBound lower2,
@@ -2739,8 +2740,8 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/* Remember bounds and length for further usage in histograms */
-		box = get_bbox_twodim(value, stats->attrtypid);
-		box_deserialize(box, &lower1, &upper1, &lower2, &upper2);
+		tbox = get_bbox_twodim(value, stats->attrtypid);
+		tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
 
 		value_lowers[analyzed_arrays] = lower1;
 		value_uppers[analyzed_arrays] = upper1;
@@ -3352,14 +3353,14 @@ get_bbox_onedim(Datum value, Oid oid)
 /*
  * get_bbox_twodim()--returns the bbox of a two dimensional temporal object
  */
-BOX*
+TBOX*
 get_bbox_twodim(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT) )
 	{
-		BOX *box = palloc(sizeof(BOX));
-		temporal_bbox(box, DatumGetTemporal(value));
-		return box;
+		TBOX *tbox = palloc(sizeof(TBOX));
+		temporal_bbox(tbox, DatumGetTemporal(value));
+		return tbox;
 	}
 	return NULL;
 }
@@ -3380,34 +3381,30 @@ get_bbox_threedim(Datum value, Oid oid)
 }
 
 /*
- * box_deserialize: decompose a box value
+ * tbox_deserialize: decompose a tbox value
  */
 
 void
-box_deserialize(BOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 				PeriodBound *lowerdim2, PeriodBound *upperdim2)
 {
-	if (box && lowerdim1)
+    /* The box should have at least one dimension X or T  */
+    assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
+	if (MOBDB_FLAGS_GET_X(tbox->flags))
 	{
-		lowerdim1->val = (Datum)box->low.x;
+		lowerdim1->val = (Datum)tbox->xmin;
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
-	}
-	if (box && upperdim1)
-	{
-		upperdim1->val = (Datum)box->high.x;
+		upperdim1->val = (Datum)tbox->xmax;
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
-	if (box && lowerdim2)
+	if (MOBDB_FLAGS_GET_T(tbox->flags))
 	{
-		lowerdim2->val = (TimestampTz)box->low.y;
+		lowerdim2->val = (TimestampTz)tbox->tmin;
 		lowerdim2->inclusive = true;
 		lowerdim2->lower = true;
-	}
-	if (box && upperdim2)
-	{
-		upperdim2->val = (TimestampTz)box->high.y;
+		upperdim2->val = (TimestampTz)tbox->tmax;
 		upperdim2->inclusive = true;
 		upperdim2->lower = false;
 	}

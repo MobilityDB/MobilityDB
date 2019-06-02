@@ -13,6 +13,7 @@
  *
  *****************************************************************************/
 
+#include <TemporalTypes.h>
 #include "TemporalTypes.h"
 
 /*
@@ -516,7 +517,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
         Period *period = period_make(periodBound->val, periodBound->val, true, true);
         period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
     }
-    else if (vardata.vartype == type_oid(T_BOX))
+    else if (vardata.vartype == type_oid(T_TBOX))
     {
 
     }
@@ -557,9 +558,9 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
         {
             result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
         }
-        else if (consttype == type_oid(T_BOX))
+        else if (consttype == type_oid(T_TBOX))
         {
-            result->val = DatumGetBoxP(((Const *) other)->constvalue)->high.y;
+            result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmax;
         }
         else if (consttype == type_oid(T_GBOX))
         {
@@ -590,9 +591,9 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
         {
             result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
         }
-        else if (consttype == type_oid(T_BOX))
+        else if (consttype == type_oid(T_TBOX))
         {
-            result->val = DatumGetBoxP(((Const *) other)->constvalue)->low.y;
+            result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmin;
         }
         else if (consttype == type_oid(T_GBOX))
         {

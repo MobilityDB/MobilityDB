@@ -497,7 +497,7 @@ estimate_tnumber_position_sel(PlannerInfo *root, VariableStatData vardata,
         range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
                            DEFAULT_STATISTICS);
     }
-    else if (vardata.vartype == type_oid(T_BOX))
+    else if (vardata.vartype == type_oid(T_TBOX))
     {
 
     }
@@ -750,15 +750,15 @@ get_tnumber_cacheOp(Oid operator)
     for (int i = LT_OP; i <= OVERAFTER_OP; i++)
     {
         if (operator == oper_oid((CachedOp)i, T_INTRANGE, T_TINT) ||
-            operator == oper_oid((CachedOp)i, T_BOX, T_TINT) ||
+            operator == oper_oid((CachedOp)i, T_TBOX, T_TINT) ||
             operator == oper_oid((CachedOp)i, T_TINT, T_INTRANGE) ||
-            operator == oper_oid((CachedOp)i, T_TINT, T_BOX) ||
+            operator == oper_oid((CachedOp)i, T_TINT, T_TBOX) ||
             operator == oper_oid((CachedOp)i, T_TINT, T_TINT) ||
             operator == oper_oid((CachedOp)i, T_TINT, T_TFLOAT) ||
             operator == oper_oid((CachedOp)i, T_FLOATRANGE, T_TFLOAT) ||
-            operator == oper_oid((CachedOp)i, T_BOX, T_TFLOAT) ||
+            operator == oper_oid((CachedOp)i, T_TBOX, T_TFLOAT) ||
             operator == oper_oid((CachedOp)i, T_TFLOAT, T_FLOATRANGE) ||
-            operator == oper_oid((CachedOp)i, T_TFLOAT, T_BOX) ||
+            operator == oper_oid((CachedOp)i, T_TFLOAT, T_TBOX) ||
             operator == oper_oid((CachedOp)i, T_TFLOAT, T_TINT) ||
             operator == oper_oid((CachedOp)i, T_TFLOAT, T_TFLOAT))
             return (CachedOp)i;
