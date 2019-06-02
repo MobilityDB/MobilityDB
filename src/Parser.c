@@ -145,6 +145,65 @@ basetype_parse(char **str, Oid basetype)
 }
 
 /*****************************************************************************/
+
+TBOX *
+tbox_parse(char **str) 
+{
+	p_whitespace(str);
+	if (!p_oparen(str) || !p_oparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	TBOX *result = palloc0(sizeof(TBOX));
+	char *nextstr = *str;
+	result->xmin = strtod(*str, &nextstr);
+	if (*str == nextstr)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	*str = nextstr; 
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);
+	result->tmin = strtod(*str, &nextstr);
+	if (*str == nextstr)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	*str = nextstr; 
+	p_whitespace(str);
+	if (!p_cparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);
+	if (!p_oparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	result->xmax = strtod(*str, &nextstr);
+	if (*str == nextstr)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	*str = nextstr; 
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);
+	result->tmax = strtod(*str, &nextstr);
+	if (*str == nextstr)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	*str = nextstr; 
+	p_whitespace(str);
+	if (!p_cparen(str) || !p_cparen(str) )
+	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	return result;
+}
+
+/*****************************************************************************/
 /* Time Types */
 
 TimestampTz 

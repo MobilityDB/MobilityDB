@@ -930,13 +930,13 @@ temporal_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_box);
+PG_FUNCTION_INFO_V1(tnumber_tbox);
 
 PGDLLEXPORT Datum
-tnumber_box(PG_FUNCTION_ARGS)
+tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	BOX *result = palloc(sizeof(BOX));
+	TBOX *result = palloc0(sizeof(TBOX));
 	temporal_bbox(result, temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
