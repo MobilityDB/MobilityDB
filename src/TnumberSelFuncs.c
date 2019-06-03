@@ -140,8 +140,12 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
     VariableStatData vardata;
     Node *other;
     bool varonleft;
-    Selectivity selec;
+    Selectivity selec = 0.001;
     CachedOp cachedOp = get_tnumber_cacheOp(operator);
+
+    /* In the case of unknown operator */
+    if (cachedOp == OVERLAPS_OP)
+        PG_RETURN_FLOAT8(selec);
 
     /*
      * If expression is not (variable op something) or (something op
@@ -778,6 +782,7 @@ get_tnumber_cacheOp(Oid operator)
             operator == oper_oid((CachedOp)i, T_TFLOAT, T_TFLOAT))
             return (CachedOp)i;
     }
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-            errmsg("Operation not supported")));
+    return OVERLAPS_OP;
+    /*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Operation not supported")));*/
 }

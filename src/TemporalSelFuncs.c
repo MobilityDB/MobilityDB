@@ -13,7 +13,6 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
 #include "TemporalTypes.h"
 
 /*
@@ -139,9 +138,11 @@ temporal_position_sel(PG_FUNCTION_ARGS)
     VariableStatData vardata;
     Node *other;
     bool varonleft;
-    Selectivity selec;
-    CachedOp cachedOp = get_temporal_cacheOp(operator);
-
+    Selectivity selec = 0.001;
+    CachedOp cachedOp = get_temporal_cacheOp(operator) ;
+    /* In the case of unknown operator */
+    if (cachedOp == OVERLAPS_OP)
+        PG_RETURN_FLOAT8(selec);
     /*
      * If expression is not (variable op something) or (something op
      * variable), then punt and return a default estimate.
@@ -1634,12 +1635,15 @@ get_temporal_cacheOp(Oid operator)
     {
         if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
             operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
+            operator == oper_oid((CachedOp)i, T_TBOX, T_TBOOL) ||
             operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
             operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
             operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
             operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
             return (CachedOp)i;
     }
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-            errmsg("Operation not supported")));
+    return OVERLAPS_OP;
+    /*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Operation not supported")));*/
 }
