@@ -13,9 +13,9 @@ IF perc < 1 THEN perc := 1; END IF;
 -- box covering approximately continental Europe, that is, "BOX(-10 32,35 72)"
 -------------------------------------------------------------------------------
 
-drop table if exists tbl_gbox;
-create table tbl_gbox as
-select k, random_gbox(0, 100, 0, 100, 0, 100, 0, 100, 10) as b
+drop table if exists tbl_stbox;
+create table tbl_stbox as
+select k, random_stbox(0, 100, 0, 100, 0, 100, 0, 100, 10) as b
 from generate_series(1, size) k;
 
 drop table if exists tbl_geompoint;
