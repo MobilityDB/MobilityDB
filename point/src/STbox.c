@@ -65,6 +65,7 @@ char* stbox_to_string(const STBOX *box)
 	static int sz = 256;
 	char *str = NULL;
 	str = (char *)palloc(sz);
+	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
@@ -77,41 +78,26 @@ char* stbox_to_string(const STBOX *box)
 				snprintf(str, sz, "GEODSTBOX((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
 					box->xmin, box->ymin, box->zmin, 
 					box->xmax, box->ymax, box->zmax);
-			return str;
 		}
-		if (MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_T(box->flags))
-		{
+		else if (MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_T(box->flags))
 			snprintf(str, sz, "STBOX ZT((%.8g,%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g,%.8g))", 
 				box->xmin, box->ymin, box->zmin, box->tmin, 
 				box->xmax, box->ymax, box->zmax, box->tmax);
-			return str;
-		}
-		if (MOBDB_FLAGS_GET_Z(box->flags))
-		{
+		else if (MOBDB_FLAGS_GET_Z(box->flags))
 			snprintf(str, sz, "STBOX Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
 				box->xmin, box->ymin, box->zmin, 
 				box->xmax, box->ymax, box->zmax);
-			return str;
-		}
-		if (MOBDB_FLAGS_GET_T(box->flags))
-		{
+		else if (MOBDB_FLAGS_GET_T(box->flags))
 			snprintf(str, sz, "STBOX T((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
 				box->xmin, box->ymin, box->tmin, box->xmax, box->ymax, box->tmax);
-			return str;
-		}
-		snprintf(str, sz, "STBOX((%.8g,%.8g),(%.8g,%.8g))", 
-			box->xmin, box->ymin, box->xmax, box->ymax);
+		else 
+			snprintf(str, sz, "STBOX((%.8g,%.8g),(%.8g,%.8g))", 
+				box->xmin, box->ymin, box->xmax, box->ymax);
 	}
 	else
-	{
 		/* Missing spatial dimension */
-		if (MOBDB_FLAGS_GET_T(box->flags))
-		{
-			snprintf(str, sz, "STBOX T((,,%.8g),(,,%.8g))", 
-				box->tmin, box->tmax);
-			return str;
-		}
-	}
+		snprintf(str, sz, "STBOX T((,,%.8g),(,,%.8g))", 
+			box->tmin, box->tmax);
 	return str;
 }
 
@@ -125,8 +111,6 @@ stbox_out(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	char *result = stbox_to_string(box);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_CSTRING(result);
 }
 
