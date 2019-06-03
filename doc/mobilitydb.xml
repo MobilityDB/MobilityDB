@@ -1324,21 +1324,21 @@ SELECT valueAtTimestamp(tfloat '[1@2012-01-01, 4@2012-01-04)', '2012-01-02');
 				</listitem>
 
 				<listitem>
-					<para><varname>xmin</varname>: Minimum value</para>
+					<para><varname>minValue</varname>: Minimum value</para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<para>Signature: <varname>xmin(ttype): base</varname></para>
+					<para>Signature: <varname>minValue(torder): base</varname></para>
 					<programlisting>
-SELECT xmin(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+SELECT minValue(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- 1
 					</programlisting>
 				</listitem>
 
 				<listitem>
-					<para><varname>xmax</varname>: Maximum value</para>
+					<para><varname>maxValue</varname>: Maximum value</para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<para>Signature: <varname>xmax(ttype): base</varname></para>
+					<para>Signature: <varname>maxValue(torder): base</varname></para>
 					<programlisting>
-SELECT xmax(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
+SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- 5
 					</programlisting>
 				</listitem>
@@ -3793,7 +3793,7 @@ ORDER BY T.TripId, T.CarId, P1.Distance;
 						<programlisting>
 SELECT T1.CarId AS CarId1, C2.CarId AS CarId2, C2.Distance
 FROM Trips T1 CROSS JOIN LATERAL (
-SELECT T2.CarId, xmin(T1.Trip &lt;-&gt; T2.Trip) AS Distance
+SELECT T2.CarId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 FROM Trips T2
 WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
 ORDER BY Distance LIMIT 3 ) AS C
@@ -3838,7 +3838,7 @@ WITH TripDistances AS (
 SELECT T1.CarId AS CarId1, T1.TripId AS TripId1, T3.CarId AS CarId2, T3.TripId AS TripId2,
 	 T3.Distance
 FROM Trips T1 CROSS JOIN LATERAL (
-	 SELECT T2.CarId, T2.TripId, xmin(T1.Trip &lt;-&gt; T2.Trip) AS Distance
+	 SELECT T2.CarId, T2.TripId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 	 FROM Trips T
 	 WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
 	 ORDER BY Distance LIMIT 3 ) AS T3 )
