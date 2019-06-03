@@ -1325,6 +1325,19 @@ select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
  [POINT(1 1)@2000-01-01 00:00:00+00, POINT(3 3)@2000-01-03 00:00:00+00]
 (1 row)
 
+/* Errors */
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
+ERROR:  Invalid timestamps for temporal value
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+ERROR:  All geometries composing a temporal point must be of the same SRID
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
+ERROR:  Invalid timestamps for temporal value
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
+ERROR:  All geometries composing a temporal point must be of the same dimensionality
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+ERROR:  All geometries composing a temporal point must be of the same SRID
 SELECT temporalType(tgeompoint 'Point(1 1)@2000-01-01');
  temporaltype 
 --------------
