@@ -1484,12 +1484,12 @@ extern int temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2);
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern bool temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,  
+extern void temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,  
 	Oid valuetypid);
-extern bool temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
-extern bool temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
+extern void temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
+extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
 	bool lower_inc, bool upper_inc);
-extern bool temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
 /* Expand the bounding box of a Temporal with a TemporalInst */
 

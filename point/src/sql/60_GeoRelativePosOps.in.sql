@@ -301,63 +301,6 @@ CREATE OPERATOR /&> (
 	PROCEDURE = temporal_overback,
 	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
 );
-CREATE OPERATOR >> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_right,
-	COMMUTATOR = '<<',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overright,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR <<| (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_below,
-	COMMUTATOR = '|>>',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &<| (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overbelow,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR |>> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_above,
-	COMMUTATOR = '<<|',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR |&> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overabove,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR <</ (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_front,
-	COMMUTATOR = '/>>',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR &</ (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overfront,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR />> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_back,
-	COMMUTATOR = '<</',
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-CREATE OPERATOR /&> (
-	LEFTARG = geometry, RIGHTARG = tgeompoint,
-	PROCEDURE = temporal_overback,
-	RESTRICT = tpoint_position_sel, JOIN = tpoint_position_joinsel
-);
-
-
 
 /******************************************************************************/
 
