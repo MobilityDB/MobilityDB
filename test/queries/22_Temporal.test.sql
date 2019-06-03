@@ -90,10 +90,13 @@ SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-0
 -- typmod
 -------------------------------------------------------------------------------
 
+SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
 SELECT format_type(oid, temporal_typmod_in(ARRAY[cstring 'Instant']))
 FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
 /* Errors */
 select temporal_typmod_in(ARRAY[[cstring 'Instant']]);
+select temporal_typmod_in(ARRAY[cstring 'Instant', NULL]);
+select tfloat(Instant, InstantSet) '1@2000-01-01';
 
 SELECT tbool 'true@2000-01-01';
 SELECT tbool '{true@2000-01-01, false@2000-01-02}';
