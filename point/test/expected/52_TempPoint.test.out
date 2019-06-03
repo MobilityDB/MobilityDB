@@ -2974,6 +2974,18 @@ SELECT astext(atValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2
  
 (1 row)
 
+SELECT atValues(tgeompoint '{Point(1 1)@2000-01-01}', '{}'::geometry[]);
+ atvalues 
+----------
+ 
+(1 row)
+
+SELECT atValues(tgeogpoint '{Point(1 1)@2000-01-01}', '{}'::geography[]);
+ atvalues 
+----------
+ 
+(1 row)
+
 /* Errors */
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', ARRAY[geometry 'Linestring(1 1,2 2)']);
 ERROR:  Only point geometries accepted
@@ -3081,6 +3093,18 @@ SELECT astext(minusValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5
                                                                                                  astext                                                                                                  
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00], [POINT(3.5 3.5)@2000-01-04 00:00:00+00, POINT(3.5 3.5)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT astext(minusValues(tgeompoint '{Point(1 1)@2000-01-01}', '{}'::geometry[]));
+               astext                
+-------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT astext(minusValues(tgeogpoint '{Point(1 1)@2000-01-01}', '{}'::geography[]));
+               astext                
+-------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00}
 (1 row)
 
 /* Errors */
