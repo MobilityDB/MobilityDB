@@ -1865,147 +1865,147 @@ SELECT endValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
  CCC
 (1 row)
 
-SELECT xmin(tint '1@2000-01-01');
- xmin 
-------
-    1
+SELECT minValue(tint '1@2000-01-01');
+ minvalue 
+----------
+        1
 (1 row)
 
-SELECT xmin(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- xmin 
-------
-    1
+SELECT minValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ minvalue 
+----------
+        1
 (1 row)
 
-SELECT xmin(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- xmin 
-------
-    1
+SELECT minValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ minvalue 
+----------
+        1
 (1 row)
 
-SELECT xmin(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- xmin 
-------
-    1
+SELECT minValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ minvalue 
+----------
+        1
 (1 row)
 
-SELECT xmin(tfloat '1.5@2000-01-01');
- xmin 
-------
-  1.5
+SELECT minValue(tfloat '1.5@2000-01-01');
+ minvalue 
+----------
+      1.5
 (1 row)
 
-SELECT xmin(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- xmin 
-------
-  1.5
+SELECT minValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ minvalue 
+----------
+      1.5
 (1 row)
 
-SELECT xmin(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- xmin 
-------
-  1.5
+SELECT minValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ minvalue 
+----------
+      1.5
 (1 row)
 
-SELECT xmin(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- xmin 
-------
-  1.5
+SELECT minValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ minvalue 
+----------
+      1.5
 (1 row)
 
-SELECT xmin(ttext 'AAA@2000-01-01');
- xmin 
-------
+SELECT minValue(ttext 'AAA@2000-01-01');
+ minvalue 
+----------
  AAA
 (1 row)
 
-SELECT xmin(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
- xmin 
-------
+SELECT minValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ minvalue 
+----------
  AAA
 (1 row)
 
-SELECT xmin(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
- xmin 
-------
+SELECT minValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ minvalue 
+----------
  AAA
 (1 row)
 
-SELECT xmin(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
- xmin 
-------
+SELECT minValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+ minvalue 
+----------
  AAA
 (1 row)
 
-SELECT xmax(tint '1@2000-01-01');
- xmax 
-------
-    1
+SELECT maxValue(tint '1@2000-01-01');
+ maxvalue 
+----------
+        1
 (1 row)
 
-SELECT xmax(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- xmax 
-------
-    2
+SELECT maxValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ maxvalue 
+----------
+        2
 (1 row)
 
-SELECT xmax(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- xmax 
-------
-    2
+SELECT maxValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ maxvalue 
+----------
+        2
 (1 row)
 
-SELECT xmax(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- xmax 
-------
-    3
+SELECT maxValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ maxvalue 
+----------
+        3
 (1 row)
 
-SELECT xmax(tfloat '1.5@2000-01-01');
- xmax 
-------
-  1.5
+SELECT maxValue(tfloat '1.5@2000-01-01');
+ maxvalue 
+----------
+      1.5
 (1 row)
 
-SELECT xmax(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- xmax 
-------
-  2.5
+SELECT maxValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ maxvalue 
+----------
+      2.5
 (1 row)
 
-SELECT xmax(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- xmax 
-------
-  2.5
+SELECT maxValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ maxvalue 
+----------
+      2.5
 (1 row)
 
-SELECT xmax(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- xmax 
-------
-  3.5
+SELECT maxValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ maxvalue 
+----------
+      3.5
 (1 row)
 
-SELECT xmax(ttext 'AAA@2000-01-01');
- xmax 
-------
+SELECT maxValue(ttext 'AAA@2000-01-01');
+ maxvalue 
+----------
  AAA
 (1 row)
 
-SELECT xmax(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
- xmax 
-------
+SELECT maxValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ maxvalue 
+----------
  BBB
 (1 row)
 
-SELECT xmax(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
- xmax 
-------
+SELECT maxValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ maxvalue 
+----------
  BBB
 (1 row)
 
-SELECT xmax(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
- xmax 
-------
+SELECT maxValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+ maxvalue 
+----------
  CCC
 (1 row)
 

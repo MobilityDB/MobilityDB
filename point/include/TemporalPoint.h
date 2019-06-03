@@ -545,6 +545,10 @@ extern Datum front_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum overfront_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum back_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum overback_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum before_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum overbefore_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum after_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum overafter_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
  * Temporal distance functions defined in TempDistance.c
