@@ -14,152 +14,172 @@
 
 /*****************************************************************************/
 
-GBOX *
-gbox_parse(char **str) 
+STBOX *
+stbox_parse(char **str) 
 {
-	int hasz = 0, hasm = 0, geodetic = 0;
+	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	p_whitespace(str);
-	if (strncasecmp(*str, "GBOX", 4) == 0) 
+	if (strncasecmp(*str, "STBOX", 5) == 0) 
 	{
-		*str += 4;
+		*str += 5;
 		p_whitespace(str);
-		if (strncasecmp(*str, "ZM", 2) == 0)
+		if (strncasecmp(*str, "ZT", 2) == 0)
 		{
-			hasz = hasm = 1;
+			hasz = hast = true;
 			*str += 2;
 		}
 		else if (strncasecmp(*str, "Z", 1) == 0)
 		{
 			*str += 1;
-			hasz = 1;
+			hasz = true;
 		}
-		else if (strncasecmp(*str, "M", 1) == 0)
+		else if (strncasecmp(*str, "T", 1) == 0)
 		{
 			*str += 1;
-			hasm = 1;
+			hast = true;
 		}
 		p_whitespace(str);
 	}
-	else if (strncasecmp(*str, "GEODBOX", 7) == 0) 
+	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0) 
 	{
-		*str += 7;
+		*str += 9;
 		hasz = geodetic = 1;
 		p_whitespace(str);
-		if (strncasecmp(*str, "M", 1) == 0)
+		if (strncasecmp(*str, "T", 1) == 0)
 		{
 			*str += 1;
-			hasm = 1;
+			hast = true;
 		}
 		p_whitespace(str);
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			errmsg("Could not parse STBOX")));
 
-	GBOX *result = gbox_new(gflags(hasz, hasm, geodetic));
+	/* Parse double opening parenthesis */
 	if (!p_oparen(str) || !p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			errmsg("Could not parse STBOX")));
 
+	/* Determine whether there is an XY(Z) dimension */
 	char *nextstr = *str;
-	result->xmin = strtod(*str, &nextstr);
+	double tmp = strtod(*str, &nextstr);
 	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
-	*str = nextstr; 
-	p_whitespace(str);
-	p_comma(str);
-	p_whitespace(str);
-	result->ymin = strtod(*str, &nextstr);
-	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
-	*str = nextstr; 
-	if (hasz != 0)
-	{	
-		p_whitespace(str);
-		p_comma(str);
-		p_whitespace(str);
-		result->zmin = strtod(*str, &nextstr);
-		if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
-	*str = nextstr; 
+	{
+		if (! hast || hasz)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
 	}
-	if (hasm != 0)
+	else
+		hasx = true;
+
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	if (hasx)
+	{
+		result->xmin = tmp;
+		*str = nextstr; 
+		p_whitespace(str);
+		p_comma(str);
+		p_whitespace(str);
+		result->ymin = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+		if (hasz)
+		{	
+			p_whitespace(str);
+			p_comma(str);
+			p_whitespace(str);
+			result->zmin = strtod(*str, &nextstr);
+			if (*str == nextstr)
+				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+					errmsg("Could not parse STBOX")));
+			*str = nextstr; 
+		}
+	}
+	else
+	{
+		/* Empty XY dimensions */
+		p_whitespace(str);
+		p_comma(str);
+		p_whitespace(str);
+		p_comma(str);
+	}
+	if (hast)
 	{	
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		result->mmin = strtod(*str, &nextstr);
+		result->tmin = strtod(*str, &nextstr);
 		if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
 	if (!p_cparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			errmsg("Could not parse STBOX")));
 	p_whitespace(str);
 	p_comma(str);
 	p_whitespace(str);
+
+	/* Parse upper bounds */
 	if (!p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			errmsg("Could not parse STBOX")));
 
-	result->xmax = strtod(*str, &nextstr);
-	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
-	*str = nextstr; 
-	p_whitespace(str);
-	p_comma(str);
-	p_whitespace(str);
-	result->ymax = strtod(*str, &nextstr);
-	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
-	*str = nextstr; 
-	if (hasz != 0)
-	{	
+	if (hasx)
+	{
+		result->xmax = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		result->zmax = strtod(*str, &nextstr);
-			if (*str == nextstr)
+		result->ymax = strtod(*str, &nextstr);
+		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse GBOX")));
-	*str = nextstr; 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+		if (hasz != 0)
+		{	
+			p_whitespace(str);
+			p_comma(str);
+			p_whitespace(str);
+			result->zmax = strtod(*str, &nextstr);
+				if (*str == nextstr)
+				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+					errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+		}
 	}
-	if (hasm != 0)
+	else
+	{
+		/* Empty XY dimensions */
+		p_whitespace(str);
+		p_comma(str);
+		p_whitespace(str);
+		p_comma(str);
+	}
+	if (hast != 0)
 	{	
 		p_whitespace(str);
 		p_comma(str);
-		result->mmax = strtod(*str, &nextstr);
+		result->tmax = strtod(*str, &nextstr);
 			if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse GBOX")));
+				errmsg("Could not parse STBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse GBOX")));
+			errmsg("Could not parse STBOX")));
 	
-	/* Set missing dimensions to +-infinity */
-	double infinity = get_float8_infinity();
-	if (hasz == 0)
-	{	
-		result->zmin = -infinity;
-		result->zmax = infinity;
-	}
-	if (hasm == 0)
-	{	
-		result->mmin = -infinity;
-		result->mmax = infinity;
-	}
-
 	return result;
 }
 

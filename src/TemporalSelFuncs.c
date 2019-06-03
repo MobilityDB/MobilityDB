@@ -522,7 +522,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
     {
 
     }
-    else if (vardata.vartype == type_oid(T_GBOX))
+    else if (vardata.vartype == type_oid(T_STBOX))
     {
 
     }
@@ -563,9 +563,9 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
         {
             result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmax;
         }
-        else if (consttype == type_oid(T_GBOX))
+        else if (consttype == type_oid(T_STBOX))
         {
-//			result = DatumGetGBoxP(((Const *) other)->constvalue)->maxz;
+			//result = DatumGetGBoxP(((Const *) other)->constvalue)->maxz;
         }
     }
     else
@@ -596,7 +596,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
         {
             result->val = (TimestampTz)DatumGetTboxP(((Const *) other)->constvalue)->tmin;
         }
-        else if (consttype == type_oid(T_GBOX))
+        else if (consttype == type_oid(T_STBOX))
         {
             //result = DatumGetGBoxP(((Const *) other)->constvalue)->low.z;
         }

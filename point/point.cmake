@@ -4,7 +4,7 @@ add_definitions(-DWITH_POSTGIS)
 include_directories("point/include")
 
 set(SRCPOINT
-point/src/Gbox.c
+point/src/STbox.c
 point/src/GeoAggFuncs.c
 point/src/GeoBoundBoxOps.c
 point/src/GeoParser.c
@@ -22,7 +22,7 @@ point/src/TempSpatialRels.c
 )
 
 set(SQLPOINT
-point/src/sql/50_Gbox.in.sql
+point/src/sql/50_STbox.in.sql
 point/src/sql/52_TempPoint.in.sql
 point/src/sql/54_ComparisonOps.in.sql
 point/src/sql/56_SpatialFuncs.in.sql

@@ -3368,14 +3368,14 @@ get_bbox_twodim(Datum value, Oid oid)
 /*
  * get_bbox_threedim()--returns the bbox of a three dimensional temporal object
  */
-GBOX*
+STBOX*
 get_bbox_threedim(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_TGEOMPOINT) || oid == type_oid(T_TGEOGPOINT))
 	{
-		GBOX *box = palloc0(sizeof(GBOX));
-		temporal_bbox(box, DatumGetTemporal(value));
-		return box;
+		STBOX *stbox = palloc0(sizeof(STBOX));
+		temporal_bbox(stbox, DatumGetTemporal(value));
+		return stbox;
 	}
 	return NULL;
 }

@@ -13,11 +13,10 @@
  *	point/src/TempPointSelFuncs.c
  *
  *****************************************************************************/
- 
+
 #include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "TemporalSelFuncs.h"
-#include "TempPointSelFuncs.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 
@@ -198,7 +197,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 		PG_RETURN_FLOAT8(0.0);
 	}
 
-	GBOX box = get_gbox(other);
+	STBOX box = get_stbox(other);
 
 	/*
 	 * If var is on the right, commute the operator, so that we can assume the
@@ -220,7 +219,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 
 	if(((Const *) other)->consttype == type_oid(T_TGEOMPOINT) || ((Const *) other)->consttype == type_oid(T_TGEOGPOINT))
 	{
-		((Const *) other)->constvalue = PointerGetDatum(period_make(box.mmin, box.mmax, true, true));
+		((Const *) other)->constvalue = PointerGetDatum(period_make(box.tmin, box.tmax, true, true));
 		selec2 = estimate_selectivity_temporal_dimension(root, vardata, other, cachedOp);
 		selec2Flag = true;
 	}
@@ -235,7 +234,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 }
 /** Estimate the selectivity of geometry/geography types */
 Selectivity
-estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
+estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 {
 	int d; /* counter */
 	float8 selectivity;
@@ -269,7 +268,7 @@ estimate_selectivity(VariableStatData *vardata, const GBOX *box, CachedOp op)
 	}
 
 	/* Initialize nd_box. */
-	nd_box_from_gbox(box, &nd_box);
+	nd_box_from_stbox(box, &nd_box);
 
 	/*
 	 * To return 2D stats on an ND sample, we need to make the
@@ -771,16 +770,16 @@ get_tpoint_cacheOp(Oid operator)
 {
 	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
-		if (operator == oper_oid((CachedOp)i, T_GBOX, T_GBOX) ||
+		if (operator == oper_oid((CachedOp)i, T_STBOX, T_STBOX) ||
 			operator == oper_oid((CachedOp)i, T_GEOMETRY, T_TGEOMPOINT) ||
-			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOMPOINT) ||
+			operator == oper_oid((CachedOp)i, T_STBOX, T_TGEOMPOINT) ||
 			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GEOMETRY) ||
-			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_STBOX) ||
 			operator == oper_oid((CachedOp)i, T_TGEOMPOINT, T_TGEOMPOINT) ||
 			operator == oper_oid((CachedOp)i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-			operator == oper_oid((CachedOp)i, T_GBOX, T_TGEOGPOINT) ||
+			operator == oper_oid((CachedOp)i, T_STBOX, T_TGEOGPOINT) ||
 			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_GBOX) ||
+			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_STBOX) ||
 			operator == oper_oid((CachedOp)i, T_TGEOGPOINT, T_TGEOGPOINT))
 			return (CachedOp)i;
 	}
@@ -788,38 +787,38 @@ get_tpoint_cacheOp(Oid operator)
 			errmsg("Operation not supported")));
 }
 
-/** Set the values of #GBOX from #Node */
-GBOX
-get_gbox(Node *node)
+/** Set the values of #STBOX from #Node */
+STBOX
+get_stbox(Node *node)
 {
-	GBOX gbox;
+	STBOX box;
 	Oid value_type = ((Const *) node)->consttype;
 
 	if (value_type == type_oid(T_TGEOMPOINT) ||
 		value_type == type_oid(T_TGEOGPOINT))
 	{
 		Temporal *temp = DatumGetTemporal(((Const *) node)->constvalue);
-		temporal_bbox(&gbox, temp);
-		return *gbox_copy(&gbox);
+		temporal_bbox(&box, temp);
+		return *stbox_copy(&box);
 	}
 	else if (value_type == type_oid(T_GEOMETRY) || value_type == type_oid(T_GEOGRAPHY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(((Const *) node)->constvalue);
-		if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
+		if (geo_to_stbox_internal(&box, gs) == LW_FAILURE)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 					errmsg("Error while obtaining the bounding box of the geometry")));
-		return gbox;
+		return box;
 	}
-	else if (value_type == type_oid(T_GBOX))
+	else if (value_type == type_oid(T_STBOX))
 	{
-		GBOX *gboxi;
-		GBOX *gbox = DatumGetGboxP(((Const *) node)->constvalue);
-		gboxi = gbox_copy(gbox);
-		return *gboxi;
+		STBOX *boxi;
+		STBOX *box = DatumGetSTboxP(((Const *) node)->constvalue);
+		boxi = stbox_copy(box);
+		return *boxi;
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Function get_gbox does not support this type")));
+				errmsg("Function get_stbox does not support this type")));
 }
 
 /**
@@ -845,36 +844,35 @@ nd_box_init(ND_BOX *a)
 	return true;
 }
 
-/** Set the values of an #ND_BOX from a #GBOX */
+/** Set the values of an #ND_BOX from a #STBOX */
 void
-nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
+nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 {
 	int d = 0;
 
 	nd_box_init(nd_box);
-	nd_box->min[d] = gbox->xmin;
-	nd_box->max[d] = gbox->xmax;
+	nd_box->min[d] = box->xmin;
+	nd_box->max[d] = box->xmax;
 	d++;
-	nd_box->min[d] = gbox->ymin;
-	nd_box->max[d] = gbox->ymax;
+	nd_box->min[d] = box->ymin;
+	nd_box->max[d] = box->ymax;
 	d++;
-	if (FLAGS_GET_GEODETIC(gbox->flags))
+	if (FLAGS_GET_GEODETIC(box->flags))
 	{
-		nd_box->min[d] = gbox->zmin;
-		nd_box->max[d] = gbox->zmax;
+		nd_box->min[d] = box->zmin;
+		nd_box->max[d] = box->zmax;
 		return;
 	}
-	if (FLAGS_GET_Z(gbox->flags))
+	if (FLAGS_GET_Z(box->flags))
 	{
-		nd_box->min[d] = gbox->zmin;
-		nd_box->max[d] = gbox->zmax;
+		nd_box->min[d] = box->zmin;
+		nd_box->max[d] = box->zmax;
 		d++;
 	}
-	if (FLAGS_GET_M(gbox->flags))
+	if (FLAGS_GET_M(box->flags))
 	{
-		nd_box->min[d] = gbox->mmin;
-		nd_box->max[d] = gbox->mmax;
-		d++;
+		nd_box->min[d] = box->tmin;
+		nd_box->max[d] = box->tmax;
 	}
 	return;
 }

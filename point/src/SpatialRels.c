@@ -9,6 +9,7 @@
  * by the temporal point. The following relationships are supported for 
  * geometries:
  *		contains, containsproperly, covers, coveredby, crosses, disjoint, 
+ *		contains, containsproperly, covers, coveredby, crosses, disjoint,
  *		equals, intersects, overlaps, touches, within, dwithin, and
  *		relate (with 2 and 3 arguments)
  * The following relationships are supported for geographies
