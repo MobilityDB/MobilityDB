@@ -990,19 +990,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'before_tnumber_tnumber'
+	AS 'MODULE_PATHNAME', 'before_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overbefore_tnumber_tnumber'
+	AS 'MODULE_PATHNAME', 'overbefore_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'after_tnumber_tnumber'
+	AS 'MODULE_PATHNAME', 'after_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, tgeogpoint)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overafter_tnumber_tnumber'
+	AS 'MODULE_PATHNAME', 'overafter_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
