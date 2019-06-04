@@ -74,7 +74,19 @@ SELECT tbox(1,2);
  TBOX((1,),(2,))
 (1 row)
 
+SELECT tbox(2,1);
+      tbox       
+-----------------
+ TBOX((1,),(2,))
+(1 row)
+
 SELECT tboxt(1,2);
+      tboxt      
+-----------------
+ TBOX((,1),(,2))
+(1 row)
+
+SELECT tboxt(2,1);
       tboxt      
 -----------------
  TBOX((,1),(,2))

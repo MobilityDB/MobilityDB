@@ -78,12 +78,9 @@ PG_FUNCTION_INFO_V1(tbox_constructor);
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin, xmax, tmin = 0, tmax , tmp;
+	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
+	double xmin, xmax, tmin, tmax, tmp;
 	bool hast = false;
-
-	if (PG_NARGS() != 2 && PG_NARGS() != 4)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid number of parameters")));
 
 	xmin = PG_GETARG_FLOAT8(0);
 	xmax = PG_GETARG_FLOAT8(1);

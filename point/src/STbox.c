@@ -123,10 +123,7 @@ PG_FUNCTION_INFO_V1(stbox_constructor);
 PGDLLEXPORT Datum
 stbox_constructor(PG_FUNCTION_ARGS)
 {
-	if (PG_NARGS() != 4 && PG_NARGS() != 6 && PG_NARGS() != 8)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid number of parameters")));
-
+	assert(PG_NARGS() == 4 || PG_NARGS() == 6 || PG_NARGS() == 8);
 	double zmin = 0, zmax = 0, tmin = 0, tmax = 0, /* keep compiler quiet */
 		tmp;
 	bool hasz = false, hast = false;

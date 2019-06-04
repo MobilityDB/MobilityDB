@@ -20,7 +20,9 @@ SELECT tbox 'TBOX((1, 2),(3, 4)';
 SELECT tbox(1,2,3,4);
 SELECT tbox(4,3,2,1);
 SELECT tbox(1,2);
+SELECT tbox(2,1);
 SELECT tboxt(1,2);
+SELECT tboxt(2,1);
 
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2.0), (1.0, 2.0))', tbox 'TBOX((2.0, 2.0), (1.0, 2.0))'); 
 SELECT tbox_cmp(tbox 'TBOX((2.0, 2.0), (1.0, 2.0))', tbox 'TBOX((1.0, 2.0), (1.0, 2.0))'); 
