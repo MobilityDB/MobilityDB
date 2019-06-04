@@ -123,10 +123,13 @@ PG_FUNCTION_INFO_V1(stbox_constructor);
 PGDLLEXPORT Datum
 stbox_constructor(PG_FUNCTION_ARGS)
 {
-	assert(PG_NARGS() == 4 || PG_NARGS() == 6 || PG_NARGS() == 8);
+	if (PG_NARGS() != 4 && PG_NARGS() != 6 && PG_NARGS() != 8)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("Invalid number of parameters")));
+
 	double zmin = 0, zmax = 0, tmin = 0, tmax = 0, /* keep compiler quiet */
 		tmp;
-	int hasz = 0, hast = 0;
+	bool hasz = false, hast = false;
 
 	double xmin = PG_GETARG_FLOAT8(0);
 	double xmax = PG_GETARG_FLOAT8(1);
@@ -139,7 +142,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 	{
 		zmin = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
-		hasz = 1;
+		hasz = true;
 	}
 	else if (PG_NARGS() == 8)
 	{
@@ -147,8 +150,8 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		zmax = PG_GETARG_FLOAT8(5);
 		tmin = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_FLOAT8(7);
-		hasz = 1;
-		hast = 1;
+		hasz = true;
+		hast = true;
 	}
 
 	STBOX *result = stbox_new(true, hasz, hast, false);
@@ -174,7 +177,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 	result->ymax = ymax;
 
 	/* Process Z min/max */
-	if (hasz != 0)
+	if (hasz)
 	{
 		if (zmin > zmax)
 		{
@@ -184,13 +187,12 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		}
 		result->zmin = zmin;
 		result->zmax = zmax;
-		MOBDB_FLAGS_SET_Z(result->flags, true);
 	}
 
 	/* Process T min/max */
-	if (hast != 0)
+	if (hast)
 	{
-		if ( hast != 0 && tmin > tmax )
+		if (tmin > tmax)
 		{
 			tmp = tmin;
 			tmin = tmax;
@@ -198,16 +200,15 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		}
 		result->tmin = tmin;
 		result->tmax = tmax;
-		MOBDB_FLAGS_SET_T(result->flags, true);
 	}
 
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(stboxzt_constructor);
+PG_FUNCTION_INFO_V1(stboxyt_constructor);
 
 PGDLLEXPORT Datum
-stboxzt_constructor(PG_FUNCTION_ARGS)
+stboxyt_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin, xmax, ymin, ymax, 
 		tmin, tmax, tmp;

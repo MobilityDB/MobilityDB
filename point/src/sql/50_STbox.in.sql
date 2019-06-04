@@ -67,7 +67,7 @@ CREATE FUNCTION stbox(float8, float8, float8, float8, float8, float8, float8, fl
 
 CREATE FUNCTION stboxzt(float8, float8, float8, float8, float8, float8)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stboxzt_constructor'
+	AS 'MODULE_PATHNAME', 'stboxyt_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geodstbox(float8, float8, float8, float8, float8, float8)

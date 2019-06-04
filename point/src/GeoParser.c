@@ -62,6 +62,7 @@ stbox_parse(char **str)
 			errmsg("Could not parse STBOX")));
 
 	/* Determine whether there is an XY(Z) dimension */
+	p_whitespace(str);
 	char *nextstr = *str;
 	double tmp = strtod(*str, &nextstr);
 	if (*str == nextstr)
@@ -100,7 +101,7 @@ stbox_parse(char **str)
 	}
 	else
 	{
-		/* Empty XY dimensions */
+		/* Empty XY(Z) dimension */
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);

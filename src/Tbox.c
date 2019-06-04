@@ -19,7 +19,9 @@
 /* 
  * Input function. 
  * Examples of input:
- * 		TBOX((1.0, 2.0), (1.0, 2.0))
+ * 		TBOX((1.0, 2.0), (1.0, 2.0)) 	-- Both X and T dimensions
+ * 		TBOX((1.0, ), (1.0, ))			-- Only X dimension
+ * 		TBOX((, 2.0), (, 2.0))			-- Only T dimension
  * where the commas are optional
  */
 PG_FUNCTION_INFO_V1(tbox_in);
@@ -37,8 +39,20 @@ char* tbox_to_string(const TBOX *box)
 	static int sz = 128;
 	char *str = NULL;
 	str = (char *)palloc(sz);
-	snprintf(str, sz, "((%.8g,%.8g),(%.8g,%.8g))", 
-		box->xmin, box->tmin, box->xmax, box->tmax);
+	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
+	if (MOBDB_FLAGS_GET_X(box->flags))
+	{
+		if (MOBDB_FLAGS_GET_T(box->flags))
+			snprintf(str, sz, "TBOX((%.8g,%.8g),(%.8g,%.8g))", 
+				box->xmin, box->tmin, box->xmax, box->tmax);
+		else 
+			snprintf(str, sz, "TBOX((%.8g,),(%.8g,))", 
+				box->xmin,box->xmax);
+	}
+	else
+		/* Missing X dimension */
+		snprintf(str, sz, "TBOX((,%.8g),(,%.8g))", 
+			box->tmin, box->tmax);
 	return str;
 }
 
@@ -64,13 +78,27 @@ PG_FUNCTION_INFO_V1(tbox_constructor);
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
-	assert(PG_NARGS() == 4);
-	double tmp;
-	double xmin = PG_GETARG_FLOAT8(0);
-	double xmax = PG_GETARG_FLOAT8(1);
-	double tmin = PG_GETARG_FLOAT8(2);
-	double tmax = PG_GETARG_FLOAT8(3);
+	double xmin, xmax, tmin = 0, tmax , tmp;
+	bool hast = false;
+
+	if (PG_NARGS() != 2 && PG_NARGS() != 4)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+			errmsg("Invalid number of parameters")));
+
+	xmin = PG_GETARG_FLOAT8(0);
+	xmax = PG_GETARG_FLOAT8(1);
+	if (PG_NARGS() == 2)
+		;
+	else if (PG_NARGS() == 4)
+	{
+		tmin = PG_GETARG_FLOAT8(2);
+		tmax = PG_GETARG_FLOAT8(2);
+		hast = true;
+	}
+
 	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
 	
 	/* Process X min/max */
 	if (xmin > xmax)
@@ -83,6 +111,34 @@ tbox_constructor(PG_FUNCTION_ARGS)
 	result->xmax = xmax;
 
 	/* Process T min/max */
+	if (hast)
+	{
+		if (tmin > tmax)
+		{
+			tmp = tmin;
+			tmin = tmax;
+			tmax = tmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tboxt_constructor);
+
+PGDLLEXPORT Datum
+tboxt_constructor(PG_FUNCTION_ARGS)
+{
+	double tmin, tmax, tmp;
+	tmin = PG_GETARG_FLOAT8(0);
+	tmax = PG_GETARG_FLOAT8(1);
+
+	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, false);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	
+	/* Process T min/max */
 	if (tmin > tmax)
 	{
 		tmp = tmin;
@@ -91,8 +147,6 @@ tbox_constructor(PG_FUNCTION_ARGS)
 	}
 	result->tmin = tmin;
 	result->tmax = tmax;
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
 	PG_RETURN_POINTER(result);
 }
 
