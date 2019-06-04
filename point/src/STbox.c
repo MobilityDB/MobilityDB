@@ -124,31 +124,38 @@ PGDLLEXPORT Datum
 stbox_constructor(PG_FUNCTION_ARGS)
 {
 	assert(PG_NARGS() == 4 || PG_NARGS() == 6 || PG_NARGS() == 8);
-	double zmin = 0, zmax = 0, tmin = 0, tmax = 0, /* keep compiler quiet */
-		tmp;
+	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, /* keep compiler quiet */
+		zmin, zmax, tmin, tmax, tmp;
 	bool hasz = false, hast = false;
 
-	double xmin = PG_GETARG_FLOAT8(0);
-	double xmax = PG_GETARG_FLOAT8(1);
-	double ymin = PG_GETARG_FLOAT8(2);
-	double ymax = PG_GETARG_FLOAT8(3);
-
 	if (PG_NARGS() == 4)
-		;
+	{
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		xmax = PG_GETARG_FLOAT8(2);
+		ymax = PG_GETARG_FLOAT8(3);
+	}
 	else if (PG_NARGS() == 6)
 	{
-		zmin = PG_GETARG_FLOAT8(4);
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		zmin = PG_GETARG_FLOAT8(2);
+		xmax = PG_GETARG_FLOAT8(3);
+		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
 		hasz = true;
 	}
 	else if (PG_NARGS() == 8)
 	{
-		zmin = PG_GETARG_FLOAT8(4);
-		zmax = PG_GETARG_FLOAT8(5);
-		tmin = PG_GETARG_FLOAT8(6);
+		xmin = PG_GETARG_FLOAT8(0);
+		ymin = PG_GETARG_FLOAT8(1);
+		zmin = PG_GETARG_FLOAT8(2);
+		tmin = PG_GETARG_FLOAT8(3);
+		xmax = PG_GETARG_FLOAT8(4);
+		ymax = PG_GETARG_FLOAT8(5);
+		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_FLOAT8(7);
-		hasz = true;
-		hast = true;
+		hasz = hast = true;
 	}
 
 	STBOX *result = stbox_new(true, hasz, hast, false);
@@ -202,19 +209,19 @@ stbox_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(stboxyt_constructor);
+PG_FUNCTION_INFO_V1(stboxt_constructor);
 
 PGDLLEXPORT Datum
-stboxyt_constructor(PG_FUNCTION_ARGS)
+stboxt_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin, xmax, ymin, ymax, 
 		tmin, tmax, tmp;
 
 	xmin = PG_GETARG_FLOAT8(0);
-	xmax = PG_GETARG_FLOAT8(1);
-	ymin = PG_GETARG_FLOAT8(2);
-	ymax = PG_GETARG_FLOAT8(3);
-	tmin = PG_GETARG_FLOAT8(4);
+	ymin = PG_GETARG_FLOAT8(1);
+	tmin = PG_GETARG_FLOAT8(2);
+	xmax = PG_GETARG_FLOAT8(3);
+	ymax = PG_GETARG_FLOAT8(4);
 	tmax = PG_GETARG_FLOAT8(5);
 
 	STBOX *result = stbox_new(true, false, true, false);

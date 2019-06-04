@@ -6,6 +6,8 @@ SELECT tbox 'TBOX((1.0, 2.0), (1.0, 2.0))'; -- Both X and T dimensions
 SELECT tbox 'TBOX((1.0,), (1.0,))'; -- Only X dimension
 SELECT tbox 'TBOX((, 2.0), (, 2.0))'; -- Only T dimension
 
+SELECT tbox 'TBOX((4,3),(2,1))';
+
 /* Errors */
 SELECT tbox 'TBOX(1, 2)';
 SELECT tbox 'TBOX(1, 2)';

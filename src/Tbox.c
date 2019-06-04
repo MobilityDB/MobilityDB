@@ -79,17 +79,21 @@ PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
 	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
-	double xmin, xmax, tmin, tmax, tmp;
+	double xmin = 0, xmax = 0, /* keep compiler quiet */
+		tmin, tmax, tmp;
 	bool hast = false;
 
-	xmin = PG_GETARG_FLOAT8(0);
-	xmax = PG_GETARG_FLOAT8(1);
 	if (PG_NARGS() == 2)
-		;
+	{
+		xmin = PG_GETARG_FLOAT8(0);
+		xmax = PG_GETARG_FLOAT8(1);
+	}
 	else if (PG_NARGS() == 4)
 	{
-		tmin = PG_GETARG_FLOAT8(2);
-		tmax = PG_GETARG_FLOAT8(2);
+		xmin = PG_GETARG_FLOAT8(0);
+		tmin = PG_GETARG_FLOAT8(1);
+		xmax = PG_GETARG_FLOAT8(2);
+		tmax = PG_GETARG_FLOAT8(3);
 		hast = true;
 	}
 

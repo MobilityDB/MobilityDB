@@ -17,6 +17,7 @@
 STBOX *
 stbox_parse(char **str) 
 {
+	double xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax, tmp;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	p_whitespace(str);
 	if (strncasecmp(*str, "STBOX", 5) == 0) 
@@ -64,7 +65,7 @@ stbox_parse(char **str)
 	/* Determine whether there is an XY(Z) dimension */
 	p_whitespace(str);
 	char *nextstr = *str;
-	double tmp = strtod(*str, &nextstr);
+	tmp = strtod(*str, &nextstr);
 	if (*str == nextstr)
 	{
 		if (! hast || hasz)
@@ -74,15 +75,14 @@ stbox_parse(char **str)
 	else
 		hasx = true;
 
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
 	if (hasx)
 	{
-		result->xmin = tmp;
+		xmin = tmp;
 		*str = nextstr; 
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		result->ymin = strtod(*str, &nextstr);
+		ymin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -92,7 +92,7 @@ stbox_parse(char **str)
 			p_whitespace(str);
 			p_comma(str);
 			p_whitespace(str);
-			result->zmin = strtod(*str, &nextstr);
+			zmin = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 					errmsg("Could not parse STBOX")));
@@ -112,7 +112,7 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		result->tmin = strtod(*str, &nextstr);
+		tmin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -133,7 +133,7 @@ stbox_parse(char **str)
 
 	if (hasx)
 	{
-		result->xmax = strtod(*str, &nextstr);
+		xmax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -141,7 +141,7 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		result->ymax = strtod(*str, &nextstr);
+		ymax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -151,7 +151,7 @@ stbox_parse(char **str)
 			p_whitespace(str);
 			p_comma(str);
 			p_whitespace(str);
-			result->zmax = strtod(*str, &nextstr);
+			zmax = strtod(*str, &nextstr);
 				if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 					errmsg("Could not parse STBOX")));
@@ -170,7 +170,7 @@ stbox_parse(char **str)
 	{	
 		p_whitespace(str);
 		p_comma(str);
-		result->tmax = strtod(*str, &nextstr);
+		tmax = strtod(*str, &nextstr);
 			if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -181,6 +181,48 @@ stbox_parse(char **str)
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX")));
 	
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	if (hasx)
+	{
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		if (ymin > ymax)
+		{
+			tmp = ymin;
+			ymin = ymax;
+			ymax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
+		result->ymin = ymin;
+		result->ymax = ymax;
+	}
+	if (hasz)
+	{
+		if (zmin > zmax)
+		{
+			tmp = zmin;
+			zmin = zmax;
+			zmax = tmp;
+		}
+		result->zmin = zmin;
+		result->zmax = zmax;
+	}
+	if (hast)
+	{
+		if (tmin > tmax)
+		{
+			tmp = tmin;
+			tmin = tmax;
+			tmax = tmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
 	return result;
 }
 

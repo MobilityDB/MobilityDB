@@ -19,6 +19,12 @@ SELECT tbox 'TBOX((, 2.0), (, 2.0))';
  TBOX((,2),(,2))
 (1 row)
 
+SELECT tbox 'TBOX((4,3),(2,1))';
+       tbox        
+-------------------
+ TBOX((2,1),(4,3))
+(1 row)
+
 /* Errors */
 SELECT tbox 'TBOX(1, 2)';
 ERROR:  Could not parse TBOX
@@ -59,13 +65,13 @@ LINE 1: SELECT tbox 'TBOX((1, 2),(3, 4)';
 SELECT tbox(1,2,3,4);
        tbox        
 -------------------
- TBOX((1,3),(2,3))
+ TBOX((1,2),(3,4))
 (1 row)
 
 SELECT tbox(4,3,2,1);
        tbox        
 -------------------
- TBOX((3,2),(4,2))
+ TBOX((2,1),(4,3))
 (1 row)
 
 SELECT tbox(1,2);

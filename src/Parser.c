@@ -149,7 +149,7 @@ basetype_parse(char **str, Oid basetype)
 TBOX *
 tbox_parse(char **str) 
 {
-	double xmin, xmax, tmin, tmax;
+	double xmin, xmax, tmin, tmax, tmp;
 	bool hasx = false, hast = false;
 	p_whitespace(str);
 	if (strncasecmp(*str, "TBOX", 4) == 0) 
@@ -234,11 +234,23 @@ tbox_parse(char **str)
 	MOBDB_FLAGS_SET_T(result->flags, hast);
 	if (hasx)
 	{
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
 		result->xmin = xmin;
 		result->xmax = xmax;
 	}
 	if (hast)
 	{
+		if (tmin > tmax)
+		{
+			tmp = tmin;
+			tmin = tmax;
+			tmax = tmp;
+		}
 		result->tmin = tmin;
 		result->tmax = tmax;
 	}

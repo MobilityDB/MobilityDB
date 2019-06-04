@@ -28,12 +28,12 @@ SELECT stbox 'stbox t((1, 2, 3),(1,2,3)';
 SELECT stbox(1,2,3,4);
 SELECT stbox(1,2,3,4,5,6);
 SELECT stbox(1,2,3,4,5,6,7,8);
-SELECT stboxzt(1,2,3,4,5,6);
+SELECT stboxt(1,2,3,4,5,6);
 SELECT geodstbox(1,2,3,4,5,6);
 SELECT geodstbox(1,2,3,4,5,6,7,8);
 
 SELECT stbox(8,7,6,5,4,3,2,1);
-SELECT stboxzt(6,5,4,3,2,1);
+SELECT stboxt(6,5,4,3,2,1);
 SELECT geodstbox(8,7,6,5,4,3,2,1);
 
 SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((2.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))'); 
