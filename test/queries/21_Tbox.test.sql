@@ -9,7 +9,7 @@ SELECT tbox 'TBOX((, 2.0), (, 2.0))'; -- Only T dimension
 SELECT tbox 'TBOX((4,3),(2,1))';
 
 /* Errors */
-SELECT tbox 'TBOX(1, 2)';
+SELECT tbox 'STBOX(1, 2)';
 SELECT tbox 'TBOX(1, 2)';
 SELECT tbox 'TBOX((AA, 2))';
 SELECT tbox 'TBOX((1, AA))';

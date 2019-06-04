@@ -26,9 +26,9 @@ SELECT tbox 'TBOX((4,3),(2,1))';
 (1 row)
 
 /* Errors */
-SELECT tbox 'TBOX(1, 2)';
+SELECT tbox 'STBOX(1, 2)';
 ERROR:  Could not parse TBOX
-LINE 2: SELECT tbox 'TBOX(1, 2)';
+LINE 2: SELECT tbox 'STBOX(1, 2)';
                     ^
 SELECT tbox 'TBOX(1, 2)';
 ERROR:  Could not parse TBOX
