@@ -99,25 +99,25 @@ LINE 1: SELECT stbox 'stbox t((1, 2, 3),(1,2,3)';
 SELECT stbox(1,2,3,4);
        stbox        
 --------------------
- STBOX((1,3),(2,4))
+ STBOX((1,2),(3,4))
 (1 row)
 
 SELECT stbox(1,2,3,4,5,6);
           stbox           
 --------------------------
- STBOX Z((1,3,5),(2,4,6))
+ STBOX Z((1,2,3),(4,5,6))
 (1 row)
 
 SELECT stbox(1,2,3,4,5,6,7,8);
              stbox             
 -------------------------------
- STBOX ZT((1,3,5,7),(2,4,6,8))
+ STBOX ZT((1,2,3,4),(5,6,7,8))
 (1 row)
 
-SELECT stboxzt(1,2,3,4,5,6);
-         stboxzt          
+SELECT stboxt(1,2,3,4,5,6);
+          stboxt          
 --------------------------
- STBOX T((1,3,5),(2,4,6))
+ STBOX T((1,2,3),(4,5,6))
 (1 row)
 
 SELECT geodstbox(1,2,3,4,5,6);
@@ -135,13 +135,13 @@ SELECT geodstbox(1,2,3,4,5,6,7,8);
 SELECT stbox(8,7,6,5,4,3,2,1);
              stbox             
 -------------------------------
- STBOX ZT((7,5,3,1),(8,6,4,2))
+ STBOX ZT((4,3,2,1),(8,7,6,5))
 (1 row)
 
-SELECT stboxzt(6,5,4,3,2,1);
-         stboxzt          
+SELECT stboxt(6,5,4,3,2,1);
+          stboxt          
 --------------------------
- STBOX T((5,3,1),(6,4,2))
+ STBOX T((3,2,1),(6,5,4))
 (1 row)
 
 SELECT geodstbox(8,7,6,5,4,3,2,1);
@@ -150,103 +150,103 @@ SELECT geodstbox(8,7,6,5,4,3,2,1);
  GEODSTBOX T((7,5,3,1),(8,6,4,2))
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((2.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((2,2,3,4), (2,2,3,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((2.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((2,2,3,4), (2,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 3.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,3,3,4), (1,3,3,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 3.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,3,3,4), (1,3,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 4.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,4,4), (1,2,4,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 4.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,4,4), (1,2,4,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 5.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,5), (1,2,3,5))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 5.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,5), (1,2,3,5))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (2.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (2,2,3,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (2.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (2,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 3.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,3,3,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 3.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,3,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 4.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,4,4))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 4.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,4,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 5.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,5))');
  stbox_cmp 
 -----------
         -1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 5.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,5))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          1
 (1 row)
 
-SELECT stbox_cmp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))');
+SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))', stbox 'STBOX ZT((1,2,3,4), (1,2,3,4))');
  stbox_cmp 
 -----------
          0

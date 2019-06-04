@@ -816,9 +816,10 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	Datum *values = datumarr_extract(array, &count);
 	if (count == 0)
 	{
+		Temporal *result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(array, 1);
-		PG_RETURN_NULL();
+		PG_RETURN_POINTER(result);
 	}
 	for (int i = 0; i < count; i++)
 	{

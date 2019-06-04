@@ -69,7 +69,7 @@ extern Temporal *tpoint_parse(char **str, Oid basetype);
 extern Datum stbox_in(PG_FUNCTION_ARGS);
 extern Datum stbox_out(PG_FUNCTION_ARGS);
 extern Datum stbox_constructor(PG_FUNCTION_ARGS);
-extern Datum stboxzt_constructor(PG_FUNCTION_ARGS);
+extern Datum stboxt_constructor(PG_FUNCTION_ARGS);
 extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic);
@@ -545,6 +545,10 @@ extern Datum front_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum overfront_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum back_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum overback_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum before_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum overbefore_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum after_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum overafter_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************
  * Temporal distance functions defined in TempDistance.c

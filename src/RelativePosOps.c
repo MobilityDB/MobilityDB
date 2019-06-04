@@ -810,10 +810,10 @@ before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
-	bool result = before_period_period_internal(&p1, &p2);
+	TBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = before_tbox_tbox_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -826,10 +826,10 @@ overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
-	bool result = overbefore_period_period_internal(&p1, &p2);
+	TBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = overbefore_tbox_tbox_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -842,10 +842,10 @@ after_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
-	bool result = after_period_period_internal(&p1, &p2);
+	TBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = after_tbox_tbox_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
@@ -858,10 +858,10 @@ overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
-	bool result = overafter_period_period_internal(&p1, &p2);
+	TBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = overafter_tbox_tbox_internal(&box1, &box2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);

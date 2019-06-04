@@ -539,37 +539,37 @@ SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(
    100
 (1 row)
 
-SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeompoint;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
        max        
 ------------------
  33709.1589600302
 (1 row)
 
-SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeogpoint;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint;
        max        
 ------------------
  12494.2315442694
 (1 row)
 
-SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
        max        
 ------------------
  58410.8961074691
 (1 row)
 
-SELECT MAX(xmax(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
+SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
        max        
 ------------------
  164523.440795882
 (1 row)
 
-SELECT MAX(xmax(speed(temp))) FROM tbl_tgeompoint;
+SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
        max        
 ------------------
  1.60651499595649
 (1 row)
 
-SELECT MAX(xmax(speed(temp))) FROM tbl_tgeompoint3D;
+SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
        max        
 ------------------
  1.86021761279442

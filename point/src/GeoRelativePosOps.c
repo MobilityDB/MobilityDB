@@ -1776,4 +1776,68 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+PG_FUNCTION_INFO_V1(before_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+before_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	STBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = before_stbox_stbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+overbefore_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	STBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = overbefore_stbox_stbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(after_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+after_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	STBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = after_stbox_stbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(overafter_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+overafter_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	STBOX box1 = {0}, box2 = {0};
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = overafter_stbox_stbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
 /*****************************************************************************/
