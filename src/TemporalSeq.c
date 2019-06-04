@@ -3285,10 +3285,8 @@ int
 temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 {
 	/* Bounding box test */
-	Period p1;
-	temporalseq_timespan(&p1, seq);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
+	Period *p = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return 0;
 
 	/* Instantaneous sequence */
@@ -3307,7 +3305,7 @@ temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
 	{
-		Period *p = periodset_per_n(ps, i);
+		p = periodset_per_n(ps, i);
 		TemporalSeq *seq1 = temporalseq_at_period(seq, p);
 		if (seq1 != NULL)
 			result[k++] = seq1;
@@ -3393,10 +3391,8 @@ TemporalS *
 temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 {
 	/* Bounding box test */
-	Period p1;
-	temporalseq_timespan(&p1, seq);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
+	Period *p = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return temporals_from_temporalseqarr(&seq, 1, false);
 
 	/* Instantaneous sequence */
