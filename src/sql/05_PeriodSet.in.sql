@@ -36,7 +36,7 @@ CREATE FUNCTION periodset_send(periodset)
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION periodset_typanalyze(internal)
+CREATE FUNCTION periodset_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -50,7 +50,7 @@ CREATE TYPE periodset (
 	alignment = double
 -- The following line makes NULL if size < 128	
 --	storage = extended
-    , analyze = periodset_typanalyze
+    , analyze = periodset_analyze
 );
 
 /******************************************************************************
