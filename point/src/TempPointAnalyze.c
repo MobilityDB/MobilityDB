@@ -42,7 +42,7 @@ tpoint_analyze_internal(VacAttrStats *stats, int durationType)
 	if (durationType == TEMPORALINST)
 		temporal_info(stats);
 	else
-		temporal_extra_info(stats);
+		temporal_extra_info(stats, durationType);
 
 	stats->compute_stats = tpoint_compute_stats;
 

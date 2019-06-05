@@ -14,6 +14,7 @@
  *****************************************************************************/
 
 #include <TemporalTypes.h>
+#include <TemporalAnalyze.h>
 #include "TemporalAnalyze.h"
 
 /*****************************************************************************/
@@ -55,7 +56,7 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
 	if (durationType == TEMPORALINST)
 		temporal_info(stats);
 	else
-		temporal_extra_info(stats);
+		temporal_extra_info(stats, durationType);
 
 	if (durationType == TEMPORALINST && temporalType == TEMPORAL_STATISTIC)
 		stats->compute_stats = temporalinst_compute_stats;
@@ -77,7 +78,7 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
  * Statistics information for Temporal types
  *****************************************************************************/
 
-TemporalArrayAnalyzeExtraData *array_extra_data;
+TemporalArrayAnalyzeExtraData *temporal_extra_data;
 void
 temporal_info(VacAttrStats *stats)
 {
@@ -98,7 +99,7 @@ temporal_info(VacAttrStats *stats)
 }
 
 void
-temporal_extra_info(VacAttrStats *stats)
+temporal_extra_info(VacAttrStats *stats, int durationType)
 {
 	Form_pg_attribute attr = stats->attr;
 
@@ -133,11 +134,6 @@ temporal_extra_info(VacAttrStats *stats)
 									   TYPECACHE_CMP_PROC_FINFO |
 									   TYPECACHE_HASH_PROC_FINFO);
 
-	temporal_typentry = lookup_type_cache(type_oid(T_TIMESTAMPTZ),
-										  TYPECACHE_EQ_OPR |
-										  TYPECACHE_CMP_PROC_FINFO |
-										  TYPECACHE_HASH_PROC_FINFO);
-
 	/* Store our findings for use by compute_array_stats() */
 	extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
 	extra_data->type_id = typentry->type_id;
@@ -156,13 +152,34 @@ temporal_extra_info(VacAttrStats *stats)
 	extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
 	extra_data->value_hash = &value_typentry->hash_proc_finfo;
 
-	extra_data->temporal_type_id = temporal_typentry->type_id;
-	extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
-	extra_data->temporal_typbyval = temporal_typentry->typbyval;
-	extra_data->temporal_typlen = temporal_typentry->typlen;
-	extra_data->temporal_typalign = temporal_typentry->typalign;
-	extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
-	extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
+	if (durationType == TEMPORALI)
+    {
+        temporal_typentry = lookup_type_cache(TIMESTAMPTZOID,
+                                              TYPECACHE_EQ_OPR |
+                                              TYPECACHE_CMP_PROC_FINFO |
+                                              TYPECACHE_HASH_PROC_FINFO);
+        extra_data->temporal_type_id = temporal_typentry->type_id;
+        extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
+        extra_data->temporal_typbyval = temporal_typentry->typbyval;
+        extra_data->temporal_typlen = temporal_typentry->typlen;
+        extra_data->temporal_typalign = temporal_typentry->typalign;
+        extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
+        extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
+    }
+    else
+    {
+        temporal_typentry = lookup_type_cache(type_oid(T_PERIOD),
+                                              TYPECACHE_EQ_OPR |
+                                              TYPECACHE_CMP_PROC_FINFO |
+                                              TYPECACHE_HASH_PROC_FINFO);
+        extra_data->temporal_type_id = temporal_typentry->type_id;
+        extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
+        extra_data->temporal_typbyval = temporal_typentry->typbyval;
+        extra_data->temporal_typlen = temporal_typentry->typlen;
+        extra_data->temporal_typalign = temporal_typentry->typalign;
+        extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
+        extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
+    }
 
 	extra_data->std_extra_data = stats->extra_data;
 	stats->extra_data = extra_data;
@@ -744,9 +761,8 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	HASHCTL		count_hash_ctl;
 	DECountItem *count_item;
 
-	array_extra_data = (TemporalArrayAnalyzeExtraData *) stats->extra_data;
+	temporal_extra_data = (TemporalArrayAnalyzeExtraData *) stats->extra_data;
 
-	Oid valueType = base_oid_from_temporal(stats->attrtypid);
 	/*
 	 * We want statistics_target * 10 elements in the MCELEM array. This
 	 * multiplier is pretty arbitrary, but is meant to reflect the fact that
@@ -895,7 +911,8 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			count_item->frequency = 1;
 
 		/* Removing the temporal part from the stats HeapTuples if the base type is geometry */
-		if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
+		if(temporal_extra_data->value_type_id == type_oid(T_GEOMETRY) ||
+           temporal_extra_data->value_type_id == type_oid(T_GEOGRAPHY))
 			stats->rows[analyzed_rows] = remove_temporaldim(stats->rows[analyzed_rows], 
 				stats->tupDesc, stats->tupattnum, stats->attrtypid, true, value);
 
@@ -1020,17 +1037,17 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			MemoryContextSwitchTo(old_context);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-			stats->staop[slot_idx] = array_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
 			stats->stanumbers[slot_idx] = mcelem_freqs;
 			/* See above comment about extra stanumber entries */
 			stats->numnumbers[slot_idx] = num_mcelem + 3;
 			stats->stavalues[slot_idx] = mcelem_values;
 			stats->numvalues[slot_idx] = num_mcelem;
 			/* We are storing values of element type */
-			stats->statypid[slot_idx] = array_extra_data->temporal_type_id;
-			stats->statyplen[slot_idx] = array_extra_data->temporal_typlen;
-			stats->statypbyval[slot_idx] = array_extra_data->temporal_typbyval;
-			stats->statypalign[slot_idx] = array_extra_data->temporal_typalign;
+			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
 			stats->stats_valid = true;
 			slot_idx++;
 		}
@@ -1122,7 +1139,7 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			Assert(j == count_items_count - 1);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-			stats->staop[slot_idx] = array_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
 			stats->stanumbers[slot_idx] = hist;
 			stats->numnumbers[slot_idx] = num_hist + 1;
 		}
@@ -1162,7 +1179,7 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	HASHCTL		count_hash_ctl_value, count_hash_ctl_temporal;
 	DECountItem *count_item_value, *count_item_temporal;
 
-	array_extra_data = (TemporalArrayAnalyzeExtraData *) stats->extra_data;
+	temporal_extra_data = (TemporalArrayAnalyzeExtraData *) stats->extra_data;
 	/*
 	 * We want statistics_target * 10 elements in the MCELEM array. This
 	 * multiplier is pretty arbitrary, but is meant to reflect the fact that
@@ -1508,17 +1525,17 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			MemoryContextSwitchTo(old_context);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-			stats->staop[slot_idx] = array_extra_data->value_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
 			stats->stanumbers[slot_idx] = mcelem_freqs;
 			/* See above comment about extra stanumber entries */
 			stats->numnumbers[slot_idx] = num_mcelem + 3;
 			stats->stavalues[slot_idx] = mcelem_values;
 			stats->numvalues[slot_idx] = num_mcelem;
 			/* We are storing values of element type */
-			stats->statypid[slot_idx] = array_extra_data->value_type_id;
-			stats->statyplen[slot_idx] = array_extra_data->value_typlen;
-			stats->statypbyval[slot_idx] = array_extra_data->value_typbyval;
-			stats->statypalign[slot_idx] = array_extra_data->value_typalign;
+			stats->statypid[slot_idx] = temporal_extra_data->value_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->value_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->value_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->value_typalign;
 			slot_idx++;
 		}
 
@@ -1609,7 +1626,7 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			Assert(j == count_items_count - 1);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-			stats->staop[slot_idx] = array_extra_data->value_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
 			stats->stanumbers[slot_idx] = hist;
 			stats->numnumbers[slot_idx] = num_hist + 1;
 			slot_idx++;
@@ -1713,17 +1730,17 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			MemoryContextSwitchTo(old_context);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-			stats->staop[slot_idx] = array_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
 			stats->stanumbers[slot_idx] = mcelem_freqs;
 			/* See above comment about extra stanumber entries */
 			stats->numnumbers[slot_idx] = num_mcelem + 3;
 			stats->stavalues[slot_idx] = mcelem_values;
 			stats->numvalues[slot_idx] = num_mcelem;
 			/* We are storing values of element type */
-			stats->statypid[slot_idx] = array_extra_data->temporal_type_id;
-			stats->statyplen[slot_idx] = array_extra_data->temporal_typlen;
-			stats->statypbyval[slot_idx] = array_extra_data->temporal_typbyval;
-			stats->statypalign[slot_idx] = array_extra_data->temporal_typalign;
+			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
 			stats->stats_valid = true;
 			slot_idx++;
 		}
@@ -1815,7 +1832,7 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			Assert(j == count_items_count - 1);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-			stats->staop[slot_idx] = array_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
 			stats->stanumbers[slot_idx] = hist;
 			stats->numnumbers[slot_idx] = num_hist + 1;
 		}
@@ -1845,7 +1862,7 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			*temporal_uppers;
 	double total_width = 0;
 
-	Oid baseType = base_oid_from_temporal(stats->attrtypid);
+    temporal_extra_data = (TemporalArrayAnalyzeExtraData *) stats->extra_data;
 
 	temporal_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	temporal_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
@@ -1869,8 +1886,7 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		}
 		Period *period = get_temporal_bbox(value, stats->attrtypid);
 		period_deserialize(period, &temp_lower, &temp_upper);
-		//pfree(period);
-		
+
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/* Remember bounds and length for further usage in histograms */
@@ -1881,7 +1897,7 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		temporal_lengths[analyzed_arrays] = length;
 
 		/* Remove the temporal part from the stats HeapTuples if the base type is geometry or geography */
-		if(baseType == type_oid(T_GEOMETRY) || baseType == type_oid(T_GEOGRAPHY))
+		if(temporal_extra_data->value_type_id == type_oid(T_GEOMETRY) || temporal_extra_data->value_type_id == type_oid(T_GEOGRAPHY))
 			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc, 
 				stats->tupDesc->natts, stats->attrtypid, true, value);
 
@@ -1903,11 +1919,11 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
-		stats->stawidth = total_width / (double) analyzed_arrays;
+		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
+		stats->stawidth = (int)(total_width / analyzed_arrays);
 
 		/* Estimate that non-null values are unique */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float4)(-1.0 * (1.0 - stats->stanullfrac));
 
 		/* Must copy the target values into anl_context */
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
@@ -1968,11 +1984,10 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 			stats->stavalues[slot_idx] = bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = type_oid(T_PERIOD);
-			stats->statyplen[slot_idx] = sizeof(Period);
-
-			stats->statypbyval[slot_idx] = false;
-			stats->statypalign[slot_idx] = 'd';
+			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
 			slot_idx++;
 		}
 
@@ -2081,9 +2096,9 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	double total_width = 0;
 	Oid valueRangeType;
 
-	TemporalArrayAnalyzeExtraData *extra_data = (TemporalArrayAnalyzeExtraData *)stats->extra_data;
+	TemporalArrayAnalyzeExtraData *temporal_extra_data = (TemporalArrayAnalyzeExtraData *)stats->extra_data;
 
-	valueRangeType = range_oid_from_base(extra_data->value_type_id);
+	valueRangeType = range_oid_from_base(temporal_extra_data->value_type_id);
 	
 	value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 	value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
@@ -2159,11 +2174,11 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
-		stats->stawidth = total_width / (double) analyzed_arrays;
+		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
+		stats->stawidth = (int)(total_width / analyzed_arrays);
 
 		/* Estimate that non-null values are unique */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float4)(-1.0 * (1.0 - stats->stanullfrac));
 
 		/* Must copy the target values into anl_context */
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
@@ -2171,7 +2186,6 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum *value_bound_hist_values;
 		Datum *value_length_hist_values;
 
-		//p start ******************************************************************************************
 		/*
 		 * Generate a bounds histogram slot entry if there are at least two
 		 * values.
@@ -2208,7 +2222,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			{
 				value_bound_hist_values[i] = PointerGetDatum(
 						range_make(value_lowers[pos].val, value_uppers[pos].val, 
-							true, true, extra_data->value_type_id));
+							true, true, temporal_extra_data->value_type_id));
 
 				pos += delta;
 				posfrac += deltafrac;
@@ -2220,24 +2234,21 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				}
 			}
 
-			TypeCacheEntry *typentry;
-			typentry = lookup_type_cache(range_oid_from_base(extra_data->value_type_id),
-										 TYPECACHE_EQ_OPR |
-										 TYPECACHE_CMP_PROC_FINFO |
-										 TYPECACHE_HASH_PROC_FINFO);
+			TypeCacheEntry *range_typeentry = lookup_type_cache(valueRangeType,
+                                                         TYPECACHE_EQ_OPR |
+                                                         TYPECACHE_CMP_PROC_FINFO |
+                                                         TYPECACHE_HASH_PROC_FINFO);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 			stats->stavalues[slot_idx] = value_bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = typentry->type_id;
-			stats->statyplen[slot_idx] = typentry->typlen;
-			stats->statypbyval[slot_idx] =typentry->typbyval;
-			stats->statypalign[slot_idx] = typentry->typalign;
+			stats->statypid[slot_idx] = range_typeentry->type_id;
+			stats->statyplen[slot_idx] = range_typeentry->typlen;
+			stats->statypbyval[slot_idx] =range_typeentry->typbyval;
+			stats->statypalign[slot_idx] = range_typeentry->typalign;
 
 			slot_idx++;
 		}
-
-		//p end ******************************************************************************************
 
 		/*
 		 * Generate a length histogram slot entry if there are at least two
@@ -2363,11 +2374,10 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 			stats->stavalues[slot_idx] = bound_hist_temporal;
 			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = type_oid(T_PERIOD);
-			stats->statyplen[slot_idx] = sizeof(Period);
-
-			stats->statypbyval[slot_idx] = false;
-			stats->statypalign[slot_idx] = 'd';
+			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
 			slot_idx++;
 		}
 
@@ -2523,13 +2533,13 @@ remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
 uint32
 element_hash_value(const void *key, Size keysize)
 {
-	return generic_element_hash(key,keysize,array_extra_data->value_hash);
+	return generic_element_hash(key,keysize,temporal_extra_data->value_hash);
 }
 
 uint32
 element_hash_temporal(const void *key, Size keysize)
 {
-	return generic_element_hash(key,keysize,array_extra_data->temporal_hash);
+	return generic_element_hash(key,keysize,temporal_extra_data->temporal_hash);
 }
 
 /*
@@ -2597,7 +2607,7 @@ element_compare(const void *key1, const void *key2)
 	Datum	   d2 = *((const Datum *) key2);
 	Datum	   c;
 
-	c = FunctionCall2Coll(array_extra_data->temporal_cmp,
+	c = FunctionCall2Coll(temporal_extra_data->temporal_cmp,
 						  DEFAULT_COLLATION_OID,
 						  d1, d2);
 	return DatumGetInt32(c);

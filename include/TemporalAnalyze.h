@@ -96,7 +96,7 @@ extern Datum temporal_analyze_internal(VacAttrStats *stats, int durationType, in
  *****************************************************************************/
 
 extern void temporal_info(VacAttrStats *stats);
-extern void temporal_extra_info(VacAttrStats *stats);
+extern void temporal_extra_info(VacAttrStats *stats, int durationType);
 
 /*****************************************************************************
  * Statistics functions for TemporalInst type
