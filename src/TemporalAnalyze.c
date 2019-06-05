@@ -15,7 +15,6 @@
 
 #include <TemporalTypes.h>
 #include <TemporalAnalyze.h>
-#include "TemporalAnalyze.h"
 
 /*****************************************************************************/
 
@@ -153,33 +152,23 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 	extra_data->value_hash = &value_typentry->hash_proc_finfo;
 
 	if (durationType == TEMPORALI)
-    {
         temporal_typentry = lookup_type_cache(TIMESTAMPTZOID,
                                               TYPECACHE_EQ_OPR |
                                               TYPECACHE_CMP_PROC_FINFO |
                                               TYPECACHE_HASH_PROC_FINFO);
-        extra_data->temporal_type_id = temporal_typentry->type_id;
-        extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
-        extra_data->temporal_typbyval = temporal_typentry->typbyval;
-        extra_data->temporal_typlen = temporal_typentry->typlen;
-        extra_data->temporal_typalign = temporal_typentry->typalign;
-        extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
-        extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
-    }
     else
-    {
         temporal_typentry = lookup_type_cache(type_oid(T_PERIOD),
                                               TYPECACHE_EQ_OPR |
                                               TYPECACHE_CMP_PROC_FINFO |
                                               TYPECACHE_HASH_PROC_FINFO);
-        extra_data->temporal_type_id = temporal_typentry->type_id;
-        extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
-        extra_data->temporal_typbyval = temporal_typentry->typbyval;
-        extra_data->temporal_typlen = temporal_typentry->typlen;
-        extra_data->temporal_typalign = temporal_typentry->typalign;
-        extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
-        extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
-    }
+
+    extra_data->temporal_type_id = temporal_typentry->type_id;
+    extra_data->temporal_eq_opr = temporal_typentry->eq_opr;
+    extra_data->temporal_typbyval = temporal_typentry->typbyval;
+    extra_data->temporal_typlen = temporal_typentry->typlen;
+    extra_data->temporal_typalign = temporal_typentry->typalign;
+    extra_data->temporal_cmp = &temporal_typentry->cmp_proc_finfo;
+    extra_data->temporal_hash = &temporal_typentry->hash_proc_finfo;
 
 	extra_data->std_extra_data = stats->extra_data;
 	stats->extra_data = extra_data;
