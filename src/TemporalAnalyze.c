@@ -12,22 +12,22 @@
  *	src/TemporalAnalyze.c
  *
  *****************************************************************************/
+
 #include <TemporalTypes.h>
 #include "TemporalAnalyze.h"
-/*****************************************************************************/
 
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
 Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	Datum result = 0;   /* keep compiler quiet */
-	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(type == TEMPORAL || type == TEMPORALINST || type == TEMPORALI ||
-		   type == TEMPORALSEQ || type == TEMPORALS);
-	result = temporal_analyze_internal(stats, type, TEMPORAL_STATISTIC);
-	return result;
+	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(durationType == TEMPORAL || durationType == TEMPORALINST || 
+		durationType == TEMPORALI || durationType == TEMPORALSEQ || 
+		durationType == TEMPORALS);
+	return temporal_analyze_internal(stats, durationType, TEMPORAL_STATISTIC);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
@@ -35,12 +35,11 @@ Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	Datum result = 0;   /* keep compiler quiet */
 	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(durationType == TEMPORAL || durationType == TEMPORALINST || durationType == TEMPORALI ||
-		   durationType == TEMPORALSEQ || durationType == TEMPORALS);
-	result = temporal_analyze_internal(stats, durationType, TNUMBER_STATISTIC);
-	return result;
+	assert(durationType == TEMPORAL || durationType == TEMPORALINST || 
+		durationType == TEMPORALI || durationType == TEMPORALSEQ || 
+		durationType == TEMPORALS);
+	return temporal_analyze_internal(stats, durationType, TNUMBER_STATISTIC);
 }
 
 Datum
@@ -53,23 +52,23 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-    if (durationType == TEMPORALINST)
+	if (durationType == TEMPORALINST)
 		temporal_info(stats);
-    else
-        temporal_extra_info(stats);
+	else
+		temporal_extra_info(stats);
 
 	if (durationType == TEMPORALINST && temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_stats;
+		stats->compute_stats = temporalinst_compute_stats;
 	else if (durationType == TEMPORALINST && temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_temporalinst_twodim_stats;
+		stats->compute_stats = tnumberinst_compute_stats;
 	else if (durationType == TEMPORALI && temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_set_stats;
+		stats->compute_stats = temporali_compute_stats;
 	else if (durationType == TEMPORALI && temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_temporali_twodim_stats;
+		stats->compute_stats = tnumberi_compute_stats;
 	else if (temporalType == TEMPORAL_STATISTIC)
-		stats->compute_stats = compute_timestamptz_traj_stats;
+		stats->compute_stats = temporals_compute_stats;
 	else if (temporalType == TNUMBER_STATISTIC)
-		stats->compute_stats = compute_twodim_traj_stats;
+		stats->compute_stats = tnumbers_compute_stats;
 
 	PG_RETURN_BOOL(true);
 }
@@ -77,12 +76,13 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
 /*****************************************************************************
  * Statistics information for Temporal types
  *****************************************************************************/
+
 TemporalArrayAnalyzeExtraData *array_extra_data;
 void
 temporal_info(VacAttrStats *stats)
 {
-	Oid ltopr;
-	Oid eqopr;
+	Oid ltopr,
+		eqopr;
 
 	Form_pg_attribute attr = stats->attr;
 
@@ -96,6 +96,7 @@ temporal_info(VacAttrStats *stats)
 							 &ltopr, &eqopr, NULL,
 							 NULL);
 }
+
 void
 temporal_extra_info(VacAttrStats *stats)
 {
@@ -105,9 +106,9 @@ temporal_extra_info(VacAttrStats *stats)
 		attr->attstattarget = default_statistics_target;
 
 	Oid element_typeid;
-	TypeCacheEntry *typentry;
-	TypeCacheEntry *value_typentry;
-	TypeCacheEntry *temporal_typentry;
+	TypeCacheEntry *typentry,
+		*value_typentry,
+		*temporal_typentry;
 	TemporalArrayAnalyzeExtraData *extra_data;
 
 	/*
@@ -115,11 +116,11 @@ temporal_extra_info(VacAttrStats *stats)
 	 */
 	element_typeid = stats->attrtypid;
 	if (!OidIsValid(element_typeid))
-		elog(ERROR, "array_typanalyze was invoked for non-array type %u",
-			 stats->attrtypid);
+		elog(ERROR, "temporal_analyze was invoked with invalid type %u",
+			element_typeid);
 
 	/*
-	 * Gather information about the element type.  If we fail to find
+	 * Gather information about the element type. If we fail to find
 	 * something, return leaving the state from std_typanalyze() in place.
 	 */
 	typentry = lookup_type_cache(element_typeid,
@@ -168,54 +169,384 @@ temporal_extra_info(VacAttrStats *stats)
 
 	stats->minrows = 300 * attr->attstattarget;
 }
+
 /*****************************************************************************
  * Statistics functions for TemporalInst type
  *****************************************************************************/
-void
-compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						  int samplerows, double totalrows)
+
+static void 
+scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink, 
+	ScalarMCVItem *track, int non_null_cnt, int null_cnt, Oid valueType,
+	int slot_idx, int total_width, int totalrows, int samplerows)
 {
-
-	int null_cnt = 0;
-	int non_null_cnt = 0;
-	int temporalinst_no;
-	int slot_idx;
-	int num_bins = stats->attr->attstattarget;
-	int num_hist;
-
-	double total_width = 0;
-
-	Oid timestamp_ltopr;
-	Oid timestamp_eqopr;
-
-	ScalarItem *timestamp_values;
-	int *timestamp_tupnoLink;
 	double corr_xysum;
 	SortSupportData ssup;
+	Oid ltopr, eqopr;
+	int track_cnt = 0;
+	int num_bins = stats->attr->attstattarget,
+		num_mcv = stats->attr->attstattarget,
+		num_hist;
 
+	bool typbyval = type_byval_fast(valueType);
+	int typlen = get_typlen_fast(valueType);
+
+	MemoryContext old_cxt;
+
+	int ndistinct,	/* # distinct values in sample */
+		nmultiple,	/* # that appear multiple times */
+		dups_cnt,
+		i;
+	CompareScalarsContext cxt;
+
+	memset(&ssup, 0, sizeof(ssup));
+	ssup.ssup_cxt = CurrentMemoryContext;
+	/* We always use the default collation for statistics */
+	ssup.ssup_collation = DEFAULT_COLLATION_OID;
+	ssup.ssup_nulls_first = false;
+
+	/*
+	 * For now, don't perform abbreviated key conversion, because full values
+	 * are required for MCV slot generation. Supporting that optimization
+	 * would necessitate teaching compare_scalars() to call a tie-breaker.
+	*/
+	ssup.abbreviate = false;
+
+	get_sort_group_operators(valueType,
+							 false, false, false,
+							 &ltopr, &eqopr, NULL,
+							 NULL);
+	PrepareSortSupportFromOrderingOp(ltopr, &ssup);
+
+	/* Sort the collected values */
+	cxt.ssup = &ssup;
+	cxt.tupnoLink = tupnoLink;
+	qsort_arg((void *) values, (size_t)non_null_cnt, sizeof(ScalarItem),
+				compare_scalars, (void *) &cxt);
+
+	/* Must copy the target values into anl_context */
+	old_cxt = MemoryContextSwitchTo(stats->anl_context);
+
+	corr_xysum = 0;
+	ndistinct = 0;
+	nmultiple = 0;
+	dups_cnt = 0;
+	for (i = 0; i < non_null_cnt; i++)
+	{
+		int tupno = values[i].tupno;
+
+		corr_xysum += ((double) i) * ((double) tupno);
+		dups_cnt++;
+		if (tupnoLink[tupno] == tupno)
+		{
+			/* Reached end of duplicates of this value */
+			ndistinct++;
+			if (dups_cnt > 1)
+			{
+				nmultiple++;
+				if (track_cnt < num_mcv ||
+					dups_cnt > track[track_cnt - 1].count)
+				{
+					/*
+						* Found a new item for the mcv list; find its
+						* position, bubbling down old items if needed. Loop
+						* invariant is that j points at an empty/replaceable
+						* slot.
+						*/
+					int j;
+
+					if (track_cnt < num_mcv)
+						track_cnt++;
+					for (j = track_cnt - 1; j > 0; j--)
+					{
+						if (dups_cnt <= track[j - 1].count)
+							break;
+						track[j].count = track[j - 1].count;
+						track[j].first = track[j - 1].first;
+					}
+					track[j].count = dups_cnt;
+					track[j].first = i + 1 - dups_cnt;
+				}
+			}
+			dups_cnt = 0;
+		}
+	}
+
+	/*
+		* Decide how many values are worth storing as most-common values. If
+		* we are able to generate a complete MCV list (all the values in the
+		* sample will fit, and we think these are all the ones in the table),
+		* then do so.  Otherwise, store only those values that are
+		* significantly more common than the (estimated) average. We set the
+		* threshold rather arbitrarily at 25% more than average, with at
+		* least 2 instances in the sample.  Also, we won't suppress values
+		* that have a frequency of at least 1/K where K is the intended
+		* number of histogram bins; such values might otherwise cause us to
+		* emit duplicate histogram bin boundaries.  (We might end up with
+		* duplicate histogram entries anyway, if the distribution is skewed;
+		* but we prefer to treat such values as MCVs if at all possible.)
+		*
+		* Note: the first of these cases is meant to address columns with
+		* small, fixed sets of possible values, such as boolean or enum
+		* columns.  If we can *completely* represent the column population by
+		* an MCV list that will fit into the stats target, then we should do
+		* so and thus provide the planner with complete information.  But if
+		* the MCV list is not complete, it's generally worth being more
+		* selective, and not just filling it all the way up to the stats
+		* target.  So for an incomplete list, we try to take only MCVs that
+		* are significantly more common than average.
+		*/
+	if (((track_cnt) == (ndistinct == 0)) &&
+		(stats->stadistinct > 0) &&
+		(track_cnt <= num_mcv))
+	{
+		/* Track list includes all values seen, and all will fit */
+		num_mcv = track_cnt;
+	}
+	else
+	{
+		double ndistinct_table = stats->stadistinct;
+		double avgcount,
+				mincount,
+				maxmincount;
+
+		/* Re-extract estimate of # distinct nonnull values in table */
+		if (ndistinct_table < 0)
+			ndistinct_table = -ndistinct_table * totalrows;
+		/* estimate # occurrences in sample of a typical nonnull value */
+		avgcount = (double) non_null_cnt / ndistinct_table;
+		/* set minimum threshold count to store a value */
+		mincount = avgcount * 1.25;
+		if (mincount < 2)
+			mincount = 2;
+		/* don't let threshold exceed 1/K, however */
+		maxmincount = (double) non_null_cnt / (double) num_bins;
+		if (mincount > maxmincount)
+			mincount = maxmincount;
+		if (num_mcv > track_cnt)
+			num_mcv = track_cnt;
+		for (i = 0; i < num_mcv; i++)
+		{
+			if (track[i].count < mincount)
+			{
+				num_mcv = i;
+				break;
+			}
+		}
+	}
+
+	/* Generate MCV slot entry */
+	if (num_mcv > 0)
+	{
+		MemoryContext old_context;
+		Datum *mcv_values;
+		float4 *mcv_freqs;
+
+		/* Must copy the target values into anl_context */
+		old_context = MemoryContextSwitchTo(stats->anl_context);
+		mcv_values = (Datum *) palloc(num_mcv * sizeof(Datum));
+		mcv_freqs = (float4 *) palloc(num_mcv * sizeof(float4));
+
+		for (i = 0; i < num_mcv; i++)
+		{
+			mcv_values[i] = 
+				datumCopy(values[track[i].first].value, typbyval, typlen);
+			mcv_freqs[i] = (float4) track[i].count / (float4) samplerows;
+		}
+		MemoryContextSwitchTo(old_context);
+
+		stats->stakind[slot_idx] = STATISTIC_KIND_MCV;
+		stats->staop[slot_idx] = eqopr;
+		stats->stanumbers[slot_idx] = mcv_freqs;
+		stats->numnumbers[slot_idx] = num_mcv;
+		stats->stavalues[slot_idx] = mcv_values;
+		stats->numvalues[slot_idx] = num_mcv;
+		stats->statyplen[slot_idx] = (int16) typlen;
+		stats->statypid[slot_idx] = valueType;
+		stats->statypbyval[slot_idx] = typbyval;
+	}
+	slot_idx++;
+
+	/*
+		* Generate a histogram slot entry if there are at least two distinct
+		* values not accounted for in the MCV list.  (This ensures the
+		* histogram won't collapse to empty or a singleton.)
+		*/
+	num_hist = ndistinct - num_mcv;
+	if (num_hist > num_bins)
+		num_hist = num_bins + 1;
+	if (num_hist >= 2)
+	{
+		MemoryContext old_context;
+		Datum *hist_values;
+		int nvals,
+			pos,
+			posfrac,
+			delta,
+			deltafrac;
+
+		/* Sort the MCV items into position order to speed next loop */
+		qsort((void *) track, num_mcv, sizeof(ScalarMCVItem), compare_mcvs);
+
+		/*
+		 * Collapse out the MCV items from the values[] array.
+		 *
+		 * Note we destroy the values[] array here... but we don't need it
+		 * for anything more.  We do, however, still need values_cnt.
+		 * nvals will be the number of remaining entries in values[].
+		*/
+		if (num_mcv > 0)
+		{
+			int src,
+				dest,
+				j;
+
+			src = dest = 0;
+			j = 0;			/* index of next interesting MCV item */
+			while (src < non_null_cnt)
+			{
+				int ncopy;
+
+				if (j < num_mcv)
+				{
+					int first = track[j].first;
+
+					if (src >= first)
+					{
+						/* advance past this MCV item */
+						src = first + track[j].count;
+						j++;
+						continue;
+					}
+					ncopy = first - src;
+				}
+				else
+					ncopy = non_null_cnt - src;
+				memmove(&values[dest], &values[src],
+						ncopy * sizeof(ScalarItem));
+				src += ncopy;
+				dest += ncopy;
+			}
+			nvals = dest;
+		}
+		else
+			nvals = non_null_cnt;
+		Assert(nvals >= num_hist);
+
+		/* Must copy the target values into anl_context */
+		old_context = MemoryContextSwitchTo(stats->anl_context);
+		hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+
+		/*
+			* The object of this loop is to copy the first and last values[]
+			* entries along with evenly-spaced values in between.  So the
+			* i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
+			* computing that subscript directly risks integer overflow when
+			* the stats target is more than a couple thousand.  Instead we
+			* add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
+			* the integral and fractional parts of the sum separately.
+			*/
+		delta = (nvals - 1) / (num_hist - 1);
+		deltafrac = (nvals - 1) % (num_hist - 1);
+		pos = posfrac = 0;
+
+		for (i = 0; i < num_hist; i++)
+		{
+			hist_values[i] = 
+				datumCopy(values[pos].value, true,typlen);
+			pos += delta;
+			posfrac += deltafrac;
+			if (posfrac >= (num_hist - 1))
+			{
+				/* fractional part exceeds 1, carry to integer part */
+				pos++;
+				posfrac -= (num_hist - 1);
+			}
+		}
+
+		MemoryContextSwitchTo(old_context);
+
+		stats->stakind[slot_idx] = STATISTIC_KIND_HISTOGRAM;
+		stats->staop[slot_idx] = ltopr;
+		stats->stavalues[slot_idx] = hist_values;
+		stats->numvalues[slot_idx] = num_hist;
+		stats->statyplen[slot_idx] = (int16)typlen;
+		stats->statypid[slot_idx] = valueType;
+		stats->statypbyval[slot_idx] = true;
+		slot_idx++;
+	}
+
+	/* Generate a correlation entry if there are multiple values */
+	if (non_null_cnt > 1)
+	{
+		MemoryContext old_context;
+		float4 *corrs;
+		double corr_xsum,
+				corr_x2sum;
+
+		/* Must copy the target values into anl_context */
+		old_context = MemoryContextSwitchTo(stats->anl_context);
+		corrs = (float4 *) palloc(sizeof(float4));
+		MemoryContextSwitchTo(old_context);
+
+		/*----------
+			* Since we know the x and y value sets are both
+			*		0, 1, ..., values_cnt-1
+			* we have sum(x) = sum(y) =
+			*		(values_cnt-1)*values_cnt / 2
+			* and sum(x^2) = sum(y^2) =
+			*		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
+			*----------
+			*/
+		corr_xsum = ((double) (non_null_cnt - 1)) *
+					((double) non_null_cnt) / 2.0;
+		corr_x2sum = ((double) (non_null_cnt - 1)) *
+						((double) non_null_cnt) * (double) (2 * non_null_cnt - 1) / 6.0;
+
+		/* And the correlation coefficient reduces to */
+		corrs[0] = (float4) ((non_null_cnt * corr_xysum - corr_xsum * corr_xsum) /
+								(non_null_cnt * corr_x2sum - corr_xsum * corr_xsum));
+
+
+		stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
+		stats->staop[slot_idx] = ltopr;
+		stats->stanumbers[slot_idx] = corrs;
+		stats->numnumbers[slot_idx] = 1;
+		stats->statyplen[slot_idx] = (int16) typlen;
+		stats->statypid[slot_idx] = valueType;
+		stats->statypbyval[slot_idx] = typbyval;
+
+
+		stats->stats_valid = true;
+		stats->stadistinct = -(float4)ndistinct/samplerows;
+		stats->stanullfrac = (float4)null_cnt/samplerows;
+		stats->stawidth = (int32)total_width;
+	}
+
+	MemoryContextSwitchTo(old_cxt);
+}
+
+void
+temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+						  int samplerows, double totalrows)
+{
+	int null_cnt = 0,
+		non_null_cnt = 0,
+		temporalinst_no,
+		slot_idx = 2;
+	double total_width = 0;
+	ScalarItem *timestamp_values;
 	ScalarMCVItem *timestamp_track;
-	int timestamp_track_cnt = 0;
-
-	int num_mcv = stats->attr->attstattarget;
+	int *timestamp_tupnoLink,
+		num_mcv = stats->attr->attstattarget;
 
 	timestamp_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
 	timestamp_tupnoLink = (int *) palloc(samplerows * sizeof(int));
 	timestamp_track = (ScalarMCVItem *) palloc(num_mcv * sizeof(ScalarMCVItem));
 
-
-	Oid timestampType = TIMESTAMPTZOID;
-	bool timestamp_typbyval = true;
-	int timestamp_typlen = sizeof(TimestampTz);
-
-
-	get_sort_group_operators(timestampType,
-							 false, false, false,
-							 &timestamp_ltopr, &timestamp_eqopr, NULL,
-							 NULL);
-
 	Oid valueType = base_oid_from_temporal(stats->attrtypid);
-	/* Loop over the sample periods. */
-	for (temporalinst_no= 0; temporalinst_no < samplerows; temporalinst_no++)
+
+	/* Loop over the sample values. */
+	for (temporalinst_no = 0; temporalinst_no < samplerows; temporalinst_no++)
 	{
 		Datum value;
 		bool isnull;
@@ -231,22 +562,21 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* The size of a TemporalInst is variable */
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-		/* Get TemporalInst and deserialize it for further analysis. */
+		/* Get TemporalInst value */
 		inst = DatumGetTemporalInst(value);
 
-		timestamp_values[non_null_cnt].value = datumCopy(inst->t,
-														 timestamp_typbyval,
-														 timestamp_typlen);
+		timestamp_values[non_null_cnt].value = 
+			datumCopy(inst->t, true, sizeof(TimestampTz));
 		timestamp_values[non_null_cnt].tupno = temporalinst_no;
 		timestamp_tupnoLink[non_null_cnt] = temporalinst_no;
 
 		non_null_cnt++;
 
-		/* Removing the temporal part from the stats HeapTuples if the base type is geometry */
-		if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
-			stats->rows[temporalinst_no] = remove_temporaldim(stats->rows[temporalinst_no], stats->tupDesc, stats->tupDesc->natts, stats->attrtypid, true, value);
+		/* Remove the temporal part from the stats HeapTuples if the base type is geometry */
+		if (valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
+			stats->rows[temporalinst_no] = remove_temporaldim(stats->rows[temporalinst_no], 
+				stats->tupDesc, stats->tupDesc->natts, stats->attrtypid, true, value);
 	}
-	slot_idx = 2;
 
 	/* If there's no useful features, we can't work out stats */
 	if (!non_null_cnt)
@@ -259,349 +589,17 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		int i;
-		MemoryContext old_cxt;
-
-		int timestamp_ndistinct,	/* # distinct values in sample */
-				timestamp_nmultiple,	/* # that appear multiple times */
-				timestamp_dups_cnt;
-		CompareScalarsContext cxt;
-
-		memset(&ssup, 0, sizeof(ssup));
-		ssup.ssup_cxt = CurrentMemoryContext;
-		/* We always use the default collation for statistics */
-		ssup.ssup_collation = DEFAULT_COLLATION_OID;
-		ssup.ssup_nulls_first = false;
-
-		/*
-		 * For now, don't perform abbreviated key conversion, because full values
-		 * are required for MCV slot generation.  Supporting that optimization
-		 * would necessitate teaching compare_scalars() to call a tie-breaker.
-		 */
-		ssup.abbreviate = false;
-
-		PrepareSortSupportFromOrderingOp(timestamp_ltopr, &ssup);
-
-		/* Sort the collected values */
-		cxt.ssup = &ssup;
-		cxt.tupnoLink = timestamp_tupnoLink;
-		qsort_arg((void *) timestamp_values, (size_t)non_null_cnt, sizeof(ScalarItem),
-				  compare_scalars, (void *) &cxt);
-
-		/* Must copy the target values into anl_context */
-		old_cxt = MemoryContextSwitchTo(stats->anl_context);
-
-
-		corr_xysum = 0;
-		timestamp_ndistinct = 0;
-		timestamp_nmultiple = 0;
-		timestamp_dups_cnt = 0;
-		for (i = 0; i < non_null_cnt; i++)
-		{
-			int tupno = timestamp_values[i].tupno;
-
-			corr_xysum += ((double) i) * ((double) tupno);
-			timestamp_dups_cnt++;
-			if (timestamp_tupnoLink[tupno] == tupno)
-			{
-				/* Reached end of duplicates of this value */
-				timestamp_ndistinct++;
-				if (timestamp_dups_cnt > 1)
-				{
-					timestamp_nmultiple++;
-					if (timestamp_track_cnt < num_mcv ||
-						timestamp_dups_cnt > timestamp_track[timestamp_track_cnt - 1].count)
-					{
-						/*
-						 * Found a new item for the mcv list; find its
-						 * position, bubbling down old items if needed. Loop
-						 * invariant is that j points at an empty/ replaceable
-						 * slot.
-						 */
-						int j;
-
-						if (timestamp_track_cnt < num_mcv)
-							timestamp_track_cnt++;
-						for (j = timestamp_track_cnt - 1; j > 0; j--)
-						{
-							if (timestamp_dups_cnt <= timestamp_track[j - 1].count)
-								break;
-							timestamp_track[j].count = timestamp_track[j - 1].count;
-							timestamp_track[j].first = timestamp_track[j - 1].first;
-						}
-						timestamp_track[j].count = timestamp_dups_cnt;
-						timestamp_track[j].first = i + 1 - timestamp_dups_cnt;
-					}
-				}
-				timestamp_dups_cnt = 0;
-			}
-		}
-
-
-		/*
-		 * Decide how many values are worth storing as most-common values. If
-		 * we are able to generate a complete MCV list (all the values in the
-		 * sample will fit, and we think these are all the ones in the table),
-		 * then do so.  Otherwise, store only those values that are
-		 * significantly more common than the (estimated) average. We set the
-		 * threshold rather arbitrarily at 25% more than average, with at
-		 * least 2 instances in the sample.  Also, we won't suppress values
-		 * that have a frequency of at least 1/K where K is the intended
-		 * number of histogram bins; such values might otherwise cause us to
-		 * emit duplicate histogram bin boundaries.  (We might end up with
-		 * duplicate histogram entries anyway, if the distribution is skewed;
-		 * but we prefer to treat such values as MCVs if at all possible.)
-		 *
-		 * Note: the first of these cases is meant to address columns with
-		 * small, fixed sets of possible values, such as boolean or enum
-		 * columns.  If we can *completely* represent the column population by
-		 * an MCV list that will fit into the stats target, then we should do
-		 * so and thus provide the planner with complete information.  But if
-		 * the MCV list is not complete, it's generally worth being more
-		 * selective, and not just filling it all the way up to the stats
-		 * target.  So for an incomplete list, we try to take only MCVs that
-		 * are significantly more common than average.
-		 */
-		if (((timestamp_track_cnt) == (timestamp_ndistinct == 0)) &&
-			(stats->stadistinct > 0) &&
-			(timestamp_track_cnt <= num_mcv))
-		{
-			/* Track list includes all values seen, and all will fit */
-			num_mcv = timestamp_track_cnt;
-		}
-		else
-		{
-			double timestamp_ndistinct_table = stats->stadistinct;
-			double avgcount,
-					mincount,
-					maxmincount;
-
-			/* Re-extract estimate of # distinct nonnull values in table */
-			if (timestamp_ndistinct_table < 0)
-				timestamp_ndistinct_table = -timestamp_ndistinct_table * totalrows;
-			/* estimate # occurrences in sample of a typical nonnull value */
-			avgcount = (double) non_null_cnt / timestamp_ndistinct_table;
-			/* set minimum threshold count to store a value */
-			mincount = avgcount * 1.25;
-			if (mincount < 2)
-				mincount = 2;
-			/* don't let threshold exceed 1/K, however */
-			maxmincount = (double) non_null_cnt / (double) num_bins;
-			if (mincount > maxmincount)
-				mincount = maxmincount;
-			if (num_mcv > timestamp_track_cnt)
-				num_mcv = timestamp_track_cnt;
-			for (i = 0; i < num_mcv; i++)
-			{
-				if (timestamp_track[i].count < mincount)
-				{
-					num_mcv = i;
-					break;
-				}
-			}
-		}
-
-
-		/* Generate MCV slot entry */
-		if (num_mcv > 0)
-		{
-			MemoryContext old_context;
-			Datum *mcv_values;
-			float4 *mcv_freqs;
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			mcv_values = (Datum *) palloc(num_mcv * sizeof(Datum));
-			mcv_freqs = (float4 *) palloc(num_mcv * sizeof(float4));
-
-			for (i = 0; i < num_mcv; i++)
-			{
-				mcv_values[i] = datumCopy(timestamp_values[timestamp_track[i].first].value,
-										  timestamp_typbyval,
-										  timestamp_typlen);
-				mcv_freqs[i] = (float4) timestamp_track[i].count / (float4) samplerows;
-			}
-			MemoryContextSwitchTo(old_context);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_MCV;
-			stats->staop[slot_idx] = timestamp_eqopr;
-			stats->stanumbers[slot_idx] = mcv_freqs;
-			stats->numnumbers[slot_idx] = num_mcv;
-			stats->stavalues[slot_idx] = mcv_values;
-			stats->numvalues[slot_idx] = num_mcv;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-		}
-		slot_idx++;
-
-		/*
-		 * Generate a histogram slot entry if there are at least two distinct
-		 * values not accounted for in the MCV list.  (This ensures the
-		 * histogram won't collapse to empty or a singleton.)
-		 */
-		num_hist = timestamp_ndistinct - num_mcv;
-		if (num_hist > num_bins)
-			num_hist = num_bins + 1;
-		if (num_hist >= 2)
-		{
-			MemoryContext old_context;
-			Datum *hist_values;
-			int nvals;
-			int pos,
-					posfrac,
-					delta,
-					deltafrac;
-
-			/* Sort the MCV items into position order to speed next loop */
-			qsort((void *) timestamp_track, num_mcv,
-				  sizeof(ScalarMCVItem), compare_mcvs);
-
-			/*
-			 * Collapse out the MCV items from the values[] array.
-			 *
-			 * Note we destroy the values[] array here... but we don't need it
-			 * for anything more.  We do, however, still need values_cnt.
-			 * nvals will be the number of remaining entries in values[].
-			 */
-			if (num_mcv > 0)
-			{
-				int src,
-						dest;
-				int j;
-
-				src = dest = 0;
-				j = 0;			/* index of next interesting MCV item */
-				while (src < non_null_cnt)
-				{
-					int ncopy;
-
-					if (j < num_mcv)
-					{
-						int first = timestamp_track[j].first;
-
-						if (src >= first)
-						{
-							/* advance past this MCV item */
-							src = first + timestamp_track[j].count;
-							j++;
-							continue;
-						}
-						ncopy = first - src;
-					}
-					else
-						ncopy = non_null_cnt - src;
-					memmove(&timestamp_values[dest], &timestamp_values[src],
-							ncopy * sizeof(ScalarItem));
-					src += ncopy;
-					dest += ncopy;
-				}
-				nvals = dest;
-			}
-			else
-				nvals = non_null_cnt;
-			Assert(nvals >= num_hist);
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-			/*
-			 * The object of this loop is to copy the first and last values[]
-			 * entries along with evenly-spaced values in between.  So the
-			 * i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (nvals - 1) / (num_hist - 1);
-			deltafrac = (nvals - 1) % (num_hist - 1);
-			pos = posfrac = 0;
-
-			for (i = 0; i < num_hist; i++)
-			{
-				hist_values[i] = datumCopy(timestamp_values[pos].value,
-										   timestamp_typbyval,
-										   timestamp_typlen);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-
-			MemoryContextSwitchTo(old_context);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_HISTOGRAM;
-			stats->staop[slot_idx] = timestamp_ltopr;
-			stats->stavalues[slot_idx] = hist_values;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-			slot_idx++;
-		}
-
-		/* Generate a correlation entry if there are multiple values */
-		if (non_null_cnt > 1)
-		{
-			MemoryContext old_context;
-			float4 *corrs;
-			double corr_xsum,
-					corr_x2sum;
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			corrs = (float4 *) palloc(sizeof(float4));
-			MemoryContextSwitchTo(old_context);
-
-			/*----------
-			 * Since we know the x and y value sets are both
-			 *		0, 1, ..., values_cnt-1
-			 * we have sum(x) = sum(y) =
-			 *		(values_cnt-1)*values_cnt / 2
-			 * and sum(x^2) = sum(y^2) =
-			 *		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
-			 *----------
-			 */
-			corr_xsum = ((double) (non_null_cnt - 1)) *
-						((double) non_null_cnt) / 2.0;
-			corr_x2sum = ((double) (non_null_cnt - 1)) *
-						 ((double) non_null_cnt) * (double) (2 * non_null_cnt - 1) / 6.0;
-
-			/* And the correlation coefficient reduces to */
-			corrs[0] = (float4) ((non_null_cnt * corr_xysum - corr_xsum * corr_xsum) /
-								 (non_null_cnt * corr_x2sum - corr_xsum * corr_xsum));
-
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
-			stats->staop[slot_idx] = timestamp_ltopr;
-			stats->stanumbers[slot_idx] = corrs;
-			stats->numnumbers[slot_idx] = 1;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-
-
-			stats->stats_valid = true;
-			stats->stadistinct = -(float4)timestamp_ndistinct/samplerows;
-			stats->stanullfrac = (float4)null_cnt/samplerows;
-			stats->stawidth = (int32)total_width;
-		}
-
-		MemoryContextSwitchTo(old_cxt);
+		scalar_compute_stats(stats, timestamp_values, timestamp_tupnoLink, 
+			timestamp_track, non_null_cnt, null_cnt, TIMESTAMPTZOID,
+			slot_idx, total_width, totalrows, samplerows);
 	}
 	else if (null_cnt > 0)
 	{
 		/* We found only nulls; assume the column is entirely null */
 		stats->stats_valid = true;
 		stats->stanullfrac = 1.0;
-		stats->stawidth = 0;	/* "unknown" */
-		stats->stadistinct = 0.0;		/* "unknown" */
+		stats->stawidth = 0;		/* "unknown" */
+		stats->stadistinct = 0.0;	/* "unknown" */
 	}
 
 	/*
@@ -609,33 +607,20 @@ compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
+
 void
-compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 								  int samplerows, double totalrows)
 {
-	int null_cnt = 0;
-	int non_null_cnt = 0;
-	int temporalinst_no;
-	int slot_idx;
-	int num_bins = stats->attr->attstattarget;
-	int num_hist;
-
+	int null_cnt = 0,
+		non_null_cnt = 0,
+		temporalinst_no,
+		slot_idx = 0;
 	double total_width = 0;
-
-	Oid value_ltopr;
-	Oid value_eqopr;
-	Oid timestamp_ltopr;
-	Oid timestamp_eqopr;
-
 	ScalarItem *scalar_values, *timestamp_values;
 	int *scalar_tupnoLink, *timestamp_tupnoLink;
-	double corr_xysum;
-	SortSupportData ssup;
 
 	ScalarMCVItem *scalar_track, *timestamp_track;
-	int scalar_track_cnt = 0,
-			timestamp_track_cnt = 0;
-
 	int num_mcv = stats->attr->attstattarget;
 
 	scalar_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
@@ -646,29 +631,15 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 	timestamp_tupnoLink = (int *) palloc(samplerows * sizeof(int));
 	timestamp_track = (ScalarMCVItem *) palloc(num_mcv * sizeof(ScalarMCVItem));
 
-
 	Oid valueType = base_oid_from_temporal(stats->attrtypid);
 	bool typbyval = type_byval_fast(valueType);
 	int typlen = get_typlen_fast(valueType);
+	
+	/* We need to change the OID due to PostgreSQL internal behavior */
 	if (valueType == INT4OID)
 		valueType = INT8OID;
 
-	Oid timestampType = TIMESTAMPTZOID;
-	bool timestamp_typbyval = true;
-	int timestamp_typlen = sizeof(TimestampTz);
-
-	get_sort_group_operators(valueType,
-							 false, false, false,
-							 &value_ltopr, &value_eqopr, NULL,
-							 NULL);
-
-	get_sort_group_operators(timestampType,
-							 false, false, false,
-							 &timestamp_ltopr, &timestamp_eqopr, NULL,
-							 NULL);
-
-
-	/* Loop over the sample TemporalInstants. */
+	/* Loop over the sample values. */
 	for (temporalinst_no = 0; temporalinst_no < samplerows; temporalinst_no++)
 	{
 		Datum value;
@@ -687,22 +658,18 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-		/* Get period and deserialize it for further analysis. */
+		/* Get TemporalInst value */
 		inst = DatumGetTemporalInst(value);
 
-
-		timestamp_values[non_null_cnt].value = datumCopy(inst->t,
-														 timestamp_typbyval,
-														 timestamp_typlen);
+		timestamp_values[non_null_cnt].value = 
+			datumCopy(inst->t, true, sizeof(TimestampTz));
 		timestamp_values[non_null_cnt].tupno = temporalinst_no;
 		timestamp_tupnoLink[non_null_cnt] = temporalinst_no;
 
-
 		if (typbyval)
 		{
-			scalar_values[non_null_cnt].value = datumCopy(temporalinst_value(inst),
-														  typbyval,
-														  typlen);
+			scalar_values[non_null_cnt].value = 
+				datumCopy(temporalinst_value(inst), typbyval, typlen);
 		}
 		else
 		{
@@ -713,41 +680,10 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 
 		non_null_cnt++;
 	}
-	slot_idx = 0;
 
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		/* Compute the statistics for the base type */
-
-		int i;
-		int scalar_ndistinct,	/* # distinct values in sample */
-				scalar_nmultiple,	/* # that appear multiple times */
-				scalar_dups_cnt;
-		CompareScalarsContext cxt;
-
-		memset(&ssup, 0, sizeof(ssup));
-		ssup.ssup_cxt = CurrentMemoryContext;
-		/* We always use the default collation for statistics */
-		ssup.ssup_collation = DEFAULT_COLLATION_OID;
-		ssup.ssup_nulls_first = false;
-
-		/*
-		 * For now, don't perform abbreviated key conversion, because full values
-		 * are required for MCV slot generation.  Supporting that optimization
-		 * would necessitate teaching compare_scalars() to call a tie-breaker.
-		 */
-		ssup.abbreviate = false;
-
-		PrepareSortSupportFromOrderingOp(value_ltopr, &ssup);
-
-		/* Sort the collected values */
-		cxt.ssup = &ssup;
-		cxt.tupnoLink = scalar_tupnoLink;
-		qsort_arg((void *) scalar_values, (size_t) non_null_cnt, sizeof(ScalarItem),
-				  compare_scalars, (void *) &cxt);
-
-
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4)((double) null_cnt / (double) samplerows);
@@ -756,607 +692,34 @@ compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetc
 		/* Estimate that non-null values are unique */
 		stats->stadistinct = -1.0f * (1.0f - stats->stanullfrac);
 
+		/* Compute the statistics for the temporal type */
+		scalar_compute_stats(stats, scalar_values, scalar_tupnoLink, 
+			scalar_track, non_null_cnt, null_cnt, valueType,
+			slot_idx, total_width, totalrows, samplerows);
 
-		corr_xysum = 0;
-		scalar_ndistinct = 0;
-		scalar_nmultiple = 0;
-		scalar_dups_cnt = 0;
-		for (i = 0; i < non_null_cnt; i++)
-		{
-			int tupno = scalar_values[i].tupno;
-
-			corr_xysum += ((double) i) * ((double) tupno);
-			scalar_dups_cnt++;
-			if (scalar_tupnoLink[tupno] == tupno)
-			{
-				/* Reached end of duplicates of this value */
-				scalar_ndistinct++;
-				if (scalar_dups_cnt > 1)
-				{
-					scalar_nmultiple++;
-					if (scalar_track_cnt < num_mcv ||
-						scalar_dups_cnt > scalar_track[scalar_track_cnt - 1].count)
-					{
-						/*
-						 * Found a new item for the mcv list; find its
-						 * position, bubbling down old items if needed. Loop
-						 * invariant is that j points at an empty/ replaceable
-						 * slot.
-						 */
-						int j;
-
-						if (scalar_track_cnt < num_mcv)
-							scalar_track_cnt++;
-						for (j = scalar_track_cnt - 1; j > 0; j--)
-						{
-							if (scalar_dups_cnt <= scalar_track[j - 1].count)
-								break;
-							scalar_track[j].count = scalar_track[j - 1].count;
-							scalar_track[j].first = scalar_track[j - 1].first;
-						}
-						scalar_track[j].count = scalar_dups_cnt;
-						scalar_track[j].first = i + 1 - scalar_dups_cnt;
-					}
-				}
-				scalar_dups_cnt = 0;
-			}
-		}
-
-
-		/*
-		 * Decide how many values are worth storing as most-common values. If
-		 * we are able to generate a complete MCV list (all the values in the
-		 * sample will fit, and we think these are all the ones in the table),
-		 * then do so.  Otherwise, store only those values that are
-		 * significantly more common than the (estimated) average. We set the
-		 * threshold rather arbitrarily at 25% more than average, with at
-		 * least 2 instances in the sample.  Also, we won't suppress values
-		 * that have a frequency of at least 1/K where K is the intended
-		 * number of histogram bins; such values might otherwise cause us to
-		 * emit duplicate histogram bin boundaries.  (We might end up with
-		 * duplicate histogram entries anyway, if the distribution is skewed;
-		 * but we prefer to treat such values as MCVs if at all possible.)
-		 *
-		 * Note: the first of these cases is meant to address columns with
-		 * small, fixed sets of possible values, such as boolean or enum
-		 * columns.  If we can *completely* represent the column population by
-		 * an MCV list that will fit into the stats target, then we should do
-		 * so and thus provide the planner with complete information.  But if
-		 * the MCV list is not complete, it's generally worth being more
-		 * selective, and not just filling it all the way up to the stats
-		 * target.  So for an incomplete list, we try to take only MCVs that
-		 * are significantly more common than average.
-		 */
-		if (((scalar_track_cnt) == (scalar_ndistinct == 0)) &&
-			(stats->stadistinct > 0) && (scalar_track_cnt <= num_mcv))
-		{
-			/* Track list includes all values seen, and all will fit */
-			num_mcv = scalar_track_cnt;
-		}
-		else
-		{
-			double scalar_ndistinct_table = stats->stadistinct;
-			double avgcount,
-					mincount,
-					maxmincount;
-
-			/* Re-extract estimate of # distinct nonnull values in table */
-			if (scalar_ndistinct_table < 0)
-				scalar_ndistinct_table = -scalar_ndistinct_table * totalrows;
-			/* estimate # occurrences in sample of a typical nonnull value */
-			avgcount = (double) non_null_cnt / scalar_ndistinct_table;
-			/* set minimum threshold count to store a value */
-			mincount = avgcount * 1.25;
-			if (mincount < 2)
-				mincount = 2;
-			/* don't let threshold exceed 1/K, however */
-			maxmincount = (double) non_null_cnt / (double) num_bins;
-			if (mincount > maxmincount)
-				mincount = maxmincount;
-			if (num_mcv > scalar_track_cnt)
-				num_mcv = scalar_track_cnt;
-			for (i = 0; i < num_mcv; i++)
-			{
-				if (scalar_track[i].count < mincount)
-				{
-					num_mcv = i;
-					break;
-				}
-			}
-		}
-
-
-		/* Generate MCV slot entry */
-		if (num_mcv > 0)
-		{
-			MemoryContext old_context;
-			Datum *mcv_values;
-			float4 *mcv_freqs;
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			mcv_values = (Datum *) palloc(num_mcv * sizeof(Datum));
-			mcv_freqs = (float4 *) palloc(num_mcv * sizeof(float4));
-
-
-			for (i = 0; i < num_mcv; i++)
-			{
-				mcv_values[i] = datumCopy(scalar_values[scalar_track[i].first].value,
-										  typbyval,
-										  typlen);
-
-				mcv_freqs[i] = (float4) scalar_track[i].count / (float4) samplerows;
-			}
-			MemoryContextSwitchTo(old_context);
-			stats->stakind[slot_idx] = STATISTIC_KIND_MCV;
-			stats->staop[slot_idx] = value_eqopr;
-			stats->stanumbers[slot_idx] = mcv_freqs;
-			stats->numnumbers[slot_idx] = num_mcv;
-			stats->stavalues[slot_idx] = mcv_values;
-			stats->numvalues[slot_idx] = num_mcv;
-			stats->statyplen[slot_idx] = (int16) typlen;
-			stats->statypid[slot_idx] = valueType;
-			stats->statypbyval[slot_idx] = typbyval;
-		}
-		slot_idx++;
-
-		/*
-		 * Generate a histogram slot entry if there are at least two distinct
-		 * values not accounted for in the MCV list.  (This ensures the
-		 * histogram won't collapse to empty or a singleton.)
-		 */
-		num_hist = scalar_ndistinct - num_mcv;
-		if (num_hist > num_bins)
-			num_hist = num_bins + 1;
-		if (num_hist >= 2)
-		{
-			MemoryContext old_context;
-			Datum *hist_values;
-			int nvals;
-			int pos,
-					posfrac,
-					delta,
-					deltafrac;
-
-			/* Sort the MCV items into position order to speed next loop */
-			qsort((void *) scalar_track, (size_t) num_mcv,
-				  sizeof(ScalarMCVItem), compare_mcvs);
-
-			/*
-			 * Collapse out the MCV items from the values[] array.
-			 *
-			 * Note we destroy the values[] array here... but we don't need it
-			 * for anything more.  We do, however, still need values_cnt.
-			 * nvals will be the number of remaining entries in values[].
-			 */
-			if (num_mcv > 0)
-			{
-				int src,
-						dest;
-				int j;
-
-				src = dest = 0;
-				j = 0;			/* index of next interesting MCV item */
-				while (src < non_null_cnt)
-				{
-					int ncopy;
-
-					if (j < num_mcv)
-					{
-						int first = scalar_track[j].first;
-
-						if (src >= first)
-						{
-							/* advance past this MCV item */
-							src = first + scalar_track[j].count;
-							j++;
-							continue;
-						}
-						ncopy = first - src;
-					}
-					else
-						ncopy = non_null_cnt - src;
-					memmove(&scalar_values[dest], &scalar_values[src],
-							ncopy * sizeof(ScalarItem));
-					src += ncopy;
-					dest += ncopy;
-				}
-				nvals = dest;
-			}
-			else
-				nvals = non_null_cnt;
-			Assert(nvals >= num_hist);
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-			/*
-			 * The object of this loop is to copy the first and last values[]
-			 * entries along with evenly-spaced values in between.  So the
-			 * i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (nvals - 1) / (num_hist - 1);
-			deltafrac = (nvals - 1) % (num_hist - 1);
-			pos = posfrac = 0;
-
-			for (i = 0; i < num_hist; i++)
-			{
-				hist_values[i] = datumCopy(scalar_values[pos].value,
-										   typbyval,
-										   typlen);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-
-			MemoryContextSwitchTo(old_context);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_HISTOGRAM;
-			stats->staop[slot_idx] = value_ltopr;
-			stats->stavalues[slot_idx] = hist_values;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statyplen[slot_idx] = (int16) typlen;
-			stats->statypid[slot_idx] = valueType;
-			stats->statypbyval[slot_idx] = typbyval;
-			stats->stadistinct = -1.0f * (float4)scalar_ndistinct/non_null_cnt;
-			stats->stanullfrac = (float4)null_cnt/non_null_cnt;
-			slot_idx++;
-		}
-
+		slot_idx += 2;
 
 		/* Compute the statistics for the temporal type */
+		scalar_compute_stats(stats, timestamp_values, timestamp_tupnoLink, 
+			timestamp_track, non_null_cnt, null_cnt, TIMESTAMPTZOID,
+			slot_idx, total_width, totalrows, samplerows);
 
-		MemoryContext old_cxt;
-
-		int timestamp_ndistinct,	/* # distinct values in sample */
-				timestamp_nmultiple,	/* # that appear multiple times */
-				timestamp_dups_cnt;
-
-		memset(&ssup, 0, sizeof(ssup));
-		ssup.ssup_cxt = CurrentMemoryContext;
-		/* We always use the default collation for statistics */
-		ssup.ssup_collation = DEFAULT_COLLATION_OID;
-		ssup.ssup_nulls_first = false;
-
-		/*
-		 * For now, don't perform abbreviated key conversion, because full values
-		 * are required for MCV slot generation.  Supporting that optimization
-		 * would necessitate teaching compare_scalars() to call a tie-breaker.
-		 */
-		ssup.abbreviate = false;
-
-		PrepareSortSupportFromOrderingOp(timestamp_ltopr, &ssup);
-
-		/* Sort the collected values */
-		cxt.ssup = &ssup;
-		cxt.tupnoLink = timestamp_tupnoLink;
-		qsort_arg((void *) timestamp_values, (size_t) non_null_cnt, sizeof(ScalarItem),
-				  compare_scalars, (void *) &cxt);
-
-		/* Must copy the target values into anl_context */
-		old_cxt = MemoryContextSwitchTo(stats->anl_context);
-
-
-		corr_xysum = 0;
-		timestamp_ndistinct = 0;
-		timestamp_nmultiple = 0;
-		timestamp_dups_cnt = 0;
-		for (i = 0; i < non_null_cnt; i++)
-		{
-			int tupno = timestamp_values[i].tupno;
-
-			corr_xysum += ((double) i) * ((double) tupno);
-			timestamp_dups_cnt++;
-			if (timestamp_tupnoLink[tupno] == tupno)
-			{
-				/* Reached end of duplicates of this value */
-				timestamp_ndistinct++;
-				if (timestamp_dups_cnt > 1)
-				{
-					timestamp_nmultiple++;
-					if (timestamp_track_cnt < num_mcv ||
-						timestamp_dups_cnt > timestamp_track[timestamp_track_cnt - 1].count)
-					{
-						/*
-						 * Found a new item for the mcv list; find its
-						 * position, bubbling down old items if needed. Loop
-						 * invariant is that j points at an empty/ replaceable
-						 * slot.
-						 */
-						int j;
-
-						if (timestamp_track_cnt < num_mcv)
-							timestamp_track_cnt++;
-						for (j = timestamp_track_cnt - 1; j > 0; j--)
-						{
-							if (timestamp_dups_cnt <= timestamp_track[j - 1].count)
-								break;
-							timestamp_track[j].count = timestamp_track[j - 1].count;
-							timestamp_track[j].first = timestamp_track[j - 1].first;
-						}
-						timestamp_track[j].count = timestamp_dups_cnt;
-						timestamp_track[j].first = i + 1 - timestamp_dups_cnt;
-					}
-				}
-				timestamp_dups_cnt = 0;
-			}
-		}
-
-
-		/*
-		 * Decide how many values are worth storing as most-common values. If
-		 * we are able to generate a complete MCV list (all the values in the
-		 * sample will fit, and we think these are all the ones in the table),
-		 * then do so.  Otherwise, store only those values that are
-		 * significantly more common than the (estimated) average. We set the
-		 * threshold rather arbitrarily at 25% more than average, with at
-		 * least 2 instances in the sample.  Also, we won't suppress values
-		 * that have a frequency of at least 1/K where K is the intended
-		 * number of histogram bins; such values might otherwise cause us to
-		 * emit duplicate histogram bin boundaries.  (We might end up with
-		 * duplicate histogram entries anyway, if the distribution is skewed;
-		 * but we prefer to treat such values as MCVs if at all possible.)
-		 *
-		 * Note: the first of these cases is meant to address columns with
-		 * small, fixed sets of possible values, such as boolean or enum
-		 * columns.  If we can *completely* represent the column population by
-		 * an MCV list that will fit into the stats target, then we should do
-		 * so and thus provide the planner with complete information.  But if
-		 * the MCV list is not complete, it's generally worth being more
-		 * selective, and not just filling it all the way up to the stats
-		 * target.  So for an incomplete list, we try to take only MCVs that
-		 * are significantly more common than average.
-		 */
-		if (((timestamp_track_cnt) == (timestamp_ndistinct == 0)) &&
-			(stats->stadistinct > 0) &&
-			(timestamp_track_cnt <= num_mcv))
-		{
-			/* Track list includes all values seen, and all will fit */
-			num_mcv = timestamp_track_cnt;
-		}
-		else
-		{
-			double timestamp_ndistinct_table = stats->stadistinct;
-			double avgcount,
-					mincount,
-					maxmincount;
-
-			/* Re-extract estimate of # distinct nonnull values in table */
-			if (timestamp_ndistinct_table < 0)
-				timestamp_ndistinct_table = -timestamp_ndistinct_table * totalrows;
-			/* estimate # occurrences in sample of a typical nonnull value */
-			avgcount = (double) non_null_cnt / timestamp_ndistinct_table;
-			/* set minimum threshold count to store a value */
-			mincount = avgcount * 1.25;
-			if (mincount < 2)
-				mincount = 2;
-			/* don't let threshold exceed 1/K, however */
-			maxmincount = (double) non_null_cnt / (double) num_bins;
-			if (mincount > maxmincount)
-				mincount = maxmincount;
-			if (num_mcv > timestamp_track_cnt)
-				num_mcv = timestamp_track_cnt;
-			for (i = 0; i < num_mcv; i++)
-			{
-				if (timestamp_track[i].count < mincount)
-				{
-					num_mcv = i;
-					break;
-				}
-			}
-		}
-
-
-		/* Generate MCV slot entry */
-		if (num_mcv > 0)
-		{
-			MemoryContext old_context;
-			Datum *mcv_values;
-			float4 *mcv_freqs;
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			mcv_values = (Datum *) palloc(num_mcv * sizeof(Datum));
-			mcv_freqs = (float4 *) palloc(num_mcv * sizeof(float4));
-
-			for (i = 0; i < num_mcv; i++)
-			{
-				mcv_values[i] = datumCopy(timestamp_values[timestamp_track[i].first].value,
-										  timestamp_typbyval,
-										  timestamp_typlen);
-				mcv_freqs[i] = (float4) timestamp_track[i].count / (float4) samplerows;
-			}
-			MemoryContextSwitchTo(old_context);
-			stats->stakind[slot_idx] = STATISTIC_KIND_MCV;
-			stats->staop[slot_idx] = timestamp_eqopr;
-			stats->stanumbers[slot_idx] = mcv_freqs;
-			stats->numnumbers[slot_idx] = num_mcv;
-			stats->stavalues[slot_idx] = mcv_values;
-			stats->numvalues[slot_idx] = num_mcv;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-			slot_idx++;
-		}
-
-		/*
-		 * Generate a histogram slot entry if there are at least two distinct
-		 * values not accounted for in the MCV list.  (This ensures the
-		 * histogram won't collapse to empty or a singleton.)
-		 */
-		num_hist = timestamp_ndistinct - num_mcv;
-		if (num_hist > num_bins)
-			num_hist = num_bins + 1;
-		if (num_hist >= 2)
-		{
-			MemoryContext old_context;
-			Datum *hist_values;
-			int nvals;
-			int pos,
-					posfrac,
-					delta,
-					deltafrac;
-
-			/* Sort the MCV items into position order to speed next loop */
-			qsort((void *) timestamp_track, (size_t) num_mcv,
-				  sizeof(ScalarMCVItem), compare_mcvs);
-
-			/*
-			 * Collapse out the MCV items from the values[] array.
-			 *
-			 * Note we destroy the values[] array here... but we don't need it
-			 * for anything more.  We do, however, still need values_cnt.
-			 * nvals will be the number of remaining entries in values[].
-			 */
-			if (num_mcv > 0)
-			{
-				int src,
-						dest;
-				int j;
-
-				src = dest = 0;
-				j = 0;			/* index of next interesting MCV item */
-				while (src < non_null_cnt)
-				{
-					int ncopy;
-
-					if (j < num_mcv)
-					{
-						int first = timestamp_track[j].first;
-
-						if (src >= first)
-						{
-							/* advance past this MCV item */
-							src = first + timestamp_track[j].count;
-							j++;
-							continue;
-						}
-						ncopy = first - src;
-					}
-					else
-						ncopy = non_null_cnt - src;
-					memmove(&timestamp_values[dest], &timestamp_values[src],
-							ncopy * sizeof(ScalarItem));
-					src += ncopy;
-					dest += ncopy;
-				}
-				nvals = dest;
-			}
-			else
-				nvals = non_null_cnt;
-			Assert(nvals >= num_hist);
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-			/*
-			 * The object of this loop is to copy the first and last values[]
-			 * entries along with evenly-spaced values in between.  So the
-			 * i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (nvals - 1) / (num_hist - 1);
-			deltafrac = (nvals - 1) % (num_hist - 1);
-			pos = posfrac = 0;
-
-			for (i = 0; i < num_hist; i++)
-			{
-				hist_values[i] = datumCopy(timestamp_values[pos].value,
-										   timestamp_typbyval,
-										   timestamp_typlen);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-
-			MemoryContextSwitchTo(old_context);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_HISTOGRAM;
-			stats->staop[slot_idx] = timestamp_ltopr;
-			stats->stavalues[slot_idx] = hist_values;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-			slot_idx++;
-		}
-
-		/* Generate a correlation entry if there are multiple values */
-		if (non_null_cnt > 1 && slot_idx < 5)
-		{
-			MemoryContext old_context;
-			float4 *corrs;
-			double corr_xsum,
-					corr_x2sum;
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-			corrs = (float4 *) palloc(sizeof(float4));
-			MemoryContextSwitchTo(old_context);
-
-			/*----------
-			 * Since we know the x and y value sets are both
-			 *		0, 1, ..., values_cnt-1
-			 * we have sum(x) = sum(y) =
-			 *		(values_cnt-1)*values_cnt / 2
-			 * and sum(x^2) = sum(y^2) =
-			 *		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
-			 *----------
-			 */
-			corr_xsum = ((double) (non_null_cnt - 1)) *
-						((double) non_null_cnt) / 2.0;
-			corr_x2sum = ((double) (non_null_cnt - 1)) *
-						 ((double) non_null_cnt) * (double) (2 * non_null_cnt - 1) / 6.0;
-
-			/* And the correlation coefficient reduces to */
-			corrs[0] = (float4) ((non_null_cnt * corr_xysum - corr_xsum * corr_xsum) /
-								 (non_null_cnt * corr_x2sum - corr_xsum * corr_xsum));
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
-			stats->staop[slot_idx] = timestamp_ltopr;
-			stats->stanumbers[slot_idx] = corrs;
-			stats->numnumbers[slot_idx] = 1;
-			stats->statyplen[slot_idx] = (int16) timestamp_typlen;
-			stats->statypid[slot_idx] = timestampType;
-			stats->statypbyval[slot_idx] = timestamp_typbyval;
-		}
-
-
-		MemoryContextSwitchTo(old_cxt);
 	}
 	else if (null_cnt > 0)
 	{
 		/* We found only nulls; assume the column is entirely null */
 		stats->stats_valid = true;
 		stats->stanullfrac = 1.0;
-		stats->stawidth = 0;	/* "unknown" */
+		stats->stawidth = 0;			/* "unknown" */
 		stats->stadistinct = 0.0;		/* "unknown" */
 	}
 }
 /*****************************************************************************
  * Statistics functions for TemporalI type
  *****************************************************************************/
+
 void
-compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							  int samplerows, double totalrows)
 {
 	int			num_mcelem;
@@ -1468,7 +831,8 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 			bool found;
 
 			/* No null element processing other than flag setting here */
-			/* if (elem_nulls[j]) {
+			/* if (elem_nulls[j])
+			{
 				 null_present = true;
 				 continue;
 			 }*/
@@ -1479,7 +843,8 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 											 (const void *) &elem_value,
 											 HASH_ENTER, &found);
 
-			if (found) {
+			if (found)
+			{
 				/* The element value is already on the tracking list */
 
 				/*
@@ -1491,7 +856,9 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 
 				item->frequency++;
 				item->last_container = array_no;
-			} else {
+			} 
+			else
+			{
 				/* Initialize new tracking list element */
 
 				/*
@@ -1529,7 +896,8 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 
 		/* Removing the temporal part from the stats HeapTuples if the base type is geometry */
 		if(valueType == type_oid(T_GEOMETRY) || valueType == type_oid(T_GEOGRAPHY))
-			stats->rows[analyzed_rows] = remove_temporaldim(stats->rows[analyzed_rows], stats->tupDesc, stats->tupattnum, stats->attrtypid, true, value);
+			stats->rows[analyzed_rows] = remove_temporaldim(stats->rows[analyzed_rows], 
+				stats->tupDesc, stats->tupattnum, stats->attrtypid, true, value);
 
 		analyzed_rows++;
 	}
@@ -1766,7 +1134,7 @@ compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfun
 	 */
 }
 void
-compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							   int samplerows, double totalrows)
 {
 	int			num_mcelem;
@@ -1856,8 +1224,6 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 									 &count_hash_ctl_temporal,
 									 HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
 
-
-
 	/* Initialize counters. */
 	b_current_value = 1;
 	b_current_temporal = 1;
@@ -1912,7 +1278,8 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 												   (const void *) &elem_value,
 												   HASH_ENTER, &found_value);
 
-			if (found_value) {
+			if (found_value)
+			{
 				/* The element value is already on the tracking list */
 
 				/*
@@ -1924,7 +1291,9 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 
 				item_value->frequency++;
 				item_value->last_container = array_no;
-			} else {
+			} 
+			else 
+			{
 				/* Initialize new tracking list element */
 
 				/*
@@ -1950,7 +1319,8 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 													  (const void *) &elem_temporal,
 													  HASH_ENTER, &found_temporal);
 
-			if (found_temporal) {
+			if (found_temporal) 
+			{
 				/* The element value is already on the tracking list */
 
 				/*
@@ -1962,7 +1332,9 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 
 				item_temporal->frequency++;
 				item_temporal->last_container = array_no;
-			} else {
+			} 
+			else 
+			{
 				/* Initialize new tracking list element */
 
 				/*
@@ -2243,8 +1615,7 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 			slot_idx++;
 		}
 
-
-		/*  Temporal Part  statistics */
+		/*  Temporal part statistics */
 
 		/*
 		 * Construct an array of the interesting hashtable items, that is,
@@ -2455,11 +1826,12 @@ compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
+
 /*****************************************************************************
- * Statistics functions for Trajectory types (TemporalSeq and TemporalS)
+ * Statistics functions for TemporalSeq and TemporalS
  *****************************************************************************/
 void
-compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 							   int samplerows, double totalrows)
 {
 	int null_cnt = 0;
@@ -2473,16 +1845,14 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 			*temporal_uppers;
 	double total_width = 0;
 
-
 	Oid baseType = base_oid_from_temporal(stats->attrtypid);
-
-
 
 	temporal_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	temporal_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	temporal_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 	/* Loop over the arrays. */
-	for (array_no = 0; array_no < samplerows; array_no++) {
+	for (array_no = 0; array_no < samplerows; array_no++)
+	{
 		Datum value;
 		bool isnull;
 		PeriodBound temp_lower,
@@ -2491,37 +1861,36 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 		vacuum_delay_point();
 
 		value = fetchfunc(stats, array_no, &isnull);
-		if (isnull) {
+		if (isnull) 
+		{
 			/* array is null, just count that */
 			null_cnt++;
 			continue;
 		}
-		Period *period = get_bbox_onedim(value, stats->attrtypid);
+		Period *period = get_temporal_bbox(value, stats->attrtypid);
 		period_deserialize(period, &temp_lower, &temp_upper);
 		//pfree(period);
-		/* The size of a period is 24 */
+		
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/* Remember bounds and length for further usage in histograms */
 		temporal_lowers[analyzed_arrays] = temp_lower;
 		temporal_uppers[analyzed_arrays] = temp_upper;
 
-
-		// For an ordinary period, use subdiff function between upper
-		// and lower bound values.
 		length = period_duration_secs(temp_upper.val, temp_lower.val);
 		temporal_lengths[analyzed_arrays] = length;
 
-
-		/* Removing the temporal part from the stats HeapTuples if the base type is geometry or geography */
+		/* Remove the temporal part from the stats HeapTuples if the base type is geometry or geography */
 		if(baseType == type_oid(T_GEOMETRY) || baseType == type_oid(T_GEOGRAPHY))
-			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc, stats->tupDesc->natts, stats->attrtypid, true, value);
+			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc, 
+				stats->tupDesc->natts, stats->attrtypid, true, value);
 
 		analyzed_arrays++;
 	}
 
 	/* We can only compute real stats if we found some non-null values. */
-	if (analyzed_arrays > 0) {
+	if (analyzed_arrays > 0) 
+	{
 
 		int pos,
 				posfrac,
@@ -2553,7 +1922,8 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 		 * values.
 		 */
 		//problem start
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 			/* Sort bound values */
 			qsort(temporal_lowers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
 			qsort(temporal_uppers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
@@ -2579,14 +1949,16 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				bound_hist_values[i] =
 						PointerGetDatum(period_make(temporal_lowers[pos].val, temporal_uppers[pos].val,
 													temporal_lowers[pos].inclusive, temporal_uppers[pos].inclusive));
 
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
@@ -2608,7 +1980,8 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 		 * Generate a length histogram slot entry if there are at least two
 		 * values.
 		 */
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 			/*
 			 * Ascending sort of period lengths for further filling of
 			 * histogram
@@ -2635,17 +2008,21 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				length_hist_values[i] = Float8GetDatum(temporal_lengths[pos]);
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
 				}
 			}
-		} else {
+		} 
+		else
+		{
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
@@ -2669,7 +2046,9 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 		stats->statypalign[slot_idx] = 'd';
 
 		MemoryContextSwitchTo(old_cxt);
-	} else if (null_cnt > 0) {
+	} 
+	else if (null_cnt > 0)
+	{
 		/* We found only nulls; assume the column is entirely null */
 		stats->stats_valid = true;
 		stats->stanullfrac = 1.0;
@@ -2684,7 +2063,7 @@ compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfu
 }
 
 void
-compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 						  int samplerows, double totalrows)
 {
 	int null_cnt = 0;
@@ -2714,9 +2093,9 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	temporal_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	temporal_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
-
 	/* Loop over the arrays. */
-	for (array_no = 0; array_no < samplerows; array_no++) {
+	for (array_no = 0; array_no < samplerows; array_no++)
+	{
 		Datum value;
 		bool isnull;
 		TBOX *tbox;
@@ -2728,54 +2107,46 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		vacuum_delay_point();
 
 		value = fetchfunc(stats, array_no, &isnull);
-		if (isnull) {
+		if (isnull) 
+		{
 			/* array is null, just count that */
 			null_cnt++;
 			continue;
 		}
 
-
-
-		/* The size of a period is 24 */
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/* Remember bounds and length for further usage in histograms */
-		tbox = get_bbox_twodim(value, stats->attrtypid);
+		tbox = get_tnumber_bbox(value, stats->attrtypid);
 		tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
 
 		value_lowers[analyzed_arrays] = lower1;
 		value_uppers[analyzed_arrays] = upper1;
 
-
-		// For an ordinary period, use subdiff function between upper
-		// and lower bound values.
-
 		if (valueRangeType == type_oid(T_FLOATRANGE))
-			value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) - DatumGetFloat8(value_lowers[analyzed_arrays].val);
+			value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) - 
+				DatumGetFloat8(value_lowers[analyzed_arrays].val);
 		else if (valueRangeType == type_oid(T_INTRANGE))
-			value_length = (float8)(DatumGetInt32(value_uppers[analyzed_arrays].val) - DatumGetInt32(value_lowers[analyzed_arrays].val));
+			value_length = (float8)(DatumGetInt32(value_uppers[analyzed_arrays].val) - 
+				DatumGetInt32(value_lowers[analyzed_arrays].val));
 
 		value_lengths[analyzed_arrays] = value_length;
-
 
 		/* Remember bounds and length for further usage in histograms */
 		temporal_lowers[analyzed_arrays] = lower2;
 		temporal_uppers[analyzed_arrays] = upper2;
 
-
-		// For an ordinary period, use subdiff function between upper
-		// and lower bound values.
 		temporal_length = period_duration_secs(upper2.val, lower2.val);
 		temporal_lengths[analyzed_arrays] = temporal_length;
 
 		analyzed_arrays++;
 	}
 
-
 	slot_idx = 0;
 
 	/* We can only compute real stats if we found some non-null values. */
-	if (analyzed_arrays > 0) {
+	if (analyzed_arrays > 0)
+	{
 
 		int pos,
 				posfrac,
@@ -2797,10 +2168,6 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* Must copy the target values into anl_context */
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
-
-
-
-
 		Datum *value_bound_hist_values;
 		Datum *value_length_hist_values;
 
@@ -2809,13 +2176,12 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * Generate a bounds histogram slot entry if there are at least two
 		 * values.
 		 */
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 
 			/* Sort bound values */
 			qsort(value_lowers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
 			qsort(value_uppers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
-
-
 
 			num_hist = analyzed_arrays;
 			if (num_hist > num_bins)
@@ -2838,13 +2204,16 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				value_bound_hist_values[i] = PointerGetDatum(
-						range_make(value_lowers[pos].val, value_uppers[pos].val, true, true, extra_data->value_type_id));
+						range_make(value_lowers[pos].val, value_uppers[pos].val, 
+							true, true, extra_data->value_type_id));
 
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
@@ -2874,7 +2243,8 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * Generate a length histogram slot entry if there are at least two
 		 * values.
 		 */
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 			/*
 			 * Ascending sort of range lengths for further filling of
 			 * histogram
@@ -2900,17 +2270,21 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				value_length_hist_values[i] = Float8GetDatum(value_lengths[pos]);
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
 				}
 			}
-		} else {
+		} 
+		else 
+		{
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
@@ -2943,7 +2317,8 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * values.
 		 */
 		//problem start
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 			/* Sort bound values */
 			qsort(temporal_lowers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
 			qsort(temporal_uppers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
@@ -2969,14 +2344,16 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				bound_hist_temporal[i] =
 						PointerGetDatum(period_make(temporal_lowers[pos].val, temporal_uppers[pos].val,
 													temporal_lowers[pos].inclusive, temporal_uppers[pos].inclusive));
 
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
@@ -2998,7 +2375,8 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * Generate a length histogram slot entry if there are at least two
 		 * values.
 		 */
-		if (analyzed_arrays >= 2) {
+		if (analyzed_arrays >= 2)
+		{
 			/*
 			 * Ascending sort of period lengths for further filling of
 			 * histogram
@@ -3017,7 +2395,7 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * entries along with evenly-spaced values in between. So the i'th
 			 * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
 			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
+			 * the stats target is more than a couple thousand.  Instead wes
 			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
 			 * the integral and fractional parts of the sum separately.
 			 */
@@ -3025,17 +2403,21 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++) {
+			for (i = 0; i < num_hist; i++)
+			{
 				length_hist_temporal[i] = Float8GetDatum(temporal_lengths[pos]);
 				pos += delta;
 				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1)) {
+				if (posfrac >= (num_hist - 1))
+				{
 					/* fractional part exceeds 1, carry to integer part */
 					pos++;
 					posfrac -= (num_hist - 1);
 				}
 			}
-		} else {
+		} 
+		else
+		{
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
@@ -3058,14 +2440,15 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 #endif
 		stats->statypalign[slot_idx] = 'd';
 
-
 		MemoryContextSwitchTo(old_cxt);
-	} else if (null_cnt > 0) {
+	} 
+	else if (null_cnt > 0)
+	{
 		/* We found only nulls; assume the column is entirely null */
 		stats->stats_valid = true;
 		stats->stanullfrac = 1.0;
-		stats->stawidth = 0;	/* "unknown" */
-		stats->stadistinct = 0.0;		/* "unknown" */
+		stats->stawidth = 0;		/* "unknown" */
+		stats->stadistinct = 0.0;	/* "unknown" */
 	}
 
 	/*
@@ -3075,9 +2458,10 @@ compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 HeapTuple
-remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, Oid attrtypid, bool geom, Datum value)
+remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, 
+	Oid attrtypid, bool geom, Datum value)
 {
-	/* The below variables are used to remove the temporal part from
+	/* The variables below are used to remove the temporal part from
 	 * the sample rows after getting the temporal value,
 	 * to be able to collect other statistics in the same stats variable.
 	 */
@@ -3326,10 +2710,10 @@ compare_mcvs(const void *a, const void *b)
  * Different functions used for 1D, 2D, and 3D types.
  *****************************************************************************/
 /*
- * get_bbox_onedim()--returns the bbox of a one dimensional temporal object
+ * get_temporal_bbox()--returns the bbox of a one dimensional temporal object
  */
 Period *
-get_bbox_onedim(Datum value, Oid oid)
+get_temporal_bbox(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_PERIOD))
 		return DatumGetPeriod(value);
@@ -3351,10 +2735,10 @@ get_bbox_onedim(Datum value, Oid oid)
 }
 
 /*
- * get_bbox_twodim()--returns the bbox of a two dimensional temporal object
+ * get_tnumber_bbox()--returns the bbox of a two dimensional temporal object
  */
 TBOX*
-get_bbox_twodim(Datum value, Oid oid)
+get_tnumber_bbox(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT) )
 	{
@@ -3366,10 +2750,10 @@ get_bbox_twodim(Datum value, Oid oid)
 }
 
 /*
- * get_bbox_threedim()--returns the bbox of a three dimensional temporal object
+ * get_tpoint_bbox()--returns the bbox of a three dimensional temporal object
  */
 STBOX*
-get_bbox_threedim(Datum value, Oid oid)
+get_tpoint_bbox(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_TGEOMPOINT) || oid == type_oid(T_TGEOGPOINT))
 	{
@@ -3388,8 +2772,8 @@ void
 tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 				PeriodBound *lowerdim2, PeriodBound *upperdim2)
 {
-    /* The box should have at least one dimension X or T  */
-    assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
+	/* The box should have at least one dimension X or T  */
+	assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
 	if (MOBDB_FLAGS_GET_X(tbox->flags))
 	{
 		lowerdim1->val = (Datum)tbox->xmin;
@@ -3411,10 +2795,10 @@ tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 }
 
 /*
- * gbox_deserialize: decompose a GBOX value
+ * stbox_deserialize: decompose an STBOX value
  */
 void
-gbox_deserialize(GBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+stbox_deserialize(STBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
 				 RangeBound *lowerdim2, RangeBound *upperdim2,
 				 PeriodBound *lowerdim3, PeriodBound *upperdim3	)
 {

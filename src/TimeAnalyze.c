@@ -25,13 +25,13 @@
 
 static int float8_qsort_cmp(const void *a1, const void *a2);
 static int period_bound_qsort_cmp(const void *a1, const void *a2);
-static void compute_timetype_stats(CachedType type, VacAttrStats *stats, 
+static void timetype_compute_stats(CachedType type, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-static void compute_period_stats(VacAttrStats *stats,
+static void period_compute_stats(VacAttrStats *stats,
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-static void compute_timestampset_stats(VacAttrStats *stats, 
+static void timestampset_compute_stats(VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
-static void compute_periodset_stats(VacAttrStats *stats, 
+static void periodset_compute_stats(VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 
 /*****************************************************************************/
@@ -66,7 +66,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 static void
-compute_timetype_stats(CachedType timetype, VacAttrStats *stats, 
+timetype_compute_stats(CachedType timetype, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows)
 {
 	int			null_cnt = 0,
@@ -305,10 +305,10 @@ compute_timetype_stats(CachedType timetype, VacAttrStats *stats,
  */
 
 static void
-compute_period_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
-	compute_timetype_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
 }
 
 PG_FUNCTION_INFO_V1(period_analyze);
@@ -322,7 +322,7 @@ period_analyze(PG_FUNCTION_ARGS)
 	if (attr->attstattarget < 0)
 		attr->attstattarget = default_statistics_target;
 
-	stats->compute_stats = compute_period_stats;
+	stats->compute_stats = period_compute_stats;
 	/* same as in std_typanalyze */
 	stats->minrows = 300 * attr->attstattarget;
 
@@ -334,10 +334,10 @@ period_analyze(PG_FUNCTION_ARGS)
  */
 
 static void
-compute_timestampset_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					int samplerows, double totalrows)
 {
-	compute_timetype_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows, totalrows);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_analyze);
@@ -351,7 +351,7 @@ timestampset_analyze(PG_FUNCTION_ARGS)
 	if (attr->attstattarget < 0)
 		attr->attstattarget = default_statistics_target;
 
-	stats->compute_stats = compute_timestampset_stats;
+	stats->compute_stats = timestampset_compute_stats;
 	/* same as in std_typanalyze */
 	stats->minrows = 300 * attr->attstattarget;
 
@@ -363,10 +363,10 @@ timestampset_analyze(PG_FUNCTION_ARGS)
  */
 
 static void
-compute_periodset_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					int samplerows, double totalrows)
 {
-	compute_timetype_stats(T_PERIODSET, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows, totalrows);
 }
 
 PG_FUNCTION_INFO_V1(periodset_analyze);
@@ -380,7 +380,7 @@ periodset_analyze(PG_FUNCTION_ARGS)
 	if (attr->attstattarget < 0)
 		attr->attstattarget = default_statistics_target;
 
-	stats->compute_stats = compute_periodset_stats;
+	stats->compute_stats = periodset_compute_stats;
 	/* same as in std_typanalyze */
 	stats->minrows = 300 * attr->attstattarget;
 

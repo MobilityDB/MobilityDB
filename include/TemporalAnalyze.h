@@ -90,41 +90,53 @@ typedef struct
 } DECountItem;
 
 extern Datum temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalType);
+
 /*****************************************************************************
  * Statistics information for Temporal types
  *****************************************************************************/
+
 extern void temporal_info(VacAttrStats *stats);
 extern void temporal_extra_info(VacAttrStats *stats);
+
 /*****************************************************************************
  * Statistics functions for TemporalInst type
  *****************************************************************************/
-extern void compute_timestamptz_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+
+extern void temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  	 	 	 	 	 	 	 	 	  int samplerows, double totalrows);
-extern void compute_temporalinst_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+extern void tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  	 	 	 	 	 	 	 	 	 	 	  int samplerows, double totalrows);
+
 /*****************************************************************************
  * Statistics functions for TemporalI type
  *****************************************************************************/
-extern void compute_timestamptz_set_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+
+extern void temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									  int samplerows, double totalrows);
-extern void compute_temporali_twodim_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+extern void tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 											  int samplerows, double totalrows);
+
 /*****************************************************************************
  * Statistics functions for Trajectory types (TemporalSeq and TemporalS)
  *****************************************************************************/
-extern void compute_timestamptz_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+
+extern void temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  	 	 	 	 	 	 	 	 	 	   int samplerows, double totalrows);
-extern void compute_twodim_traj_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+extern void tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									 int samplerows, double totalrows);
+
 /*****************************************************************************
  * Statistics functions for TPOINT types
  *****************************************************************************/
+
 extern Datum tpoint_analyze_internal(VacAttrStats *stats, int durationType);
 extern void tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 								 int samplerows, double totalrows);
+
 /*****************************************************************************
  * Comparison functions for different data types
  *****************************************************************************/
+
 extern uint32 element_hash_value(const void *key, Size keysize);
 extern uint32 element_hash_temporal(const void *key, Size keysize);
 extern int element_match(const void *key1, const void *key2, Size keysize);
@@ -138,14 +150,16 @@ extern int float8_qsort_cmp(const void *a1, const void *a2);
 extern int range_bound_qsort_cmp(const void *a1, const void *a2);
 extern int compare_scalars(const void *a, const void *b, void *arg);
 extern int compare_mcvs(const void *a, const void *b);
+
 /*****************************************************************************
  * Different functions used for 1D, 2D, and 3D types.
  *****************************************************************************/
+
 extern HeapTuple remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, Oid attrtypid,
  	 	 	 	 	 	 	 	 	bool geom, Datum value);
-extern Period* get_bbox_onedim(Datum value, Oid oid);
-extern TBOX* get_bbox_twodim(Datum value, Oid oid);
-extern STBOX* get_bbox_threedim(Datum value, Oid oid);
+extern Period* get_temporal_bbox(Datum value, Oid oid);
+extern TBOX* get_tnumber_bbox(Datum value, Oid oid);
+extern STBOX* get_tpoint_bbox(Datum value, Oid oid);
 extern void tbox_deserialize(TBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
 							PeriodBound *lowerdim2, PeriodBound *upperdim2);
 extern void stbox_deserialize(STBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
@@ -153,3 +167,5 @@ extern void stbox_deserialize(STBOX *box, RangeBound *lowerdim1, RangeBound *upp
 							 PeriodBound *lowerdim3, PeriodBound *upperdim3);
 
 #endif //MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
+
+/*****************************************************************************/

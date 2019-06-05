@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TempPointAnalyze.c
- *	  Functions for gathering statistics from temporal columns
+ *	  Functions for gathering statistics from temporal point columns
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
@@ -22,12 +22,11 @@ Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	Datum result = 0;   /* keep compiler quiet */
 	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(durationType == TEMPORAL || durationType == TEMPORALINST || durationType == TEMPORALI ||
-		   durationType == TEMPORALSEQ || durationType == TEMPORALS);
-	result = tpoint_analyze_internal(stats, durationType);
-	return result;
+	assert(durationType == TEMPORAL || durationType == TEMPORALINST || 
+		durationType == TEMPORALI || durationType == TEMPORALSEQ || 
+		durationType == TEMPORALS);
+	return tpoint_analyze_internal(stats, durationType);
 }
 
 Datum
@@ -58,12 +57,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int stawidth;
 	/* Temporal Statistics */
 	if (type == TEMPORALINST)
-		compute_timestamptz_stats(stats, fetchfunc, samplerows, totalrows);
+		temporalinst_compute_stats(stats, fetchfunc, samplerows, totalrows);
 	else if (type == TEMPORALI)
-		compute_timestamptz_set_stats(stats, fetchfunc, samplerows, totalrows);
+		temporali_compute_stats(stats, fetchfunc, samplerows, totalrows);
 	else if (type == TEMPORALSEQ || type == TEMPORALS ||
 			 type == TEMPORAL)
-		compute_timestamptz_traj_stats(stats, fetchfunc, samplerows, totalrows);
+		temporals_compute_stats(stats, fetchfunc, samplerows, totalrows);
 
 	stawidth = stats->stawidth;
 	/* Geometry Statistics */

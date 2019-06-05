@@ -45,7 +45,6 @@
 #define TYPMOD_DEL_DURATION(typmod) (typmod = typmod >> 4 )
 #define TYPMOD_SET_DURATION(typmod, durtype) ((typmod) = typmod << 4 | durtype)
 
-
 /*****************************************************************************
  * STBOX macros
  *****************************************************************************/
