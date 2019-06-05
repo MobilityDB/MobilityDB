@@ -633,10 +633,10 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		void *bbox = ((char *) result) + pdata + pos;
 		if (trajectory)
 		{
-			geo_to_gbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
-			((GBOX *)bbox)->mmin = (double)(result->period.lower);
-			((GBOX *)bbox)->mmax = (double)(result->period.upper);
-			FLAGS_SET_M(((GBOX *)bbox)->flags, true);
+			geo_to_stbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
+			((STBOX *)bbox)->tmin = (double)(result->period.lower);
+			((STBOX *)bbox)->tmax = (double)(result->period.upper);
+			MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
 		}
 		else
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
@@ -3285,10 +3285,8 @@ int
 temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 {
 	/* Bounding box test */
-	Period p1;
-	temporalseq_timespan(&p1, seq);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
+	Period *p = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return 0;
 
 	/* Instantaneous sequence */
@@ -3307,7 +3305,7 @@ temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
 	{
-		Period *p = periodset_per_n(ps, i);
+		p = periodset_per_n(ps, i);
 		TemporalSeq *seq1 = temporalseq_at_period(seq, p);
 		if (seq1 != NULL)
 			result[k++] = seq1;
@@ -3393,10 +3391,8 @@ TemporalS *
 temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 {
 	/* Bounding box test */
-	Period p1;
-	temporalseq_timespan(&p1, seq);
-	Period *p2 = periodset_bbox(ps);
-	if (!overlaps_period_period_internal(&p1, p2))
+	Period *p = periodset_bbox(ps);
+	if (!overlaps_period_period_internal(&seq->period, p))
 		return temporals_from_temporalseqarr(&seq, 1, false);
 
 	/* Instantaneous sequence */

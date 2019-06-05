@@ -149,57 +149,111 @@ basetype_parse(char **str, Oid basetype)
 TBOX *
 tbox_parse(char **str) 
 {
+	double xmin, xmax, tmin, tmax, tmp;
+	bool hasx = false, hast = false;
 	p_whitespace(str);
-	if (!p_oparen(str) || !p_oparen(str))
+	if (strncasecmp(*str, "TBOX", 4) == 0) 
+	{
+		*str += 4;
+		p_whitespace(str);
+	}
+	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
 
-	TBOX *result = palloc0(sizeof(TBOX));
-	char *nextstr = *str;
-	result->xmin = strtod(*str, &nextstr);
-	if (*str == nextstr)
+	/* Parse double opening parenthesis */
+	if (!p_oparen(str) || !p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
-	*str = nextstr; 
+	p_whitespace(str);
+
+	/* Determine whether there is an X dimension */
+	char *nextstr = *str;
+	xmin = strtod(*str, &nextstr);
+	if (*str != nextstr)
+	{
+		hasx = true;
+		*str = nextstr; 
+	}
+
 	p_whitespace(str);
 	p_comma(str);
-	p_whitespace(str);
-	result->tmin = strtod(*str, &nextstr);
-	if (*str == nextstr)
+	p_whitespace(str);		
+
+	/* Determine whether there is a T dimension */
+	tmin = strtod(*str, &nextstr);
+	if (*str != nextstr)
+	{
+		hast = true;
+		*str = nextstr; 
+	}
+
+	if (! hasx && ! hast)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
-	*str = nextstr; 
+
 	p_whitespace(str);
 	if (!p_cparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
 	p_whitespace(str);
 	p_comma(str);
-	p_whitespace(str);
+	p_whitespace(str);		
+
+	/* Parse upper bounds */
 	if (!p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
 
-	result->xmax = strtod(*str, &nextstr);
-	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
-	*str = nextstr; 
+	if (hasx)
+	{
+		xmax = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+	}
 	p_whitespace(str);
 	p_comma(str);
 	p_whitespace(str);
-	result->tmax = strtod(*str, &nextstr);
-	if (*str == nextstr)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
-	*str = nextstr; 
+	if (hast)
+	{	
+		tmax = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+	}
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
-	
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
+
+	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, hasx);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
+	if (hasx)
+	{
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
+	}
+	if (hast)
+	{
+		if (tmin > tmax)
+		{
+			tmp = tmin;
+			tmin = tmax;
+			tmax = tmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
 	return result;
 }
 

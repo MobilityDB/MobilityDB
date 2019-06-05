@@ -507,6 +507,15 @@ SELECT astext(appendInstant(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.
 SELECT astext(appendInstant(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-04'));
 SELECT astext(appendInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-06'));
 
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-03'));
+/* Errors */
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
+select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
+select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+
 -------------------------------------------------------------------------------
 -- Accessor functions
 -------------------------------------------------------------------------------
@@ -529,8 +538,8 @@ SELECT memSize(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
 SELECT memSize(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
 SELECT memSize(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
 
-SELECT gbox(tgeompoint 'Point(1 1)@2000-01-01');
-SELECT gbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
+SELECT stbox(tgeompoint 'Point(1 1)@2000-01-01');
+SELECT stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
 
 SELECT st_asewkt(getValue(tgeompoint 'Point(1 1)@2000-01-01'));
 SELECT st_asewkt(getValue(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -884,6 +893,10 @@ SELECT astext(atValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@20
 SELECT astext(atValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ARRAY[geography 'Point empty']));
 SELECT astext(atValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ARRAY[geography 'Point empty']));
 
+--NULL
+SELECT atValues(tgeompoint '{Point(1 1)@2000-01-01}', '{}'::geometry[]);
+SELECT atValues(tgeogpoint '{Point(1 1)@2000-01-01}', '{}'::geography[]);
+
 /* Errors */
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', ARRAY[geometry 'Linestring(1 1,2 2)']);
 SELECT atValues(tgeompoint 'Point(1 1)@2000-01-01', ARRAY[geometry 'SRID=5676;Point(1 1)']);
@@ -909,6 +922,9 @@ SELECT astext(minusValues(tgeogpoint 'Point(1.5 1.5)@2000-01-01', ARRAY[geograph
 SELECT astext(minusValues(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', ARRAY[geography 'Point empty']));
 SELECT astext(minusValues(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ARRAY[geography 'Point empty']));
 SELECT astext(minusValues(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ARRAY[geography 'Point empty']));
+
+SELECT astext(minusValues(tgeompoint '{Point(1 1)@2000-01-01}', '{}'::geometry[]));
+SELECT astext(minusValues(tgeogpoint '{Point(1 1)@2000-01-01}', '{}'::geography[]));
 
 /* Errors */
 SELECT minusValues(tgeompoint 'Point(1 1)@2000-01-01', ARRAY[geometry 'Linestring(1 1,2 2)']);

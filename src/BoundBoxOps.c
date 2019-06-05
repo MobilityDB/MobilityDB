@@ -140,7 +140,7 @@ temporal_bbox_size(Oid valuetypid)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
-		return sizeof(GBOX);
+		return sizeof(STBOX);
 #endif
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -153,33 +153,39 @@ temporal_bbox_size(Oid valuetypid)
 bool
 temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(valuetypid);
+	bool result = false;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-		return period_eq_internal((Period *)box1, (Period *)box2);
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
-		return tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
+		result = period_eq_internal((Period *)box1, (Period *)box2);
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		result = tbox_eq_internal((TBOX *)box1, (TBOX *)box2);
 #ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2) == 0;
+		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
 #endif
 	/* Types without bounding box, for example, doubleN */
-	return false;
+	return result;
 } 
 
 int
 temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(valuetypid);
+	int result = 0;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-		return period_cmp_internal((Period *)box1, (Period *)box2);
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
-		return tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
+		result = period_cmp_internal((Period *)box1, (Period *)box2);
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
 #ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		return gbox_cmp_internal((GBOX *)box1, (GBOX *)box2);
+		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 #endif
 	/* Types without bounding box, for example, doubleN */
-	return 0;
+	return result;
 } 
 
 /*****************************************************************************
@@ -190,14 +196,13 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 
 /* Make the bounding box a temporal instant from its values */
 
-bool
+void
 temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-	{
 		period_set((Period *)box, t, t, true, true);
-		return true;
-	}
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
 	{
 		double dvalue = datum_double(value, valuetypid);
@@ -206,18 +211,13 @@ temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid)
 		result->tmin = result->tmax = (double)t;
 		MOBDB_FLAGS_SET_X(result->flags, true);
 		MOBDB_FLAGS_SET_T(result->flags, true);
-		return true;
 	}
 #ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpointinst_make_gbox((GBOX *)box, value, t);
-		return true;
-	}
+		tpointinst_make_stbox((STBOX *)box, value, t);
 #endif
-	/* Types without bounding box, for example, tdoubleN* */
-	return false;
+	return;
 }
 
 /* Transform an array of temporal instant to a period */
@@ -233,7 +233,7 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 /* Expand the first box with the second one */
 
 static void
-tbox_expand_internal(TBOX *box1, const TBOX *box2)
+tbox_expand(TBOX *box1, const TBOX *box2)
 {
 	box1->xmin = Min(box1->xmin, box2->xmin);
 	box1->xmax = Max(box1->xmax, box2->xmax);
@@ -254,67 +254,54 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 		TBOX box1 = {0};
 		value = temporalinst_value(instants[i]);
 		temporalinst_make_bbox(&box1, value, instants[i]->t, valuetypid);
-		tbox_expand_internal(box, &box1);
+		tbox_expand(box, &box1);
 	}
 	return;
 }
 
 /* Make the bounding box a temporal instant set from its values */
-bool 
+void 
 temporali_make_bbox(void *box, TemporalInst **instants, int count) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(instants[0]->valuetypid);
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
-	{
 		temporalinstarr_to_period((Period *)box, instants, count, true, true);
-		return true;
-	}
-	if (instants[0]->valuetypid == INT4OID || 
+	else if (instants[0]->valuetypid == INT4OID || 
 		instants[0]->valuetypid == FLOAT8OID)
-	{
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-		return true;
-	}
 #ifdef WITH_POSTGIS
-	if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpointinstarr_to_gbox((GBOX *)box, instants, count);
-		return true;
-	}
+		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return false;
+	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
-bool
+void
 temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
 	bool lower_inc, bool upper_inc) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(instants[0]->valuetypid);
 	Oid valuetypid = instants[0]->valuetypid;
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
-	{
+	if (instants[0]->valuetypid == BOOLOID || 
+		instants[0]->valuetypid == TEXTOID)
 		temporalinstarr_to_period((Period *)box, instants, count, 
 			lower_inc, upper_inc);
-		return true;
-	}
-	if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
-	{
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
-		return true;
-	}
 #ifdef WITH_POSTGIS
 	/* This code is currently not used since for temporal points the bounding
 	 * box is computed from the trajectory for efficiency reasons. It is left
 	 * here in case this is no longer the case */
-	if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpointinstarr_to_gbox((GBOX *)box, instants, count);
-		return true;
-	}
+		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return false;
+	return;
 }
 
 /* Transform an array of temporal sequence to a period */
@@ -337,35 +324,28 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 	for (int i = 1; i < count; i++)
 	{
 		TBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
-		tbox_expand_internal(box, box1);
+		tbox_expand(box, box1);
 	}
 	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
-bool
+void
 temporals_make_bbox(void *box, TemporalSeq **sequences, int count) 
 {
+	/* Only external types have bounding box */
+	base_type_oid(sequences[0]->valuetypid);
 	Oid valuetypid = sequences[0]->valuetypid;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
-	{
 		temporalseqarr_to_period_internal((Period *)box, sequences, count);
-		return true;
-	}
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
-	{
 		tnumberseqarr_to_tbox_internal((TBOX *)box, sequences, count);
-		return true;
-	}
 #ifdef WITH_POSTGIS
-	if (sequences[0]->valuetypid == type_oid(T_GEOMETRY) || 
+	else if (sequences[0]->valuetypid == type_oid(T_GEOMETRY) || 
 		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY)) 
-	{
-		tpointseqarr_to_gbox((GBOX *)box, sequences, count);
-		return true;
-	}
+		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 #endif
-	return false;
+	return;
 }
 
 /*****************************************************************************
@@ -404,80 +384,86 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 	temporal_bbox(box, temp);
 	TBOX box1 = {0};
 	temporalinst_bbox(&box1, inst);
-	tbox_expand_internal(box, &box1);
+	tbox_expand(box, &box1);
 	return;
 }
 
 bool 
 temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 {
+	base_type_oid(ti->valuetypid);
+	bool result = false;
 	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
 	{
 		temporali_expand_period((Period *)box, ti, inst);
-		return true;
+		result = true;
 	}
-	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	else if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
 		tnumber_expand_tbox((TBOX *)box, (Temporal *)ti, inst);
-		return true;
+		result = true;
 	}
 #ifdef WITH_POSTGIS
-	if (ti->valuetypid == type_oid(T_GEOGRAPHY) || 
+	else if (ti->valuetypid == type_oid(T_GEOGRAPHY) || 
 		ti->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)ti, inst);
-		return true;
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)ti, inst);
+		result = true;
 	}
 #endif
-	return false;
+	return result;
 }
 
 bool 
 temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 {
+	base_type_oid(seq->valuetypid);
+	bool result = false;
 	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
 	{
 		temporalseq_expand_period((Period *)box, seq, inst);
-		return true;
+		result = true;
 	}
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
 		tnumber_expand_tbox((TBOX *)box, (Temporal *)seq, inst);
-		return true;
+		result = true;
 	}
 #ifdef WITH_POSTGIS
 	if (seq->valuetypid == type_oid(T_GEOGRAPHY) || 
 		seq->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)seq, inst);
-		return true;
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)seq, inst);
+		result = true;
 	}
 #endif
-	return false;
+	return result;
 }
 
 bool 
 temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 {
+	base_type_oid(ts->valuetypid);
+	bool result = false;
 	if (ts->valuetypid == BOOLOID || ts->valuetypid == TEXTOID)
 	{
 		temporals_expand_period((Period *)box, ts, inst);
-		return true;
+		result = true;
 	}
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
 		tnumber_expand_tbox((TBOX *)box, (Temporal *)ts, inst);
-		return true;
+		result = true;
 	}
 #ifdef WITH_POSTGIS
 	if (ts->valuetypid == type_oid(T_GEOGRAPHY) || 
 		ts->valuetypid == type_oid(T_GEOMETRY)) 
 	{
-		tpoint_expand_gbox((GBOX *)box, (Temporal *)ts, inst);
-		return true;
+		tpoint_expand_stbox((STBOX *)box, (Temporal *)ts, inst);
+		result = true;
 	}
 #endif
-	return false;
+	return result;
 }
 
 /*****************************************************************************
