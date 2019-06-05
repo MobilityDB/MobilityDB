@@ -19,7 +19,6 @@
 #include "TemporalPoint.h"
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
-double rho  = 0;
 double awgs = 6378137.0;
 double bwgs =  6356752.314;
 double abes = 6377397.155;  	/* Bessel Semi-Major Axis = Equatorial Radius in meters */
@@ -36,7 +35,6 @@ double h1   = 0;
 double eqwgs = 0;
 double eqbes = 0;
 double MDC = 2.0;		/* standard in Hagen, zone=2 */
-bool useWGS = true;		/* usw coordinates in wgs ellipsoid */
 
 static POINT2D
 BesselBLToGaussKrueger(double b, double ll)
@@ -109,111 +107,6 @@ BLRauenberg (double x, double y, double z)
 	return result;
 }
 
-/*
-static POINT2D 
-bessel2WGS(double geoDezRight1, double geoDezHeight1)
-{
-	POINT2D result;
-	double aBessel = abes;
-	double eeBessel = 0.0066743722296294277832;
-	double ScaleFactor = 0.00000982;
-	double RotXRad = -7.16069806998785E-06;
-	double RotYRad = 3.56822869296619E-07;
-	double RotZRad = 7.06858347057704E-06;
-	double ShiftXMeters = 591.28;
-	double ShiftYMeters = 81.35;
-	double ShiftZMeters = 396.39;
-	double aWGS84 = awgs;
-	double eeWGS84 = 0.0066943799;
-	double geoDezRight = (geoDezRight1 / 180) * Pi;
-	double geoDezHeight = (geoDezHeight1 / 180) * Pi;
-	double sinRight = sin(geoDezRight);
-	double sinRight2 = sinRight * sinRight;
-	double n = eeBessel * sinRight2;
-	n = 1 - n;
-	n = sqrt(n);
-	n = aBessel / n;
-	double cosRight = cos(geoDezRight);
-	double cosHeight = cos(geoDezHeight);
-	double sinHeight = sin(geoDezHeight);
-	double CartesianXMeters = n * cosRight * cosHeight;
-	double CartesianYMeters = n * cosRight * sinHeight;
-	double CartesianZMeters = n * (1 - eeBessel) * sinRight;
-
-	double CartOutputXMeters = (1 + ScaleFactor) *
-		CartesianXMeters + RotZRad * CartesianYMeters -
-		RotYRad * CartesianZMeters + ShiftXMeters;
-	double CartOutputYMeters = -RotZRad * CartesianXMeters +
-		(1 + ScaleFactor) * CartesianYMeters +
-		RotXRad * CartesianZMeters + ShiftYMeters;
-	double CartOutputZMeters = RotYRad * CartesianXMeters -
-		RotXRad * CartesianYMeters +
-		(1 + ScaleFactor) * CartesianZMeters + ShiftZMeters;
-	geoDezHeight = atan(CartOutputYMeters / CartOutputXMeters);
-	double Latitude = (CartOutputXMeters * CartOutputXMeters)+
-		(CartOutputYMeters * CartOutputYMeters);
-	Latitude = sqrt(Latitude);
-	double InitLat = Latitude;
-	Latitude = CartOutputZMeters/Latitude;
-	Latitude = atan(Latitude);
-	double LatitudeIt = 99999999;
-	do {
-		LatitudeIt = Latitude;
-		double sinLat = sin(Latitude);
-		n = 1 - eeWGS84 * sinLat * sinLat;
-		n = sqrt(n);
-		n = aWGS84 / n;
-		Latitude = InitLat;
-		Latitude = (CartOutputZMeters + eeWGS84 * n * sin(LatitudeIt)) / Latitude;
-		Latitude = atan(Latitude);
-	} while (fabs(Latitude - LatitudeIt) >= 0.000000000000001);
-	result.x = (geoDezHeight / Pi) * 180;
-	result.y = (Latitude / Pi) * 180;
-	return result;
-}
-
-static POINT2D
-gk2geo(double GKRight, double GKHeight)
-{
-	rho = 180 / Pi;
-	POINT2D result;
-	result.x = result.y = 0;
-	if (GKRight < 1000000 || GKHeight < 1000000)
-	{
-		return result;
-	} 
-	double e2 = 0.0067192188;
-	double c = 6398786.849;
-
-	double bI = GKHeight / 10000855.7646;
-	double bII = bI * bI;
-	double bf = 325632.08677 * bI * ((((((0.00000562025 * bII + 0.00022976983) *
-		bII - 0.00113566119) * bII + 0.00424914906) * bII - 0.00831729565) * bII + 1));
-	bf /= 3600 * rho;
-	double co = cos(bf);
-	double g2 = e2 * (co * co);
-	double g1 = c / sqrt(1 + g2);
-	double t = tan(bf);
-	double fa = (GKRight - floor(GKRight / 1000000) * 1000000 - 500000) / g1;
-	double GeoDezRight = ((bf - fa * fa * t * (1 + g2) / 2 + fa * fa * fa * fa * t * 
-		(5 + 3 * t * t + 6 * g2 - 6 * g2 * t * t) / 24) * rho);
-	double dl = fa - fa * fa * fa * (1 + 2 * t * t + g2) / 6 + fa * fa * fa * fa * fa *
-		(1 + 28 * t * t + 24 * t * t * t * t) / 120;
-	double Mer = floor(GKRight / 1000000);
-	double GeoDezHeight = dl * rho / co + Mer * 3;
-	if (useWGS)
-	{
-		return bessel2WGS(GeoDezRight,GeoDezHeight);
-	}
-	else
-	{
-		result.x = GeoDezHeight;
-		result.y = GeoDezRight;
-		return result;
-	}
-}
-*/
-
 /* Get Datum from 2D point */
 
 static Datum
@@ -264,43 +157,54 @@ gk(Datum inst)
 static GSERIALIZED *
 geometry_transform_gk_internal(GSERIALIZED *gs)
 {
-	GSERIALIZED *result;
+	GSERIALIZED *result = NULL; /* keep compiler quiet */
 	int geometryType = gserialized_get_type(gs);
 	if(geometryType == POINTTYPE)
 	{
-		POINT2D point2D	= gs_get_point2d(gs);
-		Datum geom = gk(point2d_get_datum(point2D));
-		point2D	= datum_get_point2d(geom);
-		LWPOINT *lwpoint = lwpoint_make2d(4326, point2D.x, point2D.y);
+		LWPOINT *lwpoint;
+		if (gserialized_is_empty(gs))
+			lwpoint = lwpoint_construct_empty(0, false, false);
+		else
+		{
+			POINT2D point2D	= gs_get_point2d(gs);
+			Datum geom = gk(point2d_get_datum(point2D));
+			point2D	= datum_get_point2d(geom);
+			lwpoint = lwpoint_make2d(4326, point2D.x, point2D.y);
+		}
 		result = geometry_serialize((LWGEOM *)lwpoint);
+		lwpoint_free(lwpoint);
 	}
 	else if(geometryType == LINETYPE)
 	{
-		LWPOINT *lwpoint = NULL;
-		LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-		LWLINE *line = lwgeom_as_lwline(lwgeom);
-		if(line->points->npoints < 1)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					errmsg("Invalid arguments for LineString")));
-
-		uint32_t numPoints = line->points->npoints;
-		LWPOINT **points = palloc(sizeof(LWPOINT *) * numPoints);
-		for (uint32_t i = 0; i < numPoints; i++)
+		LWLINE *line;
+		if (gserialized_is_empty(gs))
 		{
-			lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, i);
-			Datum point2d_datum = PointerGetDatum(gserialized_from_lwgeom(lwpoint_as_lwgeom(lwpoint), 0));
-			Datum geom = gk(point2d_datum);
-			POINT2D point2D	= datum_get_point2d(geom);
-			points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
+			line = lwline_construct_empty(0, false, false);
+			result = geometry_serialize(lwline_as_lwgeom(line));
 		}
+		else
+		{
+			LWPOINT *lwpoint = NULL;
+			LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+			line = lwgeom_as_lwline(lwgeom);
+			uint32_t numPoints = line->points->npoints;
+			LWPOINT **points = palloc(sizeof(LWPOINT *) * numPoints);
+			for (uint32_t i = 0; i < numPoints; i++)
+			{
+				lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, i);
+				Datum point2d_datum = PointerGetDatum(gserialized_from_lwgeom(lwpoint_as_lwgeom(lwpoint), 0));
+				Datum geom = gk(point2d_datum);
+				POINT2D point2D	= datum_get_point2d(geom);
+				points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
+			}
 
-		line = lwline_from_ptarray(4326, numPoints, points);
-		result = geometry_serialize(lwline_as_lwgeom(line));
-
-		lwline_free(line);lwpoint_free(lwpoint);lwgeom_free(lwgeom);
-		for( uint32_t i = 0; i < numPoints; i++)
-			lwpoint_free(points[i]);
-		pfree(points);
+			line = lwline_from_ptarray(4326, numPoints, points);
+			result = geometry_serialize(lwline_as_lwgeom(line));
+			lwline_free(line);lwpoint_free(lwpoint);lwgeom_free(lwgeom);
+			for( uint32_t i = 0; i < numPoints; i++)
+				lwpoint_free(points[i]);
+			pfree(points);
+		}
 	}
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
