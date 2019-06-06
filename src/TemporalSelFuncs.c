@@ -410,12 +410,12 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 	double selec = 0.0;
 
 
-	if (vardata.vartype == type_oid(T_TINT) ||
-		vardata.vartype == type_oid(T_TBOOL) ||
+	if (vardata.vartype == type_oid(T_TBOOL) ||
+		vardata.vartype == type_oid(T_TINT) ||
 		vardata.vartype == type_oid(T_TFLOAT) ||
 		vardata.vartype == type_oid(T_TTEXT) ||
-		vardata.vartype == type_oid(T_TGEOGPOINT) ||
-		vardata.vartype == type_oid(T_TGEOMPOINT))
+		vardata.vartype == type_oid(T_TGEOMPOINT) || 
+		vardata.vartype == type_oid(T_TGEOGPOINT))
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
@@ -424,12 +424,12 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, constant->val,
 							   type_oid(T_TIMESTAMPTZ),   TEMPORAL_STATISTICS);
 	}
-	else if (vardata.vartype == type_oid(T_TINT) ||
-			 vardata.vartype == type_oid(T_TBOOL) ||
-			 vardata.vartype == type_oid(T_TFLOAT) ||
-			 vardata.vartype == type_oid(T_TBOOL) ||
-			 vardata.vartype == type_oid(T_TGEOGPOINT) ||
-			 vardata.vartype == type_oid(T_TGEOMPOINT))
+	else if (vardata.vartype == type_oid(T_TBOOL) ||
+			vardata.vartype == type_oid(T_TINT) ||
+			vardata.vartype == type_oid(T_TFLOAT) ||
+			vardata.vartype == type_oid(T_TTEXT) ||
+			vardata.vartype == type_oid(T_TGEOMPOINT) || 
+			vardata.vartype == type_oid(T_TGEOGPOINT))
 	{
 		Oid op = (Oid) 0;
 
@@ -460,8 +460,8 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 			 vardata.vartype == type_oid(T_TINT) ||
 			 vardata.vartype == type_oid(T_TFLOAT) ||
 			 vardata.vartype == type_oid(T_TTEXT) ||
-			 vardata.vartype == type_oid(T_TGEOGPOINT) ||
-			 vardata.vartype == type_oid(T_TGEOMPOINT))
+			 vardata.vartype == type_oid(T_TGEOMPOINT) ||
+			 vardata.vartype == type_oid(T_TGEOGPOINT))
 	{
 		Oid op = (Oid) 0;
 		if (!isgt && !iseq)
@@ -538,12 +538,12 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 	if (higher)
 	{
 		result->inclusive = false;
-		if (consttype == type_oid(T_TINT) ||
-			consttype == type_oid(T_TBOOL) ||
+		if (consttype == type_oid(T_TBOOL) ||
+			consttype == type_oid(T_TINT) ||
 			consttype == type_oid(T_TFLOAT) ||
 			consttype == type_oid(T_TTEXT) ||
-			consttype == type_oid(T_TGEOGPOINT) ||
-			consttype == type_oid(T_TGEOMPOINT))
+			consttype == type_oid(T_TGEOMPOINT) ||
+			consttype == type_oid(T_TGEOGPOINT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
@@ -571,12 +571,12 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 	else
 	{
 		result->inclusive = true;
-		if (consttype == type_oid(T_TINT) || 
-			consttype == type_oid(T_TBOOL) ||
+		if (consttype == type_oid(T_TBOOL) ||
+			consttype == type_oid(T_TINT) || 
 			consttype == type_oid(T_TFLOAT) ||
 			consttype == type_oid(T_TTEXT) ||
-			consttype == type_oid(T_TGEOGPOINT) ||
-			consttype == type_oid(T_TGEOMPOINT))
+			consttype == type_oid(T_TGEOMPOINT) ||
+			consttype == type_oid(T_TGEOGPOINT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
