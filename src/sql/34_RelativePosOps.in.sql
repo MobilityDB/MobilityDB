@@ -569,23 +569,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tbool, RIGHTARG = period,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 
 /*****************************************************************************/
@@ -612,23 +612,23 @@ CREATE OPERATOR <<# (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_before,
 	COMMUTATOR = #>>,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR &<# (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_overbefore,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #>> (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_after,
 	COMMUTATOR = <<#,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 CREATE OPERATOR #&> (
 	LEFTARG = tbool, RIGHTARG = tbool,
 	PROCEDURE = temporal_overafter,
-	RESTRICT = tnumber_position_sel, JOIN = tnumber_position_joinsel
+	RESTRICT = temporal_position_sel, JOIN = temporal_position_joinsel
 );
 
 /*****************************************************************************

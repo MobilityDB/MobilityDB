@@ -408,21 +408,21 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 							   Node *other, bool isgt, bool iseq, CachedOp operator)
 {
 	double selec = 0.0;
+    int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
 
-
-	if (vardata.vartype == type_oid(T_TBOOL) ||
+	if (durationType == TEMPORALINST && (vardata.vartype == type_oid(T_TBOOL) ||
 		vardata.vartype == type_oid(T_TINT) ||
 		vardata.vartype == type_oid(T_TFLOAT) ||
 		vardata.vartype == type_oid(T_TTEXT) ||
 		vardata.vartype == type_oid(T_TGEOMPOINT) || 
-		vardata.vartype == type_oid(T_TGEOGPOINT))
+		vardata.vartype == type_oid(T_TGEOGPOINT)))
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
 
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, constant->val,
-							   type_oid(T_TIMESTAMPTZ),   TEMPORAL_STATISTICS);
+		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+							   TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_TBOOL) ||
 			vardata.vartype == type_oid(T_TINT) ||
@@ -434,65 +434,25 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 		Oid op = (Oid) 0;
 
 		if (!isgt && !iseq)
-		{
 			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (!isgt && iseq)
-		{
 			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (isgt && !iseq)
-		{
 			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (isgt && iseq)
-		{
 			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
-		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		// TODO ERROR ! EZ Changed to true, true to allow the tests to run
-		// Period *period = period_make(periodBound->val, periodBound->val, !isgt, !isgt);
-		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
 
-	}
-	else if (vardata.vartype == type_oid(T_TBOOL) ||
-			 vardata.vartype == type_oid(T_TINT) ||
-			 vardata.vartype == type_oid(T_TFLOAT) ||
-			 vardata.vartype == type_oid(T_TTEXT) ||
-			 vardata.vartype == type_oid(T_TGEOMPOINT) ||
-			 vardata.vartype == type_oid(T_TGEOGPOINT))
-	{
-		Oid op = (Oid) 0;
-		if (!isgt && !iseq)
-		{
-			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		}
-		else if (!isgt && iseq)
-		{
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
-		else if (isgt && !iseq)
-		{
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-		}
-		else if (isgt && iseq)
-		{
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		// TODO ERROR ! EZ Changed to true, true to allow the tests to run
-		// Period *period = period_make(periodBound->val, periodBound->val, !isgt, !isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
+		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_TIMESTAMPTZ))
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, constant->val,
-							   type_oid(T_TIMESTAMPTZ), DEFAULT_STATISTICS);
-
+		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+							   TIMESTAMPTZOID, DEFAULT_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_PERIOD))
 	{
@@ -514,9 +474,8 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
 		}
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		// Period *period = period_make(periodBound->val, periodBound->val, !isgt, !isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
+		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_TBOX))
 	{
@@ -548,7 +507,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
 			temporal_bbox(tbox, temporal);
-			result->val = tbox->tmax;
+			result->val = (TimestampTz)tbox->tmax;
 			pfree(tbox);
 		}
 		else if (consttype == TIMESTAMPTZOID)
@@ -581,7 +540,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
 			temporal_bbox(tbox, temporal);
-			result->val = tbox->tmin;
+			result->val = (TimestampTz)tbox->tmin;
 			pfree(tbox);
 		}
 		else if (consttype == TIMESTAMPTZOID)
