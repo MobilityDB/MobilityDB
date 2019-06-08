@@ -440,7 +440,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 		else if (isgt && !iseq)
 			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
 		else if (isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
 
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		// TODO ERROR ! EZ Changed to true, true to allow the tests to run
