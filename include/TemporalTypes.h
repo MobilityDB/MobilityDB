@@ -730,8 +730,7 @@ extern uint32 temporalinst_hash(TemporalInst *inst);
  *****************************************************************************/
 
 extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
-extern int temporali_find_timestamp(TemporalI *ti, TimestampTz t);
-extern bool temporali_find_timestamp_new(TemporalI *ti, TimestampTz t, int *pos);
+extern bool temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos);
 extern bool temporalinstarr_find_timestamp(TemporalInst **instants, int from, 
 	int count, TimestampTz t, int *pos);
 extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
