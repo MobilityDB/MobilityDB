@@ -260,24 +260,73 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t)
 	return -1;
 }
 
-int 
-temporalinstarr_find_timestamp(TemporalInst **array, int from, int count, 
-	TimestampTz t) 
+/*
+ * Binary search of a timestamptz in a TemporalI or in an array of TemporalInst.
+ * If the timestamp is found, the position of the instant is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * instants or after. For example, given 3 instants, the result of the 
+ * function if the value is not found will be as follows: 
+ *			0		1		2
+ *			|		|		|
+ * 1)	t^ 								=> result = 0
+ * 2)			t^ 						=> result = 1
+ * 3)					t^ 				=> result = 2
+ * 4)							t^		=> result = 3
+ */
+
+bool
+temporali_find_timestamp_new(TemporalI *ti, TimestampTz t, int *pos) 
 {
-	int first = from;
-	int last = count - 1;
-	int middle = (first + last)/2;
+	int first = 0, last = ti->count;
+	int middle = 0; /* make compiler quiet */
+	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last) 
 	{
-		if (timestamp_cmp_internal(t, array[middle]->t) == 0)
-			return middle;
-		if (timestamp_cmp_internal(t, array[middle]->t) < 0)
+		int middle = (first + last)/2;
+		inst = temporali_inst_n(ti, middle);
+		int cmp = timestamp_cmp_internal(inst->t, t);
+		if (cmp == 0)
+		{
+			*pos = middle;
+			return true;
+		}
+		if (cmp > 0)
+			last = middle - 1;
+		else
+			first = middle + 1;
+	}
+	if (timestamp_cmp_internal(t, inst->t) > 0)
+		middle++;
+	*pos = middle;
+	return false;
+}
+
+bool 
+temporalinstarr_find_timestamp(TemporalInst **instants, int from, int count, 
+	TimestampTz t, int *pos) 
+{
+	int first = from, last = count;
+	int middle = 0; /* make compiler quiet */
+	TemporalInst *inst = NULL; /* make compiler quiet */
+	while (first <= last) 
+	{
+		middle = (first + last)/2;
+		inst = instants[middle];
+		int cmp = timestamp_cmp_internal(inst->t, t);
+		if (cmp == 0)
+		{
+			*pos = middle;
+			return true;
+		}
+		if (cmp > 0)
 			last = middle - 1;
 		else
 			first = middle + 1;	
-		middle = (first + last)/2;
 	}
-	return middle;
+	if (timestamp_cmp_internal(t, inst->t) > 0)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /*****************************************************************************
@@ -1178,8 +1227,8 @@ temporali_at_timestamp(TemporalI *ti, TimestampTz t)
 		return temporalinst_copy(temporali_inst_n(ti, 0));
 
 	/* General case */
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
+	int n;
+	if (! temporali_find_timestamp_new(ti, t, &n))
 		return NULL;
 	TemporalInst *inst = temporali_inst_n(ti, n);
 	return temporalinst_copy(inst);
@@ -1195,9 +1244,9 @@ temporali_at_timestamp(TemporalI *ti, TimestampTz t)
 bool 
 temporali_value_at_timestamp(TemporalI *ti, TimestampTz t, Datum *result)
 {
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
-		return false;		
+	int n;
+	if (! temporali_find_timestamp_new(ti, t, &n))
+		return false;
 
 	TemporalInst *inst = temporali_inst_n(ti, n);
 	*result = temporalinst_value_copy(inst);
@@ -1487,10 +1536,8 @@ temporali_minus_periodset(TemporalI *ti, PeriodSet *ps)
 bool
 temporali_intersects_timestamp(TemporalI *ti, TimestampTz t)
 {
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
-		return false;
-	return true;
+	int n;
+	return temporali_find_timestamp_new(ti, t, &n);
 }
 
 /* Does the temporal value intersects the timestamp set? */

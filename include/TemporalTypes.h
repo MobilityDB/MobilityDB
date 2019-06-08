@@ -261,8 +261,8 @@ typedef struct double4
 typedef struct AggregateState
 {
 	int 		size;
-	void*		extra;
-	size_t      extrasize ;
+	void		*extra;
+	size_t      extrasize;
 	Temporal 	*values[];
 } AggregateState;
 
@@ -543,7 +543,7 @@ extern Datum temporal_in(PG_FUNCTION_ARGS);
 extern Datum temporal_out(PG_FUNCTION_ARGS); 
 extern Datum temporal_send(PG_FUNCTION_ARGS); 
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
-extern Temporal* temporal_read(StringInfo buf, Oid valuetypid) ;
+extern Temporal* temporal_read(StringInfo buf, Oid valuetypid);
 extern void temporal_write(Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
@@ -731,8 +731,9 @@ extern uint32 temporalinst_hash(TemporalInst *inst);
 
 extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
 extern int temporali_find_timestamp(TemporalI *ti, TimestampTz t);
-extern int temporalinstarr_find_timestamp(TemporalInst **array, int from, 
-	int count, TimestampTz t);
+extern bool temporali_find_timestamp_new(TemporalI *ti, TimestampTz t, int *pos);
+extern bool temporalinstarr_find_timestamp(TemporalInst **instants, int from, 
+	int count, TimestampTz t, int *pos);
 extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
 	int count);
 extern TemporalI *temporali_copy(TemporalI *ti);
@@ -1265,7 +1266,7 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 
 extern AggregateState *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size);
-extern void aggstate_move_extra(AggregateState* dest, AggregateState* src) ;
+extern void aggstate_move_extra(AggregateState* dest, AggregateState* src);
 
 extern AggregateState *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));

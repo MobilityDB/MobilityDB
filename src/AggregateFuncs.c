@@ -97,7 +97,6 @@ datum_sum_double4(Datum l, Datum r)
 void 
 aggstate_write(AggregateState *state, StringInfo buf)
 {
-
 	pq_sendint32(buf, (uint32) state->size);
 	Oid valuetypid = InvalidOid;
 	if (state->size > 0)
@@ -105,10 +104,9 @@ aggstate_write(AggregateState *state, StringInfo buf)
 	pq_sendint32(buf, valuetypid);
 	for (int i = 0; i < state->size; i ++)
 		temporal_write(state->values[i], buf);
-
-	pq_sendint64(buf, state->extrasize) ;
+	pq_sendint64(buf, state->extrasize);
 	if(state->extra)
-	    pq_sendbytes(buf, state->extra, state->extrasize) ;
+		pq_sendbytes(buf, state->extra, state->extrasize);
 }
 
 AggregateState *
@@ -128,11 +126,12 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	for (int i = 0; i < size; i ++)
 		result->values[i] = temporal_read(buf, valuetypid);
 	result->size = size;
-	result->extrasize = pq_getmsgint64(buf) ;
-	if(result->extrasize) {
-	    const char* extra = pq_getmsgbytes(buf, result->extrasize) ;
-	    result->extra = palloc(result->extrasize) ;
-	    memcpy(result->extra, extra, result->extrasize) ;
+	result->extrasize = pq_getmsgint64(buf);
+	if(result->extrasize) 
+	{
+		const char* extra = pq_getmsgbytes(buf, result->extrasize);
+		result->extra = palloc(result->extrasize);
+		memcpy(result->extra, extra, result->extrasize);
 	}
 
 	MemoryContextSwitchTo(oldctx);
@@ -142,10 +141,11 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 void
 aggstate_clear(AggregateState *state)
 {
-	for (int i = 0; i < state->size; i ++) {
-		pfree(state->values[i]) ;
-		state->values[i] = NULL ;
-		state->size = 0 ;
+	for (int i = 0; i < state->size; i ++)
+	{
+		pfree(state->values[i]);
+		state->values[i] = NULL;
+		state->size = 0;
 	}
 }
 
@@ -167,7 +167,8 @@ PGDLLEXPORT Datum
 temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 {
 	bytea* data = PG_GETARG_BYTEA_P(0);
-	StringInfoData buf = {
+	StringInfoData buf = 
+	{
 		.cursor = 0,
 		.data = VARDATA(data),
 		.len = VARSIZE(data),
@@ -191,30 +192,32 @@ aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
 		result->values[i] = temporal_copy(values[i]);
 	result->size = size;
 	result->extra = NULL;
-	result->extrasize = 0 ;
+	result->extrasize = 0;
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }
 
 void
-aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size)
+aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data,
+	size_t size)
 {
 	MemoryContext ctx;
 	if (!AggCheckCallContext(fcinfo, &ctx))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Operation not supported")));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-	state->extra = palloc(size) ;
-	state->extrasize = size ;
-	memcpy(state->extra, data, size) ;
+	state->extra = palloc(size);
+	state->extrasize = size;
+	memcpy(state->extra, data, size);
 	MemoryContextSwitchTo(oldctx);
 }
 
-void aggstate_move_extra(AggregateState* dest, AggregateState* src) {
-    dest->extra = src->extra ;
-    dest->extrasize = src->extrasize ;
-    src->extra = NULL ;
-    src->extrasize = 0 ;
+void aggstate_move_extra(AggregateState* dest, AggregateState* src) 
+{
+	dest->extra = src->extra;
+	dest->extrasize = src->extrasize;
+	src->extra = NULL;
+	src->extrasize = 0;
 }
 
 AggregateState *
@@ -239,8 +242,8 @@ aggstate_splice(FunctionCallInfo fcinfo, AggregateState *state1,
 	for (int i = to; i < state1->size; i ++)
 		result->values[count++] = state1->values[i];
 	result->size = count;
-	result->extra = NULL ;
-	result->extrasize = 0 ;
+	result->extra = NULL;
+	result->extrasize = 0;
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }
@@ -284,8 +287,8 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	TemporalSeq *result;
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), seq->period.lower,
-			INT4OID); 
+		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
+			seq->period.lower, INT4OID); 
 		result = temporalseq_from_temporalinstarr(&inst, 1,
 			true, true, false);
 		pfree(inst);
@@ -327,7 +330,7 @@ static Temporal *
 temporal_transform_tcount(Temporal *temp)
 {
 	temporal_duration_is_valid(temp->duration);
-    Temporal *result = NULL;
+	Temporal *result = NULL;
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
@@ -395,7 +398,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalinst_make(value1, inst2->t,
 			inst1->valuetypid);
 		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false ;
+		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
 		bool upper_inc1 = upper_inc && 
 			datum_eq(value1, value2, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
@@ -439,7 +442,7 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
-    int returnvalue = 0;
+	int returnvalue = 0;
 	number_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		returnvalue = tintseq_transform_tavg(result, seq);
@@ -506,68 +509,84 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
 
-	TemporalInst **state11 = (TemporalInst **)state1->values;
-	TemporalInst **state22 = (TemporalInst **)state2->values;
-	TimestampTz lower = state22[0]->t;
-	TimestampTz upper = state22[count2-1]->t;
-	int loweridx = temporalinstarr_find_timestamp(state11, 0, count1, lower);
-	int upperidx = temporalinstarr_find_timestamp(state11, loweridx, count1, upper);
-	TemporalInst **newinsts = palloc(sizeof(TemporalInst *) * 
-		(1 + upperidx - loweridx + count2));
-	TemporalInst **mustfree = palloc(sizeof(TemporalInst *) * 
-		(1 + upperidx - loweridx + count2));
-	int i = 0;
-	int j = loweridx;
-	int newcount1 = 0;
-	int freecount = 0;
-	while (i < count2 && j <= upperidx)
+	TemporalInst **values1 = (TemporalInst **)state1->values;
+	TemporalInst **values2 = (TemporalInst **)state2->values;
+
+	AggregateState *result;
+	/* The state1 is before all state2 instants */
+	if (timestamp_cmp_internal(values1[count1-1]->t, values2[0]->t) < 0)
+		result = aggstate_splice(fcinfo, state2, state1, 0, 0);
+	/* The state2 is before all state1 instants */
+	else if (timestamp_cmp_internal(values2[count2-1]->t, values1[0]->t) < 0)
+		result = aggstate_splice(fcinfo, state1, state2, 0, 0);
+	else
 	{
-		TemporalInst *inst = state22[i];
-		if (timestamp_cmp_internal(inst->t, state11[j]->t) == 0)
-		{
-			TemporalInst *inst1 = temporalinst_make(
-				func(temporalinst_value(state11[j]), temporalinst_value(inst)),
-				inst->t, inst->valuetypid);
-			newinsts[newcount1++] = mustfree[freecount++] = inst1;
-			i++;
-			j++;
-		}
-		else if (timestamp_cmp_internal(inst->t, state11[j]->t) < 0)
-		{
-			newinsts[newcount1++] = inst;
-			i++;
-		}
+		TimestampTz lower = values2[0]->t;
+		TimestampTz upper = values2[count2-1]->t;
+		int loweridx, upperidx;
+		bool foundlower = temporalinstarr_find_timestamp(values1, 0, count1, lower, &loweridx);
+		bool foundupper = temporalinstarr_find_timestamp(values1, loweridx, count1, upper, &upperidx);
+		/* If found upper the instant to be copied is the next one */
+		if (foundupper)
+			upperidx++;
+		if (!foundlower && !foundupper && loweridx == upperidx)
+			/* The state2 is in a gap between two instants of state1 */
+			result = aggstate_splice(fcinfo, state1, state2, loweridx, loweridx);
 		else
 		{
-			newinsts[newcount1++] = state11[j];
-			j++;
+			TemporalInst **newinsts = palloc(sizeof(TemporalInst *) * 
+				(1 + upperidx - loweridx + count2));
+			TemporalInst **mustfree = palloc(sizeof(TemporalInst *) * 
+				(1 + upperidx - loweridx + count2));
+			int i = 0;
+			int j = loweridx;
+			int newcount1 = 0;
+			int freecount = 0;
+			while (i < count2 && j <= upperidx)
+			{
+				TemporalInst *inst = values2[i];
+				if (timestamp_cmp_internal(inst->t, values1[j]->t) == 0)
+				{
+					TemporalInst *inst1 = temporalinst_make(
+						func(temporalinst_value(values1[j]), temporalinst_value(inst)),
+						inst->t, inst->valuetypid);
+					newinsts[newcount1++] = mustfree[freecount++] = inst1;
+					i++;
+					j++;
+				}
+				else if (timestamp_cmp_internal(inst->t, values1[j]->t) < 0)
+				{
+					newinsts[newcount1++] = inst;
+					i++;
+				}
+				else
+				{
+					newinsts[newcount1++] = values1[j];
+					j++;
+				}
+			}
+			while (i < count2)
+			{
+				newinsts[newcount1++] = values2[i];
+				i++;
+			}	
+			while (j < upperidx)
+			{
+				newinsts[newcount1++] = values1[j];
+				j++;
+			}
+			/* Copy the new instants into the aggregation state memory context */
+			AggregateState *tempstate = aggstate_make(fcinfo, newcount1, (Temporal **)newinsts); 
+			result = aggstate_splice(fcinfo, state1, tempstate, loweridx, upperidx);
+			pfree(tempstate);
+			/* free the values in state2 that have been aggregated: */
+			aggstate_clear(state2);
+			pfree(newinsts);  
+			for (int i = 0; i < freecount; i++) 
+				pfree(mustfree[i]);
+			pfree(mustfree);
 		}
 	}
-	while (i < count2)
-	{
-		newinsts[newcount1++] = state22[i];
-		i++;
-	}	
-	while (j <= upperidx)
-	{
-		newinsts[newcount1++] = state11[j];
-		j++;
-	}
-	
-	int newcount = (count1 - (1 + upperidx - loweridx)) + newcount1;
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * newcount);
-	memcpy(instants, state11, loweridx * sizeof(TemporalInst *));
-	memcpy(instants + loweridx, newinsts, newcount1 * sizeof(TemporalInst *));
-	memcpy(instants + loweridx + newcount1, 1 + state11 + upperidx, 
-		(count1 - upperidx - 1) * sizeof(TemporalInst *));
-	AggregateState *result = aggstate_make(fcinfo, newcount, (Temporal **)instants);
-
-	pfree(newinsts);  
-	for (int i = 0; i < freecount; i++) 
-		pfree(mustfree[i]);
-	pfree(mustfree);	
-	pfree(instants);
-	
 	return result;
 }
 
@@ -845,29 +864,24 @@ temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
 
-	TemporalSeq **state11 = (TemporalSeq **)state1->values;	
-	TemporalSeq **state22 = (TemporalSeq **)state2->values;	
-	Period period_state2;
-	period_set(&period_state2,
-		state22[0]->period.lower, state22[count2-1]->period.upper,
-		state22[0]->period.lower_inc, state22[count2-1]->period.upper_inc);
-
+	TemporalSeq **values1 = (TemporalSeq **)state1->values;	
+	TemporalSeq **values2 = (TemporalSeq **)state2->values;	
 	AggregateState *result;
 	/* The state2 is before all state1 sequences */
-	if (before_period_period_internal(&state22[count2-1]->period, 
-		&state11[0]->period))
-		result = aggstate_splice(fcinfo, state1, state2, 0, 0) ;
+	if (before_period_period_internal(&values2[count2-1]->period, 
+		&values1[0]->period))
+		result = aggstate_splice(fcinfo, state1, state2, 0, 0);
 	/* The state2 is after all state1 sequences */
-	else if (after_period_period_internal(&state22[0]->period, 
-		&state11[count1-1]->period))
-		result = aggstate_splice(fcinfo, state2, state1, 0, 0) ;
+	else if (after_period_period_internal(&values2[0]->period, 
+		&values1[count1-1]->period))
+		result = aggstate_splice(fcinfo, state2, state1, 0, 0);
 	else
 	{
 		int loweridx, upperidx;
-		bool foundlower = temporalseqarr_find_timestamp(state11, 0, count1,
-			period_state2.lower, &loweridx);
-		bool foundupper = temporalseqarr_find_timestamp(state11, loweridx, count1,
-			period_state2.upper, &upperidx);
+		bool foundlower = temporalseqarr_find_timestamp(values1, 0, count1,
+			values2[0]->period.lower, &loweridx);
+		bool foundupper = temporalseqarr_find_timestamp(values1, loweridx, count1,
+			values2[count2-1]->period.upper, &upperidx);
 		/* If found upper the sequence to be copied is the next one */
 		if (foundupper)
 			upperidx++;
@@ -880,14 +894,14 @@ temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 			 * and state2 */
 			int newcount1 = upperidx - loweridx;
 			int newcount2;
-			TemporalSeq **newseqs = temporalseq_tagg2(&state11[loweridx], newcount1,
-				state22, count2, func, crossings, &newcount2);
+			TemporalSeq **newseqs = temporalseq_tagg2(&values1[loweridx], newcount1,
+				values2, count2, func, crossings, &newcount2);
 			/* Copy them into the aggregation state memory context */
 			AggregateState *tempstate = aggstate_make(fcinfo, newcount2, (Temporal **)newseqs); 
 			result = aggstate_splice(fcinfo, state1, tempstate, loweridx, upperidx);
 			pfree(tempstate);
 			/* free the values in state2 that have been aggregated: */
-			aggstate_clear(state2) ;
+			aggstate_clear(state2);
 			for (int i = 0; i < newcount2; i++)
 				pfree(newseqs[i]);
 			pfree(newseqs);
