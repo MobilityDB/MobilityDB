@@ -213,10 +213,10 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
 				break;
 			case OVERBEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
 				break;
 			case OVERAFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
+				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
 				break;
 			default:
 				selec = 0.001;
@@ -549,7 +549,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		}
 		else if (consttype == type_oid(T_PERIOD))
 		{
-			result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
+			result->val = DatumGetPeriod(((Const *) other)->constvalue)->lower;
 		}
 		else if (consttype == type_oid(T_TBOX))
 		{
