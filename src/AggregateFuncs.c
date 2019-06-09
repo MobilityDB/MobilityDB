@@ -113,9 +113,7 @@ AggregateState *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
 	MemoryContext ctx;
-	if (!AggCheckCallContext(fcinfo, &ctx))
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	assert(AggCheckCallContext(fcinfo, &ctx));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 
 	int size = pq_getmsgint(buf, 4);
@@ -182,9 +180,7 @@ AggregateState *
 aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
 {
 	MemoryContext ctx;
-	if (!AggCheckCallContext(fcinfo, &ctx))
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	assert(AggCheckCallContext(fcinfo, &ctx));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 	AggregateState *result = palloc0(sizeof(AggregateState) + 
 		size * sizeof(Temporal *));
@@ -202,9 +198,7 @@ aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data,
 	size_t size)
 {
 	MemoryContext ctx;
-	if (!AggCheckCallContext(fcinfo, &ctx))
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Operation not supported")));
+	assert(AggCheckCallContext(fcinfo, &ctx));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 	state->extra = palloc(size);
 	state->extrasize = size;
@@ -225,9 +219,7 @@ aggstate_splice(FunctionCallInfo fcinfo, AggregateState *state1,
 	AggregateState *state2, int from, int to)
 {
 	MemoryContext ctx;
-	if (!AggCheckCallContext(fcinfo, &ctx))
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
-			errmsg("Operation not supported")));
+	assert(AggCheckCallContext(fcinfo, &ctx));
 	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
 	AggregateState *result = palloc0(sizeof(AggregateState) + 
 		(state1->size + state2->size - (to - from)) * sizeof(Temporal *));
@@ -495,7 +487,7 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
  */
 AggregateState *
 temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*func)(Datum, Datum))
+	AggregateState *state2, Datum (*func)(Datum, Datum))
 {
 	int count1 = state1->size;
 	int count2 = state2->size;
@@ -1445,9 +1437,7 @@ PG_FUNCTION_INFO_V1(temporal_tagg_finalfn);
 PGDLLEXPORT Datum
 temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 {
-	if (PG_ARGISNULL(0))
-		PG_RETURN_NULL();
-
+	/* The final function is strict, we do not need to test for null values */
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
 	if (state->size == 0)
 		PG_RETURN_NULL();
@@ -1517,15 +1507,12 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 	return result;
 }
 
-
 PG_FUNCTION_INFO_V1(temporal_tavg_finalfn);
 
 PGDLLEXPORT Datum
 temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 {
-	if (PG_ARGISNULL(0))
-		PG_RETURN_NULL();
-
+	/* The final function is strict, we do not need to test for null values */
 	AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
 	if (state->size == 0)
 		PG_RETURN_NULL();

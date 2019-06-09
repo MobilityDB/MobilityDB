@@ -255,12 +255,12 @@ temporali_copy(TemporalI *ti)
 bool
 temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos) 
 {
-	int first = 0, last = ti->count;
+	int first = 0, last = ti->count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last) 
 	{
-		int middle = (first + last)/2;
+		middle = (first + last)/2;
 		inst = temporali_inst_n(ti, middle);
 		int cmp = timestamp_cmp_internal(inst->t, t);
 		if (cmp == 0)
@@ -283,7 +283,7 @@ bool
 temporalinstarr_find_timestamp(TemporalInst **instants, int from, int count, 
 	TimestampTz t, int *pos) 
 {
-	int first = from, last = count;
+	int first = from, last = count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last) 
