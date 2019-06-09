@@ -274,8 +274,7 @@ temporals_copy(TemporalS *ts)
 bool 
 temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos) 
 {
-	int first = 0;
-	int last = ts->count - 1;
+	int first = 0, last = ts->count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalSeq *seq = NULL; /* make compiler quiet */
 	while (first <= last) 
@@ -302,8 +301,7 @@ bool
 temporalseqarr_find_timestamp(TemporalSeq **sequences, int from, int count, 
 	TimestampTz t, int *pos) 
 {
-	int first = from;
-	int last = count - 1;
+	int first = from, last = count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalSeq *seq = NULL; /* make compiler quiet */
 	while (first <= last) 

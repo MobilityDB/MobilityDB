@@ -422,47 +422,47 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
-   FunctionCallInfoData fcinfo;
-   FmgrInfo flinfo;
+	FunctionCallInfoData fcinfo;
+	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo)) ;
-   flinfo.fn_mcxt = CurrentMemoryContext;
-   Datum result;
-   InitFunctionCallInfoData(fcinfo, NULL, 3, InvalidOid, NULL, NULL);
-   fcinfo.flinfo = &flinfo;
-   fcinfo.arg[0] = arg1;
-   fcinfo.argnull[0] = false;
-   fcinfo.arg[1] = arg2;
-   fcinfo.argnull[1] = false;
-   fcinfo.arg[2] = arg3;
-   fcinfo.argnull[2] = false;
-   result = (*func) (&fcinfo);
-   if (fcinfo.isnull)
-	   elog(ERROR, "function %p returned NULL", (void *) func);
-   return result;
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(fcinfo, NULL, 3, InvalidOid, NULL, NULL);
+	fcinfo.flinfo = &flinfo;
+	fcinfo.arg[0] = arg1;
+	fcinfo.argnull[0] = false;
+	fcinfo.arg[1] = arg2;
+	fcinfo.argnull[1] = false;
+	fcinfo.arg[2] = arg3;
+	fcinfo.argnull[2] = false;
+	result = (*func) (&fcinfo);
+	if (fcinfo.isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+	return result;
 }
 
 Datum
 call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
-   FunctionCallInfoData fcinfo;
-   FmgrInfo flinfo;
+	FunctionCallInfoData fcinfo;
+	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo)) ;
-   flinfo.fn_mcxt = CurrentMemoryContext;
-   Datum result;
-   InitFunctionCallInfoData(fcinfo, NULL, 4, InvalidOid, NULL, NULL);
-   fcinfo.flinfo = &flinfo;
-   fcinfo.arg[0] = arg1;
-   fcinfo.argnull[0] = false;
-   fcinfo.arg[1] = arg2;
-   fcinfo.argnull[1] = false;
-   fcinfo.arg[2] = arg3;
-   fcinfo.argnull[2] = false;
-   fcinfo.arg[3] = arg4;
-   fcinfo.argnull[3] = false;
-   result = (*func) (&fcinfo);
-   if (fcinfo.isnull)
-	   elog(ERROR, "function %p returned NULL", (void *) func);
-   return result;
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(fcinfo, NULL, 4, InvalidOid, NULL, NULL);
+	fcinfo.flinfo = &flinfo;
+	fcinfo.arg[0] = arg1;
+	fcinfo.argnull[0] = false;
+	fcinfo.arg[1] = arg2;
+	fcinfo.argnull[1] = false;
+	fcinfo.arg[2] = arg3;
+	fcinfo.argnull[2] = false;
+	fcinfo.arg[3] = arg4;
+	fcinfo.argnull[3] = false;
+	result = (*func) (&fcinfo);
+	if (fcinfo.isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+	return result;
 }
 
 /*****************************************************************************
@@ -702,8 +702,8 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
-	char	   *a1p,
-			   *a2p;
+	char		*a1p,
+				*a2p;
 	int			len1,
 				len2;
 

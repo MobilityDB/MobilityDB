@@ -1348,9 +1348,6 @@ select k%10, numSequences(tcount(ts)) from tbl_ttexts group by k%10 order by k%1
         9 |           56
 (10 rows)
 
-/* Errors */
-select tsum(temp) from tbl_tint;
-ERROR:  Cannot aggregate temporal values of different duration
 set parallel_tuple_cost=100;
 SET
 set parallel_setup_cost=100;
