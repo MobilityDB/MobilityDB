@@ -234,6 +234,18 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
             case OVERRIGHT_OP:
                 selec = estimate_tnumber_position_sel(root, vardata, other, true, true, GE_OP);
                 break;
+            case BEFORE_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+                break;
+            case AFTER_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+                break;
+            case OVERBEFORE_OP:
+                selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+                break;
+            case OVERAFTER_OP:
+                selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+                break;
             default:
                 selec = 0.001;
         }

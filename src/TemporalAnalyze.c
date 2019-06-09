@@ -192,11 +192,20 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	int num_bins = stats->attr->attstattarget,
 		num_mcv = stats->attr->attstattarget,
 		num_hist;
+    bool typbyval = true;
+    int typlen = sizeof(TimestampTz);
 
-	bool typbyval = type_byval_fast(valueType);
-	int typlen = get_typlen_fast(valueType);
+    if (valueType != TIMESTAMPTZOID)
+    {
+        typbyval = type_byval_fast(valueType);
+        typlen = get_typlen_fast(valueType);
+    }
 
-	MemoryContext old_cxt;
+    /* We need to change the OID due to PostgreSQL internal behavior */
+    if (valueType == INT4OID)
+        valueType = INT8OID;
+
+    MemoryContext old_cxt;
 
 	int ndistinct,	/* # distinct values in sample */
 		nmultiple,	/* # that appear multiple times */
@@ -482,7 +491,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	}
 
 	/* Generate a correlation entry if there are multiple values */
-	if (non_null_cnt > 1)
+	if (non_null_cnt > 1 && valueType != TIMESTAMPTZOID)
 	{
 		MemoryContext old_context;
 		float4 *corrs;
@@ -640,10 +649,6 @@ tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	Oid valueType = base_oid_from_temporal(stats->attrtypid);
 	bool typbyval = type_byval_fast(valueType);
 	int typlen = get_typlen_fast(valueType);
-	
-	/* We need to change the OID due to PostgreSQL internal behavior */
-	if (valueType == INT4OID)
-		valueType = INT8OID;
 
 	/* Loop over the sample values. */
 	for (temporalinst_no = 0; temporalinst_no < samplerows; temporalinst_no++)
@@ -709,6 +714,7 @@ tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		scalar_compute_stats(stats, timestamp_values, timestamp_tupnoLink, 
 			timestamp_track, non_null_cnt, null_cnt, TIMESTAMPTZOID,
 			slot_idx, total_width, totalrows, samplerows);
+
 
 	}
 	else if (null_cnt > 0)
