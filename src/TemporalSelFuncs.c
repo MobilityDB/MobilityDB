@@ -179,14 +179,6 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 	 */
 	if (!varonleft)
 	{
-		/* we have other Op var, commute to make var Op other */
-		operator = get_commutator(operator);
-		if (!operator)
-		{
-			/* Use default selectivity (should we raise an error instead?) */
-			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-		}
 		switch (cachedOp)
 		{
 			case BEFORE_OP:

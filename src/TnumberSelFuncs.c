@@ -402,12 +402,31 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
             case DNCONST_DTCONST:
             {
                 hasNumeric = true;
-                Oid opl = oper_oid(LT_OP, vartype, vartype);
-                Oid opg = oper_oid(GT_OP, vartype, vartype);
-                selec1 = scalarineq_sel(root, opl, false, false, &vardata, (Datum) constantData.lower,
-                                        type_oid(vartype), VALUE_STATISTICS);
-                selec1 += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
-                                         type_oid(vartype), VALUE_STATISTICS);
+                if (cachedOp == OVERLAPS_OP)
+                {
+                    TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
+                    selec1 = range_sel_internal(root, &vardata, (Datum)constantData.lower, false, false, typcache,
+                                                VALUE_STATISTICS);
+                    selec1 += range_sel_internal(root, &vardata, (Datum)constantData.upper, true, false, typcache,
+                                                 VALUE_STATISTICS);
+                }
+                else if (cachedOp == CONTAINS_OP)
+                {
+                    TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
+                    selec1 = range_sel_internal(root, &vardata, (Datum)constantData.lower, false, false, typcache,
+                                                VALUE_STATISTICS);
+                    selec1 += range_sel_internal(root, &vardata, (Datum)constantData.upper, false, false, typcache,
+                                                 VALUE_STATISTICS);
+                }
+                else if (cachedOp == CONTAINED_OP)
+                {
+                    Oid opl = oper_oid(LT_OP, vartype, vartype);
+                    Oid opg = oper_oid(GT_OP, vartype, vartype);
+                    selec1 = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower,
+                                            type_oid(vartype), VALUE_STATISTICS);
+                    selec1 += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
+                                             type_oid(vartype), VALUE_STATISTICS);
+                }
                 selec1 = 1 - selec1;
                 selec1 = selec1 < 0 ? 0 : selec1;
                 break;
@@ -644,21 +663,13 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
     }
 
     if (!isgt && !iseq)
-    {
         hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, false);
-    }
     else if (!isgt && iseq)
-    {
         hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, true);
-    }
     else if (isgt && !iseq)
-    {
         hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, false);
-    }
     else if (isgt && iseq)
-    {
         hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
-    }
 
     free_attstatsslot(&hslot);
 
