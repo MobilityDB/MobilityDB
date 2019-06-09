@@ -14,6 +14,7 @@
  *****************************************************************************/
 
 #include <TemporalTypes.h>
+#include <TemporalSelFuncs.h>
 #include "TemporalTypes.h"
 #include "TemporalSelFuncs.h"
 
@@ -206,13 +207,13 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
                 selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
                 break;
             case AFTER_OP:
-                selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+                selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
                 break;
             case OVERBEFORE_OP:
-                selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+                selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
                 break;
             case OVERAFTER_OP:
-                selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
+                selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
                 break;
             default:
                 selec = 0.001;
@@ -241,7 +242,7 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
                 selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
                 break;
             case OVERBEFORE_OP:
-                selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+                selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
                 break;
             case OVERAFTER_OP:
                 selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
@@ -337,6 +338,8 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
     {
         constantData.lower = lower;
         constantData.upper = upper;
+        if (lower == upper && (cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
+            constantData.bBoxBounds = DNCONST;
     }
     if (temporal)
     {
@@ -486,48 +489,12 @@ estimate_tnumber_position_sel(PlannerInfo *root, VariableStatData vardata,
                               Node *other, bool isgt, bool iseq, CachedOp operator)
 {
     double selec = 0.0;
-    if (vardata.vartype == type_oid(T_TINT) ||
-        vardata.vartype == type_oid(T_INT4))
-    {
-        Oid op = oper_oid(operator, T_INT4, T_INT4);
-        int constant = (int) ceil(lower_or_higher_value_bound(other, isgt));
-        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, constant, type_oid(T_INT4), VALUE_STATISTICS);
-    }
-    else if (vardata.vartype == type_oid(T_TFLOAT) || vardata.vartype == type_oid(T_FLOAT8))
-    {
-        Oid op = oper_oid(operator, T_FLOAT8, T_FLOAT8);
-        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, lower_or_higher_value_bound(other, isgt),
-                               type_oid(T_FLOAT8), VALUE_STATISTICS);
-    }
-    else if (vardata.vartype == type_oid(T_TFLOAT))
-    {
-        TypeCacheEntry *typcache = lookup_type_cache(type_oid(T_FLOATRANGE), TYPECACHE_RANGE_INFO);
-        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
-                           VALUE_STATISTICS);
-    }
-    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
+    if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
     {
         TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
                                                      TYPECACHE_RANGE_INFO);
-        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt),
+        selec = range_sel_internal(root, &vardata, (Datum)lower_or_higher_value_bound(other, isgt),
                            isgt, iseq, typcache, VALUE_STATISTICS);
-
-    }
-    else if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-    {
-        TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
-                                                     TYPECACHE_RANGE_INFO);
-        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
-                           VALUE_STATISTICS);
-    }
-    else if (vardata.vartype == type_oid(T_INTRANGE) || vardata.vartype == type_oid(T_FLOATRANGE))
-    {
-        TypeCacheEntry *typcache = lookup_type_cache(vardata.vartype, TYPECACHE_RANGE_INFO);
-        range_sel_internal(root, &vardata, lower_or_higher_value_bound(other, isgt), isgt, iseq, typcache,
-                           DEFAULT_STATISTICS);
-    }
-    else if (vardata.vartype == type_oid(T_TBOX))
-    {
 
     }
     return selec;

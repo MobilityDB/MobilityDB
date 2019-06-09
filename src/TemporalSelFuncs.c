@@ -13,6 +13,8 @@
  *
  *****************************************************************************/
 
+#include <TemporalTypes.h>
+#include <TemporalSelFuncs.h>
 #include "TemporalPoint.h"
 
 /*
@@ -1451,7 +1453,12 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 		if (*numeric && *temporal)
 			*bBoxBounds = DNCONST_DTCONST;
 		else if (*numeric)
-			*bBoxBounds = DNCONST;
+        {
+            if (tbox->xmin == tbox->xmax)
+                *bBoxBounds = SNCONST;
+            else
+                *bBoxBounds = DNCONST;
+        }
 		else if (*temporal)
 			*bBoxBounds = DTCONST;
 	}
