@@ -484,12 +484,14 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 	if (higher)
 	{
 		result->inclusive = false;
-		if (consttype == type_oid(T_TBOOL) ||
-			consttype == type_oid(T_TINT) ||
-			consttype == type_oid(T_TFLOAT) ||
-			consttype == type_oid(T_TTEXT) ||
-			consttype == type_oid(T_TGEOMPOINT) ||
-			consttype == type_oid(T_TGEOGPOINT))
+        if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->upper;
+        }
+		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
@@ -497,6 +499,13 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 			result->val = (TimestampTz)tbox->tmax;
 			pfree(tbox);
 		}
+        else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->upper;
+        }
 		else if (consttype == TIMESTAMPTZOID)
 		{
 			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
@@ -517,12 +526,14 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 	else
 	{
 		result->inclusive = true;
-		if (consttype == type_oid(T_TBOOL) ||
-			consttype == type_oid(T_TINT) || 
-			consttype == type_oid(T_TFLOAT) ||
-			consttype == type_oid(T_TTEXT) ||
-			consttype == type_oid(T_TGEOMPOINT) ||
-			consttype == type_oid(T_TGEOGPOINT))
+		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->lower;
+        }
+		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
 			TBOX *tbox = palloc(sizeof(TBOX));
@@ -530,6 +541,13 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 			result->val = (TimestampTz)tbox->tmin;
 			pfree(tbox);
 		}
+		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->lower;
+        }
 		else if (consttype == TIMESTAMPTZOID)
 		{
 			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
