@@ -526,15 +526,14 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 			result = aggstate_splice(fcinfo, state1, state2, loweridx, loweridx);
 		else
 		{
+			/* Compute the aggregation of state1[loweridx] -> state1[upperidx-1] */
 			TemporalInst **newinsts = palloc(sizeof(TemporalInst *) * 
-				(1 + upperidx - loweridx + count2));
+				(upperidx - loweridx + count2));
 			TemporalInst **mustfree = palloc(sizeof(TemporalInst *) * 
-				(1 + upperidx - loweridx + count2));
-			int i = 0;
-			int j = loweridx;
-			int newcount1 = 0;
-			int freecount = 0;
-			while (i < count2 && j <= upperidx)
+				(upperidx - loweridx + count2));
+			int i = 0, j = loweridx;
+			int newcount1 = 0, freecount = 0;
+			while (i < count2 && j < upperidx)
 			{
 				TemporalInst *inst = values2[i];
 				if (timestamp_cmp_internal(inst->t, values1[j]->t) == 0)
