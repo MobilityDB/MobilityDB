@@ -38,10 +38,10 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
 
-SELECT transform_gk(temp) from tbl_tgeompoint LIMIT 10;
+SELECT MAX(ST_X(startValue(transform_gk(temp)))) from tbl_tgeompoint;
 
-SELECT transform_gk(g) from tbl_geompoint where not st_isempty(g) LIMIT 10;
-SELECT transform_gk(g) from tbl_geomlinestring where not st_isempty(g) LIMIT 10;
+SELECT MAX(ST_X(transform_gk(g))) from tbl_geompoint LIMIT 10;
+SELECT MAX(ST_X(ST_StartPoint(transform_gk(g)))) from tbl_geomlinestring LIMIT 10;
 
 -------------------------------------------------------------------------------
 

@@ -346,8 +346,10 @@ tnumberinst_transform_tavg(TemporalInst *inst)
 {
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
 	double2 *dvalue = double2_construct(value, 1);
-	return temporalinst_make(PointerGetDatum(dvalue), inst->t,
+	TemporalInst *result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
 		type_oid(T_DOUBLE2));
+	pfree(dvalue);
+	return result;
 }
 
 static TemporalInst **

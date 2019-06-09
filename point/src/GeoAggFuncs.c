@@ -50,20 +50,22 @@ static void geoaggstate_check_t(AggregateState* state, Temporal* t) {
 static TemporalInst *
 tpointinst_transform_tcentroid(TemporalInst *inst)
 {
+	TemporalInst *result;
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
 		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
 		double4 *dvalue = double4_construct(point.x, point.y, point.z, 1);
-		return temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
 			type_oid(T_DOUBLE4));
 	}
 	else 
 	{
 		POINT2D point = datum_get_point2d(temporalinst_value(inst));
 		double3 *dvalue = double3_construct(point.x, point.y, 1);
-		return temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
 			type_oid(T_DOUBLE3));
 	}
+	return result;
 }
 
 static TemporalInst **
