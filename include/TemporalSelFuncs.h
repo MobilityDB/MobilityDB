@@ -95,7 +95,7 @@ extern float8 get_period_distance(PeriodBound *bound1, PeriodBound *bound2);
 extern int length_hist_bsearch(Datum *length_hist_values,
                                int length_hist_nvalues, double value, bool equal);
 extern double calc_period_hist_selectivity(VariableStatData *vardata,
-                                           Period *constval, Oid operator);
+                                           Period *constval, Oid operator, StatisticsStrategy strategy);
 extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
                                                   PeriodBound *hist, int hist_nvalues, bool equal);
 extern double calc_length_hist_frac(Datum *length_hist_values,

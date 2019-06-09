@@ -15,6 +15,7 @@
 
 #include <TemporalTypes.h>
 #include <TemporalSelFuncs.h>
+#include <TimeTypes.h>
 #include "TemporalPoint.h"
 
 /*
@@ -445,7 +446,6 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
 
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		// TODO ERROR ! EZ Changed to true, true to allow the tests to run
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
 		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
 	}
@@ -460,21 +460,14 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 	{
 		Oid op = (Oid) 0;
 		if (!isgt && !iseq)
-		{
 			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (!isgt && iseq)
-		{
 			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (isgt && !iseq)
-		{
 			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-		}
 		else if (isgt && iseq)
-		{
 			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		}
+
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
 		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
@@ -594,7 +587,7 @@ period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constv
 		null_frac = 0.0;
 		empty_frac = 0.0;
 	}
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator);
+	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, strategy);
 	selec = (1.0 - empty_frac) * hist_selec;
 	selec *= (1.0 - null_frac);
 	return selec;

@@ -51,7 +51,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	 * returning the default estimate, because this still takes into 
 	 * account the fraction of NULL tuples, if we had statistics for them.
 	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator);
+	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, DEFAULT_STATISTICS);
 	if (hist_selec < 0.0)
 		hist_selec = default_period_selectivity(operator);
 
@@ -110,7 +110,7 @@ get_time_cacheOp(Oid operator)
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval, 
-	Oid operator)
+	Oid operator, StatisticsStrategy strategy)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -123,8 +123,8 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		kind_type = STATISTIC_KIND_HISTOGRAM;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		get_attstatsslot(&hslot, vardata->statsTuple,
-			kind_type, InvalidOid, ATTSTATSSLOT_VALUES)))
+		get_attstatsslot_internal(&hslot, vardata->statsTuple,
+			kind_type, InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper
