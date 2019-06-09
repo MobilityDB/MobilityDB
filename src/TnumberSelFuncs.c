@@ -475,15 +475,9 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
                 }
                 else
                 {
-                    Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-                    Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ , T_TIMESTAMPTZ);
                     hasTemporal = true;
-                    selec2 = scalarineq_sel(root, opl, false, false, &vardata, (Datum)constantData.period->lower,
-                                            TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec2 += scalarineq_sel(root, opg, true, false, &vardata, (Datum)constantData.period->upper,
-                                             TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-                    selec2 = 1 - selec2;
-                    selec2 = selec2 < 0 ? 0 : selec2;
+                    selec2 = period_sel_internal(root, &vardata, constantData.period,
+                                                 oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
                 }
             }
             default:
