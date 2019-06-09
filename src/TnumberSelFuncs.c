@@ -181,14 +181,6 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
      */
     if (!varonleft)
     {
-        /* we have other Op var, commute to make var Op other */
-        operator = get_commutator(operator);
-        if (!operator)
-        {
-            /* Use default selectivity (should we raise an error instead?) */
-            ReleaseVariableStats(vardata);
-            PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-        }
         switch (cachedOp)
         {
             case LEFT_OP:
@@ -198,10 +190,10 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
                 selec = estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
                 break;
             case OVERLEFT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, true, true, GE_OP);
+                selec = 1.0 - estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
                 break;
             case OVERRIGHT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, false, true, LE_OP);
+                selec = 1.0 - estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
                 break;
             case BEFORE_OP:
                 selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
@@ -338,7 +330,7 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
     {
         constantData.lower = lower;
         constantData.upper = upper;
-        if (lower == upper && (cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
+        if (lower == upper && varonleft &&(cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
             constantData.bBoxBounds = DNCONST;
     }
     if (temporal)
@@ -346,7 +338,13 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
         constantData.period = period;
     }
 
-    selec = estimate_tnumber_bbox_sel(root, vardata, constantData, cachedOp);
+    if (cachedOp == CONTAINS_OP && !varonleft)
+        selec = estimate_tnumber_bbox_sel(root, vardata, constantData, CONTAINED_OP);
+    else if (cachedOp == CONTAINED_OP && !varonleft)
+        selec = estimate_tnumber_bbox_sel(root, vardata, constantData, CONTAINS_OP);
+    else
+        selec = estimate_tnumber_bbox_sel(root, vardata, constantData, cachedOp);
+
 
     if (selec < 0.0)
         selec = default_temporaltypes_selectivity(operator);
