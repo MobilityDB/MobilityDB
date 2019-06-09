@@ -513,11 +513,11 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 		result = aggstate_splice(fcinfo, state1, state2, 0, 0);
 	else
 	{
-		TimestampTz lower = values2[0]->t;
-		TimestampTz upper = values2[count2-1]->t;
 		int loweridx, upperidx;
-		bool foundlower = temporalinstarr_find_timestamp(values1, 0, count1, lower, &loweridx);
-		bool foundupper = temporalinstarr_find_timestamp(values1, loweridx, count1, upper, &upperidx);
+		bool foundlower = temporalinstarr_find_timestamp(values1, 0, count1, 
+			values2[0]->t, &loweridx);
+		bool foundupper = temporalinstarr_find_timestamp(values1, loweridx, count1, 
+			values2[count2-1]->t, &upperidx);
 		/* If found upper the instant to be copied is the next one */
 		if (foundupper)
 			upperidx++;
@@ -526,13 +526,13 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 			result = aggstate_splice(fcinfo, state1, state2, loweridx, loweridx);
 		else
 		{
-			/* Compute the aggregation of state1[loweridx] -> state1[upperidx-1] */
+			/* Compute the aggregation of state1[loweridx] -> state1[upperidx-1] 
+			 * and state2 */
 			TemporalInst **newinsts = palloc(sizeof(TemporalInst *) * 
 				(upperidx - loweridx + count2));
 			TemporalInst **mustfree = palloc(sizeof(TemporalInst *) * 
 				(upperidx - loweridx + count2));
-			int i = 0, j = loweridx;
-			int newcount1 = 0, freecount = 0;
+			int i = 0, j = loweridx, newcount1 = 0, freecount = 0;
 			while (i < count2 && j < upperidx)
 			{
 				TemporalInst *inst = values2[i];
@@ -556,16 +556,12 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 					j++;
 				}
 			}
+			/* Copy the instants from state2 that are after the end of state1 */
 			while (i < count2)
 			{
 				newinsts[newcount1++] = values2[i];
 				i++;
 			}	
-			while (j < upperidx)
-			{
-				newinsts[newcount1++] = values1[j];
-				j++;
-			}
 			/* Copy the new instants into the aggregation state memory context */
 			AggregateState *tempstate = aggstate_make(fcinfo, newcount1, (Temporal **)newinsts); 
 			result = aggstate_splice(fcinfo, state1, tempstate, loweridx, upperidx);
