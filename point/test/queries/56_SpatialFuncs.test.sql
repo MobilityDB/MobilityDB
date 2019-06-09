@@ -75,7 +75,6 @@ SELECT startValue(transform(setSRID(tgeompoint '[Point(1 1 1)@2000-01-01, Point(
 SELECT startValue(transform(setSRID(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 5676), 4326)) = st_transform(geometry 'SRID=5676;Point(1 1 1)', 4326);
 
 --------------------------------------------------------
--- Transform to the Gauss Kruger projection used in Secondo
 
 -- Temporal type
 SELECT asEWKT(transform_gk(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'));
@@ -88,6 +87,9 @@ SELECT ST_AsText(transform_gk(geometry 'Point Empty'));
 SELECT ST_AsText(transform_gk(geometry 'Point(13.43593 52.41721)'));
 SELECT ST_AsText(geometry 'Linestring empty');
 SELECT ST_AsText(transform_gk(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'));
+
+/* Error */
+SELECT transform_gk(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))');
 
 --------------------------------------------------------
 
