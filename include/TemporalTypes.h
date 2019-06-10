@@ -1263,14 +1263,6 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-/* Functions make public for enabling aggregation with skip lists */
-extern TemporalInst *tnumberinst_transform_tavg(TemporalInst *inst);
-extern TemporalInst **tnumberi_transform_tavg(TemporalI *ti);
-extern int tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq);
-extern int tnumbers_transform_tavg(TemporalSeq **result, TemporalS *ts);
-extern TemporalI *temporalinst_tavg_finalfn(TemporalInst **instants, int count);
-extern TemporalS *temporalseq_tavg_finalfn(TemporalSeq **sequences, int count);
-
 extern AggregateState *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size);
 extern void aggstate_move_extra(AggregateState* dest, AggregateState* src);
