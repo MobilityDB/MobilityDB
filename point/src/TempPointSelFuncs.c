@@ -14,6 +14,7 @@
  *
  *****************************************************************************/
 
+#include <TemporalTypes.h>
 #include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "TemporalSelFuncs.h"
@@ -167,8 +168,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	bool selec2Flag = false;
-	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
+	Selectivity selec = 0.0; /* keep compiler quiet */
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -215,18 +215,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 		}
 	}
 
-	selec1 = estimate_selectivity(&vardata, &box, cachedOp);
-
-	if(((Const *) other)->consttype == type_oid(T_TGEOMPOINT) || ((Const *) other)->consttype == type_oid(T_TGEOGPOINT))
-	{
-		((Const *) other)->constvalue = PointerGetDatum(period_make(box.tmin, box.tmax, true, true));
-		selec2 = estimate_selectivity_temporal_dimension(root, vardata, other, cachedOp);
-		selec2Flag = true;
-	}
-	if(selec2 == 0.0 && !selec2Flag)
-		selec = selec1;
-	else
-		selec = selec1 * selec2;
+	selec = estimate_selectivity(root, &vardata, other, &box, cachedOp);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
@@ -234,16 +223,17 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 }
 /** Estimate the selectivity of geometry/geography types */
 Selectivity
-estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
+estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box, CachedOp op)
 {
 	int d; /* counter */
-	float8 selectivity;
 	ND_BOX nd_box;
 	ND_IBOX nd_ibox;
 	int at[ND_DIMS];
 	double cell_size[ND_DIMS];
 	double min[ND_DIMS];
 	double max[ND_DIMS];
+    bool selec2Flag = false;
+    Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
 
 	ND_STATS *nd_stats;
 	AttStatsSlot sslot;
@@ -344,16 +334,30 @@ estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 			} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
 
 			/* Scale by the number of features in our histogram to get the proportion */
-			selectivity = total_count / nd_stats->histogram_features;
-			/* Prevent rounding overflows */
-			if (selectivity > 1.0) selectivity = 1.0;
-			else if (selectivity < 0.0 ) selectivity = 0.0;
+			selec1 = total_count / nd_stats->histogram_features;
 
-			return selectivity;
+            if (MOBDB_FLAGS_GET_T(box->flags))
+            {
+                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
+                                                                            (TimestampTz)box->tmax,
+                                                                            true, true));
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+                selec2Flag = true;
+            }
+            if(selec2 == 0.0 && !selec2Flag)
+                selec = selec1;
+            else
+                selec = selec1 * selec2;
+
+			/* Prevent rounding overflows */
+			if (selec > 1.0) selec = 1.0;
+			else if (selec < 0.0 ) selec = 0.0;
+
+			return selec;
 		}
 		case CONTAINS_OP:
 		{
-			selectivity = FLT_MIN;
+			selec1 = FLT_MIN;
 			double maxx = 0;
 			do
 			{
@@ -372,24 +376,35 @@ estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
 				maxx = cell_count * ratio;
-				if (selectivity < maxx)
-					selectivity = maxx;
+				if (selec1 < maxx)
+					selec1 = maxx;
 			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
 
 			/* Scale by the number of features in our histogram to get the proportion */
-			selectivity = selectivity / nd_stats->histogram_features;
+			selec1 = selec1 / nd_stats->histogram_features;
 
-			/* Prevent rounding overflows */
-			if (selectivity > 1.0)
-				selectivity = 1.0;
-			else if (selectivity < 0.0)
-				selectivity = 0.0;
+            if (MOBDB_FLAGS_GET_T(box->flags))
+            {
+                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
+                                                                            (TimestampTz)box->tmax,
+                                                                            true, true));
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+                selec2Flag = true;
+            }
+            if(selec2 == 0.0 && !selec2Flag)
+                selec = selec1;
+            else
+                selec = selec1 * selec2;
 
-			return selectivity;
+            /* Prevent rounding overflows */
+            if (selec > 1.0) selec = 1.0;
+            else if (selec < 0.0 ) selec = 0.0;
+
+            return selec;
 		}
 		case CONTAINED_OP:
 		{
-			selectivity = FLT_MAX;
+			selec1 = FLT_MAX;
 			double minx;
 			do
 			{
@@ -408,73 +423,75 @@ estimate_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
 				minx = cell_count * ratio;
-				if (selectivity > minx)
-					selectivity = minx;
+				if (selec1 > minx)
+					selec1 = minx;
 			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
+            if (MOBDB_FLAGS_GET_T(box->flags))
+            {
+                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
+                                                                            (TimestampTz)box->tmax,
+                                                                            true, true));
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+                selec2Flag = true;
+            }
+            if(selec2 == 0.0 && !selec2Flag)
+                selec = selec1;
+            else
+                selec = selec1 * selec2;
 
-			return selectivity;
-
+            /* Prevent rounding overflows */
+            if (selec > 1.0) selec = 1.0;
+            else if (selec < 0.0 ) selec = 0.0;
+			return selec;
 		}
 		case LEFT_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
+			return selec;
 		case RIGHT_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
+			return selec;
 		case OVERLEFT_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIMS);
+			return selec;
 		case OVERRIGHT_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS);
+			return selec;
 		case BELOW_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS);
+			return selec;
 		case ABOVE_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS);
+			return selec;
 		case OVERABOVE_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS);
+			return selec;
 		case OVERBELOW_OP:
-		{
-			selectivity = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS);
-			return selectivity;
-		}
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS);
+			return selec;
 		case FRONT_OP:
-		{
-			selectivity = z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
-			return selectivity;
-		}
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
+			return selec;
+		case BACK_OP:
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
+			return selec;
+		case OVERFRONT_OP:
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS);
+			return selec;
+		case OVERBACK_OP:
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBEFORE_OP, Z_DIMS);
+			return selec;
 		case BEFORE_OP:
-		{
-			selectivity = z_position_sel(&nd_ibox, &nd_box, nd_stats, BEFORE_OP, Z_DIMS);
-			return selectivity;
-		}
-		case OVERAFTER_OP:
-		{
-			selectivity = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERAFTER_OP, Z_DIMS);
-			return selectivity;
-		}
+			selec = estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
+			return selec;
+		case AFTER_OP:
+			selec = estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
+			return selec;
 		case OVERBEFORE_OP:
-		{
-			selectivity = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBEFORE_OP, Z_DIMS);
-			return selectivity;
-		}
+			selec = estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
+			return selec;
+		case OVERAFTER_OP:
+			selec = 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP);
+			return selec;
 		default:
 			return 0.001;
 	}
@@ -697,7 +714,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 
 	at[dim] = nd_ibox->min[dim];
 
-	if (cacheOp == AFTER_OP || cacheOp == OVERBEFORE_OP)
+	if (cacheOp == FRONT_OP || cacheOp == OVERBACK_OP)
 		at[1] = nd_ibox->max[1];
 	else
 		at[1] = nd_ibox->min[1];
@@ -719,7 +736,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		iwidth = imax - imin;
 		iwidth = Max(0.0, iwidth);
 
-		if (cacheOp == AFTER_OP || cacheOp == OVERAFTER_OP)
+		if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
 			ratio= (float)(iwidth / cellWidth);
 		else
 			ratio = 1.0f - (float)(iwidth / cellWidth);
@@ -733,7 +750,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		total_count += cell_count * ratio;
 
 		/* Count the rest features */
-		if (cacheOp == BEFORE_OP || cacheOp == OVERBEFORE_OP)
+		if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
 		{
 			for (int x = at[X_DIMS] - 1; x >= 0; x--)
 			{
@@ -745,7 +762,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 				}
 			}
 		}
-		else if (cacheOp == AFTER_OP || cacheOp == OVERAFTER_OP)
+		else if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
 		{
 			for (int j = at[1] + 1; j < nd_stats->size[1]; j++)
 			{
