@@ -464,31 +464,39 @@ SkipList *
 temporalinst_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalInst *inst)
 {
 	TemporalInst *newinst = tnumberinst_transform_tavg(inst);
-	SkipList *state2 = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
-	SkipList *result = temporal_tagg_combinefn2(fcinfo, state, state2,
+	if (! state)
+	{
+		SkipList *result = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
+		pfree(newinst);
+		return result;
+	}
+
+	Period period_state2;
+	period_set(&period_state2, inst->t, inst->t, true, true);
+	skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1, &period_state2, 
 		&datum_sum_double2, false);
-
-	if (state && result != state)
-		pfree(state);
 	pfree(newinst);
-
-	return result;
+	return state;
 }
 
 SkipList *
 temporali_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalI *ti)
 {
 	TemporalInst **instants = tnumberi_transform_tavg(ti);
-	SkipList *state2 = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
-	SkipList *result = temporal_tagg_combinefn2(fcinfo, state, state2,
-		&datum_sum_double2, false);
-
-	if (state && result != state)
-		pfree(state);
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
+	else
+	{
+		Period period_state2;
+		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
+		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
+			&datum_sum_double2, false);
+		result = state;
+	}
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
-
 	return result;
 }
 
@@ -503,16 +511,18 @@ temporalseq_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalSeq 
 		maxcount = 1;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = tnumberseq_transform_tavg(sequences, seq);
-	SkipList *state2 = skiplist_make(fcinfo, (Temporal **)sequences, maxcount);
-	SkipList *result = temporal_tagg_combinefn2(fcinfo, state, state2,
-		&datum_sum_double2, false);
-
-	if (state && result != state)
-		pfree(state);
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
+	else
+	{
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, &seq->period, 
+			&datum_sum_double2, false);
+		result = state;
+	}
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-
 	return result;
 }
 
@@ -527,16 +537,21 @@ temporals_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalS *ts)
 		maxcount = ts->count;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
 	int count = tnumbers_transform_tavg(sequences, ts);
-	SkipList *state2 = skiplist_make(fcinfo, (Temporal **)sequences, maxcount);
-	SkipList *result = temporal_tagg_combinefn2(fcinfo, state, state2,
-		&datum_sum_double2, false);
-
-	if (state && result != state)
-		pfree(state);
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
+	else
+	{
+		Period period_state2;
+		period_set(&period_state2, sequences[0]->period.lower, sequences[count - 1]->period.upper,
+			sequences[0]->period.lower_inc, sequences[count - 1]->period.upper_inc);
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, &period_state2, 
+			&datum_sum_double2, false);
+		result = state;
+	}
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
-
 	return result;
 }
 
