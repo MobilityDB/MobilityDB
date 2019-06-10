@@ -341,7 +341,7 @@ temporal_transform_tcount(Temporal *temp)
  * performing average aggregation 
  */
 
-static TemporalInst *
+TemporalInst *
 tnumberinst_transform_tavg(TemporalInst *inst)
 {
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
@@ -352,7 +352,7 @@ tnumberinst_transform_tavg(TemporalInst *inst)
 	return result;
 }
 
-static TemporalInst **
+TemporalInst **
 tnumberi_transform_tavg(TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
@@ -364,7 +364,7 @@ tnumberi_transform_tavg(TemporalI *ti)
 	return result;
 }
 
-static int
+int
 tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
@@ -433,7 +433,7 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	return 1;
 }
 
-static int
+int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	int returnvalue = 0;
@@ -445,7 +445,7 @@ tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	return returnvalue;
 }
 
-static int
+int
 tnumbers_transform_tavg(TemporalSeq **result, TemporalS *ts)
 {
 	int k = 0, countstep;
