@@ -484,6 +484,51 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	return result;
 }
 
+/* 
+ * Generic aggregate function for temporal instants.
+ * Arguments:
+ * - instants1 is the accumulated state 
+ * - instants2 are the instants of a TemporalI value
+ * The function returns new instants in the result that must
+ * be freed by the calling function. 
+ */
+TemporalInst **
+temporalinst_tagg2(TemporalInst **instants1, int count1, TemporalInst **instants2, 
+	int count2, Datum (*func)(Datum, Datum), int *newcount)
+{
+	TemporalInst **result = palloc(sizeof(TemporalInst *) * (count1 + count2));
+	int i = 0, j = 0, count = 0;
+	while (i < count1 && j < count2)
+	{
+		TemporalInst *inst1 = instants1[i];
+		TemporalInst *inst2 = instants2[j];
+		int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+		if (cmp == 0)
+		{
+			result[count++] = temporalinst_make(
+				func(temporalinst_value(inst1), temporalinst_value(inst2)),
+				inst1->t, inst1->valuetypid);
+			i++;
+			j++;
+		}
+		else if (cmp < 0)
+		{
+			result[count++] = temporalinst_copy(inst1);
+			i++;
+		}
+		else
+		{
+			result[count++] = temporalinst_copy(inst2);
+			j++;
+		}
+	}
+	/* Copy the instants from state2 that are after the end of state1 */
+	while (j < count2)
+		result[count++] = temporalinst_copy(instants2[j++]);
+	*newcount = count;	
+	return result;
+}
+
 /*
  * Generic aggregate combine function for TemporalInst
  */
@@ -530,50 +575,19 @@ temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1,
 		{
 			/* Compute the aggregation of state1[loweridx] -> state1[upperidx-1] 
 			 * and state2 */
-			TemporalInst **newinsts = palloc(sizeof(TemporalInst *) * 
-				(upperidx - loweridx + count2));
-			TemporalInst **mustfree = palloc(sizeof(TemporalInst *) * 
-				(upperidx - loweridx + count2));
-			int i = 0, j = loweridx, newcount1 = 0, freecount = 0;
-			while (i < count2 && j < upperidx)
-			{
-				TemporalInst *inst = values2[i];
-				if (timestamp_cmp_internal(inst->t, values1[j]->t) == 0)
-				{
-					TemporalInst *inst1 = temporalinst_make(
-						func(temporalinst_value(values1[j]), temporalinst_value(inst)),
-						inst->t, inst->valuetypid);
-					newinsts[newcount1++] = mustfree[freecount++] = inst1;
-					i++;
-					j++;
-				}
-				else if (timestamp_cmp_internal(inst->t, values1[j]->t) < 0)
-				{
-					newinsts[newcount1++] = inst;
-					i++;
-				}
-				else
-				{
-					newinsts[newcount1++] = values1[j];
-					j++;
-				}
-			}
-			/* Copy the instants from state2 that are after the end of state1 */
-			while (i < count2)
-			{
-				newinsts[newcount1++] = values2[i];
-				i++;
-			}	
-			/* Copy the new instants into the aggregation state memory context */
-			AggregateState *tempstate = aggstate_make(fcinfo, newcount1, (Temporal **)newinsts); 
+			int newcount1 = upperidx - loweridx;
+			int newcount2;
+			TemporalInst **newinsts = temporalinst_tagg2(&values1[loweridx], newcount1,
+				values2, count2, func, &newcount2);
+			/* Copy them into the aggregation state memory context */
+			AggregateState *tempstate = aggstate_make(fcinfo, newcount2, (Temporal **)newinsts); 
 			result = aggstate_splice(fcinfo, state1, tempstate, loweridx, upperidx);
 			pfree(tempstate);
 			/* free the values in state2 that have been aggregated: */
 			aggstate_clear(state2);
-			pfree(newinsts);  
-			for (int i = 0; i < freecount; i++) 
-				pfree(mustfree[i]);
-			pfree(mustfree);
+			for (int i = 0; i < newcount2; i++)
+				pfree(newinsts[i]);
+			pfree(newinsts);
 		}
 	}
 	return result;
