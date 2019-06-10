@@ -129,8 +129,8 @@ extern double nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims);
 extern int nd_stats_value_index(const ND_STATS *stats, int *indexes);
 extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
-extern float8 estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other,
-								   const STBOX *box, CachedOp op);
+extern Selectivity estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other,
+								   const STBOX *box, CachedOp op, bool varonleft);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
 	Oid operator);
 extern int stbox_ndims(const STBOX* stbox);

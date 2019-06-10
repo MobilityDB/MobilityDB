@@ -199,23 +199,7 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 
 	STBOX box = get_stbox(other);
 
-	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
-	if (!varonleft)
-	{
-		/* we have other Op var, commute to make var Op other */
-		operator = get_commutator(operator);
-		if (!operator)
-		{
-			/* Use default selectivity (should we raise an error instead?) */
-			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(0.01);
-		}
-	}
-
-	selec = estimate_selectivity(root, &vardata, other, &box, cachedOp);
+	selec = estimate_selectivity(root, &vardata, other, &box, cachedOp, varonleft);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
@@ -223,7 +207,8 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 }
 /** Estimate the selectivity of geometry/geography types */
 Selectivity
-estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box, CachedOp op)
+estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box,
+                     CachedOp op, bool varonleft)
 {
 	int d; /* counter */
 	ND_BOX nd_box;
@@ -445,7 +430,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			return selec;
 		}
 		case LEFT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
+			selec = (varonleft)?xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS);
 			return selec;
 		case RIGHT_OP:
 			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
@@ -481,16 +467,20 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBEFORE_OP, Z_DIMS);
 			return selec;
 		case BEFORE_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
+			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP):
+                    estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
 			return selec;
 		case AFTER_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
+			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP):
+                    estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
 			return selec;
 		case OVERBEFORE_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
+			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP):
+                    estimate_temporal_position_sel(root, *vardata, other, true, true, GE_OP);
 			return selec;
 		case OVERAFTER_OP:
-			selec = 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP);
+			selec = (varonleft)? 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP):
+                    estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
 			return selec;
 		default:
 			return 0.001;
@@ -568,9 +558,9 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 		case BELOW_OP:
 		case OVERBELOW_OP:
 		{
-			if ((nd_stats->extent.min[mainDim] + 0.5) > nd_box->max[mainDim])
+			if ((nd_stats->extent.min[mainDim]) > nd_box->max[mainDim])
 				return 0.0;
-			else if (nd_box->min[mainDim] >= (nd_stats->extent.max[mainDim] - 0.5))
+			else if (nd_box->min[mainDim] >= (nd_stats->extent.max[mainDim]))
 				return 1.0;
 			break;
 		}
@@ -579,9 +569,9 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 		case ABOVE_OP:
 		case OVERABOVE_OP:
 		{
-			if (nd_stats->extent.max[mainDim] - 0.5 < nd_box->min[mainDim])
+			if (nd_stats->extent.max[mainDim]  < nd_box->min[mainDim])
 				return 0.0;
-			else if (nd_box->max[mainDim] <= nd_stats->extent.min[mainDim] + 0.5)
+			else if (nd_box->max[mainDim] <= nd_stats->extent.min[mainDim] )
 				return 1.0;
 			break;
 		}
