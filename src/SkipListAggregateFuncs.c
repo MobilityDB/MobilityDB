@@ -360,8 +360,12 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	{
 		/* We are not in a gap, we need to compute the aggregation */
 		int newcount = 0;
-		// TO DO: Generalize for instants
-		Temporal **newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, spliced_count,
+		Temporal **newtemps;
+		if (skiplist_headval(list)->duration == TEMPORALINST)
+			newtemps = (Temporal **)temporalinst_tagg2((TemporalInst **)spliced, spliced_count,
+			(TemporalInst **)values, count, operator, &newcount);
+		else
+			newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, spliced_count,
 			(TemporalSeq **)values, count, operator, crossings, &newcount);
 		values = newtemps;
 		count = newcount;
