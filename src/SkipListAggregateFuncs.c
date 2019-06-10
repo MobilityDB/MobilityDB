@@ -464,19 +464,18 @@ SkipList *
 temporalinst_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalInst *inst)
 {
 	TemporalInst *newinst = tnumberinst_transform_tavg(inst);
+	SkipList *result;
 	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
+	else
 	{
-		SkipList *result = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
-		pfree(newinst);
-		return result;
+		Period period_state2;
+		period_set(&period_state2, inst->t, inst->t, true, true);
+		skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1, &period_state2, 
+			&datum_sum_double2, false);
 	}
-
-	Period period_state2;
-	period_set(&period_state2, inst->t, inst->t, true, true);
-	skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1, &period_state2, 
-		&datum_sum_double2, false);
 	pfree(newinst);
-	return state;
+	return result;
 }
 
 SkipList *
