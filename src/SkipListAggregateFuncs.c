@@ -473,6 +473,7 @@ temporalinst_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalIns
 		period_set(&period_state2, inst->t, inst->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1, &period_state2, 
 			&datum_sum_double2, false);
+		result = state;
 	}
 	pfree(newinst);
 	return result;
