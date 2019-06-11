@@ -431,40 +431,51 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 		}
 		case LEFT_OP:
 			selec = (varonleft)?xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS);
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
 			return selec;
 		case RIGHT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
 			return selec;
 		case OVERLEFT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
 			return selec;
 		case OVERRIGHT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
 			return selec;
 		case BELOW_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS);
 			return selec;
 		case ABOVE_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS);
 			return selec;
 		case OVERABOVE_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS);
 			return selec;
 		case OVERBELOW_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS):
+                    xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS);
 			return selec;
 		case FRONT_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS):
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
 			return selec;
 		case BACK_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS):
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
 			return selec;
 		case OVERFRONT_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS):
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIMS);
 			return selec;
 		case OVERBACK_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBEFORE_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIMS):
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS);
 			return selec;
 		case BEFORE_OP:
 			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP):
@@ -558,7 +569,7 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 		case BELOW_OP:
 		case OVERBELOW_OP:
 		{
-			if ((nd_stats->extent.min[mainDim]) > nd_box->max[mainDim])
+			if ((nd_stats->extent.min[mainDim]) > nd_box->min[mainDim])
 				return 0.0;
 			else if (nd_box->min[mainDim] >= (nd_stats->extent.max[mainDim]))
 				return 1.0;
@@ -569,7 +580,7 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 		case ABOVE_OP:
 		case OVERABOVE_OP:
 		{
-			if (nd_stats->extent.max[mainDim]  < nd_box->min[mainDim])
+			if (nd_stats->extent.max[mainDim]  < nd_box->max[mainDim])
 				return 0.0;
 			else if (nd_box->max[mainDim] <= nd_stats->extent.min[mainDim] )
 				return 1.0;
