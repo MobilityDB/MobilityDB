@@ -223,7 +223,7 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 	ND_STATS *nd_stats;
 	AttStatsSlot sslot;
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_internal(&sslot, vardata->statsTuple, STATISTIC_KIND_2D, InvalidOid,
+		  get_attstatsslot_internal(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, InvalidOid,
 									ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
 	{
 		return -1;
