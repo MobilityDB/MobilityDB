@@ -318,7 +318,7 @@ temporals_transform_tcount(TemporalS *ts)
 
 /* Dispatch function */
 
-static Temporal *
+Temporal *
 temporal_transform_tcount(Temporal *temp)
 {
 	temporal_duration_is_valid(temp->duration);

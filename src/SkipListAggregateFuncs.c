@@ -427,11 +427,93 @@ sl_test(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(0);
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Generic aggregate transition functions
+ *****************************************************************************/
 
-/*
+static SkipList *
+temporalinst_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state,
+	TemporalInst *inst, Datum (*func)(Datum, Datum))
+{
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)&inst, 1);
+	else
+	{
+		Period period_state2;
+		period_set(&period_state2, inst->t, inst->t, true, true);
+		skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, &period_state2, 
+			func, false);
+		result = state;
+	}
+	return result;
+}
+
+static SkipList *
+temporali_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state, 
+	TemporalI *ti, Datum (*func)(Datum, Datum))
+{
+	TemporalInst **instants = temporali_instants(ti);
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
+	else
+	{
+		Period period_state2;
+		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
+		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
+			&datum_sum_double2, false);
+		result = state;
+	}
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+static SkipList *
+temporalseq_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state, 
+	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool crossings)
+{
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)&seq, 1);
+	else
+	{
+		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, &seq->period, 
+			func, crossings);
+		result = state;
+	}
+	return result;
+}
+
+static SkipList *
+temporals_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state, 
+	TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
+{
+	TemporalSeq **sequences = temporals_sequences(ts);
+	SkipList *result;
+	if (! state)
+		result = skiplist_make(fcinfo, (Temporal **)sequences, ts->count);
+	else
+	{
+		Period period_state2;
+		period_set(&period_state2, sequences[0]->period.lower, sequences[ts->count - 1]->period.upper,
+			sequences[0]->period.lower_inc, sequences[ts->count - 1]->period.upper_inc);
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, &period_state2, 
+			func, crossings);
+		result = state;
+	}
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
+}
+
+/*****************************************************************************
  * Generic aggregate combine function for TemporalInst and TemporalSeq
- */
+ *****************************************************************************/
+
 static SkipList *
 temporal_tagg_combinefn2(FunctionCallInfo fcinfo, SkipList *state1, SkipList *state2,
 	Datum (*operator)(Datum, Datum), bool crossings)
@@ -459,6 +541,99 @@ temporal_tagg_combinefn2(FunctionCallInfo fcinfo, SkipList *state1, SkipList *st
 	skiplist_splice(fcinfo, state1, values2, count2, &period_state2, operator, crossings);
 	return state1;
 }
+
+/*****************************************************************************
+ * Functions for temporal count
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_tcount_transfn2);
+
+PGDLLEXPORT Datum 
+temporal_tcount_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state;
+	if (PG_ARGISNULL(0))
+		state = NULL;
+	else
+		state = (SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Temporal *tempcount = temporal_transform_tcount(temp);
+	SkipList *result = NULL;
+	temporal_duration_is_valid(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_tagg_transfn2(fcinfo, state, 
+            (TemporalInst *)tempcount, &datum_sum_int32);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_tagg_transfn2(fcinfo, state, 
+            (TemporalI *)tempcount, &datum_sum_int32);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_tagg_transfn2(fcinfo, state, 
+            (TemporalSeq *)tempcount, &datum_sum_int32, false);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_tagg_transfn2(fcinfo, state, 
+            (TemporalS *)tempcount, &datum_sum_int32, false);
+	pfree(tempcount);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_tcount_combinefn2);
+
+PGDLLEXPORT Datum 
+temporal_tcount_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1;
+	if (PG_ARGISNULL(0))
+		state1 = NULL;
+	else
+		state1 = (SkipList *) PG_GETARG_POINTER(0);
+
+	SkipList *state2;
+	if (PG_ARGISNULL(1))
+		state2 = NULL;
+	else
+		state2 = (SkipList *) PG_GETARG_POINTER(1);
+
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2,
+		&datum_sum_double2, false);
+
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_tagg_finalfn2);
+
+PGDLLEXPORT Datum
+temporal_tagg_finalfn2(PG_FUNCTION_ARGS)
+{
+	/* The final function is strict, we do not need to test for null values */
+	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+	if (state->length == 0)
+		PG_RETURN_NULL();
+
+	Temporal **values = skiplist_values(state);
+	Temporal *result = NULL;
+	assert(values[0]->duration == TEMPORALINST || 
+		values[0]->duration == TEMPORALSEQ);
+	if (values[0]->duration == TEMPORALINST)
+		result = (Temporal *)temporali_from_temporalinstarr(
+			(TemporalInst **)values, state->length);
+	else if (values[0]->duration == TEMPORALSEQ)
+		result = (Temporal *)temporals_from_temporalseqarr(
+			(TemporalSeq **)values, state->length, true);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Functions for temporal average
+ *****************************************************************************/
 
 SkipList *
 temporalinst_tavg_transfn2(FunctionCallInfo fcinfo, SkipList *state, TemporalInst *inst)

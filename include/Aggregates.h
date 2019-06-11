@@ -1,6 +1,8 @@
 #ifndef MOBILITYDB_AGGREGATES_H
 #define MOBILITYDB_AGGREGATES_H
 
+extern Temporal *temporal_transform_tcount(Temporal *temp);
+
 extern TemporalInst *tnumberinst_transform_tavg(TemporalInst *inst);
 extern TemporalInst **tnumberi_transform_tavg(TemporalI *ti);
 extern int tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq);
