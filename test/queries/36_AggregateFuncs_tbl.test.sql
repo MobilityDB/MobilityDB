@@ -182,11 +182,6 @@ select k%10, numSequences(tcount(ts)) from tbl_ttexts group by k%10 order by k%1
 
 -------------------------------------------------------------------------------
 
-/* Errors */
-select tsum(temp) from tbl_tint;
-
--------------------------------------------------------------------------------
-
 set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
 set force_parallel_mode=off;

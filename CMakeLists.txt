@@ -35,7 +35,7 @@ src/TextFuncs.c
 src/TimeOps.c
 src/TimeSelFuncs.c
 src/TimestampSet.c
-src/TimeTypanalyze.c
+src/TimeAnalyze.c
 src/TnumberSelFuncs.c
 src/WAggregateFuncs.c
         )

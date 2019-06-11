@@ -33,7 +33,7 @@ CREATE FUNCTION timestampset_send(timestampset)
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timestampset_typanalyze(internal)
+CREATE FUNCTION timestampset_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -47,7 +47,7 @@ CREATE TYPE timestampset (
 	alignment = double
 -- The following line makes NULL if size < 128	
 --	storage = extended 
-   , analyze = timestampset_typanalyze
+   , analyze = timestampset_analyze
 );
 
 /******************************************************************************

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * TimeTypanalyze.c
+ * TimeAnalyze.c
  *	  Functions for gathering statistics from time type columns
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
@@ -25,7 +25,7 @@
 
 static int float8_qsort_cmp(const void *a1, const void *a2);
 static int period_bound_qsort_cmp(const void *a1, const void *a2);
-static void compute_time_stats(CachedType type, VacAttrStats *stats, 
+static void compute_timetype_stats(CachedType type, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void compute_period_stats(VacAttrStats *stats,
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
@@ -66,7 +66,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 static void
-compute_time_stats(CachedType timetype, VacAttrStats *stats, 
+compute_timetype_stats(CachedType timetype, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows)
 {
 	int			null_cnt = 0,
@@ -85,7 +85,7 @@ compute_time_stats(CachedType timetype, VacAttrStats *stats,
 	uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
-	/* Loop over the sample timestampsets. */
+	/* Loop over the sample timetype values. */
 	for (timetype_no = 0; timetype_no < samplerows; timetype_no++)
 	{
 		Datum		value;
@@ -99,7 +99,7 @@ compute_time_stats(CachedType timetype, VacAttrStats *stats,
 		value = fetchfunc(stats, timetype_no, &isnull);
 		if (isnull)
 		{
-			/* timestampset is null, just count that */
+			/* timetype value is null, just count that */
 			null_cnt++;
 			continue;
 		}
@@ -301,20 +301,20 @@ compute_time_stats(CachedType timetype, VacAttrStats *stats,
 /*****************************************************************************/
 
 /*
- * period_typanalyze -- typanalyze function for period columns
+ * period_analyze -- typanalyze function for period columns
  */
 
 static void
 compute_period_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
-	compute_time_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
+	compute_timetype_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
 }
 
-PG_FUNCTION_INFO_V1(period_typanalyze);
+PG_FUNCTION_INFO_V1(period_analyze);
 
 PGDLLEXPORT Datum
-period_typanalyze(PG_FUNCTION_ARGS)
+period_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	Form_pg_attribute attr = stats->attr;
@@ -330,20 +330,20 @@ period_typanalyze(PG_FUNCTION_ARGS)
 }
 
 /*
- * timestampset_typanalyze -- typanalyze function for timestampset columns
+ * timestampset_analyze -- typanalyze function for timestampset columns
  */
 
 static void
 compute_timestampset_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					int samplerows, double totalrows)
 {
-	compute_time_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows, totalrows);
+	compute_timetype_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows, totalrows);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_typanalyze);
+PG_FUNCTION_INFO_V1(timestampset_analyze);
 
 PGDLLEXPORT Datum
-timestampset_typanalyze(PG_FUNCTION_ARGS)
+timestampset_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	Form_pg_attribute attr = stats->attr;
@@ -359,20 +359,20 @@ timestampset_typanalyze(PG_FUNCTION_ARGS)
 }
 
 /*
- * timestampset_typanalyze -- typanalyze function for timestampset columns
+ * timestampset_analyze -- analyze function for timestampset columns
  */
 
 static void
 compute_periodset_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					int samplerows, double totalrows)
 {
-	compute_time_stats(T_PERIODSET, stats, fetchfunc, samplerows, totalrows);
+	compute_timetype_stats(T_PERIODSET, stats, fetchfunc, samplerows, totalrows);
 }
 
-PG_FUNCTION_INFO_V1(periodset_typanalyze);
+PG_FUNCTION_INFO_V1(periodset_analyze);
 
 PGDLLEXPORT Datum
-periodset_typanalyze(PG_FUNCTION_ARGS)
+periodset_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 	Form_pg_attribute attr = stats->attr;

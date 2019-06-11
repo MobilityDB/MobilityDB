@@ -29,7 +29,7 @@ CREATE FUNCTION period_send(period)
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
-CREATE FUNCTION period_typanalyze(internal)
+CREATE FUNCTION period_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -41,7 +41,7 @@ CREATE TYPE period (
 	receive = period_recv,
 	send = period_send,
 	alignment = double,
-	analyze = period_typanalyze 
+	analyze = period_analyze 
 );
 
 /******************************************************************************
