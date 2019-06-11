@@ -462,11 +462,9 @@ temporali_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state,
 		Period period_state2;
 		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
-			&datum_sum_double2, false);
+			func, false);
 		result = state;
 	}
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
 	pfree(instants);
 	return result;
 }
@@ -504,8 +502,6 @@ temporals_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state,
 			func, crossings);
 		result = state;
 	}
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
 	pfree(sequences);
 	return result;
 }
@@ -515,12 +511,33 @@ temporals_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state,
  *****************************************************************************/
 
 static SkipList *
+temporal_tagg_transfn2(FunctionCallInfo fcinfo, SkipList *state, 
+	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
+{
+	temporal_duration_is_valid(temp->duration);
+	SkipList *result = NULL;
+	if (temp->duration == TEMPORALINST) 
+		result =  temporalinst_tagg_transfn2(fcinfo, state, (TemporalInst *)temp, 
+			func);
+	else if (temp->duration == TEMPORALI) 
+		result =  temporali_tagg_transfn2(fcinfo, state, (TemporalI *)temp, 
+			func);
+	else if (temp->duration == TEMPORALSEQ) 
+		result =  temporalseq_tagg_transfn2(fcinfo, state, (TemporalSeq *)temp, 
+			func, crossings);
+	else if (temp->duration == TEMPORALS) 
+		result = temporals_tagg_transfn2(fcinfo, state, (TemporalS *)temp, 
+			func, crossings);
+	return result;
+}
+
+static SkipList *
 temporal_tagg_combinefn2(FunctionCallInfo fcinfo, SkipList *state1, SkipList *state2,
 	Datum (*operator)(Datum, Datum), bool crossings)
 {
-	if (!state1)
+	if (! state1)
 		return state2;
-	if (!state2)
+	if (! state2)
 		return state1;
 	if (skiplist_headval(state1)->duration != skiplist_headval(state2)->duration)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -543,6 +560,354 @@ temporal_tagg_combinefn2(FunctionCallInfo fcinfo, SkipList *state1, SkipList *st
 }
 
 /*****************************************************************************
+ * Temporal aggregate functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tbool_tand_transfn2);
+
+PGDLLEXPORT Datum
+tbool_tand_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_and, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tbool_tand_combinefn2);
+
+PGDLLEXPORT Datum
+tbool_tand_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_and, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tbool_tor_transfn2);
+
+PGDLLEXPORT Datum
+tbool_tor_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_or, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tbool_tor_combinefn2);
+
+PGDLLEXPORT Datum
+tbool_tor_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_or, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tint_tmin_transfn2);
+
+PGDLLEXPORT Datum
+tint_tmin_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_min_int32, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tint_tmin_combinefn2);
+
+PGDLLEXPORT Datum
+tint_tmin_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_min_int32, true);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tmin_transfn2);
+
+PGDLLEXPORT Datum
+tfloat_tmin_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_min_float8, true);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tmin_combinefn2);
+
+PGDLLEXPORT Datum
+tfloat_tmin_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_min_float8, true);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tint_tmax_transfn2);
+
+PGDLLEXPORT Datum
+tint_tmax_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_max_int32, true);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tint_tmax_combinefn2);
+
+PGDLLEXPORT Datum
+tint_tmax_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_max_int32, true);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tmax_transfn2);
+
+PGDLLEXPORT Datum
+tfloat_tmax_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_max_float8, true);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tmax_combinefn2);
+
+PGDLLEXPORT Datum
+tfloat_tmax_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_max_float8, true);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tint_tsum_transfn2);
+
+PGDLLEXPORT Datum
+tint_tsum_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_sum_int32, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tint_tsum_combinefn2);
+
+PGDLLEXPORT Datum
+tint_tsum_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_sum_int32, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tsum_transfn2);
+
+PGDLLEXPORT Datum
+tfloat_tsum_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_sum_float8, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_tsum_combinefn2);
+
+PGDLLEXPORT Datum
+tfloat_tsum_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_sum_float8, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(ttext_tmin_transfn2);
+
+PGDLLEXPORT Datum
+ttext_tmin_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_min_text, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(ttext_tmin_combinefn2);
+
+PGDLLEXPORT Datum
+ttext_tmin_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_min_text, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(ttext_tmax_transfn2);
+
+PGDLLEXPORT Datum
+ttext_tmax_transfn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	if (PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	SkipList *result = temporal_tagg_transfn2(fcinfo, state, temp, 
+		&datum_max_text, false);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(ttext_tmax_combinefn2);
+
+PGDLLEXPORT Datum
+ttext_tmax_combinefn2(PG_FUNCTION_ARGS)
+{
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
+	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2, 
+		&datum_max_text, false);
+	if (result != state1)
+		pfree(state1);
+	if (result != state2)
+		pfree(state2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Functions for temporal count
  *****************************************************************************/
 
@@ -551,11 +916,8 @@ PG_FUNCTION_INFO_V1(temporal_tcount_transfn2);
 PGDLLEXPORT Datum 
 temporal_tcount_transfn2(PG_FUNCTION_ARGS)
 {
-	SkipList *state;
-	if (PG_ARGISNULL(0))
-		state = NULL;
-	else
-		state = (SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1))
 		PG_RETURN_POINTER(state);
 
@@ -585,17 +947,10 @@ PG_FUNCTION_INFO_V1(temporal_tcount_combinefn2);
 PGDLLEXPORT Datum 
 temporal_tcount_combinefn2(PG_FUNCTION_ARGS)
 {
-	SkipList *state1;
-	if (PG_ARGISNULL(0))
-		state1 = NULL;
-	else
-		state1 = (SkipList *) PG_GETARG_POINTER(0);
-
-	SkipList *state2;
-	if (PG_ARGISNULL(1))
-		state2 = NULL;
-	else
-		state2 = (SkipList *) PG_GETARG_POINTER(1);
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
 
 	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2,
 		&datum_sum_double2, false);
@@ -735,11 +1090,8 @@ PG_FUNCTION_INFO_V1(temporal_tavg_transfn2);
 PGDLLEXPORT Datum
 temporal_tavg_transfn2(PG_FUNCTION_ARGS)
 {
-	SkipList *state;
-	if (PG_ARGISNULL(0))
-		state = NULL;
-	else
-		state = (SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1))
 		PG_RETURN_POINTER(state);
 
@@ -763,17 +1115,10 @@ PG_FUNCTION_INFO_V1(temporal_tavg_combinefn2);
 PGDLLEXPORT Datum
 temporal_tavg_combinefn2(PG_FUNCTION_ARGS)
 {
-	SkipList *state1;
-	if (PG_ARGISNULL(0))
-		state1 = NULL;
-	else
-		state1 = (SkipList *) PG_GETARG_POINTER(0);
-
-	SkipList *state2;
-	if (PG_ARGISNULL(1))
-		state2 = NULL;
-	else
-		state2 = (SkipList *) PG_GETARG_POINTER(1);
+	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
+		(SkipList *) PG_GETARG_POINTER(0);
+	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(1);
 
 	SkipList *result = temporal_tagg_combinefn2(fcinfo, state1, state2,
 		&datum_sum_double2, false);
