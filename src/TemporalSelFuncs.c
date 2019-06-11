@@ -1465,6 +1465,17 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 		else if (*temporal)
 			*bBoxBounds = DTCONST;
 	}
+	else if (consttype == type_oid(T_STBOX))
+    {
+        STBOX *stbox = DatumGetSTboxP(((Const *) other)->constvalue);
+        if (MOBDB_FLAGS_GET_T(stbox->flags))
+        {
+            *temporal = true;
+            *period = period_make((TimestampTz)stbox->tmin, (TimestampTz)stbox->tmax, true, true);
+        }
+        if (*temporal)
+            *bBoxBounds = DNCONST_DTCONST;
+    }
 }
 bool
 get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
