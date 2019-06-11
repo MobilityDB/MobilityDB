@@ -131,8 +131,8 @@ extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern Selectivity estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other,
 								   const STBOX *box, CachedOp op, bool varonleft);
-extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
-	Oid operator);
+extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata,
+                                                           Node *other, Period *period, CachedOp cachedOp);
 extern int stbox_ndims(const STBOX* stbox);
 
 extern CachedOp get_tpoint_cacheOp(Oid operator);

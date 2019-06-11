@@ -323,10 +323,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 
             if (MOBDB_FLAGS_GET_T(box->flags))
             {
-                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
-                                                                            (TimestampTz)box->tmax,
-                                                                            true, true));
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+				Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, OVERLAPS_OP);
                 selec2Flag = true;
             }
             if(selec2 == 0.0 && !selec2Flag)
@@ -370,10 +368,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 
             if (MOBDB_FLAGS_GET_T(box->flags))
             {
-                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
-                                                                            (TimestampTz)box->tmax,
-                                                                            true, true));
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+                Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, CONTAINS_OP);
                 selec2Flag = true;
             }
             if(selec2 == 0.0 && !selec2Flag)
@@ -413,10 +409,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
             if (MOBDB_FLAGS_GET_T(box->flags))
             {
-                ((Const *) other)->constvalue = PointerGetDatum(period_make((TimestampTz)box->tmin,
-                                                                            (TimestampTz)box->tmax,
-                                                                            true, true));
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, OVERLAPS_OP);
+				Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
+                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, CONTAINED_OP);
                 selec2Flag = true;
             }
             if(selec2 == 0.0 && !selec2Flag)
@@ -500,28 +494,18 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 
 /** Estimate the selectivity of time dimension */
 Selectivity
-estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other, Oid operator)
+estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata, Node *other,
+                                        Period *period, CachedOp cachedOp)
 {
 	Selectivity selec = 0.0;	/* keep compiler quiet */
-	BBoxBounds bBoxBounds;
-	bool numeric, temporal;
-	double lower, upper;
-	Period *period;
-
-	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-					 &temporal, &period);
 
 	ConstantData constantData;
-	constantData.bBoxBounds = bBoxBounds;
+	constantData.bBoxBounds = DTCONST;
 	constantData.oid = ((Const *) other)->consttype;
 
 	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-	constantData.period = NULL;   /* keep compiler quiet */
-	if (temporal)
-	{
-		constantData.period = period;
-	}
-	switch (operator)
+    constantData.period = period;
+	switch (cachedOp)
 	{
 		case OVERLAPS_OP:
 			selec = estimate_temporal_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
@@ -536,7 +520,7 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 			selec = estimate_temporal_bbox_sel(root, vardata, constantData, CONTAINED_OP);
 			break;
 		default:
-			selec = 0.0;
+			break;
 	}
 
 	if (selec < 0.0)
