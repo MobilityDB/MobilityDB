@@ -106,3 +106,24 @@ explain analyze select * from trips_stbox where trip &<| 'STBOX T((13.398789,52.
 explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox &<| trip;
 explain analyze select * from trips_stbox where trip |&> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
 explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox |&> trip;
+
+
+
+
+--
+-- Name: tbl_tgeompoint3d_big; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tbl_tgeompoint3d_big (
+    k integer,
+    temp public.tgeompoint
+);
+
+explain analyze select * from tbl_tgeompoint3d_big where temp <</ 'LineString(20 20 20, 50 50 50)'::geometry;
+explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry <</ temp;
+explain analyze select * from tbl_tgeompoint3d_big where temp />> 'LineString(20 20 20, 50 50 50)'::geometry::geometry;
+explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry />> temp;
+explain analyze select * from tbl_tgeompoint3d_big where temp &</ 'LineString(20 20 20, 50 50 50)'::geometry;
+explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry &</ temp;
+explain analyze select * from tbl_tgeompoint3d_big where temp /&> 'LineString(20 20 20, 50 50 50)'::geometry;
+explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry /&> temp;
