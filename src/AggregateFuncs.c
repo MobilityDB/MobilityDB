@@ -500,8 +500,6 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pq_sendint64(buf, state->extrasize);
 	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
-	for (int i = 0; i < state->length; i ++)
-		pfree(values[i]);
 	pfree(values);
 }
 
@@ -526,6 +524,8 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 		result->extra = palloc(result->extrasize);
 		memcpy(result->extra, extra, result->extrasize);
 	}
+	for (int i = 0; i < size; i ++)
+		pfree(values[i]);
 	pfree(values);
 
 	MemoryContextSwitchTo(oldctx);
