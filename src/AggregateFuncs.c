@@ -1067,6 +1067,9 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)&inst, 1);
 	else
 	{
+        if (skiplist_headval(state)->duration != TEMPORALINST)
+            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                    errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, inst->t, inst->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, &period_state2, 
@@ -1086,6 +1089,9 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
 	else
 	{
+        if (skiplist_headval(state)->duration != TEMPORALINST)
+            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                    errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
@@ -1105,6 +1111,9 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)&seq, 1);
 	else
 	{
+        if (skiplist_headval(state)->duration != TEMPORALSEQ)
+            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                    errmsg("Cannot aggregate temporal values of different duration")));
 		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, &seq->period, 
 			func, crossings);
 		result = state;
@@ -1122,6 +1131,9 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)sequences, ts->count);
 	else
 	{
+        if (skiplist_headval(state)->duration != TEMPORALSEQ)
+            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                    errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, sequences[0]->period.lower, sequences[ts->count - 1]->period.upper,
 			sequences[0]->period.lower_inc, sequences[ts->count - 1]->period.upper_inc);
@@ -1138,9 +1150,6 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
 	temporal_duration_is_valid(temp->duration);
-    if (state && skiplist_headval(state)->duration != temp->duration)
-        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                errmsg("Cannot aggregate temporal values of different duration")));
 	SkipList *result = NULL;
 	if (temp->duration == TEMPORALINST) 
 		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
