@@ -491,8 +491,12 @@ tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ?  NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -509,8 +513,12 @@ tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -529,8 +537,12 @@ tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -547,8 +559,12 @@ tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -567,8 +583,12 @@ tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
@@ -585,8 +605,12 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	if ((temp->duration == TEMPORALSEQ || temp->duration == TEMPORALS) &&
 		temp->valuetypid == FLOAT8OID)
@@ -609,8 +633,12 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
@@ -637,8 +665,12 @@ temporal_wavg_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
-		PG_RETURN_POINTER(state);
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+		if (state)
+			PG_RETURN_POINTER(state);
+		else
+			PG_RETURN_NULL();
+	}
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
