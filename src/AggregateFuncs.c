@@ -352,6 +352,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		/* We need to delete the spliced-out temporal values */
 		for (int i = 0; i < spliced_count; i ++)
 			pfree(spliced[i]);
+		pfree(spliced);
 	}
 
 	/* Insert new elements */
@@ -503,6 +504,20 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pfree(values);
 }
 
+
+void
+aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
+	size_t size)
+{
+	MemoryContext ctx;
+	assert(AggCheckCallContext(fcinfo, &ctx));
+	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+	state->extra = palloc(size);
+	state->extrasize = size;
+	memcpy(state->extra, data, size);
+	MemoryContextSwitchTo(oldctx);
+}
+
 SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
@@ -551,19 +566,6 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 	};
 	SkipList *result = aggstate_read(fcinfo, &buf);
 	PG_RETURN_POINTER(result);
-}
-
-void
-aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
-	size_t size)
-{
-	MemoryContext ctx;
-	assert(AggCheckCallContext(fcinfo, &ctx));
-	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-	state->extra = palloc(size);
-	state->extrasize = size;
-	memcpy(state->extra, data, size);
-	MemoryContextSwitchTo(oldctx);
 }
 
 /*****************************************************************************
