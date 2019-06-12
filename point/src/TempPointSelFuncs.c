@@ -699,13 +699,12 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 
 	at[dim] = nd_ibox->min[dim];
 
-	if (cacheOp == FRONT_OP || cacheOp == OVERBACK_OP ||
-        cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
+	if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
     {
         at[1] = nd_ibox->max[1];
         at[0] = nd_ibox->max[0];
     }
-	else
+	else if (cacheOp == FRONT_OP || cacheOp == FRONT_OP)
     {
         at[0] = nd_ibox->min[0];
         at[1] = nd_ibox->min[1];
