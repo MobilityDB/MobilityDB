@@ -576,14 +576,6 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 	MemoryContextSwitchTo(oldctx);
 }
 
-void aggstate_move_extra(SkipList *dest, SkipList *src) 
-{
-	dest->extra = src->extra;
-	dest->extrasize = src->extrasize;
-	src->extra = NULL;
-	src->extrasize = 0;
-}
-
 /*****************************************************************************
  * Transformation functions for count and avg
  *****************************************************************************/

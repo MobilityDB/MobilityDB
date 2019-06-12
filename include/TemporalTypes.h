@@ -1300,7 +1300,6 @@ extern Temporal **skiplist_values(SkipList *list);
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count);
 
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data, size_t size);
-extern void aggstate_move_extra(SkipList *dest, SkipList *src);
 
 extern SkipList *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));

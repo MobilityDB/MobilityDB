@@ -26,6 +26,8 @@ struct GeoAggregateState
 
 static void geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 {
+	if(! state)
+		return;
 	struct GeoAggregateState *extra = state->extra;
 	if (extra && extra->srid != srid)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -188,14 +190,11 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     SkipList *state2 = skiplist_make_tcentroid(fcinfo, temp);
     SkipList *result = temporal_tagg_combinefn(fcinfo, state, state2, func, false);
 
-    if (result != state)
-        pfree(state);
-    if (result != state2)
-        pfree(state2);
+    //aggstate_move_extra(result, state2);
 
-    aggstate_move_extra(result, state2);
+    pfree(state2);
 
-	PG_FREE_IF_COPY(temp, 1);
+    PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
 
@@ -217,7 +216,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 		&datum_sum_double4 : &datum_sum_double3;
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		func, false);
-	aggstate_move_extra(result, state1);
+	//aggstate_move_extra(result, state1);
 	PG_RETURN_POINTER(result);
 }
 
