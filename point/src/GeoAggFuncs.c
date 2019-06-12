@@ -340,6 +340,7 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 
 	int32_t srid = ((struct GeoAggregateState*) state->extra)->srid;
 	Temporal *sridresult = tpoint_set_srid_internal(result, srid);
+	pfree(values);
 	pfree(result);
 
 	PG_RETURN_POINTER(sridresult);

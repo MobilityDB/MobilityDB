@@ -488,7 +488,7 @@ datum_sum_double4(Datum l, Datum r)
 void 
 aggstate_write(SkipList *state, StringInfo buf)
 {
-    Temporal** values = skiplist_values(state) ;
+    Temporal** values = skiplist_values(state);
 	pq_sendint32(buf, (uint32) state->length);
 	Oid valuetypid = InvalidOid;
 	if (state->length > 0)
@@ -500,6 +500,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pq_sendint64(buf, state->extrasize);
 	if(state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
+	pfree(values);
 }
 
 SkipList *
