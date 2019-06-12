@@ -493,6 +493,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	Oid valuetypid = InvalidOid;
 	if (state->length > 0)
 		valuetypid = values[0]->valuetypid;
+
 	pq_sendint32(buf, valuetypid);
 	for (int i = 0; i < state->length; i ++)
 		temporal_write(values[i], buf);
@@ -1624,7 +1625,7 @@ temporal_tcount_combinefn(PG_FUNCTION_ARGS)
 		(SkipList *) PG_GETARG_POINTER(1);
 
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2,
-		&datum_sum_double2, false);
+		&datum_sum_int32, false);
 
 	if (result != state2)
 		pfree(state2);

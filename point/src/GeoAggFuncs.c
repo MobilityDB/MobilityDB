@@ -216,12 +216,12 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(1);
 	geoaggstate_check_as(state1, state2);
-	bool hasz = MOBDB_FLAGS_GET_Z(skiplist_headval(state1)->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(skiplist_headval(state1 ? state1 : state2)->flags);
 	Datum (*func)(Datum, Datum) = hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		func, false);
-	//aggstate_move_extra(result, state1);
+
 	PG_RETURN_POINTER(result);
 }
 
@@ -337,6 +337,7 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
 			(TemporalSeq **)values, state->length);
+
 	int32_t srid = ((struct GeoAggregateState*) state->extra)->srid;
 	Temporal *sridresult = tpoint_set_srid_internal(result, srid);
 	pfree(result);
