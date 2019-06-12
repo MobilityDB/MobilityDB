@@ -11,7 +11,13 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
-#include "Aggregates.h"
+
+static TemporalInst **
+temporalinst_tagg2(TemporalInst **instants1, int count1, TemporalInst **instants2, 
+	int count2, Datum (*func)(Datum, Datum), int *newcount);
+static TemporalSeq **
+temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
+   int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -155,9 +161,7 @@ typedef enum
 RelativeTimePos
 pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 {
-	int32 cmp;
-
-	cmp = timestamp_cmp_internal(t1, t);
+	int32 cmp = timestamp_cmp_internal(t1, t);
 	if (cmp > 0)
 		return BEFORE;
 	if (cmp < 0)
@@ -168,20 +172,16 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 RelativeTimePos
 pos_period_timestamp(Period *p, TimestampTz t)
 {
-	int32 cmp;
-
-	cmp = timestamp_cmp_internal(p->lower, t);
+	int32 cmp = timestamp_cmp_internal(p->lower, t);
 	if (cmp > 0)
 		return BEFORE;
 	if (cmp == 0 && !(p->lower_inc))
 		return BEFORE;
-
 	cmp = timestamp_cmp_internal(p->upper, t);
 	if (cmp < 0)
 		return AFTER;
 	if (cmp == 0 && !(p->upper_inc))
 		return AFTER;
-
 	return DURING;
 }
 
@@ -511,13 +511,12 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	Temporal **values = palloc0(sizeof(Temporal *) * size);
 	for (int i = 0; i < size; i ++)
 		values[i] = temporal_read(buf, valuetypid);
-	SkipList* result = skiplist_make(fcinfo, values, size);
-	result->extrasize = pq_getmsgint64(buf);
-	if (result->extrasize) 
+	SkipList *result = skiplist_make(fcinfo, values, size);
+	size_t extrasize = pq_getmsgint64(buf);
+	if (extrasize)
 	{
-		const char* extra = pq_getmsgbytes(buf, result->extrasize);
-		result->extra = palloc(result->extrasize);
-		memcpy(result->extra, extra, result->extrasize);
+		const char *extra = pq_getmsgbytes(buf, extrasize);
+		aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
 	}
 	for (int i = 0; i < size; i ++)
 		pfree(values[i]);
@@ -542,7 +541,7 @@ PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
 PGDLLEXPORT Datum
 temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 {
-	bytea* data = PG_GETARG_BYTEA_P(0);
+	bytea *data = PG_GETARG_BYTEA_P(0);
 	StringInfoData buf =
 	{
 		.cursor = 0,
@@ -645,7 +644,7 @@ temporals_transform_tcount(TemporalS *ts)
 
 /* Dispatch function */
 
-Temporal *
+static Temporal *
 temporal_transform_tcount(Temporal *temp)
 {
 	temporal_duration_is_valid(temp->duration);
@@ -1800,7 +1799,7 @@ temporal_tavg_combinefn(PG_FUNCTION_ARGS)
 
 /* Final function for tavg */
 
-TemporalI *
+static TemporalI *
 temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 {
 	TemporalInst **newinstants = palloc(sizeof(TemporalInst *) * count);
@@ -1821,7 +1820,7 @@ temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 	return result;
 }
 
-TemporalS *
+static TemporalS *
 temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 {
 	TemporalSeq **newsequences = palloc(sizeof(TemporalSeq *) * count);
