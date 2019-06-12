@@ -186,13 +186,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		&datum_sum_double4 : &datum_sum_double3;
 
     SkipList *state2 = skiplist_make_tcentroid(fcinfo, temp);
-    SkipList *result = NULL;
-    if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
-        result = temporalinst_tagg_combinefn(fcinfo, state, state2, func);
-    if (temp->duration == TEMPORALSEQ || temp->duration == TEMPORALS)
-        result = temporalseq_tagg_combinefn(fcinfo, state, state2, func, false);
-
-    assert(result != NULL);
+    SkipList *result = temporal_tagg_combinefn(fcinfo, state, state2, func, false);
 
     if (result != state)
         pfree(state);

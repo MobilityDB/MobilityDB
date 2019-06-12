@@ -484,6 +484,41 @@ datum_sum_double4(Datum l, Datum r)
 /*****************************************************************************
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
+
+PGDLLEXPORT Datum
+temporal_tagg_serialize(PG_FUNCTION_ARGS)
+{
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Write me!")));
+    AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+    pq_begintypsend(&buf);
+    //aggstate_write(state, &buf);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
+
+PGDLLEXPORT Datum
+temporal_tagg_deserialize(PG_FUNCTION_ARGS)
+{
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Write me!")));
+    bytea* data = PG_GETARG_BYTEA_P(0);
+    StringInfoData buf =
+            {
+                    .cursor = 0,
+                    .data = VARDATA(data),
+                    .len = VARSIZE(data),
+                    .maxlen = VARSIZE(data)
+            };
+    //AggregateState *result = aggstate_read(fcinfo, &buf);
+    //PG_RETURN_POINTER(result);
+    PG_RETURN_NULL() ;
+}
+
 /*
 void 
 aggstate_write(SkipList *state, StringInfo buf)
@@ -523,63 +558,6 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 		memcpy(result->extra, extra, result->extrasize);
 	}
 
-	MemoryContextSwitchTo(oldctx);
-	return result;
-}
-
-void
-aggstate_clear(SkipList *state)
-{
-	for (int i = 0; i < state->size; i ++)
-	{
-		pfree(state->values[i]);
-		state->values[i] = NULL;
-		state->size = 0;
-	}
-}
-
-PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
-
-PGDLLEXPORT Datum
-temporal_tagg_serialize(PG_FUNCTION_ARGS)
-{
-	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-	StringInfoData buf;
-	pq_begintypsend(&buf);
-	aggstate_write(state, &buf);
-	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
-}
-
-PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
-
-PGDLLEXPORT Datum
-temporal_tagg_deserialize(PG_FUNCTION_ARGS)
-{
-	bytea* data = PG_GETARG_BYTEA_P(0);
-	StringInfoData buf = 
-	{
-		.cursor = 0,
-		.data = VARDATA(data),
-		.len = VARSIZE(data),
-		.maxlen = VARSIZE(data)
-	};
-	SkipList *result = aggstate_read(fcinfo, &buf);
-	PG_RETURN_POINTER(result);
-}
-
-SkipList *
-aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
-{
-	MemoryContext ctx;
-	assert(AggCheckCallContext(fcinfo, &ctx));
-	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-	SkipList *result = palloc0(sizeof(AggregateState) + 
-		size * sizeof(Temporal *));
-	for (int i = 0; i < size; i ++)
-		result->values[i] = temporal_copy(values[i]);
-	result->size = size;
-	result->extra = NULL;
-	result->extrasize = 0;
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }

@@ -1299,22 +1299,15 @@ extern Temporal *skiplist_headval(SkipList *list);
 extern Temporal **skiplist_values(SkipList *list);
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count);
 
-extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, 
-	SkipList *state1, SkipList *state2,	Datum (*operator)(Datum, Datum), 
-	bool crossings);
-
-extern SkipList *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data, size_t size);
 extern void aggstate_move_extra(SkipList *dest, SkipList *src);
 
 extern SkipList *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));
-extern SkipList *temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
-	SkipList *state2,	Datum (*operator)(Datum, Datum));
 extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool interpoint);
-extern SkipList *temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
-	SkipList *state2,	Datum (*operator)(Datum, Datum), bool interpoint);
+extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
+                        SkipList *state2, Datum (*operator)(Datum, Datum), bool crossings) ;
 	
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
