@@ -485,51 +485,17 @@ datum_sum_double4(Datum l, Datum r)
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
-
-PGDLLEXPORT Datum
-temporal_tagg_serialize(PG_FUNCTION_ARGS)
-{
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-            errmsg("Write me!")));
-    AggregateState *state = (AggregateState *) PG_GETARG_POINTER(0);
-    StringInfoData buf;
-    pq_begintypsend(&buf);
-    //aggstate_write(state, &buf);
-    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
-}
-
-PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
-
-PGDLLEXPORT Datum
-temporal_tagg_deserialize(PG_FUNCTION_ARGS)
-{
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-            errmsg("Write me!")));
-    bytea* data = PG_GETARG_BYTEA_P(0);
-    StringInfoData buf =
-            {
-                    .cursor = 0,
-                    .data = VARDATA(data),
-                    .len = VARSIZE(data),
-                    .maxlen = VARSIZE(data)
-            };
-    //AggregateState *result = aggstate_read(fcinfo, &buf);
-    //PG_RETURN_POINTER(result);
-    PG_RETURN_NULL() ;
-}
-
-/*
 void 
 aggstate_write(SkipList *state, StringInfo buf)
 {
-	pq_sendint32(buf, (uint32) state->size);
+    Temporal** values = skiplist_values(state) ;
+	pq_sendint32(buf, (uint32) state->length);
 	Oid valuetypid = InvalidOid;
-	if (state->size > 0)
-		valuetypid = state->values[0]->valuetypid;
+	if (state->length > 0)
+		valuetypid = values[0]->valuetypid;
 	pq_sendint32(buf, valuetypid);
-	for (int i = 0; i < state->size; i ++)
-		temporal_write(state->values[i], buf);
+	for (int i = 0; i < state->length; i ++)
+		temporal_write(values[i], buf);
 	pq_sendint64(buf, state->extrasize);
 	if(state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
@@ -544,12 +510,13 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 
 	int size = pq_getmsgint(buf, 4);
 	Oid valuetypid = pq_getmsgint(buf, 4);
-	SkipList *result = palloc0(sizeof(AggregateState) + 
-		size * sizeof(TemporalSeq *));
+	Temporal** values = palloc0(size * sizeof(Temporal *));
 
 	for (int i = 0; i < size; i ++)
-		result->values[i] = temporal_read(buf, valuetypid);
-	result->size = size;
+		values[i] = temporal_read(buf, valuetypid);
+
+	SkipList* result = skiplist_make(fcinfo, values, size) ;
+
 	result->extrasize = pq_getmsgint64(buf);
 	if(result->extrasize) 
 	{
@@ -561,7 +528,36 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }
-*/
+
+
+PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
+
+PGDLLEXPORT Datum
+temporal_tagg_serialize(PG_FUNCTION_ARGS)
+{
+    SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+    StringInfoData buf;
+    pq_begintypsend(&buf);
+    aggstate_write(state, &buf);
+    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
+
+PGDLLEXPORT Datum
+temporal_tagg_deserialize(PG_FUNCTION_ARGS)
+{
+    bytea* data = PG_GETARG_BYTEA_P(0);
+    StringInfoData buf =
+            {
+                    .cursor = 0,
+                    .data = VARDATA(data),
+                    .len = VARSIZE(data),
+                    .maxlen = VARSIZE(data)
+            };
+    SkipList *result = aggstate_read(fcinfo, &buf);
+    PG_RETURN_POINTER(result);
+}
 
 void
 aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
