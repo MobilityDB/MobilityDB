@@ -506,17 +506,12 @@ aggstate_write(SkipList *state, StringInfo buf)
 SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
-	MemoryContext ctx;
-	assert(AggCheckCallContext(fcinfo, &ctx));
-	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-
 	int size = pq_getmsgint(buf, 4);
 	Oid valuetypid = pq_getmsgint(buf, 4);
 	Temporal **values = palloc0(sizeof(Temporal *) * size);
 	for (int i = 0; i < size; i ++)
 		values[i] = temporal_read(buf, valuetypid);
 	SkipList* result = skiplist_make(fcinfo, values, size);
-
 	result->extrasize = pq_getmsgint64(buf);
 	if (result->extrasize) 
 	{
@@ -527,8 +522,6 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	for (int i = 0; i < size; i ++)
 		pfree(values[i]);
 	pfree(values);
-
-	MemoryContextSwitchTo(oldctx);
 	return result;
 }
 
