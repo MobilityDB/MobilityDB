@@ -21,16 +21,16 @@
 struct GeoAggregateState
 {
 	int32_t srid;
-	bool has_z;
+	bool hasz;
 };
 
-static void geoaggstate_check(SkipList *state, int32_t srid, bool has_z)
+static void geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 {
 	struct GeoAggregateState *extra = state->extra;
 	if (extra && extra->srid != srid)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Geometries need to have the same SRID for temporal aggregation")));
-	if (extra && extra->has_z != has_z)
+	if (extra && extra->hasz != hasz)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Geometries need to have the same dimensionality for temporal aggregation")));
 }
@@ -39,13 +39,15 @@ static void geoaggstate_check_as(SkipList *state1, SkipList *state2)
 {
 	struct GeoAggregateState *extra2 = state2->extra;
 	if (extra2)
-		geoaggstate_check(state1, extra2->srid, extra2->has_z);
+		geoaggstate_check(state1, extra2->srid, extra2->hasz);
 }
 
 static void geoaggstate_check_t(SkipList *state, Temporal *t)
 {
 	geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
 }
+
+/*****************************************************************************/
 
 /*
  * Transform a temporal point type into a temporal double3/double4 type for 
@@ -120,21 +122,21 @@ tpoints_transform_tcentroid(TemporalS *ts)
  *****************************************************************************/
 
 static SkipList *
-aggstate_make_tcentroid(FunctionCallInfo fcinfo, Temporal *temp)
+skiplist_make_tcentroid(FunctionCallInfo fcinfo, Temporal *temp)
 {
     SkipList *result = NULL;
     if (temp->duration == TEMPORALINST) 
 	{
         TemporalInst *inst = (TemporalInst*) temp;
         TemporalInst *newinst = tpointinst_transform_tcentroid(inst);
-        result = aggstate_make(fcinfo, 1, (Temporal **)&newinst);
+        result = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
         pfree(newinst);
     }
 	else if (temp->duration == TEMPORALI)
 	{
         TemporalI *ti = (TemporalI*) temp;
         TemporalInst **instants = tpointi_transform_tcentroid(ti);
-        result = aggstate_make(fcinfo, ti->count, (Temporal **)instants);
+        result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
         for (int i = 0; i < ti->count; i++)
             pfree(instants[i]);
         pfree(instants);
@@ -143,14 +145,14 @@ aggstate_make_tcentroid(FunctionCallInfo fcinfo, Temporal *temp)
 	{
         TemporalSeq *seq = (TemporalSeq*) temp;
         TemporalSeq *newseq = tpointseq_transform_tcentroid(seq);
-        result = aggstate_make(fcinfo, 1, (Temporal **)&newseq);
+        result = skiplist_make(fcinfo, (Temporal **)&newseq, 1);
         pfree(newseq);
     }
 	else if (temp->duration == TEMPORALS)
 	{
         TemporalS *ts = (TemporalS*) temp;
         TemporalSeq **sequences = tpoints_transform_tcentroid(ts);
-        result = aggstate_make(fcinfo, ts->count, (Temporal **)sequences);
+        result = skiplist_make(fcinfo, (Temporal **)sequences, ts->count);
         for (int i = 0; i < ts->count; i++)
             pfree(sequences[i]);
         pfree(sequences);
@@ -160,7 +162,7 @@ aggstate_make_tcentroid(FunctionCallInfo fcinfo, Temporal *temp)
     struct GeoAggregateState extra =
 	{
         .srid = tpoint_srid_internal(temp),
-        .has_z = MOBDB_FLAGS_GET_Z(temp->flags) != 0
+        .hasz = MOBDB_FLAGS_GET_Z(temp->flags) != 0
     };
 
     aggstate_set_extra(fcinfo, result, &extra, sizeof(struct GeoAggregateState));
@@ -183,7 +185,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
 		&datum_sum_double4 : &datum_sum_double3;
 
-    SkipList *state2 = aggstate_make_tcentroid(fcinfo, temp);
+    SkipList *state2 = skiplist_make_tcentroid(fcinfo, temp);
     SkipList *result = NULL;
     if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
         result = temporalinst_tagg_combinefn(fcinfo, state, state2, func);

@@ -17,7 +17,7 @@
  * Functions manipulating skip lists
  *****************************************************************************/
 
-MemoryContext
+static MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
 	MemoryContext ctx;
@@ -27,7 +27,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
 	return  MemoryContextSwitchTo(ctx);
 }
 
-void
+static void
 unset_aggregation_context(MemoryContext ctx)
 {
 	MemoryContextSwitchTo(ctx);
@@ -586,7 +586,7 @@ aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values)
 */
 
 void
-aggstate_set_extra(FunctionCallInfo fcinfo, SkipList* state, void* data,
+aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 	size_t size)
 {
 	MemoryContext ctx;
@@ -598,7 +598,7 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList* state, void* data,
 	MemoryContextSwitchTo(oldctx);
 }
 
-void aggstate_move_extra(SkipList* dest, SkipList* src) 
+void aggstate_move_extra(SkipList *dest, SkipList *src) 
 {
 	dest->extra = src->extra;
 	dest->extrasize = src->extrasize;
@@ -1212,7 +1212,9 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 			((TemporalSeq *)values2[count2-1])->period.upper,
 			((TemporalSeq *)values2[0])->period.lower_inc, 
 			((TemporalSeq *)values2[count2-1])->period.upper_inc);
-	skiplist_splice(fcinfo, state1, values2, count2, &period_state2, operator, crossings);
+	skiplist_splice(fcinfo, state1, values2, count2, &period_state2, operator, 
+		crossings);
+	pfree(values2);
 	return state1;
 }
 
@@ -1640,6 +1642,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_from_temporalseqarr(
 			(TemporalSeq **)values, state->length, true);
+	pfree(values);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1862,6 +1865,7 @@ temporal_tavg_finalfn(PG_FUNCTION_ARGS)
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporalseq_tavg_finalfn(
 			(TemporalSeq **)values, state->length);
+	pfree(values);
 	PG_RETURN_POINTER(result);
 }
 

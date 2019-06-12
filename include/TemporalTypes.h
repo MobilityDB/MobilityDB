@@ -1297,6 +1297,7 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 
 extern Temporal *skiplist_headval(SkipList *list);
 extern Temporal **skiplist_values(SkipList *list);
+extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count);
 
 extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, 
 	SkipList *state1, SkipList *state2,	Datum (*operator)(Datum, Datum), 
