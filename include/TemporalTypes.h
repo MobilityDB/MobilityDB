@@ -258,6 +258,8 @@ typedef struct double4
 	double		d;
 } double4;
 
+/* AggregateState - Internal type for computing aggregates */
+
 typedef struct AggregateState
 {
 	int 		size;
@@ -265,6 +267,36 @@ typedef struct AggregateState
 	size_t      extrasize;
 	Temporal 	*values[];
 } AggregateState;
+
+/*****************************************************************************/
+
+#define SKIPLIST_MAXLEVEL 32
+#define SKIPLIST_INITIAL_CAPACITY 1024
+#define SKIPLIST_GROW 2
+#define SKIPLIST_INITIAL_FREELIST 32
+
+typedef struct
+{
+	Temporal *value;
+	int height;
+	int next[SKIPLIST_MAXLEVEL];
+} Elem;
+
+typedef struct
+{
+	int capacity;
+	int next;
+	int length;
+	int *freed;
+	int freecount;
+	int freecap;
+	int tail;
+	void *extra;
+	size_t extrasize;
+	Elem *elems;
+} SkipList;
+
+/*****************************************************************************/
 
 typedef struct
 {
@@ -1263,18 +1295,25 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern AggregateState *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
-extern void aggstate_set_extra(FunctionCallInfo fcinfo, AggregateState* state, void* data, size_t size);
-extern void aggstate_move_extra(AggregateState* dest, AggregateState* src);
+extern Temporal *skiplist_headval(SkipList *list);
+extern Temporal **skiplist_values(SkipList *list);
 
-extern AggregateState *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
+extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, 
+	SkipList *state1, SkipList *state2,	Datum (*operator)(Datum, Datum), 
+	bool crossings);
+
+extern SkipList *aggstate_make(FunctionCallInfo fcinfo, int size, Temporal **values);
+extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data, size_t size);
+extern void aggstate_move_extra(SkipList *dest, SkipList *src);
+
+extern SkipList *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	TemporalInst *inst, Datum (*operator)(Datum, Datum));
-extern AggregateState *temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*operator)(Datum, Datum));
-extern AggregateState *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
+extern SkipList *temporalinst_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
+	SkipList *state2,	Datum (*operator)(Datum, Datum));
+extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool interpoint);
-extern AggregateState *temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, AggregateState *state1, 
-	AggregateState *state2,	Datum (*operator)(Datum, Datum), bool interpoint);
+extern SkipList *temporalseq_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
+	SkipList *state2,	Datum (*operator)(Datum, Datum), bool interpoint);
 	
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);

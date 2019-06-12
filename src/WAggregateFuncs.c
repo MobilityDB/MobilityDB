@@ -464,14 +464,14 @@ temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 
 /* Generic moving window transition function for min, max, sum */
 
-static AggregateState *
-temporal_wagg_transfn(FunctionCallInfo fcinfo, AggregateState *state, 
+static SkipList *
+temporal_wagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	Temporal *temp, Interval *interval,
 	Datum (*func)(Datum, Datum), bool min, bool crossings)
 {
 	int count;
 	TemporalSeq **sequences = temporal_extend(temp, interval, min, &count);
-	AggregateState *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
+	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
 		func, crossings);
 	for (int i = 1; i < count; i++)
 		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i],
@@ -489,13 +489,13 @@ PG_FUNCTION_INFO_V1(tint_wmin_transfn);
 PGDLLEXPORT Datum
 tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ?  NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_min_int32, true, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -507,13 +507,13 @@ PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
 PGDLLEXPORT Datum
 tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_min_float8, true, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -527,13 +527,13 @@ PG_FUNCTION_INFO_V1(tint_wmax_transfn);
 PGDLLEXPORT Datum
 tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_max_int32, false, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -545,13 +545,13 @@ PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
 PGDLLEXPORT Datum
 tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_max_float8, false, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -565,13 +565,13 @@ PG_FUNCTION_INFO_V1(tint_wsum_transfn);
 PGDLLEXPORT Datum
 tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_sum_int32, true, false);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -583,8 +583,8 @@ PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
 PGDLLEXPORT Datum
 tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -593,7 +593,7 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Operation not supported for temporal float sequences")));
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
-	AggregateState *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
+	SkipList *result = temporal_wagg_transfn(fcinfo, state, temp, interval, 
 		&datum_sum_float8, true, false);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_FREE_IF_COPY(interval, 2);
@@ -607,15 +607,15 @@ PG_FUNCTION_INFO_V1(temporal_wcount_transfn);
 PGDLLEXPORT Datum
 temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
 	TemporalSeq **sequences = temporal_transform_wcount(temp, interval, &count);
-	AggregateState *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
+	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
 		&datum_sum_int32, false);
 	for (int i = 1; i < count; i++)
 		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i], 
@@ -635,15 +635,15 @@ PG_FUNCTION_INFO_V1(temporal_wavg_transfn);
 PGDLLEXPORT Datum
 temporal_wavg_transfn(PG_FUNCTION_ARGS)
 {
-	AggregateState *state = PG_ARGISNULL(0) ?
-		aggstate_make(fcinfo, 0, NULL) : (AggregateState *) PG_GETARG_POINTER(0);
+	SkipList *state = PG_ARGISNULL(0) ? NULL :
+		(SkipList *) PG_GETARG_POINTER(0);
 	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
 		PG_RETURN_POINTER(state);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
 	TemporalSeq **sequences = temporal_transform_wavg(temp, interval, &count);
-	AggregateState *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
+	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
 		&datum_sum_double2, false);
 	for (int i = 1; i < count; i++)
 		result = temporalseq_tagg_transfn(fcinfo, result, sequences[i], 

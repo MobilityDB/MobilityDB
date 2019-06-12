@@ -22,7 +22,6 @@ src/Period.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
-src/SkipListAggregateFuncs.c
 src/Tbox.c
 src/Temporal.c
 src/TemporalAnalyze.c
@@ -60,7 +59,6 @@ src/sql/30_ComparisonOps.in.sql
 src/sql/32_BoundBoxOps.in.sql
 src/sql/34_RelativePosOps.in.sql
 src/sql/36_AggregateFuncs.in.sql
-src/sql/37_SkipListAggregateFuncs.in.sql
 src/sql/38_WAggregateFuncs.in.sql
 src/sql/40_IndexGistTemporal.in.sql
 src/sql/42_IndexSPGistTemporal.in.sql
