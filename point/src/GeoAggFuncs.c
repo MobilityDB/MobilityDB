@@ -179,8 +179,12 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1))
-		PG_RETURN_POINTER(state);
+    if (PG_ARGISNULL(1)) {
+        if (state)
+            PG_RETURN_POINTER(state);
+        else
+            PG_RETURN_NULL();
+    }
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 
 	geoaggstate_check_t(state, temp);
@@ -192,7 +196,8 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 
     //aggstate_move_extra(result, state2);
 
-    pfree(state2);
+    if(result != state2)
+        pfree(state2);
 
     PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
