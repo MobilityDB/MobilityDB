@@ -498,7 +498,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	for (int i = 0; i < state->length; i ++)
 		temporal_write(values[i], buf);
 	pq_sendint64(buf, state->extrasize);
-	if(state->extra)
+	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
 	pfree(values);
 }
@@ -512,15 +512,13 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 
 	int size = pq_getmsgint(buf, 4);
 	Oid valuetypid = pq_getmsgint(buf, 4);
-	Temporal** values = palloc0(size * sizeof(Temporal *));
-
+	Temporal **values = palloc0(sizeof(Temporal *) * size);
 	for (int i = 0; i < size; i ++)
 		values[i] = temporal_read(buf, valuetypid);
-
-	SkipList* result = skiplist_make(fcinfo, values, size) ;
+	SkipList* result = skiplist_make(fcinfo, values, size);
 
 	result->extrasize = pq_getmsgint64(buf);
-	if(result->extrasize) 
+	if (result->extrasize) 
 	{
 		const char* extra = pq_getmsgbytes(buf, result->extrasize);
 		result->extra = palloc(result->extrasize);
@@ -530,7 +528,6 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	MemoryContextSwitchTo(oldctx);
 	return result;
 }
-
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
 
@@ -551,12 +548,12 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 {
     bytea* data = PG_GETARG_BYTEA_P(0);
     StringInfoData buf =
-            {
-                    .cursor = 0,
-                    .data = VARDATA(data),
-                    .len = VARSIZE(data),
-                    .maxlen = VARSIZE(data)
-            };
+	{
+		.cursor = 0,
+		.data = VARDATA(data),
+		.len = VARSIZE(data),
+		.maxlen = VARSIZE(data)
+	};
     SkipList *result = aggstate_read(fcinfo, &buf);
     PG_RETURN_POINTER(result);
 }
