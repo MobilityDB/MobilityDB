@@ -342,11 +342,11 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		int newcount = 0;
 		Temporal **newtemps;
 		if (duration == TEMPORALINST)
-			newtemps = (Temporal **)temporalinst_tagg2((TemporalInst **)spliced, spliced_count,
-			(TemporalInst **)values, count, operator, &newcount);
+			newtemps = (Temporal **)temporalinst_tagg2((TemporalInst **)spliced, 
+				spliced_count, (TemporalInst **)values, count, operator, &newcount);
 		else
-			newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, spliced_count,
-			(TemporalSeq **)values, count, operator, crossings, &newcount);
+			newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, 
+				spliced_count, (TemporalSeq **)values, count, operator, crossings, &newcount);
 		values = newtemps;
 		count = newcount;
 		/* We need to delete the spliced-out temporal values */
@@ -385,6 +385,13 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		}
 		if (rheight > height)
 			height = rheight;
+	}
+
+	if (spliced_count != 0)
+	{
+		for (int i = 0; i< count; i++)
+			pfree(values[i]);
+		pfree(values);	
 	}
 }
 
