@@ -1138,6 +1138,9 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
 	temporal_duration_is_valid(temp->duration);
+    if (state && skiplist_headval(state)->duration != temp->duration)
+        ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+                errmsg("Cannot aggregate temporal values of different duration")));
 	SkipList *result = NULL;
 	if (temp->duration == TEMPORALINST) 
 		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
