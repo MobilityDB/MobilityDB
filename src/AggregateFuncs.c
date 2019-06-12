@@ -389,7 +389,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 
 	if (spliced_count != 0)
 	{
-		for (int i = 0; i< count; i++)
+		/* We need to delete the new aggregate temporal values */
+		for (int i = 0; i < count; i++)
 			pfree(values[i]);
 		pfree(values);	
 	}
