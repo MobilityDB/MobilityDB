@@ -36,6 +36,7 @@ unset_aggregation_context(MemoryContext ctx)
 SkipList *
 skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 {
+	assert(count > 0);
 	//FIXME: tail should be a constant (e.g. 1) but is not, for ease of construction
 
 	MemoryContext oldctx = set_aggregation_context(fcinfo);
@@ -488,18 +489,19 @@ datum_sum_double4(Datum l, Datum r)
 void 
 aggstate_write(SkipList *state, StringInfo buf)
 {
-    Temporal** values = skiplist_values(state);
+	Temporal **values = skiplist_values(state);
 	pq_sendint32(buf, (uint32) state->length);
 	Oid valuetypid = InvalidOid;
 	if (state->length > 0)
 		valuetypid = values[0]->valuetypid;
-
 	pq_sendint32(buf, valuetypid);
 	for (int i = 0; i < state->length; i ++)
 		temporal_write(values[i], buf);
 	pq_sendint64(buf, state->extrasize);
 	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
+	for (int i = 0; i < state->length; i ++)
+		pfree(values[i]);
 	pfree(values);
 }
 
@@ -524,6 +526,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 		result->extra = palloc(result->extrasize);
 		memcpy(result->extra, extra, result->extrasize);
 	}
+	pfree(values);
 
 	MemoryContextSwitchTo(oldctx);
 	return result;
@@ -534,11 +537,11 @@ PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
 PGDLLEXPORT Datum
 temporal_tagg_serialize(PG_FUNCTION_ARGS)
 {
-    SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
-    StringInfoData buf;
-    pq_begintypsend(&buf);
-    aggstate_write(state, &buf);
-    PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
+	StringInfoData buf;
+	pq_begintypsend(&buf);
+	aggstate_write(state, &buf);
+	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
@@ -546,16 +549,16 @@ PG_FUNCTION_INFO_V1(temporal_tagg_deserialize);
 PGDLLEXPORT Datum
 temporal_tagg_deserialize(PG_FUNCTION_ARGS)
 {
-    bytea* data = PG_GETARG_BYTEA_P(0);
-    StringInfoData buf =
+	bytea* data = PG_GETARG_BYTEA_P(0);
+	StringInfoData buf =
 	{
 		.cursor = 0,
 		.data = VARDATA(data),
 		.len = VARSIZE(data),
 		.maxlen = VARSIZE(data)
 	};
-    SkipList *result = aggstate_read(fcinfo, &buf);
-    PG_RETURN_POINTER(result);
+	SkipList *result = aggstate_read(fcinfo, &buf);
+	PG_RETURN_POINTER(result);
 }
 
 void
@@ -1062,9 +1065,9 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)&inst, 1);
 	else
 	{
-        if (skiplist_headval(state)->duration != TEMPORALINST)
-            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                    errmsg("Cannot aggregate temporal values of different duration")));
+		if (skiplist_headval(state)->duration != TEMPORALINST)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, inst->t, inst->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, &period_state2, 
@@ -1084,9 +1087,9 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
 	else
 	{
-        if (skiplist_headval(state)->duration != TEMPORALINST)
-            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                    errmsg("Cannot aggregate temporal values of different duration")));
+		if (skiplist_headval(state)->duration != TEMPORALINST)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
 		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
@@ -1106,9 +1109,9 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)&seq, 1);
 	else
 	{
-        if (skiplist_headval(state)->duration != TEMPORALSEQ)
-            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                    errmsg("Cannot aggregate temporal values of different duration")));
+		if (skiplist_headval(state)->duration != TEMPORALSEQ)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
 		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, &seq->period, 
 			func, crossings);
 		result = state;
@@ -1126,9 +1129,9 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		result = skiplist_make(fcinfo, (Temporal **)sequences, ts->count);
 	else
 	{
-        if (skiplist_headval(state)->duration != TEMPORALSEQ)
-            ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-                    errmsg("Cannot aggregate temporal values of different duration")));
+		if (skiplist_headval(state)->duration != TEMPORALSEQ)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
 		Period period_state2;
 		period_set(&period_state2, sequences[0]->period.lower, sequences[ts->count - 1]->period.upper,
 			sequences[0]->period.lower_inc, sequences[ts->count - 1]->period.upper_inc);
@@ -1597,16 +1600,16 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = temporalinst_tagg_transfn(fcinfo, state, 
-            (TemporalInst *)tempcount, &datum_sum_int32);
+			(TemporalInst *)tempcount, &datum_sum_int32);
 	else if (temp->duration == TEMPORALI)
 		result = temporali_tagg_transfn(fcinfo, state, 
-            (TemporalI *)tempcount, &datum_sum_int32);
+			(TemporalI *)tempcount, &datum_sum_int32);
 	else if (temp->duration == TEMPORALSEQ)
 		result = temporalseq_tagg_transfn(fcinfo, state, 
-            (TemporalSeq *)tempcount, &datum_sum_int32, false);
+			(TemporalSeq *)tempcount, &datum_sum_int32, false);
 	else if (temp->duration == TEMPORALS)
 		result = temporals_tagg_transfn(fcinfo, state, 
-            (TemporalS *)tempcount, &datum_sum_int32, false);
+			(TemporalS *)tempcount, &datum_sum_int32, false);
 	pfree(tempcount);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);

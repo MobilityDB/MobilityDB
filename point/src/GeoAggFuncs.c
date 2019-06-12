@@ -24,7 +24,8 @@ struct GeoAggregateState
 	bool hasz;
 };
 
-static void geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
+static void
+geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 {
 	if(! state)
 		return;
@@ -37,14 +38,16 @@ static void geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 			errmsg("Geometries need to have the same dimensionality for temporal aggregation")));
 }
 
-static void geoaggstate_check_as(SkipList *state1, SkipList *state2)
+static void 
+geoaggstate_check_as(SkipList *state1, SkipList *state2)
 {
 	struct GeoAggregateState *extra2 = state2->extra;
 	if (extra2)
 		geoaggstate_check(state1, extra2->srid, extra2->hasz);
 }
 
-static void geoaggstate_check_t(SkipList *state, Temporal *t)
+static void
+geoaggstate_check_t(SkipList *state, Temporal *t)
 {
 	geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
 }
