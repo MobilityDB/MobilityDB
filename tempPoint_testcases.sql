@@ -81,33 +81,6 @@ explain analyze select * from trips where 'STBOX T((13.398789,52.529999,2.337408
 explain analyze select * from trips where trip |&> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
 explain analyze select * from trips where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox |&> trip;
 
---STBOX op STBOX
-create table trips_stbox as select trip::stbox from trips;
-
-explain analyze select * from trips_stbox where trip && 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox && trip;
-explain analyze select * from trips_stbox where trip @> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox @> trip;
-explain analyze select * from trips_stbox where trip <@ 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox <@ trip;
-explain analyze select * from trips_stbox where trip << 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox << trip;
-explain analyze select * from trips_stbox where trip >> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox >> trip;
-explain analyze select * from trips_stbox where trip &< 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox &< trip;
-explain analyze select * from trips_stbox where trip &> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox &> trip;
-explain analyze select * from trips_stbox where trip <<| 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox <<| trip;
-explain analyze select * from trips_stbox where trip |>> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox |>> trip;
-explain analyze select * from trips_stbox where trip &<| 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox &<| trip;
-explain analyze select * from trips_stbox where trip |&> 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox;;
-explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.337408e+14),(13.498791,52.660004,2.337444e+14))'::stbox |&> trip;
-
-
 
 
 --Z-DIM
@@ -141,4 +114,3 @@ explain analyze select * from plane_3d where plane_pos &</ tgeompoint(sequence)'
 explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' &</ plane_pos;
 explain analyze select * from plane_3d where plane_pos /&> tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
 explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' /&> plane_pos;
-
