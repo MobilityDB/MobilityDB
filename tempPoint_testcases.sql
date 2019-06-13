@@ -110,20 +110,13 @@ explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.
 
 
 
---
--- Name: tbl_tgeompoint3d_big; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.tbl_tgeompoint3d_big (
-    k integer,
-    temp public.tgeompoint
-);
-
-explain analyze select * from tbl_tgeompoint3d_big where temp <</ 'LineString(20 20 20, 50 50 50)'::geometry;
-explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry <</ temp;
-explain analyze select * from tbl_tgeompoint3d_big where temp />> 'LineString(20 20 20, 50 50 50)'::geometry::geometry;
-explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry />> temp;
-explain analyze select * from tbl_tgeompoint3d_big where temp &</ 'LineString(20 20 20, 50 50 50)'::geometry;
-explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry &</ temp;
-explain analyze select * from tbl_tgeompoint3d_big where temp /&> 'LineString(20 20 20, 50 50 50)'::geometry;
-explain analyze select * from tbl_tgeompoint3d_big where 'LineString(20 20 20, 50 50 50)'::geometry /&> temp;
+--Z-DIM
+--Planes table
+explain analyze select * from plane_3d where plane_pos <</ 'LineString Z(10 51.1 2000, 30 51.6 2700)'::geometry;
+explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry <</ plane_pos;
+explain analyze select * from plane_3d where plane_pos />> 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry;
+explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry />> plane_pos;
+explain analyze select * from plane_3d where plane_pos &</ 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry;
+explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry &</ plane_pos;
+explain analyze select * from plane_3d where plane_pos /&> 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry;
+explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry /&> plane_pos;

@@ -697,14 +697,14 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 	/* Cell size in each dim */
 	cell_size[dim] = (nd_stats->extent.max[dim] - nd_stats->extent.min[dim]) / nd_stats->size[dim];
 
-	at[dim] = nd_ibox->min[dim];
+	at[dim] = nd_ibox->max[dim];
 
 	if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
     {
         at[1] = nd_ibox->max[1];
         at[0] = nd_ibox->max[0];
     }
-	else if (cacheOp == FRONT_OP || cacheOp == FRONT_OP)
+	else if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
     {
         at[0] = nd_ibox->min[0];
         at[1] = nd_ibox->min[1];
@@ -718,8 +718,8 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		/* We have to pro-rate partially overlapped cells. */
 		nd_cell.min[Z_DIMS] = (float4)(nd_stats->extent.min[Z_DIMS] + (at[Z_DIMS] + 0) * cell_size[Z_DIMS]);
 		nd_cell.max[Z_DIMS] = (float4)(nd_stats->extent.min[Z_DIMS] + (at[Z_DIMS] + 1) * cell_size[Z_DIMS]);
-		cell_count = nd_stats->value[(at[X_DIMS] * (int)nd_stats->size[Y_DIMS] + at[Y_DIMS]) *
-									 (int)nd_stats->size[Z_DIMS] + i];
+        cell_count = nd_stats->value[at[X_DIMS] + at[Y_DIMS] * (int)nd_stats->size[X_DIMS] +
+                                     at[Z_DIMS] * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
 
 		cellWidth = nd_cell.max[Z_DIMS] - nd_cell.min[Z_DIMS];
 		imin = Max(nd_box->min[Z_DIMS], nd_box->min[Z_DIMS]);
@@ -727,7 +727,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		iwidth = imax - imin;
 		iwidth = Max(0.0, iwidth);
 
-		if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
+		if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
 			ratio= (float)(iwidth / cellWidth);
 		else
 			ratio = 1.0f - (float)(iwidth / cellWidth);
@@ -747,8 +747,8 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 			{
 				for (int y = at[Y_DIMS] - 1; y >= 0; y--)
 				{
-					cell_count = nd_stats->value[(x * (int)nd_stats->size[Y_DIMS] + y) *
-												 (int)nd_stats->size[Z_DIMS] + i];
+                    cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIMS] +
+                                                 i * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
 					total_count += cell_count;
 				}
 			}
@@ -759,9 +759,9 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 			{
 				for (int y = at[Y_DIMS] + 1; y < nd_stats->size[1]; y++)
 				{
-					cell_count = nd_stats->value[(x * (int)nd_stats->size[Y_DIMS] + y) *
-												 (int)nd_stats->size[Z_DIMS] + i];
-					total_count += cell_count;
+                    cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIMS] +
+                                                 i * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
+                    total_count += cell_count;
 				}
 			}
 		}
