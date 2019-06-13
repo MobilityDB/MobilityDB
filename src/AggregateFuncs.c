@@ -539,11 +539,11 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	for (int i = 0; i < size; i ++)
 		values[i] = temporal_read(buf, valuetypid);
 	SkipList *result = skiplist_make(fcinfo, values, size);
-	size_t extrasize = pq_getmsgint64(buf);
-	if (extrasize)
+	result->extrasize = (size_t) pq_getmsgint64(buf);
+	if (result->extrasize)
 	{
-		const char *extra = pq_getmsgbytes(buf, extrasize);
-		aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
+		const char *extra = pq_getmsgbytes(buf, result->extrasize);
+		aggstate_set_extra(fcinfo, result, (void *)extra, result->extrasize);
 	}
 	for (int i = 0; i < size; i ++)
 		pfree(values[i]);
