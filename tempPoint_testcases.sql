@@ -112,6 +112,7 @@ explain analyze select * from trips_stbox where 'STBOX T((13.398789,52.529999,2.
 
 --Z-DIM
 --Planes table
+--TGEOMPOINT op GEOMETRY
 explain analyze select * from plane_3d where plane_pos <</ 'LineString Z(10 51.1 2000, 30 51.6 2700)'::geometry;
 explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry <</ plane_pos;
 explain analyze select * from plane_3d where plane_pos />> 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry;
@@ -120,3 +121,24 @@ explain analyze select * from plane_3d where plane_pos &</ 'LineString Z(20 51.1
 explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry &</ plane_pos;
 explain analyze select * from plane_3d where plane_pos /&> 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry;
 explain analyze select * from plane_3d where 'LineString Z(20 51.1 400, 30 51.6 2000)'::geometry /&> plane_pos;
+
+--TGEOMPOINT op STBOX
+explain analyze select * from plane_3d where plane_pos <</ 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox;
+explain analyze select * from plane_3d where 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox <</ plane_pos;
+explain analyze select * from plane_3d where plane_pos />> 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox;
+explain analyze select * from plane_3d where 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox />> plane_pos;
+explain analyze select * from plane_3d where plane_pos &</ 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox;
+explain analyze select * from plane_3d where 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox &</ plane_pos;
+explain analyze select * from plane_3d where plane_pos /&> 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox;
+explain analyze select * from plane_3d where 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox /&> plane_pos;
+
+--TGEOMPOINT op TGEOMPOINT
+explain analyze select * from plane_3d where plane_pos << tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
+explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]'::geometry <</ plane_pos;
+explain analyze select * from plane_3d where plane_pos />> tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
+explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' />> plane_pos;
+explain analyze select * from plane_3d where plane_pos &</ tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
+explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' &</ plane_pos;
+explain analyze select * from plane_3d where plane_pos /&> tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
+explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' /&> plane_pos;
+
