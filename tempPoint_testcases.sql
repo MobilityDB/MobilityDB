@@ -133,7 +133,7 @@ explain analyze select * from plane_3d where plane_pos /&> 'STBOX ZT((20,51.0999
 explain analyze select * from plane_3d where 'STBOX ZT((20,51.099998,400,6.023772e+14),(30,51.600002,2000,6.024636e+14))'::stbox /&> plane_pos;
 
 --TGEOMPOINT op TGEOMPOINT
-explain analyze select * from plane_3d where plane_pos << tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
+explain analyze select * from plane_3d where plane_pos <</ tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
 explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]'::geometry <</ plane_pos;
 explain analyze select * from plane_3d where plane_pos />> tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]';
 explain analyze select * from plane_3d where tgeompoint(sequence)'[POINT Z(20 51.1 400)@2019-02-02, POINT Z(30 51.6 2000)@2019-02-03]' />> plane_pos;

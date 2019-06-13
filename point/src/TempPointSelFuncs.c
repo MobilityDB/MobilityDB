@@ -465,11 +465,11 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			return selec;
 		case OVERFRONT_OP:
 			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS):
-                    z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIMS);
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
 			return selec;
 		case OVERBACK_OP:
 			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIMS):
-                    z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS);
+                    z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
 			return selec;
 		case BEFORE_OP:
 			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP):
@@ -697,14 +697,12 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 	/* Cell size in each dim */
 	cell_size[dim] = (nd_stats->extent.max[dim] - nd_stats->extent.min[dim]) / nd_stats->size[dim];
 
-	at[dim] = nd_ibox->max[dim];
-
-	if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
+	if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
     {
         at[1] = nd_ibox->max[1];
         at[0] = nd_ibox->max[0];
     }
-	else if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
+	else
     {
         at[0] = nd_ibox->min[0];
         at[1] = nd_ibox->min[1];
