@@ -57,6 +57,8 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 	result->capacity = capacity;
 	result->next = count;
 	result->length = count - 2;
+	result->extra = NULL;
+	result->extrasize = 0;
 
 	/* Fill values first */
 	result->elems[0].value = NULL;
@@ -539,11 +541,11 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	for (int i = 0; i < size; i ++)
 		values[i] = temporal_read(buf, valuetypid);
 	SkipList *result = skiplist_make(fcinfo, values, size);
-	result->extrasize = (size_t) pq_getmsgint64(buf);
-	if (result->extrasize)
+	size_t extrasize = (size_t) pq_getmsgint64(buf);
+	if (extrasize)
 	{
-		const char *extra = pq_getmsgbytes(buf, result->extrasize);
-		aggstate_set_extra(fcinfo, result, (void *)extra, result->extrasize);
+		const char *extra = pq_getmsgbytes(buf, extrasize);
+		aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
 	}
 	for (int i = 0; i < size; i ++)
 		pfree(values[i]);
