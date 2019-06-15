@@ -1,7 +1,7 @@
 ﻿-------------------------------------------------------------------------------
 set parallel_tuple_cost=0;
 set parallel_setup_cost=0;
-set force_parallel_mode=regress;
+set force_parallel_mode=off;
 -------------------------------------------------------------------------------
 
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompointinst;

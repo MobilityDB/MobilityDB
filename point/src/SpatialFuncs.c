@@ -59,8 +59,15 @@ POINT3DZ
 datum_get_point3dz(Datum geom)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(geom);
-	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	return *point;
+	// POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	// return *point;
+	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
+	POINT3DZ point = getPoint3dz(lwpoint->point, 0);
+	lwgeom_free(lwgeom);
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+	return point;
+
 }
 
 /* Compare two points from serialized geometries */
@@ -178,7 +185,7 @@ gserialized_check_point(GSERIALIZED *gs)
  * The Oid argument is not used but is needed since the second argument of 
  * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum) 
  */
-static char *
+char *
 wkt_out(Oid type, Datum value)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
@@ -554,7 +561,8 @@ tpoints_set_srid_internal(TemporalS *ts, int32 srid)
 	return result;
 }
 
-Temporal* tpoint_set_srid_internal(Temporal* temp, int32 srid) {
+Temporal* tpoint_set_srid_internal(Temporal* temp, int32 srid)
+{
     Temporal *result = NULL;
     if (temp->duration == TEMPORALINST)
         result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);

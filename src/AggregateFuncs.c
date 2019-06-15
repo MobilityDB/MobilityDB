@@ -48,7 +48,7 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 
 	MemoryContext oldctx = set_aggregation_context(fcinfo);
 	int capacity = SKIPLIST_INITIAL_CAPACITY;
-	count += 2; /* Account for head & tail */
+	count += 2; /* Account for head and tail */
 	while (capacity <= count)
 		capacity <<= 1;
 	SkipList *result = palloc0(sizeof(SkipList));
@@ -219,7 +219,7 @@ skiplist_values(SkipList *list)
 	return result;
 }
 
-/* Outputs the skiplist in graphviz dot format for visualisation & debugging purposes */
+/* Outputs the skiplist in graphviz dot format for visualisation and debugging purposes */
 static void 
 skiplist_print(SkipList *list)
 {
@@ -374,7 +374,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		{
 			for (int l = height; l < rheight; l ++)
 				update[l] = 0;
-			/* Grow head & tail as appropriate */
+			/* Grow head and tail as appropriate */
 			head->height = rheight;
 			tail->height = rheight;
 		}
@@ -515,7 +515,8 @@ aggstate_write(SkipList *state, StringInfo buf)
 	if (state->length > 0)
 		valuetypid = values[0]->valuetypid;
 	pq_sendint32(buf, valuetypid);
-    for (int i = 0; i < state->length; i ++) {
+    for (int i = 0; i < state->length; i ++)
+	{
         SPI_connect();
         temporal_write(values[i], buf);
         SPI_finish();
@@ -955,6 +956,17 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	}
 	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
 		lower_inc, upper_inc, true);
+
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nTAGG1 BEFORE NORMALIZATION")));
+	char *str = temporalseq_to_string(seq1, &call_output);
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SEQ1: %s", str)));
+	str = temporalseq_to_string(seq2, &call_output);
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SEQ2: %s", str)));
+	str = temporalseq_to_string(syncseq1, &call_output);
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SYNCSEQ1: %s", str)));
+	str = temporalseq_to_string(syncseq2, &call_output);
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SYNCSEQ2: %s", str)));
+
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
 	pfree(instants); pfree(syncseq1); pfree(syncseq2);
@@ -974,6 +986,11 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 		sequences[k++] = temporalseq_at_period(seq2, &period);
 	}
 	pfree(intersect); 
+	for (int i = 0; i < k; i ++)
+	{
+		str = temporalseq_to_string(sequences[i], &call_output);
+		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%d: %s", i, str)));
+	}
 
 	/* Normalization */
 	if (k == 1)
@@ -1006,6 +1023,19 @@ TemporalSeq **
 temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
 	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCES 1")));
+	for (int i = 0; i < count1; i ++)
+	{
+		char *str = temporalseq_to_string(sequences1[i], &call_output);
+		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
+	}
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCES 2")));
+	for (int i = 0; i < count2; i ++)
+	{
+		char *str = temporalseq_to_string(sequences2[i], &call_output);
+		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
+	}
+
 	/*
 	 * Each sequence can be split 3 times, there may be count - 1 holes between
 	 * sequences for both sequences1 and sequences2, and there may be 
@@ -1062,6 +1092,13 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
 		sequences[k++] = temporalseq_copy(sequences1[i++]);
 	while (j < count2)
 		sequences[k++] = temporalseq_copy(sequences2[j++]);
+
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCE BEFORE NORMALIZATION")));
+	for (int i = 0; i < k; i ++)
+	{
+		char *str = temporalseq_to_string(sequences[i], &call_output);
+		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
+	}
 
 	/* Normalization */
 	if (k == 1)
@@ -1217,7 +1254,8 @@ tbool_tand_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1254,7 +1292,8 @@ tbool_tor_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1293,7 +1332,8 @@ tint_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1330,7 +1370,8 @@ tfloat_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1367,7 +1408,8 @@ tint_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1404,7 +1446,8 @@ tfloat_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1441,7 +1484,8 @@ tint_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1478,7 +1522,8 @@ tfloat_tsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1517,7 +1562,8 @@ ttext_tmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1554,7 +1600,8 @@ ttext_tmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1595,7 +1642,8 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -1769,7 +1817,8 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1)) {
+	if (PG_ARGISNULL(1))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else

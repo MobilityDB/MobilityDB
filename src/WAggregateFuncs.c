@@ -491,7 +491,8 @@ tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ?  NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -513,7 +514,8 @@ tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -537,7 +539,8 @@ tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -559,7 +562,8 @@ tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -583,7 +587,8 @@ tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -605,7 +610,8 @@ tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -633,7 +639,8 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else
@@ -665,7 +672,8 @@ temporal_wavg_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
-	if (PG_ARGISNULL(1) || PG_ARGISNULL(2)) {
+	if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+	{
 		if (state)
 			PG_RETURN_POINTER(state);
 		else

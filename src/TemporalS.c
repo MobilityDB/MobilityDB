@@ -1266,7 +1266,7 @@ temporals_shift(TemporalS *ts, Interval *interval)
 	{
 		TemporalSeq *seq = sequences[i] = temporals_seq_n(result, i);
         for (int j = 0; j < seq->count; j++)
-        {
+    	{
             TemporalInst *inst = instants[j] = temporalseq_inst_n(seq, j);
             inst->t = DatumGetTimestampTz(
                 DirectFunctionCall2(timestamptz_pl_interval,
