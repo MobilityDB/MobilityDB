@@ -182,8 +182,7 @@ double3_send(PG_FUNCTION_ARGS)
 double3 *
 double3_construct(double a, double b, double c)
 {
-	double3 *result;
-	result = (double3 *) palloc(sizeof(double3));
+	double3 *result = (double3 *) palloc(sizeof(double3));
 	result->a = a;
 	result->b = b;
 	result->c = c;
@@ -286,8 +285,7 @@ double4_send(PG_FUNCTION_ARGS)
 double4 *
 double4_construct(double a, double b, double c, double d)
 {
-	double4 *result;
-	result = (double4 *) palloc(sizeof(double4));
+	double4 *result = (double4 *) palloc(sizeof(double4));
 	result->a = a;
 	result->b = b;
 	result->c = c;

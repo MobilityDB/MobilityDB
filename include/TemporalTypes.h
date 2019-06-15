@@ -258,17 +258,9 @@ typedef struct double4
 	double		d;
 } double4;
 
-/* AggregateState - Internal type for computing aggregates */
-
-typedef struct AggregateState
-{
-	int 		size;
-	void		*extra;
-	size_t	  extrasize;
-	Temporal 	*values[];
-} AggregateState;
-
 /*****************************************************************************/
+
+/* SkipList - Internal type for computing aggregates */
 
 #define SKIPLIST_MAXLEVEL 32
 #define SKIPLIST_INITIAL_CAPACITY 1024
@@ -1299,15 +1291,17 @@ extern Temporal *skiplist_headval(SkipList *list);
 extern Temporal **skiplist_values(SkipList *list);
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, Temporal **values, 
 	int count);
+extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, 
+	Temporal **values, int count, Datum (*func)(Datum, Datum), bool crossings);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, 
 	void *data, size_t size);
 
 extern SkipList *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-	TemporalInst *inst, Datum (*operator)(Datum, Datum));
+	TemporalInst *inst, Datum (*func)(Datum, Datum));
 extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	TemporalSeq *seq, Datum (*operator)(Datum, Datum), bool interpoint);
+	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool interpoint);
 extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
-	SkipList *state2, Datum (*operator)(Datum, Datum), bool crossings) ;
+	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings) ;
 	
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
@@ -1647,203 +1641,203 @@ extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern TemporalInst *
 sync_tfunc2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc2_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc2_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc2_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc2_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc2_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalSeq *
 sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalInst *
 sync_tfunc2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc2_temporali_temporals(TemporalI *ti, TemporalS *ts,
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 extern TemporalS *
 sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc2_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum), Datum valuetypid,
+	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_tfunc2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum), Datum valuetypid);
+	Datum (*func)(Datum, Datum), Datum valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalInst *
 sync_tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc3_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 extern TemporalI *
 sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 /* These functions are currently not used
 extern TemporalSeq *
 sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 */
 extern Temporal *
 sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_tfunc3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Datum valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalInst *
 sync_tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc4_temporali_temporalinst(TemporalI *ti, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc4_temporalinst_temporali(TemporalInst *inst, TemporalI *ti, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
 sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc4_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc4_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
 sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
 sync_tfunc4_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalSeq *
 sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 extern TemporalInst *
 sync_tfunc4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalInst *
 sync_tfunc4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
 sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalI *
 sync_tfunc4_temporali_temporals(TemporalI *ti, TemporalS *ts,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 extern TemporalS *
 sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc4_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 extern TemporalS *
 sync_tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 
 extern Temporal *
 sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, 
 		TemporalInst *, TimestampTz *));
 	
 extern Temporal *
 sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
-	Datum (*operator)(Datum, Datum, Oid, Oid), Datum valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 	
 /*****************************************************************************
  * Generic functions for generalizing temporal operators
@@ -1858,110 +1852,110 @@ extern TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq,
 extern TemporalS *tfunc1_temporals(TemporalS *ts, 
 	Datum (*func)(Datum), Oid valuetypid, bool mustfree);
 extern Temporal *tfunc1_temporal(Temporal *temp, 
-Datum (*operator)(Datum), Oid valuetypid, bool mustfree);
+Datum (*func)(Datum), Oid valuetypid, bool mustfree);
 
 extern TemporalInst *tfunc2_temporalinst(TemporalInst *inst, Datum param,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
 extern Temporal *tfunc2_temporal(Temporal *temp, Datum param,
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
 
 extern TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum d, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum d, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum d, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum d, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 
 extern TemporalInst *tfunc2_temporalinst_temporalinst(TemporalInst *inst1, 
-	TemporalInst *inst2, Datum (*operator)(Datum, Datum), Oid valuetypid);
+	TemporalInst *inst2, Datum (*func)(Datum, Datum), Oid valuetypid);
 extern TemporalI *tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum), Oid valuetypid);
 extern TemporalSeq *tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, 
-	TemporalSeq *seq2, Datum (*operator)(Datum, Datum),  Oid valuetypid);
+	TemporalSeq *seq2, Datum (*func)(Datum, Datum),  Oid valuetypid);
 extern TemporalS *tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum), Oid valuetypid);
 
 extern Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 extern Temporal *tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2, 
-	Datum (*operator)(Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum), Oid valuetypid);
 	
 /*****************************************************************************/
 
 extern TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 /* These functions are not currently used
 extern TemporalSeq *tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 extern TemporalS *tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);	
 */
 extern TemporalInst *tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum dist, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum dist, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalI *tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, Datum dist, 
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalSeq *tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalS *tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2, Datum param,
-	Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalInst *tfunc4_temporalinst_base(TemporalInst *inst, Datum value,  
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern TemporalI *tfunc4_temporali_base(TemporalI *ti, Datum d, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern TemporalSeq *tfunc4_temporalseq_base(TemporalSeq *seq, Datum d, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern TemporalS *tfunc4_temporals_base(TemporalS *ts, Datum d, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 
 extern TemporalInst *tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 extern TemporalI *tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 extern TemporalSeq *tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 extern TemporalS *tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 extern Temporal *tfunc4_temporal_base(Temporal *temp, Datum value, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern Temporal *tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 /*****************************************************************************/
 
 extern TemporalS *tfunc2_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, 
-	TemporalSeq *seq2, Datum (*operator)(Datum, Datum), Oid valuetypid);
+	TemporalSeq *seq2, Datum (*func)(Datum, Datum), Oid valuetypid);
 extern TemporalS *tfunc2_temporals_temporals_crossdisc(TemporalS *ts1, 
-	TemporalS *ts2, Datum (*operator)(Datum, Datum), Oid valuetypid);
+	TemporalS *ts2, Datum (*func)(Datum, Datum), Oid valuetypid);
 
 extern TemporalS *tfunc3_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 extern TemporalS *tfunc3_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
-	Datum param, Datum (*operator)(Datum, Datum, Datum), Oid valuetypid);
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 
 extern TemporalS *tfunc4_temporalseq_base_crossdisc(TemporalSeq *seq, Datum value, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern TemporalS *tfunc4_temporalseq_temporalseq_crossdisc(TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 extern TemporalS *tfunc4_temporals_base_crossdisc(TemporalS *ts, Datum value, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid datumtypid, 
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 extern TemporalS *tfunc4_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
-	Datum (*operator)(Datum, Datum, Oid, Oid), Oid valuetypid);
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
 
 /*****************************************************************************
  * Functions for GiST indexes defined in IndexGistTemporal.c

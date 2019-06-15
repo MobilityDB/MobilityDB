@@ -90,9 +90,9 @@ TemporalS *
 temporals_from_temporalseqarr(TemporalSeq **sequences, int count, 
 	bool normalize)
 {
+	assert(count > 0);
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
-	assert(count > 0);
 	bool tempcontinuous = true;
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz = false;

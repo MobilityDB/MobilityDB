@@ -270,12 +270,20 @@ random_level()
 
 void
 skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
-	int count, Period *period, Datum (*operator)(Datum, Datum), bool crossings)
+	int count, Datum (*func)(Datum, Datum), bool crossings)
 {
 	// O(count*log(n)) average (unless I'm mistaken)
 	// O(n+count*log(n)) worst case (when period spans the whole list so everything has to be deleted)
 	assert(list->length > 0);
 	int16 duration = skiplist_headval(list)->duration;
+	Period period;
+	if (duration == TEMPORALINST)
+		period_set(&period, ((TemporalInst *)values[0])->t, ((TemporalInst *)values[count-1])->t,
+			true, true);
+	else
+		period_set(&period, ((TemporalSeq *)values[0])->period.lower, ((TemporalSeq *)values[count-1])->period.upper,
+			((TemporalSeq *)values[0])->period.lower_inc, ((TemporalSeq *)values[count-1])->period.upper_inc);
+
 	int update[SKIPLIST_MAXLEVEL];
 	memset(update, 0, sizeof(update));
 	int cur = 0;
@@ -284,7 +292,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	for (int level = height-1; level >= 0; level --)
 	{
 		while (e->next[level] != -1 && 
-			skiplist_elmpos(list, e->next[level], period->lower) == AFTER)
+			skiplist_elmpos(list, e->next[level], period.lower) == AFTER)
 		{
 			cur = e->next[level];
 			e = &list->elems[cur];
@@ -297,14 +305,14 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	e = &list->elems[cur];
 
 	int spliced_count = 0;
-	while (skiplist_elmpos(list, cur, period->upper) == AFTER)
+	while (skiplist_elmpos(list, cur, period.upper) == AFTER)
 	{
 		cur = e->next[0];
 		e = &list->elems[cur];
 		spliced_count ++;
 	}
 	int upper = cur;
-	if (upper >= 0 && skiplist_elmpos(list, upper, period->upper) == DURING)
+	if (upper >= 0 && skiplist_elmpos(list, upper, period.upper) == DURING)
 	{
 		upper = e->next[0]; /* if found upper, one more to remove */
 		spliced_count ++;
@@ -346,10 +354,10 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		Temporal **newtemps;
 		if (duration == TEMPORALINST)
 			newtemps = (Temporal **)temporalinst_tagg2((TemporalInst **)spliced, 
-				spliced_count, (TemporalInst **)values, count, operator, &newcount);
+				spliced_count, (TemporalInst **)values, count, func, &newcount);
 		else
 			newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, 
-				spliced_count, (TemporalSeq **)values, count, operator, crossings, &newcount);
+				spliced_count, (TemporalSeq **)values, count, func, crossings, &newcount);
 		values = newtemps;
 		count = newcount;
 		/* We need to delete the spliced-out temporal values */
@@ -860,8 +868,7 @@ temporalinst_tagg2(TemporalInst **instants1, int count1, TemporalInst **instants
  */
 
 void
-temporalseq_tagg1(TemporalSeq **result,
-	TemporalSeq *seq1, TemporalSeq *seq2, 
+temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
@@ -969,6 +976,12 @@ temporalseq_tagg1(TemporalSeq **result,
 	pfree(intersect); 
 
 	/* Normalization */
+	if (k == 1)
+	{
+		result[0] = sequences[0];
+		*newcount = 1;	
+		return;
+	}
 	int l;
 	TemporalSeq **normsequences = temporalseqarr_normalize(sequences, k, &l);
 	for (int i = 0; i < k; i++)
@@ -995,7 +1008,7 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
 {
 	/*
 	 * Each sequence can be split 3 times, there may be count - 1 holes between
-	 * sequences for both sequences 1 and sequences2, and there may be 
+	 * sequences for both sequences1 and sequences2, and there may be 
 	 * 2 sequences before and after.
 	 * TODO Verify this formula
 	 */
@@ -1051,6 +1064,14 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
 		sequences[k++] = temporalseq_copy(sequences2[j++]);
 
 	/* Normalization */
+	if (k == 1)
+	{
+		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
+		result[0] = sequences[0];
+		pfree(sequences);
+		*newcount = 1;	
+		return result;
+	}
 	int l;
 	TemporalSeq **result = temporalseqarr_normalize(sequences, k, &l);
 	for (int i = 0; i < k; i++)
@@ -1076,10 +1097,7 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALINST)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		Period period_state2;
-		period_set(&period_state2, inst->t, inst->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, &period_state2, 
-			func, false);
+		skiplist_splice(fcinfo, state, (Temporal **)&inst, 1, func, false);
 		result = state;
 	}
 	return result;
@@ -1098,10 +1116,7 @@ temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALINST)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		Period period_state2;
-		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
-			func, false);
+		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, func, false);
 		result = state;
 	}
 	pfree(instants);
@@ -1120,8 +1135,7 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, &seq->period, 
-			func, crossings);
+		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, func, crossings);
 		result = state;
 	}
 	return result;
@@ -1140,11 +1154,7 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		Period period_state2;
-		period_set(&period_state2, sequences[0]->period.lower, sequences[ts->count - 1]->period.upper,
-			sequences[0]->period.lower_inc, sequences[ts->count - 1]->period.upper_inc);
-		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, &period_state2, 
-			func, crossings);
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, func, crossings);
 		result = state;
 	}
 	pfree(sequences);
@@ -1178,7 +1188,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 
 SkipList *
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1, 
-	SkipList *state2, Datum (*operator)(Datum, Datum), bool crossings)
+	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings)
 {
 	if (! state1)
 		return state2;
@@ -1191,17 +1201,7 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	//int count1 = state1->length;
 	int count2 = state2->length;
 	Temporal **values2 = skiplist_values(state2);
-	Period period_state2;
-	if (skiplist_headval(state1)->duration == TEMPORALINST)
-		period_set(&period_state2, ((TemporalInst *)values2[0])->t, 
-			((TemporalInst *)values2[count2-1])->t, true, true);
-	else
-		period_set(&period_state2, ((TemporalSeq *)values2[0])->period.lower, 
-			((TemporalSeq *)values2[count2-1])->period.upper,
-			((TemporalSeq *)values2[0])->period.lower_inc, 
-			((TemporalSeq *)values2[count2-1])->period.upper_inc);
-	skiplist_splice(fcinfo, state1, values2, count2, &period_state2, operator, 
-		crossings);
+	skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
 	pfree(values2);
 	return state1;
 }
@@ -1681,7 +1681,7 @@ temporalinst_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalInst
 	{
 		Period period_state2;
 		period_set(&period_state2, inst->t, inst->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1, &period_state2, 
+		skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1,
 			&datum_sum_double2, false);
 		result = state;
 	}
@@ -1700,7 +1700,7 @@ temporali_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalI *ti)
 	{
 		Period period_state2;
 		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count, &period_state2, 
+		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count,
 			&datum_sum_double2, false);
 		result = state;
 	}
@@ -1726,7 +1726,7 @@ temporalseq_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalSeq *
 		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
 	else
 	{
-		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, &seq->period, 
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, 
 			&datum_sum_double2, false);
 		result = state;
 	}
@@ -1752,10 +1752,7 @@ temporals_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalS *ts)
 		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
 	else
 	{
-		Period period_state2;
-		period_set(&period_state2, sequences[0]->period.lower, sequences[count - 1]->period.upper,
-			sequences[0]->period.lower_inc, sequences[count - 1]->period.upper_inc);
-		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, &period_state2, 
+		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, 
 			&datum_sum_double2, false);
 		result = state;
 	}

@@ -365,7 +365,7 @@ temporalinstarr_normalize(TemporalInst **instants, int count, int *newcount)
 			*/
 			(datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
 			||
-			/* collinear float/point instants that have the same duration
+			/* collinear float/point instants
 				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
 			*/
 			(datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
@@ -394,14 +394,10 @@ temporalinstarr_normalize(TemporalInst **instants, int count, int *newcount)
  * values of the last two Boolean arguments */
 
 static TemporalSeq *
-temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last1, bool first1)
+temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 {
-	int count1 = seq1->count;
-	int start2 = 0;
-	/* If we need to remove also the last instant of the first sequence */
-	if (last1) count1--;		
-	/* If we need to remove also the last instant of the first sequence */
-	if (first1) start2++;		
+	int count1 = last ? seq1->count - 1 : seq1->count;
+	int start2 = first ? 1 : 0;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 
 		(count1 + seq2->count - start2));
 	int k = 0;
