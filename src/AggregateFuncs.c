@@ -956,17 +956,6 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	}
 	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
 		lower_inc, upper_inc, true);
-
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nTAGG1 BEFORE NORMALIZATION")));
-	char *str = temporalseq_to_string(seq1, &call_output);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SEQ1: %s", str)));
-	str = temporalseq_to_string(seq2, &call_output);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SEQ2: %s", str)));
-	str = temporalseq_to_string(syncseq1, &call_output);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SYNCSEQ1: %s", str)));
-	str = temporalseq_to_string(syncseq2, &call_output);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SYNCSEQ2: %s", str)));
-
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
 	pfree(instants); pfree(syncseq1); pfree(syncseq2);
@@ -986,11 +975,6 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 		sequences[k++] = temporalseq_at_period(seq2, &period);
 	}
 	pfree(intersect); 
-	for (int i = 0; i < k; i ++)
-	{
-		str = temporalseq_to_string(sequences[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%d: %s", i, str)));
-	}
 
 	/* Normalization */
 	if (k == 1)
@@ -1023,19 +1007,6 @@ TemporalSeq **
 temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
 	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCES 1")));
-	for (int i = 0; i < count1; i ++)
-	{
-		char *str = temporalseq_to_string(sequences1[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
-	}
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCES 2")));
-	for (int i = 0; i < count2; i ++)
-	{
-		char *str = temporalseq_to_string(sequences2[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
-	}
-
 	/*
 	 * Each sequence can be split 3 times, there may be count - 1 holes between
 	 * sequences for both sequences1 and sequences2, and there may be 
@@ -1092,13 +1063,6 @@ temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2
 		sequences[k++] = temporalseq_copy(sequences1[i++]);
 	while (j < count2)
 		sequences[k++] = temporalseq_copy(sequences2[j++]);
-
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nSEQUENCE BEFORE NORMALIZATION")));
-	for (int i = 0; i < k; i ++)
-	{
-		char *str = temporalseq_to_string(sequences[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
-	}
 
 	/* Normalization */
 	if (k == 1)

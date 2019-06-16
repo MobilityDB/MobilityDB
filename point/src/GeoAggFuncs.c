@@ -194,18 +194,6 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		};
 		aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
 	}
-/*
-	char *str = temporal_to_string(temp, &wkt_out);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nNew value: %s", str)));
-	Temporal **values = skiplist_values(state);
-	for (int i = 0; i < state->length; i ++)
-	{
-		char *str = temporal_to_string(values[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
-	}
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("Length: %d", state->length)));
-	pfree(values);
-*/
 
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(state);
@@ -224,17 +212,17 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 	SkipList *state2 = PG_ARGISNULL(1) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(1);
 
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("COMBINE FUNCTION\n")));
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("State1 Length: %d\n", state1 ? state1->length : 0)));
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("State2 Length: %d\n", state2 ? state2->length : 0)));
-
 	geoaggstate_check_as(state1, state2);
-	bool hasz = MOBDB_FLAGS_GET_Z(skiplist_headval(state1 ? state1 : state2)->flags);
-	Datum (*func)(Datum, Datum) = hasz ?
+	struct GeoAggregateState *extra = NULL;
+	if (state1 && state1->extra) 
+		extra = state1->extra;
+	if (state2 && state2->extra) 
+		extra = state2->extra;
+	assert(extra != NULL);
+	Datum (*func)(Datum, Datum) = extra->hasz ?
 		&datum_sum_double4 : &datum_sum_double3;
 	SkipList *result = temporal_tagg_combinefn(fcinfo, state1, state2, 
 		func, false);
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("Result Length: %d\n", result->length)));
 
 	PG_RETURN_POINTER(result);
 }
@@ -344,14 +332,6 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	Temporal **values = skiplist_values(state);
-
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("\nFINAL FUNCTION")));
-	for (int i = 0; i < state->length; i ++)
-	{
-		char *str = temporal_to_string(values[i], &call_output);
-		ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("%s", str)));
-	}
-
 	Temporal *result = NULL;
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
