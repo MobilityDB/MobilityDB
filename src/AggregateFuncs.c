@@ -272,8 +272,10 @@ void
 skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	int count, Datum (*func)(Datum, Datum), bool crossings)
 {
-	// O(count*log(n)) average (unless I'm mistaken)
-	// O(n+count*log(n)) worst case (when period spans the whole list so everything has to be deleted)
+	/*
+	 * O(count*log(n)) average (unless I'm mistaken)
+	 * O(n+count*log(n)) worst case (when period spans the whole list so everything has to be deleted) 
+	 */
 	assert(list->length > 0);
 	int16 duration = skiplist_headval(list)->duration;
 	Period period;
@@ -606,21 +608,15 @@ temporalinst_transform_tcount(TemporalInst *inst)
 	return temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 }
 
-static TemporalI *
+static TemporalInst **
 temporali_transform_tcount(TemporalI *ti)
 {
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
+		result[i] = temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	
 	return result;
 }
 
@@ -649,39 +645,47 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	return result;
 }
 
-static TemporalS *
+static TemporalSeq **
 temporals_transform_tcount(TemporalS *ts)
 {
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = temporalseq_transform_tcount(seq);
+		result[i] = temporalseq_transform_tcount(seq);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, true);
-
-	for (int i = 0; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	
 	return result;
 }
 
 /* Dispatch function */
 
-static Temporal *
-temporal_transform_tcount(Temporal *temp)
+static Temporal **
+temporal_transform_tcount(Temporal *temp, int *count)
 {
-	temporal_duration_is_valid(temp->duration);
-	Temporal *result = NULL;
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
+	Temporal **result = NULL;
+	if (temp->duration == TEMPORALINST) 
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)temporalinst_transform_tcount((TemporalInst *)temp);
+		*count = 1;
+	}
 	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)temporali_transform_tcount((TemporalI *)temp);
+	{
+		result = (Temporal **)temporali_transform_tcount((TemporalI *) temp);
+		*count = ((TemporalI *)temp)->count;
+	} 
 	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)temporalseq_transform_tcount((TemporalSeq *)temp);
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)temporalseq_transform_tcount((TemporalSeq *) temp);
+		*count = 1;
+	}
 	else if (temp->duration == TEMPORALS)
-		result = (Temporal *)temporals_transform_tcount((TemporalS *)temp);
+	{
+		result = (Temporal **)temporals_transform_tcount((TemporalS *) temp);
+		*count = ((TemporalS *)temp)->count;
+	}
+	assert(result != NULL);
 	return result;
 }
 
@@ -784,30 +788,72 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	return 1;
 }
 
-int
-tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
+static TemporalSeq **
+tnumberseq_transform_tavg(TemporalSeq *seq, int *count)
 {
-	int returnvalue = 0;
+	int maxcount = 0;
 	number_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
-		returnvalue = tintseq_transform_tavg(result, seq);
-	if (seq->valuetypid == FLOAT8OID)
-		returnvalue = tfloatseq_transform_tavg(result, seq);
-	return returnvalue;
+		maxcount = seq->count;
+	else if (seq->valuetypid == FLOAT8OID)
+		maxcount = 1;
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
+	if (seq->valuetypid == INT4OID)
+		*count = tintseq_transform_tavg(result, seq);
+	else if (seq->valuetypid == FLOAT8OID)
+		*count = tfloatseq_transform_tavg(result, seq);
+	return result;
 }
 
-int
-tnumbers_transform_tavg(TemporalSeq **result, TemporalS *ts)
+static TemporalSeq **
+tnumbers_transform_tavg(TemporalS *ts, int *count)
 {
+	int maxcount = 0;
+	number_base_type_oid(ts->valuetypid);
+	if (ts->valuetypid == INT4OID)
+		maxcount = ts->totalcount;
+	else if (ts->valuetypid == FLOAT8OID)
+		maxcount = ts->count;
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
 	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tnumberseq_transform_tavg(&result[k], seq);
+		if (seq->valuetypid == INT4OID)
+			countstep = tintseq_transform_tavg(&result[k], seq);
+		else if (seq->valuetypid == FLOAT8OID)
+			countstep = tfloatseq_transform_tavg(&result[k], seq);
 		k += countstep;
 	}
-	return k;
+	*count = k;
+	return result;
 }
+
+/* Dispatch function  */
+
+static Temporal **
+tnumber_transform_tavg(Temporal *temp, int *count)
+{
+	Temporal **result = NULL;
+	if (temp->duration == TEMPORALINST) 
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)tnumberinst_transform_tavg((TemporalInst *)temp);
+		*count = 1;
+	}
+	else if (temp->duration == TEMPORALI)
+	{
+		result = (Temporal **)tnumberi_transform_tavg((TemporalI *) temp);
+		*count = ((TemporalI *)temp)->count;
+	} 
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal **)tnumberseq_transform_tavg((TemporalSeq *) temp, count);
+	else if (temp->duration == TEMPORALS)
+		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp, count);
+	assert(result != NULL);
+	return result;
+}
+
 
 /*****************************************************************************
  * TemporalInst generic aggregation functions
@@ -1199,7 +1245,6 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
 
-	//int count1 = state1->length;
 	int count2 = state2->length;
 	Temporal **values2 = skiplist_values(state2);
 	skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
@@ -1615,24 +1660,23 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Temporal *tempcount = temporal_transform_tcount(temp);
-	SkipList *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = temporalinst_tagg_transfn(fcinfo, state, 
-			(TemporalInst *)tempcount, &datum_sum_int32);
-	else if (temp->duration == TEMPORALI)
-		result = temporali_tagg_transfn(fcinfo, state, 
-			(TemporalI *)tempcount, &datum_sum_int32);
-	else if (temp->duration == TEMPORALSEQ)
-		result = temporalseq_tagg_transfn(fcinfo, state, 
-			(TemporalSeq *)tempcount, &datum_sum_int32, false);
-	else if (temp->duration == TEMPORALS)
-		result = temporals_tagg_transfn(fcinfo, state, 
-			(TemporalS *)tempcount, &datum_sum_int32, false);
-	pfree(tempcount);
+	int count;
+	Temporal **temporals = temporal_transform_tcount(temp, &count);
+	if (state)
+	{
+		if (skiplist_headval(state)->duration != temporals[0]->duration)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
+		skiplist_splice(fcinfo, state, temporals, count, &datum_sum_int32, false);
+	}
+	else
+		state = skiplist_make(fcinfo, temporals, count);
+
+	for (int i = 0; i< count; i++)
+		pfree(temporals[i]);
+	pfree(temporals);		
 	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	PG_RETURN_POINTER(state);
 }
 
 PG_FUNCTION_INFO_V1(temporal_tcount_combinefn);
@@ -1682,102 +1726,10 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
  * Functions for temporal average
  *****************************************************************************/
 
-SkipList *
-temporalinst_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalInst *inst)
-{
-	TemporalInst *newinst = tnumberinst_transform_tavg(inst);
-	SkipList *result;
-	if (! state)
-		result = skiplist_make(fcinfo, (Temporal **)&newinst, 1);
-	else
-	{
-		Period period_state2;
-		period_set(&period_state2, inst->t, inst->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)&newinst, 1,
-			&datum_sum_double2, false);
-		result = state;
-	}
-	pfree(newinst);
-	return result;
-}
-
-SkipList *
-temporali_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalI *ti)
-{
-	TemporalInst **instants = tnumberi_transform_tavg(ti);
-	SkipList *result;
-	if (! state)
-		result = skiplist_make(fcinfo, (Temporal **)instants, ti->count);
-	else
-	{
-		Period period_state2;
-		period_set(&period_state2, instants[0]->t, instants[ti->count - 1]->t, true, true);
-		skiplist_splice(fcinfo, state, (Temporal **)instants, ti->count,
-			&datum_sum_double2, false);
-		result = state;
-	}
-	for (int i = 0; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
-}
-
-SkipList *
-temporalseq_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalSeq *seq)
-{
-	int maxcount = 0;
-	number_base_type_oid(seq->valuetypid);
-	if (seq->valuetypid == INT4OID)
-		maxcount = seq->count;
-	else if (seq->valuetypid == FLOAT8OID)
-		maxcount = 1;
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
-	int count = tnumberseq_transform_tavg(sequences, seq);
-	SkipList *result;
-	if (! state)
-		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
-	else
-	{
-		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, 
-			&datum_sum_double2, false);
-		result = state;
-	}
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
-}
-
-SkipList *
-temporals_tavg_transfn(FunctionCallInfo fcinfo, SkipList *state, TemporalS *ts)
-{
-	int maxcount = 0;
-	number_base_type_oid(ts->valuetypid);
-	if (ts->valuetypid == INT4OID)
-		maxcount = ts->totalcount;
-	else if (ts->valuetypid == FLOAT8OID)
-		maxcount = ts->count;
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * maxcount);
-	int count = tnumbers_transform_tavg(sequences, ts);
-	SkipList *result;
-	if (! state)
-		result = skiplist_make(fcinfo, (Temporal **)sequences, count);
-	else
-	{
-		skiplist_splice(fcinfo, state, (Temporal **)sequences, count, 
-			&datum_sum_double2, false);
-		result = state;
-	}
-	for (int i = 0; i < count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(temporal_tavg_transfn);
+PG_FUNCTION_INFO_V1(tnumber_tavg_transfn);
 
 PGDLLEXPORT Datum
-temporal_tavg_transfn(PG_FUNCTION_ARGS)
+tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
@@ -1790,24 +1742,29 @@ temporal_tavg_transfn(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	SkipList *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = temporalinst_tavg_transfn(fcinfo, state, (TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = temporali_tavg_transfn(fcinfo, state, (TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = temporalseq_tavg_transfn(fcinfo, state, (TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = temporals_tavg_transfn(fcinfo, state, (TemporalS *)temp);
+	int count;
+	Temporal **temporals = tnumber_transform_tavg(temp, &count);
+	if (state)
+	{
+		if (skiplist_headval(state)->duration != temporals[0]->duration)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
+		skiplist_splice(fcinfo, state, temporals, count, &datum_sum_double2, false);
+	}
+	else
+		state = skiplist_make(fcinfo, temporals, count);
+
+	for (int i = 0; i< count; i++)
+		pfree(temporals[i]);
+	pfree(temporals);
 	PG_FREE_IF_COPY(temp, 1);
-	PG_RETURN_POINTER(result);
+	PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(temporal_tavg_combinefn);
+PG_FUNCTION_INFO_V1(tnumber_tavg_combinefn);
 
 PGDLLEXPORT Datum
-temporal_tavg_combinefn(PG_FUNCTION_ARGS)
+tnumber_tavg_combinefn(PG_FUNCTION_ARGS)
 {
 	SkipList *state1 = PG_ARGISNULL(0) ? NULL : 
 		(SkipList *) PG_GETARG_POINTER(0);
@@ -1877,10 +1834,10 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(temporal_tavg_finalfn);
+PG_FUNCTION_INFO_V1(tnumber_tavg_finalfn);
 
 PGDLLEXPORT Datum
-temporal_tavg_finalfn(PG_FUNCTION_ARGS)
+tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
 {
 	/* The final function is strict, we do not need to test for null values */
 	SkipList *state = (SkipList *) PG_GETARG_POINTER(0);

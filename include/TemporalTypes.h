@@ -1321,10 +1321,10 @@ extern Datum tfloat_tsum_transfn(PG_FUNCTION_ARGS);
 extern Datum tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
 extern Datum temporal_tcount_transfn(PG_FUNCTION_ARGS);
 extern Datum temporal_tcount_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_combinefn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_transfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
 extern Datum temporal_tagg_finalfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_finalfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmin_transfn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmin_combinefn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmax_transfn(PG_FUNCTION_ARGS);
@@ -2033,7 +2033,7 @@ extern Datum tfloat_wmax_transfn(PG_FUNCTION_ARGS);
 extern Datum tint_wsum_transfn(PG_FUNCTION_ARGS);
 extern Datum tfloat_wsum_transfn(PG_FUNCTION_ARGS);
 extern Datum temporal_wcount_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_wavg_transfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_wavg_transfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

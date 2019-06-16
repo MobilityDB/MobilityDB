@@ -113,15 +113,15 @@ CREATE FUNCTION tcount_transfn(internal, tint)
 	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_transfn(internal, tint)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'temporal_tavg_transfn'
+	AS 'MODULE_PATHNAME', 'tnumber_tavg_transfn'
 	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_combinefn(internal, internal)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'temporal_tavg_combinefn'
+	AS 'MODULE_PATHNAME', 'tnumber_tavg_combinefn'
 	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_finalfn(internal)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_tavg_finalfn'
+	AS 'MODULE_PATHNAME', 'tnumber_tavg_finalfn'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tmin(tint) (
@@ -204,7 +204,7 @@ CREATE FUNCTION tfloat_tagg_finalfn(internal)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tavg_transfn(internal, tfloat)
 	RETURNS internal
-	AS 'MODULE_PATHNAME', 'temporal_tavg_transfn'
+	AS 'MODULE_PATHNAME', 'tnumber_tavg_transfn'
 	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tmin(tfloat) (

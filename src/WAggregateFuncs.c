@@ -326,7 +326,7 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
  * extend it by a time interval */
 
 static int
-temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
+tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
 	float8 value = 0.0;
 	number_base_type_oid(inst->valuetypid);
@@ -351,12 +351,12 @@ temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *
 }
 
 static int
-temporali_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
+tnumberi_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 {
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		temporalinst_transform_wavg(&result[i], inst, interval);
+		tnumberinst_transform_wavg(&result[i], inst, interval);
 	}
 	return ti->count;
 }
@@ -427,7 +427,7 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 /* Dispatch function */
 
 static TemporalSeq **
-temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
+tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
 	temporal_duration_is_valid(temp->duration);
 	TemporalSeq **result = NULL;
@@ -435,13 +435,13 @@ temporal_transform_wavg(Temporal *temp, Interval *interval, int *count)
 	{	
 		TemporalInst *inst = (TemporalInst *)temp;
 		result = palloc(sizeof(TemporalSeq *));
-		*count = temporalinst_transform_wavg(result, inst, interval);
+		*count = tnumberinst_transform_wavg(result, inst, interval);
 	}
 	else if (temp->duration == TEMPORALI)
 	{	
 		TemporalI *ti = (TemporalI *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ti->count);
-		*count = temporali_transform_wavg(result, ti, interval);
+		*count = tnumberi_transform_wavg(result, ti, interval);
 	}
 	else if (temp->duration == TEMPORALSEQ)
 	{
@@ -665,10 +665,10 @@ temporal_wcount_transfn(PG_FUNCTION_ARGS)
 
 /* Moving window average transition function for TemporalInst */
 
-PG_FUNCTION_INFO_V1(temporal_wavg_transfn);
+PG_FUNCTION_INFO_V1(tnumber_wavg_transfn);
 
 PGDLLEXPORT Datum
-temporal_wavg_transfn(PG_FUNCTION_ARGS)
+tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
 	SkipList *state = PG_ARGISNULL(0) ? NULL :
 		(SkipList *) PG_GETARG_POINTER(0);
@@ -682,7 +682,7 @@ temporal_wavg_transfn(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Interval *interval = PG_GETARG_INTERVAL_P(2);
 	int count;
-	TemporalSeq **sequences = temporal_transform_wavg(temp, interval, &count);
+	TemporalSeq **sequences = tnumber_transform_wavg(temp, interval, &count);
 	SkipList *result = temporalseq_tagg_transfn(fcinfo, state, sequences[0], 
 		&datum_sum_double2, false);
 	for (int i = 1; i < count; i++)

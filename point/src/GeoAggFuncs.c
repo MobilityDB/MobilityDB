@@ -126,6 +126,8 @@ tpoints_transform_tcentroid(TemporalS *ts)
 	return result;
 }
 
+/* Dispatch function  */
+
 static Temporal **
 tpoint_transform_tcentroid(Temporal *temp, int *count)
 {
@@ -183,7 +185,12 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 	int count;
 	Temporal **temporals = tpoint_transform_tcentroid(temp, &count);
 	if (state)
+	{
+		if (skiplist_headval(state)->duration != temporals[0]->duration)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different duration")));
 		skiplist_splice(fcinfo, state, temporals, count, func, false);
+	}
 	else
 	{
 		state = skiplist_make(fcinfo, temporals, count);
@@ -195,6 +202,9 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
 	}
 
+	for (int i = 0; i< count; i++)
+		pfree(temporals[i]);
+	pfree(temporals);		
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(state);
 }
