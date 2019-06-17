@@ -423,18 +423,18 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 
 		if (!isgt && !iseq)
 			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		else if (!isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && !iseq)
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
 		else if (isgt && iseq)
-			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
+            op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
+		else if (iseq)
+			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+		else if (isgt)
+			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
 
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
 		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
 	}
-	else if (vardata.vartype == type_oid(T_TIMESTAMPTZ))
+	else if (vardata.vartype == TIMESTAMPTZOID)
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);

@@ -128,28 +128,34 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 								 TYPECACHE_CMP_PROC_FINFO |
 								 TYPECACHE_HASH_PROC_FINFO);
 
-	value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
-									   TYPECACHE_EQ_OPR |
-									   TYPECACHE_CMP_PROC_FINFO |
-									   TYPECACHE_HASH_PROC_FINFO);
+    /* Store our findings for use by stats functions */
+    extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
 
-	/* Store our findings for use by compute_array_stats() */
-	extra_data = (TemporalArrayAnalyzeExtraData *) palloc(sizeof(TemporalArrayAnalyzeExtraData));
-	extra_data->type_id = typentry->type_id;
-	extra_data->eq_opr = typentry->eq_opr;
-	extra_data->typbyval = typentry->typbyval;
-	extra_data->typlen = typentry->typlen;
-	extra_data->typalign = typentry->typalign;
-	extra_data->cmp = &typentry->cmp_proc_finfo;
-	extra_data->hash = &typentry->hash_proc_finfo;
+    extra_data->type_id = typentry->type_id;
+    extra_data->eq_opr = typentry->eq_opr;
+    extra_data->typbyval = typentry->typbyval;
+    extra_data->typlen = typentry->typlen;
+    extra_data->typalign = typentry->typalign;
+    extra_data->cmp = &typentry->cmp_proc_finfo;
+    extra_data->hash = &typentry->hash_proc_finfo;
 
-	extra_data->value_type_id = value_typentry->type_id;
-	extra_data->value_eq_opr = value_typentry->eq_opr;
-	extra_data->value_typbyval = value_typentry->typbyval;
-	extra_data->value_typlen = value_typentry->typlen;
-	extra_data->value_typalign = value_typentry->typalign;
-	extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
-	extra_data->value_hash = &value_typentry->hash_proc_finfo;
+
+    if (element_typeid != type_oid(T_STBOX) || element_typeid != type_oid(T_TGEOMPOINT) ||
+        element_typeid != type_oid(T_TGEOGPOINT))
+    {
+        value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
+                                           TYPECACHE_EQ_OPR |
+                                           TYPECACHE_CMP_PROC_FINFO |
+                                           TYPECACHE_HASH_PROC_FINFO);
+        extra_data->value_type_id = value_typentry->type_id;
+        extra_data->value_eq_opr = value_typentry->eq_opr;
+        extra_data->value_typbyval = value_typentry->typbyval;
+        extra_data->value_typlen = value_typentry->typlen;
+        extra_data->value_typalign = value_typentry->typalign;
+        extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
+        extra_data->value_hash = &value_typentry->hash_proc_finfo;
+
+    }
 
 	if (durationType == TEMPORALI)
         temporal_typentry = lookup_type_cache(TIMESTAMPTZOID,

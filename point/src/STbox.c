@@ -285,7 +285,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	}
 
 	STBOX *result = stbox_new(true, true, hast, true);
-	
+
 	/* Process X min/max */
 	if (xmin > xmax)
 	{
