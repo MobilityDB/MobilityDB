@@ -314,7 +314,7 @@ base_oid_from_temporal(Oid temptypid)
 	else if (temptypid == type_oid(T_TTEXT)) 
 		result = TEXTOID;
 #ifdef WITH_POSTGIS
-	else if (temptypid == type_oid(T_TGEOMPOINT)) 
+	else if (temptypid == type_oid(T_TGEOMPOINT))
 		result = type_oid(T_GEOMETRY);
 	else if (temptypid == type_oid(T_TGEOGPOINT)) 
 		result = type_oid(T_GEOGRAPHY);
