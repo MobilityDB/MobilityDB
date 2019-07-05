@@ -38,6 +38,7 @@ Manuals
 -----
 
 HTML: https://docs.mobilitydb.com/nightly/
+
 PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 
