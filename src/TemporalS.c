@@ -1217,7 +1217,7 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0}, box2 = {0};
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
 		base_to_tbox(&box2, value, ts->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -1340,7 +1340,7 @@ temporals_at_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0}, box2 = {0};
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
 		base_to_tbox(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -1382,7 +1382,7 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0}, box2 = {0};
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
 		base_to_tbox(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -1497,7 +1497,7 @@ TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0}, box2 = {0};
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1535,7 +1535,7 @@ TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0}, box2 = {0};
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
