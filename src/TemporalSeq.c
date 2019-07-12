@@ -1778,7 +1778,7 @@ temporalseq_always_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0};
+		TBOX box = {0,0,0,0,0};
 		temporalseq_bbox(&box, seq);
 		if (seq->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&

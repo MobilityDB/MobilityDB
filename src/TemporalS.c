@@ -1238,7 +1238,7 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0};
+		TBOX box = {0,0,0,0,0};
 		temporals_bbox(&box, ts);
 		if (ts->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&

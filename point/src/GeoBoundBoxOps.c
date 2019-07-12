@@ -261,7 +261,7 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double d = PG_GETARG_FLOAT8(1);
-	STBOX box = {0};
+	STBOX box = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box, temp);
 	STBOX *result = stbox_expand_spatial_internal(&box, d);
 	PG_FREE_IF_COPY(temp, 0);	
@@ -311,7 +311,7 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum interval = PG_GETARG_DATUM(1);
-	STBOX box = {0};
+	STBOX box = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box, temp);
 	STBOX *result = stbox_expand_temporal_internal(&box, interval);
 	PG_FREE_IF_COPY(temp, 0);	
