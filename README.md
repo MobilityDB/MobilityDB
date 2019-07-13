@@ -34,10 +34,12 @@ shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
 
-Usage
+Manuals
 -----
 
-https://docs.mobilitydb.com/nightly/
+HTML: https://docs.mobilitydb.com/nightly/
+
+PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 
 License

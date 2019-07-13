@@ -430,7 +430,7 @@ left_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -453,7 +453,7 @@ overleft_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -476,7 +476,7 @@ right_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -499,7 +499,7 @@ overright_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -522,7 +522,7 @@ below_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -545,7 +545,7 @@ overbelow_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -568,7 +568,7 @@ above_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -591,7 +591,7 @@ overabove_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -614,7 +614,7 @@ front_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -637,7 +637,7 @@ overfront_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -659,7 +659,7 @@ back_geom_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -682,7 +682,7 @@ overback_geom_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -708,7 +708,7 @@ left_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -731,7 +731,7 @@ overleft_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -754,7 +754,7 @@ right_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -777,7 +777,7 @@ overright_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -800,7 +800,7 @@ below_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -823,7 +823,7 @@ overbelow_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -846,7 +846,7 @@ above_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -869,7 +869,7 @@ overabove_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -892,7 +892,7 @@ front_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -915,7 +915,7 @@ overfront_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -938,7 +938,7 @@ back_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -961,7 +961,7 @@ overback_tpoint_geom(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_check_Z_dimension(temp, gs);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -987,7 +987,7 @@ left_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = left_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1003,7 +1003,7 @@ overleft_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overleft_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1019,7 +1019,7 @@ right_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = right_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1035,7 +1035,7 @@ overright_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overright_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1051,7 +1051,7 @@ below_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = below_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1067,7 +1067,7 @@ overbelow_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overbelow_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1083,7 +1083,7 @@ above_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = above_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1099,7 +1099,7 @@ overabove_stbox_tpoint(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overabove_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1113,7 +1113,7 @@ front_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1132,7 +1132,7 @@ overfront_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1151,7 +1151,7 @@ back_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1170,7 +1170,7 @@ overback_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1193,7 +1193,7 @@ before_stbox_tpoint(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = before_stbox_stbox_internal(box, &box1);
 	}
@@ -1214,7 +1214,7 @@ overbefore_stbox_tpoint(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = overbefore_stbox_stbox_internal(box, &box1);
 	}
@@ -1235,7 +1235,7 @@ after_stbox_tpoint(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = after_stbox_stbox_internal(box, &box1);
 	}
@@ -1256,7 +1256,7 @@ overafter_stbox_tpoint(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = overafter_stbox_stbox_internal(box, &box1);
 	}
@@ -1278,7 +1278,7 @@ left_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = left_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1294,7 +1294,7 @@ overleft_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overleft_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1310,7 +1310,7 @@ right_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = right_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1326,7 +1326,7 @@ overright_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overright_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1342,7 +1342,7 @@ below_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = below_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1358,7 +1358,7 @@ overbelow_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overbelow_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1374,7 +1374,7 @@ above_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = above_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1390,7 +1390,7 @@ overabove_tpoint_stbox(PG_FUNCTION_ARGS)
 	if (! MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool result = overabove_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1404,7 +1404,7 @@ front_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1423,7 +1423,7 @@ overfront_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1442,7 +1442,7 @@ back_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1461,7 +1461,7 @@ overback_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	bool hasz = MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_Z(box1.flags);
 	bool result = false;
@@ -1484,7 +1484,7 @@ before_tpoint_stbox(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = before_stbox_stbox_internal(&box1, box);
 	}
@@ -1505,7 +1505,7 @@ overbefore_tpoint_stbox(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = overbefore_stbox_stbox_internal(&box1, box);
 	}
@@ -1526,7 +1526,7 @@ after_tpoint_stbox(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = after_stbox_stbox_internal(&box1, box);
 	}
@@ -1547,7 +1547,7 @@ overafter_tpoint_stbox(PG_FUNCTION_ARGS)
 	bool result = false;
 	if (hast)
 	{
-		STBOX box1 = {0};
+		STBOX box1 = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box1, temp);
 		result = overafter_stbox_stbox_internal(&box1, box);
 	}
@@ -1569,7 +1569,7 @@ left_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = left_stbox_stbox_internal(&box1, &box2);
@@ -1587,7 +1587,7 @@ overleft_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overleft_stbox_stbox_internal(&box1, &box2);
@@ -1605,7 +1605,7 @@ right_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = right_stbox_stbox_internal(&box1, &box2);
@@ -1623,7 +1623,7 @@ overright_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overright_stbox_stbox_internal(&box1, &box2);
@@ -1641,7 +1641,7 @@ below_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = below_stbox_stbox_internal(&box1, &box2);
@@ -1659,7 +1659,7 @@ overbelow_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overbelow_stbox_stbox_internal(&box1, &box2);
@@ -1677,7 +1677,7 @@ above_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = above_stbox_stbox_internal(&box1, &box2);
@@ -1695,7 +1695,7 @@ overabove_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overabove_stbox_stbox_internal(&box1, &box2);
@@ -1713,7 +1713,7 @@ front_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_check_Z_dimension(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = front_stbox_stbox_internal(&box1, &box2);
@@ -1731,7 +1731,7 @@ overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_check_Z_dimension(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overfront_stbox_stbox_internal(&box1, &box2);
@@ -1749,7 +1749,7 @@ back_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_check_Z_dimension(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = back_stbox_stbox_internal(&box1, &box2);
@@ -1767,7 +1767,7 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_check_Z_dimension(temp1, temp2);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overback_stbox_stbox_internal(&box1, &box2);
@@ -1783,7 +1783,7 @@ before_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = before_stbox_stbox_internal(&box1, &box2);
@@ -1799,7 +1799,7 @@ overbefore_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overbefore_stbox_stbox_internal(&box1, &box2);
@@ -1815,7 +1815,7 @@ after_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = after_stbox_stbox_internal(&box1, &box2);
@@ -1831,7 +1831,7 @@ overafter_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0}, box2 = {0};
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overafter_stbox_stbox_internal(&box1, &box2);
