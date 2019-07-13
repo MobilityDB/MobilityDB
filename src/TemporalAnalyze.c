@@ -15,6 +15,7 @@
 
 #include <TemporalTypes.h>
 #include <TemporalAnalyze.h>
+#include <TimeTypes.h>
 
 /*****************************************************************************/
 
@@ -140,8 +141,8 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
     extra_data->hash = &typentry->hash_proc_finfo;
 
 
-    if (element_typeid != type_oid(T_STBOX) || element_typeid != type_oid(T_TGEOMPOINT) ||
-        element_typeid != type_oid(T_TGEOGPOINT))
+    if (element_typeid == type_oid(T_TBOOL) || element_typeid == type_oid(T_TTEXT) ||
+        element_typeid == type_oid(T_TINT) || element_typeid == type_oid(T_TFLOAT))
     {
         value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
                                            TYPECACHE_EQ_OPR |
@@ -1898,8 +1899,10 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		temporal_lengths[analyzed_arrays] = length;
 
 		/* Remove the temporal part from the stats HeapTuples if the base type is geometry or geography */
-		if(temporal_extra_data->value_type_id == type_oid(T_GEOMETRY) || temporal_extra_data->value_type_id == type_oid(T_GEOGRAPHY))
-			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc, 
+		if(temporal_extra_data->type_id == type_oid(T_STBOX) ||
+           temporal_extra_data->type_id == type_oid(T_TGEOMPOINT) ||
+           temporal_extra_data->type_id == type_oid(T_TGEOGPOINT))
+			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc,
 				stats->tupDesc->natts, stats->attrtypid, true, value);
 
 		analyzed_arrays++;
@@ -2494,7 +2497,28 @@ remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
 				if(attrtypid == tupDesc->attrs[j].atttypid)
 				{
 					if (geom)
-						values[j] = tpoint_values_internal(DatumGetTemporal(value));
+                    {
+                        if (attrtypid == type_oid(T_STBOX))
+                        {
+                            STBOX *stbox = DatumGetSTboxP(value);
+
+                            //Convert STBOX to geometry
+                            LWLINE *line;
+                            LWPOINT *lwpoint = lwpoint_make2d(4326, stbox->xmin, stbox->ymin);
+                            LWPOINT **points = palloc(sizeof(LWPOINT *) * 2);
+                            points[0] = lwpoint;
+                            lwpoint = lwpoint_make2d(4326, stbox->xmax, stbox->ymax);
+                            points[1] = lwpoint;
+                            line = lwline_from_ptarray(4326, 2, points);
+                            value = PointerGetDatum(geometry_serialize(lwline_as_lwgeom(line)));
+                            lwline_free(line);lwpoint_free(lwpoint);
+                            pfree(points);
+                            values[j] = value;
+                        }
+                        else
+                            values[j] = tpoint_values_internal(DatumGetTemporal(value));
+                    }
+
 					else
 						values[j] = tempdisc_get_values_internal(DatumGetTemporal(value));
 					rep_v[j] = true;
@@ -2742,6 +2766,16 @@ get_temporal_bbox(Datum value, Oid oid)
 		temporal_timespan_internal(p, DatumGetTemporal(value));
 		return p;
 	}
+	if (oid == type_oid(T_STBOX))
+    {
+        STBOX *stbox = DatumGetSTboxP(value);
+        Period *p = (Period *)palloc(sizeof(Period));
+        p->upper = (TimestampTz)stbox->tmax;
+        p->lower = (TimestampTz) stbox->tmin;
+        p->lower_inc = true;
+        p->upper_inc = true;
+        return p;
+    }
 	return NULL;
 }
 
@@ -2766,7 +2800,7 @@ get_tnumber_bbox(Datum value, Oid oid)
 STBOX*
 get_tpoint_bbox(Datum value, Oid oid)
 {
-	if (oid == type_oid(T_TGEOMPOINT) || oid == type_oid(T_TGEOGPOINT))
+	if (oid == type_oid(T_STBOX))
 	{
 		STBOX *stbox = palloc0(sizeof(STBOX));
 		temporal_bbox(stbox, DatumGetTemporal(value));
