@@ -168,7 +168,8 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = 0.0; /* keep compiler quiet */
+	bool selec2Flag = false;
+	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
 
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -199,7 +200,25 @@ tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp c
 
 	STBOX box = get_stbox(other);
 
-	selec = estimate_selectivity(root, &vardata, other, &box, cachedOp, varonleft);
+	selec1 = estimate_selectivity(root, &vardata, other, &box, cachedOp, varonleft);
+
+	if (MOBDB_FLAGS_GET_T(box.flags) && (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
+										cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
+	{
+		Period *period = period_make((TimestampTz)box.tmin, (TimestampTz)box.tmax, true, true);
+		selec2 = estimate_selectivity_temporal_dimension(root, vardata, other, period, CONTAINED_OP);
+		selec2Flag = true;
+	}
+	if(selec2 == 0.0 && !selec2Flag)
+		selec = selec1;
+	else if (selec1 == 0)
+	    selec = selec2;
+	else
+		selec = selec1 * selec2;
+
+	/* Prevent rounding overflows */
+	if (selec > 1.0) selec = 1.0;
+	else if (selec < 0.0 ) selec = 0.0;
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
@@ -217,8 +236,7 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 	double cell_size[ND_DIMS];
 	double min[ND_DIMS];
 	double max[ND_DIMS];
-    bool selec2Flag = false;
-    Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
+	Selectivity selec = 0.0; /* keep compiler quiet */
 
 	ND_STATS *nd_stats;
 	AttStatsSlot sslot;
@@ -319,28 +337,13 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
 
 			/* Scale by the number of features in our histogram to get the proportion */
-			selec1 = total_count / nd_stats->histogram_features;
-
-            if (MOBDB_FLAGS_GET_T(box->flags))
-            {
-				Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, OVERLAPS_OP);
-                selec2Flag = true;
-            }
-            if(selec2 == 0.0 && !selec2Flag)
-                selec = selec1;
-            else
-                selec = selec1 * selec2;
-
-			/* Prevent rounding overflows */
-			if (selec > 1.0) selec = 1.0;
-			else if (selec < 0.0 ) selec = 0.0;
+			selec = total_count / nd_stats->histogram_features;
 
 			return selec;
 		}
 		case CONTAINS_OP:
 		{
-			selec1 = FLT_MIN;
+			selec = FLT_MIN;
 			double maxx = 0;
 			do
 			{
@@ -359,33 +362,18 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
 				maxx = cell_count * ratio;
-				if (selec1 < maxx)
-					selec1 = maxx;
+				if (selec < maxx)
+					selec = maxx;
 			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
 
 			/* Scale by the number of features in our histogram to get the proportion */
-			selec1 = selec1 / nd_stats->histogram_features;
-
-            if (MOBDB_FLAGS_GET_T(box->flags))
-            {
-                Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, CONTAINS_OP);
-                selec2Flag = true;
-            }
-            if(selec2 == 0.0 && !selec2Flag)
-                selec = selec1;
-            else
-                selec = selec1 * selec2;
-
-            /* Prevent rounding overflows */
-            if (selec > 1.0) selec = 1.0;
-            else if (selec < 0.0 ) selec = 0.0;
+			selec = selec / nd_stats->histogram_features;
 
             return selec;
 		}
 		case CONTAINED_OP:
 		{
-			selec1 = FLT_MAX;
+			selec = FLT_MAX;
 			double minx;
 			do
 			{
@@ -404,23 +392,9 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
 				minx = cell_count * ratio;
-				if (selec1 > minx)
-					selec1 = minx;
+				if (selec > minx)
+					selec = minx;
 			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
-            if (MOBDB_FLAGS_GET_T(box->flags))
-            {
-				Period *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
-                selec2 = estimate_selectivity_temporal_dimension(root, *vardata, other, period, CONTAINED_OP);
-                selec2Flag = true;
-            }
-            if(selec2 == 0.0 && !selec2Flag)
-                selec = selec1;
-            else
-                selec = selec1 * selec2;
-
-            /* Prevent rounding overflows */
-            if (selec > 1.0) selec = 1.0;
-            else if (selec < 0.0 ) selec = 0.0;
 			return selec;
 		}
 		case LEFT_OP:
