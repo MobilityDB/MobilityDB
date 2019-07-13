@@ -2776,6 +2776,16 @@ get_temporal_bbox(Datum value, Oid oid)
         p->upper_inc = true;
         return p;
     }
+    if (oid == type_oid(T_TBOX))
+    {
+        TBOX *tbox = DatumGetTboxP(value);
+        Period *p = (Period *)palloc(sizeof(Period));
+        p->upper = (TimestampTz)tbox->tmax;
+        p->lower = (TimestampTz) tbox->tmin;
+        p->lower_inc = true;
+        p->upper_inc = true;
+        return p;
+    }
 	return NULL;
 }
 
