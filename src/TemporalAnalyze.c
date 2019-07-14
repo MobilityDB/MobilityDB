@@ -2854,10 +2854,10 @@ tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 	assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
 	if (MOBDB_FLAGS_GET_X(tbox->flags))
 	{
-		lowerdim1->val = Float8GetDatum(tbox->xmin);
+		lowerdim1->val = (Datum)(tbox->xmin);
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
-		upperdim1->val = Float8GetDatum(tbox->xmax);
+		upperdim1->val = (Datum)(tbox->xmax);
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
