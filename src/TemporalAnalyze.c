@@ -2181,7 +2181,6 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
                 temporal_lengths[analyzed_arrays] = temporal_length;
                 analyzed_arrays++;
             }
-            pfree(tbox);
         }
     }
 
