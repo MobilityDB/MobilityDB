@@ -12,12 +12,9 @@
  *	src/TemporalAnalyze.c
  *
  *****************************************************************************/
-
 #include <TemporalTypes.h>
 #include <TemporalAnalyze.h>
 #include <TimeTypes.h>
-#include <server/utils/array.h>
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
