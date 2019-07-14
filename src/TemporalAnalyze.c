@@ -16,6 +16,7 @@
 #include <TemporalTypes.h>
 #include <TemporalAnalyze.h>
 #include <TimeTypes.h>
+#include <server/utils/array.h>
 
 /*****************************************************************************/
 
@@ -2083,392 +2084,418 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 void
 tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						  int samplerows, double totalrows)
+                       int samplerows, double totalrows)
 {
-	int null_cnt = 0;
-	int analyzed_arrays = 0;
-	int array_no;
-	int slot_idx;
-	int num_bins = stats->attr->attstattarget;
-	int num_hist;
-	float8 *value_lengths;
-	RangeBound *value_lowers,
-			*value_uppers;
-	float8 *temporal_lengths;
-	PeriodBound *temporal_lowers,
-			*temporal_uppers;
-	double total_width = 0;
-	Oid valueRangeType;
+    int null_cnt = 0;
+    int analyzed_arrays = 0;
+    int array_no;
+    int slot_idx;
+    int num_bins = stats->attr->attstattarget;
+    int num_hist;
+    float8 *value_lengths;
+    RangeBound *value_lowers,
+            *value_uppers;
+    float8 *temporal_lengths;
+    PeriodBound *temporal_lowers,
+            *temporal_uppers;
+    double total_width = 0;
+    Oid valueRangeType;
 
-	TemporalArrayAnalyzeExtraData *temporal_extra_data = (TemporalArrayAnalyzeExtraData *)stats->extra_data;
+    TemporalArrayAnalyzeExtraData *temporal_extra_data = (TemporalArrayAnalyzeExtraData *)stats->extra_data;
 
-	valueRangeType = range_oid_from_base(temporal_extra_data->value_type_id);
-	
-	value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
-	value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
-	value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
+    valueRangeType = range_oid_from_base(temporal_extra_data->value_type_id);
 
-	temporal_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
-	temporal_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
-	temporal_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
+    value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
+    value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
+    value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
-	/* Loop over the arrays. */
-	for (array_no = 0; array_no < samplerows; array_no++)
-	{
-		Datum value;
-		bool isnull;
-		TBOX *tbox;
-		RangeBound lower1,
-				upper1;
-		PeriodBound lower2,
-				upper2;
-		float8 value_length = 0, temporal_length = 0;
-		vacuum_delay_point();
+    temporal_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
+    temporal_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
+    temporal_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
-		value = fetchfunc(stats, array_no, &isnull);
-		if (isnull) 
-		{
-			/* array is null, just count that */
-			null_cnt++;
-			continue;
-		}
+    /* Loop over the arrays. */
+    for (array_no = 0; array_no < samplerows; array_no++)
+    {
+        Datum value;
+        bool isnull;
+        TBOX *tbox = palloc0(sizeof(TBOX));
+        RangeBound lower1,
+                upper1;
+        PeriodBound lower2,
+                upper2;
+        float8 value_length = 0, temporal_length = 0;
+        vacuum_delay_point();
 
-		total_width += VARSIZE_ANY(DatumGetPointer(value));
+        value = fetchfunc(stats, array_no, &isnull);
+        if (isnull)
+        {
+            /* array is null, just count that */
+            null_cnt++;
+            continue;
+        }
 
-		/* Remember bounds and length for further usage in histograms */
-		tbox = get_tnumber_bbox(value, stats->attrtypid);
-		tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
+        total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-		value_lowers[analyzed_arrays] = lower1;
-		value_uppers[analyzed_arrays] = upper1;
+        if (valueRangeType == type_oid(T_INTRANGE))
+        {
+            /* Remember bounds and length for further usage in histograms */
+            tbox = get_tnumber_bbox(value, stats->attrtypid);
+            tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
 
-		if (valueRangeType == type_oid(T_FLOATRANGE))
-			value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) - 
-				DatumGetFloat8(value_lowers[analyzed_arrays].val);
-		else if (valueRangeType == type_oid(T_INTRANGE))
-			value_length = (float8)(DatumGetInt32(value_uppers[analyzed_arrays].val) - 
-				DatumGetInt32(value_lowers[analyzed_arrays].val));
+            value_lowers[analyzed_arrays] = lower1;
+            value_uppers[analyzed_arrays] = upper1;
+            value_length = (float8) (DatumGetInt32(value_uppers[analyzed_arrays].val) -
+                                     DatumGetInt32(value_lowers[analyzed_arrays].val));
 
-		value_lengths[analyzed_arrays] = value_length;
+            value_lengths[analyzed_arrays] = value_length;
 
-		/* Remember bounds and length for further usage in histograms */
-		temporal_lowers[analyzed_arrays] = lower2;
-		temporal_uppers[analyzed_arrays] = upper2;
+            /* Remember bounds and length for further usage in histograms */
+            temporal_lowers[analyzed_arrays] = lower2;
+            temporal_uppers[analyzed_arrays] = upper2;
 
-		temporal_length = period_duration_secs(upper2.val, lower2.val);
-		temporal_lengths[analyzed_arrays] = temporal_length;
+            temporal_length = period_duration_secs(upper2.val, lower2.val);
+            temporal_lengths[analyzed_arrays] = temporal_length;
+            analyzed_arrays++;
+        }
+        if (valueRangeType == type_oid(T_FLOATRANGE))
+        {
+            TemporalS *ts = DatumGetTemporalS(value);
+            ArrayType *floatranges = tfloats_ranges(ts);
+            int count = ts->count;
+            RangeType **ranges = rangearr_extract(floatranges, &count);
+            for (int c = 0; c < count; c++)
+            {
+                floatrange_to_tbox_internal(tbox, ranges[c]);
+                tbox = get_tnumber_bbox(value, stats->attrtypid);
+                tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
 
-		analyzed_arrays++;
-	}
+                value_lowers[analyzed_arrays] = lower1;
+                value_uppers[analyzed_arrays] = upper1;
 
-	slot_idx = 0;
+                value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) -
+                               DatumGetFloat8(value_lowers[analyzed_arrays].val);
+                value_lengths[analyzed_arrays] = value_length;
 
-	/* We can only compute real stats if we found some non-null values. */
-	if (analyzed_arrays > 0)
-	{
+                /* Remember bounds and length for further usage in histograms */
+                temporal_lowers[analyzed_arrays] = lower2;
+                temporal_uppers[analyzed_arrays] = upper2;
 
-		int pos,
-				posfrac,
-				delta,
-				deltafrac,
-				i;
+                temporal_length = period_duration_secs(upper2.val, lower2.val);
+                temporal_lengths[analyzed_arrays] = temporal_length;
+                analyzed_arrays++;
+            }
+            pfree(tbox);
+        }
+    }
 
-		MemoryContext old_cxt;
+    slot_idx = 0;
+
+    /* We can only compute real stats if we found some non-null values. */
+    if (analyzed_arrays > 0)
+    {
+
+        int pos,
+                posfrac,
+                delta,
+                deltafrac,
+                i;
+
+        MemoryContext old_cxt;
 
 
-		stats->stats_valid = true;
-		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
-		stats->stawidth = (int)(total_width / analyzed_arrays);
+        stats->stats_valid = true;
+        /* Do the simple null-frac and width stats */
+        stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
+        stats->stawidth = (int)(total_width / analyzed_arrays);
 
-		/* Estimate that non-null values are unique */
-		stats->stadistinct = (float4)(-1.0 * (1.0 - stats->stanullfrac));
+        /* Estimate that non-null values are unique */
+        stats->stadistinct = (float4)(-1.0 * (1.0 - stats->stanullfrac));
 
-		/* Must copy the target values into anl_context */
-		old_cxt = MemoryContextSwitchTo(stats->anl_context);
+        /* Must copy the target values into anl_context */
+        old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
-		Datum *value_bound_hist_values;
-		Datum *value_length_hist_values;
+        Datum *value_bound_hist_values;
+        Datum *value_length_hist_values;
 
-		/*
-		 * Generate a bounds histogram slot entry if there are at least two
-		 * values.
-		 */
-		if (analyzed_arrays >= 2)
-		{
+        /*
+         * Generate a bounds histogram slot entry if there are at least two
+         * values.
+         */
+        if (analyzed_arrays >= 2)
+        {
 
-			/* Sort bound values */
-			qsort(value_lowers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
-			qsort(value_uppers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
+            /* Sort bound values */
+            qsort(value_lowers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
+            qsort(value_uppers, analyzed_arrays, sizeof(RangeBound), range_bound_qsort_cmp);
 
-			num_hist = analyzed_arrays;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
+            num_hist = analyzed_arrays;
+            if (num_hist > num_bins)
+                num_hist = num_bins + 1;
 
-			value_bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+            value_bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
-			/*
-			 * The object of this loop is to construct ranges from first and
-			 * last entries in lowers[] and uppers[] along with evenly-spaced
-			 * values in between. So the i'th value is a range of lowers[(i *
-			 * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
-			 * (num_hist - 1)]. But computing that subscript directly risks
-			 * integer overflow when the stats target is more than a couple
-			 * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
-			 * at each step, tracking the integral and fractional parts of the
-			 * sum separately.
-			 */
-			delta = (analyzed_arrays - 1) / (num_hist - 1);
-			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
-			pos = posfrac = 0;
+            /*
+             * The object of this loop is to construct ranges from first and
+             * last entries in lowers[] and uppers[] along with evenly-spaced
+             * values in between. So the i'th value is a range of lowers[(i *
+             * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
+             * (num_hist - 1)]. But computing that subscript directly risks
+             * integer overflow when the stats target is more than a couple
+             * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
+             * at each step, tracking the integral and fractional parts of the
+             * sum separately.
+             */
+            delta = (analyzed_arrays - 1) / (num_hist - 1);
+            deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
+            pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++)
-			{
-				value_bound_hist_values[i] = PointerGetDatum(
-						range_make(value_lowers[pos].val, value_uppers[pos].val, 
-							true, true, temporal_extra_data->value_type_id));
+            for (i = 0; i < num_hist; i++)
+            {
+                value_bound_hist_values[i] = PointerGetDatum(
+                        range_make(value_lowers[pos].val, value_uppers[pos].val,
+                                   true, true, temporal_extra_data->value_type_id));
 
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
+                pos += delta;
+                posfrac += deltafrac;
+                if (posfrac >= (num_hist - 1))
+                {
+                    /* fractional part exceeds 1, carry to integer part */
+                    pos++;
+                    posfrac -= (num_hist - 1);
+                }
+            }
 
-			TypeCacheEntry *range_typeentry = lookup_type_cache(valueRangeType,
-                                                         TYPECACHE_EQ_OPR |
-                                                         TYPECACHE_CMP_PROC_FINFO |
-                                                         TYPECACHE_HASH_PROC_FINFO);
+            TypeCacheEntry *range_typeentry = lookup_type_cache(valueRangeType,
+                                                                TYPECACHE_EQ_OPR |
+                                                                TYPECACHE_CMP_PROC_FINFO |
+                                                                TYPECACHE_HASH_PROC_FINFO);
 
-			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-			stats->stavalues[slot_idx] = value_bound_hist_values;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = range_typeentry->type_id;
-			stats->statyplen[slot_idx] = range_typeentry->typlen;
-			stats->statypbyval[slot_idx] =range_typeentry->typbyval;
-			stats->statypalign[slot_idx] = range_typeentry->typalign;
+            stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+            stats->stavalues[slot_idx] = value_bound_hist_values;
+            stats->numvalues[slot_idx] = num_hist;
+            stats->statypid[slot_idx] = range_typeentry->type_id;
+            stats->statyplen[slot_idx] = range_typeentry->typlen;
+            stats->statypbyval[slot_idx] =range_typeentry->typbyval;
+            stats->statypalign[slot_idx] = range_typeentry->typalign;
 
-			slot_idx++;
-		}
+            slot_idx++;
+        }
 
-		/*
-		 * Generate a length histogram slot entry if there are at least two
-		 * values.
-		 */
-		if (analyzed_arrays >= 2)
-		{
-			/*
-			 * Ascending sort of range lengths for further filling of
-			 * histogram
-			 */
-			qsort(value_lengths, analyzed_arrays, sizeof(float8), float8_qsort_cmp);
+        /*
+         * Generate a length histogram slot entry if there are at least two
+         * values.
+         */
+        if (analyzed_arrays >= 2)
+        {
+            /*
+             * Ascending sort of range lengths for further filling of
+             * histogram
+             */
+            qsort(value_lengths, analyzed_arrays, sizeof(float8), float8_qsort_cmp);
 
-			num_hist = analyzed_arrays;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
+            num_hist = analyzed_arrays;
+            if (num_hist > num_bins)
+                num_hist = num_bins + 1;
 
-			value_length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+            value_length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
-			/*
-			 * The object of this loop is to copy the first and last lengths[]
-			 * entries along with evenly-spaced values in between. So the i'th
-			 * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (analyzed_arrays - 1) / (num_hist - 1);
-			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
-			pos = posfrac = 0;
+            /*
+             * The object of this loop is to copy the first and last lengths[]
+             * entries along with evenly-spaced values in between. So the i'th
+             * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
+             * computing that subscript directly risks integer overflow when
+             * the stats target is more than a couple thousand.  Instead we
+             * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
+             * the integral and fractional parts of the sum separately.
+             */
+            delta = (analyzed_arrays - 1) / (num_hist - 1);
+            deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
+            pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++)
-			{
-				value_length_hist_values[i] = Float8GetDatum(value_lengths[pos]);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-		} 
-		else 
-		{
-			/*
-			 * Even when we don't create the histogram, store an empty array
-			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot() errors if you ask for stavalues, and
-			 * it's NULL. We'll still store the empty fraction in stanumbers.
-			 */
-			value_length_hist_values = palloc(0);
-			num_hist = 0;
-		}
-		stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
-		stats->staop[slot_idx] = Float8LessOperator;
-		stats->stavalues[slot_idx] = value_length_hist_values;
-		stats->numvalues[slot_idx] = num_hist;
-		stats->statypid[slot_idx] = FLOAT8OID;
-		stats->statyplen[slot_idx] = sizeof(float8);
+            for (i = 0; i < num_hist; i++)
+            {
+                value_length_hist_values[i] = Float8GetDatum(value_lengths[pos]);
+                pos += delta;
+                posfrac += deltafrac;
+                if (posfrac >= (num_hist - 1))
+                {
+                    /* fractional part exceeds 1, carry to integer part */
+                    pos++;
+                    posfrac -= (num_hist - 1);
+                }
+            }
+        }
+        else
+        {
+            /*
+             * Even when we don't create the histogram, store an empty array
+             * to mean "no histogram". We can't just leave stavalues NULL,
+             * because get_attstatsslot() errors if you ask for stavalues, and
+             * it's NULL. We'll still store the empty fraction in stanumbers.
+             */
+            value_length_hist_values = palloc(0);
+            num_hist = 0;
+        }
+        stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+        stats->staop[slot_idx] = Float8LessOperator;
+        stats->stavalues[slot_idx] = value_length_hist_values;
+        stats->numvalues[slot_idx] = num_hist;
+        stats->statypid[slot_idx] = FLOAT8OID;
+        stats->statyplen[slot_idx] = sizeof(float8);
 #ifdef USE_FLOAT8_BYVAL
-		stats->statypbyval[slot_idx] = true;
+        stats->statypbyval[slot_idx] = true;
 #else
-		stats->statypbyval[slot_idx] = false;
+        stats->statypbyval[slot_idx] = false;
 #endif
-		stats->statypalign[slot_idx] = 'd';
+        stats->statypalign[slot_idx] = 'd';
 
-		slot_idx = 2;
+        slot_idx = 2;
 
-		Datum *bound_hist_temporal;
-		Datum *length_hist_temporal;
+        Datum *bound_hist_temporal;
+        Datum *length_hist_temporal;
 
-		/*
-		 * Generate a bounds histogram slot entry if there are at least two
-		 * values.
-		 */
-		//problem start
-		if (analyzed_arrays >= 2)
-		{
-			/* Sort bound values */
-			qsort(temporal_lowers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
-			qsort(temporal_uppers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
+        /*
+         * Generate a bounds histogram slot entry if there are at least two
+         * values.
+         */
+        //problem start
+        if (analyzed_arrays >= 2)
+        {
+            /* Sort bound values */
+            qsort(temporal_lowers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
+            qsort(temporal_uppers, analyzed_arrays, sizeof(PeriodBound), period_bound_qsort_cmp);
 
-			num_hist = analyzed_arrays;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
+            num_hist = analyzed_arrays;
+            if (num_hist > num_bins)
+                num_hist = num_bins + 1;
 
-			bound_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
+            bound_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
 
-			/*
-			 * The object of this loop is to construct periods from first and
-			 * last entries in lowers[] and uppers[] along with evenly-spaced
-			 * values in between. So the i'th value is a period of lowers[(i *
-			 * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
-			 * (num_hist - 1)]. But computing that subscript directly risks
-			 * integer overflow when the stats target is more than a couple
-			 * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
-			 * at each step, tracking the integral and fractional parts of the
-			 * sum separately.
-			 */
-			delta = (analyzed_arrays - 1) / (num_hist - 1);
-			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
-			pos = posfrac = 0;
+            /*
+             * The object of this loop is to construct periods from first and
+             * last entries in lowers[] and uppers[] along with evenly-spaced
+             * values in between. So the i'th value is a period of lowers[(i *
+             * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
+             * (num_hist - 1)]. But computing that subscript directly risks
+             * integer overflow when the stats target is more than a couple
+             * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
+             * at each step, tracking the integral and fractional parts of the
+             * sum separately.
+             */
+            delta = (analyzed_arrays - 1) / (num_hist - 1);
+            deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
+            pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++)
-			{
-				bound_hist_temporal[i] =
-						PointerGetDatum(period_make(temporal_lowers[pos].val, temporal_uppers[pos].val,
-													temporal_lowers[pos].inclusive, temporal_uppers[pos].inclusive));
+            for (i = 0; i < num_hist; i++)
+            {
+                bound_hist_temporal[i] =
+                        PointerGetDatum(period_make(temporal_lowers[pos].val, temporal_uppers[pos].val,
+                                                    temporal_lowers[pos].inclusive, temporal_uppers[pos].inclusive));
 
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
+                pos += delta;
+                posfrac += deltafrac;
+                if (posfrac >= (num_hist - 1))
+                {
+                    /* fractional part exceeds 1, carry to integer part */
+                    pos++;
+                    posfrac -= (num_hist - 1);
+                }
+            }
 
-			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-			stats->stavalues[slot_idx] = bound_hist_temporal;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
-			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
-			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
-			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
-			slot_idx++;
-		}
+            stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+            stats->stavalues[slot_idx] = bound_hist_temporal;
+            stats->numvalues[slot_idx] = num_hist;
+            stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
+            stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
+            stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
+            stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
+            slot_idx++;
+        }
 
-		/*
-		 * Generate a length histogram slot entry if there are at least two
-		 * values.
-		 */
-		if (analyzed_arrays >= 2)
-		{
-			/*
-			 * Ascending sort of period lengths for further filling of
-			 * histogram
-			 */
-			qsort(temporal_lengths, analyzed_arrays, sizeof(float8), float8_qsort_cmp);
+        /*
+         * Generate a length histogram slot entry if there are at least two
+         * values.
+         */
+        if (analyzed_arrays >= 2)
+        {
+            /*
+             * Ascending sort of period lengths for further filling of
+             * histogram
+             */
+            qsort(temporal_lengths, analyzed_arrays, sizeof(float8), float8_qsort_cmp);
 
-			num_hist = analyzed_arrays;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
+            num_hist = analyzed_arrays;
+            if (num_hist > num_bins)
+                num_hist = num_bins + 1;
 
-			length_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
+            length_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
 
 
-			/*
-			 * The object of this loop is to copy the first and last lengths[]
-			 * entries along with evenly-spaced values in between. So the i'th
-			 * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead wes
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (analyzed_arrays - 1) / (num_hist - 1);
-			deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
-			pos = posfrac = 0;
+            /*
+             * The object of this loop is to copy the first and last lengths[]
+             * entries along with evenly-spaced values in between. So the i'th
+             * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
+             * computing that subscript directly risks integer overflow when
+             * the stats target is more than a couple thousand.  Instead wes
+             * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
+             * the integral and fractional parts of the sum separately.
+             */
+            delta = (analyzed_arrays - 1) / (num_hist - 1);
+            deltafrac = (analyzed_arrays - 1) % (num_hist - 1);
+            pos = posfrac = 0;
 
-			for (i = 0; i < num_hist; i++)
-			{
-				length_hist_temporal[i] = Float8GetDatum(temporal_lengths[pos]);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-		} 
-		else
-		{
-			/*
-			 * Even when we don't create the histogram, store an empty array
-			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot() errors if you ask for stavalues, and
-			 * it's NULL.
-			 */
-			length_hist_temporal = palloc(0);
-			num_hist = 0;
-		}
-		stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
-		stats->staop[slot_idx] = Float8LessOperator;
-		stats->stavalues[slot_idx] = length_hist_temporal;
-		stats->numvalues[slot_idx] = num_hist;
-		stats->statypid[slot_idx] = FLOAT8OID;
-		stats->statyplen[slot_idx] = sizeof(float8);
+            for (i = 0; i < num_hist; i++)
+            {
+                length_hist_temporal[i] = Float8GetDatum(temporal_lengths[pos]);
+                pos += delta;
+                posfrac += deltafrac;
+                if (posfrac >= (num_hist - 1))
+                {
+                    /* fractional part exceeds 1, carry to integer part */
+                    pos++;
+                    posfrac -= (num_hist - 1);
+                }
+            }
+        }
+        else
+        {
+            /*
+             * Even when we don't create the histogram, store an empty array
+             * to mean "no histogram". We can't just leave stavalues NULL,
+             * because get_attstatsslot() errors if you ask for stavalues, and
+             * it's NULL.
+             */
+            length_hist_temporal = palloc(0);
+            num_hist = 0;
+        }
+        stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+        stats->staop[slot_idx] = Float8LessOperator;
+        stats->stavalues[slot_idx] = length_hist_temporal;
+        stats->numvalues[slot_idx] = num_hist;
+        stats->statypid[slot_idx] = FLOAT8OID;
+        stats->statyplen[slot_idx] = sizeof(float8);
 #ifdef USE_FLOAT8_BYVAL
-		stats->statypbyval[slot_idx] = true;
+        stats->statypbyval[slot_idx] = true;
 #else
-		stats->statypbyval[slot_idx] = false;
+        stats->statypbyval[slot_idx] = false;
 #endif
-		stats->statypalign[slot_idx] = 'd';
+        stats->statypalign[slot_idx] = 'd';
 
-		MemoryContextSwitchTo(old_cxt);
-	} 
-	else if (null_cnt > 0)
-	{
-		/* We found only nulls; assume the column is entirely null */
-		stats->stats_valid = true;
-		stats->stanullfrac = 1.0;
-		stats->stawidth = 0;		/* "unknown" */
-		stats->stadistinct = 0.0;	/* "unknown" */
-	}
+        MemoryContextSwitchTo(old_cxt);
+    }
+    else if (null_cnt > 0)
+    {
+        /* We found only nulls; assume the column is entirely null */
+        stats->stats_valid = true;
+        stats->stanullfrac = 1.0;
+        stats->stawidth = 0;		/* "unknown" */
+        stats->stadistinct = 0.0;	/* "unknown" */
+    }
 
-	/*
-	 * We don't need to bother cleaning up any of our temporary palloc's. The
-	 * hashtable should also go away, as it used a child memory context.
-	 */
+    /*
+     * We don't need to bother cleaning up any of our temporary palloc's. The
+     * hashtable should also go away, as it used a child memory context.
+     */
 }
 
 HeapTuple
@@ -2831,10 +2858,10 @@ tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 	assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
 	if (MOBDB_FLAGS_GET_X(tbox->flags))
 	{
-		lowerdim1->val = (Datum)tbox->xmin;
+		lowerdim1->val = Float8GetDatum(tbox->xmin);
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
-		upperdim1->val = (Datum)tbox->xmax;
+		upperdim1->val = Float8GetDatum(tbox->xmax);
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
