@@ -2115,7 +2115,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     {
         Datum value;
         bool isnull;
-        TBOX *tbox = palloc0(sizeof(TBOX));
+        TBOX *tbox;
         RangeBound lower1,
                 upper1;
         PeriodBound lower2,
@@ -2133,55 +2133,30 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
         total_width += VARSIZE_ANY(DatumGetPointer(value));
 
-        if (valueRangeType == type_oid(T_INTRANGE))
-        {
-            /* Remember bounds and length for further usage in histograms */
-            tbox = get_tnumber_bbox(value, stats->attrtypid);
-            tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
+        /* Remember bounds and length for further usage in histograms */
+        tbox = get_tnumber_bbox(value, stats->attrtypid);
+        tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
 
-            value_lowers[analyzed_arrays] = lower1;
-            value_uppers[analyzed_arrays] = upper1;
-            value_length = (float8) (DatumGetInt32(value_uppers[analyzed_arrays].val) -
-                                     DatumGetInt32(value_lowers[analyzed_arrays].val));
+        value_lowers[analyzed_arrays] = lower1;
+        value_uppers[analyzed_arrays] = upper1;
 
-            value_lengths[analyzed_arrays] = value_length;
-
-            /* Remember bounds and length for further usage in histograms */
-            temporal_lowers[analyzed_arrays] = lower2;
-            temporal_uppers[analyzed_arrays] = upper2;
-
-            temporal_length = period_duration_secs(upper2.val, lower2.val);
-            temporal_lengths[analyzed_arrays] = temporal_length;
-            analyzed_arrays++;
-        }
         if (valueRangeType == type_oid(T_FLOATRANGE))
-        {
-            TemporalS *ts = DatumGetTemporalS(value);
-            ArrayType *floatranges = tfloats_ranges(ts);
-            int count = ts->count;
-            RangeType **ranges = rangearr_extract(floatranges, &count);
-            for (int c = 0; c < count; c++)
-            {
-                floatrange_to_tbox_internal(tbox, ranges[c]);
-                tbox = get_tnumber_bbox(value, stats->attrtypid);
-                tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
+            value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) -
+                           DatumGetFloat8(value_lowers[analyzed_arrays].val);
+        else if (valueRangeType == type_oid(T_INTRANGE))
+            value_length = (float8)(DatumGetInt32(value_uppers[analyzed_arrays].val) -
+                                    DatumGetInt32(value_lowers[analyzed_arrays].val));
 
-                value_lowers[analyzed_arrays] = lower1;
-                value_uppers[analyzed_arrays] = upper1;
+        value_lengths[analyzed_arrays] = value_length;
 
-                value_length = DatumGetFloat8(value_uppers[analyzed_arrays].val) -
-                               DatumGetFloat8(value_lowers[analyzed_arrays].val);
-                value_lengths[analyzed_arrays] = value_length;
+        /* Remember bounds and length for further usage in histograms */
+        temporal_lowers[analyzed_arrays] = lower2;
+        temporal_uppers[analyzed_arrays] = upper2;
 
-                /* Remember bounds and length for further usage in histograms */
-                temporal_lowers[analyzed_arrays] = lower2;
-                temporal_uppers[analyzed_arrays] = upper2;
+        temporal_length = period_duration_secs(upper2.val, lower2.val);
+        temporal_lengths[analyzed_arrays] = temporal_length;
 
-                temporal_length = period_duration_secs(upper2.val, lower2.val);
-                temporal_lengths[analyzed_arrays] = temporal_length;
-                analyzed_arrays++;
-            }
-        }
+        analyzed_arrays++;
     }
 
     slot_idx = 0;
@@ -2854,10 +2829,10 @@ tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
 	assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
 	if (MOBDB_FLAGS_GET_X(tbox->flags))
 	{
-		lowerdim1->val = (Datum)(tbox->xmin);
+		lowerdim1->val = Float8GetDatum(tbox->xmin);
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
-		upperdim1->val = (Datum)(tbox->xmax);
+		upperdim1->val = Float8GetDatum(tbox->xmax);
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
