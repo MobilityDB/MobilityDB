@@ -2,6 +2,9 @@
 
 MobilityDB
 =======
+
+![MobilityDB Logo](doc/images/mobilitydb-logo.png)
+
 MobilityDB is an extension for PostgreSQL to support temporal data types.
 
 Status
@@ -34,8 +37,13 @@ shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
 
+Issues
+------
+
+https://github.com/ULB-CoDE-WIT/MobilityDB/issues
+
 Manuals
------
+-------
 
 HTML: https://docs.mobilitydb.com/nightly/
 
