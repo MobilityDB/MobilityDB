@@ -9,7 +9,7 @@ MobilityDB is an extension for PostgreSQL to support temporal data types.
 
 Status
 ------
-The extension is under heavy development; many things work, some things are not yet fully tested, and some things are broken.
+The extension is under development. We are planning to release the first version in late 2019.
 
 Requirements
 ------------
@@ -39,6 +39,8 @@ max_locks_per_transaction = 128
 
 Issues
 ------
+
+Please report any issues at the address 
 
 https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 
