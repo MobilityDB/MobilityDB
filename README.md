@@ -66,6 +66,18 @@ HTML: https://docs.mobilitydb.com/nightly/
 PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 
+Publications
+------------
+* Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, MobilityDB: A Mainstream Moving Object Database System. In Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019.
+
+* Alejandro A. Vaisman, Esteban Zimányi:
+[Mobility Data Warehouses](https://www.mdpi.com/2220-9964/8/4/170). ISPRS International Journal of Geo-Information, 8(4): 170, 2019.
+
+Presentations
+------------
+* [MobilityDB: A PostgreSQL extension for mobility data management](https://pgconf.ru/en/2019/242944), PGConf.Russia, 2019.
+
+
 License
 -------
 MobilityDB is provided under the [PostgreSQL license](https://www.postgresql.org/about/licence/).

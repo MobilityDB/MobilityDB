@@ -667,7 +667,9 @@ temporalseq_tagg1(TemporalSeq **result,
 	 * tint '[1@2000-01-03, 2@2000-01-04]' and tint '[3@2000-01-01, 4@2000-01-05]'
 	 * whose result for sum would be the following three sequences
 	 * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and
-	 * (3@2000-01-04, 3@2000-01-05]
+	 * (3@2000-01-04, 4@2000-01-05] which after normalization becomes
+	 * [3@2000-01-01, 4@2000-01-03, 5@2000-01-04], and
+	 * (3@2000-01-04, 4@2000-01-05]
 	 */
 	Period period;
 	TimestampTz lower1 = seq1->period.lower;
