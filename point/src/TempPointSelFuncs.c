@@ -775,7 +775,7 @@ get_tpoint_cacheOp(Oid operator)
 STBOX
 get_stbox(Node *node)
 {
-	STBOX box;
+	STBOX box = {0,0,0,0,0,0,0,0,0};
 	Oid value_type = ((Const *) node)->consttype;
 
 	if (value_type == type_oid(T_TGEOMPOINT) ||

@@ -158,13 +158,14 @@ extern int compare_mcvs(const void *a, const void *b);
 extern HeapTuple remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum, Oid attrtypid,
  	 	 	 	 	 	 	 	 	bool geom, Datum value);
 extern Period* get_temporal_bbox(Datum value, Oid oid);
-extern TBOX* get_tnumber_bbox(Datum value, Oid oid);
-extern STBOX* get_tpoint_bbox(Datum value, Oid oid);
-extern void tbox_deserialize(TBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+extern TBOX get_tnumber_bbox(Datum value, Oid oid);
+extern STBOX get_tpoint_bbox(Datum value, Oid oid);
+extern void tbox_deserialize(TBOX box, RangeBound *lowerdim1, RangeBound *upperdim1,
 							PeriodBound *lowerdim2, PeriodBound *upperdim2);
-extern void stbox_deserialize(STBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+extern void stbox_deserialize(STBOX box, RangeBound *lowerdim1, RangeBound *upperdim1,
 							 RangeBound *lowerdim2, RangeBound *upperdim2,
-							 PeriodBound *lowerdim3, PeriodBound *upperdim3);
+							  RangeBound *lowerdim3, RangeBound *upperdim3,
+							  PeriodBound *lowerdim4, PeriodBound *upperdim4);
 
 #endif //MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
 

@@ -69,9 +69,8 @@ extern CachedOp get_temporal_cacheOp(Oid operator);
 extern Selectivity tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
 extern Selectivity estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
 											 CachedOp cachedOp);
-extern Selectivity estimate_tnumber_position_sel(PlannerInfo *root, VariableStatData vardata,
-												 Node *other, bool isgt, bool iseq, CachedOp operator);
-extern Selectivity range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
+extern Selectivity estimate_tnumber_position_sel(VariableStatData vardata, Node *other, bool isgt, bool iseq);
+extern Selectivity range_sel_internal(VariableStatData *vardata, Datum constval,
                                       bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy);
 extern Selectivity calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 											   TypeCacheEntry *typcache, bool isgt, bool iseq,

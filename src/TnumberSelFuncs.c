@@ -144,7 +144,7 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
     Selectivity selec = 0.001;
     CachedOp cachedOp = get_tnumber_cacheOp(operator);
 
-    /* In the case of unknown operator */
+    /* In the case of unknown position operator */
     if (cachedOp == OVERLAPS_OP)
         PG_RETURN_FLOAT8(selec);
 
@@ -184,16 +184,16 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
         switch (cachedOp)
         {
             case LEFT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, true, false);
                 break;
             case RIGHT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, false, false);
                 break;
             case OVERLEFT_OP:
-                selec = 1.0 - estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
+                selec = 1.0 - estimate_tnumber_position_sel(vardata, other, false, false);
                 break;
             case OVERRIGHT_OP:
-                selec = 1.0 - estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
+                selec = 1.0 - estimate_tnumber_position_sel(vardata, other, true, false);
                 break;
             case BEFORE_OP:
                 selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
@@ -216,16 +216,16 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
         switch (cachedOp)
         {
             case LEFT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, false, false, LT_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, false, false);
                 break;
             case RIGHT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, true, false, GT_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, true, false);
                 break;
             case OVERLEFT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, false, true, LE_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, false, true);
                 break;
             case OVERRIGHT_OP:
-                selec = estimate_tnumber_position_sel(root, vardata, other, true, true, GE_OP);
+                selec = estimate_tnumber_position_sel(vardata, other, true, true);
                 break;
             case BEFORE_OP:
                 selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
@@ -388,9 +388,9 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
                 {
                     hasNumeric = true;
                     TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-                    selec1 = range_sel_internal(root, &vardata, (Datum) constantData.lower, false, true, typcache,
+                    selec1 = range_sel_internal(&vardata, (Datum) constantData.lower, false, true, typcache,
                                                 VALUE_STATISTICS);
-                    selec1 += range_sel_internal(root, &vardata, (Datum) constantData.lower, true, true, typcache,
+                    selec1 += range_sel_internal(&vardata, (Datum) constantData.lower, true, true, typcache,
                                                  VALUE_STATISTICS);
                     selec1 = 1 - selec1;
                     selec1 = selec1 < 0 ? 0 : selec1;
@@ -405,17 +405,17 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
                 if (cachedOp == OVERLAPS_OP)
                 {
                     TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-                    selec1 = range_sel_internal(root, &vardata, (Datum)constantData.lower, false, false, typcache,
+                    selec1 = range_sel_internal(&vardata, (Datum)constantData.lower, false, false, typcache,
                                                 VALUE_STATISTICS);
-                    selec1 += range_sel_internal(root, &vardata, (Datum)constantData.upper, true, false, typcache,
+                    selec1 += range_sel_internal(&vardata, (Datum)constantData.upper, true, false, typcache,
                                                  VALUE_STATISTICS);
                 }
                 else if (cachedOp == CONTAINS_OP)
                 {
                     TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-                    selec1 = range_sel_internal(root, &vardata, (Datum)constantData.lower, false, false, typcache,
+                    selec1 = range_sel_internal(&vardata, (Datum)constantData.lower, false, false, typcache,
                                                 VALUE_STATISTICS);
-                    selec1 += range_sel_internal(root, &vardata, (Datum)constantData.upper, false, false, typcache,
+                    selec1 += range_sel_internal(&vardata, (Datum)constantData.upper, false, false, typcache,
                                                  VALUE_STATISTICS);
                 }
                 else if (cachedOp == CONTAINED_OP)
@@ -485,34 +485,31 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
         }
         if (hasNumeric && hasTemporal)
             selec = selec1 * selec2;
-        else if (hasNumeric && !hasTemporal)
+        else if (hasNumeric)
             selec = selec1;
-        else if (!hasNumeric && hasTemporal)
+        else if (hasTemporal)
             selec = selec2;
-        else
-            selec = 0.0;
     }
     return selec;
 }
 
 Selectivity
-estimate_tnumber_position_sel(PlannerInfo *root, VariableStatData vardata,
-                              Node *other, bool isgt, bool iseq, CachedOp operator)
+estimate_tnumber_position_sel(VariableStatData vardata,
+                              Node *other, bool isgt, bool iseq)
 {
     double selec = 0.0;
     if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
     {
         TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
                                                      TYPECACHE_RANGE_INFO);
-        selec = range_sel_internal(root, &vardata, (Datum)lower_or_higher_value_bound(other, isgt),
+        selec = range_sel_internal(&vardata, (Datum)lower_or_higher_value_bound(other, isgt),
                            isgt, iseq, typcache, VALUE_STATISTICS);
-
     }
     return selec;
 }
 
 Selectivity
-range_sel_internal(PlannerInfo *root, VariableStatData *vardata, Datum constval,
+range_sel_internal(VariableStatData *vardata, Datum constval,
                    bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy)
 {
     double hist_selec;
@@ -556,10 +553,9 @@ lower_or_higher_value_bound(Node *other, bool higher)
         if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            TBOX *tbox = palloc(sizeof(TBOX));
-            temporal_bbox(tbox, temporal);
-            result = tbox->xmax;
-            pfree(tbox);
+            TBOX box = {0,0,0,0,0};
+            temporal_bbox(&box, temporal);
+            result = box.xmax;
         }
         else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
         {
@@ -575,9 +571,9 @@ lower_or_higher_value_bound(Node *other, bool higher)
         }
         else if (consttype == type_oid(T_TBOX))
         {
-            TBOX *tbox = DatumGetTboxP(((Const *) other)->constvalue);
-            assert(MOBDB_FLAGS_GET_X(tbox->flags));
-            result = tbox->xmax;
+            TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
+            assert(MOBDB_FLAGS_GET_X(box->flags));
+            result = box->xmax;
         }
     }
     else
@@ -585,10 +581,9 @@ lower_or_higher_value_bound(Node *other, bool higher)
         if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
         {
             Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-            TBOX *tbox = palloc(sizeof(TBOX));
-            temporal_bbox(tbox, temporal);
-            result = tbox->xmin;
-            pfree(tbox);
+            TBOX box = {0,0,0,0,0};
+            temporal_bbox(&box, temporal);
+            result = box.xmin;
         }
         else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
         {
@@ -604,9 +599,9 @@ lower_or_higher_value_bound(Node *other, bool higher)
         }
         else if (consttype == type_oid(T_TBOX))
         {
-            TBOX *tbox = DatumGetTboxP(((Const *) other)->constvalue);
-            assert(MOBDB_FLAGS_GET_X(tbox->flags));
-            result = tbox->xmin;
+            TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
+            assert(MOBDB_FLAGS_GET_X(box->flags));
+            result = box->xmin;
         }
     }
     return result;
@@ -658,12 +653,13 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 
     if (!isgt && !iseq)
         hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, false);
-    else if (!isgt && iseq)
-        hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, true);
-    else if (isgt && !iseq)
-        hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, false);
     else if (isgt && iseq)
         hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
+    else if (isgt)
+        hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, false);
+    else if (iseq)
+        hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, true);
+
 
     free_attstatsslot(&hslot);
 

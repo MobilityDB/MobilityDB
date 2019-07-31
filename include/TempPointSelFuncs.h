@@ -121,7 +121,6 @@ extern double xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, cons
 extern double z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
 							 CachedOp cacheOp, int dim);
 extern int nd_box_init(ND_BOX *a);
-extern int nd_box_init_bounds(ND_BOX *a);
 extern void nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern int nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox);
@@ -133,7 +132,6 @@ extern Selectivity estimate_selectivity(PlannerInfo *root, VariableStatData *var
 								   const STBOX *box, CachedOp op, bool varonleft);
 extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata,
                                                            Node *other, Period *period, CachedOp cachedOp);
-extern int stbox_ndims(const STBOX* stbox);
 
 extern CachedOp get_tpoint_cacheOp(Oid operator);
 extern STBOX get_stbox(Node *node);

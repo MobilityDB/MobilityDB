@@ -2115,7 +2115,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     {
         Datum value;
         bool isnull;
-        TBOX *tbox;
+        TBOX box;
         RangeBound lower1,
                 upper1;
         PeriodBound lower2,
@@ -2134,8 +2134,8 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
         total_width += VARSIZE_ANY(DatumGetPointer(value));
 
         /* Remember bounds and length for further usage in histograms */
-        tbox = get_tnumber_bbox(value, stats->attrtypid);
-        tbox_deserialize(tbox, &lower1, &upper1, &lower2, &upper2);
+        box = get_tnumber_bbox(value, stats->attrtypid);
+        tbox_deserialize(box, &lower1, &upper1, &lower2, &upper2);
 
         value_lowers[analyzed_arrays] = lower1;
         value_uppers[analyzed_arrays] = upper1;
@@ -2498,14 +2498,14 @@ remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
                     {
                         if (attrtypid == type_oid(T_STBOX))
                         {
-                            STBOX *stbox = DatumGetSTboxP(value);
+                            STBOX *box = DatumGetSTboxP(value);
 
                             //Convert STBOX to geometry
                             LWLINE *line;
-                            LWPOINT *lwpoint = lwpoint_make2d(4326, stbox->xmin, stbox->ymin);
+                            LWPOINT *lwpoint = lwpoint_make2d(4326, box->xmin, box->ymin);
                             LWPOINT **points = palloc(sizeof(LWPOINT *) * 2);
                             points[0] = lwpoint;
-                            lwpoint = lwpoint_make2d(4326, stbox->xmax, stbox->ymax);
+                            lwpoint = lwpoint_make2d(4326, box->xmax, box->ymax);
                             points[1] = lwpoint;
                             line = lwline_from_ptarray(4326, 2, points);
                             value = PointerGetDatum(geometry_serialize(lwline_as_lwgeom(line)));
@@ -2766,20 +2766,20 @@ get_temporal_bbox(Datum value, Oid oid)
 	}
 	if (oid == type_oid(T_STBOX))
     {
-        STBOX *stbox = DatumGetSTboxP(value);
+        STBOX *box = DatumGetSTboxP(value);
         Period *p = (Period *)palloc(sizeof(Period));
-        p->upper = (TimestampTz)stbox->tmax;
-        p->lower = (TimestampTz) stbox->tmin;
+        p->upper = (TimestampTz)box->tmax;
+        p->lower = (TimestampTz) box->tmin;
         p->lower_inc = true;
         p->upper_inc = true;
         return p;
     }
     if (oid == type_oid(T_TBOX))
     {
-        TBOX *tbox = DatumGetTboxP(value);
+        TBOX *box = DatumGetTboxP(value);
         Period *p = (Period *)palloc(sizeof(Period));
-        p->upper = (TimestampTz)tbox->tmax;
-        p->lower = (TimestampTz) tbox->tmin;
+        p->upper = (TimestampTz)box->tmax;
+        p->lower = (TimestampTz) box->tmin;
         p->lower_inc = true;
         p->upper_inc = true;
         return p;
@@ -2790,14 +2790,14 @@ get_temporal_bbox(Datum value, Oid oid)
 /*
  * get_tnumber_bbox()--returns the bbox of a two dimensional temporal object
  */
-TBOX*
+TBOX
 get_tnumber_bbox(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT) )
 	{
-		TBOX *tbox = palloc(sizeof(TBOX));
-		temporal_bbox(tbox, DatumGetTemporal(value));
-		return tbox;
+		TBOX box = {0,0,0,0,0};
+		temporal_bbox(&box, DatumGetTemporal(value));
+		return box;
 	}
 	return NULL;
 }
@@ -2805,14 +2805,14 @@ get_tnumber_bbox(Datum value, Oid oid)
 /*
  * get_tpoint_bbox()--returns the bbox of a three dimensional temporal object
  */
-STBOX*
+STBOX
 get_tpoint_bbox(Datum value, Oid oid)
 {
 	if (oid == type_oid(T_STBOX))
 	{
-		STBOX *stbox = palloc0(sizeof(STBOX));
-		temporal_bbox(stbox, DatumGetTemporal(value));
-		return stbox;
+		STBOX box = {0,0,0,0,0,0,0,0,0};
+		temporal_bbox(&box, DatumGetTemporal(value));
+		return box;
 	}
 	return NULL;
 }
@@ -2822,26 +2822,26 @@ get_tpoint_bbox(Datum value, Oid oid)
  */
 
 void
-tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
+tbox_deserialize(TBOX box, RangeBound *lowerdim1, RangeBound *upperdim1,
 				PeriodBound *lowerdim2, PeriodBound *upperdim2)
 {
 	/* The box should have at least one dimension X or T  */
-	assert(MOBDB_FLAGS_GET_X(tbox->flags) || MOBDB_FLAGS_GET_T(tbox->flags));
-	if (MOBDB_FLAGS_GET_X(tbox->flags))
+	assert(MOBDB_FLAGS_GET_X(box.flags) || MOBDB_FLAGS_GET_T(box.flags));
+	if (MOBDB_FLAGS_GET_X(box.flags))
 	{
-		lowerdim1->val = Float8GetDatum(tbox->xmin);
+		lowerdim1->val = Float8GetDatum(box.xmin);
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
-		upperdim1->val = Float8GetDatum(tbox->xmax);
+		upperdim1->val = Float8GetDatum(box.xmax);
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
-	if (MOBDB_FLAGS_GET_T(tbox->flags))
+	if (MOBDB_FLAGS_GET_T(box.flags))
 	{
-		lowerdim2->val = (TimestampTz)tbox->tmin;
+		lowerdim2->val = (TimestampTz)box.tmin;
 		lowerdim2->inclusive = true;
 		lowerdim2->lower = true;
-		upperdim2->val = (TimestampTz)tbox->tmax;
+		upperdim2->val = (TimestampTz)box.tmax;
 		upperdim2->inclusive = true;
 		upperdim2->lower = false;
 	}
@@ -2851,44 +2851,57 @@ tbox_deserialize(TBOX *tbox, RangeBound *lowerdim1, RangeBound *upperdim1,
  * stbox_deserialize: decompose an STBOX value
  */
 void
-stbox_deserialize(STBOX *box, RangeBound *lowerdim1, RangeBound *upperdim1,
+stbox_deserialize(STBOX box, RangeBound *lowerdim1, RangeBound *upperdim1,
 				 RangeBound *lowerdim2, RangeBound *upperdim2,
-				 PeriodBound *lowerdim3, PeriodBound *upperdim3	)
+				  RangeBound *lowerdim3, RangeBound *upperdim3,
+				  PeriodBound *lowerdim4, PeriodBound *upperdim4)
 {
-	if (box && lowerdim1)
+	if (MOBDB_FLAGS_GET_X(box.flags) && lowerdim1)
 	{
-		lowerdim1->val =(Datum) box->xmin;
+		lowerdim1->val =(Datum) box.xmin;
 		lowerdim1->inclusive = true;
 		lowerdim1->lower = true;
 	}
-	if (box && upperdim1)
+	if (MOBDB_FLAGS_GET_X(box.flags) && upperdim1)
 	{
-		upperdim1->val =(Datum) box->xmax;
+		upperdim1->val =(Datum) box.xmax;
 		upperdim1->inclusive = true;
 		upperdim1->lower = false;
 	}
-	if (box && lowerdim2)
+	if (MOBDB_FLAGS_GET_X(box.flags) && lowerdim2)
 	{
-		lowerdim2->val =(Datum) box->ymin;
+		lowerdim2->val =(Datum) box.ymin;
 		lowerdim2->inclusive = true;
 		lowerdim2->lower = true;
 	}
-	if (box && upperdim2)
+	if (MOBDB_FLAGS_GET_X(box.flags) && upperdim2)
 	{
-		upperdim2->val =(Datum) box->ymax;
+		upperdim2->val =(Datum) box.ymax;
 		upperdim2->inclusive = true;
 		upperdim2->lower = false;
 	}
-	if (box && lowerdim3)
+	if (MOBDB_FLAGS_GET_Z(box.flags) && lowerdim3)
 	{
-		lowerdim3->val = (TimestampTz)box->zmin;
+		lowerdim3->val =(Datum) box.zmin;
 		lowerdim3->inclusive = true;
 		lowerdim3->lower = true;
 	}
-	if (box && upperdim3)
+	if (MOBDB_FLAGS_GET_Z(box.flags) && upperdim3)
 	{
-		upperdim3->val = (TimestampTz)box->zmax;
+		upperdim3->val =(Datum) box.zmax;
 		upperdim3->inclusive = true;
 		upperdim3->lower = false;
+	}
+	if (MOBDB_FLAGS_GET_T(box.flags) && lowerdim4)
+	{
+		lowerdim4->val = (TimestampTz)box.tmin;
+		lowerdim4->inclusive = true;
+		lowerdim4->lower = true;
+	}
+	if (MOBDB_FLAGS_GET_T(box.flags) && upperdim4)
+	{
+		upperdim4->val = (TimestampTz)box.tmax;
+		upperdim4->inclusive = true;
+		upperdim4->lower = false;
 	}
 }
