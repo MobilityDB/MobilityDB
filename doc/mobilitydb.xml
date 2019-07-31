@@ -28,7 +28,12 @@
 			</affiliation>
 		</author>
 
-		<pubdate>01.04.2019</pubdate>
+		<pubdate>01.09.2019</pubdate>
+		<abstract>
+			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes.</para>
+
+			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' /></imageobject></inlinemediaobject></para>
+		</abstract>
 	</bookinfo>
 
 	<chapter id ="introduction">
@@ -36,7 +41,7 @@
 
 		<para>MobilityDB is an extension of <ulink url="http://postgresql.org">PostgreSQL</ulink> and <ulink url="http://postgis.net">PostGIS</ulink> that provides temporal types. Such types are data types that represent the evolution on time of values of some element type, called the base type of the temporal type. For instance, temporal integers may be used to represent the evolution on time of the number of employees of a department. In this case, the data type is &ldquo;temporal integer&rdquo; and &ldquo;integer&rdquo; is the base type. Similarly, a temporal float may be used to represent the evolution on time of the temperature of a room. As another example, a temporal point may be used to represent the evolution on time of the location of a car, as reported by GPS devices. Temporal types are useful because representing values that evolve in time is essential in many applications, for example in mobility applications. Furthermore, the operators on the base types (such as arithmetic operators and aggregation for integers and floats, spatial relationships and distance for geometries) can be intuitively generalized when the values evolve in time.</para>
 
-		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname> and <varname>tgeography</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
+		<para>MobilityDB provides the following temporal types: <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>. These temporal types are based, respectively, on the <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, and <varname>text</varname> base types provided by PostgreSQL, and on the <varname>geometry</varname> and <varname>geography</varname> base types provided by PostGIS (restricted to 2D or 3D points).<footnote><para>Although 4D temporal points can be represented, the M dimension is currently not taken into account.</para></footnote> Furthermore, MobilityDB uses four time types to represent extents of time: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>. In addition, two range types are defined in MobilityDB: <varname>intrange</varname> and <varname>floatrange</varname>.</para>
 		
 	</chapter>
 	
