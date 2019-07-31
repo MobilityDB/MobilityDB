@@ -5,7 +5,22 @@ MobilityDB
 
 <img src="doc/images/mobilitydb-logo.svg" width="200" alt="MobilityDB Logo" />
 
-MobilityDB is an extension for PostgreSQL to support temporal data types.
+MobilityDB is an open source software program that adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/). MobilityDB follows the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) specification from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
+
+Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html).
+
+MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/).
+
+
+Features
+--------
+
+* Time types `Period`, `PeriodSet`, and `TimestampSet` which, in addition of the the `TimestampTz` type provided by PostgreSQL,  are used to represent time spans.
+* Temporal types `tbool`, `tint`, `tfloat`, and `ttext` which are based on the `bool`, `int`, `float`, and `text` types provided by PostgreSQL and are used to represent basic types that evolve on time.
+* Spatio-temporal types `tgeompoint` and `tgeogpoint` which are based on the `geometry` and `geography` types provided by PostGIS (restricted to 2D or 3D points) and are used to represent points that evolve on time.
+* Range types `intrange` and `floatrange` which are used to represent ranges of `int` and `float` values.
+
+All these types have associated an extensive set of functions and operators. GiST and SP-GIST index support for these types are also provided.
 
 Status
 ------
@@ -36,7 +51,6 @@ You should also set the following in postgresql.conf:
 shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
-
 Issues
 ------
 
@@ -54,5 +68,5 @@ PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 License
 -------
-MobilityDB is provided under the PostgreSQL license.
+MobilityDB is provided under the [PostgreSQL license](https://www.postgresql.org/about/licence/).
 
