@@ -2793,13 +2793,13 @@ get_temporal_bbox(Datum value, Oid oid)
 TBOX
 get_tnumber_bbox(Datum value, Oid oid)
 {
+	TBOX box = {0,0,0,0,0};
 	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT) )
 	{
-		TBOX box = {0,0,0,0,0};
 		temporal_bbox(&box, DatumGetTemporal(value));
 		return box;
 	}
-	return NULL;
+	return box;
 }
 
 /*
@@ -2808,13 +2808,13 @@ get_tnumber_bbox(Datum value, Oid oid)
 STBOX
 get_tpoint_bbox(Datum value, Oid oid)
 {
+	STBOX box = {0,0,0,0,0,0,0,0,0};
 	if (oid == type_oid(T_STBOX))
 	{
-		STBOX box = {0,0,0,0,0,0,0,0,0};
 		temporal_bbox(&box, DatumGetTemporal(value));
 		return box;
 	}
-	return NULL;
+	return box;
 }
 
 /*
