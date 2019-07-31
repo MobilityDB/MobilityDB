@@ -3,7 +3,7 @@
 MobilityDB
 =======
 
-![MobilityDB Logo](doc/images/mobilitydb-logo.svg)
+![MobilityDB Logo](doc/images/mobilitydb-logo.svg| width=100)
 
 MobilityDB is an extension for PostgreSQL to support temporal data types.
 
