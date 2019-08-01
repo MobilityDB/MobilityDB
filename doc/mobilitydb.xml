@@ -32,7 +32,7 @@
 		<abstract>
 			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes.</para>
 
-			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' /></imageobject></inlinemediaobject></para>
+			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' width='200px' /></imageobject></inlinemediaobject></para>
 		</abstract>
 	</bookinfo>
 
