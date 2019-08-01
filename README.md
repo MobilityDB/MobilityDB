@@ -65,6 +65,8 @@ HTML: https://docs.mobilitydb.com/nightly/
 
 PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
+EPUB: https://docs.mobilitydb.com/nightly/mobilitydb.epub
+
 
 Publications
 ------------
