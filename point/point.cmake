@@ -11,6 +11,7 @@ point/src/GeoParser.c
 point/src/GeoRelativePosOps.c
 point/src/IndexGistTempPoint.c
 point/src/IndexSpgistTempPoint.c
+point/src/mfjson.c
 point/src/ProjectionGK.c
 point/src/SpatialFuncs.c
 point/src/SpatialRels.c
