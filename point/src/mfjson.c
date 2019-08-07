@@ -13,6 +13,8 @@
 #include "TemporalPoint.h"
 #include "executor/spi.h"
 
+/* The following definitions are taken from PostGIS */
+
 #define FP_TOLERANCE 1e-12
 
 #define OUT_MAX_DOUBLE 1E15
@@ -29,6 +31,8 @@
 /*
  * Removes trailing zeros and dot for a %f formatted number.
  * Modifies input.
+ * 
+ * This function is taken from PostGIS file lwprint.c
  */
 static void
 trim_trailing_zeros(char *str)
@@ -63,7 +67,8 @@ trim_trailing_zeros(char *str)
  * written if there was enough space (excluding terminating NULL).
  * So a return of ``bufsize'' or more means that the string was
  * truncated and misses a terminating NULL.
- *
+ * 
+ * This function is taken from PostGIS file lwprint.c
  */
 int
 lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
@@ -93,9 +98,10 @@ lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
 /*
  * Retrieve an SRS from a given SRID
  * Require valid spatial_ref_sys table entry
- *
  * Could return SRS as short one (i.e EPSG:4326)
- * or as long one: (i.e urn:ogc:def:crs:EPSG::4326)
+ * or as long one: (i.e urn:ogc:def:crs:EPSG::4326).
+ * 
+ * This function is taken from PostGIS file lwgeom_export.c
  */
 char *
 getSRSbySRID(int32_t srid, bool short_crs)
@@ -113,27 +119,27 @@ getSRSbySRID(int32_t srid, bool short_crs)
 
 	if (short_crs)
 		sprintf(query, "SELECT auth_name||':'||auth_srid \
-		        FROM spatial_ref_sys WHERE srid='%d'", srid);
+				FROM spatial_ref_sys WHERE srid='%d'", srid);
 	else
 		sprintf(query, "SELECT 'urn:ogc:def:crs:'||auth_name||'::'||auth_srid \
-		        FROM spatial_ref_sys WHERE srid='%d'", srid);
+				FROM spatial_ref_sys WHERE srid='%d'", srid);
 
 	err = SPI_exec(query, 1);
-	if ( err < 0 )
+	if (err < 0)
 	{
 		elog(NOTICE, "getSRSbySRID: error executing query %d", err);
 		SPI_finish();
 		return NULL;
 	}
 
-	/* no entry in spatial_ref_sys */
+	/* No entry in spatial_ref_sys */
 	if (SPI_processed <= 0)
 	{
 		SPI_finish();
 		return NULL;
 	}
 
-	/* get result  */
+	/* Get result */
 	srs = SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1);
 
 	/* NULL result */
@@ -143,12 +149,12 @@ getSRSbySRID(int32_t srid, bool short_crs)
 		return NULL;
 	}
 
-	/* copy result to upper executor context */
-	size = strlen(srs)+1;
+	/* Copy result to upper executor context */
+	size = strlen(srs) + 1;
 	srscopy = SPI_palloc(size);
 	memcpy(srscopy, srs, size);
 
-	/* disconnect from SPI */
+	/* Disconnect from SPI */
 	SPI_finish();
 
 	return srscopy;
@@ -156,8 +162,6 @@ getSRSbySRID(int32_t srid, bool short_crs)
 
 /*
  * Handle coordinate array
- */
-/*
  * Returns maximum size of rendered coordinate array in bytes.
  */
 static size_t
@@ -166,14 +170,14 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 	assert(precision <= OUT_MAX_DOUBLE_PRECISION);
 	if (hasz)
 		return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(",,"))
-	       * 3 * npoints + sizeof(",[]");
+		   * 3 * npoints + sizeof(",[]");
 	else
 		return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(","))
-		       * 2 * npoints + sizeof(",[]");
+			   * 2 * npoints + sizeof(",[]");
 }
 
 static size_t
-coordinates_mfjson_buf(char *output, TemporalInst **instants, int count, int precision)
+coordinates_mfjson_buf(char *output, TemporalInst *inst, int precision)
 {
 	char *ptr;
 	char x[OUT_DOUBLE_BUFFER_SIZE];
@@ -183,69 +187,45 @@ coordinates_mfjson_buf(char *output, TemporalInst **instants, int count, int pre
 	assert (precision <= OUT_MAX_DOUBLE_PRECISION);
 	ptr = output;
 
-	/* TODO: rewrite this loop to be simpler and possibly quicker */
-	if (!MOBDB_FLAGS_GET_Z(instants[0]->flags))
+	if (!MOBDB_FLAGS_GET_Z(inst->flags))
 	{
-		for (int i = 0; i < count; i++)
-		{
-			POINT2D pt = datum_get_point2d(temporalinst_value(instants[i]));
-
-			lwprint_double(
-			    pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-			lwprint_double(
-			    pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-
-			if ( i ) ptr += sprintf(ptr, ",");
-			ptr += sprintf(ptr, "[%s,%s]", x, y);
-		}
+		POINT2D pt = datum_get_point2d(temporalinst_value(inst));
+		lwprint_double(pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+		ptr += sprintf(ptr, "[%s,%s]", x, y);
 	}
 	else
 	{
-		for (int i = 0; i < count; i++)
-		{
-			POINT3DZ pt = datum_get_point3dz(temporalinst_value(instants[i]));
-
-			lwprint_double(
-			    pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
-			lwprint_double(
-			    pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
-			lwprint_double(
-			    pt.z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
-
-			if (i) ptr += sprintf(ptr, ",");
-			ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
-		}
+		POINT3DZ pt = datum_get_point3dz(temporalinst_value(inst));
+		lwprint_double(pt.x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt.y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+		lwprint_double(pt.z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
+		ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
 	}
-
 	return (ptr - output);
 }
 
 /*
  * Handle datetimes array
- */
-/*
  * Returns maximum size of datetimes array in bytes.
- * Example:   "datetimes":["2019-08-06T18:35:48.021455+02","2019-08-06 18:45:18.476983+02"],
+ * Example: "datetimes":["2019-08-06T18:35:48.021455+02:30","2019-08-06T18:45:18.476983+02:30"],
+ * 32 characters for the timestamptz + 2 double quotes + 1 comma
  */
 static size_t
 datetimes_mfjson_size(int npoints)
 {
-	return 32 * npoints + sizeof("[]");
+	return 35 * npoints + sizeof("[],");
 }
 
 static size_t
-datetimes_mfjson_buf(char *output, TemporalInst **instants, int count)
+datetimes_mfjson_buf(char *output, TemporalInst *inst)
 {
 	char *ptr = output;
-
-	/* TODO: rewrite this loop to be simpler and possibly quicker */
-    for (int i = 0; i < count; i++)
-    {
-		char *t = call_output(TIMESTAMPTZOID, instants[i]->t);
-        if (i) ptr += sprintf(ptr, ",");
-        ptr += sprintf(ptr, "\"%s\"", t);
-    }
-
+	char *t = call_output(TIMESTAMPTZOID, inst->t);
+	/* Replace ' ' by 'T' as separator between date and time parts */
+	t[10] = 'T';
+	ptr += sprintf(ptr, "\"%s\"", t);
+	pfree(t);
 	return (ptr - output);
 }
 
@@ -255,12 +235,9 @@ datetimes_mfjson_buf(char *output, TemporalInst **instants, int count)
 static size_t
 asmfjson_srs_size(char *srs)
 {
-	int size;
-
-	size = sizeof("'crs':{'type':'name',");
+	int size = sizeof("'crs':{'type':'name',");
 	size += sizeof("'properties':{'name':''}},");
 	size += strlen(srs) * sizeof(char);
-
 	return size;
 }
 
@@ -268,11 +245,9 @@ static size_t
 asmfjson_srs_buf(char *output, char *srs)
 {
 	char *ptr = output;
-
 	ptr += sprintf(ptr, "\"crs\":{\"type\":\"name\",");
 	ptr += sprintf(ptr, "\"properties\":{\"name\":\"%s\"}},", srs);
-
-	return (ptr-output);
+	return (ptr - output);
 }
 
 /*
@@ -281,19 +256,18 @@ asmfjson_srs_buf(char *output, char *srs)
 static size_t
 asmfjson_bbox_size(int hasz, int precision)
 {
-	int size;
-
+	/* The maximum size of a timestamptz is 35, e.g., "2019-08-06 23:18:16.195062-09:30" */
+	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") + 70;
 	if (!hasz)
 	{
-		size = sizeof("\"bbox\":[,,,],");
+		size += sizeof("'bbox':[,,,],");
 		size +=	2 * 2 * (OUT_MAX_DIGS_DOUBLE + precision);
 	}
 	else
 	{
-		size = sizeof("\"bbox\":[,,,,,],");
+		size += sizeof("\"bbox\":[,,,,,],");
 		size +=	2 * 3 * (OUT_MAX_DIGS_DOUBLE + precision);
 	}
-
 	return size;
 }
 
@@ -301,18 +275,23 @@ static size_t
 asmfjson_bbox_buf(char *output, STBOX *bbox, int hasz, int precision)
 {
 	char *ptr = output;
-
+	ptr += sprintf(ptr, "\"stBoundedBy\":{");
 	if (!hasz)
 		ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f],",
-		               precision, bbox->xmin, precision, bbox->ymin,
-		               precision, bbox->xmax, precision, bbox->ymax);
+				   precision, bbox->xmin, precision, bbox->ymin,
+				   precision, bbox->xmax, precision, bbox->ymax);
 	else
 		ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f,%.*f,%.*f],",
-		               precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
-		               precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
-
+					precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
+					precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
+	char *begin = call_output(TIMESTAMPTZOID, bbox->tmin);
+	char *end = call_output(TIMESTAMPTZOID, bbox->tmax);
+	ptr += sprintf(ptr, "\"period\":{\"begin\":\"%s\",\"end\":\"%s\"}},", begin, end);
+	pfree(begin); pfree(end); 
 	return (ptr - output);
 }
+
+/*****************************************************************************/
 
 static size_t
 tpointinst_asmfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
@@ -320,11 +299,9 @@ tpointinst_asmfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, c
 	int size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	size += datetimes_mfjson_size(1);
 	size += sizeof("{'type':'MovingPoint',");
-	size += sizeof("'coordinates':,'datetimes':}");
-
+	size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
 	if (srs) size += asmfjson_srs_size(srs);
 	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
-
 	return size;
 }
 
@@ -332,131 +309,180 @@ static size_t
 tpointinst_asmfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
-
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
 	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
 	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
-
 	ptr += sprintf(ptr, "\"coordinates\":");
-	ptr += coordinates_mfjson_buf(ptr, &inst, 1, precision);
+	ptr += coordinates_mfjson_buf(ptr, inst, precision);
 	ptr += sprintf(ptr, ",\"datetimes\":");
-	ptr += datetimes_mfjson_buf(ptr, &inst, 1);
-	ptr += sprintf(ptr, "}");
-
+	ptr += datetimes_mfjson_buf(ptr, inst);
+	ptr += sprintf(ptr, ",\"interpolations\":[\"Discrete\"]}");
 	return (ptr - output);
 }
 
 static char *
-tpointinst_asmfjson(TemporalInst *inst, int precision, int has_bbox, char *srs)
+tpointinst_asmfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
-	STBOX *bbox = NULL;
-	STBOX tmp;
-	if (has_bbox)
-	{
-        tpointinst_make_stbox(&tmp, temporalinst_value(inst), inst->t);
-		bbox = &tmp;
-	}
-    
-    int size = tpointinst_asmfjson_size(inst, precision, bbox, srs);
+	int size = tpointinst_asmfjson_size(inst, precision, bbox, srs);
 	char *output = palloc(size);
 	tpointinst_asmfjson_buf(inst, precision, bbox, srs, output);
 	return output;
 }
 
-static char *
-tpointi_asmfjson(TemporalI *ti, int precision, int has_bbox, char *srs)
+/*****************************************************************************/
+
+static size_t
+tpointi_asmfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-    return NULL;
-/*    
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	Datum length = Float8GetDatum(0.0);
+	int size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	size += datetimes_mfjson_size(ti->count);
+	size += sizeof("{'type':'MovingPoint',");
+	size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
+	if (srs) size += asmfjson_srs_size(srs);
+	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	return size;
+}
+
+static size_t
+tpointi_asmfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
+{
+	char *ptr = output;
+	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
+	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
+	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	ptr += sprintf(ptr, "\"coordinates\":[");
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst = temporali_inst_n(ti, i);
-		instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
+		if (i) ptr += sprintf(ptr, ",");
+		ptr += coordinates_mfjson_buf(ptr, temporali_inst_n(ti, i), precision);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
-	for (int i = 1; i < ti->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	return result;
-*/
+	ptr += sprintf(ptr, "],\"datetimes\":[");
+	for (int i = 0; i < ti->count; i++)
+	{
+		if (i) ptr += sprintf(ptr, ",");
+		ptr += datetimes_mfjson_buf(ptr, temporali_inst_n(ti, i));
+	}
+	ptr += sprintf(ptr, "],\"interpolations\":[\"Discrete\"]}");
+	return (ptr - output);
 }
 
 static char *
-tpointseq_asmfjson(TemporalSeq *seq, int precision, int has_bbox, char *srs)
+tpointi_asmfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-    return NULL;
-/*    
-	/ * Instantaneous sequence * /
-	if (seq->count == 1)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = temporalinst_make(Float8GetDatum(0), inst->t,
-			FLOAT8OID);
-		TemporalSeq *result = temporalseq_from_temporalinstarr(&inst1, 1,
-			true, true, false);
-		pfree(inst1);
-		return result;
-	}
+	int size = tpointi_asmfjson_size(ti, precision, bbox, srs);
+	char *output = palloc(size);
+	tpointi_asmfjson_buf(ti, precision, bbox, srs, output);
+	return output;
+}
 
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	Datum value1 = temporalinst_value(inst1);
-	double length = prevlength;
-	instants[0] = temporalinst_make(Float8GetDatum(length), inst1->t,
-			FLOAT8OID);
-	for (int i = 1; i < seq->count; i++)
+/*****************************************************************************/
+
+static size_t
+tpointseq_asmfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+{
+	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	size += datetimes_mfjson_size(seq->count);
+	size += sizeof("{'type':'MovingPoint',");
+	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Linear']}");
+	if (srs) size += asmfjson_srs_size(srs);
+	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	return size;
+}
+
+static size_t
+tpointseq_asmfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
+{
+	char *ptr = output;
+	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
+	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
+	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	ptr += sprintf(ptr, "\"coordinates\":[");
+	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-		Datum value2 = temporalinst_value(inst2);
-		if (datum_ne(value1, value2, inst1->valuetypid))
-		{
-			Datum line = geompoint_trajectory(value1, value2);
-			/ * The next function works for 2D and 3D * /
-			length += DatumGetFloat8(call_function1(LWGEOM_length_linestring, line));	
-			pfree(DatumGetPointer(line)); 
-		}
-		instants[i] = temporalinst_make(Float8GetDatum(length), inst2->t,
-			FLOAT8OID);
-		inst1 = inst2;
-		value1 = value2;
+		if (i) ptr += sprintf(ptr, ",");
+		ptr += coordinates_mfjson_buf(ptr, temporalseq_inst_n(seq, i), precision);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, false);
-		
-	for (int i = 1; i < seq->count; i++)
-		pfree(instants[i]);
-	pfree(instants);
-	
-	return result;
-*/
+	ptr += sprintf(ptr, "],\"datetimes\":[");
+	for (int i = 0; i < seq->count; i++)
+	{
+		if (i) ptr += sprintf(ptr, ",");
+		ptr += datetimes_mfjson_buf(ptr, temporalseq_inst_n(seq, i));
+	}
+	ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"Linear\"]}", 
+		seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false");
+	return (ptr - output);
 }
 
 static char *
-tpoints_asmfjson(TemporalS *ts, int precision, int has_bbox, char *srs)
+tpointseq_asmfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
-    return NULL;
-/*    
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	double length = 0;
+	int size = tpointseq_asmfjson_size(seq, precision, bbox, srs);
+	char *output = palloc(size);
+	tpointseq_asmfjson_buf(seq, precision, bbox, srs, output);
+	return output;
+}
+
+/*****************************************************************************/
+
+static size_t
+tpoints_asmfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+{
+	bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
+	int size = sizeof("{'type':'MovingPoint','sequences':[],");
+	size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tpointseq_asmfjson(seq, length);
-		TemporalInst *end = temporalseq_inst_n(sequences[i], seq->count - 1);
-		length += DatumGetFloat8(temporalinst_value(end));
+		coordinates_mfjson_size(seq->count, hasz, precision);
+		size += datetimes_mfjson_size(seq->count);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, 
-		ts->count, false);
-		
-	for (int i = 1; i < ts->count; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
-
-	return result;
-*/
+	size += sizeof(",interpolations':['Linear']}");
+	if (srs) size += asmfjson_srs_size(srs);
+	if (bbox) size += asmfjson_bbox_size(hasz, precision);
+	return size;
 }
+
+static size_t
+tpoints_asmfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
+{
+	char *ptr = output;
+	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
+	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
+	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+	ptr += sprintf(ptr, "\"sequences\":[");
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		if (i) ptr += sprintf(ptr, ",");
+		ptr += sprintf(ptr, "{\"coordinates\":[");
+		for (int j = 0; j < seq->count; j++)
+		{
+			if (j) ptr += sprintf(ptr, ",");
+			ptr += coordinates_mfjson_buf(ptr, temporalseq_inst_n(seq, j), precision);
+		}
+		ptr += sprintf(ptr, "],\"datetimes\":[");
+		for (int j = 0; j < seq->count; j++)
+		{
+			if (j) ptr += sprintf(ptr, ",");
+			ptr += datetimes_mfjson_buf(ptr, temporalseq_inst_n(seq, j));
+		}
+		ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s}", 
+			seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false");
+	}
+	ptr += sprintf(ptr, "],\"interpolations\":[\"Linear\"]}");
+	return (ptr - output);
+}
+
+static char *
+tpoints_asmfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+{
+	int size = tpoints_asmfjson_size(ts, precision, bbox, srs);
+	char *output = palloc(size);
+	tpoints_asmfjson_buf(ts, precision, bbox, srs, output);
+	return output;
+}
+
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_asmfjson);
 
@@ -506,8 +532,8 @@ tpoint_asmfjson(PG_FUNCTION_ARGS)
 				if (!srs)
 				{
 					elog(ERROR,
-					      "SRID %i unknown in spatial_ref_sys table",
-					      srid);
+						  "SRID %i unknown in spatial_ref_sys table",
+						  srid);
 					PG_RETURN_NULL();
 				}
 			}
@@ -517,18 +543,35 @@ tpoint_asmfjson(PG_FUNCTION_ARGS)
 			has_bbox = 1;
 	}
 
+	/* Get bounding box if needed */
+	STBOX *bbox = NULL;
+	STBOX tmp = {0,0,0,0,0,0,0,0,0};
+	if (has_bbox)
+	{
+		temporal_bbox(&tmp, temp);
+		bbox = &tmp;
+	}
+
 	char *mfjson = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		mfjson = tpointinst_asmfjson((TemporalInst *)temp, precision, has_bbox, srs);
+		mfjson = tpointinst_asmfjson((TemporalInst *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALI)
-		mfjson = tpointi_asmfjson((TemporalI *)temp, precision, has_bbox, srs);
+		mfjson = tpointi_asmfjson((TemporalI *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALSEQ)
-		mfjson = tpointseq_asmfjson((TemporalSeq *)temp, precision, has_bbox, srs);
+		mfjson = tpointseq_asmfjson((TemporalSeq *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALS)
-		mfjson = tpoints_asmfjson((TemporalS *)temp, precision, has_bbox, srs);
+		mfjson = tpoints_asmfjson((TemporalS *)temp, precision, bbox, srs);
 	text *result = cstring_to_text(mfjson);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
 }
 
+
+/*****************************************************************************
+ * fromMFJSON  functions
+ * TO BE DONE
+ *****************************************************************************/
+
+
+/*****************************************************************************/
