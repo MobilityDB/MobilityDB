@@ -11,6 +11,9 @@
  *****************************************************************************/
 
 #include <TemporalTypes.h>
+#include <access/hash.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"

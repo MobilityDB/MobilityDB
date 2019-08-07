@@ -16,45 +16,18 @@
 #include <postgres.h>
 #include <c.h>
 #include <float.h>
-#include <fmgr.h>
-#include <funcapi.h>
-#include <liblwgeom.h>
 #include <math.h>
-#include <access/gist.h>
-#include <access/hash.h>
-#include <access/heapam.h>
-#include <access/htup_details.h>
-#include <access/spgist.h>
-#include <access/stratnum.h>
 #include <assert.h>
-#include <catalog/namespace.h>
-#include <catalog/pg_operator.h>
 #include <catalog/pg_type.h>
-#include <catalog/pg_collation.h>
-#include <catalog/pg_statistic.h>
-#include <commands/vacuum.h>
-#include <lib/stringinfo.h>
-#include <libpq/pqformat.h>
-#include <nodes/pg_list.h>
-#include <parser/parse_oper.h>
 #include <utils/array.h>
-#include <utils/builtins.h>
 #include <utils/date.h>
 #include <utils/datetime.h>
 #include <utils/datum.h>
-#include <utils/fmgroids.h>
-#include <utils/geo_decls.h>
-#include <utils/lsyscache.h>
-#include <utils/memutils.h>
 #include <utils/rangetypes.h>
-#include <utils/rel.h>
-#include <utils/selfuncs.h>
-#include "utils/syscache.h"
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
 #include "TimeTypes.h"
 #include "OidCache.h"
-#include "TemporalSelFuncs.h"
 
 #ifndef USE_FLOAT4_BYVAL
 #error Postgres needs to be configured with USE_FLOAT4_BYVAL
@@ -63,6 +36,8 @@
 #ifndef USE_FLOAT8_BYVAL
 #error Postgres needs to be configured with USE_FLOAT8_BYVAL
 #endif
+
+#define EPSILON					1.0E-06
 
 /*****************************************************************************
  * Duration of temporal types

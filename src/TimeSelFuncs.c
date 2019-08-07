@@ -14,6 +14,9 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
+#include <access/htup_details.h>
+#include <utils/lsyscache.h>
+#include "TemporalSelFuncs.h"
 
 /*****************************************************************************/
 

@@ -11,6 +11,7 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
+#include <utils/lsyscache.h>
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
 #endif

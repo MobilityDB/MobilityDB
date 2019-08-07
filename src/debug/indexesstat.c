@@ -13,6 +13,11 @@
 
 // #include <access/spgist_private.h>
 #include "TemporalTypes.h"
+#include <access/hash.h>
+#include <access/heapam.h>
+#include <catalog/namespace.h>
+#include <utils/builtins.h>
+#include <utils/rel.h>
 
 /* These definitions are taken from <catalog/pg_am.h> */
 #define GIST_AM_OID 783

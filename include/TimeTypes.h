@@ -21,6 +21,7 @@
 #define __TIMETYPES_H__
 
 #include <postgres.h>
+#include <access/stratnum.h>
 #include <datatype/timestamp.h>
 
 typedef struct 

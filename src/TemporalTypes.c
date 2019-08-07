@@ -11,6 +11,16 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
+#include <access/heapam.h>
+#include <access/htup_details.h>
+#include <catalog/namespace.h>
+#include <catalog/pg_collation.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/fmgroids.h>
+#include <utils/lsyscache.h>
+#include <utils/rel.h>
+
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
 #endif

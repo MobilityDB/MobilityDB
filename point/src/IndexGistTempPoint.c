@@ -11,6 +11,8 @@
  *****************************************************************************/
 
 #include "TemporalPoint.h"
+#include <access/gist.h>
+#include <utils/builtins.h>
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
@@ -551,7 +553,7 @@ interval_cmp_upper(const void *i1, const void *i2)
 static inline float
 non_negative(float val)
 {
-	if (FPge(val, 0.0f))
+	if (FLOAT8_GE(val, 0.0f))
 		return val;
 	else
 		return 0.0f;

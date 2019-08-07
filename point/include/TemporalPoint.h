@@ -14,8 +14,8 @@
 #define __TEMPORALPOINT_H__
 
 #include "TemporalTypes.h"
+#include <liblwgeom.h>
 #include "PostGIS.h"
-#include "GeoEstimate.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

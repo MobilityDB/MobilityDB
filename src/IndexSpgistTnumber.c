@@ -73,6 +73,8 @@
  */
 
 #include "TemporalTypes.h"
+#include <access/spgist.h>
+#include <utils/builtins.h>
 
 /*****************************************************************************/
 
@@ -363,7 +365,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 
 	/* Fill the output */
 	out->hasPrefix = true;
-	out->prefixDatum = BoxPGetDatum(centroid);
+	out->prefixDatum = PointerGetDatum(centroid);
 
 	out->nNodes = 16;
 	out->nodeLabels = NULL;		/* We don't need node labels. */
@@ -380,7 +382,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 		TBOX *box = DatumGetTboxP(in->datums[i]);
 		uint8 quadrant = getQuadrant4D(centroid, box);
 
-		out->leafTupleDatums[i] = BoxPGetDatum(box);
+		out->leafTupleDatums[i] = PointerGetDatum(box);
 		out->mapTuplesToNodes[i] = quadrant;
 	}
 

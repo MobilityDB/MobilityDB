@@ -12,6 +12,8 @@
 
 #include "TemporalTypes.h"
 #include "Aggregates.h"
+#include <catalog/pg_collation.h>
+#include <libpq/pqformat.h>
 
 /*****************************************************************************
  * Numeric aggregate functions on datums

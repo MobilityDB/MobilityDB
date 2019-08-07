@@ -19,6 +19,9 @@
 #define MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
 
 #include <TemporalTypes.h>
+#include <catalog/pg_statistic.h>
+#include <commands/vacuum.h>
+#include <utils/lsyscache.h>
 #include <TemporalPoint.h>
 #include <PostGIS.h>
 

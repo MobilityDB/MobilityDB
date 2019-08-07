@@ -12,6 +12,8 @@
  *****************************************************************************/
 
 #include "TemporalTypes.h"
+#include <access/spgist.h>
+#include <utils/builtins.h>
 
 /*****************************************************************************
  * SP-GiST inner consistent function for temporal types

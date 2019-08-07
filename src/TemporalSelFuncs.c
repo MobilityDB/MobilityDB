@@ -13,6 +13,7 @@
  *****************************************************************************/
  
 #include "TemporalTypes.h"
+#include <utils/lsyscache.h>
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 

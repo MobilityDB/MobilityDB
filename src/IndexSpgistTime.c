@@ -13,6 +13,7 @@
  */
 
 #include "TemporalTypes.h"
+#include <access/spgist.h>
 
 /*****************************************************************************
  * SP-GiST config functions

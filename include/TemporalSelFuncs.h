@@ -14,6 +14,9 @@
 #define __TEMPORAL_SELFUNCS_H__
 
 #include "TemporalTypes.h"
+#include <catalog/pg_operator.h>
+#include <commands/vacuum.h>
+#include <utils/selfuncs.h>
 
 typedef enum {
  	VALUE_STATISTICS,

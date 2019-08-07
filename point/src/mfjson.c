@@ -12,6 +12,7 @@
 
 #include "TemporalPoint.h"
 #include "executor/spi.h"
+#include <utils/builtins.h>
 
 /* The following definitions are taken from PostGIS */
 

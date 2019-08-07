@@ -14,6 +14,7 @@
 #define __GEO_ESTIMATE_H__
 
 #include <postgres.h>
+#include <catalog/pg_statistic.h>
 #include <datatype/timestamp.h>
 
 /**

@@ -12,6 +12,10 @@
 
 #include "TemporalTypes.h"
 #include "OidCache.h"
+#include <access/heapam.h>
+#include <access/htup_details.h>
+#include <catalog/namespace.h>
+#include <utils/rel.h>
 
 /*****************************************************************************
  * Global arrays for caching the OIDs in order to avoid (slow) lookups.
