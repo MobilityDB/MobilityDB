@@ -66,7 +66,7 @@ ewkt_out(Oid type, Datum value)
 /* Output a temporal point in WKT format */
 
 static text *
-tpoint_astext_internal(Temporal *temp)
+tpoint_as_text_internal(Temporal *temp)
 {
 	char *str = NULL;
 	temporal_duration_is_valid(temp->duration);
@@ -83,13 +83,13 @@ tpoint_astext_internal(Temporal *temp)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_astext);
+PG_FUNCTION_INFO_V1(tpoint_as_text);
 
 PGDLLEXPORT Datum
-tpoint_astext(PG_FUNCTION_ARGS)
+tpoint_as_text(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	text *result = tpoint_astext_internal(temp);
+	text *result = tpoint_as_text_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
 }
@@ -97,7 +97,7 @@ tpoint_astext(PG_FUNCTION_ARGS)
 /* Output a temporal point in WKT format */
 
 static text *
-tpoint_asewkt_internal(Temporal *temp)
+tpoint_as_ewkt_internal(Temporal *temp)
 {
 	int srid = tpoint_srid_internal(temp);
 	char str1[20];
@@ -123,13 +123,13 @@ tpoint_asewkt_internal(Temporal *temp)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_asewkt);
+PG_FUNCTION_INFO_V1(tpoint_as_ewkt);
 
 PGDLLEXPORT Datum
-tpoint_asewkt(PG_FUNCTION_ARGS)
+tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	text *result = tpoint_asewkt_internal(temp);
+	text *result = tpoint_as_ewkt_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
 }
@@ -138,10 +138,10 @@ tpoint_asewkt(PG_FUNCTION_ARGS)
 
 /* Output a geometry/geography array in WKT format */
 
-PG_FUNCTION_INFO_V1(geoarr_astext);
+PG_FUNCTION_INFO_V1(geoarr_as_text);
 
 PGDLLEXPORT Datum
-geoarr_astext(PG_FUNCTION_ARGS)
+geoarr_as_text(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
@@ -167,10 +167,10 @@ geoarr_astext(PG_FUNCTION_ARGS)
 
 /* Output a geometry/geography array in WKT format prefixed with the SRID */
 
-PG_FUNCTION_INFO_V1(geoarr_asewkt);
+PG_FUNCTION_INFO_V1(geoarr_as_ewkt);
 
 PGDLLEXPORT Datum
-geoarr_asewkt(PG_FUNCTION_ARGS)
+geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
@@ -196,10 +196,10 @@ geoarr_asewkt(PG_FUNCTION_ARGS)
 
 /* Output a temporal point array in WKT format */
 
-PG_FUNCTION_INFO_V1(tpointarr_astext);
+PG_FUNCTION_INFO_V1(tpointarr_as_text);
 
 PGDLLEXPORT Datum
-tpointarr_astext(PG_FUNCTION_ARGS)
+tpointarr_as_text(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
@@ -211,7 +211,7 @@ tpointarr_astext(PG_FUNCTION_ARGS)
 	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_astext_internal(temparr[i]);
+		textarr[i] = tpoint_as_text_internal(temparr[i]);
 	ArrayType *result = textarr_to_array(textarr, count);
 
 	pfree(temparr);
@@ -225,10 +225,10 @@ tpointarr_astext(PG_FUNCTION_ARGS)
 
 /* Output a temporal point array in WKT format prefixed with the SRID */
 
-PG_FUNCTION_INFO_V1(tpointarr_asewkt);
+PG_FUNCTION_INFO_V1(tpointarr_as_ewkt);
 
 PGDLLEXPORT Datum
-tpointarr_asewkt(PG_FUNCTION_ARGS)
+tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count;
@@ -240,7 +240,7 @@ tpointarr_asewkt(PG_FUNCTION_ARGS)
 	}
 	text **textarr = palloc(sizeof(text *) * count);
 	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_asewkt_internal(temparr[i]);
+		textarr[i] = tpoint_as_ewkt_internal(temparr[i]);
 	ArrayType *result = textarr_to_array(textarr, count);
 
 	pfree(temparr);
@@ -759,8 +759,7 @@ tpoint_asmfjson(PG_FUNCTION_ARGS)
 
 				if (!srs)
 				{
-					elog(ERROR,
-						  "SRID %i unknown in spatial_ref_sys table",
+					elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
 						  srid);
 					PG_RETURN_NULL();
 				}

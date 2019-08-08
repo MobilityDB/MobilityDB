@@ -328,7 +328,9 @@ tpoints_set_srid_internal(TemporalS *ts, int32 srid)
 	return result;
 }
 
-Temporal* tpoint_set_srid_internal(Temporal* temp, int32 srid) {
+Temporal * 
+tpoint_set_srid_internal(Temporal *temp, int32 srid)
+{
     Temporal *result = NULL;
     if (temp->duration == TEMPORALINST)
         result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);
@@ -350,7 +352,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 srid = PG_GETARG_INT32(1);
-	Temporal* result = tpoint_set_srid_internal(temp, srid) ;
+	Temporal *result = tpoint_set_srid_internal(temp, srid) ;
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

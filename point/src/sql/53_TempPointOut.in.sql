@@ -12,56 +12,56 @@
 
 CREATE FUNCTION asText(tgeompoint)
 	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_astext'
+	AS 'MODULE_PATHNAME', 'tpoint_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tgeompoint[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_astext'
+	AS 'MODULE_PATHNAME', 'tpointarr_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asText(tgeogpoint)
 	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_astext'
+	AS 'MODULE_PATHNAME', 'tpoint_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asText(tgeogpoint[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_astext'
+	AS 'MODULE_PATHNAME', 'tpointarr_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE FUNCTION asText(geometry[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_astext'
+	AS 'MODULE_PATHNAME', 'geoarr_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
 CREATE FUNCTION asText(geography[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_astext'
+	AS 'MODULE_PATHNAME', 'geoarr_as_text'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
 
 CREATE FUNCTION asEWKT(tgeompoint)
 	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asewkt'
+	AS 'MODULE_PATHNAME', 'tpoint_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tgeompoint[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_asewkt'
+	AS 'MODULE_PATHNAME', 'tpointarr_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asEWKT(tgeogpoint)
 	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asewkt'
+	AS 'MODULE_PATHNAME', 'tpoint_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKT(tgeogpoint[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_asewkt'
+	AS 'MODULE_PATHNAME', 'tpointarr_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
 
 CREATE FUNCTION asEWKT(geometry[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_asewkt'
+	AS 'MODULE_PATHNAME', 'geoarr_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
 CREATE FUNCTION asEWKT(geography[])
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_asewkt'
+	AS 'MODULE_PATHNAME', 'geoarr_as_ewkt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asMFJSON(point tgeompoint, maxdecimaldigits int4 DEFAULT 15, options int4 DEFAULT 0)
