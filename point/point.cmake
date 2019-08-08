@@ -16,6 +16,7 @@ point/src/SpatialFuncs.c
 point/src/SpatialRels.c
 point/src/TempDistance.c
 point/src/TempPoint.c
+point/src/TempPointIn.c
 point/src/TempPointOut.c
 point/src/TempPointAnalyze.c
 point/src/TempPointSelFuncs.c
