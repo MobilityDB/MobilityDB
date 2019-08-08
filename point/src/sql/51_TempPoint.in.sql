@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalPointG.sql
- *	  Basic functions for temporal geography points.
+ * TemporalPoint.sql
+ *	  Basic functions for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles

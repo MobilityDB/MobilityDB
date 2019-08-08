@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalGeo.sql
- *	  Geometric functions for temporal points.
+ * SpatialFuncs.sql
+ *	  Spatial functions for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -9,69 +9,6 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
-
-CREATE FUNCTION asText(tgeompoint)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tgeompoint[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asText(tgeogpoint)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tgeogpoint[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-	
-CREATE FUNCTION asText(geometry[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
-CREATE FUNCTION asText(geography[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_astext'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
-
-CREATE FUNCTION asEWKT(tgeompoint)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tgeompoint[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asEWKT(tgeogpoint)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tgeogpoint[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tpointarr_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
-
-CREATE FUNCTION asEWKT(geometry[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
-CREATE FUNCTION asEWKT(geography[])
-	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'geoarr_asewkt'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asMFJSON(point tgeompoint, maxdecimaldigits int4 DEFAULT 15, options int4 DEFAULT 0)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asmfjson'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15, options int4 DEFAULT 0)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_asmfjson'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION SRID(tgeompoint)
 	RETURNS integer
@@ -120,12 +57,12 @@ CREATE FUNCTION tgeompoint(tgeogpoint)
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
 CREATE CAST (tgeogpoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeogpoint);
 
-CREATE OR REPLACE FUNCTION setprecision(tgeompoint, int)
+CREATE FUNCTION setprecision(tgeompoint, int)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION setprecision(tgeogpoint, int)
+CREATE FUNCTION setprecision(tgeogpoint, int)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -236,7 +173,7 @@ CREATE FUNCTION nearestApproachDistance(tgeompoint, tgeompoint)
 	AS 'MODULE_PATHNAME', 'NAD_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-	CREATE FUNCTION nearestApproachDistance(geography, tgeogpoint)
+CREATE FUNCTION nearestApproachDistance(geography, tgeogpoint)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'NAD_geo_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
