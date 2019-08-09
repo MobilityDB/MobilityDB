@@ -310,3 +310,29 @@ SELECT asMFJSON(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@
  {"type":"MovingPoint","sequences":[{"coordinates":[[1.5,1.5,1.5],[2.5,2.5,2.5],[1.5,1.5,1.5]],"datetimes":["2000-01-01T00:00:00+00","2000-01-02T00:00:00+00","2000-01-03T00:00:00+00"],"lower_inc":true,"upper_inc":true},{"coordinates":[[3.5,3.5,3.5],[3.5,3.5,3.5]],"datetimes":["2000-01-04T00:00:00+00","2000-01-05T00:00:00+00"],"lower_inc":true,"upper_inc":true}],"interpolations":["Linear"]}
 (1 row)
 
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01',20);
+                                                   asmfjson                                                    
+---------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'Point(1 1)@2000-01-01',-1);
+                                                   asmfjson                                                    
+---------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPoint","coordinates":[1,1],"datetimes":"2000-01-01T00:00:00+00","interpolations":["Discrete"]}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 3);
+                                                                                                                                                    asmfjson                                                                                                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],"period":{"begin":"2019-01-01 16:00:00.15+00","end":"2019-01-01 16:00:00.15+00"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 4);
+                                                                                             asmfjson                                                                                             
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPoint","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:EPSG::4326"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T16:00:00.15+00","interpolations":["Discrete"]}
+(1 row)
+
+SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 4);
+ERROR:  SRID 123456 unknown in spatial_ref_sys table

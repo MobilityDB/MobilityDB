@@ -286,7 +286,7 @@ tpointi_from_mfjson(json_object *mfjson)
 	/* Get coordinates */
 	// THIS FUNCTION CALL INVALIDATES THE NEXT FUNCTION CALL
 	// int numpoints = parse_mfjson_points(mfjson, &values);
-	
+	/* */
 	json_object *coordinates = NULL;
 	coordinates = findMemberByName(mfjson, "coordinates");
 	if (coordinates == NULL)
@@ -308,7 +308,7 @@ tpointi_from_mfjson(json_object *mfjson)
 		coords = json_object_array_get_idx(coordinates, i);
 		values[i] = parse_mfjson_coord(coords);
 	}
-
+	/* */
 	/* Get datetimes */
 	// FUNCTION CALL DOES NOT WORK
 	// int numdates = parse_mfjson_datetimes(mfjson, &times);
