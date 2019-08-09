@@ -10,9 +10,15 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
-#include "executor/spi.h"
+#include <postgres.h>
+#include <assert.h>
+#include <float.h>
+#include <catalog/pg_type.h>
+#include <executor/spi.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalPoint.h"
 
 /* The following definitions are taken from PostGIS */
 

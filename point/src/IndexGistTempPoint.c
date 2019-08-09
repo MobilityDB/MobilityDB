@@ -10,9 +10,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
+#include <postgres.h>
 #include <access/gist.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalPoint.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

@@ -11,9 +11,13 @@
  *	These functions are only stubs, they need to be written TODO
  *
  *****************************************************************************/
- 
-#include "TemporalTypes.h"
+
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 

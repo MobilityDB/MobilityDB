@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * IndexGistTime.c
- *		R-tree GiST index for time types.
+ *	R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
@@ -11,8 +11,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/gist.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TemporalTypes.h"
 
 /*****************************************************************************/
 

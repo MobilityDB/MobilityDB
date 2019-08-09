@@ -62,6 +62,11 @@
  *	 tfloats.
  */
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/timestamp.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalTypes.h"
 
 /*****************************************************************************
@@ -2543,7 +2548,7 @@ sync_tfunc2_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	return 3;
 }
 
-int 
+static int 
 sync_tfunc2_temporalseq_temporalseq_crossdisc2(TemporalSeq **result, TemporalSeq *seq1, 
 	TemporalSeq *seq2, Datum (*func)(Datum, Datum), Datum valuetypid)
 {
@@ -2913,7 +2918,7 @@ sync_tfunc3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	return 3;
 }
 
-int 
+static int 
 sync_tfunc3_temporalseq_temporalseq_crossdisc2(TemporalSeq **result, 
 	TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
@@ -3311,7 +3316,7 @@ sync_tfunc4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	return 3;
 }
 
-int
+static int
 sync_tfunc4_temporalseq_temporalseq_crossdisc2(TemporalSeq **result,
 	TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)

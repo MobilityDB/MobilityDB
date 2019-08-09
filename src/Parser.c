@@ -10,8 +10,12 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
 #endif

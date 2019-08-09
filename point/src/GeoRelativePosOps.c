@@ -21,6 +21,11 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalPoint.h"
 
 /*****************************************************************************/

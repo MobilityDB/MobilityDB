@@ -20,9 +20,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
 
 /*****************************************************************************
  * Input/Output functions

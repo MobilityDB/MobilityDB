@@ -13,9 +13,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/htup_details.h>
+#include <catalog/pg_type.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalTypes.h"
 #include "TemporalSelFuncs.h"
 
 /*****************************************************************************/

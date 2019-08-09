@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * BoundingBoxOps.c
+ * BoundBoxOps.c
  *	  Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are 
@@ -20,9 +20,17 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalTypes.h"
+#include "Range.h"
+#include "TBox.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
 #endif

@@ -14,7 +14,13 @@
  *
  *****************************************************************************/
  
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalTypes.h"
+#include "BoundBoxOps.h"
 
 /*****************************************************************************/
 /* TBOX op TBOX */

@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * GeomAggFuncs.c
+ * GeoAggFuncs.c
  *	  Aggregate functions for temporal points.
  *
  * The only function currently provided is temporal centroid.
@@ -12,7 +12,14 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalPoint.h"
+#include "DoubleN.h"
+#include "AggregateFuncs.h"
 
 /*****************************************************************************
  * Generic functions

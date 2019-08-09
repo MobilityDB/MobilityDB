@@ -18,7 +18,13 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/timestamp.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalPoint.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships 

@@ -11,8 +11,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/gist.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
+#include "TimeTypes.h"
+#include "IndexGistTime.h"
+#include "TemporalTypes.h"
 
 /*****************************************************************************
  * Consistent method for temporal types

@@ -10,10 +10,15 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
-#include "executor/spi.h"
+#include <postgres.h>
+#include <float.h>
+#include <catalog/pg_type.h>
+#include <executor/spi.h>
 #include <json-c/json.h>
 #include <json-c/json_object_private.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalPoint.h"
 
 /*****************************************************************************
  * Input in MFJSON format 
@@ -180,8 +185,9 @@ parse_mfjson_coord(json_object *poObj)
 	return result;
 }
 
-static int
-parse_mfjson_points(json_object *mfjson, Datum **values)
+/* TODO MAKE POSSIBLE TO CALL THIS FUNCTION
+static Datum *
+parse_mfjson_points(json_object *mfjson, int *count)
 {
 	json_object *mfjsonTmp = mfjson;
 	json_object *coordinates = NULL;
@@ -198,18 +204,20 @@ parse_mfjson_points(json_object *mfjson, Datum **values)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid value of 'coordinates' array in MFJSON string")));
 	
-	*values = palloc(sizeof(Datum) * numpoints);
+	Datum *values = palloc(sizeof(Datum) * numpoints);
 	for (int i = 0; i < numpoints; ++i)
 	{
 		json_object *coords = NULL;
 		coords = json_object_array_get_idx(coordinates, i);
-		*values[i] = parse_mfjson_coord(coords);
+		values[i] = parse_mfjson_coord(coords);
 	}
-	return numpoints;
+	*count = numpoints;
+	return values;
 }
+*/
 
-static int
-parse_mfjson_datetimes(json_object *mfjson, TimestampTz **times)
+static TimestampTz *
+parse_mfjson_datetimes(json_object *mfjson, int *count)
 {
 	json_object *datetimes = NULL;
 	datetimes = findMemberByName(mfjson, "datetimes");
@@ -225,8 +233,8 @@ parse_mfjson_datetimes(json_object *mfjson, TimestampTz **times)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Invalid value of 'datetimes' array in MFJSON string")));
 	
-	*times = palloc(sizeof(TimestampTz) * numdates);
-	for (int i = 0; i < numdates; ++i)
+	TimestampTz *times = palloc(sizeof(TimestampTz) * numdates);
+	for (int i = 0; i < numdates; i++)
 	{
 		char datetime[33];
 		json_object* datevalue = NULL;
@@ -237,10 +245,11 @@ parse_mfjson_datetimes(json_object *mfjson, TimestampTz **times)
 			strcpy(datetime, strdatevalue);
 			/* Replace 'T' by ' ' before converting to timestamptz */
 			datetime[10] = ' ';
-			*times[i] = call_input(TIMESTAMPTZOID, datetime);
+			times[i] = call_input(TIMESTAMPTZOID, datetime);
 		}
 	}
-	return numdates;
+	*count = numdates;
+	return times;
 }
 
 /*****************************************************************************/
@@ -281,7 +290,6 @@ static TemporalI *
 tpointi_from_mfjson(json_object *mfjson)
 {
 	Datum *values;
-	TimestampTz *times;
 
 	/* Get coordinates */
 	// THIS FUNCTION CALL INVALIDATES THE NEXT FUNCTION CALL
@@ -311,36 +319,8 @@ tpointi_from_mfjson(json_object *mfjson)
 	/* */
 	/* Get datetimes */
 	// FUNCTION CALL DOES NOT WORK
-	// int numdates = parse_mfjson_datetimes(mfjson, &times);
-	
-	json_object *datetimes = NULL;
-	datetimes = findMemberByName(mfjson, "datetimes");
-	if (datetimes == NULL)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Unable to find 'datetimes' in MFJSON string")));
-	if (json_object_get_type(datetimes) != json_type_array)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid 'datetimes' array in MFJSON string")));
-
-	int numdates = json_object_array_length(datetimes);
-	if (numdates < 1)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid value of 'datetimes' array in MFJSON string")));
-	times = palloc(sizeof(TimestampTz) * numdates);
-	for (int i = 0; i < numdates; ++i)
-	{
-		char datetime[33];
-		json_object *datevalue = NULL;
-		datevalue = json_object_array_get_idx(datetimes, i);
-		const char *strdatevalue = json_object_get_string(datevalue);
-		if (strdatevalue)
-		{
-			strcpy(datetime, strdatevalue);
-			/* Replace 'T' by ' ' before converting to timestamptz */
-			datetime[10] = ' ';
-			times[i] = call_input(TIMESTAMPTZOID, datetime);
-		}
-	}
+	int numdates;
+	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
 
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -365,7 +345,6 @@ static TemporalSeq *
 tpointseq_from_mfjson(json_object *mfjson)
 {
 	Datum *values;
-	TimestampTz *times;
 
 	/* Get coordinates */
 	// THIS FUNCTION CALL INVALIDATES THE NEXT FUNCTION CALL
@@ -395,37 +374,8 @@ tpointseq_from_mfjson(json_object *mfjson)
 
 	/* Get datetimes */
 	// FUNCTION CALL DOES NOT WORK
-	// int numdates = parse_mfjson_datetimes(mfjson, &times);
-
-	json_object *datetimes = NULL;
-	datetimes = findMemberByName(mfjson, "datetimes");
-	if (datetimes == NULL)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Unable to find 'datetimes' in MFJSON string")));
-	if (json_object_get_type(datetimes) != json_type_array)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid 'datetimes' array in MFJSON string")));
-
-	int numdates = json_object_array_length(datetimes);
-	if (numdates < 1)
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Invalid value of 'datetimes' array in MFJSON string")));
-	
-	times = palloc(sizeof(TimestampTz) * numdates);
-	for (int i = 0; i < numdates; ++i)
-	{
-		char datetime[33];
-		json_object* datevalue = NULL;
-		datevalue = json_object_array_get_idx(datetimes, i);
-		const char *strdatevalue = json_object_get_string(datevalue);
-		if (strdatevalue)
-		{
-			strcpy(datetime, strdatevalue);
-			/* Replace 'T' by ' ' before converting to timestamptz */
-			datetime[10] = ' ';
-			times[i] = call_input(TIMESTAMPTZOID, datetime);
-		}
-	}
+	int numdates;
+	TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
 
 	if (numpoints != numdates)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
@@ -599,9 +549,6 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 	char *srs = NULL;
 
 	/* Get the mfjson stream */
-	if (PG_ARGISNULL(0))
-		PG_RETURN_NULL();
-
 	mfjson_input = PG_GETARG_TEXT_P(0);
 	mfjson = text2cstring(mfjson_input);
 

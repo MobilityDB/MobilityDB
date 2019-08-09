@@ -10,7 +10,13 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalTypes.h"
+#include "Parser.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -34,7 +40,8 @@ tbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-char* tbox_to_string(const TBOX *box)
+char *
+tbox_to_string(const TBOX *box)
 {
 	static int sz = 128;
 	char *str = NULL;

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TextFuncs.c
- *		Text functions (textcat, lower, upper).
+ *	Text functions (textcat, lower, upper).
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -10,8 +10,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Mathematical functions on datums
@@ -40,7 +45,7 @@ datum_upper(Datum value)
 }
 
 /*****************************************************************************
- * Temporal addition
+ * Text concatenation
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(textcat_base_temporal);

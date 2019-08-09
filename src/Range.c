@@ -10,8 +10,13 @@
  *
  *****************************************************************************/
  
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
 
 /*****************************************************************************
  * Generic range functions

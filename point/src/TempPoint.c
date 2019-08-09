@@ -10,8 +10,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalPoint.h"
 
 /*****************************************************************************
  * Miscellaneous functions

@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * Temporal.c
- *	  Basic functions for the generic temporal type.
+ *	Basic functions for temporal types of any duration.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,11 +10,20 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
 #include <utils/rel.h>
+#include <utils/timestamp.h>
+
+#include "TemporalTypes.h"
+#include "BoundBoxOps.h"
+#include "Parser.h"
+#include "Range.h"
 
 /*****************************************************************************
  * Typmod 

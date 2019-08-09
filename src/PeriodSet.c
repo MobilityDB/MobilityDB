@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * PeriodSet.c
- *	  Basic functions for set of periods.
+ *	Basic functions for set of periods.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,9 +10,16 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include <postgres.h>
+#include <assert.h>
 #include <libpq/pqformat.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalTypes.h"
+#include "Parser.h"
 
 /*****************************************************************************
  * General functions

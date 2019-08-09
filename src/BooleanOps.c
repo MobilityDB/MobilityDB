@@ -10,7 +10,12 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalTypes.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Boolean operations functions on datums

@@ -19,8 +19,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalPoint.h"
 
 /*****************************************************************************
  * STBOX bounding box operators

@@ -70,9 +70,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
+#include <postgres.h>
 #include <access/spgist.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalPoint.h"
 
 /*****************************************************************************/
 

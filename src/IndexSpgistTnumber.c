@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------------
  *
  * IndexSpgistTnumber.c
- *		SP-GiST implementation of 4-dimensional quad tree over temporal
- *		integers and floats.
+ *	SP-GiST implementation of 4-dimensional quad tree over temporal
+ *	integers and floats.
  *
  * These functions are based on those in the file geo_spgist.c.
  * This module provides SP-GiST implementation for temporal number types 
@@ -72,9 +72,15 @@
  *-----------------------------------------------------------------------------
  */
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/spgist.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
+#include "BoundBoxOps.h"
+#include "IndexGistTnumber.h"
 
 /*****************************************************************************/
 

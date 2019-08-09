@@ -11,6 +11,10 @@
  *	These functions are only stubs, they need to be written TODO
  *
  *****************************************************************************/
+
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
  
 #include "TemporalTypes.h"
 

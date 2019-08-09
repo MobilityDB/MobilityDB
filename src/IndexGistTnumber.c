@@ -11,9 +11,15 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/gist.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
+#include "BoundBoxOps.h"
+#include "RelativePosOps.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

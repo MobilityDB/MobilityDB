@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
  * MathematicalFuncs.c
- *		Temporal mathematical operators (+, -, *, /) and functions (round, 
- *		degrees).
+ *	Temporal mathematical operators (+, -, *, /) and functions (round, 
+ *	degrees).
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -11,8 +11,13 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TemporalTypes.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Mathematical functions on datums
@@ -37,7 +42,6 @@ datum_add(Datum l, Datum r, Oid typel, Oid typer)
 		result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
 	return result;
 }
-
 
 /* Subtraction */
 

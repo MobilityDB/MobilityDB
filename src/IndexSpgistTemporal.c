@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * IndexSpgistTemporal.c
- *		Quad-tree SP-GiST index for temporal boolean and temporal text types.
+ *	Quad-tree SP-GiST index for temporal boolean and temporal text types.
  *
  * These functions are based on those in the file rangetypes_spgist.c.
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
@@ -11,9 +11,16 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
 #include <access/spgist.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+
+#include "TimeTypes.h"
+#include "IndexGistTime.h"
+#include "IndexSpgistTime.h"
+#include "TemporalTypes.h"
 
 /*****************************************************************************
  * SP-GiST inner consistent function for temporal types

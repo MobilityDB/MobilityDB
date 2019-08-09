@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalTypes.c
- *	  Generic functions for temporal types.
+ * TemporalUtil.c
+ *	  Miscellaneous utility functions for temporal types.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,16 +10,24 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include <postgres.h>
+#include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <catalog/namespace.h>
+#include <catalog/pg_type.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/fmgroids.h>
 #include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
 #include <utils/rel.h>
+#include <utils/timestamp.h>
+#include <utils/varlena.h>
+
+#include "TemporalTypes.h"
+#include "DoubleN.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"

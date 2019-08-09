@@ -10,8 +10,17 @@
  *
  *****************************************************************************/
 
-#include "TemporalPoint.h"
+#include <postgres.h>
+#include <assert.h>
+#include <float.h>
+#include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalPoint.h"
+#include "LiftingFuncs.h"
+#include "MathematicalFuncs.h"
 
 /*****************************************************************************
  * Utility functions

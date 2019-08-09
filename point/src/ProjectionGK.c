@@ -13,6 +13,10 @@
  *
  *****************************************************************************/
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "TemporalPoint.h"
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;

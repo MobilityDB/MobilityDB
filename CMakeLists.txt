@@ -30,7 +30,7 @@ src/TemporalInst.c
 src/TemporalS.c
 src/TemporalSelFuncs.c
 src/TemporalSeq.c
-src/TemporalTypes.c
+src/TemporalUtil.c
 src/TextFuncs.c
 src/TimeOps.c
 src/TimeSelFuncs.c

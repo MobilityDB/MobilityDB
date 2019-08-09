@@ -10,12 +10,16 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
-#include "OidCache.h"
+#include <postgres.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <catalog/namespace.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
 #include <utils/rel.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 
 /*****************************************************************************
  * Global arrays for caching the OIDs in order to avoid (slow) lookups.

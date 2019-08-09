@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TemporalI.c
- *	  Basic functions for temporal instants.
+ *	  Basic functions for temporal instant sets.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -10,9 +10,17 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include <postgres.h>
+#include <assert.h>
+#include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/rangetypes.h>
+#include <utils/timestamp.h>
+
+#include "TemporalTypes.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
