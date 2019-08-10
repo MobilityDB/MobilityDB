@@ -27,6 +27,215 @@
 #include <utils/timestamp.h>
 
 #include "TemporalPoint.h"
+#include "STbox.h"
+#include "SpatialFuncs.h"
+#include "GeoBoundBoxOps.h"
+
+/*****************************************************************************
+ * Transform a <Type> to a STBOX
+ * The functions assume that the argument box is set to 0 before with palloc0
+ *****************************************************************************/
+
+/* Transform a geometry/geography to a stbox */
+
+bool
+geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
+{
+	GBOX gbox;
+	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
+	{
+		/* Spatial dimensions are set as missing for the SP-GiST index */
+		MOBDB_FLAGS_SET_X(box->flags, false);
+		MOBDB_FLAGS_SET_Z(box->flags, false);
+		MOBDB_FLAGS_SET_T(box->flags, false);
+		return false;
+	}
+	box->xmin = gbox.xmin;
+	box->xmax = gbox.xmax;
+	box->ymin = gbox.ymin;
+	box->ymax = gbox.ymax;
+	if (FLAGS_GET_Z(gs->flags) || FLAGS_GET_GEODETIC(gs->flags))
+	{
+		box->zmin = gbox.zmin;
+		box->zmax = gbox.zmax;
+	}
+	MOBDB_FLAGS_SET_X(box->flags, true);
+	MOBDB_FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
+	MOBDB_FLAGS_SET_T(box->flags, false);
+	MOBDB_FLAGS_SET_GEODETIC(box->flags, FLAGS_GET_GEODETIC(gs->flags));
+	return true;
+}
+
+PG_FUNCTION_INFO_V1(geo_to_stbox);
+
+PGDLLEXPORT Datum
+geo_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	bool found = geo_to_stbox_internal(result, gs);
+	PG_FREE_IF_COPY(gs, 0);
+	if (!found)
+	{
+		pfree(result);
+		PG_RETURN_NULL();
+	}
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a timestamptz to a stbox */
+
+void
+timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
+{
+	box->tmin = box->tmax = (double)t;
+	MOBDB_FLAGS_SET_X(box->flags, false);
+	MOBDB_FLAGS_SET_Z(box->flags, false);
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return;
+}
+
+PG_FUNCTION_INFO_V1(timestamp_to_stbox);
+
+PGDLLEXPORT Datum
+timestamp_to_stbox(PG_FUNCTION_ARGS)
+{
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	timestamp_to_stbox_internal(result, t);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a period set to a box */
+
+void
+timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
+{
+	Period *p = timestampset_bbox(ts);
+	box->tmin = (double)(p->lower);
+	box->tmax = (double)(p->upper);
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return;
+}
+
+PG_FUNCTION_INFO_V1(timestampset_to_stbox);
+
+PGDLLEXPORT Datum
+timestampset_to_stbox(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	timestampset_to_stbox_internal(result, ts);
+	PG_FREE_IF_COPY(ts, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a period to a box */
+
+void
+period_to_stbox_internal(STBOX *box, Period *p)
+{
+	box->tmin = (double)(p->lower);
+	box->tmax = (double)(p->upper);
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return;
+}
+
+PG_FUNCTION_INFO_V1(period_to_stbox);
+
+PGDLLEXPORT Datum
+period_to_stbox(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	period_to_stbox_internal(result, p);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a period set to a box (internal function only) */
+
+void
+periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
+{
+	Period *p = periodset_bbox(ps);
+	box->tmin = (double)(p->lower);
+	box->tmax = (double)(p->upper);
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return;
+}
+
+PG_FUNCTION_INFO_V1(periodset_to_stbox);
+
+PGDLLEXPORT Datum
+periodset_to_stbox(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	STBOX *result = palloc0(sizeof(STBOX));
+	periodset_to_stbox_internal(result, ps);
+	PG_FREE_IF_COPY(ps, 0);
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a geometry/geography and a timestamptz to a stbox */
+
+bool
+geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED *gs, TimestampTz t)
+{
+	if (!geo_to_stbox_internal(box, gs))
+		return false;
+	box->tmin = box->tmax = t;
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return true;
+}
+
+PG_FUNCTION_INFO_V1(geo_timestamp_to_stbox);
+
+PGDLLEXPORT Datum
+geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+	STBOX *result = palloc0(sizeof(STBOX));
+	bool found = geo_timestamp_to_stbox_internal(result, gs, t);
+	PG_FREE_IF_COPY(gs, 0);
+	if (!found)
+	{
+		pfree(result);
+		PG_RETURN_NULL();
+	}
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform a geometry/geography and a period to a stbox */
+
+bool
+geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
+{
+	if (!geo_to_stbox_internal(box, gs))
+		return false;
+	box->tmin = (double)p->lower;
+	box->tmax = (double)p->upper;
+	MOBDB_FLAGS_SET_T(box->flags, true);
+	return true;
+}
+
+PG_FUNCTION_INFO_V1(geo_period_to_stbox);
+
+PGDLLEXPORT Datum
+geo_period_to_stbox(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	STBOX *result = palloc0(sizeof(STBOX));
+	bool found = geo_period_to_stbox_internal(result, gs, p);
+	PG_FREE_IF_COPY(gs, 0);
+	if (!found)
+	{
+		pfree(result);
+		PG_RETURN_NULL();
+	}
+	PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************
  * STBOX bounding box operators
@@ -322,212 +531,6 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
 	temporal_bbox(&box, temp);
 	STBOX *result = stbox_expand_temporal_internal(&box, interval);
 	PG_FREE_IF_COPY(temp, 0);	
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Transform a <Type> to a STBOX
- * The functions assume that the argument box is set to 0 before with palloc0
- *****************************************************************************/
-
-/* Transform a geometry/geography to a stbox */
-
-bool
-geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
-{
-	GBOX gbox;
-	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
-	{
-		/* Spatial dimensions are set as missing for the SP-GiST index */
-		MOBDB_FLAGS_SET_X(box->flags, false);
-		MOBDB_FLAGS_SET_Z(box->flags, false);
-		MOBDB_FLAGS_SET_T(box->flags, false);
-		return false;
-	}
-	box->xmin = gbox.xmin;
-	box->xmax = gbox.xmax;
-	box->ymin = gbox.ymin;
-	box->ymax = gbox.ymax;
-	if (FLAGS_GET_Z(gs->flags) || FLAGS_GET_GEODETIC(gs->flags))
-	{
-		box->zmin = gbox.zmin;
-		box->zmax = gbox.zmax;
-	}
-	MOBDB_FLAGS_SET_X(box->flags, true);
-	MOBDB_FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
-	MOBDB_FLAGS_SET_T(box->flags, false);
-	MOBDB_FLAGS_SET_GEODETIC(box->flags, FLAGS_GET_GEODETIC(gs->flags));
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_to_stbox);
-
-PGDLLEXPORT Datum
-geo_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_to_stbox_internal(result, gs);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a timestamptz to a stbox */
-
-void
-timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
-{
-	box->tmin = box->tmax = (double)t;
-	MOBDB_FLAGS_SET_X(box->flags, false);
-	MOBDB_FLAGS_SET_Z(box->flags, false);
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
-}
-
-PG_FUNCTION_INFO_V1(timestamp_to_stbox);
-
-PGDLLEXPORT Datum
-timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	timestamp_to_stbox_internal(result, t);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period set to a box */
-
-void
-timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
-{
-	Period *p = timestampset_bbox(ts);
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
-}
-
-PG_FUNCTION_INFO_V1(timestampset_to_stbox);
-
-PGDLLEXPORT Datum
-timestampset_to_stbox(PG_FUNCTION_ARGS)
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	timestampset_to_stbox_internal(result, ts);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period to a box */
-
-void
-period_to_stbox_internal(STBOX *box, Period *p)
-{
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
-}
-
-PG_FUNCTION_INFO_V1(period_to_stbox);
-
-PGDLLEXPORT Datum
-period_to_stbox(PG_FUNCTION_ARGS)
-{
-	Period *p = PG_GETARG_PERIOD(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	period_to_stbox_internal(result, p);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a period set to a box (internal function only) */
-
-void
-periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
-{
-	Period *p = periodset_bbox(ps);
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
-}
-
-PG_FUNCTION_INFO_V1(periodset_to_stbox);
-
-PGDLLEXPORT Datum
-periodset_to_stbox(PG_FUNCTION_ARGS)
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	STBOX *result = palloc0(sizeof(STBOX));
-	periodset_to_stbox_internal(result, ps);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a geometry/geography and a timestamptz to a stbox */
-
-bool
-geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED *gs, TimestampTz t)
-{
-	if (!geo_to_stbox_internal(box, gs))
-		return false;
-	box->tmin = box->tmax = t;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_timestamp_to_stbox);
-
-PGDLLEXPORT Datum
-geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_timestamp_to_stbox_internal(result, gs, t);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
-	PG_RETURN_POINTER(result);
-}
-
-/* Transform a geometry/geography and a period to a stbox */
-
-bool
-geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
-{
-	if (!geo_to_stbox_internal(box, gs))
-		return false;
-	box->tmin = (double)p->lower;
-	box->tmax = (double)p->upper;
-	MOBDB_FLAGS_SET_T(box->flags, true);
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(geo_period_to_stbox);
-
-PGDLLEXPORT Datum
-geo_period_to_stbox(PG_FUNCTION_ARGS)
-{
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	Period *p = PG_GETARG_PERIOD(1);
-	STBOX *result = palloc0(sizeof(STBOX));
-	bool found = geo_period_to_stbox_internal(result, gs, p);
-	PG_FREE_IF_COPY(gs, 0);
-	if (!found)
-	{
-		pfree(result);
-		PG_RETURN_NULL();
-	}
 	PG_RETURN_POINTER(result);
 }
 

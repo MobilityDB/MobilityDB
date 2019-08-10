@@ -20,6 +20,7 @@
 
 #include "TemporalTypes.h"
 #include "Parser.h"
+#include "PeriodSet.h"
 
 /*****************************************************************************
  * General functions

@@ -19,6 +19,7 @@
 
 #include "TimeTypes.h"
 #include "TemporalTypes.h"
+#include "IndexGistTime.h"
 
 /*****************************************************************************/
 

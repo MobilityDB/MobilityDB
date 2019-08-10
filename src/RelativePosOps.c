@@ -21,6 +21,7 @@
 
 #include "TemporalTypes.h"
 #include "BoundBoxOps.h"
+#include "RelativePosOps.h"
 
 /*****************************************************************************/
 /* TBOX op TBOX */

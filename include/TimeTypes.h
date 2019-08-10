@@ -79,11 +79,11 @@ typedef struct
 #define TEMPORALSTRAT_CONTAINS_ELEM		RTContainsElemStrategyNumber
 #define TEMPORALSTRAT_CONTAINED			RTContainedByStrategyNumber
 #define TEMPORALSTRAT_OVERLAPS			RTOverlapStrategyNumber
-#define TEMPORALSTRAT_SAME				RTSameStrategyNumber
-#define TEMPORALSTRAT_EQ				RTEqualStrategyNumber
+#define TEMPORALSTRAT_SAME			RTSameStrategyNumber
+#define TEMPORALSTRAT_EQ			RTEqualStrategyNumber
 #define TEMPORALSTRAT_BEFORE			RTLeftStrategyNumber
 #define TEMPORALSTRAT_OVERBEFORE		RTOverLeftStrategyNumber
-#define TEMPORALSTRAT_AFTER				RTRightStrategyNumber
+#define TEMPORALSTRAT_AFTER			RTRightStrategyNumber
 #define TEMPORALSTRAT_OVERAFTER			RTOverRightStrategyNumber
 
 /*****************************************************************************/

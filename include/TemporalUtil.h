@@ -22,7 +22,6 @@
 extern void _PG_init(void);
 extern void debugstr(char *msg);
 extern size_t double_pad(size_t size);
-extern bool type_is_continuous(Oid type);
 extern bool type_byval_fast(Oid type);
 extern int get_typlen_fast(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
@@ -36,7 +35,7 @@ extern void base_type_oid(Oid valuetypid);
 extern void base_type_all_oid(Oid valuetypid);
 extern void continuous_base_type_oid(Oid valuetypid);
 extern void continuous_base_type_all_oid(Oid valuetypid);
-extern void number_base_type_oid(Oid type);
+extern void numeric_base_type_oid(Oid type);
 extern void point_base_type_oid(Oid type);
 
 /* PostgreSQL call helpers */
@@ -82,7 +81,6 @@ extern int timestamp_remove_duplicates(TimestampTz *values, int count);
 /* Text functions */
 
 extern int text_cmp(text *arg1, text *arg2, Oid collid);
-extern text *text_copy(text *t);
 
 /* Comparison functions on datums */
 
@@ -106,21 +104,6 @@ extern Datum datum2_lt2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_le2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_gt2(Datum l, Datum r, Oid typel, Oid typer);
 extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
-
-/* Oid functions */
-
-extern Oid temporal_oid_from_base(Oid valuetypid);
-extern Oid base_oid_from_temporal(Oid temptypid);
-extern Oid range_oid_from_base(Oid valuetypid);
-extern bool temporal_type_oid(Oid temptypid);
-
-/* Catalog functions */
-
-extern void temporal_typinfo(Oid temptypid, Oid* valuetypid);
-
-/* Trajectory functions */
-
-extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
 /*****************************************************************************/
 

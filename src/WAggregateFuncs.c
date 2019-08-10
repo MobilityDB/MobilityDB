@@ -338,7 +338,7 @@ static int
 temporalinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
 	float8 value = 0.0;
-	number_base_type_oid(inst->valuetypid);
+	numeric_base_type_oid(inst->valuetypid);
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(temporalinst_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)

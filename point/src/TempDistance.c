@@ -16,6 +16,8 @@
 
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
+#include "SpatialFuncs.h"
+#include "TempDistance.h"
 
 /*****************************************************************************
  * Generic functions

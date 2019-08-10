@@ -10,21 +10,24 @@
  *
  *****************************************************************************/
 
-#ifndef __TEMPORAL_SELFUNCS_H__
-#define __TEMPORAL_SELFUNCS_H__
+#ifndef __TEMPORALSELFUNCS_H__
+#define __TEMPORALSELFUNCS_H__
 
-#include "TemporalTypes.h"
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
 #include <utils/selfuncs.h>
 
-typedef enum {
+#include "TemporalTypes.h"
+
+typedef enum 
+{
  	VALUE_STATISTICS,
  	TEMPORAL_STATISTICS,
  	DEFAULT_STATISTICS
 } StatisticsStrategy;
 
-typedef enum {
+typedef enum 
+{
  	SNCONST, /* Single Numeric Constant */
  	DNCONST, /* Double Numeric Constant */
  	STCONST, /* Single Temporal Constant */

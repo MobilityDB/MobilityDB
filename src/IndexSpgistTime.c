@@ -21,6 +21,7 @@
 #include "TimeTypes.h"
 #include "IndexGistTime.h"
 #include "TemporalTypes.h"
+#include "IndexSpgistTime.h"
 
 /*****************************************************************************
  * SP-GiST config functions

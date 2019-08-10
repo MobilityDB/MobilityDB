@@ -81,6 +81,7 @@
 #include "TemporalTypes.h"
 #include "BoundBoxOps.h"
 #include "IndexGistTnumber.h"
+#include "IndexSpgistTnumber.h"
 
 /*****************************************************************************/
 

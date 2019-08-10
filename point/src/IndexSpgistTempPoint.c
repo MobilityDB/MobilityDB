@@ -77,6 +77,9 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "IndexGistTempPoint.h"
+#include "IndexSpgistTempPoint.h"
 
 /*****************************************************************************/
 

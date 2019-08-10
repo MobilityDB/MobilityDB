@@ -19,6 +19,8 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "TempPointIn.h"
 
 /*****************************************************************************
  * Input in MFJSON format 
@@ -45,7 +47,7 @@ text2cstring(const text *textptr)
  *
  * This function is taken from PostGIS file lwgeom_export.c
  */
-int
+static int
 getSRIDbySRS(const char *srs)
 {
 	char query[256];

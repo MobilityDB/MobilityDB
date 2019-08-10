@@ -27,6 +27,9 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "GeoBoundBoxOps.h"
+#include "GeoRelativePosOps.h"
 
 /*****************************************************************************/
 /* STBOX op STBOX */

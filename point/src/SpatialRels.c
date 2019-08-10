@@ -27,7 +27,9 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
-	
+#include "SpatialFuncs.h"
+#include "SpatialRels.h"
+
 /*****************************************************************************
  * Spatial relationship functions
  *****************************************************************************/

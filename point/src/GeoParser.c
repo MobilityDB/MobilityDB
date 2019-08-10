@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * Parser.c
- *	  Functions for parsing temporal types.
+ * GeoParser.c
+ *	  Functions for parsing temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -16,6 +16,8 @@
 
 #include "TemporalPoint.h"
 #include "Parser.h"
+#include "STbox.h"
+#include "GeoParser.h"
 
 /*****************************************************************************/
 

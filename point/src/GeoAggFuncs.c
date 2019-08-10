@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * GeoAggFuncs.c
- *	  Aggregate functions for temporal points.
+ *	Aggregate functions for temporal points.
  *
  * The only function currently provided is temporal centroid.
  *
@@ -20,6 +20,8 @@
 #include "TemporalPoint.h"
 #include "DoubleN.h"
 #include "AggregateFuncs.h"
+#include "SpatialFuncs.h"
+#include "GeoAggFuncs.h"
 
 /*****************************************************************************
  * Generic functions

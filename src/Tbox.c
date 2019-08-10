@@ -17,6 +17,7 @@
 
 #include "TemporalTypes.h"
 #include "Parser.h"
+#include "Tbox.h"
 
 /*****************************************************************************
  * Input/output functions

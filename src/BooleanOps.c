@@ -16,6 +16,7 @@
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"
+#include "BooleanOps.h"
 
 /*****************************************************************************
  * Boolean operations functions on datums

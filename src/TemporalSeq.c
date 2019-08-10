@@ -25,6 +25,8 @@
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "GeoBoundBoxOps.h"
 #endif
 
 /*****************************************************************************
@@ -1575,7 +1577,7 @@ tnumberseq_value_range(TemporalSeq *seq)
 {
 	TBOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = 0, max = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->xmin);

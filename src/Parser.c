@@ -16,9 +16,7 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
-#ifdef WITH_POSTGIS
-#include "TemporalPoint.h"
-#endif
+#include "Parser.h"
 
 /*****************************************************************************/
 

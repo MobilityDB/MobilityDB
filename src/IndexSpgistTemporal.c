@@ -21,6 +21,7 @@
 #include "IndexGistTime.h"
 #include "IndexSpgistTime.h"
 #include "TemporalTypes.h"
+#include "IndexSpgistTemporal.h"
 
 /*****************************************************************************
  * SP-GiST inner consistent function for temporal types

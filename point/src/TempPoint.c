@@ -17,6 +17,10 @@
 #include <utils/timestamp.h>
 
 #include "TemporalPoint.h"
+#include "STbox.h"
+#include "GeoParser.h"
+#include "GeoBoundBoxOps.h"
+#include "SpatialFuncs.h"
 
 /*****************************************************************************
  * Miscellaneous functions

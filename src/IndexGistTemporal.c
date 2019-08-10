@@ -19,6 +19,7 @@
 #include "TimeTypes.h"
 #include "IndexGistTime.h"
 #include "TemporalTypes.h"
+#include "IndexGistTemporal.h"
 
 /*****************************************************************************
  * Consistent method for temporal types

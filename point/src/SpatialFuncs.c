@@ -21,6 +21,9 @@
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
 #include "MathematicalFuncs.h"
+#include "GeoBoundBoxOps.h"
+#include "TempDistance.h"
+#include "SpatialFuncs.h"
 
 /*****************************************************************************
  * Utility functions

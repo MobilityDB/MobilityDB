@@ -9,24 +9,16 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *
- * IDENTIFICATION
- *	include/TemporalAnalyze.h
- *
  *-------------------------------------------------------------------------
  */
-#ifndef MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
-#define MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
+#ifndef __TEMPORALANALYZE_H__
+#define __TEMPORALANALYZE_H__
 
-#include <TemporalTypes.h>
-#include <catalog/pg_statistic.h>
 #include <commands/vacuum.h>
-#include <utils/lsyscache.h>
-#include <TemporalPoint.h>
-#include <PostGIS.h>
 
 /* Extra data for compute_stats function */
-typedef struct {
+typedef struct 
+{
 	/* Information about array element type */
 	Oid type_id;			/* element type's OID */
 	Oid eq_opr;				/* default equality operator's OID */

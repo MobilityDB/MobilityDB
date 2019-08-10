@@ -19,6 +19,8 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "TempPointOut.h"
 
 /* The following definitions are taken from PostGIS */
 
@@ -304,7 +306,7 @@ trim_trailing_zeros(char *str)
  * 
  * This function is taken from PostGIS file lwprint.c
  */
-int
+static int
 lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
 {
 	double ad = fabs(d);
@@ -337,7 +339,7 @@ lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
  * 
  * This function is taken from PostGIS file lwgeom_export.c
  */
-char *
+static char *
 getSRSbySRID(int32_t srid, bool short_crs)
 {
 	char query[256];
@@ -718,10 +720,10 @@ tpoints_asmfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_asmfjson);
+PG_FUNCTION_INFO_V1(tpoint_as_mfjson);
 
 PGDLLEXPORT Datum
-tpoint_asmfjson(PG_FUNCTION_ARGS)
+tpoint_as_mfjson(PG_FUNCTION_ARGS)
 {
 	int has_bbox = 0;
 	int precision = DBL_DIG;

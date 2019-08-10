@@ -1,32 +1,24 @@
 /*****************************************************************************
  *
- * TempPointAnalyze.c
- *	  Functions for gathering statistics from temporal point columns
+ * GeoAggFuncs.h
+ *	Aggregate functions for temporal points.
  *
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
- * * IDENTIFICATION
- *	include/TemporalAnalyze.c
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
-#include "TemporalAnalyze.h"
-#include "TempPointAnalyze.h"
+#ifndef __GEOAGGFUNCS_H__
+#define __GEOAGGFUNCS_H__
 
 /*****************************************************************************/
 
-
-PG_FUNCTION_INFO_V1(tpoint_analyze);
-
-PGDLLEXPORT Datum
-tpoint_analyze(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_BOOL(true);
-}
+extern Datum tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
+extern Datum tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
+extern Datum tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
+
+#endif

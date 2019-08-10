@@ -28,6 +28,7 @@
 
 #include "TemporalTypes.h"
 #include "TemporalSelFuncs.h"
+#include "TimeAnalyze.h"
 
 static int float8_qsort_cmp(const void *a1, const void *a2);
 static int period_bound_qsort_cmp(const void *a1, const void *a2);

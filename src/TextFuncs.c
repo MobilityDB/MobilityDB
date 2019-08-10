@@ -17,6 +17,7 @@
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"
+#include "TextFuncs.h"
 
 /*****************************************************************************
  * Mathematical functions on datums

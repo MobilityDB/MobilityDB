@@ -30,9 +30,12 @@
 
 #include "TemporalTypes.h"
 #include "Range.h"
-#include "TBox.h"
+#include "Tbox.h"
+#include "BoundBoxOps.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "STbox.h"
+#include "GeoBoundBoxOps.h"
 #endif
 
 /*****************************************************************************
@@ -486,7 +489,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 void
 base_to_tbox(TBOX *box, Datum value, Oid valuetypid)
 {
-	number_base_type_oid(valuetypid);
+	numeric_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)

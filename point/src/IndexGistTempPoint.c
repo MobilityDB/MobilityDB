@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * IndexGistTPoint.c
+ * IndexGistTempPoint.c
  *	  R-tree GiST index for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
@@ -17,6 +17,9 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "GeoRelativePosOps.h"
+#include "IndexGistTempPoint.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

@@ -16,6 +16,8 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "GeoParser.h"
+#include "STbox.h"
 
 /*****************************************************************************
  * Miscellaneus functions

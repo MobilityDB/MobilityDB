@@ -68,6 +68,7 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type. 

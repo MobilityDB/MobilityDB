@@ -25,6 +25,9 @@
 
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
+#include "SpatialFuncs.h"
+#include "SpatialRels.h"
+#include "TempSpatialRels.h"
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships 

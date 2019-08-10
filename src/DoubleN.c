@@ -27,6 +27,7 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
+#include "DoubleN.h"
 
 /*****************************************************************************
  * Input/Output functions

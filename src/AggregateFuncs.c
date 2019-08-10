@@ -448,7 +448,7 @@ static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	int returnvalue = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		returnvalue = tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
@@ -1361,7 +1361,7 @@ temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
 	int maxcount = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		maxcount = seq->count;
 	else if (seq->valuetypid == FLOAT8OID)
@@ -1388,7 +1388,7 @@ temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
 	int maxcount = 0;
-	number_base_type_oid(ts->valuetypid);
+	numeric_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)

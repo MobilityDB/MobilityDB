@@ -20,6 +20,7 @@
 #include "TemporalTypes.h"
 #include "BoundBoxOps.h"
 #include "RelativePosOps.h"
+#include "IndexGistTnumber.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

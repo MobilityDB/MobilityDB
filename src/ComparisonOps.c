@@ -17,6 +17,7 @@
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"
+#include "ComparisonOps.h"
 
 /*****************************************************************************
  * Generic dispatch functions

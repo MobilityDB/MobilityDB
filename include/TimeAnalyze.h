@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalTypes.h
- *	  Functions for temporal types.
+ * WAggregateFuncs.c
+ *	  Window temporal aggregate functions
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,18 +10,21 @@
  *
  *****************************************************************************/
 
-#ifndef __TEMPORALTYPES_H__
-#define __TEMPORALTYPES_H__
+#ifndef __WAGGREGATEFUNCS_H__
+#define __WAGGREGATEFUNCS_H__
 
+#include <postgres.h>
+ 
 /*****************************************************************************/
 
-#include "Temporal.h"
-#include "TemporalInst.h"
-#include "TemporalI.h"
-#include "TemporalSeq.h"
-#include "TemporalS.h"
-#include "TemporalUtil.h"
-#include "OidCache.h"
+extern Datum tint_wmin_transfn(PG_FUNCTION_ARGS);
+extern Datum tfloat_wmin_transfn(PG_FUNCTION_ARGS);
+extern Datum tint_wmax_transfn(PG_FUNCTION_ARGS);
+extern Datum tfloat_wmax_transfn(PG_FUNCTION_ARGS);
+extern Datum tint_wsum_transfn(PG_FUNCTION_ARGS);
+extern Datum tfloat_wsum_transfn(PG_FUNCTION_ARGS);
+extern Datum temporal_wcount_transfn(PG_FUNCTION_ARGS);
+extern Datum temporal_wavg_transfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

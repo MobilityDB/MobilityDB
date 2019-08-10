@@ -17,6 +17,7 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
+#include "Range.h"
 
 /*****************************************************************************
  * Generic range functions

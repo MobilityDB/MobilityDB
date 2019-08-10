@@ -18,6 +18,8 @@
 #include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "ProjectionGK.h"
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
 double awgs = 6378137.0;

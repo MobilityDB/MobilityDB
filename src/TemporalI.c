@@ -24,6 +24,7 @@
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 #endif
 
 /*****************************************************************************
@@ -610,7 +611,7 @@ tnumberi_value_range(TemporalI *ti)
 {
 	TBOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	number_base_type_oid(ti->valuetypid);
+	numeric_base_type_oid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->xmin));

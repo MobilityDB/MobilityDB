@@ -19,9 +19,11 @@
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "TemporalTypes.h"
+#include "Temporal.h"
+#include "TemporalUtil.h"
 #include "Parser.h"
 #include "Range.h"
+#include "Period.h"
 
 /*****************************************************************************
  * Utility functions
