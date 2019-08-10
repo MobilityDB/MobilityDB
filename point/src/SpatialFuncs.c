@@ -18,12 +18,14 @@
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
+#include "SpatialFuncs.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
 #include "MathematicalFuncs.h"
 #include "GeoBoundBoxOps.h"
 #include "TempDistance.h"
-#include "SpatialFuncs.h"
 
 /*****************************************************************************
  * Utility functions

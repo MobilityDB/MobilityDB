@@ -13,6 +13,11 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern void p_whitespace(char **str);

@@ -26,10 +26,12 @@
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
+#include "GeoBoundBoxOps.h"
+#include "TimestampSet.h"
+#include "PeriodSet.h"
 #include "TemporalPoint.h"
 #include "STbox.h"
 #include "SpatialFuncs.h"
-#include "GeoBoundBoxOps.h"
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX

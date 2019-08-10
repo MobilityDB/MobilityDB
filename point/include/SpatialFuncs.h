@@ -13,6 +13,10 @@
 #ifndef __SPATIALFUNCS_H__
 #define __SPATIALFUNCS_H__
 
+#include <liblwgeom.h>
+#include "Temporal.h"
+
+
 /*****************************************************************************/
 
 extern POINT2D gs_get_point2d(GSERIALIZED *gs);

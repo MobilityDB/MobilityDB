@@ -10,17 +10,18 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "AggregateFuncs.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
+#include "TimeTypes.h"
+#include "Period.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
-#include "Aggregates.h"
-#include "AggregateFuncs.h"
 #include "BooleanOps.h"
 #include "DoubleN.h"
 

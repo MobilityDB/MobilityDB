@@ -10,14 +10,13 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "TextFuncs.h"
+
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
+#include "Temporal.h"
+#include "TemporalUtil.h"
 #include "LiftingFuncs.h"
-#include "TextFuncs.h"
 
 /*****************************************************************************
  * Mathematical functions on datums

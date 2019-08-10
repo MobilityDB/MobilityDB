@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TempSelFuncs.c
- *	  Functions for selectivity estimation of operators on temporal types
+ * TnumberSelFuncs.c
+ *	  Functions for selectivity estimation of operators on temporal numeric types
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
@@ -12,11 +12,7 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
- 
-#include "TemporalTypes.h"
+#include "TnumberSelFuncs.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 

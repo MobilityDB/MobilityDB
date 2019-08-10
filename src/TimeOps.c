@@ -10,13 +10,15 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "TimeOps.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "TemporalTypes.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimestampSet.h"
+#include "OidCache.h"
 
 /*****************************************************************************/
 

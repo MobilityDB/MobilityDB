@@ -13,6 +13,10 @@
 #ifndef __INDEXSPGISTTIME_H__
 #define __INDEXSPGISTTIME_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+
 /*****************************************************************************/
 
 extern Datum spgist_timestampset_config(PG_FUNCTION_ARGS);

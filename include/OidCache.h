@@ -17,6 +17,9 @@
 #ifndef TEMPORAL_OIDCACHE_H
 #define TEMPORAL_OIDCACHE_H
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*
  * The list of built-in and temporal types that must be cached. 
  */

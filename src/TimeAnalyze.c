@@ -21,14 +21,17 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
-#include "TemporalSelFuncs.h"
 #include "TimeAnalyze.h"
+
+#include <assert.h>
+#include <catalog/pg_operator.h>
+#include <commands/vacuum.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "Temporal.h"
+#include "OidCache.h"
 
 static int float8_qsort_cmp(const void *a1, const void *a2);
 static int period_bound_qsort_cmp(const void *a1, const void *a2);

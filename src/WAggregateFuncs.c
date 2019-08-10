@@ -10,14 +10,13 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "WAggregateFuncs.h"
+
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
 #include "TemporalTypes.h"
-#include "Aggregates.h"
 #include "AggregateFuncs.h"
 #include "DoubleN.h"
 

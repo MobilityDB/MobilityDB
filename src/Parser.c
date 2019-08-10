@@ -10,13 +10,15 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "Parser.h"
+
 #include <utils/lsyscache.h>
 #include <utils/rangetypes.h>
 
+#include "PeriodSet.h"
+#include "Period.h"
+#include "TimestampSet.h"
 #include "TemporalTypes.h"
-#include "Parser.h"
 
 /*****************************************************************************/
 

@@ -13,6 +13,10 @@
 #ifndef __PERIOD_H__
 #define __PERIOD_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+
 /*****************************************************************************/
 
 /* Input/output functions */

@@ -14,7 +14,9 @@
 #define __LIFTINGFUNCS_H__
 
 #include <postgres.h>
- 
+#include <catalog/pg_type.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid valuetypid,

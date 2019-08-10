@@ -13,6 +13,10 @@
 #ifndef __GEOBONDBOXOPS_H__
 #define __GEOBONDBOXOPS_H__
 
+#include <postgres.h>
+#include <liblwgeom.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 /* STBOX functions */

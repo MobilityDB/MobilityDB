@@ -10,15 +10,18 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "TemporalI.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "TemporalTypes.h"
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
 #include "BoundBoxOps.h"
 #include "Range.h"
 

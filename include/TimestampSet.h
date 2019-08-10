@@ -13,6 +13,10 @@
 #ifndef __TIMESTAMPSET_H__
 #define __TIMESTAMPSET_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+
 /*****************************************************************************/
 
 /* assorted support functions */

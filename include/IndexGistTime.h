@@ -13,6 +13,10 @@
 #ifndef __INDEXGISTTIME_H__
 #define __INDEXGISTTIME_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+
 /*****************************************************************************/
 
 extern Datum gist_time_consistent_exact(PG_FUNCTION_ARGS);

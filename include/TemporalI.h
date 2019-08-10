@@ -14,6 +14,9 @@
 #define __TEMPORALI_H__
 
 #include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+#include "Temporal.h"
 
 /*****************************************************************************/
 

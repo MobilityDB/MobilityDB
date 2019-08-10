@@ -14,6 +14,8 @@
 #define __INDEXGISTTNUMBER_H__
 
 #include <postgres.h>
+#include <catalog/pg_type.h>
+#include "Temporal.h"
 
 /*****************************************************************************/
 

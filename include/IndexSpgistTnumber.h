@@ -15,6 +15,7 @@
 #define __INDEXSPGISTTNUMBER_H__
 
 #include <postgres.h>
+#include <catalog/pg_type.h>
 
 /*****************************************************************************/
 

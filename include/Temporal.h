@@ -32,7 +32,7 @@
  *****************************************************************************/
 
 #define TEMPORAL			0
-#define TEMPORALINST			1
+#define TEMPORALINST		1
 #define TEMPORALI			2
 #define TEMPORALSEQ			3
 #define TEMPORALS			4

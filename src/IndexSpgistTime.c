@@ -12,6 +12,8 @@
  *-----------------------------------------------------------------------------
  */
 
+#include "IndexSpgistTime.h"
+
 #include <postgres.h>
 #include <access/spgist.h>
 #include <catalog/pg_type.h>
@@ -19,9 +21,11 @@
 #include <utils/rangetypes.h>
 
 #include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
 #include "IndexGistTime.h"
 #include "TemporalTypes.h"
-#include "IndexSpgistTime.h"
 
 /*****************************************************************************
  * SP-GiST config functions

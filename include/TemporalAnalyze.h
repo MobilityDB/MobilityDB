@@ -14,7 +14,12 @@
 #ifndef __TEMPORALANALYZE_H__
 #define __TEMPORALANALYZE_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <commands/vacuum.h>
+#include <utils/rangetypes.h>
+#include "TimeTypes.h"
+#include "Temporal.h"
 
 /* Extra data for compute_stats function */
 typedef struct 

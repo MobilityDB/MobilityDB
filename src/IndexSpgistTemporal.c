@@ -11,17 +11,17 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "IndexSpgistTemporal.h"
+
 #include <access/spgist.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
 
 #include "TimeTypes.h"
+#include "Period.h"
 #include "IndexGistTime.h"
 #include "IndexSpgistTime.h"
 #include "TemporalTypes.h"
-#include "IndexSpgistTemporal.h"
 
 /*****************************************************************************
  * SP-GiST inner consistent function for temporal types

@@ -11,16 +11,16 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "IndexGistTnumber.h"
+
 #include <access/gist.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
 
-#include "TemporalTypes.h"
+#include "Temporal.h"
+#include "OidCache.h"
 #include "BoundBoxOps.h"
 #include "RelativePosOps.h"
-#include "IndexGistTnumber.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

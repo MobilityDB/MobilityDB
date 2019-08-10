@@ -13,6 +13,10 @@
 #ifndef __TIMEOPS_H__
 #define __TIMEOPS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "TimeTypes.h"
+
 /*****************************************************************************/
 
 /* Miscellaneous */

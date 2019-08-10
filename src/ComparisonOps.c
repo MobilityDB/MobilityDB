@@ -10,14 +10,13 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "ComparisonOps.h"
+
 #include <utils/lsyscache.h>
 #include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"
-#include "ComparisonOps.h"
 
 /*****************************************************************************
  * Generic dispatch functions

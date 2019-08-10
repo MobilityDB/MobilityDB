@@ -10,19 +10,19 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "TemporalUtil.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
 
-#include "TemporalTypes.h"
+#include "Period.h"
+#include "Temporal.h"
 #include "DoubleN.h"
 
 #ifdef WITH_POSTGIS

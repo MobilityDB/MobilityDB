@@ -62,13 +62,14 @@
  *	 tfloats.
  */
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "LiftingFuncs.h"
+
 #include <utils/timestamp.h>
 #include <utils/rangetypes.h>
 
+#include "Period.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
-#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type. 

@@ -20,18 +20,20 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "BoundBoxOps.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
 #include "Range.h"
 #include "Tbox.h"
-#include "BoundBoxOps.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
 #include "STbox.h"

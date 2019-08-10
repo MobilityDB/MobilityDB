@@ -10,25 +10,21 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
 #include "TemporalAnalyze.h"
 
 /*****************************************************************************/
 
-
 PG_FUNCTION_INFO_V1(temporal_analyze);
-Datum
+
+PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(true);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
-Datum
+
+PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(true);

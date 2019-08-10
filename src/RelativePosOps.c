@@ -13,15 +13,15 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
- 
-#include <postgres.h>
+
+#include "RelativePosOps.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
 
-#include "TemporalTypes.h"
+#include "TimeOps.h"
+#include "Temporal.h"
 #include "BoundBoxOps.h"
-#include "RelativePosOps.h"
 
 /*****************************************************************************/
 /* TBOX op TBOX */

@@ -9,15 +9,15 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
- 
-#include <postgres.h>
-#include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
-#include <utils/rangetypes.h>
 
-#include "TemporalTypes.h"
 #include "Range.h"
+
+#include <assert.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 
 /*****************************************************************************
  * Generic range functions

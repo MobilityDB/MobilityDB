@@ -10,14 +10,12 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
-#include "Parser.h"
 #include "Tbox.h"
+
+#include <assert.h>
+
+#include "Temporal.h"
+#include "Parser.h"
 
 /*****************************************************************************
  * Input/output functions

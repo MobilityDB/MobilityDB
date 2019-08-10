@@ -72,16 +72,16 @@
  *-----------------------------------------------------------------------------
  */
 
-#include <postgres.h>
+#include "IndexSpgistTnumber.h"
+
 #include <access/spgist.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
 
-#include "TemporalTypes.h"
+#include "Temporal.h"
+#include "OidCache.h"
 #include "BoundBoxOps.h"
 #include "IndexGistTnumber.h"
-#include "IndexSpgistTnumber.h"
 
 /*****************************************************************************/
 

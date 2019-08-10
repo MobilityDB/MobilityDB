@@ -20,14 +20,10 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "DoubleN.h"
+
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
-#include "DoubleN.h"
 
 /*****************************************************************************
  * Input/Output functions
