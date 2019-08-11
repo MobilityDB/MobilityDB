@@ -65,7 +65,6 @@
 #include "LiftingFuncs.h"
 
 #include <utils/timestamp.h>
-#include <utils/rangetypes.h>
 
 #include "Period.h"
 #include "TimeOps.h"

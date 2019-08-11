@@ -12,8 +12,6 @@
 
 #include "BooleanOps.h"
 
-#include <utils/rangetypes.h>
-
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"
 

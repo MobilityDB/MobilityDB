@@ -13,7 +13,6 @@
 #include "ComparisonOps.h"
 
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"

@@ -17,7 +17,6 @@
 #include "RelativePosOps.h"
 
 #include <assert.h>
-#include <utils/rangetypes.h>
 
 #include "TimeOps.h"
 #include "Temporal.h"

@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
 #include "TimestampSet.h"

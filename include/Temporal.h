@@ -14,7 +14,7 @@
 #define __TEMPORAL_H__
 
 #include <postgres.h>
-
+#include <catalog/pg_type.h>
 #include "TimeTypes.h"
 
 #ifndef USE_FLOAT4_BYVAL

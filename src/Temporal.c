@@ -10,6 +10,8 @@
  *
  *****************************************************************************/
 
+#include "Temporal.h"
+
 #include <postgres.h>
 #include <assert.h>
 #include <access/heapam.h>
@@ -20,7 +22,6 @@
 #include <utils/builtins.h>
 #include <utils/fmgroids.h>
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 

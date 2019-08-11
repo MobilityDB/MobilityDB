@@ -15,7 +15,6 @@
 
 #include <access/gist.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 
 #include "Temporal.h"
 #include "OidCache.h"

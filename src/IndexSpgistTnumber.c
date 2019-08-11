@@ -76,7 +76,6 @@
 
 #include <access/spgist.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 
 #include "Temporal.h"
 #include "OidCache.h"

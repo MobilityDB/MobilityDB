@@ -15,7 +15,6 @@
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <catalog/namespace.h>
-#include <utils/rangetypes.h>
 #include <utils/rel.h>
 
 #include "TemporalTypes.h"

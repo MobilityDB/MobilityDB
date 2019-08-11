@@ -14,7 +14,6 @@
 #include "IndexGistTime.h"
 
 #include <access/gist.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
 #include "TimeTypes.h"

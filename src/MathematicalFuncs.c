@@ -14,7 +14,6 @@
 #include "MathematicalFuncs.h"
 
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 
 #include "TemporalTypes.h"
 #include "LiftingFuncs.h"

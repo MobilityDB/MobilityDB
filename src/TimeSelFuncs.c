@@ -17,7 +17,6 @@
 
 #include <access/htup_details.h>
 #include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
 

@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
 #include "TimeTypes.h"
