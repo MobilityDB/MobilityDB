@@ -20,8 +20,6 @@
 #include "TemporalI.h"
 #include "TemporalSeq.h"
 #include "TemporalS.h"
-#include "TemporalUtil.h"
-#include "OidCache.h"
 
 /*****************************************************************************/
 

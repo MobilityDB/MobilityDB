@@ -23,6 +23,7 @@
 #include "PeriodSet.h"
 #include "IndexGistTime.h"
 #include "TemporalTypes.h"
+#include "OidCache.h"
 
 /*****************************************************************************
  * SP-GiST config functions

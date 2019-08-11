@@ -28,6 +28,7 @@
 #include "TimestampSet.h"
 #include "PeriodSet.h"
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
 #include "TemporalPoint.h"
 #include "STbox.h"
 #include "SpatialFuncs.h"

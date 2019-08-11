@@ -18,6 +18,7 @@
 #include <utils/builtins.h>
 
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
 

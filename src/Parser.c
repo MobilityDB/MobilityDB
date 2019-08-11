@@ -16,6 +16,8 @@
 #include "Period.h"
 #include "TimestampSet.h"
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
+
 
 /*****************************************************************************/
 

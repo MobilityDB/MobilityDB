@@ -69,6 +69,7 @@
 #include "Period.h"
 #include "TimeOps.h"
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type. 

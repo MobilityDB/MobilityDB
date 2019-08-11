@@ -24,6 +24,8 @@
 #include <utils/timestamp.h>
 
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "BoundBoxOps.h"
 #include "Parser.h"
 #include "Range.h"
@@ -428,6 +430,89 @@ type_has_precomputed_trajectory(Oid valuetypid)
 	return false;
 } 
  
+/*****************************************************************************
+ * Assertion tests
+ *****************************************************************************/
+
+void 
+temporal_duration_is_valid(int16 duration)
+{
+	assert(duration == TEMPORALINST || duration == TEMPORALI || 
+		duration == TEMPORALSEQ || duration == TEMPORALS);
+}
+
+void 
+numrange_type_oid(Oid type)
+{
+	assert(type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE));
+}
+
+void
+base_type_oid(Oid valuetypid)
+{
+	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
+		valuetypid == FLOAT8OID || valuetypid == TEXTOID
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+#endif
+		);
+}
+
+void
+base_type_all_oid(Oid valuetypid)
+{
+	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
+		valuetypid == FLOAT8OID || valuetypid == TEXTOID ||
+		valuetypid ==  type_oid(T_DOUBLE2)
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+		|| valuetypid == type_oid(T_DOUBLE3)
+		|| valuetypid == type_oid(T_DOUBLE4)
+#endif
+		);
+}
+
+void
+continuous_base_type_oid(Oid valuetypid)
+{
+	assert(valuetypid == FLOAT8OID
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+#endif
+		);
+}
+
+void
+continuous_base_type_all_oid(Oid valuetypid)
+{
+	assert(valuetypid == FLOAT8OID ||
+		valuetypid ==  type_oid(T_DOUBLE2)
+#ifdef WITH_POSTGIS
+		|| valuetypid == type_oid(T_GEOMETRY)
+		|| valuetypid == type_oid(T_GEOGRAPHY)
+		|| valuetypid == type_oid(T_DOUBLE3)
+		|| valuetypid == type_oid(T_DOUBLE4)
+#endif
+		);
+}
+
+void 
+numeric_base_type_oid(Oid type)
+{
+	assert(type == INT4OID || type == FLOAT8OID);
+}
+
+#ifdef WITH_POSTGIS
+void 
+point_base_type_oid(Oid type)
+{
+	assert(type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY));
+}
+#endif
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

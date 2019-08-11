@@ -314,6 +314,17 @@ extern bool temporal_type_oid(Oid temptypid);
 
 extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
+/* Assertion tests */
+
+extern void temporal_duration_is_valid(int16 type);
+extern void numrange_type_oid(Oid type);
+extern void base_type_oid(Oid valuetypid);
+extern void base_type_all_oid(Oid valuetypid);
+extern void continuous_base_type_oid(Oid valuetypid);
+extern void continuous_base_type_all_oid(Oid valuetypid);
+extern void numeric_base_type_oid(Oid type);
+extern void point_base_type_oid(Oid type);
+
 /* Input/output functions */
 
 extern Datum temporal_in(PG_FUNCTION_ARGS); 

@@ -17,6 +17,7 @@
 #include <utils/builtins.h>
 
 #include "TimeTypes.h"
+#include "OidCache.h"
 #include "Period.h"
 #include "IndexGistTime.h"
 #include "IndexSpgistTime.h"

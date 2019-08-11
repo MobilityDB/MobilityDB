@@ -31,6 +31,8 @@
 #include "PeriodSet.h"
 #include "TimeOps.h"
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "Range.h"
 #include "Tbox.h"
 #ifdef WITH_POSTGIS

@@ -20,9 +20,11 @@
 #include "PeriodSet.h"
 #include "TimeOps.h"
 #include "TemporalTypes.h"
-#include "TemporalPoint.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "LiftingFuncs.h"
 #include "MathematicalFuncs.h"
+#include "TemporalPoint.h"
 #include "GeoBoundBoxOps.h"
 #include "TempDistance.h"
 

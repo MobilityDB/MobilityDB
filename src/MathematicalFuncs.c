@@ -16,6 +16,7 @@
 #include <utils/builtins.h>
 
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
 #include "LiftingFuncs.h"
 
 /*****************************************************************************

@@ -26,8 +26,10 @@
 #include "PeriodSet.h"
 #include "TimeOps.h"
 #include "TemporalTypes.h"
-#include "TemporalPoint.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "LiftingFuncs.h"
+#include "TemporalPoint.h"
 #include "SpatialFuncs.h"
 #include "SpatialRels.h"
 

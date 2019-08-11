@@ -26,6 +26,7 @@
 
 #include "TemporalTypes.h"
 #include "OidCache.h"
+#include "TemporalUtil.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
 

@@ -17,6 +17,8 @@
 #include <assert.h>
 
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "DoubleN.h"
 #include "AggregateFuncs.h"
 #include "TemporalPoint.h"

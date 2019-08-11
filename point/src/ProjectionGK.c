@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * ProjectionOps.c
+ * ProjectionGK.c
  *	  Implementation of the Gauss Krueger projection that is used in Secondo
  * 
  * This projection does not correspond to any standard projection in

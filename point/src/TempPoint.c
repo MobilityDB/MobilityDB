@@ -16,6 +16,8 @@
 #include <utils/timestamp.h>
 
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 #include "STbox.h"
 #include "GeoParser.h"
 #include "GeoBoundBoxOps.h"

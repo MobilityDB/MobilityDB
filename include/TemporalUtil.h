@@ -32,17 +32,6 @@ extern int get_typlen_fast(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);
 
-/* Assertion tests */
-
-extern void temporal_duration_is_valid(int16 type);
-extern void numrange_type_oid(Oid type);
-extern void base_type_oid(Oid valuetypid);
-extern void base_type_all_oid(Oid valuetypid);
-extern void continuous_base_type_oid(Oid valuetypid);
-extern void continuous_base_type_all_oid(Oid valuetypid);
-extern void numeric_base_type_oid(Oid type);
-extern void point_base_type_oid(Oid type);
-
 /* PostgreSQL call helpers */
 
 extern Datum call_input(Oid type, char *str);
