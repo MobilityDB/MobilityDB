@@ -12,12 +12,10 @@
 
 #include "Temporal.h"
 
-#include <postgres.h>
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <catalog/namespace.h>
-#include <catalog/pg_type.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/fmgroids.h>

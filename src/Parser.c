@@ -12,8 +12,6 @@
 
 #include "Parser.h"
 
-#include <utils/lsyscache.h>
-
 #include "PeriodSet.h"
 #include "Period.h"
 #include "TimestampSet.h"

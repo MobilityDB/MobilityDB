@@ -14,10 +14,8 @@
 
 #include <assert.h>
 #include <catalog/pg_collation.h>
-#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
-#include <utils/rel.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
 
