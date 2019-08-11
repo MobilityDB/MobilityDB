@@ -13,6 +13,9 @@
 #ifndef __TEMPPOINTANALYZE_H__
 #define __TEMPPOINTANALYZE_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tpoint_analyze(PG_FUNCTION_ARGS);

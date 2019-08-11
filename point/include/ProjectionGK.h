@@ -13,6 +13,9 @@
 #ifndef __TEMPORALPOINT_H__
 #define __TEMPORALPOINT_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tgeompoint_transform_gk(PG_FUNCTION_ARGS);

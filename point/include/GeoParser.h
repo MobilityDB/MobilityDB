@@ -13,6 +13,10 @@
 #ifndef __GEOPARSER_H__
 #define __GEOPARSER_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern STBOX *stbox_parse(char **str);

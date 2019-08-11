@@ -13,9 +13,10 @@
 #ifndef __SPATIALFUNCS_H__
 #define __SPATIALFUNCS_H__
 
+#include <postgres.h>
 #include <liblwgeom.h>
+#include <catalog/pg_type.h>
 #include "Temporal.h"
-
 
 /*****************************************************************************/
 

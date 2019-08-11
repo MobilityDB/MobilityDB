@@ -10,16 +10,15 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <access/gist.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
-#include <utils/rangetypes.h>
+#include "IndexGistTempPoint.h"
 
+#include <access/gist.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
 #include "GeoBoundBoxOps.h"
 #include "GeoRelativePosOps.h"
-#include "IndexGistTempPoint.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3

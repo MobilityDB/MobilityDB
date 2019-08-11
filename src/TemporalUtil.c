@@ -23,6 +23,7 @@
 
 #include "Period.h"
 #include "Temporal.h"
+#include "OidCache.h"
 #include "DoubleN.h"
 
 #ifdef WITH_POSTGIS

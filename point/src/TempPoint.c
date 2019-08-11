@@ -10,13 +10,13 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
+#include "TemporalPoint.h"
+
 #include <utils/builtins.h>
 #include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "TemporalPoint.h"
+#include "TemporalTypes.h"
 #include "STbox.h"
 #include "GeoParser.h"
 #include "GeoBoundBoxOps.h"

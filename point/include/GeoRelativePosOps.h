@@ -13,6 +13,10 @@
 #ifndef __GEORELATIVEPOSOPS_H__
 #define __GEORELATIVEPOSOPS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern Datum left_stbox_stbox(PG_FUNCTION_ARGS);

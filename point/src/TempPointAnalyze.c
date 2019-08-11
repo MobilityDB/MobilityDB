@@ -10,12 +10,6 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-
-#include "TemporalTypes.h"
-#include "TemporalAnalyze.h"
 #include "TempPointAnalyze.h"
 
 /*****************************************************************************/

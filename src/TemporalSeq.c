@@ -22,6 +22,7 @@
 #include "Period.h"
 #include "PeriodSet.h"
 #include "TimeOps.h"
+#include "TemporalTypes.h"
 #include "BoundBoxOps.h"
 #include "Range.h"
 

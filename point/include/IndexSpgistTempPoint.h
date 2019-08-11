@@ -13,6 +13,9 @@
 #ifndef __INDEXSPGISTTEMPPOINT_H__
 #define __INDEXSPGISTTEMPPOINT_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum spgist_tgeogpoint_config(PG_FUNCTION_ARGS);

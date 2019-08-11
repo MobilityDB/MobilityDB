@@ -10,14 +10,12 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "STbox.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
 
 #include "TemporalPoint.h"
 #include "GeoParser.h"
-#include "STbox.h"
 
 /*****************************************************************************
  * Miscellaneus functions
@@ -67,7 +65,8 @@ stbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-char* stbox_to_string(const STBOX *box)
+static char *
+stbox_to_string(const STBOX *box)
 {
 	static int sz = 256;
 	char *str = NULL;

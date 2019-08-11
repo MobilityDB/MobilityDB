@@ -10,17 +10,16 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "TempPointOut.h"
+
 #include <assert.h>
 #include <float.h>
-#include <catalog/pg_type.h>
 #include <executor/spi.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
-#include "TempPointOut.h"
 
 /* The following definitions are taken from PostGIS */
 

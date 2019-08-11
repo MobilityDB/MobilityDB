@@ -18,6 +18,7 @@
 #include <utils/rangetypes.h>
 #include "TimeTypes.h"
 #include "Temporal.h"
+#include "PostGIS.h"
 
 /*****************************************************************************/
 

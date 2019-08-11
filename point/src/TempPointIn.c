@@ -10,17 +10,16 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "TempPointIn.h"
+
 #include <float.h>
-#include <catalog/pg_type.h>
 #include <executor/spi.h>
 #include <json-c/json.h>
 #include <json-c/json_object_private.h>
-#include <utils/rangetypes.h>
 
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
-#include "TempPointIn.h"
 
 /*****************************************************************************
  * Input in MFJSON format 

@@ -13,6 +13,9 @@
 #ifndef __SPATIALRELS_H__
 #define __SPATIALRELS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum geom_contains(Datum geom1, Datum geom2);

@@ -13,6 +13,9 @@
 #ifndef __TEMPPOINTIN_H__
 #define __TEMPPOINTIN_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tpoint_from_mfjson(PG_FUNCTION_ARGS);

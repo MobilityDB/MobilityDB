@@ -13,6 +13,10 @@
 #ifndef __STBOX_H__
 #define __STBOX_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern Datum stbox_in(PG_FUNCTION_ARGS);

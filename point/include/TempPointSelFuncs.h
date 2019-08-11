@@ -13,6 +13,9 @@
 #ifndef __TEMPPOINTSELFUNCS_H__
 #define __TEMPPOINTSELFUNCS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tpoint_overlaps_sel(PG_FUNCTION_ARGS);

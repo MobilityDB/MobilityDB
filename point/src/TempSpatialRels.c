@@ -18,15 +18,14 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/timestamp.h>
-#include <utils/rangetypes.h>
-
 #include "TempSpatialRels.h"
+
+#include <utils/timestamp.h>
+
 #include "Period.h"
 #include "PeriodSet.h"
 #include "TimeOps.h"
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
 #include "SpatialFuncs.h"

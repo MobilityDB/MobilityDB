@@ -10,14 +10,13 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
+#include "GeoParser.h"
 
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
 #include "Parser.h"
 #include "STbox.h"
-#include "GeoParser.h"
 
 /*****************************************************************************/
 

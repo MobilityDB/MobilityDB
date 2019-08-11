@@ -10,14 +10,12 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
+#include "TempDistance.h"
 
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
 #include "SpatialFuncs.h"
-#include "TempDistance.h"
 
 /*****************************************************************************
  * Generic functions

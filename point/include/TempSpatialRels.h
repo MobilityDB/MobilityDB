@@ -13,6 +13,9 @@
 #ifndef __TEMPSPATIALRELS_H__
 #define __TEMPSPATIALRELS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);

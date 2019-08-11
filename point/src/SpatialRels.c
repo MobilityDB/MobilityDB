@@ -22,13 +22,12 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
+#include "SpatialRels.h"
 
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
-#include "SpatialRels.h"
 
 /*****************************************************************************
  * Spatial relationship functions

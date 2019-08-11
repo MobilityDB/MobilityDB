@@ -12,16 +12,15 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
+#include "GeoAggFuncs.h"
 
-#include "TemporalPoint.h"
+#include <assert.h>
+
+#include "TemporalTypes.h"
 #include "DoubleN.h"
 #include "AggregateFuncs.h"
+#include "TemporalPoint.h"
 #include "SpatialFuncs.h"
-#include "GeoAggFuncs.h"
 
 /*****************************************************************************
  * Generic functions

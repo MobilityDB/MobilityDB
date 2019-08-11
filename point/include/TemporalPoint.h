@@ -13,9 +13,10 @@
 #ifndef __TEMPORALPOINT_H__
 #define __TEMPORALPOINT_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
 #include <liblwgeom.h>
-#include "TemporalTypes.h"
-#include "PostGIS.h"
+#include "Temporal.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

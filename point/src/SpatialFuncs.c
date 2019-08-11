@@ -10,17 +10,16 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "SpatialFuncs.h"
+
 #include <assert.h>
 #include <float.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "SpatialFuncs.h"
 #include "PeriodSet.h"
 #include "TimeOps.h"
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "LiftingFuncs.h"
 #include "MathematicalFuncs.h"

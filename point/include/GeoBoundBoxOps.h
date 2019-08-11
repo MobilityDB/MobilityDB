@@ -14,6 +14,7 @@
 #define __GEOBONDBOXOPS_H__
 
 #include <postgres.h>
+#include <catalog/pg_type.h>
 #include <liblwgeom.h>
 #include "Temporal.h"
 

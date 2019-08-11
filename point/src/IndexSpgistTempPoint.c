@@ -70,16 +70,16 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <access/spgist.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
-#include <utils/rangetypes.h>
+#include "IndexSpgistTempPoint.h"
 
+#include <access/spgist.h>
+#include <utils/builtins.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
 #include "GeoBoundBoxOps.h"
 #include "IndexGistTempPoint.h"
-#include "IndexSpgistTempPoint.h"
 
 /*****************************************************************************/
 

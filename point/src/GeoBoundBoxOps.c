@@ -19,16 +19,15 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
+#include "GeoBoundBoxOps.h"
+
 #include <assert.h>
-#include <catalog/pg_type.h>
 #include <utils/builtins.h>
-#include <utils/rangetypes.h>
 #include <utils/timestamp.h>
 
-#include "GeoBoundBoxOps.h"
 #include "TimestampSet.h"
 #include "PeriodSet.h"
+#include "TemporalTypes.h"
 #include "TemporalPoint.h"
 #include "STbox.h"
 #include "SpatialFuncs.h"

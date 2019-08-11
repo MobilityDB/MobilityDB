@@ -13,6 +13,9 @@
 #ifndef __GEOAGGFUNCS_H__
 #define __GEOAGGFUNCS_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*****************************************************************************/
 
 extern Datum tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);

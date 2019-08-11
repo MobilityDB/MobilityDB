@@ -21,15 +21,14 @@
  *
  *****************************************************************************/
 
-#include <postgres.h>
-#include <assert.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
+#include "GeoRelativePosOps.h"
 
+#include <assert.h>
+
+#include "PostGIS.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
 #include "GeoBoundBoxOps.h"
-#include "GeoRelativePosOps.h"
 
 /*****************************************************************************/
 /* STBOX op STBOX */

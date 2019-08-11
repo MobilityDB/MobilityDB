@@ -13,6 +13,10 @@
 #ifndef __TEMPDISTANCE_H__
 #define __TEMPDISTANCE_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern Datum geom_distance2d(Datum geom1, Datum geom2);

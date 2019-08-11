@@ -13,6 +13,11 @@
 #ifndef __INDEXGISTEMPTPOINT_H__
 #define __INDEXGISTEMPTPOINT_H__
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <utils/builtins.h>
+#include "Temporal.h"
+
 /*****************************************************************************/
 
 extern Datum gist_tpoint_consistent(PG_FUNCTION_ARGS);
