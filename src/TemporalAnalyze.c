@@ -15,6 +15,8 @@
 
 #include "TemporalAnalyze.h"
 
+#include <server/catalog/pg_collation_d.h>
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);

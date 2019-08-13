@@ -19,7 +19,6 @@
 #include <commands/vacuum.h>
 #include <utils/rangetypes.h>
 #include <parser/parse_oper.h>
-#include <server/catalog/pg_collation_d.h>
 #include <server/catalog/pg_operator_d.h>
 #include <server/utils/timestamp.h>
 #include <server/access/htup_details.h>
