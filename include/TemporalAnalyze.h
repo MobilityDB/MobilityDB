@@ -19,20 +19,10 @@
 #include <commands/vacuum.h>
 #include <utils/rangetypes.h>
 #include <parser/parse_oper.h>
-#include <server/catalog/pg_operator_d.h>
-#include <server/utils/timestamp.h>
-#include <server/access/htup_details.h>
 #include <statistics/extended_stats_internal.h>
-#include "TemporalTypes.h"
-#include "TemporalUtil.h"
-#include "TemporalPoint.h"
-#include "Temporal.h"
-#include "TimeTypes.h"
 #include "Period.h"
-#include "Range.h"
 #include "SpatialFuncs.h"
-#include "assert.h"
-#include "OidCache.h"
+
 
 /**
 * The dimensions of temporal types our code can handle.

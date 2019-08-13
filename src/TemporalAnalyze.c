@@ -16,6 +16,17 @@
 #include "TemporalAnalyze.h"
 
 #include <server/catalog/pg_collation_d.h>
+#include <server/catalog/pg_operator_d.h>
+#include <server/utils/timestamp.h>
+#include <server/access/htup_details.h>
+#include "OidCache.h"
+#include "assert.h"
+#include "TemporalTypes.h"
+#include "TemporalUtil.h"
+#include "TemporalPoint.h"
+#include "Temporal.h"
+#include "TimeTypes.h"
+#include "Range.h"
 
 /*****************************************************************************/
 
