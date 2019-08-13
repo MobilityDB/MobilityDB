@@ -17,6 +17,9 @@
 #ifndef TEMPORAL_OIDCACHE_H
 #define TEMPORAL_OIDCACHE_H
 
+#include <postgres.h>
+#include <catalog/pg_type.h>
+
 /*
  * The list of built-in and temporal types that must be cached. 
  */
@@ -25,18 +28,18 @@
 typedef enum 
 {
 	T_BOOL,
-	T_BOX,
 	T_DOUBLE2,
 	T_DOUBLE3,
 	T_DOUBLE4,
 	T_FLOAT8,
 	T_FLOATRANGE,
-	T_GBOX,
 	T_INT4,
 	T_INTRANGE,
 	T_PERIOD,
 	T_PERIODSET,
+	T_STBOX,
 	T_TBOOL,
+	T_TBOX,
 	T_TDOUBLE2,
 	T_TDOUBLE3,
 	T_TDOUBLE4,
@@ -106,11 +109,12 @@ typedef enum
 
 } CachedOp;
 
-/*****************************************************************************/
 
-void populate_oidcache();
-Oid type_oid(CachedType t);
-Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
+extern Oid type_oid(CachedType t);
+extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
+extern void populate_oidcache();
+
+extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 #endif /* TEMPORAL_OIDCACHE_H */
 

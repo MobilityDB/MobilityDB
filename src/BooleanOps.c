@@ -10,7 +10,10 @@
  *
  *****************************************************************************/
 
+#include "BooleanOps.h"
+
 #include "TemporalTypes.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Boolean operations functions on datums

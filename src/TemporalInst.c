@@ -10,7 +10,22 @@
  *
  *****************************************************************************/
 
+#include "TemporalInst.h"
+
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
@@ -438,12 +453,9 @@ temporalinst_minus_values(TemporalInst *inst, Datum *values, int count)
 TemporalInst *
 tnumberinst_at_range(TemporalInst *inst, RangeType *range)
 {
-	/* Operations on range types require that they must be of the same type */
-	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
-	RangeType *range1 = numrange_to_floatrange(range);
-	TypeCacheEntry* typcache = lookup_type_cache(range1->rangetypid, TYPECACHE_RANGE_INFO);
-	bool contains = range_contains_elem_internal(typcache, range1, d);
-	pfree(range1);
+	Datum d = temporalinst_value(inst);
+	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	bool contains = range_contains_elem_internal(typcache, range, d);
 	if (!contains) 
 		return NULL;
 	return temporalinst_copy(inst);
@@ -454,12 +466,9 @@ tnumberinst_at_range(TemporalInst *inst, RangeType *range)
 TemporalInst *
 tnumberinst_minus_range(TemporalInst *inst, RangeType *range)
 {
-	/* Operations on range types require that they must be of the same type */
-	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
-	RangeType *range1 = numrange_to_floatrange(range);
-	TypeCacheEntry* typcache = lookup_type_cache(range1->rangetypid, TYPECACHE_RANGE_INFO);
-	bool contains = range_contains_elem_internal(typcache, range1, d);
-	pfree(range1);
+	Datum d = temporalinst_value(inst);
+	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	bool contains = range_contains_elem_internal(typcache, range, d);
 	if (contains)
 		return NULL;
 	return temporalinst_copy(inst);
@@ -471,16 +480,13 @@ tnumberinst_minus_range(TemporalInst *inst, RangeType *range)
 TemporalInst *
 tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
-	/* Operations on range types require that they must be of the same type */
-	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
+	Datum d = temporalinst_value(inst);
 	bool contains = false;
 	for (int i = 0; i < count; i++)
 	{
-		RangeType *range = numrange_to_floatrange(normranges[i]);
-		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, 
+		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
 			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, range, d);
-		pfree(range);
+		contains = range_contains_elem_internal(typcache, normranges[i], d);
 		if (contains) 
 			return temporalinst_copy(inst);
 	}
@@ -493,16 +499,13 @@ tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count)
 TemporalInst *
 tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
-	/* Operations on range types require that they must be of the same type */
-	Datum d = Float8GetDatum(datum_double(temporalinst_value(inst), inst->valuetypid));
+	Datum d = temporalinst_value(inst);
 	bool contains = false;
 	for (int i = 0; i < count; i++)
 	{
-		RangeType *range = numrange_to_floatrange(normranges[i]);
-		TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, 
+		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
 			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, range, d);
-		pfree(range);
+		contains = range_contains_elem_internal(typcache, normranges[i], d);
 		if (contains)
 			return NULL;
 	}

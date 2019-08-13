@@ -10,8 +10,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
 #include "OidCache.h"
+
+#include <access/heapam.h>
+#include <access/htup_details.h>
+#include <catalog/namespace.h>
+#include <utils/rel.h>
+
+#include "TemporalTypes.h"
 
 /*****************************************************************************
  * Global arrays for caching the OIDs in order to avoid (slow) lookups.
@@ -21,18 +27,18 @@
 const char *_type_names[] = 
 {
 	"bool",
-	"box",
 	"double2",
 	"double3",
 	"double4",
 	"float8",
 	"floatrange",
-	"gbox",
 	"int4",
 	"intrange",
 	"period",
 	"periodset",
+	"stbox",
 	"tbool",
+	"tbox",
 	"tdouble2",
 	"tdouble3",
 	"tdouble4",

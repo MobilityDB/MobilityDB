@@ -16,23 +16,20 @@ CREATE FUNCTION period_in(cstring)
 	RETURNS period
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
 CREATE FUNCTION period_out(period)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
 CREATE FUNCTION period_recv(internal)
 	RETURNS period
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
 CREATE FUNCTION period_send(period)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
-CREATE FUNCTION period_typanalyze(internal)
+CREATE FUNCTION period_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -44,7 +41,7 @@ CREATE TYPE period (
 	receive = period_recv,
 	send = period_send,
 	alignment = double,
-	analyze = period_typanalyze 
+	analyze = period_analyze 
 );
 
 /******************************************************************************

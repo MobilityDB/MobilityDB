@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------------
  *
  * IndexSpgistTnumber.c
- *		SP-GiST implementation of 4-dimensional quad tree over temporal
- *		integers and floats.
+ *	SP-GiST implementation of 4-dimensional quad tree over temporal
+ *	integers and floats.
  *
  * These functions are based on those in the file geo_spgist.c.
  * This module provides SP-GiST implementation for temporal number types 
@@ -72,14 +72,22 @@
  *-----------------------------------------------------------------------------
  */
 
-#include "TemporalTypes.h"
+#include "IndexSpgistTnumber.h"
+
+#include <access/spgist.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "BoundBoxOps.h"
+#include "IndexGistTnumber.h"
 
 /*****************************************************************************/
 
 typedef struct
 {
-	BOX	left;
-	BOX	right;
+	TBOX	left;
+	TBOX	right;
 } RectBox;
 
 /*
@@ -108,20 +116,20 @@ compareDoubles(const void *a, const void *b)
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
-getQuadrant4D(BOX *centroid, BOX *inBox)
+getQuadrant4D(TBOX *centroid, TBOX *inBox)
 {
 	uint8 quadrant = 0;
 
-	if (inBox->low.x > centroid->low.x)
+	if (inBox->xmin > centroid->xmin)
 		quadrant |= 0x8;
 
-	if (inBox->high.x > centroid->high.x)
+	if (inBox->xmax > centroid->xmax)
 		quadrant |= 0x4;
 
-	if (inBox->low.y > centroid->low.y)
+	if (inBox->tmin > centroid->tmin)
 		quadrant |= 0x2;
 
-	if (inBox->high.y > centroid->high.y)
+	if (inBox->tmax > centroid->tmax)
 		quadrant |= 0x1;
 
 	return quadrant;
@@ -139,11 +147,11 @@ initRectBox(void)
 	RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
 	double infinity = get_float8_infinity();
 
-	rect_box->left.low.x = rect_box->left.low.y = -infinity;
-	rect_box->left.high.x = rect_box->left.high.y = infinity;
+	rect_box->left.xmin = rect_box->left.tmin = -infinity;
+	rect_box->left.xmax = rect_box->left.tmax = infinity;
 
-	rect_box->right.low.x = rect_box->right.low.y = -infinity;
-	rect_box->right.high.x = rect_box->right.high.y = infinity;
+	rect_box->right.xmin = rect_box->right.tmin = -infinity;
+	rect_box->right.xmax = rect_box->right.tmax = infinity;
 
 	return rect_box;
 }
@@ -156,123 +164,121 @@ initRectBox(void)
  * using centroid and quadrant.
  */
 static RectBox *
-nextRectBox(RectBox *rect_box, BOX *centroid, uint8 quadrant)
+nextRectBox(RectBox *rect_box, TBOX *centroid, uint8 quadrant)
 {
 	RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
 
 	memcpy(next_rect_box, rect_box, sizeof(RectBox));
 
 	if (quadrant & 0x8)
-		next_rect_box->left.low.x = centroid->low.x;
+		next_rect_box->left.xmin = centroid->xmin;
 	else
-		next_rect_box->left.high.x = centroid->low.x;
+		next_rect_box->left.xmax = centroid->xmin;
 
 	if (quadrant & 0x4)
-		next_rect_box->right.low.x = centroid->high.x;
+		next_rect_box->right.xmin = centroid->xmax;
 	else
-		next_rect_box->right.high.x = centroid->high.x;
+		next_rect_box->right.xmax = centroid->xmax;
 
 	if (quadrant & 0x2)
-		next_rect_box->left.low.y = centroid->low.y;
+		next_rect_box->left.tmin = centroid->tmin;
 	else
-		next_rect_box->left.high.y = centroid->low.y;
+		next_rect_box->left.tmax = centroid->tmin;
 
 	if (quadrant & 0x1)
-		next_rect_box->right.low.y = centroid->high.y;
+		next_rect_box->right.tmin = centroid->tmax;
 	else
-		next_rect_box->right.high.y = centroid->high.y;
+		next_rect_box->right.tmax = centroid->tmax;
 
 	return next_rect_box;
 }
 
 /* Can any rectangle from rect_box overlap with this argument? */
 static bool
-overlap4D(RectBox *rect_box, BOX *query)
+overlap4D(RectBox *rect_box, TBOX *query)
 {
-	double infinity = get_float8_infinity();
 	bool result = true;
-	/* If the missing dimension of the query was not set to -+infinity */
-	if (query->high.x != infinity)
-		result &= rect_box->left.low.x <= query->high.x &&
-			rect_box->right.high.x >= query->low.x;
-	/* If the missing dimension of the query was not set to -+infinity */
-	if (query->high.y != infinity)
-		result &= rect_box->left.low.y <= query->high.y &&
-			rect_box->right.high.y >= query->low.y;
+	/* If the dimension is not missing */
+	if (MOBDB_FLAGS_GET_X(query->flags))
+		result &= rect_box->left.xmin <= query->xmax &&
+			rect_box->right.xmax >= query->xmin;
+	/* If the dimension is not missing */
+	if (MOBDB_FLAGS_GET_T(query->flags))
+		result &= rect_box->left.tmin <= query->tmax &&
+			rect_box->right.tmax >= query->tmin;
 	return result;
 }
 
 /* Can any rectangle from rect_box contain this argument? */
 static bool
-contain4D(RectBox *rect_box, BOX *query)
+contain4D(RectBox *rect_box, TBOX *query)
 {
-	double infinity = get_float8_infinity();
 	bool result = true;
-	/* If the missing dimension of the query was not set to -+infinity */
-	if (query->high.x != infinity)
-		result &= rect_box->right.high.x >= query->high.x &&
-			rect_box->left.low.x <= query->low.x;
-	/* If the missing dimension of the query was not set to -+infinity */
-	if (query->high.y != infinity)
-		result &= rect_box->right.high.y >= query->high.y &&
-			rect_box->left.low.y <= query->low.y;
+	/* If the dimension is not missing */
+	if (MOBDB_FLAGS_GET_X(query->flags))
+		result &= rect_box->right.xmax >= query->xmax &&
+			rect_box->left.xmin <= query->xmin;
+	/* If the dimension is not missing */
+	if (MOBDB_FLAGS_GET_T(query->flags))
+		result &= rect_box->right.tmax >= query->tmax &&
+			rect_box->left.tmin <= query->tmin;
 	return result;
 }
 
 /* Can any rectangle from rect_box be left of this argument? */
 static bool
-left4D(RectBox *rect_box, BOX *query)
+left4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->right.high.x < query->low.x);
+	return (rect_box->right.xmax < query->xmin);
 }
 
 /* Can any rectangle from rect_box does not extend the right of this argument? */
 static bool
-overLeft4D(RectBox *rect_box, BOX *query)
+overLeft4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->right.high.x <= query->high.x);
+	return (rect_box->right.xmax <= query->xmax);
 }
 
 /* Can any rectangle from rect_box be right of this argument? */
 static bool
-right4D(RectBox *rect_box, BOX *query)
+right4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->left.low.x > query->high.x);
+	return (rect_box->left.xmin > query->xmax);
 }
 
 /* Can any rectangle from rect_box does not extend the left of this argument? */
 static bool
-overRight4D(RectBox *rect_box, BOX *query)
+overRight4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->left.low.x >= query->low.x);
+	return (rect_box->left.xmin >= query->xmin);
 }
 
 /* Can any rectangle from rect_box be before this argument? */
 static bool
-before4D(RectBox *rect_box, BOX *query)
+before4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->right.high.y < query->low.y);
+	return (rect_box->right.tmax < query->tmin);
 }
 
 /* Can any rectangle from rect_box does not extend after this argument? */
 static bool
-overBefore4D(RectBox *rect_box, BOX *query)
+overBefore4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->right.high.y <= query->high.y);
+	return (rect_box->right.tmax <= query->tmax);
 }
 
 /* Can any rectangle from rect_box be after this argument? */
 static bool
-after4D(RectBox *rect_box, BOX *query)
+after4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->left.low.y > query->high.y);
+	return (rect_box->left.tmin > query->tmax);
 }
 
 /* Can any rectangle from rect_box does not extend before this argument? */
 static bool
-overAfter4D(RectBox *rect_box, BOX *query)
+overAfter4D(RectBox *rect_box, TBOX *query)
 {
-	return (rect_box->left.low.y >= query->low.y);
+	return (rect_box->left.tmin >= query->tmin);
 }
 
 /*****************************************************************************
@@ -285,9 +291,9 @@ PGDLLEXPORT Datum
 spgist_tnumber_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-	cfg->prefixType = BOXOID;	/* A type represented by its bounding box */
+	cfg->prefixType = type_oid(T_TBOX);	/* A type represented by its bounding box */
 	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-	cfg->leafType = BOXOID;
+	cfg->leafType = type_oid(T_TBOX);
 	cfg->canReturnData = false;
 	cfg->longValuesOK = false;
 	PG_RETURN_VOID();
@@ -304,8 +310,8 @@ spgist_tnumber_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-	BOX *centroid = DatumGetBoxP(in->prefixDatum),
-		*box = DatumGetBoxP(in->leafDatum);
+	TBOX *centroid = DatumGetTboxP(in->prefixDatum),
+		*box = DatumGetTboxP(in->leafDatum);
 
 	out->resultType = spgMatchNode;
 	out->result.matchNode.restDatum = PointerGetDatum(box);
@@ -331,7 +337,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	BOX *centroid;
+	TBOX *centroid;
 	int median, i;
 	double *lowXs = palloc(sizeof(double) * in->nTuples);
 	double *highXs = palloc(sizeof(double) * in->nTuples);
@@ -341,12 +347,12 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 	/* Calculate median of all 4D coordinates */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		BOX	*box = DatumGetBoxP(in->datums[i]);
+		TBOX	*box = DatumGetTboxP(in->datums[i]);
 
-		lowXs[i] = box->low.x;
-		highXs[i] = box->high.x;
-		lowYs[i] = box->low.y;
-		highYs[i] = box->high.y;
+		lowXs[i] = box->xmin;
+		highXs[i] = box->xmax;
+		lowYs[i] = box->tmin;
+		highYs[i] = box->tmax;
 	}
 
 	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
@@ -356,16 +362,16 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 
 	median = in->nTuples / 2;
 
-	centroid = palloc(sizeof(BOX));
+	centroid = palloc0(sizeof(TBOX));
 
-	centroid->low.x = lowXs[median];
-	centroid->high.x = highXs[median];
-	centroid->low.y = lowYs[median];
-	centroid->high.y = highYs[median];
+	centroid->xmin = lowXs[median];
+	centroid->xmax = highXs[median];
+	centroid->tmin = lowYs[median];
+	centroid->tmax = highYs[median];
 
 	/* Fill the output */
 	out->hasPrefix = true;
-	out->prefixDatum = BoxPGetDatum(centroid);
+	out->prefixDatum = PointerGetDatum(centroid);
 
 	out->nNodes = 16;
 	out->nodeLabels = NULL;		/* We don't need node labels. */
@@ -379,10 +385,10 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 	 */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		BOX *box = DatumGetBoxP(in->datums[i]);
+		TBOX *box = DatumGetTboxP(in->datums[i]);
 		uint8 quadrant = getQuadrant4D(centroid, box);
 
-		out->leafTupleDatums[i] = BoxPGetDatum(box);
+		out->leafTupleDatums[i] = PointerGetDatum(box);
 		out->mapTuplesToNodes[i] = quadrant;
 	}
 
@@ -407,7 +413,7 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 	MemoryContext old_ctx;
 	RectBox *rect_box;
 	uint8 quadrant;
-	BOX *centroid = DatumGetBoxP(in->prefixDatum), *queries;
+	TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
 
 	if (in->allTheSame)
 	{
@@ -432,20 +438,20 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 	/*
 	 * Transform the queries into bounding boxes.
 	 */
-	queries = (BOX *) palloc(sizeof(BOX) * in->nkeys);
+	queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
 		Oid subtype = in->scankeys[i].sk_subtype;
 		
 		if (subtype == type_oid(T_INTRANGE))
-			intrange_to_box_internal(&queries[i],
+			intrange_to_tbox_internal(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_FLOATRANGE))
-			floatrange_to_box_internal(&queries[i],
+			floatrange_to_tbox_internal(&queries[i],
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-		else if (subtype == BOXOID)
-			memcpy(&queries[i], DatumGetBoxP(in->scankeys[i].sk_argument), sizeof(BOX));
+		else if (subtype == type_oid(T_TBOX))
+			memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument), sizeof(TBOX));
 		else if (temporal_type_oid(subtype))
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
@@ -548,7 +554,7 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-	BOX *key = DatumGetBoxP(in->leafDatum), query;
+	TBOX *key = DatumGetTboxP(in->leafDatum), query;
 	bool res = true;
 	int	i;
 
@@ -570,25 +576,25 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		if (subtype == type_oid(T_INTRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			intrange_to_box_internal(&query, range);									  
-			res = index_leaf_consistent_box(key, &query, strategy);
+			intrange_to_tbox_internal(&query, range);									  
+			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_FLOATRANGE))
 		{
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-			floatrange_to_box_internal(&query, range);									  
-			res = index_leaf_consistent_box(key, &query, strategy);
+			floatrange_to_tbox_internal(&query, range);									  
+			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
-		else if (subtype == BOXOID)
+		else if (subtype == type_oid(T_TBOX))
 		{
-			BOX *box = DatumGetBoxP(in->scankeys[i].sk_argument);
-			res = index_leaf_consistent_box(key, box, strategy);
+			TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
+			res = index_leaf_consistent_tbox(key, box, strategy);
 		}
 		else if (temporal_type_oid(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));
-			res = index_leaf_consistent_box(key, &query, strategy);
+			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else
 			elog(ERROR, "Unrecognized strategy number: %d", strategy);
@@ -611,10 +617,10 @@ PGDLLEXPORT Datum
 spgist_tnumber_compress(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	BOX *box = palloc(sizeof(BOX));
+	TBOX *box = palloc0(sizeof(TBOX));
 	temporal_bbox(box, temp);
 	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_BOX_P(box);
+	PG_RETURN_TBOX_P(box);
 }
 
 /*****************************************************************************/

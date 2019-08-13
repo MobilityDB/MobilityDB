@@ -20,26 +20,23 @@ CREATE FUNCTION timestampset_in(cstring)
 	RETURNS timestampset
 	AS 'MODULE_PATHNAME', 'timestampset_in'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION timestampset_out(timestampset)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION timestampset_recv(internal)
 	RETURNS timestampset
 	AS 'MODULE_PATHNAME', 'timestampset_recv'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION timestampset_send(timestampset)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timestampset_typanalyze(internal)
+CREATE FUNCTION timestampset_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT;
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE timestampset (
 	internallength = variable,
@@ -50,7 +47,7 @@ CREATE TYPE timestampset (
 	alignment = double
 -- The following line makes NULL if size < 128	
 --	storage = extended 
-   , analyze = timestampset_typanalyze
+   , analyze = timestampset_analyze
 );
 
 /******************************************************************************

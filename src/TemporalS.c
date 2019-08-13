@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TemporalS.c
- *	  Basic functions for temporal set sequences.
+ *	  Basic functions for temporal sequence sets.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,10 +10,26 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TemporalS.h"
+
+#include <assert.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "TemporalUtil.h"
+#include "OidCache.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 #endif
 
 /*****************************************************************************
@@ -191,18 +207,60 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 TemporalS *
 temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 {
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ts->count));
-	for (int i = 0; i < ts->count - 1; i++)
-		sequences[i] = temporals_seq_n(ts, i);
+	/* Add the instant to the last sequence */
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
-	TemporalSeq *seq1 = temporalseq_append_instant(seq, inst);
-	sequences[ts->count - 1] = seq1;
-	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
-		false);
-	pfree(sequences[ts->count - 1]);
+	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
+	/* Compute the size of the TemporalS */
+	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+1) * sizeof(size_t));
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	for (int i = 0; i < ts->count-1; i++)
+		memsize += double_pad(VARSIZE(temporals_seq_n(ts, i)));
+	memsize += double_pad(VARSIZE(newseq));
+	/* Create the TemporalS */
+	TemporalS *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = ts->count;
+	result->totalcount = ts->totalcount - seq->count + newseq->count;
+	result->valuetypid = ts->valuetypid;
+	result->duration = TEMPORALS;
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(ts->flags));
+	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, MOBDB_FLAGS_GET_TEMPCONTINUOUS(ts->flags));
+#ifdef WITH_POSTGIS
+	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
+		ts->valuetypid == type_oid(T_GEOGRAPHY))
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
+#endif
+	/* Initialization of the variable-length part */
+	size_t *offsets = temporals_offsets_ptr(result);
+	size_t pos = 0;	
+	for (int i = 0; i < ts->count-1; i++)
+	{
+		seq = temporals_seq_n(ts,i);
+		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
+		offsets[i] = pos;
+		pos += double_pad(VARSIZE(seq));
+	}
+	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
+	offsets[ts->count-1] = pos;
+	pos += double_pad(VARSIZE(seq));
+	/*
+	 * Precompute the bounding box 
+	 * Only external types have precomputed bounding box, internal types such
+	 * as double2, double3, or double4 do not have precomputed bounding box
+	 */
+	if (bboxsize != 0) 
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		memcpy(bbox, temporals_bbox_ptr(ts), bboxsize);
+		temporals_expand_bbox(bbox, ts, inst);
+		offsets[ts->count] = pos;
+	}
+	pfree(newseq);
 	return result;
 }
-
 
 /* Copy a TemporalS */
 TemporalS *
@@ -232,8 +290,7 @@ temporals_copy(TemporalS *ts)
 bool 
 temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos) 
 {
-	int first = 0;
-	int last = ts->count - 1;
+	int first = 0, last = ts->count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalSeq *seq = NULL; /* make compiler quiet */
 	while (first <= last) 
@@ -260,8 +317,7 @@ bool
 temporalseqarr_find_timestamp(TemporalSeq **sequences, int from, int count, 
 	TimestampTz t, int *pos) 
 {
-	int first = from;
-	int last = count - 1;
+	int first = from, last = count - 1;
 	int middle = 0; /* make compiler quiet */
 	TemporalSeq *seq = NULL; /* make compiler quiet */
 	while (first <= last) 
@@ -793,18 +849,18 @@ tfloats_ranges(TemporalS *ts)
 RangeType *
 tnumbers_value_range(TemporalS *ts)
 {
-	BOX *box = temporals_bbox_ptr(ts);
+	TBOX *box = temporals_bbox_ptr(ts);
 	Datum min = 0, max = 0;
-	number_base_type_oid(ts->valuetypid);
+	numeric_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 	{
-		min = Int32GetDatum(box->low.x);
-		max = Int32GetDatum(box->high.x);
+		min = Int32GetDatum(box->xmin);
+		max = Int32GetDatum(box->xmax);
 	}
 	else if (ts->valuetypid == FLOAT8OID)
 	{
-		min = Float8GetDatum(box->low.x);
-		max = Float8GetDatum(box->high.x);
+		min = Float8GetDatum(box->xmin);
+		max = Float8GetDatum(box->xmax);
 	}
 	return range_make(min, max, true, true, ts->valuetypid);
 }
@@ -817,13 +873,13 @@ temporals_min_value(TemporalS *ts)
 	Oid valuetypid = ts->valuetypid;
 	if (valuetypid == INT4OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum((int)(box->low.x));
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Int32GetDatum((int)(box->xmin));
 	}
 	if (valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Float8GetDatum(box->low.x);
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Float8GetDatum(box->xmin);
 	}
 	Datum result = temporalseq_min_value(temporals_seq_n(ts, 0));
 	for (int i = 1; i < ts->count; i++)
@@ -843,13 +899,13 @@ temporals_max_value(TemporalS *ts)
 	Oid valuetypid = ts->valuetypid;
 	if (valuetypid == INT4OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Int32GetDatum((int)(box->high.x));
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Int32GetDatum((int)(box->xmax));
 	}
 	if (valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporals_bbox_ptr(ts);
-		return Float8GetDatum(box->high.x);
+		TBOX *box = temporals_bbox_ptr(ts);
+		return Float8GetDatum(box->xmax);
 	}
 	Datum result = temporalseq_max_value(temporals_seq_n(ts, 0));
 	for (int i = 1; i < ts->count; i++)
@@ -1177,10 +1233,10 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, ts->valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, ts->valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
 
@@ -1198,14 +1254,14 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		BOX box;
+		TBOX box = {0,0,0,0,0};
 		temporals_bbox(&box, ts);
 		if (ts->valuetypid == INT4OID)
-			return box.low.x == box.high.x &&
-				(int)(box.high.x) == DatumGetInt32(value);
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetInt32(value);
 		else
-			return box.low.x == box.high.x &&
-				box.high.x == DatumGetFloat8(value);
+			return box.xmin == box.xmax &&
+				box.xmax == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ts->count; i++) 
@@ -1300,10 +1356,10 @@ temporals_at_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
 
@@ -1342,10 +1398,10 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporals_bbox(&box1, ts);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporals_copy(ts);
 	}
 
@@ -1457,10 +1513,10 @@ TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return NULL;
 
 	/* Singleton sequence set */
@@ -1495,10 +1551,10 @@ TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporals_bbox(&box1, ts);
-	range_to_box_internal(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return temporals_copy(ts);
 
 	/* Singleton sequence set */
@@ -1645,8 +1701,8 @@ TemporalS *
 temporals_at_min(TemporalS *ts)
 {
 	/* General case */
-	Datum minvalue = temporals_min_value(ts);
-	return temporals_at_minmax(ts, minvalue);
+	Datum xmin = temporals_min_value(ts);
+	return temporals_at_minmax(ts, xmin);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1654,8 +1710,8 @@ temporals_at_min(TemporalS *ts)
 TemporalS *
 temporals_minus_min(TemporalS *ts)
 {
-	Datum minvalue = temporals_min_value(ts);
-	return temporals_minus_value(ts, minvalue);
+	Datum xmin = temporals_min_value(ts);
+	return temporals_minus_value(ts, xmin);
 }
 
 /* Restriction to the maximum value */
@@ -1663,8 +1719,8 @@ temporals_minus_min(TemporalS *ts)
 TemporalS *
 temporals_at_max(TemporalS *ts)
 {
-	Datum maxvalue = temporals_max_value(ts);
-	return temporals_at_minmax(ts, maxvalue);
+	Datum xmax = temporals_max_value(ts);
+	return temporals_at_minmax(ts, xmax);
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1672,8 +1728,8 @@ temporals_at_max(TemporalS *ts)
 TemporalS *
 temporals_minus_max(TemporalS *ts)
 {
-	Datum maxvalue = temporals_max_value(ts);
-	return temporals_minus_value(ts, maxvalue);
+	Datum xmax = temporals_max_value(ts);
+	return temporals_minus_value(ts, xmax);
 }
 
 /*

@@ -10,7 +10,16 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TimestampSet.h"
+
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "Temporal.h"
+#include "Parser.h"
+#include "Period.h"
+#include "TemporalUtil.h"
 
 /*****************************************************************************
  * General functions

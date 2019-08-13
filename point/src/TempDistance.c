@@ -10,7 +10,14 @@
  *
  *****************************************************************************/
 
+#include "TempDistance.h"
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "LiftingFuncs.h"
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 
 /*****************************************************************************
  * Generic functions

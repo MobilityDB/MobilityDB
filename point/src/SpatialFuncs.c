@@ -10,7 +10,23 @@
  *
  *****************************************************************************/
 
+#include "SpatialFuncs.h"
+
+#include <assert.h>
+#include <float.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "LiftingFuncs.h"
+#include "MathematicalFuncs.h"
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "TempDistance.h"
 
 /*****************************************************************************
  * Utility functions
@@ -157,7 +173,7 @@ tpoint_check_Z_dimension(Temporal *temp1, Temporal *temp2)
 void
 tpoint_gs_check_Z_dimension(Temporal *temp, GSERIALIZED *gs)
 {
-	if (! FLAGS_GET_Z(gs->flags) || ! MOBDB_FLAGS_GET_Z(temp->flags))
+	if (! MOBDB_FLAGS_GET_Z(temp->flags) || ! FLAGS_GET_Z(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("The temporal point and the geometry must have Z dimension")));
 }
@@ -171,40 +187,6 @@ gserialized_check_point(GSERIALIZED *gs)
 }
 
 /*****************************************************************************/
-
-/* 
- * Output a geometry in Well-Known Text (WKT) and Extended Well-Known Text 
- * (EWKT) format.
- * The Oid argument is not used but is needed since the second argument of 
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum) 
- */
-static char *
-wkt_out(Oid type, Datum value)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-	LWGEOM *geom = lwgeom_from_gserialized(gs);
-	size_t len;
-	char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
-	char *result = palloc(len);
-	strcpy(result, wkt);
-	lwgeom_free(geom);
-	pfree(wkt);
-	return result;
-}
-
-static char *
-ewkt_out(Oid type, Datum value)
-{
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
-	LWGEOM *geom = lwgeom_from_gserialized(gs);
-	size_t len;
-	char *wkt = lwgeom_to_wkt(geom, WKT_EXTENDED, DBL_DIG, &len);
-	char *result = palloc(len);
-	strcpy(result, wkt);
-	lwgeom_free(geom);
-	pfree(wkt);
-	return result;
-}
 
 /* Serialize a geometry */
  
@@ -235,199 +217,6 @@ static Datum
 geom_as_geog(Datum value)
 {
 	return call_function1(geography_from_geometry, value);
-}
-
-/*****************************************************************************
- * Functions for output in WKT and EWKT format 
- *****************************************************************************/
-
-/* Output a temporal point in WKT format */
-
-static text *
-tpoint_astext_internal(Temporal *temp)
-{
-	char *str = NULL;
-	temporal_duration_is_valid(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		str = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALI) 
-		str = temporali_to_string((TemporalI *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALSEQ) 
-		str = temporalseq_to_string((TemporalSeq *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALS) 
-		str = temporals_to_string((TemporalS *)temp, &wkt_out);
-	text *result = cstring_to_text(str);
-	pfree(str);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tpoint_astext);
-
-PGDLLEXPORT Datum
-tpoint_astext(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	text *result = tpoint_astext_internal(temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_TEXT_P(result);
-}
-
-/* Output a temporal point in WKT format */
-
-static text *
-tpoint_asewkt_internal(Temporal *temp)
-{
-	int srid = tpoint_srid_internal(temp);
-	char str1[20];
-	if (srid > 0)
-		sprintf(str1, "SRID=%d;", srid);
-	else
-		str1[0] = '\0';
-	char *str2 = NULL;
-	temporal_duration_is_valid(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		str2 = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALI) 
-		str2 = temporali_to_string((TemporalI *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALSEQ) 
-		str2 = temporalseq_to_string((TemporalSeq *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALS) 
-		str2 = temporals_to_string((TemporalS *)temp, &wkt_out);
-	char *str = (char *)palloc(strlen(str1) + strlen(str2) + 1);
-	strcpy(str, str1);
-	strcat(str, str2);
-	text *result = cstring_to_text(str);
-	pfree(str2); pfree(str);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tpoint_asewkt);
-
-PGDLLEXPORT Datum
-tpoint_asewkt(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	text *result = tpoint_asewkt_internal(temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_TEXT_P(result);
-}
-
-/*****************************************************************************/
-
-/* Output a geometry/geography array in WKT format */
-
-PG_FUNCTION_INFO_V1(geoarr_astext);
-
-PGDLLEXPORT Datum
-geoarr_astext(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Datum *geoarr = datumarr_extract(array, &count);
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		/* The wkt_out function does not use the first argument */
-		char *str = wkt_out(ANYOID, geoarr[i]);
-		textarr[i] = cstring_to_text(str);
-		pfree(str);
-	}
-	ArrayType *result = textarr_to_array(textarr, count);
-
-	pfree(geoarr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
-	PG_FREE_IF_COPY(array, 0);
-
-	PG_RETURN_ARRAYTYPE_P(result);
-}
-
-/* Output a geometry/geography array in WKT format prefixed with the SRID */
-
-PG_FUNCTION_INFO_V1(geoarr_asewkt);
-
-PGDLLEXPORT Datum
-geoarr_asewkt(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Datum *geoarr = datumarr_extract(array, &count);
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		/* The wkt_out function does not use the first argument */
-		char *str = ewkt_out(ANYOID, geoarr[i]);
-		textarr[i] = cstring_to_text(str);
-		pfree(str);
-	}
-	ArrayType *result = textarr_to_array(textarr, count);
-
-	pfree(geoarr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
-	PG_FREE_IF_COPY(array, 0);
-
-	PG_RETURN_ARRAYTYPE_P(result);
-}
-
-/* Output a temporal point array in WKT format */
-
-PG_FUNCTION_INFO_V1(tpointarr_astext);
-
-PGDLLEXPORT Datum
-tpointarr_astext(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Temporal **temparr = temporalarr_extract(array, &count);
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		PG_RETURN_NULL();
-	}
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_astext_internal(temparr[i]);
-	ArrayType *result = textarr_to_array(textarr, count);
-
-	pfree(temparr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
-	PG_FREE_IF_COPY(array, 0);
-
-	PG_RETURN_ARRAYTYPE_P(result);
-}
-
-/* Output a temporal point array in WKT format prefixed with the SRID */
-
-PG_FUNCTION_INFO_V1(tpointarr_asewkt);
-
-PGDLLEXPORT Datum
-tpointarr_asewkt(PG_FUNCTION_ARGS)
-{
-	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	int count;
-	Temporal **temparr = temporalarr_extract(array, &count);
-	if (count == 0)
-	{
-		PG_FREE_IF_COPY(array, 0);
-		PG_RETURN_NULL();
-	}
-	text **textarr = palloc(sizeof(text *) * count);
-	for (int i = 0; i < count; i++)
-		textarr[i] = tpoint_asewkt_internal(temparr[i]);
-	ArrayType *result = textarr_to_array(textarr, count);
-
-	pfree(temparr);
-	for (int i = 0; i < count; i++)
-		pfree(textarr[i]);
-	pfree(textarr);
-	PG_FREE_IF_COPY(array, 0);
-
-	PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************
@@ -554,7 +343,9 @@ tpoints_set_srid_internal(TemporalS *ts, int32 srid)
 	return result;
 }
 
-Temporal* tpoint_set_srid_internal(Temporal* temp, int32 srid) {
+Temporal * 
+tpoint_set_srid_internal(Temporal *temp, int32 srid)
+{
     Temporal *result = NULL;
     if (temp->duration == TEMPORALINST)
         result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);
@@ -576,7 +367,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 srid = PG_GETARG_INT32(1);
-	Temporal* result = tpoint_set_srid_internal(temp, srid) ;
+	Temporal *result = tpoint_set_srid_internal(temp, srid) ;
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -1926,7 +1717,7 @@ tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, GBOX *box2)
+tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 {
 	/* palloc0 used due to the bounding box test in the for loop below */
 	TemporalSeq ***sequences = palloc0(sizeof(TemporalSeq *) * ts->count);
@@ -1936,8 +1727,8 @@ tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, GBOX *box2)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		/* Bounding box test */
-		GBOX *box1 = temporalseq_bbox_ptr(seq);
-		if (overlaps_gbox_gbox_internal(box1, box2))
+		STBOX *box1 = temporalseq_bbox_ptr(seq);
+		if (overlaps_stbox_stbox_internal(box1, box2))
 		{
 			sequences[i] = tpointseq_at_geometry2(seq, PointerGetDatum(gs), 
 				&countseqs[i]);
@@ -1986,11 +1777,11 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	/* Bounding box test */
-	GBOX box1, box2;
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	temporal_bbox(&box1, temp);
 	/* Non-empty geometries have a bounding box */
-	assert(geo_to_gbox_internal(&box2, gs));
-	if (!overlaps_gbox_gbox_internal(&box1, &box2))
+	assert(geo_to_stbox_internal(&box2, gs));
+	if (!overlaps_stbox_stbox_internal(&box1, &box2))
 	{
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
@@ -2105,7 +1896,7 @@ tpointseq_minus_geometry(TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, GBOX *box2)
+tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
@@ -2119,8 +1910,8 @@ tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, GBOX *box2)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		/* Bounding box test */
-		GBOX *box1 = temporalseq_bbox_ptr(seq);
-		if (!overlaps_gbox_gbox_internal(box1, box2))
+		STBOX *box1 = temporalseq_bbox_ptr(seq);
+		if (!overlaps_stbox_stbox_internal(box1, box2))
 		{
 			sequences[i] = palloc(sizeof(TemporalSeq *));
 			sequences[i][0] = temporalseq_copy(seq);
@@ -2168,8 +1959,8 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	/* Bounding box test */
-	GBOX box1, box2;
-	if (!geo_to_gbox_internal(&box2, gs))
+	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal* copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
@@ -2177,7 +1968,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(copy);
 	}
 	temporal_bbox(&box1, temp);
-	if (!overlaps_gbox_gbox_internal(&box1, &box2))
+	if (!overlaps_stbox_stbox_internal(&box1, &box2))
 	{
 		Temporal* copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
@@ -2309,8 +2100,8 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
-	TimestampTz mint = 0; /* keep compiler quiet */
-	bool mintofree =  false; /* keep compiler quiet */
+	TimestampTz tmin = 0; /* keep compiler quiet */
+	bool tminofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count-1; i++)
 	{
@@ -2323,15 +2114,15 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 		{
 			mindist = dist;
 			minpoint = point;
-			mint = t;
-			mintofree = tofree;
+			tmin = t;
+			tminofree = tofree;
 		}
 		else if (tofree)
 			pfree(DatumGetPointer(point)); 			
 		inst1 = inst2;
 	}
-	TemporalInst *result = temporalinst_make(minpoint, mint, seq->valuetypid);
-	if (mintofree)
+	TemporalInst *result = temporalinst_make(minpoint, tmin, seq->valuetypid);
+	if (tminofree)
 		pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
@@ -2789,8 +2580,8 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	/* Compute the distance */
 	TemporalI *dist = sync_tfunc2_temporali_temporali(ti1, ti2, func, 
 		FLOAT8OID);
-	Datum minvalue = temporali_min_value(dist);
-	TemporalI *mindistance = temporali_at_value(dist, minvalue);
+	Datum xmin = temporali_min_value(dist);
+	TemporalI *mindistance = temporali_at_value(dist, xmin);
 	TimestampTz t = temporali_start_timestamp(mindistance);
 	TemporalInst *inst1 = temporali_at_timestamp(ti1, t);
 	TemporalInst *inst2 = temporali_at_timestamp(ti2, t);

@@ -112,9 +112,6 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp && f;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tint', 'floatrange', count(*) FROM tbl_tint, tbl_floatrange WHERE temp && f;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tint', 'timestamptz', count(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
@@ -127,7 +124,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp && ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp && b;
+SELECT '&&', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp && b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp;
@@ -137,9 +134,6 @@ SELECT '&&', 'tint', 'tfloat', count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tfloat', 'int', count(*) FROM tbl_tfloat, tbl_int WHERE temp && i;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tfloat', 'intrange', count(*) FROM tbl_tfloat, tbl_intrange WHERE temp && i;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp && f;
@@ -160,7 +154,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp && ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp && b;
+SELECT '&&', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp && b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp && t2.temp;
@@ -256,9 +250,6 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp @> f;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tint', 'floatrange', count(*) FROM tbl_tint, tbl_floatrange WHERE temp @> f;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tint', 'timestamptz', count(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
@@ -271,7 +262,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp @> ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp @> b;
+SELECT '@>', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp @> b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp;
@@ -281,9 +272,6 @@ SELECT '@>', 'tint', 'tfloat', count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tfloat', 'int', count(*) FROM tbl_tfloat, tbl_int WHERE temp @> i;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tfloat', 'intrange', count(*) FROM tbl_tfloat, tbl_intrange WHERE temp @> i;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp @> f;
@@ -304,7 +292,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp @> ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp @> b;
+SELECT '@>', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp @> b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '@>', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp @> t2.temp;
@@ -400,9 +388,6 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp <@ f;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tint', 'floatrange', count(*) FROM tbl_tint, tbl_floatrange WHERE temp <@ f;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tint', 'timestamptz', count(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
@@ -415,7 +400,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp <@ ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp <@ b;
+SELECT '<@', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp <@ b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp;
@@ -425,9 +410,6 @@ SELECT '<@', 'tint', 'tfloat', count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tfloat', 'int', count(*) FROM tbl_tfloat, tbl_int WHERE temp <@ i;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tfloat', 'intrange', count(*) FROM tbl_tfloat, tbl_intrange WHERE temp <@ i;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp <@ f;
@@ -448,7 +430,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <@ ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp <@ b;
+SELECT '<@', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <@ b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '<@', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <@ t2.temp;
@@ -544,9 +526,6 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tint', 'float', count(*) FROM tbl_tint, tbl_float WHERE temp ~= f;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tint', 'floatrange', count(*) FROM tbl_tint, tbl_floatrange WHERE temp ~= f;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tint', 'timestamptz', count(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
@@ -559,7 +538,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tint', 'periodset', count(*) FROM tbl_tint, tbl_periodset WHERE temp ~= ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tint', 'box', count(*) FROM tbl_tint, tbl_box WHERE temp ~= b;
+SELECT '~=', 'tint', 'tbox', count(*) FROM tbl_tint, tbl_tbox WHERE temp ~= b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tint', 'tint', count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp;
@@ -569,9 +548,6 @@ SELECT '~=', 'tint', 'tfloat', count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tfloat', 'int', count(*) FROM tbl_tfloat, tbl_int WHERE temp ~= i;
-INSERT 0 1
-INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tfloat', 'intrange', count(*) FROM tbl_tfloat, tbl_intrange WHERE temp ~= i;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tfloat', 'float', count(*) FROM tbl_tfloat, tbl_float WHERE temp ~= f;
@@ -592,7 +568,7 @@ INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tfloat', 'periodset', count(*) FROM tbl_tfloat, tbl_periodset WHERE temp ~= ps;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tfloat', 'box', count(*) FROM tbl_tfloat, tbl_box WHERE temp ~= b;
+SELECT '~=', 'tfloat', 'tbox', count(*) FROM tbl_tfloat, tbl_tbox WHERE temp ~= b;
 INSERT 0 1
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tfloat', 'tint', count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp ~= t2.temp;
@@ -725,10 +701,6 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp && f )
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp && f ) 
-WHERE op = '&&' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t ) 
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -745,8 +717,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp && ps )
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp && b ) 
-WHERE op = '&&' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp && b ) 
+WHERE op = '&&' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp ) 
@@ -759,10 +731,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp && i ) 
 WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp && i ) 
-WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp && f ) 
@@ -789,8 +757,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp && ps 
 WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp && b ) 
-WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp && b ) 
+WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp && t2.temp ) 
@@ -917,10 +885,6 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp @> f )
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp @> f ) 
-WHERE op = '@>' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t ) 
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -937,8 +901,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp @> ps )
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp @> b ) 
-WHERE op = '@>' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp @> b ) 
+WHERE op = '@>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp ) 
@@ -951,10 +915,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp @> i ) 
 WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp @> i ) 
-WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp @> f ) 
@@ -981,8 +941,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp @> ps 
 WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp @> b ) 
-WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp @> b ) 
+WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp @> t2.temp ) 
@@ -1109,10 +1069,6 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp <@ f )
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp <@ f ) 
-WHERE op = '<@' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t ) 
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -1129,8 +1085,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp <@ ps )
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp <@ b ) 
-WHERE op = '<@' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp <@ b ) 
+WHERE op = '<@' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp ) 
@@ -1143,10 +1099,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp <@ i ) 
 WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp <@ i ) 
-WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp <@ f ) 
@@ -1173,8 +1125,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <@ ps 
 WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp <@ b ) 
-WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <@ b ) 
+WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <@ t2.temp ) 
@@ -1301,10 +1253,6 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp ~= f )
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp ~= f ) 
-WHERE op = '~=' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t ) 
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -1321,8 +1269,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp ~= ps )
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp ~= b ) 
-WHERE op = '~=' and leftarg = 'tint' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp ~= b ) 
+WHERE op = '~=' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp ) 
@@ -1335,10 +1283,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp ~= i ) 
 WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp ~= i ) 
-WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp ~= f ) 
@@ -1365,8 +1309,8 @@ SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp ~= ps 
 WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp ~= b ) 
-WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'box';
+SET gistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp ~= b ) 
+WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp ~= t2.temp ) 
@@ -1514,10 +1458,6 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp && f )
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp && f ) 
-WHERE op = '&&' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t ) 
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -1534,8 +1474,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp && ps 
 WHERE op = '&&' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp && b ) 
-WHERE op = '&&' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp && b ) 
+WHERE op = '&&' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp ) 
@@ -1548,10 +1488,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp && i ) 
 WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp && i ) 
-WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp && f ) 
@@ -1578,8 +1514,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp && p
 WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp && b ) 
-WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp && b ) 
+WHERE op = '&&' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp && t2.temp ) 
@@ -1706,10 +1642,6 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp @> f )
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp @> f ) 
-WHERE op = '@>' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t ) 
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -1726,8 +1658,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp @> ps 
 WHERE op = '@>' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp @> b ) 
-WHERE op = '@>' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp @> b ) 
+WHERE op = '@>' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp ) 
@@ -1740,10 +1672,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp @> i ) 
 WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp @> i ) 
-WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp @> f ) 
@@ -1770,8 +1698,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp @> p
 WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp @> b ) 
-WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp @> b ) 
+WHERE op = '@>' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp @> t2.temp ) 
@@ -1898,10 +1826,6 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp <@ f )
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp <@ f ) 
-WHERE op = '<@' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t ) 
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -1918,8 +1842,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp <@ ps 
 WHERE op = '<@' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp <@ b ) 
-WHERE op = '<@' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp <@ b ) 
+WHERE op = '<@' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp ) 
@@ -1932,10 +1856,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp <@ i ) 
 WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp <@ i ) 
-WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp <@ f ) 
@@ -1962,8 +1882,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <@ p
 WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp <@ b ) 
-WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <@ b ) 
+WHERE op = '<@' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <@ t2.temp ) 
@@ -2090,10 +2010,6 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp ~= f )
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'float';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_floatrange WHERE temp ~= f ) 
-WHERE op = '~=' and leftarg = 'tint' and rightarg = 'floatrange';
-UPDATE 1
-UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t ) 
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'timestamptz';
 UPDATE 1
@@ -2110,8 +2026,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp ~= ps 
 WHERE op = '~=' and leftarg = 'tint' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_box WHERE temp ~= b ) 
-WHERE op = '~=' and leftarg = 'tint' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp ~= b ) 
+WHERE op = '~=' and leftarg = 'tint' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp ) 
@@ -2124,10 +2040,6 @@ UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp ~= i ) 
 WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'int';
-UPDATE 1
-UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_intrange WHERE temp ~= i ) 
-WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'intrange';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp ~= f ) 
@@ -2154,8 +2066,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp ~= p
 WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'periodset';
 UPDATE 1
 UPDATE test_boundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_box WHERE temp ~= b ) 
-WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'box';
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp ~= b ) 
+WHERE op = '~=' and leftarg = 'tfloat' and rightarg = 'tbox';
 UPDATE 1
 UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp ~= t2.temp ) 

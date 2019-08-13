@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * IndexGistTPoint.c
+ * IndexGistTempPoint.c
  *	  R-tree GiST index for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
@@ -10,7 +10,15 @@
  *
  *****************************************************************************/
 
+#include "IndexGistTempPoint.h"
+
+#include <access/gist.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "GeoRelativePosOps.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
@@ -25,87 +33,87 @@
 #define FLOAT8_MIN(a,b)  (FLOAT8_LT(a, b) ? (a) : (b))
 
 /*****************************************************************************
- * Leaf-level consistent method for temporal points using a gbox
+ * Leaf-level consistent method for temporal points using a stbox
  *****************************************************************************/
 
 /*
- * Leaf-level consistency for gboxes
+ * Leaf-level consistency for stboxes
  *
- * Since gboxes do not distinguish between inclusive and exclusive bounds it is 
+ * Since stboxes do not distinguish between inclusive and exclusive bounds it is 
  * necessary to generalize the tests, e.g., 
- * before : (box1->mmax < box2->mmin) => (box1->mmax <= box2->mmin) 
+ * before : (box1->tmax < box2->tmin) => (box1->tmax <= box2->tmin) 
  * e.g., to take into account before([a,b],(b,c])
- * after : (box1->mmin > box2->mmax) => (box1->mmin >= box2->mmax)
+ * after : (box1->tmin > box2->tmax) => (box1->tmin >= box2->tmax)
  * e.g., to take into account after((b,c],[a,b])
  */
 bool
-index_leaf_consistent_gbox(GBOX *key, GBOX *query, StrategyNumber strategy)
+index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
 {
 	bool retval;
 	
 	switch (strategy)
 	{
 		case RTOverlapStrategyNumber:
-			retval = overlaps_gbox_gbox_internal(key, query);
+			retval = overlaps_stbox_stbox_internal(key, query);
 			break;
 		case RTContainsStrategyNumber:
-			retval = contains_gbox_gbox_internal(key, query);
+			retval = contains_stbox_stbox_internal(key, query);
 			break;
 		case RTContainedByStrategyNumber:
-			retval = contained_gbox_gbox_internal(key, query);
+			retval = contained_stbox_stbox_internal(key, query);
 			break;
 		case RTSameStrategyNumber:
-			retval = same_gbox_gbox_internal(key, query);
+			retval = same_stbox_stbox_internal(key, query);
 			break;
 		case RTLeftStrategyNumber:
-			retval = left_gbox_gbox_internal(key, query);
+			retval = left_stbox_stbox_internal(key, query);
 			break;
 		case RTOverLeftStrategyNumber:
-			retval = overleft_gbox_gbox_internal(key, query);
+			retval = overleft_stbox_stbox_internal(key, query);
 			break;
 		case RTRightStrategyNumber:
-			retval = right_gbox_gbox_internal(key, query);
+			retval = right_stbox_stbox_internal(key, query);
 			break;
 		case RTOverRightStrategyNumber:
-			retval = overright_gbox_gbox_internal(key, query);
+			retval = overright_stbox_stbox_internal(key, query);
 			break;
 		case RTBelowStrategyNumber:
-			retval = below_gbox_gbox_internal(key, query);
+			retval = below_stbox_stbox_internal(key, query);
 			break;
 		case RTOverBelowStrategyNumber:
-			retval = overbelow_gbox_gbox_internal(key, query);
+			retval = overbelow_stbox_stbox_internal(key, query);
 			break;
 		case RTAboveStrategyNumber:
-			retval = above_gbox_gbox_internal(key, query);
+			retval = above_stbox_stbox_internal(key, query);
 			break;
 		case RTOverAboveStrategyNumber:
-			retval = overabove_gbox_gbox_internal(key, query);
+			retval = overabove_stbox_stbox_internal(key, query);
 			break;
 		case RTFrontStrategyNumber:
-			retval = front_gbox_gbox_internal(key, query);
+			retval = front_stbox_stbox_internal(key, query);
 			break;
 		case RTOverFrontStrategyNumber:
-			retval = overfront_gbox_gbox_internal(key, query);
+			retval = overfront_stbox_stbox_internal(key, query);
 			break;
 		case RTBackStrategyNumber:
-			retval = back_gbox_gbox_internal(key, query);
+			retval = back_stbox_stbox_internal(key, query);
 			break;
 		case RTOverBackStrategyNumber:
-			retval = overback_gbox_gbox_internal(key, query);
+			retval = overback_stbox_stbox_internal(key, query);
 			break;
 		case RTBeforeStrategyNumber:
-			retval = /* before_gbox_gbox_internal(key, query) */
-				(key->mmax <= query->mmin);
+			retval = /* before_stbox_stbox_internal(key, query) */
+				(key->tmax <= query->tmin);
 			break;
 		case RTOverBeforeStrategyNumber:
-			retval = overbefore_gbox_gbox_internal(key, query); 
+			retval = overbefore_stbox_stbox_internal(key, query); 
 			break;
 		case RTAfterStrategyNumber:
-			retval = /* after_gbox_gbox_internal(key, query)*/
-				(key->mmin >= query->mmax); 
+			retval = /* after_stbox_stbox_internal(key, query)*/
+				(key->tmin >= query->tmax); 
 			break;
 		case RTOverAfterStrategyNumber:
-			retval = overafter_gbox_gbox_internal(key, query); 
+			retval = overafter_stbox_stbox_internal(key, query); 
 			break;			
 		default:
 			elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -116,7 +124,7 @@ index_leaf_consistent_gbox(GBOX *key, GBOX *query, StrategyNumber strategy)
 }
 
 /*****************************************************************************
- * Internal-page consistent method for temporal points using a gbox.
+ * Internal-page consistent method for temporal points using a stbox.
  *
  * Should return false if for all data items x below entry, the predicate 
  * x op query must be false, where op is the oper corresponding to strategy 
@@ -124,7 +132,7 @@ index_leaf_consistent_gbox(GBOX *key, GBOX *query, StrategyNumber strategy)
  *****************************************************************************/
 
 static bool
-gist_internal_consistent_gbox(GBOX *key, GBOX *query, StrategyNumber strategy)
+gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
 {
 	bool retval;
 	
@@ -132,59 +140,59 @@ gist_internal_consistent_gbox(GBOX *key, GBOX *query, StrategyNumber strategy)
 	{
 		case RTOverlapStrategyNumber:
 		case RTContainedByStrategyNumber:
-			retval = overlaps_gbox_gbox_internal(key, query);
+			retval = overlaps_stbox_stbox_internal(key, query);
 			break;
 		case RTContainsStrategyNumber:
 		case RTSameStrategyNumber:
-			retval = contains_gbox_gbox_internal(key, query);
+			retval = contains_stbox_stbox_internal(key, query);
 			break;
 		case RTLeftStrategyNumber:
-			retval = !overright_gbox_gbox_internal(key, query);
+			retval = !overright_stbox_stbox_internal(key, query);
 			break;
 		case RTOverLeftStrategyNumber:
-			retval = !right_gbox_gbox_internal(key, query);
+			retval = !right_stbox_stbox_internal(key, query);
 			break;
 		case RTRightStrategyNumber:
-			retval = !overleft_gbox_gbox_internal(key, query);
+			retval = !overleft_stbox_stbox_internal(key, query);
 			break;
 		case RTOverRightStrategyNumber:
-			retval = !left_gbox_gbox_internal(key, query);
+			retval = !left_stbox_stbox_internal(key, query);
 			break;
 		case RTBelowStrategyNumber:
-			retval = !overabove_gbox_gbox_internal(key, query);
+			retval = !overabove_stbox_stbox_internal(key, query);
 			break;
 		case RTOverBelowStrategyNumber:
-			retval = !above_gbox_gbox_internal(key, query);
+			retval = !above_stbox_stbox_internal(key, query);
 			break;
 		case RTAboveStrategyNumber:
-			retval = !overbelow_gbox_gbox_internal(key, query);
+			retval = !overbelow_stbox_stbox_internal(key, query);
 			break;
 		case RTOverAboveStrategyNumber:
-			retval = !below_gbox_gbox_internal(key, query);
+			retval = !below_stbox_stbox_internal(key, query);
 			break;
 		case RTFrontStrategyNumber:
-			retval = !overback_gbox_gbox_internal(key, query);
+			retval = !overback_stbox_stbox_internal(key, query);
 			break;
 		case RTOverFrontStrategyNumber:
-			retval = !back_gbox_gbox_internal(key, query);
+			retval = !back_stbox_stbox_internal(key, query);
 			break;
 		case RTBackStrategyNumber:
-			retval = !overfront_gbox_gbox_internal(key, query);
+			retval = !overfront_stbox_stbox_internal(key, query);
 			break;
 		case RTOverBackStrategyNumber:
-			retval = !front_gbox_gbox_internal(key, query);
+			retval = !front_stbox_stbox_internal(key, query);
 			break;
 		case RTBeforeStrategyNumber:
-			retval = !overafter_gbox_gbox_internal(key, query);
+			retval = !overafter_stbox_stbox_internal(key, query);
 			break;
 		case RTOverBeforeStrategyNumber:
-			retval = !after_gbox_gbox_internal(key, query);
+			retval = !after_stbox_stbox_internal(key, query);
 			break;
 		case RTAfterStrategyNumber:
-			retval = !overbefore_gbox_gbox_internal(key, query);
+			retval = !overbefore_stbox_stbox_internal(key, query);
 			break;
 		case RTOverAfterStrategyNumber:
-			retval = !before_gbox_gbox_internal(key, query);
+			retval = !before_stbox_stbox_internal(key, query);
 			break;
 		default:
 			elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -235,7 +243,7 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid subtype = PG_GETARG_OID(3);
 	bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-	GBOX *key = (GBOX *)DatumGetPointer(entry->key), 
+	STBOX *key = (STBOX *)DatumGetPointer(entry->key), 
 		query;
 	
 	/* Determine whether the index is lossy depending on the strategy */
@@ -251,15 +259,15 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 	{
 		/* Since function gist_tpoint_consistent is strict, query is not NULL */
-		if (!geo_to_gbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
+		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);										  
 	}
-	else if (subtype == type_oid(T_GBOX))
+	else if (subtype == type_oid(T_STBOX))
 	{
-		GBOX *box = PG_GETARG_GBOX_P(1);
+		STBOX *box = PG_GETARG_STBOX_P(1);
 		if (box == NULL)
 			PG_RETURN_BOOL(false);
-		memcpy(&query, box, sizeof(GBOX));
+		memcpy(&query, box, sizeof(STBOX));
 	}
 	else if (temporal_type_oid(subtype))
 	{
@@ -273,9 +281,9 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 		elog(ERROR, "unrecognized strategy number: %d", strategy);
 	
 	if (GIST_LEAF(entry))
-		result = index_leaf_consistent_gbox(key, &query, strategy);
+		result = index_leaf_consistent_stbox(key, &query, strategy);
 	else
-		result = gist_internal_consistent_gbox(key, &query, strategy);
+		result = gist_internal_consistent_stbox(key, &query, strategy);
 		
 	PG_RETURN_BOOL(result);
 }
@@ -285,10 +293,10 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /*
- * Increase GBOX b to include addon.
+ * Increase STBOX b to include addon.
  */
 static void
-adjustGbox(GBOX *b, const GBOX *addon)
+adjust_stbox(STBOX *b, const STBOX *addon)
 {
 	if (FLOAT8_LT(b->xmax, addon->xmax))
 		b->xmax = addon->xmax;
@@ -302,14 +310,14 @@ adjustGbox(GBOX *b, const GBOX *addon)
 		b->zmax = addon->zmax;
 	if (FLOAT8_GT(b->zmin, addon->zmin))
 		b->zmin = addon->zmin;
-	if (FLOAT8_LT(b->mmax, addon->mmax))
-		b->mmax = addon->mmax;
-	if (FLOAT8_GT(b->mmin, addon->mmin))
-		b->mmin = addon->mmin;
+	if (FLOAT8_LT(b->tmax, addon->tmax))
+		b->tmax = addon->tmax;
+	if (FLOAT8_GT(b->tmin, addon->tmin))
+		b->tmin = addon->tmin;
 }
 
 /*
- * The GiST Union method for GBOX
+ * The GiST Union method for STBOX
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
 PG_FUNCTION_INFO_V1(gist_tpoint_union);
@@ -319,16 +327,16 @@ gist_tpoint_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int	i;
-	GBOX *cur, *pageunion;
+	STBOX *cur, *pageunion;
 	
-	pageunion = (GBOX *)palloc0(sizeof(GBOX));
-	cur = (GBOX *)DatumGetPointer(entryvec->vector[0].key);
-	memcpy((void *)pageunion, (void *)cur, sizeof(GBOX));
+	pageunion = (STBOX *)palloc0(sizeof(STBOX));
+	cur = (STBOX *)DatumGetPointer(entryvec->vector[0].key);
+	memcpy((void *)pageunion, (void *)cur, sizeof(STBOX));
 	
 	for (i = 1; i < entryvec->n; i++)
 	{
-		cur = (GBOX *)DatumGetPointer(entryvec->vector[i].key);
-		adjustGbox(pageunion, cur);
+		cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
+		adjust_stbox(pageunion, cur);
 	}
 	
 	PG_RETURN_POINTER(pageunion);
@@ -342,24 +350,24 @@ gist_tpoint_union(PG_FUNCTION_ARGS)
  * Calculates union of two boxes, a and b. The result is stored in *n.
  */
 static void
-rt_gbox_union(GBOX *n, const GBOX *a, const GBOX *b)
+rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
 {
 	n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
 	n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
 	n->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-	n->mmax = FLOAT8_MAX(a->mmax, b->mmax);
+	n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
 	n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
 	n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
 	n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-	n->mmin = FLOAT8_MIN(a->mmin, b->mmin);
+	n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
 }
 
 /*
- * Size of a gbox for penalty-calculation purposes.
+ * Size of a stbox for penalty-calculation purposes.
  * The result can be +Infinity, but not NaN.
  */
 static double
-size_gbox(const GBOX *box)
+size_stbox(const STBOX *box)
 {
 	/*
 	 * Check for zero-width cases.  Note that we define the size of a zero-
@@ -371,7 +379,7 @@ size_gbox(const GBOX *box)
 	if (FLOAT8_LE(box->xmax, box->xmin) ||
 		FLOAT8_LE(box->ymax, box->ymin) ||
 		FLOAT8_LE(box->zmax, box->zmin) ||
-		FLOAT8_LE(box->mmax, box->mmin))
+		FLOAT8_LE(box->tmax, box->tmin))
 		return 0.0;
 	
 	/*
@@ -379,23 +387,23 @@ size_gbox(const GBOX *box)
 	 * and a non-NaN is infinite.  Note the previous check eliminated the
 	 * possibility that the low fields are NaNs.
 	 */
-	if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax) || isnan(box->mmax))
+	if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax) || isnan(box->tmax))
 		return get_float8_infinity();
 	return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
-		(box->mmax - box->mmin) * (box->mmax - box->mmin);
+		(box->tmax - box->tmin) * (box->tmax - box->tmin);
 }
 
 /*
  * Return amount by which the union of the two boxes is larger than
- * the original GBOX's volume.  The result can be +Infinity, but not NaN.
+ * the original STBOX's volume.  The result can be +Infinity, but not NaN.
  */
 static double
-gbox_penalty(const GBOX *original, const GBOX *new)
+stbox_penalty(const STBOX *original, const STBOX *new)
 {
-	GBOX			unionbox;
+	STBOX			unionbox;
 	
-	rt_gbox_union(&unionbox, original, new);
-	return size_gbox(&unionbox) - size_gbox(original);
+	rt_stbox_union(&unionbox, original, new);
+	return size_stbox(&unionbox) - size_stbox(original);
 }
 
 /*
@@ -410,10 +418,10 @@ gist_tpoint_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY* origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY* newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float* result = (float *) PG_GETARG_POINTER(2);
-	GBOX *origbox = (GBOX *)DatumGetPointer(origentry->key);
-	GBOX *newbox = (GBOX *)DatumGetPointer(newentry->key);
+	STBOX *oristbox = (STBOX *)DatumGetPointer(origentry->key);
+	STBOX *newbox = (STBOX *)DatumGetPointer(newentry->key);
 	
-	*result = (float) gbox_penalty(origbox, newbox);
+	*result = (float) stbox_penalty(oristbox, newbox);
 	PG_RETURN_POINTER(result);
 }
 
@@ -430,7 +438,7 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	OffsetNumber i,
 				 maxoff;
-	GBOX		*unionL = NULL,
+	STBOX		*unionL = NULL,
 				*unionR = NULL;
 	int			 nbytes;
 	
@@ -443,18 +451,18 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 	
 	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 	{
-		GBOX *cur = (GBOX *)DatumGetPointer(entryvec->vector[i].key);
+		STBOX *cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
 		
 		if (i <= (maxoff - FirstOffsetNumber + 1) / 2)
 		{
 			v->spl_left[v->spl_nleft] = i;
 			if (unionL == NULL)
 			{
-				unionL = (GBOX *) palloc0(sizeof(GBOX));
+				unionL = (STBOX *) palloc0(sizeof(STBOX));
 				*unionL = *cur;
 			}
 			else
-				adjustGbox(unionL, cur);
+				adjust_stbox(unionL, cur);
 			
 			v->spl_nleft++;
 		}
@@ -463,11 +471,11 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 			v->spl_right[v->spl_nright] = i;
 			if (unionR == NULL)
 			{
-				unionR = (GBOX *) palloc0(sizeof(GBOX));
+				unionR = (STBOX *) palloc0(sizeof(STBOX));
 				*unionR = *cur;
 			}
 			else
-				adjustGbox(unionR, cur);
+				adjust_stbox(unionR, cur);
 			
 			v->spl_nright++;
 		}
@@ -490,13 +498,13 @@ typedef struct
 } CommonEntry;
 
 /*
- * Context for g_gbox_consider_split. Contains information about currently
+ * Context for g_stbox_consider_split. Contains information about currently
  * selected split and some general information.
  */
 typedef struct
 {
 	int			entriesCount;	/* total number of entries being split */
-	GBOX		boundingBox;	/* minimum bounding box across all entries */
+	STBOX		boundingBox;	/* minimum bounding box across all entries */
 	
 	/* Information about currently selected split follows */
 	
@@ -551,7 +559,7 @@ interval_cmp_upper(const void *i1, const void *i2)
 static inline float
 non_negative(float val)
 {
-	if (FPge(val, 0.0f))
+	if (FLOAT8_GE(val, 0.0f))
 		return val;
 	else
 		return 0.0f;
@@ -561,7 +569,7 @@ non_negative(float val)
  * Consider replacement of currently selected split with the better one.
  */
 static inline void
-g_gbox_consider_split(ConsiderSplitContext *context, int dimNum,
+g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 					   double rightLower, int minLeftCount,
 					   double leftUpper, int maxLeftCount)
 {
@@ -694,7 +702,7 @@ common_entry_cmp(const void *i1, const void *i2)
  * minimize the overlap of the groups. Then the same is repeated for the
  * Y-axis and the Z-axis, and the overall best split is chosen.
  * The quality of a split is determined by overlap along that axis and some
- * other criteria (see g_gbox_consider_split).
+ * other criteria (see g_stbox_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
@@ -720,7 +728,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	OffsetNumber i,
 				maxoff;
 	ConsiderSplitContext context;
-	GBOX	   *box,
+	STBOX	   *box,
 			   *leftBox,
 			   *rightBox;
 	int			dim,
@@ -745,16 +753,16 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	 */
 	for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 	{
-		box = (GBOX *)DatumGetPointer(entryvec->vector[i].key);
+		box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
 		if (i == FirstOffsetNumber)
 			context.boundingBox = *box;
 		else
-			adjustGbox(&context.boundingBox, box);
+			adjust_stbox(&context.boundingBox, box);
 	}
 
 	/* Determine whether there is a Z dimension */
-	box = (GBOX *)DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
-	hasz = FLAGS_GET_Z(box->flags);
+	box = (STBOX *)DatumGetPointer(entryvec->vector[FirstOffsetNumber].key);
+	hasz = MOBDB_FLAGS_GET_Z(box->flags);
 	
 	/*
 	 * Iterate over axes for optimal split searching.
@@ -774,7 +782,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		/* Project each entry as an interval on the selected axis. */
 		for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
 		{
-			box = (GBOX *)DatumGetPointer(entryvec->vector[i].key);
+			box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
 			if (dim == 0)
 			{
 				intervalsLower[i - FirstOffsetNumber].lower = box->xmin;
@@ -792,8 +800,8 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 			}
 			else
 			{
-				intervalsLower[i - FirstOffsetNumber].lower = box->mmin;
-				intervalsLower[i - FirstOffsetNumber].upper = box->mmax;
+				intervalsLower[i - FirstOffsetNumber].lower = box->tmin;
+				intervalsLower[i - FirstOffsetNumber].upper = box->tmax;
 			}
 		}
 		
@@ -873,7 +881,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			g_gbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
+			g_stbox_consider_split(&context, dim, rightLower, i1, leftUpper, i2);
 		}
 		
 		/*
@@ -909,7 +917,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 			/*
 			 * Consider found split.
 			 */
-			g_gbox_consider_split(&context, dim, rightLower, i1 + 1, 
+			g_stbox_consider_split(&context, dim, rightLower, i1 + 1, 
 				leftUpper, i2 + 1);
 		}
 	}
@@ -938,8 +946,8 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	v->spl_nright = 0;
 	
 	/* Allocate bounding boxes of left and right groups */
-	leftBox = palloc0(sizeof(GBOX));
-	rightBox = palloc0(sizeof(GBOX));
+	leftBox = palloc0(sizeof(STBOX));
+	rightBox = palloc0(sizeof(STBOX));
 	
 	/*
 	 * Allocate an array for "common entries" - entries which can be placed to
@@ -952,7 +960,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)					\
 	do {										\
 		if (v->spl_nleft > 0)					\
-			adjustGbox(leftBox, box);			\
+			adjust_stbox(leftBox, box);			\
 		else									\
 			*leftBox = *(box);					\
 		v->spl_left[v->spl_nleft++] = off;		\
@@ -961,7 +969,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)					\
 	do {										\
 		if (v->spl_nright > 0)					\
-			adjustGbox(rightBox, box);			\
+			adjust_stbox(rightBox, box);			\
 		else									\
 			*rightBox = *(box);					\
 		v->spl_right[v->spl_nright++] = off;	\
@@ -979,7 +987,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		/*
 		 * Get upper and lower bounds along selected axis.
 		 */
-		box = (GBOX *)DatumGetPointer(entryvec->vector[i].key);
+		box = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
 		if (context.dim == 0)
 		{
 			lower = box->xmin;
@@ -997,8 +1005,8 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		}
 		else
 		{
-			lower = box->mmin;
-			upper = box->mmax;
+			lower = box->tmin;
+			upper = box->tmax;
 		}
 		
 		if (FLOAT8_LE(upper, context.leftUpper))
@@ -1046,9 +1054,9 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		 */
 		for (i = 0; i < commonEntriesCount; i++)
 		{
-			box = (GBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
-			commonEntries[i].delta = Abs(gbox_penalty(leftBox, box) -
-										 gbox_penalty(rightBox, box));
+			box = (STBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+			commonEntries[i].delta = Abs(stbox_penalty(leftBox, box) -
+										 stbox_penalty(rightBox, box));
 		}
 		
 		/*
@@ -1062,7 +1070,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		 */
 		for (i = 0; i < commonEntriesCount; i++)
 		{
-			box = (GBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
+			box = (STBOX *)DatumGetPointer(entryvec->vector[commonEntries[i].index].key);
 			
 			/*
 			 * Check if we have to place this entry in either group to achieve
@@ -1075,7 +1083,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 			else
 			{
 				/* Otherwise select the group by minimal penalty */
-				if (gbox_penalty(leftBox, box) < gbox_penalty(rightBox, box))
+				if (stbox_penalty(leftBox, box) < stbox_penalty(rightBox, box))
 					PLACE_LEFT(box, commonEntries[i].index);
 				else
 					PLACE_RIGHT(box, commonEntries[i].index);
@@ -1097,25 +1105,25 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
  *
  * Returns true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
- * equivalent to gbox_same().
+ * equivalent to stbox_same().
  */
 PG_FUNCTION_INFO_V1(gist_tpoint_same);
 
 PGDLLEXPORT Datum
 gist_tpoint_same(PG_FUNCTION_ARGS)
 {
-	GBOX *b1 = (GBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
-	GBOX *b2 = (GBOX *)DatumGetPointer(PG_GETARG_DATUM(1));
+	STBOX *b1 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
+	STBOX *b2 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(1));
 	bool* result = (bool *) PG_GETARG_POINTER(2);
 	if (b1 && b2)
 		*result = (FLOAT8_EQ(b1->xmin, b2->xmin) &&
 				   FLOAT8_EQ(b1->ymin, b2->ymin) &&
 				   FLOAT8_EQ(b1->zmin, b2->zmin) &&
-				   FLOAT8_EQ(b1->mmin, b2->mmin) &&
+				   FLOAT8_EQ(b1->tmin, b2->tmin) &&
 				   FLOAT8_EQ(b1->xmax, b2->xmax) &&
 				   FLOAT8_EQ(b1->ymax, b2->ymax) &&
 				   FLOAT8_EQ(b1->zmax, b2->zmax) &&
-				   FLOAT8_EQ(b1->mmax, b2->mmax));
+				   FLOAT8_EQ(b1->tmax, b2->tmax));
 	else
 		*result = (b1 == NULL && b2 == NULL);
 	PG_RETURN_POINTER(result);
@@ -1135,7 +1143,7 @@ gist_tpoint_compress(PG_FUNCTION_ARGS)
 	{
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
 		Temporal *temp = DatumGetTemporal(entry->key);
-		GBOX *box = palloc0(sizeof(GBOX));
+		STBOX *box = palloc0(sizeof(STBOX));
 		temporal_bbox(box, temp);
 		gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page, 
 			entry->offset, false);

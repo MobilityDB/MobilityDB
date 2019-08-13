@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TemporalI.c
- *	  Basic functions for temporal instants.
+ *	  Basic functions for temporal instant sets.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -10,10 +10,27 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TemporalI.h"
+
+#include <assert.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 #endif
 
 /*****************************************************************************
@@ -187,14 +204,18 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
 #endif
-	/* Compute the new size */
-	size_t tisize = VARSIZE(ti) - 
-		double_pad(sizeof(TemporalI) + (ti->count + 1) * sizeof(size_t));
-	size_t instsize = VARSIZE(inst);
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	for (int i = 0; i < ti->count; i++)
+		memsize += double_pad(VARSIZE(temporali_inst_n(ti, i)));
+	memsize += double_pad(VARSIZE(inst));
+	/* Add the size of the struct and the offset array */
 	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 2) * sizeof(size_t));
 	/* Create the TemporalI */
-	TemporalI *result = palloc0(pdata + tisize + instsize);
-	SET_VARSIZE(result, pdata + tisize + instsize);
+	TemporalI *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
@@ -216,7 +237,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	offsets[ti->count] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
-	if (temporal_bbox_size(valuetypid) != 0) 
+	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_expand_bbox(bbox, ti, inst);
@@ -234,46 +255,73 @@ temporali_copy(TemporalI *ti)
 	return result;
 }
 
-/* Binary search of a timestamptz in a TemporalI or in an array of TemporalInst*/
+/*
+ * Binary search of a timestamptz in a TemporalI or in an array of TemporalInst.
+ * If the timestamp is found, the position of the instant is returned in pos.
+ * Otherwise, return a number encoding whether it is before, between two 
+ * instants or after. For example, given 3 instants, the result of the 
+ * function if the value is not found will be as follows: 
+ *			0		1		2
+ *			|		|		|
+ * 1)	t^ 								=> result = 0
+ * 2)			t^ 						=> result = 1
+ * 3)					t^ 				=> result = 2
+ * 4)							t^		=> result = 3
+ */
 
-int
-temporali_find_timestamp(TemporalI *ti, TimestampTz t) 
+bool
+temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos) 
 {
-	int first = 0;
-	int last = ti->count - 1;
-	int middle = (first + last)/2;
+	int first = 0, last = ti->count - 1;
+	int middle = 0; /* make compiler quiet */
+	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last) 
 	{
-		TemporalInst *inst = temporali_inst_n(ti, middle);
-		if (timestamp_cmp_internal(t, inst->t) == 0)
-			return middle;
-		if (timestamp_cmp_internal(t, inst->t) < 0)
+		middle = (first + last)/2;
+		inst = temporali_inst_n(ti, middle);
+		int cmp = timestamp_cmp_internal(inst->t, t);
+		if (cmp == 0)
+		{
+			*pos = middle;
+			return true;
+		}
+		if (cmp > 0)
 			last = middle - 1;
 		else
 			first = middle + 1;
-		middle = (first + last)/2;
 	}
-	return -1;
+	if (timestamp_cmp_internal(t, inst->t) > 0)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
-int 
-temporalinstarr_find_timestamp(TemporalInst **array, int from, int count, 
-	TimestampTz t) 
+bool 
+temporalinstarr_find_timestamp(TemporalInst **instants, int from, int count, 
+	TimestampTz t, int *pos) 
 {
-	int first = from;
-	int last = count - 1;
-	int middle = (first + last)/2;
+	int first = from, last = count - 1;
+	int middle = 0; /* make compiler quiet */
+	TemporalInst *inst = NULL; /* make compiler quiet */
 	while (first <= last) 
 	{
-		if (timestamp_cmp_internal(t, array[middle]->t) == 0)
-			return middle;
-		if (timestamp_cmp_internal(t, array[middle]->t) < 0)
+		middle = (first + last)/2;
+		inst = instants[middle];
+		int cmp = timestamp_cmp_internal(inst->t, t);
+		if (cmp == 0)
+		{
+			*pos = middle;
+			return true;
+		}
+		if (cmp > 0)
 			last = middle - 1;
 		else
 			first = middle + 1;	
-		middle = (first + last)/2;
 	}
-	return middle;
+	if (timestamp_cmp_internal(t, inst->t) > 0)
+		middle++;
+	*pos = middle;
+	return false;
 }
 
 /*****************************************************************************
@@ -567,18 +615,18 @@ temporali_get_time(TemporalI *ti)
 RangeType *
 tnumberi_value_range(TemporalI *ti)
 {
-	BOX *box = temporali_bbox_ptr(ti);
+	TBOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	number_base_type_oid(ti->valuetypid);
+	numeric_base_type_oid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
-		min = Int32GetDatum((int)(box->low.x));
-		max = Int32GetDatum((int)(box->high.x));
+		min = Int32GetDatum((int)(box->xmin));
+		max = Int32GetDatum((int)(box->xmax));
 	}
 	else if (ti->valuetypid == FLOAT8OID)
 	{
-		min = Float8GetDatum(box->low.x);
-		max = Float8GetDatum(box->high.x);
+		min = Float8GetDatum(box->xmin);
+		max = Float8GetDatum(box->xmax);
 	}
 	return range_make(min, max, true, true, ti->valuetypid);
 }
@@ -590,13 +638,13 @@ temporali_min_value(TemporalI *ti)
 {
 	if (ti->valuetypid == INT4OID)
 	{
-		BOX *box = temporali_bbox_ptr(ti);
-		return Int32GetDatum((int)(box->low.x));
+		TBOX *box = temporali_bbox_ptr(ti);
+		return Int32GetDatum((int)(box->xmin));
 	}
 	else if (ti->valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporali_bbox_ptr(ti);
-		return Float8GetDatum(box->low.x);
+		TBOX *box = temporali_bbox_ptr(ti);
+		return Float8GetDatum(box->xmin);
 	}
 	else
 	{
@@ -623,13 +671,13 @@ temporali_max_value(TemporalI *ti)
 {
 	if (ti->valuetypid == INT4OID)
 	{
-		BOX *box = temporali_bbox_ptr(ti);
-		return Int32GetDatum((int)(box->high.x));
+		TBOX *box = temporali_bbox_ptr(ti);
+		return Int32GetDatum((int)(box->xmax));
 	}
 	else if (ti->valuetypid == FLOAT8OID)
 	{
-		BOX *box = temporali_bbox_ptr(ti);
-		return Float8GetDatum(box->high.x);
+		TBOX *box = temporali_bbox_ptr(ti);
+		return Float8GetDatum(box->xmax);
 	}
 	else
 	{
@@ -718,10 +766,10 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, ti->valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, ti->valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
 
@@ -742,14 +790,14 @@ temporali_always_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		BOX box;
+		TBOX box = {0,0,0,0,0};
 		temporali_bbox(&box, ti);
 		if (ti->valuetypid == INT4OID)
-			return box.low.x == box.high.x &&
-				(int)(box.high.x) == DatumGetInt32(value);
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetInt32(value);
 		else
-			return box.low.x == box.high.x &&
-				(int)(box.high.x) == DatumGetFloat8(value);
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetFloat8(value);
 	}
 
 	for (int i = 0; i < ti->count; i++) 
@@ -795,10 +843,10 @@ temporali_at_value(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
 
@@ -835,10 +883,10 @@ temporali_minus_value(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		BOX box1, box2;
+		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 		temporali_bbox(&box1, ti);
-		base_to_box(&box2, value, valuetypid);
-		if (!contains_box_box_internal(&box1, &box2))
+		base_to_tbox(&box2, value, valuetypid);
+		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporali_copy(ti);
 	}
 
@@ -955,10 +1003,10 @@ TemporalI *
 tnumberi_at_range(TemporalI *ti, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporali_bbox(&box1, ti);
-	range_to_box_internal(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return NULL;
 
 	/* Singleton instant set */
@@ -994,10 +1042,10 @@ TemporalI *
 tnumberi_minus_range(TemporalI *ti, RangeType *range)
 {
 	/* Bounding box test */
-	BOX box1, box2;
+	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
 	temporali_bbox(&box1, ti);
-	range_to_box_internal(&box2, range);
-	if (!overlaps_box_box_internal(&box1, &box2))
+	range_to_tbox_internal(&box2, range);
+	if (!overlaps_tbox_tbox_internal(&box1, &box2))
 		return temporali_copy(ti);
 
 	/* Singleton instant set */
@@ -1122,8 +1170,8 @@ tnumberi_minus_ranges(TemporalI *ti, RangeType **normranges, int count)
 TemporalI *
 temporali_at_min(TemporalI *ti)
 {
-	Datum minvalue = temporali_min_value(ti);
-	return temporali_at_value(ti, minvalue);	
+	Datum xmin = temporali_min_value(ti);
+	return temporali_at_value(ti, xmin);	
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1131,8 +1179,8 @@ temporali_at_min(TemporalI *ti)
 TemporalI *
 temporali_minus_min(TemporalI *ti)
 {
-	Datum minvalue = temporali_min_value(ti);
-	return temporali_minus_value(ti, minvalue);	
+	Datum xmin = temporali_min_value(ti);
+	return temporali_minus_value(ti, xmin);	
 }
 
 /* Restriction to the maximum value */
@@ -1140,8 +1188,8 @@ temporali_minus_min(TemporalI *ti)
 TemporalI *
 temporali_at_max(TemporalI *ti)
 {
-	Datum maxvalue = temporali_max_value(ti);
-	return temporali_at_value(ti, maxvalue);	
+	Datum xmax = temporali_max_value(ti);
+	return temporali_at_value(ti, xmax);	
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1149,8 +1197,8 @@ temporali_at_max(TemporalI *ti)
 TemporalI *
 temporali_minus_max(TemporalI *ti)
 {
-	Datum maxvalue = temporali_max_value(ti);
-	return temporali_minus_value(ti, maxvalue);	
+	Datum xmax = temporali_max_value(ti);
+	return temporali_minus_value(ti, xmax);	
 }
 
 /* 
@@ -1174,8 +1222,8 @@ temporali_at_timestamp(TemporalI *ti, TimestampTz t)
 		return temporalinst_copy(temporali_inst_n(ti, 0));
 
 	/* General case */
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
+	int n;
+	if (! temporali_find_timestamp(ti, t, &n))
 		return NULL;
 	TemporalInst *inst = temporali_inst_n(ti, n);
 	return temporalinst_copy(inst);
@@ -1191,9 +1239,9 @@ temporali_at_timestamp(TemporalI *ti, TimestampTz t)
 bool 
 temporali_value_at_timestamp(TemporalI *ti, TimestampTz t, Datum *result)
 {
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
-		return false;		
+	int n;
+	if (! temporali_find_timestamp(ti, t, &n))
+		return false;
 
 	TemporalInst *inst = temporali_inst_n(ti, n);
 	*result = temporalinst_value_copy(inst);
@@ -1483,10 +1531,8 @@ temporali_minus_periodset(TemporalI *ti, PeriodSet *ps)
 bool
 temporali_intersects_timestamp(TemporalI *ti, TimestampTz t)
 {
-	int n = temporali_find_timestamp(ti, t);
-	if (n == -1)
-		return false;
-	return true;
+	int n;
+	return temporali_find_timestamp(ti, t, &n);
 }
 
 /* Does the temporal value intersects the timestamp set? */

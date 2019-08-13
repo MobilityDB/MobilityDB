@@ -9,8 +9,15 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
- 
-#include "TemporalTypes.h"
+
+#include "Range.h"
+
+#include <assert.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 
 /*****************************************************************************
  * Generic range functions
@@ -219,20 +226,6 @@ intrange_canonical(PG_FUNCTION_ARGS)
 		upper.inclusive = false;
 	}
 	PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
-}
-
-/* Convert an integer range into a float range */
-
-RangeType *
-numrange_to_floatrange(RangeType *range)
-{
-	if (range->rangetypid == type_oid(T_FLOATRANGE))
-		return range_make(lower_datum(range), upper_datum(range), 
-			lower_inc(range), lower_inc(range), FLOAT8OID);
-	/* Function upper_datum subtract 1 to the result of upper(range) */
-	Datum lower = Float8GetDatum((double)DatumGetInt32(lower_datum(range)));
-	Datum upper = Float8GetDatum((double)(DatumGetInt32(upper_datum(range))));
-	return range_make(lower, upper, true, true, FLOAT8OID);
 }
 
 /*****************************************************************************/

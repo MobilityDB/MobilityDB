@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * TimeTypesOps.c
+ * TimeOps.c
  *	  Operators for time types.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
@@ -10,7 +10,15 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TimeOps.h"
+
+#include <assert.h>
+#include <utils/timestamp.h>
+
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimestampSet.h"
+#include "OidCache.h"
 
 /*****************************************************************************/
 

@@ -22,6 +22,7 @@ src/Period.c
 src/PeriodSet.c
 src/Range.c
 src/RelativePosOps.c
+src/Tbox.c
 src/Temporal.c
 src/TemporalAnalyze.c
 src/TemporalI.c
@@ -29,12 +30,12 @@ src/TemporalInst.c
 src/TemporalS.c
 src/TemporalSelFuncs.c
 src/TemporalSeq.c
-src/TemporalTypes.c
+src/TemporalUtil.c
 src/TextFuncs.c
 src/TimeOps.c
 src/TimeSelFuncs.c
 src/TimestampSet.c
-src/TimeTypanalyze.c
+src/TimeAnalyze.c
 src/TnumberSelFuncs.c
 src/WAggregateFuncs.c
         include/TimeSelFuncs.h)
@@ -49,6 +50,7 @@ src/sql/11_TimeOps.in.sql
 src/sql/13_IndexGistTime.in.sql
 src/sql/15_IndexSPGistTime.in.sql
 src/sql/20_DoubleN.in.sql
+src/sql/21_Tbox.in.sql
 src/sql/22_Temporal.in.sql
 src/sql/24_MathematicalFuncs.in.sql
 src/sql/26_BooleanOps.in.sql

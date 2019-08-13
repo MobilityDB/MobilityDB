@@ -18,7 +18,20 @@
  *
  *****************************************************************************/
 
+#include "TempSpatialRels.h"
+
+#include <utils/timestamp.h>
+
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "LiftingFuncs.h"
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "SpatialRels.h"
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships 

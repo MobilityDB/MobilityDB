@@ -10,10 +10,14 @@
  *
  *****************************************************************************/
 
+#include "Parser.h"
+
+#include "PeriodSet.h"
+#include "Period.h"
+#include "TimestampSet.h"
 #include "TemporalTypes.h"
-#ifdef WITH_POSTGIS
-#include "TemporalPoint.h"
-#endif
+#include "TemporalUtil.h"
+
 
 /*****************************************************************************/
 
@@ -141,6 +145,119 @@ basetype_parse(char **str, Oid basetype)
 		/* Replace the at */
 		(*str)[delim] = '@';
 	*str += delim + 1; // since we know there's an @ here, let's take it with us
+	return result;
+}
+
+/*****************************************************************************/
+
+TBOX *
+tbox_parse(char **str) 
+{
+	double xmin, xmax, tmin, tmax, tmp;
+	bool hasx = false, hast = false;
+	p_whitespace(str);
+	if (strncasecmp(*str, "TBOX", 4) == 0) 
+	{
+		*str += 4;
+		p_whitespace(str);
+	}
+	else
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	/* Parse double opening parenthesis */
+	if (!p_oparen(str) || !p_oparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	p_whitespace(str);
+
+	/* Determine whether there is an X dimension */
+	char *nextstr = *str;
+	xmin = strtod(*str, &nextstr);
+	if (*str != nextstr)
+	{
+		hasx = true;
+		*str = nextstr; 
+	}
+
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);		
+
+	/* Determine whether there is a T dimension */
+	tmin = strtod(*str, &nextstr);
+	if (*str != nextstr)
+	{
+		hast = true;
+		*str = nextstr; 
+	}
+
+	if (! hasx && ! hast)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	p_whitespace(str);
+	if (!p_cparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);		
+
+	/* Parse upper bounds */
+	if (!p_oparen(str))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	if (hasx)
+	{
+		xmax = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+	}
+	p_whitespace(str);
+	p_comma(str);
+	p_whitespace(str);
+	if (hast)
+	{	
+		tmax = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse STBOX")));
+		*str = nextstr; 
+	}
+	p_whitespace(str);
+	if (!p_cparen(str) || !p_cparen(str) )
+	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
+
+	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, hasx);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
+	if (hasx)
+	{
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
+	}
+	if (hast)
+	{
+		if (tmin > tmax)
+		{
+			tmp = tmin;
+			tmin = tmax;
+			tmax = tmp;
+		}
+		result->tmin = tmin;
+		result->tmax = tmax;
+	}
 	return result;
 }
 

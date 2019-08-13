@@ -1,23 +1,30 @@
 /*****************************************************************************
  *
- * TemporalSelFuncs.c
- *	  Functions for selectivity estimation of operators on temporal types
+ * TempPointSelFuncs.h
+ * 		Selectivity functions for the temporal point types
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
- * 		Universite Libre de Bruxelles
+ *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
- *	src/TemporalSelFuncs.c
- *
+ *	include/TempPointSelFuncs.h
  *****************************************************************************/
- 
-#include "TemporalTypes.h"
-#include "TimeSelFuncs.h"
+#include "TemporalSelFuncs.h"
+
+#include <server/utils/builtins.h>
+#include <server/utils/date.h>
+#include <utils/syscache.h>
+#include <Range.h>
+#include <assert.h>
+#include <PeriodSet.h>
+#include <TimestampSet.h>
+#include <TimeSelFuncs.h>
+#include <TemporalPoint.h>
 
 /*
- *	Selectivity functions for temporal types operators.  These are bogus -- 
+ *	Selectivity functions for temporal types operators.  These are bogus --
  *	unless we know the actual key distribution in the index, we can't make
  *	a good prediction of the selectivity of these operators.
  *
@@ -37,10 +44,10 @@
 /*****************************************************************************/
 
 /*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&), 
- * contains (@>), contained (<@), and, same (~=). These operators depend on 
- * volume. Contains and contained are tighter contraints than overlaps, so 
- * the former should produce lower estimates than the latter. Similarly, 
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
+ * contains (@>), contained (<@), and, same (~=). These operators depend on
+ * volume. Contains and contained are tighter contraints than overlaps, so
+ * the former should produce lower estimates than the latter. Similarly,
  * equals is a tighter constrain tha contains and contained.
  */
 
@@ -66,7 +73,7 @@ PG_FUNCTION_INFO_V1(temporal_overlaps_joinsel);
 PGDLLEXPORT Datum
 temporal_overlaps_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.005);
+    PG_RETURN_FLOAT8(0.005);
 }
 
 PG_FUNCTION_INFO_V1(temporal_contains_sel);
@@ -78,7 +85,7 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
     Oid operator = PG_GETARG_OID(1);
     List *args = (List *) PG_GETARG_POINTER(2);
     int varRelid = PG_GETARG_INT32(3);
-    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, CONTAINS_OP);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
     if (selec < 0.0)
         selec = 0.002;
     else if (selec > 1.0)
@@ -91,7 +98,7 @@ PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
 PGDLLEXPORT Datum
 temporal_contains_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.002);
+    PG_RETURN_FLOAT8(0.002);
 }
 
 PG_FUNCTION_INFO_V1(temporal_same_sel);
@@ -99,7 +106,16 @@ PG_FUNCTION_INFO_V1(temporal_same_sel);
 PGDLLEXPORT Datum
 temporal_same_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
+    if (selec < 0.0)
+        selec = 0.001;
+    else if (selec > 1.0)
+        selec = 1.0;
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_same_joinsel);
@@ -107,15 +123,15 @@ PG_FUNCTION_INFO_V1(temporal_same_joinsel);
 PGDLLEXPORT Datum
 temporal_same_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PG_RETURN_FLOAT8(0.001);
 }
 
 /*****************************************************************************/
 
 /*
- * Selectivity for operators for relative position box operators, i.e., 
- * left (<<), overleft (&<), right (>>), overright (&>), before (<<#), 
- * overbefore (&<#), after (#>>), overafter (#&>). 
+ * Selectivity for operators for relative position box operators, i.e.,
+ * left (<<), overleft (&<), right (>>), overright (&>), before (<<#),
+ * overbefore (&<#), after (#>>), overafter (#&>).
  */
 
 PG_FUNCTION_INFO_V1(temporal_position_sel);
@@ -123,7 +139,95 @@ PG_FUNCTION_INFO_V1(temporal_position_sel);
 PGDLLEXPORT Datum
 temporal_position_sel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+    Oid operator = PG_GETARG_OID(1);
+    List *args = (List *) PG_GETARG_POINTER(2);
+    int varRelid = PG_GETARG_INT32(3);
+    VariableStatData vardata;
+    Node *other;
+    bool varonleft;
+    Selectivity selec = 0.001;
+    CachedOp cachedOp = get_temporal_cacheOp(operator) ;
+    /* In the case of unknown operator */
+    if (cachedOp == OVERLAPS_OP)
+        PG_RETURN_FLOAT8(selec);
+    /*
+     * If expression is not (variable op something) or (something op
+     * variable), then punt and return a default estimate.
+     */
+    if (!get_restriction_variable(root, args, varRelid,
+                                  &vardata, &other, &varonleft))
+        PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+
+    /*
+     * Can't do anything useful if the something is not a constant, either.
+     */
+    if (!IsA(other, Const))
+    {
+        ReleaseVariableStats(vardata);
+        PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+    }
+
+    /*
+     * All the period operators are strict, so we can cope with a NULL constant
+     * right away.
+     */
+    if (((Const *) other)->constisnull)
+    {
+        ReleaseVariableStats(vardata);
+        PG_RETURN_FLOAT8(0.0);
+    }
+
+    /*
+     * If var is on the right, commute the operator, so that we can assume the
+     * var is on the left in what follows.
+     */
+    if (!varonleft)
+    {
+        switch (cachedOp)
+        {
+            case BEFORE_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+                break;
+            case AFTER_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+                break;
+            case OVERBEFORE_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
+                break;
+            case OVERAFTER_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+                break;
+            default:
+                selec = 0.001;
+        }
+    }
+    else
+    {
+        switch (cachedOp)
+        {
+            case BEFORE_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+                break;
+            case AFTER_OP:
+                selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+                break;
+            case OVERBEFORE_OP:
+                selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+                break;
+            case OVERAFTER_OP:
+                selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+                break;
+            default:
+                selec = 0.001;
+        }
+    }
+
+    if (selec < 0.0)
+        selec = default_temporaltypes_selectivity(operator);
+    ReleaseVariableStats(vardata);
+    CLAMP_PROBABILITY(selec);
+    PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(temporal_position_joinsel);
@@ -131,11 +235,10 @@ PG_FUNCTION_INFO_V1(temporal_position_joinsel);
 PGDLLEXPORT Datum
 temporal_position_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PG_RETURN_FLOAT8(0.001);
 }
 
 /*****************************************************************************/
-
 Selectivity
 temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
 {
@@ -230,32 +333,40 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Constant
     // Check the temporal types and inside each one check the cachedOp
     Selectivity  selec = 0.0;
     int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
-    if (vardata.vartype == type_oid(T_TBOOL) || vardata.vartype == type_oid(T_TTEXT) ||
-        vardata.vartype == type_oid(T_TIMESTAMPTZ))
+    switch (constantData.bBoxBounds)
     {
-        switch (constantData.bBoxBounds)
+        case STCONST:
+        case SNCONST_STCONST:
+        case DNCONST_STCONST:
         {
-            case STCONST:
-            case SNCONST_STCONST:
-            case DNCONST_STCONST:
+            if(durationType == TEMPORALINST)
             {
-                if(durationType == TEMPORALINST)
+                Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+                selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+                                     false, TEMPORAL_STATISTICS);
+            }
+            else
+                selec = period_sel_internal(root, &vardata, constantData.period,
+                                            oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
+
+            break;
+        }
+        case DTCONST:
+        case SNCONST_DTCONST:
+        case DNCONST_DTCONST:
+        {
+            if(durationType == TEMPORALINST)
+            {
+                if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
                 {
                     Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
                     selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
                                          false, TEMPORAL_STATISTICS);
+                    selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
+                                          false, TEMPORAL_STATISTICS);
+                    selec = selec > 1 ? 1 : selec;
                 }
                 else
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-
-                break;
-            }
-            case DTCONST:
-            case SNCONST_DTCONST:
-            case DNCONST_DTCONST:
-            {
-                if(durationType == TEMPORALINST)
                 {
                     Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
                     Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
@@ -269,22 +380,187 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Constant
                     selec = 1 - selec;
                     selec = selec < 0 ? 0 : selec;
                 }
-                else
-                {
-                    selec = period_sel_internal(root, &vardata, constantData.period,
-                                                oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-                }
-                break;
             }
-            default:
-                break;
+            else
+            {
+                selec = period_sel_internal(root, &vardata, constantData.period,
+                                            oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+            }
+            break;
         }
+        default:
+            break;
     }
-    else if (vardata.vartype == T_PERIOD)
+
+    return selec;
+}
+
+Selectivity
+estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
+                               Node *other, bool isgt, bool iseq, CachedOp operator)
+{
+    double selec = 0.0;
+    int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+
+    if (durationType == TEMPORALINST && (vardata.vartype == type_oid(T_TBOOL) ||
+                                         vardata.vartype == type_oid(T_TINT) ||
+                                         vardata.vartype == type_oid(T_TFLOAT) ||
+                                         vardata.vartype == type_oid(T_TTEXT) ||
+                                         vardata.vartype == type_oid(T_TGEOMPOINT) ||
+                                         vardata.vartype == type_oid(T_TGEOGPOINT)))
+    {
+        Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+
+        PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
+
+        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+                               TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_TBOOL) ||
+             vardata.vartype == type_oid(T_TINT) ||
+             vardata.vartype == type_oid(T_TFLOAT) ||
+             vardata.vartype == type_oid(T_TTEXT) ||
+             vardata.vartype == type_oid(T_TGEOMPOINT) ||
+             vardata.vartype == type_oid(T_TGEOGPOINT))
+    {
+        Oid op = (Oid) 0;
+
+        if (!isgt && !iseq)
+            op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
+        else if (isgt && iseq)
+            op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
+        else if (iseq)
+            op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+        else if (isgt)
+            op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
+
+        PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
+        Period *period = period_make(periodBound->val, periodBound->val, true, true);
+        selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
+    }
+    else if (vardata.vartype == TIMESTAMPTZOID)
+    {
+        Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+        PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
+        selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+                               TIMESTAMPTZOID, DEFAULT_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_PERIOD))
+    {
+        Oid op = (Oid) 0;
+        if (!isgt && !iseq)
+            op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
+        else if (!isgt && iseq)
+            op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+        else if (isgt && !iseq)
+            op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
+        else if (isgt && iseq)
+            op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+
+        PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
+        Period *period = period_make(periodBound->val, periodBound->val, true, true);
+        selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
+    }
+    else if (vardata.vartype == type_oid(T_TBOX))
+    {
+
+    }
+    else if (vardata.vartype == type_oid(T_STBOX))
     {
 
     }
     return selec;
+}
+
+PeriodBound *
+lower_or_higher_temporal_bound(Node *other, bool higher)
+{
+
+    PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
+    Oid consttype = ((Const *) other)->consttype;
+    if (higher)
+    {
+        result->inclusive = false;
+        if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->upper;
+        }
+        else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+        {
+            Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+            TBOX box = {0,0,0,0,0};
+            temporal_bbox(&box, temporal);
+            result->val = (TimestampTz)box.tmax;
+        }
+        else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->upper;
+        }
+        else if (consttype == TIMESTAMPTZOID)
+        {
+            result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
+        }
+        else if (consttype == type_oid(T_PERIOD))
+        {
+            result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
+        }
+        else if (consttype == type_oid(T_TBOX))
+        {
+            result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmax;
+        }
+        else if (consttype == type_oid(T_STBOX))
+        {
+            result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmax;
+        }
+    }
+    else
+    {
+        result->inclusive = true;
+        if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->lower;
+        }
+        else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+        {
+            Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+            TBOX box = {0,0,0,0,0};
+            temporal_bbox(&box, temporal);
+            result->val = (TimestampTz)box.tmin;
+        }
+        else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+        {
+            Period *p = (Period *)palloc(sizeof(Period));
+            /* TODO MEMORY LEAK HERE !!!! */
+            temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+            result->val = p->lower;
+        }
+        else if (consttype == TIMESTAMPTZOID)
+        {
+            result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
+        }
+        else if (consttype == type_oid(T_PERIOD))
+        {
+            result->val = DatumGetPeriod(((Const *) other)->constvalue)->lower;
+        }
+        else if (consttype == type_oid(T_TBOX))
+        {
+            result->val = (TimestampTz)DatumGetTboxP(((Const *) other)->constvalue)->tmin;
+        }
+        else if (consttype == type_oid(T_STBOX))
+        {
+            result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
+        }
+    }
+    return result;
 }
 
 Selectivity
@@ -739,6 +1015,7 @@ ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
     }
     return hist_selec;
 }
+
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/
@@ -1090,15 +1367,16 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
     if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
     {
         Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-        BOX *box = palloc(sizeof(BOX));
-        temporal_bbox(box, temp);
+        TBOX box = {0,0,0,0,0};
+        temporal_bbox(&box, temp);
+        /* The boxes should have both dimensions X and T  */
+        assert(MOBDB_FLAGS_GET_X(box.flags) && MOBDB_FLAGS_GET_T(box.flags));
         *numeric = true;
         *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        temporal_timespan_internal(*period, temp);
+        *lower = box.xmin;
+        *upper = box.xmax;
+        *period = period_make((TimestampTz)box.tmin, (TimestampTz)box.tmax, true, true);
         *bBoxBounds = DNCONST_DTCONST;
-        pfree(box);
     }
     else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
     {
@@ -1122,21 +1400,11 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *bBoxBounds = DNCONST;
 
     }
-    else if (consttype == BOXOID)
-    {
-        BOX *box = DatumGetBoxP(((Const *) other)->constvalue);
-        *numeric = true;
-        *temporal = true;
-        *lower = box->low.x;
-        *upper = box->high.x;
-        *period = period_make(box->low.y, box->high.y, true, true);
-        *bBoxBounds = DNCONST_DTCONST;
-    }
     else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     {
         Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
         *period = palloc(sizeof(Period));
-        temporal_bbox(period, temp);
+        temporal_bbox(*period, temp);
         *temporal = true;
         *bBoxBounds = DTCONST;
     }
@@ -1166,4 +1434,180 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
         *period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
         *bBoxBounds = DTCONST;
     }
+    else if (consttype == type_oid(T_TBOX))
+    {
+        TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
+        if (MOBDB_FLAGS_GET_X(box->flags))
+        {
+            *numeric = true;
+            *lower = box->xmin;
+            *upper = box->xmax;
+        }
+        if (MOBDB_FLAGS_GET_T(box->flags))
+        {
+            *temporal = true;
+            *period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
+        }
+        if (*numeric && *temporal)
+            *bBoxBounds = DNCONST_DTCONST;
+        else if (*numeric)
+        {
+            if (box->xmin == box->xmax)
+                *bBoxBounds = SNCONST;
+            else
+                *bBoxBounds = DNCONST;
+        }
+        else if (*temporal)
+            *bBoxBounds = DTCONST;
+    }
+}
+bool
+get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
+                          int reqkind, Oid reqop, int flags, StatisticsStrategy strategy)
+{
+    Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
+    int i, start = 0, end = 0;  /* keep compiler quiet */
+    Datum val;
+    bool isnull;
+    ArrayType *statarray;
+    Oid arrayelemtype;
+    int narrayelem;
+    HeapTuple typeTuple;
+    Form_pg_type typeForm;
+
+    switch (strategy) {
+        case VALUE_STATISTICS: {
+            start = 0;
+            end = 2;
+            break;
+        }
+        case TEMPORAL_STATISTICS: {
+            start = 2;
+            end = 5;
+            break;
+        }
+        case DEFAULT_STATISTICS: {
+            start = 0;
+            end = STATISTIC_NUM_SLOTS;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    /* initialize *sslot properly */
+    memset(sslot, 0, sizeof(AttStatsSlot));
+
+    for (i = start; i < end; i++) {
+        if ((&stats->stakind1)[i] == reqkind &&
+            (reqop == InvalidOid || (&stats->staop1)[i] == reqop))
+            break;
+    }
+    if (i >= end)
+        return false;			/* not there */
+
+    sslot->staop = (&stats->staop1)[i];
+
+    if (flags & ATTSTATSSLOT_VALUES) {
+        val = SysCacheGetAttr(STATRELATTINH, statstuple,
+                              Anum_pg_statistic_stavalues1 + i,
+                              &isnull);
+        if (isnull)
+            elog(ERROR, "stavalues is null");
+
+        /*
+         * Detoast the array if needed, and in any case make a copy that's
+         * under control of this AttStatsSlot.
+         */
+        statarray = DatumGetArrayTypePCopy(val);
+
+        /*
+         * Extract the actual array element type, and pass it after in case the
+         * caller needs it.
+         */
+        sslot->valuetype = arrayelemtype = ARR_ELEMTYPE(statarray);
+
+        /* Need info about element type */
+        typeTuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(arrayelemtype));
+        if (!HeapTupleIsValid(typeTuple))
+            elog(ERROR, "cache lookup failed for type %u", arrayelemtype);
+        typeForm = (Form_pg_type) GETSTRUCT(typeTuple);
+
+        /* Deconstruct array into Datum elements; NULLs not expected */
+        deconstruct_array(statarray,
+                          arrayelemtype,
+                          typeForm->typlen,
+                          typeForm->typbyval,
+                          typeForm->typalign,
+                          &sslot->values, NULL, &sslot->nvalues);
+
+        /*
+         * If the element type is pass-by-reference, we now have a bunch of
+         * Datums that are pointers into the statarray, so we need to keep
+         * that until free_attstatsslot.  Otherwise, all the useful info is in
+         * sslot->values[], so we can free the array object immediately.
+         */
+        if (!typeForm->typbyval)
+            sslot->values_arr = statarray;
+        else
+            pfree(statarray);
+
+        ReleaseSysCache(typeTuple);
+    }
+
+    if (flags & ATTSTATSSLOT_NUMBERS) {
+        val = SysCacheGetAttr(STATRELATTINH, statstuple,
+                              Anum_pg_statistic_stanumbers1 + i,
+                              &isnull);
+        if (isnull)
+            elog(ERROR, "stanumbers is null");
+
+        /*
+         * Detoast the array if needed, and in any case make a copy that's
+         * under control of this AttStatsSlot.
+         */
+        statarray = DatumGetArrayTypePCopy(val);
+
+        /*
+         * We expect the array to be a 1-D float4 array; verify that. We don't
+         * need to use deconstruct_array() since the array data is just going
+         * to look like a C array of float4 values.
+         */
+        narrayelem = ARR_DIMS(statarray)[0];
+        if (ARR_NDIM(statarray) != 1 || narrayelem <= 0 ||
+            ARR_HASNULL(statarray) ||
+            ARR_ELEMTYPE(statarray) != FLOAT4OID)
+            elog(ERROR, "stanumbers is not a 1-D float4 array");
+
+        /* Give caller a pointer directly into the statarray */
+        sslot->numbers = (float4 *) ARR_DATA_PTR(statarray);
+        sslot->nnumbers = narrayelem;
+
+        /* We'll free the statarray in free_attstatsslot */
+        sslot->numbers_arr = statarray;
+    }
+
+    return true;
+}
+
+/** Get the name of the operator from different cases */
+CachedOp
+get_temporal_cacheOp(Oid operator)
+{
+    for (int i = LT_OP; i <= OVERAFTER_OP; i++)
+    {
+        if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
+            operator == oper_oid((CachedOp)i, T_TBOX, T_TBOOL) ||
+            operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
+            operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
+            operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
+            operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
+            return (CachedOp)i;
+    }
+    return OVERLAPS_OP;
+    /*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+            errmsg("Operation not supported")));*/
 }
