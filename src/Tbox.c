@@ -10,7 +10,12 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include "Tbox.h"
+
+#include <assert.h>
+
+#include "Temporal.h"
+#include "Parser.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -34,7 +39,8 @@ tbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-char* tbox_to_string(const TBOX *box)
+char *
+tbox_to_string(const TBOX *box)
 {
 	static int sz = 128;
 	char *str = NULL;

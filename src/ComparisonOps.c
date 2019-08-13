@@ -10,7 +10,13 @@
  *
  *****************************************************************************/
 
+#include "ComparisonOps.h"
+
+#include <utils/lsyscache.h>
+
 #include "TemporalTypes.h"
+#include "TemporalUtil.h"
+#include "LiftingFuncs.h"
 
 /*****************************************************************************
  * Generic dispatch functions

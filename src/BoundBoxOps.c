@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * BoundingBoxOps.c
+ * BoundBoxOps.c
  *	  Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are 
@@ -20,9 +20,25 @@
  *
  *****************************************************************************/
 
+#include "BoundBoxOps.h"
+
+#include <assert.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "Range.h"
+#include "Tbox.h"
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "STbox.h"
+#include "GeoBoundBoxOps.h"
 #endif
 
 /*****************************************************************************
@@ -476,7 +492,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 void
 base_to_tbox(TBOX *box, Datum value, Oid valuetypid)
 {
-	number_base_type_oid(valuetypid);
+	numeric_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)

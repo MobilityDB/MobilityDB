@@ -10,8 +10,21 @@
  *
  *****************************************************************************/
 
+#include "AggregateFuncs.h"
+
+#include <assert.h>
+#include <catalog/pg_collation.h>
+#include <libpq/pqformat.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "Period.h"
+#include "TimeOps.h"
 #include "TemporalTypes.h"
-#include "Aggregates.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "BooleanOps.h"
+#include "DoubleN.h"
 
 /*****************************************************************************
  * Numeric aggregate functions on datums
@@ -437,7 +450,7 @@ static int
 tnumberseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	int returnvalue = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		returnvalue = tintseq_transform_tavg(result, seq);
 	if (seq->valuetypid == FLOAT8OID)
@@ -667,7 +680,9 @@ temporalseq_tagg1(TemporalSeq **result,
 	 * tint '[1@2000-01-03, 2@2000-01-04]' and tint '[3@2000-01-01, 4@2000-01-05]'
 	 * whose result for sum would be the following three sequences
 	 * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and
-	 * (3@2000-01-04, 3@2000-01-05]
+	 * (3@2000-01-04, 4@2000-01-05] which after normalization becomes
+	 * [3@2000-01-01, 4@2000-01-03, 5@2000-01-04], and
+	 * (3@2000-01-04, 4@2000-01-05]
 	 */
 	Period period;
 	TimestampTz lower1 = seq1->period.lower;
@@ -1348,7 +1363,7 @@ temporalseq_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalSeq *seq)
 {
 	int maxcount = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 		maxcount = seq->count;
 	else if (seq->valuetypid == FLOAT8OID)
@@ -1375,7 +1390,7 @@ temporals_tavg_transfn(FunctionCallInfo fcinfo, AggregateState *state,
 	TemporalS *ts)
 {
 	int maxcount = 0;
-	number_base_type_oid(ts->valuetypid);
+	numeric_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 		maxcount = ts->totalcount;
 	else if (ts->valuetypid == FLOAT8OID)

@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------------
  *
  * IndexSpgistTnumber.c
- *		SP-GiST implementation of 4-dimensional quad tree over temporal
- *		integers and floats.
+ *	SP-GiST implementation of 4-dimensional quad tree over temporal
+ *	integers and floats.
  *
  * These functions are based on those in the file geo_spgist.c.
  * This module provides SP-GiST implementation for temporal number types 
@@ -72,7 +72,15 @@
  *-----------------------------------------------------------------------------
  */
 
-#include "TemporalTypes.h"
+#include "IndexSpgistTnumber.h"
+
+#include <access/spgist.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "BoundBoxOps.h"
+#include "IndexGistTnumber.h"
 
 /*****************************************************************************/
 
@@ -363,7 +371,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 
 	/* Fill the output */
 	out->hasPrefix = true;
-	out->prefixDatum = BoxPGetDatum(centroid);
+	out->prefixDatum = PointerGetDatum(centroid);
 
 	out->nNodes = 16;
 	out->nodeLabels = NULL;		/* We don't need node labels. */
@@ -380,7 +388,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 		TBOX *box = DatumGetTboxP(in->datums[i]);
 		uint8 quadrant = getQuadrant4D(centroid, box);
 
-		out->leafTupleDatums[i] = BoxPGetDatum(box);
+		out->leafTupleDatums[i] = PointerGetDatum(box);
 		out->mapTuplesToNodes[i] = quadrant;
 	}
 

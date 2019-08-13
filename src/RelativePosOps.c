@@ -13,8 +13,14 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
- 
-#include "TemporalTypes.h"
+
+#include "RelativePosOps.h"
+
+#include <assert.h>
+
+#include "TimeOps.h"
+#include "Temporal.h"
+#include "BoundBoxOps.h"
 
 /*****************************************************************************/
 /* TBOX op TBOX */

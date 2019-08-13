@@ -21,7 +21,14 @@
  *
  *****************************************************************************/
 
+#include "GeoRelativePosOps.h"
+
+#include <assert.h>
+
+#include "PostGIS.h"
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "GeoBoundBoxOps.h"
 
 /*****************************************************************************/
 /* STBOX op STBOX */

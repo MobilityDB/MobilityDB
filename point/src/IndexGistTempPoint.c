@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * IndexGistTPoint.c
+ * IndexGistTempPoint.c
  *	  R-tree GiST index for temporal points.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
@@ -10,7 +10,15 @@
  *
  *****************************************************************************/
 
+#include "IndexGistTempPoint.h"
+
+#include <access/gist.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "GeoRelativePosOps.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
@@ -551,7 +559,7 @@ interval_cmp_upper(const void *i1, const void *i2)
 static inline float
 non_negative(float val)
 {
-	if (FPge(val, 0.0f))
+	if (FLOAT8_GE(val, 0.0f))
 		return val;
 	else
 		return 0.0f;

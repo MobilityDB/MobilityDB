@@ -10,10 +10,14 @@
  *
  *****************************************************************************/
 
+#include "Parser.h"
+
+#include "PeriodSet.h"
+#include "Period.h"
+#include "TimestampSet.h"
 #include "TemporalTypes.h"
-#ifdef WITH_POSTGIS
-#include "TemporalPoint.h"
-#endif
+#include "TemporalUtil.h"
+
 
 /*****************************************************************************/
 

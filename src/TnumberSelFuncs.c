@@ -1,25 +1,25 @@
 /*****************************************************************************
  *
  * TnumberSelFuncs.c
- *	  Functions for selectivity estimation of operators on temporal types
+ *	  Functions for selectivity estimation of operators on temporal numeric types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * IDENTIFICATION
- *	src/TnumberSelFuncs.c
+ *	These functions are only stubs, they need to be written TODO
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TnumberSelFuncs.h"
+
+#include <server/nodes/relation.h>
 #include <TemporalSelFuncs.h>
-#include "TemporalTypes.h"
-#include "TemporalSelFuncs.h"
+#include <assert.h>
 
 /*
- *	Selectivity functions for temporal types operators.  These are bogus -- 
+ *	Selectivity functions for temporal types operators.  These are bogus --
  *	unless we know the actual key distribution in the index, we can't make
  *	a good prediction of the selectivity of these operators.
  *
@@ -39,10 +39,10 @@
 /*****************************************************************************/
 
 /*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&), 
- * contains (@>), contained (<@), and, same (~=). These operators depend on 
- * volume. Contains and contained are tighter contraints than overlaps, so 
- * the former should produce lower estimates than the latter. Similarly, 
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
+ * contains (@>), contained (<@), and, same (~=). These operators depend on
+ * volume. Contains and contained are tighter contraints than overlaps, so
+ * the former should produce lower estimates than the latter. Similarly,
  * equals is a tighter constrain tha contains and contained.
  */
 
@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(tnumber_overlaps_joinsel);
 PGDLLEXPORT Datum
 tnumber_overlaps_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.005);
+    PG_RETURN_FLOAT8(0.005);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_contains_sel);
@@ -93,7 +93,7 @@ PG_FUNCTION_INFO_V1(tnumber_contains_joinsel);
 PGDLLEXPORT Datum
 tnumber_contains_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.002);
+    PG_RETURN_FLOAT8(0.002);
 }
 
 PG_FUNCTION_INFO_V1(tnumber_same_sel);
@@ -118,15 +118,15 @@ PG_FUNCTION_INFO_V1(tnumber_same_joinsel);
 PGDLLEXPORT Datum
 tnumber_same_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PG_RETURN_FLOAT8(0.001);
 }
 
 /*****************************************************************************/
 
 /*
- * Selectivity for operators for relative position box operators, i.e., 
- * left (<<), overleft (&<), right (>>), overright (&>), before (<<#), 
- * overbefore (&<#), after (#>>), overafter (#&>). 
+ * Selectivity for operators for relative position box operators, i.e.,
+ * left (<<), overleft (&<), right (>>), overright (&>), before (<<#),
+ * overbefore (&<#), after (#>>), overafter (#&>).
  */
 
 PG_FUNCTION_INFO_V1(tnumber_position_sel);
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(tnumber_position_joinsel);
 PGDLLEXPORT Datum
 tnumber_position_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+    PG_RETURN_FLOAT8(0.001);
 }
 
 /*****************************************************************************/
@@ -500,10 +500,15 @@ estimate_tnumber_position_sel(VariableStatData vardata,
     double selec = 0.0;
     if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
     {
-        TypeCacheEntry *typcache = lookup_type_cache(range_oid_from_base(base_oid_from_temporal(vardata.vartype)),
-                                                     TYPECACHE_RANGE_INFO);
+        TypeCacheEntry *typcache;
+        if (vardata.vartype == type_oid(T_TINT))
+            typcache = lookup_type_cache(type_oid(T_INTRANGE),
+                                         TYPECACHE_RANGE_INFO);
+        else
+            typcache = lookup_type_cache(type_oid(T_FLOATRANGE),
+                                         TYPECACHE_RANGE_INFO);
         selec = range_sel_internal(&vardata, (Datum)lower_or_higher_value_bound(other, isgt),
-                           isgt, iseq, typcache, VALUE_STATISTICS);
+                                   isgt, iseq, typcache, VALUE_STATISTICS);
     }
     return selec;
 }

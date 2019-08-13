@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------------
  *
  * IndexSpgistTime.c
- *		Quad-tree SP-GiST index for time types.
+ *	Quad-tree SP-GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_spgist.c.
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
@@ -12,7 +12,18 @@
  *-----------------------------------------------------------------------------
  */
 
+#include "IndexSpgistTime.h"
+
+#include <access/spgist.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "IndexGistTime.h"
 #include "TemporalTypes.h"
+#include "OidCache.h"
 
 /*****************************************************************************
  * SP-GiST config functions
@@ -251,7 +262,7 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
 		
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{
-			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
+			TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
 			period_set(&period, t, t, true, true);
 			query = &period;
 		}
@@ -470,7 +481,7 @@ spgist_time_leaf_consistent(PG_FUNCTION_ARGS)
 			
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{
-			TimestampTz t = DatumGetTimestamp(in->scankeys[i].sk_argument);
+			TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
 			period_set(&period, t, t, true, true);
 			query = &period;
 		}

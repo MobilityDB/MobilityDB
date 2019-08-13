@@ -10,10 +10,28 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TemporalSeq.h"
+
+#include <assert.h>
+#include <access/hash.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
+#include "GeoBoundBoxOps.h"
 #endif
 
 /*****************************************************************************
@@ -1564,7 +1582,7 @@ tnumberseq_value_range(TemporalSeq *seq)
 {
 	TBOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = 0, max = 0;
-	number_base_type_oid(seq->valuetypid);
+	numeric_base_type_oid(seq->valuetypid);
 	if (seq->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->xmin);

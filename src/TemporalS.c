@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TemporalS.c
- *	  Basic functions for temporal set sequences.
+ *	  Basic functions for temporal sequence sets.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -10,10 +10,26 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TemporalS.h"
+
+#include <assert.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "TemporalUtil.h"
+#include "OidCache.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 #endif
 
 /*****************************************************************************
@@ -835,7 +851,7 @@ tnumbers_value_range(TemporalS *ts)
 {
 	TBOX *box = temporals_bbox_ptr(ts);
 	Datum min = 0, max = 0;
-	number_base_type_oid(ts->valuetypid);
+	numeric_base_type_oid(ts->valuetypid);
 	if (ts->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum(box->xmin);

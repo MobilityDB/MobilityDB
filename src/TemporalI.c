@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * TemporalI.c
- *	  Basic functions for temporal instants.
+ *	  Basic functions for temporal instant sets.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
@@ -10,10 +10,27 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
+#include "TemporalI.h"
+
+#include <assert.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "BoundBoxOps.h"
+#include "Range.h"
 
 #ifdef WITH_POSTGIS
 #include "TemporalPoint.h"
+#include "SpatialFuncs.h"
 #endif
 
 /*****************************************************************************
@@ -600,7 +617,7 @@ tnumberi_value_range(TemporalI *ti)
 {
 	TBOX *box = temporali_bbox_ptr(ti);
 	Datum min = 0, max = 0;
-	number_base_type_oid(ti->valuetypid);
+	numeric_base_type_oid(ti->valuetypid);
 	if (ti->valuetypid == INT4OID)
 	{
 		min = Int32GetDatum((int)(box->xmin));

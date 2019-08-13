@@ -16,6 +16,8 @@ point/src/SpatialFuncs.c
 point/src/SpatialRels.c
 point/src/TempDistance.c
 point/src/TempPoint.c
+point/src/TempPointIn.c
+point/src/TempPointOut.c
 point/src/TempPointAnalyze.c
 point/src/TempPointSelFuncs.c
 point/src/TempSpatialRels.c
@@ -23,7 +25,9 @@ point/src/TempSpatialRels.c
 
 set(SQLPOINT
 point/src/sql/50_STbox.in.sql
-point/src/sql/52_TempPoint.in.sql
+point/src/sql/51_TempPoint.in.sql
+point/src/sql/52_TempPointIn.in.sql
+point/src/sql/53_TempPointOut.in.sql
 point/src/sql/54_ComparisonOps.in.sql
 point/src/sql/56_SpatialFuncs.in.sql
 point/src/sql/58_GeoBoundBoxOps.in.sql
