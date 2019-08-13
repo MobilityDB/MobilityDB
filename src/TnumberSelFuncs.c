@@ -14,7 +14,7 @@
 
 #include "TnumberSelFuncs.h"
 
-#include <server/nodes/relation.h>
+#include <nodes/relation.h>
 #include <TemporalSelFuncs.h>
 #include <assert.h>
 

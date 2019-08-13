@@ -18,7 +18,7 @@
 #include <catalog/pg_statistic.h>
 #include <datatype/timestamp.h>
 #include <OidCache.h>
-#include <server/nodes/relation.h>
+#include <nodes/relation.h>
 #include "TemporalPoint.h"
 
 /**

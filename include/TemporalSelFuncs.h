@@ -20,10 +20,10 @@
 #include <commands/vacuum.h>
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
-#include <server/utils/lsyscache.h>
-#include <server/utils/timestamp.h>
-#include <server/access/htup_details.h>
-#include <server/catalog/pg_collation_d.h>
+#include <utils/lsyscache.h>
+#include <utils/timestamp.h>
+#include <access/htup_details.h>
+#include <catalog/pg_collation_d.h>
 #include <Period.h>
 #include <Range.h>
 #include "Temporal.h"

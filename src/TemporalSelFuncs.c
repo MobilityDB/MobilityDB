@@ -13,9 +13,8 @@
  *****************************************************************************/
 #include "TemporalSelFuncs.h"
 
-#include <server/utils/builtins.h>
-#include <server/utils/date.h>
-
+#include <utils/builtins.h>
+#include <utils/date.h>
 #include <utils/syscache.h>
 #include <Range.h>
 #include <assert.h>
