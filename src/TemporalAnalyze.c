@@ -15,10 +15,10 @@
 
 #include "TemporalAnalyze.h"
 
-#include <server/catalog/pg_collation_d.h>
-#include <server/catalog/pg_operator_d.h>
-#include <server/utils/timestamp.h>
-#include <server/access/htup_details.h>
+#include <catalog/pg_collation_d.h>
+#include <catalog/pg_operator_d.h>
+#include <utils/timestamp.h>
+#include <access/htup_details.h>
 #include "OidCache.h"
 #include "assert.h"
 #include "TemporalTypes.h"
@@ -27,7 +27,6 @@
 #include "Temporal.h"
 #include "TimeTypes.h"
 #include "Range.h"
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
