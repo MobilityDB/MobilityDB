@@ -461,7 +461,7 @@ datetimes_mfjson_buf(char *output, TemporalInst *inst)
 	/* Replace ' ' by 'T' as separator between date and time parts */
 	t[10] = 'T';
 	ptr += sprintf(ptr, "\"%s\"", t);
-	pfree(t);
+	// pfree(t); FIXME
 	return (ptr - output);
 }
 
@@ -815,9 +815,37 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 #define WKB_INT_SIZE 4 /* Internal use only */
 #define WKB_BYTE_SIZE 1 /* Internal use only */
 
+/**
+* Well-Known Binary (WKB) Flags
+*/
+
+#define WKB_ZFLAG  		0x10
+#define WKB_SRIDFLAG 	0x20
+#define WKB_BBOXFLAG 	0x40
+
+#define WKB_LOWER_INC	0x01
+#define WKB_UPPER_INC 	0x02
+
 /* Machine endianness */
 #define XDR 0 /* big endian */
 #define NDR 1 /* little endian */
+
+/*
+** Variants available for WKB and WKT output types
+*/
+
+#define WKB_ISO 0x01
+#define WKB_SFSQL 0x02
+#define WKB_EXTENDED 0x04
+#define WKB_NDR 0x08
+#define WKB_XDR 0x10
+#define WKB_HEX 0x20
+#define WKB_NO_NPOINTS 0x40 /* Internal use only */
+#define WKB_NO_SRID 0x80 /* Internal use only */
+
+#define WKT_ISO 0x01
+#define WKT_SFSQL 0x02
+#define WKT_EXTENDED 0x04
 
 /*
 * Look-up table for hex writer
@@ -830,8 +858,27 @@ getMachineEndian(void)
 	static int endian_check_int = 1; /* don't modify this!!! */
 
 	return *((char *) &endian_check_int); /* 0 = big endian | xdr,
-	                                       * 1 = little endian | ndr
-	                                       */
+										   * 1 = little endian | ndr
+										   */
+}
+
+/*
+* Endian
+*/
+static uint8_t *
+endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
+{
+	if (variant & WKB_HEX)
+	{
+		buf[0] = '0';
+		buf[1] = ((variant & WKB_NDR) ? '1' : '0');
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = ((variant & WKB_NDR) ? 1 : 0);
+		return buf + 1;
+	}
 }
 
 /*
@@ -842,7 +889,7 @@ wkb_swap_bytes(uint8_t variant)
 {
 	/* If requested variant matches machine arch, we don't have to swap! */
 	if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
-	     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
+		 ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
 	{
 		return false;
 	}
@@ -991,8 +1038,316 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 	}
 }
 
+static bool
+tpoint_wkb_needs_srid(Temporal *temp, uint8_t variant)
+{
+	/* We can only add an SRID if the geometry has one, and the
+	   WKB form is extended */
+	if ((variant & WKB_EXTENDED) && tpoint_srid_internal(temp) != SRID_UNKNOWN)
+		return true;
+
+	/* Everything else doesn't get an SRID */
+	return false;
+}
+
+static size_t
+tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
+{
+	int dims = 2;
+	size_t size = 0;
+	if (hasz)
+		dims = 3;
+	/* size of the TemporalInst array */
+	size += dims * npoints * WKB_DOUBLE_SIZE + 
+		npoints * WKB_TIMESTAMP_SIZE;
+	return size;
+}
+
+static size_t 
+tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
+{
+	/* Endian flag + temporal flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+		size += WKB_INT_SIZE;
+	/* TemporalInst */
+	size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of instants */
+	size += WKB_INT_SIZE;
+	/* Include the TemporalInst array */
+	size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of instants and the period bounds flag */
+	size += WKB_INT_SIZE + WKB_BYTE_SIZE;
+	/* Include the TemporalInst array */
+	size += tpointinstarr_to_wkb_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpoints_to_wkb_size(TemporalS *ts, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of sequences */
+	size += WKB_INT_SIZE;
+	/* For each sequence include the number of instants and the period bounds flag */
+	size += ts->count * (WKB_INT_SIZE + WKB_BYTE_SIZE);
+	/* Include all the TemporalInst of all the sequences */
+	size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags),
+			variant);
+	return size;
+}
+
+static size_t
+tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
+{
+	size_t size = 0;
+	temporal_duration_is_valid(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		size = tpointinst_to_wkb_size((TemporalInst *)temp, variant);
+	else if (temp->duration == TEMPORALI)
+		size = tpointi_to_wkb_size((TemporalI *)temp, variant);
+	else if (temp->duration == TEMPORALSEQ)
+		size = tpointseq_to_wkb_size((TemporalSeq *)temp, variant);
+	else if (temp->duration == TEMPORALS)
+		size = tpoints_to_wkb_size((TemporalS *)temp, variant);
+	return size;
+}
+
+static uint8_t *
+tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+	uint8_t wkb_flags = 0;
+	if (variant & WKB_EXTENDED)
+	{
+		if ( MOBDB_FLAGS_GET_Z(temp->flags) )
+			wkb_flags |= WKB_ZFLAG;
+		if (tpoint_wkb_needs_srid(temp, variant))
+			wkb_flags |= WKB_SRIDFLAG;
+	}
+	if (variant & WKB_HEX)
+	{
+		buf[0] = hexchr[wkb_flags >> 4];
+		buf[1] = hexchr[temp->duration];
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = temp->duration + wkb_flags;
+		return buf + 1;
+	}
+}
+
+static uint8_t *
+tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)inst), buf, variant);
+	/* Set the coordinates */
+	if (MOBDB_FLAGS_GET_Z(inst->flags))
+	{
+		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point.x, buf, variant);
+		buf = double_to_wkb_buf(point.y, buf, variant);
+		buf = double_to_wkb_buf(point.z, buf, variant);
+	}
+	else 
+	{
+		POINT2D point = datum_get_point2d(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point.x, buf, variant);
+		buf = double_to_wkb_buf(point.y, buf, variant);
+	}	
+	buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	return buf;
+}
+
+static uint8_t *
+tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)ti, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ti), buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(ti->count, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		/* Set the coordinates */
+		if (MOBDB_FLAGS_GET_Z(inst->flags))
+		{
+			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+			buf = double_to_wkb_buf(point.z, buf, variant);
+		}
+		else 
+		{
+			POINT2D point = datum_get_point2d(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+		}	
+		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	}
+	return buf;
+}
+
+static uint8_t *
+tpointseq_wkb_bounds(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+{
+	uint8_t wkb_flags = 0;
+	if (seq->period.lower_inc)
+		wkb_flags |= WKB_LOWER_INC;
+	if (seq->period.upper_inc)
+		wkb_flags |= WKB_UPPER_INC;
+	if (variant & WKB_HEX)
+	{
+		buf[0] = '0';
+		buf[1] = hexchr[wkb_flags];
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = wkb_flags;
+		return buf + 1;
+	}
+}
+
+static uint8_t *
+tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)seq), buf, variant);
+	/* Set the period bounds */
+	buf = tpointseq_wkb_bounds(seq, buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(seq->count, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		/* Set the coordinates */
+		if (MOBDB_FLAGS_GET_Z(inst->flags))
+		{
+			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+			buf = double_to_wkb_buf(point.z, buf, variant);
+		}
+		else 
+		{
+			POINT2D point = datum_get_point2d(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+		}	
+		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	}
+	return buf;
+}
+
+static uint8_t *
+tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ts), buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(ts->count, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		/* Set the count */
+		buf = integer_to_wkb_buf(seq->count, buf, variant);
+		/* Set the period bounds */
+		buf = tpointseq_wkb_bounds(seq, buf, variant);
+		for (int j = 0; j < seq->count; j++)
+		{
+			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			/* Set the coordinates */
+			if (MOBDB_FLAGS_GET_Z(inst->flags))
+			{
+				POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point.x, buf, variant);
+				buf = double_to_wkb_buf(point.y, buf, variant);
+				buf = double_to_wkb_buf(point.z, buf, variant);
+			}
+			else 
+			{
+				POINT2D point = datum_get_point2d(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point.x, buf, variant);
+				buf = double_to_wkb_buf(point.y, buf, variant);
+			}	
+			buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+		}
+	}
+	return buf;
+}
+
+static uint8_t *
+tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+	temporal_duration_is_valid(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		return tpointinst_to_wkb_buf((TemporalInst *)temp, buf, variant);
+	else if (temp->duration == TEMPORALI)
+		return tpointi_to_wkb_buf((TemporalI *)temp, buf, variant);
+	else if (temp->duration == TEMPORALSEQ)
+		return tpointseq_to_wkb_buf((TemporalSeq *)temp, buf, variant);
+	else if (temp->duration == TEMPORALS)
+		return tpoints_to_wkb_buf((TemporalS *)temp, buf, variant);
+	return NULL; /* make compiler quiet */
+}
+
 /**
-* Convert LWGEOM to a char* in WKB format. Caller is responsible for freeing
+* Convert Temporal to a char* in WKB format. Caller is responsible for freeing
 * the returned array.
 *
 * @param variant. Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
@@ -1002,7 +1357,9 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 * @param size_out If supplied, will return the size of the returned memory segment,
 * including the null terminator in the case of ASCII.
 */
-uint8_t* tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+
+uint8_t*
+tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
 	size_t buf_size;
 	uint8_t *buf = NULL;
@@ -1034,7 +1391,7 @@ uint8_t* tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 	/* If neither or both variants are specified, choose the native order */
 	if (! (variant & WKB_NDR || variant & WKB_XDR) ||
-	       (variant & WKB_NDR && variant & WKB_XDR))
+		   (variant & WKB_NDR && variant & WKB_XDR))
 	{
 		if (getMachineEndian() == NDR)
 			variant = variant | WKB_NDR;
@@ -1047,7 +1404,7 @@ uint8_t* tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 	if (buf == NULL)
 	{
-		elog(ERROR, "Unable to allocate %d bytes for WKB output buffer.", buf_size);
+		elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
 		return NULL;
 	}
 
@@ -1083,5 +1440,129 @@ tpoint_to_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
 	return (char *)tpoint_to_wkb(temp, variant | WKB_HEX, size_out);
 }
+
+
+/*
+ * This will have no 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_binary);
+
+PGDLLEXPORT Datum 
+tpoint_as_binary(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	uint8_t *wkb;
+	size_t wkb_size;
+	uint8_t variant = 0;
+ 	bytea *result;
+	text *type;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+	wkb_size = VARSIZE_ANY_EXHDR(temp);
+	/* Create WKB hex string */
+	wkb = tpoint_to_wkb(temp, variant, &wkb_size);
+
+	/* Prepare the PgSQL text return type */
+	result = palloc(wkb_size + VARHDRSZ);
+	memcpy(VARDATA(result), wkb, wkb_size);
+	SET_VARSIZE(result, wkb_size + VARHDRSZ);
+
+	/* Clean up and return */
+	pfree(wkb);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BYTEA_P(result);
+}
+
+/*
+ * This will have 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
+
+PGDLLEXPORT Datum 
+tpoint_as_ewkb(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	uint8_t *wkb;
+	size_t wkb_size;
+	uint8_t variant = 0;
+ 	bytea *result;
+	text *type;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+	wkb_size = VARSIZE_ANY_EXHDR(temp);
+	/* Create WKB hex string */
+	wkb = tpoint_to_wkb(temp, variant | WKB_EXTENDED, &wkb_size);
+
+	/* Prepare the PgSQL text return type */
+	result = palloc(wkb_size + VARHDRSZ);
+	memcpy(VARDATA(result), wkb, wkb_size);
+	SET_VARSIZE(result, wkb_size + VARHDRSZ);
+
+	/* Clean up and return */
+	pfree(wkb);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BYTEA_P(result);
+}
+
+/*
+ * This will have 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
+
+PGDLLEXPORT Datum 
+tpoint_as_hexewkb(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	char *hexwkb;
+	size_t hexwkb_size;
+	uint8_t variant = 0;
+	text *result;
+	text *type;
+	size_t text_size;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+
+	/* Create WKB hex string */
+	hexwkb = (char *)tpoint_to_wkb(temp, variant | WKB_EXTENDED | WKB_HEX, &hexwkb_size);
+
+	/* Prepare the PgSQL text return type */
+	text_size = hexwkb_size - 1 + VARHDRSZ;
+	result = palloc(text_size);
+	memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
+	SET_VARSIZE(result, text_size);
+
+	/* Clean up and return */
+	pfree(hexwkb);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_TEXT_P(result);
+}
+
 
 /*****************************************************************************/
