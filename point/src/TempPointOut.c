@@ -379,7 +379,7 @@ getSRSbySRID(int32_t srid, bool short_crs)
 	srs = SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1);
 
 	/* NULL result */
-	if ( ! srs )
+	if (! srs)
 	{
 		SPI_finish();
 		return NULL;
@@ -800,6 +800,288 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	text *result = cstring_to_text(mfjson);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Output in WKB format 
+ *****************************************************************************/
+
+/**
+* Well-Known Binary (WKB) Output Variant Types
+*/
+
+#define WKB_TIMESTAMP_SIZE 8 /* Internal use only */
+#define WKB_DOUBLE_SIZE 8 /* Internal use only */
+#define WKB_INT_SIZE 4 /* Internal use only */
+#define WKB_BYTE_SIZE 1 /* Internal use only */
+
+/* Machine endianness */
+#define XDR 0 /* big endian */
+#define NDR 1 /* little endian */
+
+/*
+* Look-up table for hex writer
+*/
+static char *hexchr = "0123456789ABCDEF";
+
+static char
+getMachineEndian(void)
+{
+	static int endian_check_int = 1; /* don't modify this!!! */
+
+	return *((char *) &endian_check_int); /* 0 = big endian | xdr,
+	                                       * 1 = little endian | ndr
+	                                       */
+}
+
+/*
+* SwapBytes?
+*/
+static inline bool
+wkb_swap_bytes(uint8_t variant)
+{
+	/* If requested variant matches machine arch, we don't have to swap! */
+	if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
+	     ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
+	{
+		return false;
+	}
+	return true;
+}
+
+/*
+* Integer32
+*/
+static uint8_t*
+integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
+{
+	char *iptr = (char*)(&ival);
+	int i = 0;
+
+	if (sizeof(int) != WKB_INT_SIZE)
+		elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
+
+	if (variant & WKB_HEX)
+	{
+		int swap = wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_INT_SIZE; i++)
+		{
+			int j = (swap ? WKB_INT_SIZE - 1 - i : i);
+			uint8_t b = iptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_INT_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_INT_SIZE; i++)
+			{
+				buf[i] = iptr[WKB_INT_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, iptr, WKB_INT_SIZE);
+		}
+		return buf + WKB_INT_SIZE;
+	}
+}
+
+/*
+* Float64
+*/
+static uint8_t*
+double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
+{
+	char *dptr = (char*)(&d);
+	int i = 0;
+
+	if (sizeof(double) != WKB_DOUBLE_SIZE)
+	{
+		elog(ERROR, "Machine double size is not %d bytes!", WKB_DOUBLE_SIZE);
+	}
+
+	if (variant & WKB_HEX)
+	{
+		int swap =  wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		{
+			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
+			uint8_t b = dptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_DOUBLE_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			{
+				buf[i] = dptr[WKB_DOUBLE_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, dptr, WKB_DOUBLE_SIZE);
+		}
+		return buf + WKB_DOUBLE_SIZE;
+	}
+}
+
+/*
+* Timestamp aka int64
+*/
+static uint8_t*
+timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
+{
+	char *tptr = (char*)(&t);
+	int i = 0;
+
+	if (sizeof(double) != WKB_DOUBLE_SIZE)
+	{
+		elog(ERROR, "Machine timestamp size is not %d bytes!", WKB_DOUBLE_SIZE);
+	}
+
+	if (variant & WKB_HEX)
+	{
+		int swap =  wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		{
+			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
+			uint8_t b = tptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_DOUBLE_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			{
+				buf[i] = tptr[WKB_DOUBLE_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, tptr, WKB_DOUBLE_SIZE);
+		}
+		return buf + WKB_DOUBLE_SIZE;
+	}
+}
+
+/**
+* Convert LWGEOM to a char* in WKB format. Caller is responsible for freeing
+* the returned array.
+*
+* @param variant. Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
+* Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
+* return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
+* would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
+* @param size_out If supplied, will return the size of the returned memory segment,
+* including the null terminator in the case of ASCII.
+*/
+uint8_t* tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+	size_t buf_size;
+	uint8_t *buf = NULL;
+	uint8_t *wkb_out = NULL;
+
+	/* Initialize output size */
+	if (size_out) *size_out = 0;
+
+	if (temp == NULL)
+	{
+		elog(ERROR, "Cannot convert NULL into WKB.");
+		return NULL;
+	}
+
+	/* Calculate the required size of the output buffer */
+	buf_size = tpoint_to_wkb_size(temp, variant);
+
+	if (buf_size == 0)
+	{
+		elog(ERROR, "Error calculating output WKB buffer size.");
+		return NULL;
+	}
+
+	/* Hex string takes twice as much space as binary + a null character */
+	if (variant & WKB_HEX)
+	{
+		buf_size = 2 * buf_size + 1;
+	}
+
+	/* If neither or both variants are specified, choose the native order */
+	if (! (variant & WKB_NDR || variant & WKB_XDR) ||
+	       (variant & WKB_NDR && variant & WKB_XDR))
+	{
+		if (getMachineEndian() == NDR)
+			variant = variant | WKB_NDR;
+		else
+			variant = variant | WKB_XDR;
+	}
+
+	/* Allocate the buffer */
+	buf = palloc(buf_size);
+
+	if (buf == NULL)
+	{
+		elog(ERROR, "Unable to allocate %d bytes for WKB output buffer.", buf_size);
+		return NULL;
+	}
+
+	/* Retain a pointer to the front of the buffer for later */
+	wkb_out = buf;
+
+	/* Write the WKB into the output buffer */
+	buf = tpoint_to_wkb_buf(temp, buf, variant);
+
+	/* Null the last byte if this is a hex output */
+	if (variant & WKB_HEX)
+	{
+		*buf = '\0';
+		buf++;
+	}
+
+	/* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
+	if (buf_size != (size_t) (buf - wkb_out))
+	{
+		elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+		pfree(wkb_out);
+		return NULL;
+	}
+
+	/* Report output size */
+	if (size_out) *size_out = buf_size;
+
+	return wkb_out;
+}
+
+char *
+tpoint_to_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+	return (char *)tpoint_to_wkb(temp, variant | WKB_HEX, size_out);
 }
 
 /*****************************************************************************/
