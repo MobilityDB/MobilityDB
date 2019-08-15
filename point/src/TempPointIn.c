@@ -13,13 +13,13 @@
 #include "TempPointIn.h"
 
 #include <float.h>
-#include <executor/spi.h>
 #include <json-c/json.h>
 #include <json-c/json_object_private.h>
 
 #include "TemporalTypes.h"
 #include "OidCache.h"
 #include "TemporalUtil.h"
+#include "PostGIS.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
 
@@ -40,71 +40,6 @@ text2cstring(const text *textptr)
 	memcpy(str, VARDATA(textptr), size);
 	str[size]='\0';
 	return str;
-}
-
-/*
- * Retrieve an SRID from a given SRS
- * Require valid spatial_ref_sys table entry
- *
- * This function is taken from PostGIS file lwgeom_export.c
- */
-static int
-getSRIDbySRS(const char *srs)
-{
-	char query[256];
-	int32_t srid, err;
-
-	if (!srs) return 0;
-
-	if (SPI_OK_CONNECT != SPI_connect ())
-	{
-		elog(NOTICE, "getSRIDbySRS: could not connect to SPI manager");
-		SPI_finish();
-		return 0;
-	}
-	sprintf(query,
-		"SELECT srid "
-		"FROM spatial_ref_sys, "
-		"regexp_matches('%s', E'([a-z]+):([0-9]+)', 'gi') AS re "
-		"WHERE re[1] ILIKE auth_name AND int4(re[2]) = auth_srid", srs);
-
-	err = SPI_exec(query, 1);
-	if (err < 0)
-	{
-		elog(NOTICE, "getSRIDbySRS: error executing query %d", err);
-		SPI_finish();
-		return 0;
-	}
-
-	/* no entry in spatial_ref_sys */
-	if (SPI_processed <= 0)
-	{
-		sprintf(query,
-			"SELECT srid "
-			"FROM spatial_ref_sys, "
-			"regexp_matches('%s', E'urn:ogc:def:crs:([a-z]+):.*:([0-9]+)', 'gi') AS re "
-			"WHERE re[1] ILIKE auth_name AND int4(re[2]) = auth_srid", srs);
-
-		err = SPI_exec(query, 1);
-		if (err < 0)
-		{
-			elog(NOTICE, "getSRIDbySRS: error executing query %d", err);
-			SPI_finish();
-			return 0;
-		}
-
-		if (SPI_processed <= 0) 
-		{
-			SPI_finish();
-			return 0;
-		}
-	}
-
-	srid = atoi(SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1));
-
-	SPI_finish();
-
-	return srid;
 }
 
 /* Function taken from PostGIS file lwin_geojson.c */

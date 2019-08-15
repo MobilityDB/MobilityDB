@@ -14,7 +14,6 @@
 
 #include <assert.h>
 #include <float.h>
-#include <executor/spi.h>
 #include <utils/builtins.h>
 
 #include "TemporalTypes.h"
@@ -266,138 +265,6 @@ tpointarr_as_ewkt(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /*
- * Removes trailing zeros and dot for a %f formatted number.
- * Modifies input.
- * 
- * This function is taken from PostGIS file lwprint.c
- */
-static void
-trim_trailing_zeros(char *str)
-{
-	char *ptr, *totrim = NULL;
-	int len;
-	ptr = strchr(str, '.');
-	if (!ptr) return; /* no dot, no decimal digits */
-	len = strlen(ptr);
-	for (int i = len - 1; i; i--)
-	{
-		if (ptr[i] != '0') break;
-		totrim = &ptr[i];
-	}
-	if (totrim)
-	{
-		if (ptr == totrim - 1)
-			*ptr = '\0';
-		else
-			*totrim = '\0';
-	}
-}
-
-/*
- * Print an ordinate value using at most the given number of decimal digits
- *
- * The actual number of printed decimal digits may be less than the
- * requested ones if out of significant digits.
- *
- * The function will not write more than maxsize bytes, including the
- * terminating NULL. Returns the number of bytes that would have been
- * written if there was enough space (excluding terminating NULL).
- * So a return of ``bufsize'' or more means that the string was
- * truncated and misses a terminating NULL.
- * 
- * This function is taken from PostGIS file lwprint.c
- */
-static int
-lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
-{
-	double ad = fabs(d);
-	int ndd;
-	int length = 0;
-	if (ad <= FP_TOLERANCE)
-	{
-		d = 0;
-		ad = 0;
-	}
-	if (ad < OUT_MAX_DOUBLE)
-	{
-		ndd = ad < 1 ? 0 : floor(log10(ad)) + 1; /* non-decimal digits */
-		if (maxdd > (OUT_MAX_DOUBLE_PRECISION - ndd)) maxdd -= ndd;
-		length = snprintf(buf, bufsize, "%.*f", maxdd, d);
-	}
-	else
-	{
-		length = snprintf(buf, bufsize, "%g", d);
-	}
-	trim_trailing_zeros(buf);
-	return length;
-}
-
-/*
- * Retrieve an SRS from a given SRID
- * Require valid spatial_ref_sys table entry
- * Could return SRS as short one (i.e EPSG:4326)
- * or as long one: (i.e urn:ogc:def:crs:EPSG::4326).
- * 
- * This function is taken from PostGIS file lwgeom_export.c
- */
-static char *
-getSRSbySRID(int32_t srid, bool short_crs)
-{
-	char query[256];
-	char *srs, *srscopy;
-	int size, err;
-
-	if (SPI_OK_CONNECT != SPI_connect ())
-	{
-		elog(NOTICE, "getSRSbySRID: could not connect to SPI manager");
-		SPI_finish();
-		return NULL;
-	}
-
-	if (short_crs)
-		sprintf(query, "SELECT auth_name||':'||auth_srid \
-				FROM spatial_ref_sys WHERE srid='%d'", srid);
-	else
-		sprintf(query, "SELECT 'urn:ogc:def:crs:'||auth_name||'::'||auth_srid \
-				FROM spatial_ref_sys WHERE srid='%d'", srid);
-
-	err = SPI_exec(query, 1);
-	if (err < 0)
-	{
-		elog(NOTICE, "getSRSbySRID: error executing query %d", err);
-		SPI_finish();
-		return NULL;
-	}
-
-	/* No entry in spatial_ref_sys */
-	if (SPI_processed <= 0)
-	{
-		SPI_finish();
-		return NULL;
-	}
-
-	/* Get result */
-	srs = SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1);
-
-	/* NULL result */
-	if (! srs)
-	{
-		SPI_finish();
-		return NULL;
-	}
-
-	/* Copy result to upper executor context */
-	size = strlen(srs) + 1;
-	srscopy = SPI_palloc(size);
-	memcpy(srscopy, srs, size);
-
-	/* Disconnect from SPI */
-	SPI_finish();
-
-	return srscopy;
-}
-
-/*
  * Handle coordinate array
  * Returns maximum size of rendered coordinate array in bytes.
  */
@@ -462,7 +329,7 @@ datetimes_mfjson_buf(char *output, TemporalInst *inst)
 	/* Replace ' ' by 'T' as separator between date and time parts */
 	t[10] = 'T';
 	ptr += sprintf(ptr, "\"%s\"", t);
-	// pfree(t); FIXME
+	pfree(t);
 	return (ptr - output);
 }
 
@@ -470,7 +337,7 @@ datetimes_mfjson_buf(char *output, TemporalInst *inst)
  * Handle SRS
  */
 static size_t
-asmfjson_srs_size(char *srs)
+srs_mfjson_size(char *srs)
 {
 	int size = sizeof("'crs':{'type':'name',");
 	size += sizeof("'properties':{'name':''}},");
@@ -479,7 +346,7 @@ asmfjson_srs_size(char *srs)
 }
 
 static size_t
-asmfjson_srs_buf(char *output, char *srs)
+srs_mfjson_buf(char *output, char *srs)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "\"crs\":{\"type\":\"name\",");
@@ -491,7 +358,7 @@ asmfjson_srs_buf(char *output, char *srs)
  * Handle Bbox
  */
 static size_t
-asmfjson_bbox_size(int hasz, int precision)
+bbox_mfjson_size(int hasz, int precision)
 {
 	/* The maximum size of a timestamptz is 35, e.g., "2019-08-06 23:18:16.195062-09:30" */
 	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") + 70;
@@ -509,7 +376,7 @@ asmfjson_bbox_size(int hasz, int precision)
 }
 
 static size_t
-asmfjson_bbox_buf(char *output, STBOX *bbox, int hasz, int precision)
+bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "\"stBoundedBy\":{");
@@ -531,24 +398,24 @@ asmfjson_bbox_buf(char *output, STBOX *bbox, int hasz, int precision)
 /*****************************************************************************/
 
 static size_t
-tpointinst_asmfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	size += datetimes_mfjson_size(1);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	return size;
 }
 
 static size_t
-tpointinst_asmfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
+tpointinst_as_mfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":");
 	ptr += coordinates_mfjson_buf(ptr, inst, precision);
 	ptr += sprintf(ptr, ",\"datetimes\":");
@@ -558,35 +425,35 @@ tpointinst_asmfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *sr
 }
 
 static char *
-tpointinst_asmfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointinst_asmfjson_size(inst, precision, bbox, srs);
+	int size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointinst_asmfjson_buf(inst, precision, bbox, srs, output);
+	tpointinst_as_mfjson_buf(inst, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpointi_asmfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	size += datetimes_mfjson_size(ti->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	return size;
 }
 
 static size_t
-tpointi_asmfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
+tpointi_as_mfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":[");
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -604,35 +471,35 @@ tpointi_asmfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char 
 }
 
 static char *
-tpointi_asmfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointi_asmfjson_size(ti, precision, bbox, srs);
+	int size = tpointi_as_mfjson_size(ti, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointi_asmfjson_buf(ti, precision, bbox, srs, output);
+	tpointi_as_mfjson_buf(ti, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpointseq_asmfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Linear']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	return size;
 }
 
 static size_t
-tpointseq_asmfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
+tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":[");
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -651,18 +518,18 @@ tpointseq_asmfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, 
 }
 
 static char *
-tpointseq_asmfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointseq_asmfjson_size(seq, precision, bbox, srs);
+	int size = tpointseq_as_mfjson_size(seq, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointseq_asmfjson_buf(seq, precision, bbox, srs, output);
+	tpointseq_as_mfjson_buf(seq, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpoints_asmfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
 	bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
 	int size = sizeof("{'type':'MovingPoint','sequences':[],");
@@ -674,18 +541,18 @@ tpoints_asmfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 		size += datetimes_mfjson_size(seq->count);
 	}
 	size += sizeof(",interpolations':['Linear']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(hasz, precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(hasz, precision);
 	return size;
 }
 
 static size_t
-tpoints_asmfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
+tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
 	ptr += sprintf(ptr, "\"sequences\":[");
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -711,11 +578,11 @@ tpoints_asmfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char 
 }
 
 static char *
-tpoints_asmfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpoints_asmfjson_size(ts, precision, bbox, srs);
+	int size = tpoints_as_mfjson_size(ts, precision, bbox, srs);
 	char *output = palloc(size);
-	tpoints_asmfjson_buf(ts, precision, bbox, srs, output);
+	tpoints_as_mfjson_buf(ts, precision, bbox, srs, output);
 	return output;
 }
 
@@ -788,13 +655,13 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	char *mfjson = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		mfjson = tpointinst_asmfjson((TemporalInst *)temp, precision, bbox, srs);
+		mfjson = tpointinst_as_mfjson((TemporalInst *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALI)
-		mfjson = tpointi_asmfjson((TemporalI *)temp, precision, bbox, srs);
+		mfjson = tpointi_as_mfjson((TemporalI *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALSEQ)
-		mfjson = tpointseq_asmfjson((TemporalSeq *)temp, precision, bbox, srs);
+		mfjson = tpointseq_as_mfjson((TemporalSeq *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALS)
-		mfjson = tpoints_asmfjson((TemporalS *)temp, precision, bbox, srs);
+		mfjson = tpoints_as_mfjson((TemporalS *)temp, precision, bbox, srs);
 	text *result = cstring_to_text(mfjson);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
