@@ -18,6 +18,7 @@
 #include <utils/builtins.h>
 
 #include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalUtil.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
@@ -730,8 +731,6 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	char *srs = NULL;
 	
 	/* Get the temporal point */
-	if (PG_ARGISNULL(0))
-		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 
 	/* Retrieve precision if any (default is max) */
@@ -773,7 +772,6 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 				}
 			}
 		}
-
 		if (option & 1)
 			has_bbox = 1;
 	}
@@ -805,6 +803,15 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Output in WKB format 
  *****************************************************************************/
+
+/**
+* Well-Known Binary (WKB) Durations
+*/
+
+#define WKB_TEMPORALINST 1
+#define WKB_TEMPORALI 2
+#define WKB_TEMPORALSEQ 3
+#define WKB_TEMPORALS 4
 
 /**
 * Well-Known Binary (WKB) Output Variant Types
@@ -1261,10 +1268,10 @@ tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
 		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)seq), buf, variant);
-	/* Set the period bounds */
-	buf = tpointseq_wkb_bounds(seq, buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(seq->count, buf, variant);
+	/* Set the period bounds */
+	buf = tpointseq_wkb_bounds(seq, buf, variant);
 	/* Set the TemporalInst array */
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -1564,5 +1571,508 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(result);
 }
 
+/*****************************************************************************/
+
+/**
+* Used for passing the parse state between the parsing functions.
+*/
+typedef struct
+{
+	const uint8_t *wkb; /* Points to start of WKB */
+	size_t wkb_size; /* Expected size of WKB */
+	bool swap_bytes; /* Do an endian flip? */
+	uint8_t duration; /* Current duration we are handling */
+	int32_t srid;    /* Current SRID we are handling */
+	bool has_z; /* Z? */
+	bool has_srid; /* SRID? */
+	const uint8_t *pos; /* Current parse position */
+} wkb_parse_state;
+
+/**********************************************************************/
+
+/* Our static character->number map. Anything > 15 is invalid */
+static uint8_t hex2char[256] = {
+    /* not Hex characters */
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    /* 0-9 */
+    0,1,2,3,4,5,6,7,8,9,20,20,20,20,20,20,
+    /* A-F */
+    20,10,11,12,13,14,15,20,20,20,20,20,20,20,20,20,
+    /* not Hex characters */
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+	/* a-f */
+    20,10,11,12,13,14,15,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    /* not Hex characters (upper 128 characters) */
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
+    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20
+    };
+
+
+uint8_t*
+bytes_from_hexbytes(const char *hexbuf, size_t hexsize)
+{
+	uint8_t *buf = NULL;
+	register uint8_t h1, h2;
+	uint32_t i;
+	if (hexsize % 2)
+		elog(ERROR, "Invalid hex string, length (%lu) has to be a multiple of two!", hexsize);
+	buf = palloc(hexsize/2);
+	if (! buf)
+		elog(ERROR, "Unable to allocate memory buffer.");
+	for (i = 0; i < hexsize/2; i++)
+	{
+		h1 = hex2char[(int)hexbuf[2*i]];
+		h2 = hex2char[(int)hexbuf[2*i+1]];
+		if (h1 > 15)
+			elog(ERROR, "Invalid hex character (%c) encountered", hexbuf[2*i]);
+		if (h2 > 15)
+			elog(ERROR, "Invalid hex character (%c) encountered", hexbuf[2*i+1]);
+		/* First character is high bits, second is low bits */
+		buf[i] = ((h1 & 0x0F) << 4) | (h2 & 0x0F);
+	}
+	return buf;
+}
+
+/**
+* Check that we are not about to read off the end of the WKB
+* array.
+*/
+static inline void 
+wkb_parse_state_check(wkb_parse_state *s, size_t next)
+{
+	if ((s->pos + next) > (s->wkb + s->wkb_size))
+		elog(ERROR, "WKB structure does not match expected size!");
+}
+
+/**
+* Byte
+* Read a byte and advance the parse state forward.
+*/
+static char
+byte_from_wkb_state(wkb_parse_state *s)
+{
+	char char_value = 0;
+	wkb_parse_state_check(s, WKB_BYTE_SIZE);
+	char_value = s->pos[0];
+	s->pos += WKB_BYTE_SIZE;
+	return char_value;
+}
+
+/**
+* Int32
+* Read 4-byte integer and advance the parse state forward.
+*/
+static uint32_t
+integer_from_wkb_state(wkb_parse_state *s)
+{
+	uint32_t i = 0;
+	wkb_parse_state_check(s, WKB_INT_SIZE);
+	memcpy(&i, s->pos, WKB_INT_SIZE);
+	/* Swap? Copy into a stack-allocated integer. */
+	if (s->swap_bytes)
+	{
+		uint8_t tmp;
+		for (int j = 0; j < WKB_INT_SIZE/2; j++)
+		{
+			tmp = ((uint8_t*)(&i))[j];
+			((uint8_t*)(&i))[j] = ((uint8_t*)(&i))[WKB_INT_SIZE - j - 1];
+			((uint8_t*)(&i))[WKB_INT_SIZE - j - 1] = tmp;
+		}
+	}
+	s->pos += WKB_INT_SIZE;
+	return i;
+}
+
+/**
+* Double
+* Read an 8-byte double and advance the parse state forward.
+*/
+static double
+double_from_wkb_state(wkb_parse_state *s)
+{
+	double d = 0;
+	wkb_parse_state_check(s, WKB_DOUBLE_SIZE);
+	memcpy(&d, s->pos, WKB_DOUBLE_SIZE);
+	/* Swap? Copy into a stack-allocated integer. */
+	if (s->swap_bytes)
+	{
+		uint8_t tmp;
+		for (int i = 0; i < WKB_DOUBLE_SIZE/2; i++)
+		{
+			tmp = ((uint8_t*)(&d))[i];
+			((uint8_t*)(&d))[i] = ((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1];
+			((uint8_t*)(&d))[WKB_DOUBLE_SIZE - i - 1] = tmp;
+		}
+	}
+	s->pos += WKB_DOUBLE_SIZE;
+	return d;
+}
+
+/**
+* Double
+* Read an 8-byte timestamp and advance the parse state forward.
+*/
+static TimestampTz
+timestamp_from_wkb_state(wkb_parse_state *s)
+{
+	int64_t t = 0;
+	wkb_parse_state_check(s, WKB_TIMESTAMP_SIZE);
+	memcpy(&t, s->pos, WKB_TIMESTAMP_SIZE);
+	/* Swap? Copy into a stack-allocated integer. */
+	if (s->swap_bytes)
+	{
+		uint8_t tmp;
+		for (int i = 0; i < WKB_TIMESTAMP_SIZE/2; i++)
+		{
+			tmp = ((uint8_t*)(&t))[i];
+			((uint8_t*)(&t))[i] = ((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1];
+			((uint8_t*)(&t))[WKB_TIMESTAMP_SIZE - i - 1] = tmp;
+		}
+	}
+	s->pos += WKB_TIMESTAMP_SIZE;
+	return (TimestampTz) t;
+}
+
+/**
+* Take in an unknown kind of wkb type number and ensure it comes out
+* as an extended WKB type number (with Z/SRID flags masked onto the
+* high bits).
+*/
+static void
+tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
+{
+	s->has_z = false;
+	s->has_srid = false;
+	/* If any of the higher bits are set, this is probably an extended type. */
+	if (wkb_type & 0xF0)
+	{
+		if (wkb_type & WKB_ZFLAG) s->has_z = true;
+		if (wkb_type & WKB_SRIDFLAG) s->has_srid = true;
+	}
+	/* Mask off the flags */
+	wkb_type = wkb_type & 0x0F;
+
+	switch (wkb_type)
+	{
+		case WKB_TEMPORALINST:
+			s->duration = TEMPORALINST;
+			break;
+		case WKB_TEMPORALI:
+			s->duration = TEMPORALI;
+			break;
+		case WKB_TEMPORALSEQ:
+			s->duration = TEMPORALSEQ;
+			break;
+		case WKB_TEMPORALS:
+			s->duration = TEMPORALS;
+			break;
+		default: /* Error! */
+			elog(ERROR, "Unknown WKB duration (%d)!", wkb_type);
+			break;
+	}
+	return;
+}
+
+/**
+* TemporalInst
+* Read a WKB Temporal, starting just after the endian byte,
+* type byte and optional srid number.
+* Advance the parse state forward appropriately.
+* WKB point has just a set of doubles, with the quantity depending on the
+* dimension of the point.
+*/
+static TemporalInst * 
+temporalinst_from_wkb_state(wkb_parse_state *s)
+{
+	double x, y, z;
+	/* Count the dimensions. */
+	uint32_t ndims = (s->has_z) ? 3 : 2;
+	/* Does the data we want to read exist? */
+	size_t size = (ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE;
+	wkb_parse_state_check(s, size);
+	/* Parse the coordinates and create the point */
+	Datum value = 0;
+	if (s->has_z)
+	{
+		x = double_from_wkb_state(s);
+		y = double_from_wkb_state(s);
+		z = double_from_wkb_state(s);
+		value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
+			Float8GetDatum(y), Float8GetDatum(z));
+
+	}
+	else 
+	{
+		x = double_from_wkb_state(s);
+		y = double_from_wkb_state(s);
+		value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
+			Float8GetDatum(y));
+	}
+	TimestampTz t = timestamp_from_wkb_state(s);
+	if (s->has_srid)
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+		gserialized_set_srid(gs, s->srid);
+	}
+	TemporalInst *result = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+	pfree(DatumGetPointer(value));
+	return result;
+}
+
+static TemporalI * 
+temporali_from_wkb_state(wkb_parse_state *s)
+{
+	/* Count the dimensions. */
+	uint32_t ndims = (s->has_z) ? 3 : 2;
+	/* Get the number of instants. */
+	int count = integer_from_wkb_state(s);
+	/* Does the data we want to read exist? */
+	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+	wkb_parse_state_check(s, size);
+	/* Parse the instants */
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	for (int i = 0; i < count; i++)
+	{
+		double x, y, z;
+		/* Parse the coordinates and create the point */
+		Datum value = 0;
+		if (s->has_z)
+		{
+			x = double_from_wkb_state(s);
+			y = double_from_wkb_state(s);
+			z = double_from_wkb_state(s);
+			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
+				Float8GetDatum(y), Float8GetDatum(z));
+
+		}
+		else 
+		{
+			x = double_from_wkb_state(s);
+			y = double_from_wkb_state(s);
+			value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
+				Float8GetDatum(y));
+		}
+		TimestampTz t = timestamp_from_wkb_state(s);
+		if (s->has_srid)
+		{
+			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+			gserialized_set_srid(gs, s->srid);
+		}
+		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+		pfree(DatumGetPointer(value));
+	}
+	TemporalI *result = temporali_from_temporalinstarr(instants, count); 
+	for (int i = 0; i < count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+static void
+tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
+{
+	if (wkb_bounds & WKB_LOWER_INC) 
+		*lower_inc = true;
+	else
+		*lower_inc = false;
+	if (wkb_bounds & WKB_UPPER_INC) 
+		*upper_inc = true;
+	else
+		*upper_inc = false;
+	return;
+}
+
+static TemporalSeq * 
+temporalseq_from_wkb_state(wkb_parse_state *s)
+{
+	/* Count the dimensions. */
+	uint32_t ndims = (s->has_z) ? 3 : 2;
+	/* Get the number of instants. */
+	int count = integer_from_wkb_state(s);
+	/* Get the period bounds */
+	uint8_t wkb_bounds = byte_from_wkb_state(s);
+	bool lower_inc, upper_inc;
+	tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
+	/* Does the data we want to read exist? */
+	size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+	wkb_parse_state_check(s, size);
+	/* Parse the instants */
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
+	for (int i = 0; i < count; i++)
+	{
+		double x, y, z;
+		/* Parse the coordinates and create the point */
+		Datum value = 0;
+		if (s->has_z)
+		{
+			x = double_from_wkb_state(s);
+			y = double_from_wkb_state(s);
+			z = double_from_wkb_state(s);
+			value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
+				Float8GetDatum(y), Float8GetDatum(z));
+
+		}
+		else 
+		{
+			x = double_from_wkb_state(s);
+			y = double_from_wkb_state(s);
+			value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
+				Float8GetDatum(y));
+		}
+		TimestampTz t = timestamp_from_wkb_state(s);
+		if (s->has_srid)
+		{
+			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+			gserialized_set_srid(gs, s->srid);
+		}
+		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+		pfree(DatumGetPointer(value));
+	}
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, count, 
+		lower_inc, upper_inc, true); 
+	for (int i = 0; i < count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+static TemporalS * 
+temporals_from_wkb_state(wkb_parse_state *s)
+{
+	/* Count the dimensions. */
+	uint32_t ndims = (s->has_z) ? 3 : 2;
+	/* Get the number of sequences. */
+	int count = integer_from_wkb_state(s);
+	/* Parse the sequences */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
+	for (int i = 0; i < count; i++)
+	{
+		/* Get the number of instants. */
+		int countinst = integer_from_wkb_state(s);
+		/* Get the period bounds */
+		uint8_t wkb_bounds = byte_from_wkb_state(s);
+		bool lower_inc, upper_inc;
+		tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
+		/* Does the data we want to read exist? */
+		size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+		wkb_parse_state_check(s, size);
+		/* Parse the instants */
+		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst);
+		for (int j = 0; j < countinst; j++)
+		{
+			double x, y, z;
+			/* Parse the coordinates and create the point */
+			Datum value = 0;
+			if (s->has_z)
+			{
+				x = double_from_wkb_state(s);
+				y = double_from_wkb_state(s);
+				z = double_from_wkb_state(s);
+				value = call_function3(LWGEOM_makepoint, Float8GetDatum(x),
+					Float8GetDatum(y), Float8GetDatum(z));
+
+			}
+			else 
+			{
+				x = double_from_wkb_state(s);
+				y = double_from_wkb_state(s);
+				value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
+					Float8GetDatum(y));
+			}
+			TimestampTz t = timestamp_from_wkb_state(s);
+			if (s->has_srid)
+			{
+				GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+				gserialized_set_srid(gs, s->srid);
+			}
+			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
+			pfree(DatumGetPointer(value));
+		}
+		sequences[i] = temporalseq_from_temporalinstarr(instants, count, 
+			lower_inc, upper_inc, true); 
+		for (int j = 0; j < count; j++)
+			pfree(instants[j]);
+		pfree(instants);
+	}
+	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true); 
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
+}
+
+Temporal *
+tpoint_from_wkb_state(wkb_parse_state *s)
+{
+	/* Fail when handed incorrect starting byte */
+	char wkb_little_endian = byte_from_wkb_state(s);
+	if (wkb_little_endian != 1 && wkb_little_endian != 0)
+		elog(ERROR, "Invalid endian flag value encountered.");
+
+	/* Check the endianness of our input  */
+	s->swap_bytes = false;
+	if (getMachineEndian() == NDR) /* Machine arch is little */
+	{
+		if (! wkb_little_endian)    /* Data is big! */
+			s->swap_bytes = true;
+	}
+	else                              /* Machine arch is big */
+	{
+		if (wkb_little_endian)      /* Data is little! */
+			s->swap_bytes = true;
+	}
+
+	/* Read the temporal flag */
+	uint8_t wkb_type = byte_from_wkb_state(s);
+	tpoint_type_from_wkb_state(s, wkb_type);
+
+	/* Read the SRID, if necessary */
+	if (s->has_srid)
+		s->srid = (integer_from_wkb_state(s));
+
+	temporal_duration_is_valid(s->duration);
+	if (s->duration == TEMPORALINST)
+		return (Temporal *)temporalinst_from_wkb_state(s);
+	else if (s->duration == TEMPORALI)
+		return (Temporal *)temporali_from_wkb_state(s);
+	else if (s->duration == TEMPORALSEQ)
+		return (Temporal *)temporalseq_from_wkb_state(s);
+	else if (s->duration == TEMPORALS)
+		return (Temporal *)temporals_from_wkb_state(s);
+	return NULL; /* make compiler quiet */
+}
+
+PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
+
+PGDLLEXPORT Datum
+tpoint_from_ewkb(PG_FUNCTION_ARGS)
+{
+	bytea *bytea_wkb = (bytea *)PG_GETARG_BYTEA_P(0);
+	uint8_t *wkb = (uint8_t *)VARDATA(bytea_wkb);
+
+	/* Initialize the state appropriately */
+	wkb_parse_state s;
+	s.wkb = wkb;
+	s.wkb_size = VARSIZE(bytea_wkb)-VARHDRSZ;
+	s.swap_bytes = false;
+	s.duration = 0;
+	s.srid = SRID_UNKNOWN;
+	s.has_z = false;
+	s.has_srid = false;
+	s.pos = wkb;
+
+	Temporal *temp = tpoint_from_wkb_state(&s);
+	PG_FREE_IF_COPY(bytea_wkb, 0);
+	PG_RETURN_POINTER(temp);
+}
 
 /*****************************************************************************/
