@@ -671,10 +671,6 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
  * Output in WKB format 
  *****************************************************************************/
 
-
-#define WKB_LOWER_INC	0x01
-#define WKB_UPPER_INC 	0x02
-
 /*
 ** Variants available for WKB and WKT output types
 */
@@ -1193,7 +1189,7 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 * including the null terminator in the case of ASCII.
 */
 
-uint8_t*
+static uint8_t *
 tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
 	size_t buf_size;
@@ -1269,13 +1265,6 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
 	return wkb_out;
 }
-
-char *
-tpoint_to_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
-{
-	return (char *)tpoint_to_wkb(temp, variant | WKB_HEX, size_out);
-}
-
 
 /*
  * This will have no 'SRID=#;'
@@ -1376,7 +1365,6 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
 	{
 		type = PG_GETARG_TEXT_P(1);
-
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
 			variant = variant | WKB_XDR;

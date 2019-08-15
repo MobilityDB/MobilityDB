@@ -73,56 +73,29 @@ CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15, opt
 	AS 'MODULE_PATHNAME', 'tpoint_as_mfjson'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asBinary(tgeompoint)
+CREATE FUNCTION asBinary(tgeompoint, endianenconding text DEFAULT 'NDR')
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'tpoint_as_binary'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tgeogpoint)
-	RETURNS bytea
-	AS 'MODULE_PATHNAME', 'tpoint_as_binary'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asBinary(tgeompoint, text)
-	RETURNS bytea
-	AS 'MODULE_PATHNAME', 'tpoint_as_binary'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asBinary(tgeogpoint, text)
+CREATE FUNCTION asBinary(tgeogpoint, endianenconding text DEFAULT 'NDR')
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'tpoint_as_binary'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKB(tgeompoint)
+CREATE FUNCTION asEWKB(tgeompoint, endianenconding text DEFAULT 'NDR')
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'tpoint_as_ewkb'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(tgeogpoint)
-	RETURNS bytea
-	AS 'MODULE_PATHNAME', 'tpoint_as_ewkb'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asEWKB(tgeompoint, text)
-	RETURNS bytea
-	AS 'MODULE_PATHNAME', 'tpoint_as_ewkb'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKB(tgeogpoint, text)
+CREATE FUNCTION asEWKB(tgeogpoint, endianenconding text DEFAULT 'NDR')
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'tpoint_as_ewkb'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHEXEWKB(tgeompoint)
+CREATE FUNCTION asHexEWKB(tgeompoint, endianenconding text DEFAULT 'NDR')
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'tpoint_as_hexewkb'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHEXEWKB(tgeogpoint)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_as_hexewkb'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION asHEXEWKB(tgeompoint, text)
-	RETURNS text
-	AS 'MODULE_PATHNAME', 'tpoint_as_hexewkb'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asHEXEWKB(tgeogpoint, text)
+CREATE FUNCTION asHexEWKB(tgeogpoint, endianenconding text DEFAULT 'NDR')
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'tpoint_as_hexewkb'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

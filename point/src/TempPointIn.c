@@ -529,58 +529,6 @@ typedef struct
 
 /**********************************************************************/
 
-/* Our static character->number map. Anything > 15 is invalid */
-static uint8_t hex2char[256] = {
-    /* not Hex characters */
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    /* 0-9 */
-    0,1,2,3,4,5,6,7,8,9,20,20,20,20,20,20,
-    /* A-F */
-    20,10,11,12,13,14,15,20,20,20,20,20,20,20,20,20,
-    /* not Hex characters */
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-	/* a-f */
-    20,10,11,12,13,14,15,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    /* not Hex characters (upper 128 characters) */
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,
-    20,20,20,20,20,20,20,20,20,20,20,20,20,20,20,20
-    };
-
-
-uint8_t*
-bytes_from_hexbytes(const char *hexbuf, size_t hexsize)
-{
-	uint8_t *buf = NULL;
-	register uint8_t h1, h2;
-	uint32_t i;
-	if (hexsize % 2)
-		elog(ERROR, "Invalid hex string, length (%lu) has to be a multiple of two!", hexsize);
-	buf = palloc(hexsize/2);
-	if (! buf)
-		elog(ERROR, "Unable to allocate memory buffer.");
-	for (i = 0; i < hexsize/2; i++)
-	{
-		h1 = hex2char[(int)hexbuf[2*i]];
-		h2 = hex2char[(int)hexbuf[2*i+1]];
-		if (h1 > 15)
-			elog(ERROR, "Invalid hex character (%c) encountered", hexbuf[2*i]);
-		if (h2 > 15)
-			elog(ERROR, "Invalid hex character (%c) encountered", hexbuf[2*i+1]);
-		/* First character is high bits, second is low bits */
-		buf[i] = ((h1 & 0x0F) << 4) | (h2 & 0x0F);
-	}
-	return buf;
-}
-
 /**
 * Check that we are not about to read off the end of the WKB
 * array.

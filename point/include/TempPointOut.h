@@ -25,6 +25,9 @@ extern Datum geoarr_as_ewkt(PG_FUNCTION_ARGS);
 extern Datum tpointarr_as_text(PG_FUNCTION_ARGS);
 extern Datum tpointarr_as_ewkt(PG_FUNCTION_ARGS);
 extern Datum tpoint_as_mfjson(PG_FUNCTION_ARGS);
+extern Datum tpoint_as_binary(PG_FUNCTION_ARGS);
+extern Datum tpoint_as_ewkb(PG_FUNCTION_ARGS);
+extern Datum tpoint_as_hexewkb(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
