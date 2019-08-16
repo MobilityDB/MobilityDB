@@ -34,7 +34,8 @@
 * explicit axis conversions from STBOX in all calculations
 * at every step.
 */
-typedef struct ND_BOX_T {
+typedef struct ND_BOX_T
+{
  	float4 min[ND_DIMS];	
  	float4 max[ND_DIMS];
 } ND_BOX;
@@ -42,7 +43,8 @@ typedef struct ND_BOX_T {
 /**
 * N-dimensional box index type
 */
-typedef struct ND_IBOX_T {
+typedef struct ND_IBOX_T
+{
  	int min[ND_DIMS];
  	int max[ND_DIMS];
 } ND_IBOX;
@@ -54,7 +56,8 @@ typedef struct ND_IBOX_T {
 * if necessary (really, we just want to get the 2,3,4-d cases
 * into one shared piece of code).
 */
-typedef struct ND_STATS_T {
+typedef struct ND_STATS_T
+{
  	/* Dimensionality of the histogram. */
  	float4 ndims;
 
@@ -111,7 +114,6 @@ typedef struct ND_STATS_T {
 #define STATISTIC_SLOT_ND 0
 #define STATISTIC_SLOT_2D 1
 
-
 extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
 extern int nd_box_init(ND_BOX *a);
 extern int nd_box_init_bounds(ND_BOX *a);
@@ -119,7 +121,7 @@ extern void nd_box_from_stbox(const STBOX *stbox, ND_BOX *nd_box);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern int nd_box_expand(ND_BOX *nd_box, double expansion_factor);
 extern int nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *extent, int ndims,
- 	 	 	 	 	 	 	 	 	 double *distribution);
+	double *distribution);
 extern int range_quintile(int *vals, int nvals);
 extern int cmp_int(const void *a, const void *b);
 extern double total_double(const double *vals, int nvals);
@@ -137,6 +139,7 @@ extern int stbox_ndims(const STBOX* stbox);
 /*****************************************************************************
  * Join functions
  *****************************************************************************/
+
 #define DEFAULT_ND_JOINSEL 0.001
 #define FALLBACK_ND_JOINSEL 0.3
 /*
