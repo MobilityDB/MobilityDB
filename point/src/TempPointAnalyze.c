@@ -12,13 +12,15 @@
  *	point/src/TempPointAnalyze.c
  *
  *****************************************************************************/
-#include <TemporalTypes.h>
-#include <TemporalAnalyze.h>
+
+#include "TempPointAnalyze.h"
+
 /*****************************************************************************/
 
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
-Datum
+
+PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);

@@ -11,7 +11,14 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include "IndexGistTemporal.h"
+
+#include <access/gist.h>
+
+#include "TimeTypes.h"
+#include "Temporal.h"
+#include "OidCache.h"
+#include "IndexGistTime.h"
 
 /*****************************************************************************
  * Consistent method for temporal types

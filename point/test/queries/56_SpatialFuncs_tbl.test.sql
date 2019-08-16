@@ -6,20 +6,6 @@
 
 -------------------------------------------------------------------------------
 
-SELECT astext(temp) FROM tbl_tgeompoint LIMIT 10;
-SELECT astext(temp) FROM tbl_tgeogpoint LIMIT 10;
-SELECT astext(temp) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT astext(temp) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT k%90, astext(array_agg(g ORDER BY k)) FROM tbl_geogcollection3D WHERE g IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-SELECT k%90, astext(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-
-SELECT asEWKT(temp) FROM tbl_tgeompoint LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT k%90, asEWKT(array_agg(g ORDER BY k)) FROM tbl_geogcollection3D WHERE g IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-SELECT k%90, asEWKT(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
 SELECT DISTINCT SRID(temp) FROM tbl_tgeogpoint;
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint3D;
@@ -38,10 +24,10 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
 
-SELECT transform_gk(temp) from tbl_tgeompoint LIMIT 10;
+SELECT MAX(ST_X(startValue(transform_gk(temp)))) from tbl_tgeompoint;
 
-SELECT transform_gk(g) from tbl_geompoint where not st_isempty(g) LIMIT 10;
-SELECT transform_gk(g) from tbl_geomlinestring where not st_isempty(g) LIMIT 10;
+SELECT MAX(ST_X(transform_gk(g))) from tbl_geompoint LIMIT 10;
+SELECT MAX(ST_X(ST_StartPoint(transform_gk(g)))) from tbl_geomlinestring LIMIT 10;
 
 -------------------------------------------------------------------------------
 

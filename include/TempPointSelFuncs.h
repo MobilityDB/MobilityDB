@@ -15,7 +15,8 @@
 #define MOBILITYDB_TEMPPOINTSELFUNCS_COMMON_UTILITIES_H
 
 #include <postgres.h>
-#include <datatype/timestamp.h>
+#include <catalog/pg_statistic.h>
+#include <utils/timestamp.h>
 
 /**
 * The maximum number of dimensions our code can handle.

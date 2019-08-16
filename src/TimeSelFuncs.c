@@ -13,9 +13,31 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
-#include "TemporalSelFuncs.h"
+#include "TimeSelFuncs.h"
+
+#include <access/htup_details.h>
+#include <utils/lsyscache.h>
+#include <catalog/pg_statistic.h>
+#include <utils/timestamp.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "OidCache.h"
+#include "Temporal.h" // FIXME: TO BE REMOVED
+
 /*****************************************************************************/
+
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ */
+static double
+default_period_selectivity(Oid operator)
+{
+	return 0.01;
+}
 
 static double
 calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
@@ -64,16 +86,6 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	CLAMP_PROBABILITY(selec);
 
 	return selec;
-}
-
-/*
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
- */
-double
-default_period_selectivity(Oid operator)
-{
-	return 0.01;
 }
 
 /* Get the name of the operator from different cases */
@@ -249,6 +261,40 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 }
 
 /*
+ * Binary search on an array of period bounds. Returns greatest index of period
+ * bound in array which is less(less or equal) than given period bound. If all
+ * period bounds in array are greater or equal(greater) than given period bound,
+ * return -1. When "equal" flag is set conditions in brackets are used.
+ *
+ * This function is used in scalar operator selectivity estimation. Another
+ * goal of this function is to find a histogram bin where to stop
+ * interpolation of portion of bounds which are less or equal to given bound.
+ */
+static int
+period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
+			   int hist_length, bool equal)
+{
+	int			lower = -1,
+				upper = hist_length - 1,
+				cmp,
+				middle;
+
+	while (lower < upper)
+	{
+		middle = (lower + upper + 1) / 2;
+		cmp = period_cmp_bounds(hist[middle].val, value->val, 
+			hist[middle].lower, value->lower,
+			hist[middle].inclusive, value->inclusive);
+
+		if (cmp < 0 || (equal && cmp == 0))
+			lower = middle;
+		else
+			upper = middle - 1;
+	}
+	return lower;
+}
+
+/*
  * Look up the fraction of values less than (or equal, if 'equal' argument
  * is true) a given const in a histogram of period bounds.
  */
@@ -272,40 +318,6 @@ calc_period_hist_selectivity_scalar(PeriodBound *constbound,
 							  &hist[index + 1]) / (Selectivity) (hist_nvalues - 1);
 
 	return selec;
-}
-
-/*
- * Binary search on an array of period bounds. Returns greatest index of period
- * bound in array which is less(less or equal) than given period bound. If all
- * period bounds in array are greater or equal(greater) than given period bound,
- * return -1. When "equal" flag is set conditions in brackets are used.
- *
- * This function is used in scalar operator selectivity estimation. Another
- * goal of this function is to find a histogram bin where to stop
- * interpolation of portion of bounds which are less or equal to given bound.
- */
- int
-period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
-			   int hist_length, bool equal)
-{
-	int			lower = -1,
-				upper = hist_length - 1,
-				cmp,
-				middle;
-
-	while (lower < upper)
-	{
-		middle = (lower + upper + 1) / 2;
-		cmp = period_cmp_bounds(hist[middle].val, value->val, 
-			hist[middle].lower, value->lower,
-			hist[middle].inclusive, value->inclusive);
-
-		if (cmp < 0 || (equal && cmp == 0))
-			lower = middle;
-		else
-			upper = middle - 1;
-	}
-	return lower;
 }
 
 /*

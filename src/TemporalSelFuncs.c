@@ -13,6 +13,19 @@
  *
  *****************************************************************************/
 
+#include "TemporalSelFuncs.h"
+
+#include <assert.h>
+#include <access/htup_details.h>
+#include <catalog/pg_collation_d.h>
+#include <utils/builtins.h>
+#include <utils/date.h>
+#include <utils/syscache.h>
+
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "Range.h"
 #include "TemporalPoint.h"
 
 /*

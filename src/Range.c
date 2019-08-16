@@ -9,8 +9,15 @@
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
- 
-#include "TemporalTypes.h"
+
+#include "Range.h"
+
+#include <assert.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
 
 /*****************************************************************************
  * Generic range functions

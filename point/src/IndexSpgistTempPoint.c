@@ -70,7 +70,16 @@
  *
  *****************************************************************************/
 
+#include "IndexSpgistTempPoint.h"
+
+#include <access/spgist.h>
+#include <utils/builtins.h>
+
+#include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalPoint.h"
+#include "GeoBoundBoxOps.h"
+#include "IndexGistTempPoint.h"
 
 /*****************************************************************************/
 

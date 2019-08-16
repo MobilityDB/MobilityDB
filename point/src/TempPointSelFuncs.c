@@ -1,8 +1,7 @@
 /*****************************************************************************
  *
  * TempPointSelFuncs.c
- *      Functions for selectivity estimation of operators on temporal point 
- *      types
+ *      Functions for selectivity estimation of operators on temporal points
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
@@ -14,9 +13,7 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
-#include "TemporalPoint.h"
-#include "TemporalSelFuncs.h"
+#include "TempPointSelFuncs.h"
 
 /*
  *	Selectivity functions for temporal types operators.  These are bogus -- 

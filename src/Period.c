@@ -10,7 +10,20 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include "Period.h"
+
+#include <assert.h>
+#include <access/hash.h>
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
+#include <utils/timestamp.h>
+
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "Temporal.h"
+#include "TemporalUtil.h"
+#include "Parser.h"
+#include "Range.h"
 
 /*****************************************************************************
  * Utility functions

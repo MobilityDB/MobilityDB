@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * IndexGistTime.c
- *		R-tree GiST index for time types.
+ *	R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
@@ -11,7 +11,18 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include "IndexGistTime.h"
+
+#include <access/gist.h>
+#include <utils/timestamp.h>
+
+#include "TimeTypes.h"
+#include "TimestampSet.h"
+#include "Period.h"
+#include "PeriodSet.h"
+#include "TimeOps.h"
+#include "Temporal.h"
+#include "OidCache.h"
 
 /*****************************************************************************/
 
@@ -758,10 +769,11 @@ gist_timestampset_compress(PG_FUNCTION_ARGS)
 	if (entry->leafkey)
 	{
 		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
-				
-		gistentryinit(*retval, call_function1(timestampset_timespan, entry->key),
-					  entry->rel, entry->page, entry->offset, false);
-		
+		TimestampSet *ts = DatumGetTimestampSet(entry->key);
+		Period *period = palloc(sizeof(Period));
+		timestampset_timespan_internal(period, ts);
+		gistentryinit(*retval, PointerGetDatum(period),
+			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
 	}
 	
@@ -803,11 +815,12 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
 	
 	if (entry->leafkey)
 	{
-		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
-		
-		gistentryinit(*retval, call_function1(periodset_timespan, entry->key),
-					  entry->rel, entry->page, entry->offset, false);
-		
+		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+		PeriodSet *ps = DatumGetPeriodSet(entry->key);
+		Period *period = palloc(sizeof(Period));
+		periodset_timespan_internal(period, ps);
+		gistentryinit(*retval, PointerGetDatum(period),
+			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
 	}
 	

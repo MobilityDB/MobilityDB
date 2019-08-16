@@ -13,13 +13,29 @@
  *
  *****************************************************************************/
 
-#include <TemporalTypes.h>
 #include "TemporalAnalyze.h"
+
+#include <assert.h>
+#include <access/htup_details.h>
+#include <catalog/pg_collation_d.h>
+#include <catalog/pg_operator_d.h>
+#include <commands/vacuum.h>
+#include <parser/parse_oper.h>
+#include <utils/datum.h>
+#include <utils/timestamp.h>
+
+#include "Period.h"
+#include "Range.h"
+#include "TemporalTypes.h"
+#include "OidCache.h"
+#include "TemporalUtil.h"
+#include "TemporalPoint.h"
 
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
-Datum
+
+PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -31,7 +47,8 @@ temporal_analyze(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
-Datum
+
+PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);

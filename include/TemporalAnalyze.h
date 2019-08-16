@@ -11,18 +11,19 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *
- * IDENTIFICATION
- *	include/TemporalAnalyze.h
- *
- *****************************************************************************/
+ *-------------------------------------------------------------------------
+ */
+#ifndef __TEMPORALANALYZE_H__
+#define __TEMPORALANALYZE_H__
 
-#ifndef MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
-#define MOBILITYDB_TEMPANALYZE_COMMON_UTILITIES_H
+#include <postgres.h>
+#include <catalog/pg_type.h>
+#include <commands/vacuum.h>
+#include <utils/rangetypes.h>
+#include <utils/sortsupport.h>
 
-#include <TemporalTypes.h>
-#include <TemporalPoint.h>
-#include <PostGIS.h>
+#include "TimeTypes.h"
+#include "Temporal.h"
 
 /**
 * The dimensions of temporal types our code can handle.
@@ -34,7 +35,8 @@
 #define TPOINT_STATISTIC	3
 
 /* Extra data for compute_stats function */
-typedef struct {
+typedef struct 
+{
 	/* Information about array element type */
 	Oid type_id;			/* element type's OID */
 	Oid eq_opr;				/* default equality operator's OID */
@@ -88,6 +90,21 @@ typedef struct
 	int			count; 	 	  /* Count of distinct elements in an array */
 	int			frequency; 	  /* Number of arrays seen with this count */
 } DECountItem;
+
+/*
+ * Extra information used by the default analysis routines
+ */
+typedef struct
+{
+    int         count;          /* # of duplicates */
+    int         first;          /* values[] index of first occurrence */
+} ScalarMCVItem;
+
+typedef struct
+{
+    SortSupport ssup;
+    int        *tupnoLink;
+} CompareScalarsContext;
 
 extern Datum temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalType);
 

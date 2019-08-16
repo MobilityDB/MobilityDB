@@ -10,6 +10,8 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))';
 SELECT stbox 'STBOX T(( , , 3.0), ( , , 3.0))';
 
+SELECT stbox 'STBOX ZT((5,6,7,8), (1,2,3,4))';
+
 /* Errors */
 SELECT stbox 'AAA(1, 2, 3)';
 SELECT stbox 'stbox(1, 2, 3)';

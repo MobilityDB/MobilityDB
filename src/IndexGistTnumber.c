@@ -11,7 +11,15 @@
  *
  *****************************************************************************/
 
- #include "TemporalTypes.h"
+#include "IndexGistTnumber.h"
+
+#include <access/gist.h>
+#include <utils/builtins.h>
+
+#include "Temporal.h"
+#include "OidCache.h"
+#include "BoundBoxOps.h"
+#include "RelativePosOps.h"
 
 /* Minimum accepted ratio of split */
 #define LIMIT_RATIO 0.3
@@ -198,8 +206,8 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 		}
 	}
 
-	v->spl_ldatum = BoxPGetDatum(unionL);
-	v->spl_rdatum = BoxPGetDatum(unionR);
+	v->spl_ldatum = PointerGetDatum(unionL);
+	v->spl_rdatum = PointerGetDatum(unionR);
 }
 
 /*

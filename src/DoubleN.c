@@ -20,7 +20,10 @@
  *
  *****************************************************************************/
 
-#include "TemporalTypes.h"
+#include "DoubleN.h"
+
+#include <libpq/pqformat.h>
+#include <utils/builtins.h>
 
 /*****************************************************************************
  * Input/Output functions
