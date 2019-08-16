@@ -1616,5 +1616,6 @@ get_temporal_cacheOp(Oid operator)
             operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
             return (CachedOp)i;
     }
+    
     return OVERLAPS_OP;
 }
