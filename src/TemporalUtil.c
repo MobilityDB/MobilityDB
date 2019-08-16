@@ -130,7 +130,7 @@ Datum
 datum_copy(Datum value, Oid type)
 {
 	/* For types passed by value */
-	if (type_byval_fast(type) )
+	if (type_byval_fast(type))
 		return value;
 	/* For types passed by reference */
 	int typlen = get_typlen_fast(type);

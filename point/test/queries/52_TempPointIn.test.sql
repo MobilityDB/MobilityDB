@@ -1,29 +1,31 @@
-﻿-------------------------------------------------------------------------------
--- TemporalInst
-select asEWKT(frommfjson(
-'{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-"coordinates":[50.81381,4.38426],"datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
+﻿-----------------------------------------------------------------------
 
--- TemporalI
-select asEWKT(frommfjson(
-'{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-"coordinates":[[50.81381,4.38426],[50.81414,4.38566]],
-"datetimes":["2019-01-01T17:00:00.15+01","2019-01-01T17:00:35.33+01"],"interpolations":["Discrete"]}'));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint 'Point(1 2)@2000-01-01')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
 
--- TemporalSeq
-select asEWKT(frommfjson(
-'{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-"coordinates":[[50.81381,4.38426],[50.81414,4.38566]],
-"datetimes":["2019-01-01T17:00:00.15+01","2019-01-01T17:00:35.33+01"],
-"lower_inc":true,"upper_inc":false,"interpolations":["Linear"]}'));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01',1,2)));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}',1,2)));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]',1,2)));
+SELECT asEWKT(fromMFJSON(asMFJSON(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}',1,2)));
 
--- TemporalS
-select asEWKT(frommfjson(
-'{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-"sequences":[{"coordinates":[[50.81381,4.38426],[50.81414,4.38566]],
-"datetimes":["2019-01-01T17:00:00.15+01","2019-01-01T17:00:35.33+01"],"lower_inc":true,"upper_inc":false},
-{"coordinates":[[50.81253,4.38707],[50.81287,4.38915]],
-"datetimes":["2019-01-01T17:01:23.03+01","2019-01-01T17:01:48.45+01"],"lower_inc":true,"upper_inc":true}],
-"interpolations":["Linear"]}'));
 -----------------------------------------------------------------------
 
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'Point(1 2)@2000-01-01')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '(Point(1 2)@2000-01-01, Point(3 4)@2000-01-02)')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2000-01-01')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;{Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02}')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02]')));
+SELECT asEWKT(fromEWKB(asEWKB(tgeompoint 'SRID=4326;{[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02],[Point(1 2 3)@2000-01-03, Point(4 5 6)@2000-01-04]}')));
+
+-----------------------------------------------------------------------

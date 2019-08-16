@@ -56,6 +56,35 @@
 #define PG_RETURN_STBOX_P(x) return STboxPGetDatum(x)
 
 /*****************************************************************************
+ * Well-Known Binary (WKB)
+ *****************************************************************************/
+
+/* Data type size */
+#define WKB_TIMESTAMP_SIZE 8 /* Internal use only */
+#define WKB_DOUBLE_SIZE 8 /* Internal use only */
+#define WKB_INT_SIZE 4 /* Internal use only */
+#define WKB_BYTE_SIZE 1 /* Internal use only */
+
+/* Durations */
+#define WKB_TEMPORALINST 1
+#define WKB_TEMPORALI 2
+#define WKB_TEMPORALSEQ 3
+#define WKB_TEMPORALS 4
+
+/* Period bounds */
+#define WKB_LOWER_INC	0x01
+#define WKB_UPPER_INC 	0x02
+
+/* Machine endianness */
+#define XDR 0 /* big endian */
+#define NDR 1 /* little endian */
+
+/* Variation flags */
+#define WKB_ZFLAG  		0x10
+#define WKB_SRIDFLAG 	0x20
+#define WKB_BBOXFLAG 	0x40
+
+/*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c
  *****************************************************************************/
 

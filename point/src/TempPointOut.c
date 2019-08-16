@@ -14,10 +14,10 @@
 
 #include <assert.h>
 #include <float.h>
-#include <executor/spi.h>
 #include <utils/builtins.h>
 
 #include "TemporalTypes.h"
+#include "OidCache.h"
 #include "TemporalUtil.h"
 #include "TemporalPoint.h"
 #include "SpatialFuncs.h"
@@ -265,138 +265,6 @@ tpointarr_as_ewkt(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /*
- * Removes trailing zeros and dot for a %f formatted number.
- * Modifies input.
- * 
- * This function is taken from PostGIS file lwprint.c
- */
-static void
-trim_trailing_zeros(char *str)
-{
-	char *ptr, *totrim = NULL;
-	int len;
-	ptr = strchr(str, '.');
-	if (!ptr) return; /* no dot, no decimal digits */
-	len = strlen(ptr);
-	for (int i = len - 1; i; i--)
-	{
-		if (ptr[i] != '0') break;
-		totrim = &ptr[i];
-	}
-	if (totrim)
-	{
-		if (ptr == totrim - 1)
-			*ptr = '\0';
-		else
-			*totrim = '\0';
-	}
-}
-
-/*
- * Print an ordinate value using at most the given number of decimal digits
- *
- * The actual number of printed decimal digits may be less than the
- * requested ones if out of significant digits.
- *
- * The function will not write more than maxsize bytes, including the
- * terminating NULL. Returns the number of bytes that would have been
- * written if there was enough space (excluding terminating NULL).
- * So a return of ``bufsize'' or more means that the string was
- * truncated and misses a terminating NULL.
- * 
- * This function is taken from PostGIS file lwprint.c
- */
-static int
-lwprint_double(double d, int maxdd, char* buf, size_t bufsize)
-{
-	double ad = fabs(d);
-	int ndd;
-	int length = 0;
-	if (ad <= FP_TOLERANCE)
-	{
-		d = 0;
-		ad = 0;
-	}
-	if (ad < OUT_MAX_DOUBLE)
-	{
-		ndd = ad < 1 ? 0 : floor(log10(ad)) + 1; /* non-decimal digits */
-		if (maxdd > (OUT_MAX_DOUBLE_PRECISION - ndd)) maxdd -= ndd;
-		length = snprintf(buf, bufsize, "%.*f", maxdd, d);
-	}
-	else
-	{
-		length = snprintf(buf, bufsize, "%g", d);
-	}
-	trim_trailing_zeros(buf);
-	return length;
-}
-
-/*
- * Retrieve an SRS from a given SRID
- * Require valid spatial_ref_sys table entry
- * Could return SRS as short one (i.e EPSG:4326)
- * or as long one: (i.e urn:ogc:def:crs:EPSG::4326).
- * 
- * This function is taken from PostGIS file lwgeom_export.c
- */
-static char *
-getSRSbySRID(int32_t srid, bool short_crs)
-{
-	char query[256];
-	char *srs, *srscopy;
-	int size, err;
-
-	if (SPI_OK_CONNECT != SPI_connect ())
-	{
-		elog(NOTICE, "getSRSbySRID: could not connect to SPI manager");
-		SPI_finish();
-		return NULL;
-	}
-
-	if (short_crs)
-		sprintf(query, "SELECT auth_name||':'||auth_srid \
-				FROM spatial_ref_sys WHERE srid='%d'", srid);
-	else
-		sprintf(query, "SELECT 'urn:ogc:def:crs:'||auth_name||'::'||auth_srid \
-				FROM spatial_ref_sys WHERE srid='%d'", srid);
-
-	err = SPI_exec(query, 1);
-	if (err < 0)
-	{
-		elog(NOTICE, "getSRSbySRID: error executing query %d", err);
-		SPI_finish();
-		return NULL;
-	}
-
-	/* No entry in spatial_ref_sys */
-	if (SPI_processed <= 0)
-	{
-		SPI_finish();
-		return NULL;
-	}
-
-	/* Get result */
-	srs = SPI_getvalue(SPI_tuptable->vals[0], SPI_tuptable->tupdesc, 1);
-
-	/* NULL result */
-	if ( ! srs )
-	{
-		SPI_finish();
-		return NULL;
-	}
-
-	/* Copy result to upper executor context */
-	size = strlen(srs) + 1;
-	srscopy = SPI_palloc(size);
-	memcpy(srscopy, srs, size);
-
-	/* Disconnect from SPI */
-	SPI_finish();
-
-	return srscopy;
-}
-
-/*
  * Handle coordinate array
  * Returns maximum size of rendered coordinate array in bytes.
  */
@@ -469,7 +337,7 @@ datetimes_mfjson_buf(char *output, TemporalInst *inst)
  * Handle SRS
  */
 static size_t
-asmfjson_srs_size(char *srs)
+srs_mfjson_size(char *srs)
 {
 	int size = sizeof("'crs':{'type':'name',");
 	size += sizeof("'properties':{'name':''}},");
@@ -478,7 +346,7 @@ asmfjson_srs_size(char *srs)
 }
 
 static size_t
-asmfjson_srs_buf(char *output, char *srs)
+srs_mfjson_buf(char *output, char *srs)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "\"crs\":{\"type\":\"name\",");
@@ -490,7 +358,7 @@ asmfjson_srs_buf(char *output, char *srs)
  * Handle Bbox
  */
 static size_t
-asmfjson_bbox_size(int hasz, int precision)
+bbox_mfjson_size(int hasz, int precision)
 {
 	/* The maximum size of a timestamptz is 35, e.g., "2019-08-06 23:18:16.195062-09:30" */
 	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") + 70;
@@ -508,7 +376,7 @@ asmfjson_bbox_size(int hasz, int precision)
 }
 
 static size_t
-asmfjson_bbox_buf(char *output, STBOX *bbox, int hasz, int precision)
+bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "\"stBoundedBy\":{");
@@ -530,24 +398,24 @@ asmfjson_bbox_buf(char *output, STBOX *bbox, int hasz, int precision)
 /*****************************************************************************/
 
 static size_t
-tpointinst_asmfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	size += datetimes_mfjson_size(1);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	return size;
 }
 
 static size_t
-tpointinst_asmfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
+tpointinst_as_mfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":");
 	ptr += coordinates_mfjson_buf(ptr, inst, precision);
 	ptr += sprintf(ptr, ",\"datetimes\":");
@@ -557,35 +425,35 @@ tpointinst_asmfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *sr
 }
 
 static char *
-tpointinst_asmfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointinst_asmfjson_size(inst, precision, bbox, srs);
+	int size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointinst_asmfjson_buf(inst, precision, bbox, srs, output);
+	tpointinst_as_mfjson_buf(inst, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpointi_asmfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	size += datetimes_mfjson_size(ti->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	return size;
 }
 
 static size_t
-tpointi_asmfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
+tpointi_as_mfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":[");
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -603,35 +471,35 @@ tpointi_asmfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char 
 }
 
 static char *
-tpointi_asmfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointi_asmfjson_size(ti, precision, bbox, srs);
+	int size = tpointi_as_mfjson_size(ti, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointi_asmfjson_buf(ti, precision, bbox, srs, output);
+	tpointi_as_mfjson_buf(ti, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpointseq_asmfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
 	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Linear']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	return size;
 }
 
 static size_t
-tpointseq_asmfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
+tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":[");
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -650,18 +518,18 @@ tpointseq_asmfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, 
 }
 
 static char *
-tpointseq_asmfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointseq_asmfjson_size(seq, precision, bbox, srs);
+	int size = tpointseq_as_mfjson_size(seq, precision, bbox, srs);
 	char *output = palloc(size);
-	tpointseq_asmfjson_buf(seq, precision, bbox, srs, output);
+	tpointseq_as_mfjson_buf(seq, precision, bbox, srs, output);
 	return output;
 }
 
 /*****************************************************************************/
 
 static size_t
-tpoints_asmfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
 	bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
 	int size = sizeof("{'type':'MovingPoint','sequences':[],");
@@ -673,18 +541,18 @@ tpoints_asmfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 		size += datetimes_mfjson_size(seq->count);
 	}
 	size += sizeof(",interpolations':['Linear']}");
-	if (srs) size += asmfjson_srs_size(srs);
-	if (bbox) size += asmfjson_bbox_size(hasz, precision);
+	if (srs) size += srs_mfjson_size(srs);
+	if (bbox) size += bbox_mfjson_size(hasz, precision);
 	return size;
 }
 
 static size_t
-tpoints_asmfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
+tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
-	if (srs) ptr += asmfjson_srs_buf(ptr, srs);
-	if (bbox) ptr += asmfjson_bbox_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+	if (srs) ptr += srs_mfjson_buf(ptr, srs);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
 	ptr += sprintf(ptr, "\"sequences\":[");
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -710,11 +578,11 @@ tpoints_asmfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char 
 }
 
 static char *
-tpoints_asmfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpoints_asmfjson_size(ts, precision, bbox, srs);
+	int size = tpoints_as_mfjson_size(ts, precision, bbox, srs);
 	char *output = palloc(size);
-	tpoints_asmfjson_buf(ts, precision, bbox, srs, output);
+	tpoints_as_mfjson_buf(ts, precision, bbox, srs, output);
 	return output;
 }
 
@@ -730,8 +598,6 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	char *srs = NULL;
 	
 	/* Get the temporal point */
-	if (PG_ARGISNULL(0))
-		PG_RETURN_NULL();
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 
 	/* Retrieve precision if any (default is max) */
@@ -773,7 +639,6 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 				}
 			}
 		}
-
 		if (option & 1)
 			has_bbox = 1;
 	}
@@ -790,14 +655,734 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	char *mfjson = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		mfjson = tpointinst_asmfjson((TemporalInst *)temp, precision, bbox, srs);
+		mfjson = tpointinst_as_mfjson((TemporalInst *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALI)
-		mfjson = tpointi_asmfjson((TemporalI *)temp, precision, bbox, srs);
+		mfjson = tpointi_as_mfjson((TemporalI *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALSEQ)
-		mfjson = tpointseq_asmfjson((TemporalSeq *)temp, precision, bbox, srs);
+		mfjson = tpointseq_as_mfjson((TemporalSeq *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALS)
-		mfjson = tpoints_asmfjson((TemporalS *)temp, precision, bbox, srs);
+		mfjson = tpoints_as_mfjson((TemporalS *)temp, precision, bbox, srs);
 	text *result = cstring_to_text(mfjson);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Output in WKB format 
+ *****************************************************************************/
+
+/*
+** Variants available for WKB and WKT output types
+*/
+
+#define WKB_ISO 0x01
+#define WKB_SFSQL 0x02
+#define WKB_EXTENDED 0x04
+#define WKB_NDR 0x08
+#define WKB_XDR 0x10
+#define WKB_HEX 0x20
+#define WKB_NO_NPOINTS 0x40 /* Internal use only */
+#define WKB_NO_SRID 0x80 /* Internal use only */
+
+#define WKT_ISO 0x01
+#define WKT_SFSQL 0x02
+#define WKT_EXTENDED 0x04
+
+/*
+* Look-up table for hex writer
+*/
+static char *hexchr = "0123456789ABCDEF";
+
+/*
+* Endian
+*/
+static uint8_t *
+endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
+{
+	if (variant & WKB_HEX)
+	{
+		buf[0] = '0';
+		buf[1] = ((variant & WKB_NDR) ? '1' : '0');
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = ((variant & WKB_NDR) ? 1 : 0);
+		return buf + 1;
+	}
+}
+
+/*
+* SwapBytes?
+*/
+static inline bool
+wkb_swap_bytes(uint8_t variant)
+{
+	/* If requested variant matches machine arch, we don't have to swap! */
+	if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
+		 ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
+	{
+		return false;
+	}
+	return true;
+}
+
+/*
+* Integer32
+*/
+static uint8_t*
+integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
+{
+	char *iptr = (char*)(&ival);
+	int i = 0;
+
+	if (sizeof(int) != WKB_INT_SIZE)
+		elog(ERROR, "Machine int size is not %d bytes!", WKB_INT_SIZE);
+
+	if (variant & WKB_HEX)
+	{
+		int swap = wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_INT_SIZE; i++)
+		{
+			int j = (swap ? WKB_INT_SIZE - 1 - i : i);
+			uint8_t b = iptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_INT_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_INT_SIZE; i++)
+			{
+				buf[i] = iptr[WKB_INT_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, iptr, WKB_INT_SIZE);
+		}
+		return buf + WKB_INT_SIZE;
+	}
+}
+
+/*
+* Float64
+*/
+static uint8_t*
+double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
+{
+	char *dptr = (char*)(&d);
+	int i = 0;
+
+	if (sizeof(double) != WKB_DOUBLE_SIZE)
+	{
+		elog(ERROR, "Machine double size is not %d bytes!", WKB_DOUBLE_SIZE);
+	}
+
+	if (variant & WKB_HEX)
+	{
+		int swap =  wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		{
+			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
+			uint8_t b = dptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_DOUBLE_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			{
+				buf[i] = dptr[WKB_DOUBLE_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, dptr, WKB_DOUBLE_SIZE);
+		}
+		return buf + WKB_DOUBLE_SIZE;
+	}
+}
+
+/*
+* Timestamp aka int64
+*/
+static uint8_t*
+timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
+{
+	char *tptr = (char*)(&t);
+	int i = 0;
+
+	if (sizeof(double) != WKB_DOUBLE_SIZE)
+	{
+		elog(ERROR, "Machine timestamp size is not %d bytes!", WKB_DOUBLE_SIZE);
+	}
+
+	if (variant & WKB_HEX)
+	{
+		int swap =  wkb_swap_bytes(variant);
+		/* Machine/request arch mismatch, so flip byte order */
+		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+		{
+			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
+			uint8_t b = tptr[j];
+			/* Top four bits to 0-F */
+			buf[2*i] = hexchr[b >> 4];
+			/* Bottom four bits to 0-F */
+			buf[2*i+1] = hexchr[b & 0x0F];
+		}
+		return buf + (2 * WKB_DOUBLE_SIZE);
+	}
+	else
+	{
+		/* Machine/request arch mismatch, so flip byte order */
+		if (wkb_swap_bytes(variant))
+		{
+			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
+			{
+				buf[i] = tptr[WKB_DOUBLE_SIZE - 1 - i];
+			}
+		}
+		/* If machine arch and requested arch match, don't flip byte order */
+		else
+		{
+			memcpy(buf, tptr, WKB_DOUBLE_SIZE);
+		}
+		return buf + WKB_DOUBLE_SIZE;
+	}
+}
+
+static bool
+tpoint_wkb_needs_srid(Temporal *temp, uint8_t variant)
+{
+	/* We can only add an SRID if the geometry has one, and the
+	   WKB form is extended */
+	if ((variant & WKB_EXTENDED) && tpoint_srid_internal(temp) != SRID_UNKNOWN)
+		return true;
+
+	/* Everything else doesn't get an SRID */
+	return false;
+}
+
+static size_t
+tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
+{
+	int dims = 2;
+	size_t size = 0;
+	if (hasz)
+		dims = 3;
+	/* size of the TemporalInst array */
+	size += dims * npoints * WKB_DOUBLE_SIZE + 
+		npoints * WKB_TIMESTAMP_SIZE;
+	return size;
+}
+
+static size_t 
+tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
+{
+	/* Endian flag + temporal flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+		size += WKB_INT_SIZE;
+	/* TemporalInst */
+	size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of instants */
+	size += WKB_INT_SIZE;
+	/* Include the TemporalInst array */
+	size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of instants and the period bounds flag */
+	size += WKB_INT_SIZE + WKB_BYTE_SIZE;
+	/* Include the TemporalInst array */
+	size += tpointinstarr_to_wkb_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags),
+		variant);
+	return size;
+}
+
+static size_t 
+tpoints_to_wkb_size(TemporalS *ts, uint8_t variant)
+{
+	/* Endian flag + duration flag */
+	size_t size = WKB_BYTE_SIZE * 2;
+	/* Extended WKB needs space for optional SRID integer */
+	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+		size += WKB_INT_SIZE;
+	/* Include the number of sequences */
+	size += WKB_INT_SIZE;
+	/* For each sequence include the number of instants and the period bounds flag */
+	size += ts->count * (WKB_INT_SIZE + WKB_BYTE_SIZE);
+	/* Include all the TemporalInst of all the sequences */
+	size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags),
+			variant);
+	return size;
+}
+
+static size_t
+tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
+{
+	size_t size = 0;
+	temporal_duration_is_valid(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		size = tpointinst_to_wkb_size((TemporalInst *)temp, variant);
+	else if (temp->duration == TEMPORALI)
+		size = tpointi_to_wkb_size((TemporalI *)temp, variant);
+	else if (temp->duration == TEMPORALSEQ)
+		size = tpointseq_to_wkb_size((TemporalSeq *)temp, variant);
+	else if (temp->duration == TEMPORALS)
+		size = tpoints_to_wkb_size((TemporalS *)temp, variant);
+	return size;
+}
+
+static uint8_t *
+tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+	uint8_t wkb_flags = 0;
+	if (variant & WKB_EXTENDED)
+	{
+		if ( MOBDB_FLAGS_GET_Z(temp->flags) )
+			wkb_flags |= WKB_ZFLAG;
+		if (tpoint_wkb_needs_srid(temp, variant))
+			wkb_flags |= WKB_SRIDFLAG;
+	}
+	if (variant & WKB_HEX)
+	{
+		buf[0] = hexchr[wkb_flags >> 4];
+		buf[1] = hexchr[temp->duration];
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = temp->duration + wkb_flags;
+		return buf + 1;
+	}
+}
+
+static uint8_t *
+tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)inst), buf, variant);
+	/* Set the coordinates */
+	if (MOBDB_FLAGS_GET_Z(inst->flags))
+	{
+		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point.x, buf, variant);
+		buf = double_to_wkb_buf(point.y, buf, variant);
+		buf = double_to_wkb_buf(point.z, buf, variant);
+	}
+	else 
+	{
+		POINT2D point = datum_get_point2d(temporalinst_value(inst));
+		buf = double_to_wkb_buf(point.x, buf, variant);
+		buf = double_to_wkb_buf(point.y, buf, variant);
+	}	
+	buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	return buf;
+}
+
+static uint8_t *
+tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)ti, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ti), buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(ti->count, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		/* Set the coordinates */
+		if (MOBDB_FLAGS_GET_Z(inst->flags))
+		{
+			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+			buf = double_to_wkb_buf(point.z, buf, variant);
+		}
+		else 
+		{
+			POINT2D point = datum_get_point2d(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+		}	
+		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	}
+	return buf;
+}
+
+static uint8_t *
+tpointseq_wkb_bounds(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+{
+	uint8_t wkb_flags = 0;
+	if (seq->period.lower_inc)
+		wkb_flags |= WKB_LOWER_INC;
+	if (seq->period.upper_inc)
+		wkb_flags |= WKB_UPPER_INC;
+	if (variant & WKB_HEX)
+	{
+		buf[0] = '0';
+		buf[1] = hexchr[wkb_flags];
+		return buf + 2;
+	}
+	else
+	{
+		buf[0] = wkb_flags;
+		return buf + 1;
+	}
+}
+
+static uint8_t *
+tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)seq), buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(seq->count, buf, variant);
+	/* Set the period bounds */
+	buf = tpointseq_wkb_bounds(seq, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		/* Set the coordinates */
+		if (MOBDB_FLAGS_GET_Z(inst->flags))
+		{
+			POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+			buf = double_to_wkb_buf(point.z, buf, variant);
+		}
+		else 
+		{
+			POINT2D point = datum_get_point2d(temporalinst_value(inst));
+			buf = double_to_wkb_buf(point.x, buf, variant);
+			buf = double_to_wkb_buf(point.y, buf, variant);
+		}	
+		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+	}
+	return buf;
+}
+
+static uint8_t *
+tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
+{
+	/* Set the endian flag */
+	buf = endian_to_wkb_buf(buf, variant);
+	/* Set the temporal flags */
+	buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
+	/* Set the optional SRID for extended variant */
+	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ts), buf, variant);
+	/* Set the count */
+	buf = integer_to_wkb_buf(ts->count, buf, variant);
+	/* Set the TemporalInst array */
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		/* Set the count */
+		buf = integer_to_wkb_buf(seq->count, buf, variant);
+		/* Set the period bounds */
+		buf = tpointseq_wkb_bounds(seq, buf, variant);
+		for (int j = 0; j < seq->count; j++)
+		{
+			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			/* Set the coordinates */
+			if (MOBDB_FLAGS_GET_Z(inst->flags))
+			{
+				POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point.x, buf, variant);
+				buf = double_to_wkb_buf(point.y, buf, variant);
+				buf = double_to_wkb_buf(point.z, buf, variant);
+			}
+			else 
+			{
+				POINT2D point = datum_get_point2d(temporalinst_value(inst));
+				buf = double_to_wkb_buf(point.x, buf, variant);
+				buf = double_to_wkb_buf(point.y, buf, variant);
+			}	
+			buf = timestamp_to_wkb_buf(inst->t, buf, variant);
+		}
+	}
+	return buf;
+}
+
+static uint8_t *
+tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
+{
+	temporal_duration_is_valid(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		return tpointinst_to_wkb_buf((TemporalInst *)temp, buf, variant);
+	else if (temp->duration == TEMPORALI)
+		return tpointi_to_wkb_buf((TemporalI *)temp, buf, variant);
+	else if (temp->duration == TEMPORALSEQ)
+		return tpointseq_to_wkb_buf((TemporalSeq *)temp, buf, variant);
+	else if (temp->duration == TEMPORALS)
+		return tpoints_to_wkb_buf((TemporalS *)temp, buf, variant);
+	return NULL; /* make compiler quiet */
+}
+
+/**
+* Convert Temporal to a char* in WKB format. Caller is responsible for freeing
+* the returned array.
+*
+* @param variant. Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
+* Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
+* return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
+* would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
+* @param size_out If supplied, will return the size of the returned memory segment,
+* including the null terminator in the case of ASCII.
+*/
+
+static uint8_t *
+tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
+{
+	size_t buf_size;
+	uint8_t *buf = NULL;
+	uint8_t *wkb_out = NULL;
+
+	/* Initialize output size */
+	if (size_out) *size_out = 0;
+
+	if (temp == NULL)
+	{
+		elog(ERROR, "Cannot convert NULL into WKB.");
+		return NULL;
+	}
+
+	/* Calculate the required size of the output buffer */
+	buf_size = tpoint_to_wkb_size(temp, variant);
+
+	if (buf_size == 0)
+	{
+		elog(ERROR, "Error calculating output WKB buffer size.");
+		return NULL;
+	}
+
+	/* Hex string takes twice as much space as binary + a null character */
+	if (variant & WKB_HEX)
+	{
+		buf_size = 2 * buf_size + 1;
+	}
+
+	/* If neither or both variants are specified, choose the native order */
+	if (! (variant & WKB_NDR || variant & WKB_XDR) ||
+		   (variant & WKB_NDR && variant & WKB_XDR))
+	{
+		if (getMachineEndian() == NDR)
+			variant = variant | WKB_NDR;
+		else
+			variant = variant | WKB_XDR;
+	}
+
+	/* Allocate the buffer */
+	buf = palloc(buf_size);
+
+	if (buf == NULL)
+	{
+		elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+		return NULL;
+	}
+
+	/* Retain a pointer to the front of the buffer for later */
+	wkb_out = buf;
+
+	/* Write the WKB into the output buffer */
+	buf = tpoint_to_wkb_buf(temp, buf, variant);
+
+	/* Null the last byte if this is a hex output */
+	if (variant & WKB_HEX)
+	{
+		*buf = '\0';
+		buf++;
+	}
+
+	/* The buffer pointer should now land at the end of the allocated buffer space. Let's check. */
+	if (buf_size != (size_t) (buf - wkb_out))
+	{
+		elog(ERROR, "Output WKB is not the same size as the allocated buffer.");
+		pfree(wkb_out);
+		return NULL;
+	}
+
+	/* Report output size */
+	if (size_out) *size_out = buf_size;
+
+	return wkb_out;
+}
+
+/*
+ * This will have no 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_binary);
+
+PGDLLEXPORT Datum 
+tpoint_as_binary(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	uint8_t *wkb;
+	size_t wkb_size;
+	uint8_t variant = 0;
+ 	bytea *result;
+	text *type;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+	wkb_size = VARSIZE_ANY_EXHDR(temp);
+	/* Create WKB hex string */
+	wkb = tpoint_to_wkb(temp, variant, &wkb_size);
+
+	/* Prepare the PgSQL text return type */
+	result = palloc(wkb_size + VARHDRSZ);
+	memcpy(VARDATA(result), wkb, wkb_size);
+	SET_VARSIZE(result, wkb_size + VARHDRSZ);
+
+	/* Clean up and return */
+	pfree(wkb);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BYTEA_P(result);
+}
+
+/*
+ * This will have 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
+
+PGDLLEXPORT Datum 
+tpoint_as_ewkb(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	uint8_t *wkb;
+	size_t wkb_size;
+	uint8_t variant = 0;
+ 	bytea *result;
+	text *type;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+	wkb_size = VARSIZE_ANY_EXHDR(temp);
+	/* Create WKB hex string */
+	wkb = tpoint_to_wkb(temp, variant | WKB_EXTENDED, &wkb_size);
+
+	/* Prepare the PgSQL text return type */
+	result = palloc(wkb_size + VARHDRSZ);
+	memcpy(VARDATA(result), wkb, wkb_size);
+	SET_VARSIZE(result, wkb_size + VARHDRSZ);
+
+	/* Clean up and return */
+	pfree(wkb);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BYTEA_P(result);
+}
+
+/*
+ * This will have 'SRID=#;'
+ */
+PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
+
+PGDLLEXPORT Datum 
+tpoint_as_hexewkb(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	char *hexwkb;
+	size_t hexwkb_size;
+	uint8_t variant = 0;
+	text *result;
+	text *type;
+	size_t text_size;
+	/* If user specified endianness, respect it */
+	if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
+	{
+		type = PG_GETARG_TEXT_P(1);
+		if (! strncmp(VARDATA(type), "xdr", 3) ||
+			! strncmp(VARDATA(type), "XDR", 3))
+			variant = variant | WKB_XDR;
+		else
+			variant = variant | WKB_NDR;
+	}
+
+	/* Create WKB hex string */
+	hexwkb = (char *)tpoint_to_wkb(temp, variant | WKB_EXTENDED | WKB_HEX, &hexwkb_size);
+
+	/* Prepare the PgSQL text return type */
+	text_size = hexwkb_size - 1 + VARHDRSZ;
+	result = palloc(text_size);
+	memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
+	SET_VARSIZE(result, text_size);
+
+	/* Clean up and return */
+	pfree(hexwkb);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
 }

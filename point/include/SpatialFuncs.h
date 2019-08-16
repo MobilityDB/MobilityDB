@@ -37,15 +37,6 @@ extern void gserialized_check_point(GSERIALIZED *gs);
 extern void gserialized_check_M_dimension(GSERIALIZED *gs);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
-/* Functions for output in WKT and EWKT format */
-
-extern Datum tpoint_as_text(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum geoarr_as_text(PG_FUNCTION_ARGS);
-extern Datum geoarr_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum tpointarr_as_text(PG_FUNCTION_ARGS);
-extern Datum tpointarr_as_ewkt(PG_FUNCTION_ARGS);
-
 /* Functions for spatial reference systems */
 
 extern Datum tpoint_srid(PG_FUNCTION_ARGS);
