@@ -126,11 +126,11 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
     PeriodBound *hist_lower, *hist_upper;
     PeriodBound	const_lower, const_upper;
     double		hist_selec;
-    int			nhist, i, kind_type = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+    int			nhist, i;
 
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
           get_attstatsslot_internal(&hslot, vardata->statsTuple,
-                                    kind_type, InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
+                                    STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
         return -1.0;
     /*
      * Convert histogram of periods into histograms of its lower and upper
