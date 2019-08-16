@@ -53,7 +53,6 @@ pg_notice(const char *fmt, va_list ap)
     ereport(NOTICE, (errmsg_internal("%s", errmsg)));
 }
 
-
 void temporalgeom_init()
 {
 	lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);

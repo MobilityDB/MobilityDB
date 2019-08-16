@@ -41,4 +41,15 @@ CREATE FUNCTION fromMFJSON(text)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 */
 
+CREATE FUNCTION fromEWKB(bytea)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+/*
+CREATE FUNCTION fromEWKB(bytea)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+*/
+
 /*****************************************************************************/

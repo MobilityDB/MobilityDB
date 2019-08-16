@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
- * TemporalPoint.h
- *	  Functions for temporal points.
+ * ProjectionGK.h
+ *	  Implementation of the Gauss Krueger projection that is used in Secondo
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
