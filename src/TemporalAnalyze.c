@@ -595,7 +595,6 @@ temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
         /* Get TemporalInst value */
         inst = DatumGetTemporalInst(value);
-
         timestamp_values[non_null_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
         timestamp_values[non_null_cnt].tupno = temporalinst_no;
         timestamp_tupnoLink[non_null_cnt] = temporalinst_no;

@@ -383,7 +383,17 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Constant
             }
             else
             {
-                selec = period_sel_internal(root, &vardata, constantData.period,
+                if (cachedOp == SAME_OP)
+                {
+                    Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+                    selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+                                         false, TEMPORAL_STATISTICS);
+                    selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
+                                          false, TEMPORAL_STATISTICS);
+                    selec = selec > 1 ? 1 : selec;
+                }
+                else
+                    selec = period_sel_internal(root, &vardata, constantData.period,
                                             oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
             }
             break;
