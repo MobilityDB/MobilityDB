@@ -101,10 +101,6 @@ CREATE FUNCTION temporal_typmod_out(integer)
 	AS 'MODULE_PATHNAME','temporal_typmod_out'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION temporal_analyze(internal)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION tnumber_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'

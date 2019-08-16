@@ -355,7 +355,7 @@ Oid
 range_oid_from_base(Oid valuetypid)
 {
 	Oid result = 0;
-	number_base_type_oid(valuetypid);
+	numeric_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)
 		result = type_oid(T_INTRANGE);
 	else if (valuetypid == FLOAT8OID)
