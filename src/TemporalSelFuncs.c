@@ -1610,8 +1610,7 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 CachedOp
 get_temporal_cacheOp(Oid operator)
 {
-    for (int i = LT_OP; i <= OVERAFTER_OP; i++)
-    {
+    for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
         if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
             operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
             operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
@@ -1622,7 +1621,6 @@ get_temporal_cacheOp(Oid operator)
             operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
             return (CachedOp)i;
     }
+    
     return OVERLAPS_OP;
-    /*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-            errmsg("Operation not supported")));*/
 }
