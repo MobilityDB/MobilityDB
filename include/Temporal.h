@@ -222,14 +222,6 @@ typedef struct double4
 	double		d;
 } double4;
 
-typedef struct AggregateState
-{
-	int 		size;
-	void		*extra;
-	size_t		extrasize;
-	Temporal 	*values[];
-} AggregateState;
-
 typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /*****************************************************************************
@@ -238,8 +230,8 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* TBOX */
 
-#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)    PointerGetDatum(X)
+#define DatumGetTboxP(X)	((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)	PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 

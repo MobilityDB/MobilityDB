@@ -17,6 +17,14 @@
 #include <catalog/pg_type.h>
 #include "Temporal.h"
 
+typedef struct AggregateState
+{
+	int 		size;
+	void		*extra;
+	size_t		extrasize;
+	Temporal 	*values[];
+} AggregateState;
+
 /*****************************************************************************/
 
 extern Datum datum_min_int32(Datum l, Datum r);
