@@ -23,7 +23,7 @@
 #include <statistics/extended_stats_internal.h>
 
 #include "period.h"
-#include "tpoint_spatialfuncs.h"
+#include "stbox.h"
 
 /**
 * The dimensions of temporal types our code can handle.

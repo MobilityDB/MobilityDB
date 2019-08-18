@@ -8,9 +8,6 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- * IDENTIFICATION
- *	src/TemporalAnalyze.c
- *
  *****************************************************************************/
 
 #include "temporal_analyze.h"
@@ -30,6 +27,7 @@
 #include "oidcache.h"
 #include "temporal_util.h"
 #include "tpoint.h"
+#include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 
