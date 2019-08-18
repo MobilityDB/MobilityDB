@@ -118,7 +118,7 @@ aggstate_write(AggregateState *state, StringInfo buf)
 	for (int i = 0; i < state->size; i ++)
 		temporal_write(state->values[i], buf);
 	pq_sendint64(buf, state->extrasize);
-	if(state->extra)
+	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
 }
 
@@ -138,7 +138,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 		result->values[i] = temporal_read(buf, valuetypid);
 	result->size = size;
 	result->extrasize = pq_getmsgint64(buf);
-	if(result->extrasize) 
+	if (result->extrasize) 
 	{
 		const char* extra = pq_getmsgbytes(buf, result->extrasize);
 		result->extra = palloc(result->extrasize);

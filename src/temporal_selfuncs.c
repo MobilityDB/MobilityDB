@@ -46,6 +46,361 @@
 
 /*****************************************************************************/
 
+static Selectivity
+temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+{
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	Selectivity selec = 0.0;
+	BBoxBounds bBoxBounds;
+	bool numeric, temporal;
+	double lower, upper;
+	Period *period;
+	ConstantData constantData;
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		}
+	}
+
+	/*
+	 * Set constant information
+	 */
+	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
+					 &temporal, &period);
+
+	constantData.bBoxBounds = bBoxBounds;
+	constantData.oid = ((Const *) other)->consttype;
+
+	constantData.lower = constantData.upper = 0;  /* keep compiler quiet */
+	constantData.period = NULL;   /* keep compiler quiet */
+	if (numeric)
+	{
+		constantData.lower = lower;
+		constantData.upper = upper;
+	}
+	if (temporal)
+	{
+		constantData.period = period;
+	}
+
+	selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
+
+	if (selec < 0.0)
+		selec = default_temporaltypes_selectivity(operator);
+
+	ReleaseVariableStats(vardata);
+
+	CLAMP_PROBABILITY(selec);
+
+	return selec;
+}
+
+static PeriodBound *
+lower_or_higher_temporal_bound(Node *other, bool higher)
+{
+
+	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
+	Oid consttype = ((Const *) other)->consttype;
+	if (higher)
+	{
+		result->inclusive = false;
+		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+		{
+			Period *p = (Period *)palloc(sizeof(Period));
+			/* TODO MEMORY LEAK HERE !!!! */
+			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+			result->val = p->upper;
+		}
+		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+		{
+			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+			TBOX box = {0,0,0,0,0};
+			temporal_bbox(&box, temporal);
+			result->val = (TimestampTz)box.tmax;
+		}
+		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+		{
+			Period *p = (Period *)palloc(sizeof(Period));
+			/* TODO MEMORY LEAK HERE !!!! */
+			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+			result->val = p->upper;
+		}
+		else if (consttype == TIMESTAMPTZOID)
+		{
+			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
+		}
+		else if (consttype == type_oid(T_PERIOD))
+		{
+			result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
+		}
+		else if (consttype == type_oid(T_TBOX))
+		{
+			result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmax;
+		}
+		else if (consttype == type_oid(T_STBOX))
+		{
+			result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmax;
+		}
+	}
+	else
+	{
+		result->inclusive = true;
+		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+		{
+			Period *p = (Period *)palloc(sizeof(Period));
+			/* TODO MEMORY LEAK HERE !!!! */
+			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
+			result->val = p->lower;
+		}
+		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+		{
+			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
+			TBOX box = {0,0,0,0,0};
+			temporal_bbox(&box, temporal);
+			result->val = (TimestampTz)box.tmin;
+		}
+		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+		{
+			Period *p = (Period *)palloc(sizeof(Period));
+			/* TODO MEMORY LEAK HERE !!!! */
+			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
+			result->val = p->lower;
+		}
+		else if (consttype == TIMESTAMPTZOID)
+		{
+			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
+		}
+		else if (consttype == type_oid(T_PERIOD))
+		{
+			result->val = DatumGetPeriod(((Const *) other)->constvalue)->lower;
+		}
+		else if (consttype == type_oid(T_TBOX))
+		{
+			result->val = (TimestampTz)DatumGetTboxP(((Const *) other)->constvalue)->tmin;
+		}
+		else if (consttype == type_oid(T_STBOX))
+		{
+			result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
+		}
+	}
+	return result;
+}
+
+Selectivity
+estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
+{
+	// Check the temporal types and inside each one check the cachedOp
+	Selectivity  selec = 0.0;
+	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+	switch (constantData.bBoxBounds)
+	{
+		case STCONST:
+		case SNCONST_STCONST:
+		case DNCONST_STCONST:
+		{
+			if (durationType == TEMPORALINST)
+			{
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+									 false, TEMPORAL_STATISTICS);
+			}
+			else
+				selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
+
+			break;
+		}
+		case DTCONST:
+		case SNCONST_DTCONST:
+		case DNCONST_DTCONST:
+		{
+			if (durationType == TEMPORALINST)
+			{
+				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
+										  false, TEMPORAL_STATISTICS);
+					selec = selec > 1 ? 1 : selec;
+				}
+				else
+				{
+					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+
+					selec = scalarineq_sel(root, opl, false, false, &vardata,
+										   TimestampTzGetDatum(constantData.period->lower),
+										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec += scalarineq_sel(root, opg, true, true, &vardata,
+											TimestampTzGetDatum(constantData.period->upper),
+											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+					selec = 1 - selec;
+					selec = selec < 0 ? 0 : selec;
+				}
+			}
+			else
+			{
+				if (cachedOp == SAME_OP)
+				{
+					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
+										 false, TEMPORAL_STATISTICS);
+					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
+										  false, TEMPORAL_STATISTICS);
+					selec = selec > 1 ? 1 : selec;
+				}
+				else
+					selec = period_sel_internal(root, &vardata, constantData.period,
+											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+			}
+			break;
+		}
+		default:
+			break;
+	}
+
+	return selec;
+}
+
+Selectivity
+estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
+							   Node *other, bool isgt, bool iseq, CachedOp operator)
+{
+	double selec = 0.0;
+	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+
+	if (durationType == TEMPORALINST && (vardata.vartype == type_oid(T_TBOOL) ||
+										 vardata.vartype == type_oid(T_TINT) ||
+										 vardata.vartype == type_oid(T_TFLOAT) ||
+										 vardata.vartype == type_oid(T_TTEXT) ||
+										 vardata.vartype == type_oid(T_TGEOMPOINT) ||
+										 vardata.vartype == type_oid(T_TGEOGPOINT)))
+	{
+		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+
+		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
+
+		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+							   TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
+	}
+	else if (vardata.vartype == type_oid(T_TBOOL) ||
+			 vardata.vartype == type_oid(T_TINT) ||
+			 vardata.vartype == type_oid(T_TFLOAT) ||
+			 vardata.vartype == type_oid(T_TTEXT) ||
+			 vardata.vartype == type_oid(T_TGEOMPOINT) ||
+			 vardata.vartype == type_oid(T_TGEOGPOINT))
+	{
+		Oid op = (Oid) 0;
+
+		if (!isgt && !iseq)
+			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
+		else if (isgt && iseq)
+			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
+		else if (iseq)
+			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+		else if (isgt)
+			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
+
+		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
+		Period *period = period_make(periodBound->val, periodBound->val, true, true);
+		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
+	}
+	else if (vardata.vartype == TIMESTAMPTZOID)
+	{
+		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
+		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+							   TIMESTAMPTZOID, DEFAULT_STATISTICS);
+	}
+	else if (vardata.vartype == type_oid(T_PERIOD))
+	{
+		Oid op = (Oid) 0;
+		if (!isgt && !iseq)
+			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
+		else if (!isgt && iseq)
+			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+		else if (isgt && !iseq)
+			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
+		else if (isgt && iseq)
+			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
+
+		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
+		Period *period = period_make(periodBound->val, periodBound->val, true, true);
+		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
+	}
+	else if (vardata.vartype == type_oid(T_TBOX))
+	{
+
+	}
+	else if (vardata.vartype == type_oid(T_STBOX))
+	{
+
+	}
+	return selec;
+}
+
+/** Get the name of the operator from different cases */
+static CachedOp
+get_temporal_cacheOp(Oid operator)
+{
+	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
+		if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
+			operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
+			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
+			operator == oper_oid((CachedOp)i, T_TBOX, T_TBOOL) ||
+			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
+			operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
+			operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
+			operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
+			return (CachedOp)i;
+	}
+	
+	return OVERLAPS_OP;
+}
+
+/*****************************************************************************/
+
 /*
  * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
  * contains (@>), contained (<@), and, same (~=). These operators depend on
@@ -244,340 +599,6 @@ temporal_position_joinsel(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 Selectivity
-temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
-{
-	VariableStatData vardata;
-	Node *other;
-	bool varonleft;
-	Selectivity selec = 0.0;
-	BBoxBounds bBoxBounds;
-	bool numeric, temporal;
-	double lower, upper;
-	Period *period;
-	ConstantData constantData;
-	/*
-	 * If expression is not (variable op something) or (something op
-	 * variable), then punt and return a default estimate.
-	 */
-	if (!get_restriction_variable(root, args, varRelid,
-								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-
-	/*
-	 * Can't do anything useful if the something is not a constant, either.
-	 */
-	if (!IsA(other, Const))
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-	}
-
-	/*
-	 * All the period operators are strict, so we can cope with a NULL constant
-	 * right away.
-	 */
-	if (((Const *) other)->constisnull)
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.0);
-	}
-
-	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
-	if (!varonleft)
-	{
-		/* we have other Op var, commute to make var Op other */
-		operator = get_commutator(operator);
-		if (!operator)
-		{
-			/* Use default selectivity (should we raise an error instead?) */
-			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-		}
-	}
-
-	/*
-	 * Set constant information
-	 */
-	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-					 &temporal, &period);
-
-	constantData.bBoxBounds = bBoxBounds;
-	constantData.oid = ((Const *) other)->consttype;
-
-	constantData.lower = constantData.upper = 0;  /* keep compiler quiet */
-	constantData.period = NULL;   /* keep compiler quiet */
-	if (numeric)
-	{
-		constantData.lower = lower;
-		constantData.upper = upper;
-	}
-	if (temporal)
-	{
-		constantData.period = period;
-	}
-
-	selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
-
-	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
-
-	ReleaseVariableStats(vardata);
-
-	CLAMP_PROBABILITY(selec);
-
-	return selec;
-}
-
-Selectivity
-estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
-{
-	// Check the temporal types and inside each one check the cachedOp
-	Selectivity  selec = 0.0;
-	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
-	switch (constantData.bBoxBounds)
-	{
-		case STCONST:
-		case SNCONST_STCONST:
-		case DNCONST_STCONST:
-		{
-			if(durationType == TEMPORALINST)
-			{
-				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-									 false, TEMPORAL_STATISTICS);
-			}
-			else
-				selec = period_sel_internal(root, &vardata, constantData.period,
-											oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-
-			break;
-		}
-		case DTCONST:
-		case SNCONST_DTCONST:
-		case DNCONST_DTCONST:
-		{
-			if(durationType == TEMPORALINST)
-			{
-				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
-				{
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-										 false, TEMPORAL_STATISTICS);
-					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
-										  false, TEMPORAL_STATISTICS);
-					selec = selec > 1 ? 1 : selec;
-				}
-				else
-				{
-					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-
-					selec = scalarineq_sel(root, opl, false, false, &vardata,
-										   TimestampTzGetDatum(constantData.period->lower),
-										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-					selec += scalarineq_sel(root, opg, true, true, &vardata,
-											TimestampTzGetDatum(constantData.period->upper),
-											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-					selec = 1 - selec;
-					selec = selec < 0 ? 0 : selec;
-				}
-			}
-			else
-			{
-				if (cachedOp == SAME_OP)
-				{
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-										 false, TEMPORAL_STATISTICS);
-					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
-										  false, TEMPORAL_STATISTICS);
-					selec = selec > 1 ? 1 : selec;
-				}
-				else
-					selec = period_sel_internal(root, &vardata, constantData.period,
-											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-			}
-			break;
-		}
-		default:
-			break;
-	}
-
-	return selec;
-}
-
-Selectivity
-estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
-							   Node *other, bool isgt, bool iseq, CachedOp operator)
-{
-	double selec = 0.0;
-	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
-
-	if (durationType == TEMPORALINST && (vardata.vartype == type_oid(T_TBOOL) ||
-										 vardata.vartype == type_oid(T_TINT) ||
-										 vardata.vartype == type_oid(T_TFLOAT) ||
-										 vardata.vartype == type_oid(T_TTEXT) ||
-										 vardata.vartype == type_oid(T_TGEOMPOINT) ||
-										 vardata.vartype == type_oid(T_TGEOGPOINT)))
-	{
-		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-
-		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
-							   TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
-	}
-	else if (vardata.vartype == type_oid(T_TBOOL) ||
-			 vardata.vartype == type_oid(T_TINT) ||
-			 vardata.vartype == type_oid(T_TFLOAT) ||
-			 vardata.vartype == type_oid(T_TTEXT) ||
-			 vardata.vartype == type_oid(T_TGEOMPOINT) ||
-			 vardata.vartype == type_oid(T_TGEOGPOINT))
-	{
-		Oid op = (Oid) 0;
-
-		if (!isgt && !iseq)
-			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && iseq)
-			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
-		else if (iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		else if (isgt)
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-
-		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
-	}
-	else if (vardata.vartype == TIMESTAMPTZOID)
-	{
-		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
-							   TIMESTAMPTZOID, DEFAULT_STATISTICS);
-	}
-	else if (vardata.vartype == type_oid(T_PERIOD))
-	{
-		Oid op = (Oid) 0;
-		if (!isgt && !iseq)
-			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		else if (!isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && !iseq)
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-
-		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
-	}
-	else if (vardata.vartype == type_oid(T_TBOX))
-	{
-
-	}
-	else if (vardata.vartype == type_oid(T_STBOX))
-	{
-
-	}
-	return selec;
-}
-
-PeriodBound *
-lower_or_higher_temporal_bound(Node *other, bool higher)
-{
-
-	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
-	Oid consttype = ((Const *) other)->consttype;
-	if (higher)
-	{
-		result->inclusive = false;
-		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-		{
-			Period *p = (Period *)palloc(sizeof(Period));
-			/* TODO MEMORY LEAK HERE !!!! */
-			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
-			result->val = p->upper;
-		}
-		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-		{
-			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
-			temporal_bbox(&box, temporal);
-			result->val = (TimestampTz)box.tmax;
-		}
-		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
-		{
-			Period *p = (Period *)palloc(sizeof(Period));
-			/* TODO MEMORY LEAK HERE !!!! */
-			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
-			result->val = p->upper;
-		}
-		else if (consttype == TIMESTAMPTZOID)
-		{
-			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
-		}
-		else if (consttype == type_oid(T_PERIOD))
-		{
-			result->val = DatumGetPeriod(((Const *) other)->constvalue)->upper;
-		}
-		else if (consttype == type_oid(T_TBOX))
-		{
-			result->val = DatumGetTboxP(((Const *) other)->constvalue)->tmax;
-		}
-		else if (consttype == type_oid(T_STBOX))
-		{
-			result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmax;
-		}
-	}
-	else
-	{
-		result->inclusive = true;
-		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-		{
-			Period *p = (Period *)palloc(sizeof(Period));
-			/* TODO MEMORY LEAK HERE !!!! */
-			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
-			result->val = p->lower;
-		}
-		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-		{
-			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
-			temporal_bbox(&box, temporal);
-			result->val = (TimestampTz)box.tmin;
-		}
-		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
-		{
-			Period *p = (Period *)palloc(sizeof(Period));
-			/* TODO MEMORY LEAK HERE !!!! */
-			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
-			result->val = p->lower;
-		}
-		else if (consttype == TIMESTAMPTZOID)
-		{
-			result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
-		}
-		else if (consttype == type_oid(T_PERIOD))
-		{
-			result->val = DatumGetPeriod(((Const *) other)->constvalue)->lower;
-		}
-		else if (consttype == type_oid(T_TBOX))
-		{
-			result->val = (TimestampTz)DatumGetTboxP(((Const *) other)->constvalue)->tmin;
-		}
-		else if (consttype == type_oid(T_STBOX))
-		{
-			result->val = DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
-		}
-	}
-	return result;
-}
-
-Selectivity
 period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 					Oid operator, StatisticsStrategy strategy)
 {
@@ -613,81 +634,6 @@ period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constv
 }
 
 /*
- *	scalarineq_sel		- Selectivity of "<", "<=", ">", ">=" for scalars.
- *
- * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
- * The isgt and iseq flags distinguish which of the four cases apply.
- *
- * The caller has commuted the clause, if necessary, so that we can treat
- * the variable as being on the left.  The caller must also make sure that
- * the other side of the clause is a non-null Const, and dissect that into
- * a value and datatype.  (This definition simplifies some callers that
- * want to estimate against a computed value instead of a Const node.)
- *
- * This routine works for any datatype (or pair of datatypes) known to
- * convert_to_scalar().  If it is applied to some other datatype,
- * it will return a default estimate.
- */
-Selectivity
-scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
-			   VariableStatData *vardata, Datum constval, Oid consttype,
-			   StatisticsStrategy strategy)
-{
-	Form_pg_statistic stats;
-	FmgrInfo opproc;
-	double mcv_selec, hist_selec, sumcommon;
-	Selectivity selec;
-
-	if (!HeapTupleIsValid(vardata->statsTuple))
-	{
-		/* no stats available, so default result */
-		return DEFAULT_INEQ_SEL;
-	}
-	stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-
-	fmgr_info(get_opcode(operator), &opproc);
-
-	/*
-	 * If we have most-common-values info, add up the fractions of the MCV
-	 * entries that satisfy MCV OP CONST.  These fractions contribute directly
-	 * to the result selectivity.  Also add up the total fraction represented
-	 * by MCV entries.
-	 */
-	mcv_selec = mcv_selectivity_internal(vardata, &opproc, constval, consttype, true,
-										 &sumcommon, strategy);
-
-	/*
-	 * If there is a histogram, determine which bin the constant falls in, and
-	 * compute the resulting contribution to selectivity.
-	 */
-	hist_selec = ineq_histogram_selectivity(root, vardata,
-											&opproc, isgt, iseq,
-											constval, consttype, strategy);
-
-	/*
-	 * Now merge the results from the MCV and histogram calculations,
-	 * realizing that the histogram covers only the non-null values that are
-	 * not listed in MCV.
-	 */
-	selec = 1.0 - stats->stanullfrac - sumcommon;
-
-	if (hist_selec >= 0.0)
-		selec *= hist_selec;
-	else
-	{
-		/*
-		 * If no histogram but there are values not accounted for by MCV,
-		 * arbitrarily assume half of them will match.
-		 */
-		selec *= 0.5;
-	}
-	selec += mcv_selec;
-	/* result should be in range, but make sure... */
-	CLAMP_PROBABILITY(selec);
-	return selec;
-}
-
-/*
  *	mcv_selectivity			- Examine the MCV list for selectivity estimates
  *
  * Determine the fraction of the variable's MCV population that satisfies
@@ -699,7 +645,7 @@ scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
  * total population is returned into *sumcommonp.  Zeroes are returned
  * if there is no MCV list.
  */
-Selectivity
+static Selectivity
 mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo *opproc,
 						 Datum constval, Oid atttype, bool varonleft, double *sumcommonp,
 						 StatisticsStrategy strategy)
@@ -737,6 +683,174 @@ mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo *opproc,
 }
 
 /*
+ * Do convert_to_scalar()'s work for any number data type.
+ */
+static double
+convert_numeric_to_scalar(Oid typid, Datum value)
+{
+	switch (typid) {
+		case BOOLOID:
+			return (double)DatumGetBool(value);
+		case INT2OID:
+			return (double)DatumGetInt16(value);
+		case INT4OID:
+			return (double)DatumGetInt32(value);
+		case INT8OID:
+			return (double)DatumGetInt64(value);
+		case FLOAT4OID:
+			return (double)DatumGetFloat4(value);
+		case FLOAT8OID:
+			return (double)DatumGetFloat8(value);
+		case NUMERICOID:
+			/* Note: out-of-range values will be clamped to +-HUGE_VAL */
+			return (double)DatumGetFloat8(DirectFunctionCall1(
+												  numeric_float8_no_overflow, value));
+		case OIDOID:
+		case REGPROCOID:
+		case REGPROCEDUREOID:
+		case REGOPEROID:
+		case REGOPERATOROID:
+		case REGCLASSOID:
+		case REGTYPEOID:
+		case REGCONFIGOID:
+		case REGDICTIONARYOID:
+		case REGROLEOID:
+		case REGNAMESPACEOID:
+			/* we can treat OIDs as integers... */
+			return (double)DatumGetObjectId(value);
+	}
+
+	/*
+	 * Can't get here unless someone tries to use scalarltsel/scalargtsel on
+	 * an operator with one number and one non-number operand.
+	 */
+	elog(ERROR, "unsupported type: %u", typid);
+	return 0;
+}
+
+/*
+ * Do convert_to_scalar()'s work for any timevalue data type.
+ */
+static double
+convert_timevalue_to_scalar(Oid typid, Datum value)
+{
+	switch (typid)
+	{
+		case TIMESTAMPOID:
+			return DatumGetTimestamp(value);
+		case TIMESTAMPTZOID:
+			return DatumGetTimestampTz(value);
+		case DATEOID:
+			return date2timestamp_no_overflow(DatumGetDateADT(value));
+		default:
+			elog(ERROR, "unsupported type: %u", typid);
+			return 0;
+	}
+}
+
+
+static bool
+convert_to_scalar(Oid valuetypid, Datum value, double *scaledvalue,
+				  Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
+				  double *scaledhibound)
+{
+	/*
+	* Both the valuetypid and the boundstypid should exactly match the
+	* declared input type(s) of the operator we are invoked for, so we just
+	* error out if either is not recognized.
+	*
+	* XXX The histogram we are interpolating between points of could belong
+	* to a column that's only binary-compatible with the declared type. In
+	* essence we are assuming that the semantics of binary-compatible types
+	* are enough alike that we can use a histogram generated with one type's
+	* operators to estimate selectivity for the other's.  This is outright
+	* wrong in some cases --- in particular signed versus unsigned
+	* interpretation could trip us up.  But it's useful enough in the
+	* majority of cases that we do it anyway.  Should think about more
+	* rigorous ways to do it.
+	*/
+	switch (valuetypid)
+	{
+		/*
+		 * Built-in number types
+		 */
+		case BOOLOID:
+		case INT2OID:
+		case INT4OID:
+		case INT8OID:
+		case FLOAT4OID:
+		case FLOAT8OID:
+		case NUMERICOID:
+		case OIDOID:
+			*scaledvalue = convert_numeric_to_scalar(valuetypid, value);
+			*scaledlobound = convert_numeric_to_scalar(boundstypid, lobound);
+			*scaledhibound = convert_numeric_to_scalar(boundstypid, hibound);
+			return true;
+
+		/*
+		* Built-in time types
+		*/
+		case TIMESTAMPTZOID:
+			*scaledvalue = convert_timevalue_to_scalar(valuetypid, value);
+			*scaledlobound = convert_timevalue_to_scalar(boundstypid, lobound);
+			*scaledhibound = convert_timevalue_to_scalar(boundstypid, hibound);
+			return true;
+	}
+	/* Don't know how to convert */
+	*scaledvalue = *scaledlobound = *scaledhibound = 0;
+	return false;
+}
+
+/*
+ * get_actual_variable_range
+ *		Attempt to identify the current *actual* minimum and/or maximum
+ *		of the specified variable, by looking for a suitable btree index
+ *		and fetching its low and/or high values.
+ *		If successful, store values in *min and *max, and return TRUE.
+ *		(Either pointer can be NULL if that endpoint isn't needed.)
+ *		If no data available, return false.
+ *
+ * sortop is the "<" comparison operator to use.
+ */
+static bool
+get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
+						  Oid sortop,
+						  Datum *min, Datum *max)
+{
+	bool		have_data = false;
+	RelOptInfo *rel = vardata->rel;
+	//RangeTblEntry *rte;
+	ListCell   *lc;
+
+	/* No hope if no relation or it doesn't have indexes */
+	if (rel == NULL || rel->indexlist == NIL)
+		return false;
+	/* If it has indexes it must be a plain relation */
+	//rte = root->simple_rte_array[rel->relid];
+	//Assert(rte->rtekind == RTE_RELATION);
+
+	/* Search through the indexes to see if any match our problem */
+	foreach(lc, rel->indexlist)
+	{
+		IndexOptInfo *index = (IndexOptInfo *) lfirst(lc);
+		//ScanDirection indexscandir;
+
+		/* Ignore non-btree indexes */
+		if (index->relam != BTREE_AM_OID)
+			continue;
+
+		/*
+		 * Ignore partial indexes --- we only want stats that cover the entire
+		 * relation.
+		 */
+		if (index->indpred != NIL)
+			continue;
+	}
+
+	return have_data;
+}
+
+/*
  *	ineq_histogram_selectivity	- Examine the histogram for scalarineqsel
  *
  * Determine the fraction of the variable's histogram population that
@@ -749,7 +863,7 @@ mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo *opproc,
  * statistics for those portions of the column population.
  */
 
-double
+static double
 ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
 						   FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
 						   StatisticsStrategy strategy)
@@ -1030,6 +1144,81 @@ ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
 	return hist_selec;
 }
 
+/*
+ *	scalarineq_sel		- Selectivity of "<", "<=", ">", ">=" for scalars.
+ *
+ * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
+ * The isgt and iseq flags distinguish which of the four cases apply.
+ *
+ * The caller has commuted the clause, if necessary, so that we can treat
+ * the variable as being on the left.  The caller must also make sure that
+ * the other side of the clause is a non-null Const, and dissect that into
+ * a value and datatype.  (This definition simplifies some callers that
+ * want to estimate against a computed value instead of a Const node.)
+ *
+ * This routine works for any datatype (or pair of datatypes) known to
+ * convert_to_scalar().  If it is applied to some other datatype,
+ * it will return a default estimate.
+ */
+Selectivity
+scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
+			   VariableStatData *vardata, Datum constval, Oid consttype,
+			   StatisticsStrategy strategy)
+{
+	Form_pg_statistic stats;
+	FmgrInfo opproc;
+	double mcv_selec, hist_selec, sumcommon;
+	Selectivity selec;
+
+	if (!HeapTupleIsValid(vardata->statsTuple))
+	{
+		/* no stats available, so default result */
+		return DEFAULT_INEQ_SEL;
+	}
+	stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+
+	fmgr_info(get_opcode(operator), &opproc);
+
+	/*
+	 * If we have most-common-values info, add up the fractions of the MCV
+	 * entries that satisfy MCV OP CONST.  These fractions contribute directly
+	 * to the result selectivity.  Also add up the total fraction represented
+	 * by MCV entries.
+	 */
+	mcv_selec = mcv_selectivity_internal(vardata, &opproc, constval, consttype, true,
+										 &sumcommon, strategy);
+
+	/*
+	 * If there is a histogram, determine which bin the constant falls in, and
+	 * compute the resulting contribution to selectivity.
+	 */
+	hist_selec = ineq_histogram_selectivity(root, vardata,
+											&opproc, isgt, iseq,
+											constval, consttype, strategy);
+
+	/*
+	 * Now merge the results from the MCV and histogram calculations,
+	 * realizing that the histogram covers only the non-null values that are
+	 * not listed in MCV.
+	 */
+	selec = 1.0 - stats->stanullfrac - sumcommon;
+
+	if (hist_selec >= 0.0)
+		selec *= hist_selec;
+	else
+	{
+		/*
+		 * If no histogram but there are values not accounted for by MCV,
+		 * arbitrarily assume half of them will match.
+		 */
+		selec *= 0.5;
+	}
+	selec += mcv_selec;
+	/* result should be in range, but make sure... */
+	CLAMP_PROBABILITY(selec);
+	return selec;
+}
+
 /*****************************************************************************
  * Helper functions for calculating selectivity.
  *****************************************************************************/
@@ -1203,172 +1392,6 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 	/* result should be in range, but make sure... */
 	CLAMP_PROBABILITY(selec);
 	return selec;
-}
-
-bool
-convert_to_scalar(Oid valuetypid, Datum value, double *scaledvalue,
-				  Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
-				  double *scaledhibound)
-{
-/*
- * Both the valuetypid and the boundstypid should exactly match the
- * declared input type(s) of the operator we are invoked for, so we just
- * error out if either is not recognized.
- *
- * XXX The histogram we are interpolating between points of could belong
- * to a column that's only binary-compatible with the declared type. In
- * essence we are assuming that the semantics of binary-compatible types
- * are enough alike that we can use a histogram generated with one type's
- * operators to estimate selectivity for the other's.  This is outright
- * wrong in some cases --- in particular signed versus unsigned
- * interpretation could trip us up.  But it's useful enough in the
- * majority of cases that we do it anyway.  Should think about more
- * rigorous ways to do it.
- */
-	switch (valuetypid)
-	{
-		/*
-		 * Built-in number types
-		 */
-		case BOOLOID:
-		case INT2OID:
-		case INT4OID:
-		case INT8OID:
-		case FLOAT4OID:
-		case FLOAT8OID:
-		case NUMERICOID:
-		case OIDOID:
-			*scaledvalue = convert_numeric_to_scalar(valuetypid, value);
-			*scaledlobound = convert_numeric_to_scalar(boundstypid, lobound);
-			*scaledhibound = convert_numeric_to_scalar(boundstypid, hibound);
-			return true;
-
-/*
- * Built-in time types
- */
-		case TIMESTAMPTZOID:
-			*scaledvalue = convert_timevalue_to_scalar(valuetypid, value);
-			*scaledlobound = convert_timevalue_to_scalar(boundstypid, lobound);
-			*scaledhibound = convert_timevalue_to_scalar(boundstypid, hibound);
-			return true;
-	}
-	/* Don't know how to convert */
-	*scaledvalue = *scaledlobound = *scaledhibound = 0;
-	return false;
-}
-/*
- * Do convert_to_scalar()'s work for any number data type.
- */
-double
-convert_numeric_to_scalar(Oid typid, Datum value)
-{
-	switch (typid) {
-		case BOOLOID:
-			return (double)DatumGetBool(value);
-		case INT2OID:
-			return (double)DatumGetInt16(value);
-		case INT4OID:
-			return (double)DatumGetInt32(value);
-		case INT8OID:
-			return (double)DatumGetInt64(value);
-		case FLOAT4OID:
-			return (double)DatumGetFloat4(value);
-		case FLOAT8OID:
-			return (double)DatumGetFloat8(value);
-		case NUMERICOID:
-			/* Note: out-of-range values will be clamped to +-HUGE_VAL */
-			return (double)DatumGetFloat8(DirectFunctionCall1(
-												  numeric_float8_no_overflow, value));
-		case OIDOID:
-		case REGPROCOID:
-		case REGPROCEDUREOID:
-		case REGOPEROID:
-		case REGOPERATOROID:
-		case REGCLASSOID:
-		case REGTYPEOID:
-		case REGCONFIGOID:
-		case REGDICTIONARYOID:
-		case REGROLEOID:
-		case REGNAMESPACEOID:
-			/* we can treat OIDs as integers... */
-			return (double)DatumGetObjectId(value);
-	}
-
-	/*
-	 * Can't get here unless someone tries to use scalarltsel/scalargtsel on
-	 * an operator with one number and one non-number operand.
-	 */
-	elog(ERROR, "unsupported type: %u", typid);
-	return 0;
-}
-
-/*
- * Do convert_to_scalar()'s work for any timevalue data type.
- */
-double
-convert_timevalue_to_scalar(Oid typid, Datum value)
-{
-	switch (typid)
-	{
-		case TIMESTAMPOID:
-			return DatumGetTimestamp(value);
-		case TIMESTAMPTZOID:
-			return DatumGetTimestampTz(value);
-		case DATEOID:
-			return date2timestamp_no_overflow(DatumGetDateADT(value));
-		default:
-			elog(ERROR, "unsupported type: %u", typid);
-			return 0;
-	}
-}
-
-/*
- * get_actual_variable_range
- *		Attempt to identify the current *actual* minimum and/or maximum
- *		of the specified variable, by looking for a suitable btree index
- *		and fetching its low and/or high values.
- *		If successful, store values in *min and *max, and return TRUE.
- *		(Either pointer can be NULL if that endpoint isn't needed.)
- *		If no data available, return false.
- *
- * sortop is the "<" comparison operator to use.
- */
-bool
-get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
-						  Oid sortop,
-						  Datum *min, Datum *max)
-{
-	bool		have_data = false;
-	RelOptInfo *rel = vardata->rel;
-	//RangeTblEntry *rte;
-	ListCell   *lc;
-
-	/* No hope if no relation or it doesn't have indexes */
-	if (rel == NULL || rel->indexlist == NIL)
-		return false;
-	/* If it has indexes it must be a plain relation */
-	//rte = root->simple_rte_array[rel->relid];
-	//Assert(rte->rtekind == RTE_RELATION);
-
-	/* Search through the indexes to see if any match our problem */
-	foreach(lc, rel->indexlist)
-	{
-		IndexOptInfo *index = (IndexOptInfo *) lfirst(lc);
-		//ScanDirection indexscandir;
-
-		/* Ignore non-btree indexes */
-		if (index->relam != BTREE_AM_OID)
-			continue;
-
-		/*
-		 * Ignore partial indexes --- we only want stats that cover the entire
-		 * relation.
-		 */
-		if (index->indpred != NIL)
-			continue;
-	}
-
-	return have_data;
 }
 
 void
@@ -1605,21 +1628,3 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	return true;
 }
 
-/** Get the name of the operator from different cases */
-CachedOp
-get_temporal_cacheOp(Oid operator)
-{
-	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-		if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
-			operator == oper_oid((CachedOp)i, T_TBOX, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
-			operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
-			return (CachedOp)i;
-	}
-	
-	return OVERLAPS_OP;
-}

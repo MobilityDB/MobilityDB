@@ -163,7 +163,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 {
 	GSERIALIZED *result = NULL; /* keep compiler quiet */
 	int geometryType = gserialized_get_type(gs);
-	if(geometryType == POINTTYPE)
+	if (geometryType == POINTTYPE)
 	{
 		LWPOINT *lwpoint;
 		if (gserialized_is_empty(gs))
@@ -178,7 +178,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 		result = geometry_serialize((LWGEOM *)lwpoint);
 		lwpoint_free(lwpoint);
 	}
-	else if(geometryType == LINETYPE)
+	else if (geometryType == LINETYPE)
 	{
 		LWLINE *line;
 		if (gserialized_is_empty(gs))

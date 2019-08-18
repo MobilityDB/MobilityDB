@@ -41,17 +41,19 @@
 * explicit axis conversions from STBOX in all calculations
 * at every step.
 */
-typedef struct ND_BOX_T {
-    float4 min[ND_DIMS];
-    float4 max[ND_DIMS];
+typedef struct ND_BOX_T
+{
+	float4 min[ND_DIMS];
+	float4 max[ND_DIMS];
 } ND_BOX;
 
 /**
 * N-dimensional box index type
 */
-typedef struct ND_IBOX_T {
-    int min[ND_DIMS];
-    int max[ND_DIMS];
+typedef struct ND_IBOX_T
+{
+	int min[ND_DIMS];
+	int max[ND_DIMS];
 } ND_IBOX;
 
 
@@ -61,39 +63,40 @@ typedef struct ND_IBOX_T {
 * if necessary (really, we just want to get the 2,3,4-d cases
 * into one shared piece of code).
 */
-typedef struct ND_STATS_T {
-    /* Dimensionality of the histogram. */
-    float4 ndims;
+typedef struct ND_STATS_T
+{
+	/* Dimensionality of the histogram. */
+	float4 ndims;
 
-    /* Size of n-d histogram in each dimension. */
-    float4 size[ND_DIMS];
+	/* Size of n-d histogram in each dimension. */
+	float4 size[ND_DIMS];
 
-    /* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
-    ND_BOX extent;
+	/* Lower-left (min) and upper-right (max) spatial bounds of histogram. */
+	ND_BOX extent;
 
-    /* How many rows in the table itself? */
-    float4 table_features;
+	/* How many rows in the table itself? */
+	float4 table_features;
 
-    /* How many rows were in the sample that built this histogram? */
-    float4 sample_features;
+	/* How many rows were in the sample that built this histogram? */
+	float4 sample_features;
 
-    /* How many not-Null/Empty features were in the sample? */
-    float4 not_null_features;
+	/* How many not-Null/Empty features were in the sample? */
+	float4 not_null_features;
 
-    /* How many features actually got sampled in the histogram? */
-    float4 histogram_features;
+	/* How many features actually got sampled in the histogram? */
+	float4 histogram_features;
 
-    /* How many cells in histogram? (sizex*sizey*sizez*sizem) */
-    float4 histogram_cells;
+	/* How many cells in histogram? (sizex*sizey*sizez*sizem) */
+	float4 histogram_cells;
 
-    /* How many cells did those histogram features cover? */
-    /* Since we are pro-rating coverage, this number should */
-    /* now always equal histogram_features */
-    float4 cells_covered;
+	/* How many cells did those histogram features cover? */
+	/* Since we are pro-rating coverage, this number should */
+	/* now always equal histogram_features */
+	float4 cells_covered;
 
-    /* Variable length # of floats for histogram */
+	/* Variable length # of floats for histogram */
 
-    float4 value[1];
+	float4 value[1];
 } ND_STATS;
 
 /*
@@ -116,27 +119,6 @@ typedef struct ND_STATS_T {
 #define STATISTIC_KIND_2D 103
 #define STATISTIC_SLOT_ND 0
 #define STATISTIC_SLOT_2D 1
-
-extern Selectivity tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp);
-extern double xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
-                              CachedOp cacheOp, int dim);
-extern double z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats,
-                             CachedOp cacheOp, int dim);
-extern int nd_box_init(ND_BOX *a);
-extern void nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box);
-extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
-extern int nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox);
-extern double nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims);
-extern int nd_stats_value_index(const ND_STATS *stats, int *indexes);
-extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
-extern int nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims);
-extern Selectivity estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other,
-                                        const STBOX *box, CachedOp op, bool varonleft);
-extern Selectivity estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vardata,
-                                                           Node *other, Period *period, CachedOp cachedOp);
-
-extern CachedOp get_tpoint_cacheOp(Oid operator);
-extern STBOX get_stbox(Node *node);
 
 /*****************************************************************************/
 

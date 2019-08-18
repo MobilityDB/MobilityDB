@@ -32,7 +32,8 @@
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(temporal_analyze);
-Datum
+
+PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -44,7 +45,8 @@ temporal_analyze(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnumber_analyze);
-Datum
+
+PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
@@ -91,6 +93,7 @@ temporal_analyze_internal(VacAttrStats *stats, int durationType, int temporalTyp
  *****************************************************************************/
 
 TemporalArrayAnalyzeExtraData *temporal_extra_data;
+
 void
 temporal_info(VacAttrStats *stats)
 {
@@ -520,14 +523,14 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		MemoryContextSwitchTo(old_context);
 
 		/*----------
-			* Since we know the x and y value sets are both
-			*		0, 1, ..., values_cnt-1
-			* we have sum(x) = sum(y) =
-			*		(values_cnt-1)*values_cnt / 2
-			* and sum(x^2) = sum(y^2) =
-			*		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
-			*----------
-			*/
+		* Since we know the x and y value sets are both
+		*		0, 1, ..., values_cnt-1
+		* we have sum(x) = sum(y) =
+		*		(values_cnt-1)*values_cnt / 2
+		* and sum(x^2) = sum(y^2) =
+		*		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
+		*----------
+		*/
 		corr_xsum = ((double) (non_null_cnt - 1)) *
 					((double) non_null_cnt) / 2.0;
 		corr_x2sum = ((double) (non_null_cnt - 1)) *
@@ -738,6 +741,7 @@ tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stadistinct = 0.0;		/* "unknown" */
 	}
 }
+
 /*****************************************************************************
  * Statistics functions for TemporalI type
  *****************************************************************************/
@@ -845,7 +849,7 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * tracking hashtable.
 		 */
 		null_present = false;
-		if(array->count < 1)
+		if (array->count < 1)
 			null_present = true;
 		for (j = 0; j < array->count; j++)
 		{
@@ -918,7 +922,7 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			count_item->frequency = 1;
 
 		/* Removing the temporal part from the stats HeapTuples if the base type is geometry */
-		if(temporal_extra_data->value_type_id == type_oid(T_GEOMETRY) ||
+		if (temporal_extra_data->value_type_id == type_oid(T_GEOMETRY) ||
 		   temporal_extra_data->value_type_id == type_oid(T_GEOGRAPHY))
 			stats->rows[analyzed_rows] = remove_temporaldim(stats->rows[analyzed_rows],
 															stats->tupDesc, stats->tupattnum, stats->attrtypid, true, value);
@@ -1157,6 +1161,7 @@ temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 * hashtable should also go away, as it used a child memory context.
 	 */
 }
+
 void
 tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					   int samplerows, double totalrows)
@@ -1287,7 +1292,7 @@ tnumberi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 */
 		null_present = false;
 
-		if(array->count < 1)
+		if (array->count < 1)
 			null_present = true;
 		for (j = 0; j < array->count; j++)
 		{
@@ -1904,7 +1909,7 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		temporal_lengths[analyzed_arrays] = length;
 
 		/* Remove the temporal part from the stats HeapTuples if the base type is geometry or geography */
-		if(temporal_extra_data->type_id == type_oid(T_STBOX) ||
+		if (temporal_extra_data->type_id == type_oid(T_STBOX) ||
 		   temporal_extra_data->type_id == type_oid(T_TGEOMPOINT) ||
 		   temporal_extra_data->type_id == type_oid(T_TGEOGPOINT))
 			stats->rows[array_no] = remove_temporaldim(stats->rows[array_no], stats->tupDesc,
@@ -2062,11 +2067,7 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statypid[slot_idx] = FLOAT8OID;
 		stats->statyplen[slot_idx] = sizeof(float8);
-#ifdef USE_FLOAT8_BYVAL
 		stats->statypbyval[slot_idx] = true;
-#else
-		stats->statypbyval[slot_idx] = false;
-#endif
 		stats->statypalign[slot_idx] = 'd';
 
 		MemoryContextSwitchTo(old_cxt);
@@ -2323,11 +2324,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statypid[slot_idx] = FLOAT8OID;
 		stats->statyplen[slot_idx] = sizeof(float8);
-#ifdef USE_FLOAT8_BYVAL
 		stats->statypbyval[slot_idx] = true;
-#else
-		stats->statypbyval[slot_idx] = false;
-#endif
 		stats->statypalign[slot_idx] = 'd';
 
 		slot_idx = 2;
@@ -2455,11 +2452,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statypid[slot_idx] = FLOAT8OID;
 		stats->statyplen[slot_idx] = sizeof(float8);
-#ifdef USE_FLOAT8_BYVAL
 		stats->statypbyval[slot_idx] = true;
-#else
-		stats->statypbyval[slot_idx] = false;
-#endif
 		stats->statypalign[slot_idx] = 'd';
 
 		MemoryContextSwitchTo(old_cxt);
@@ -2482,6 +2475,7 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 /*****************************************************************************
  * Comparison functions for different data types
  *****************************************************************************/
+
 uint32
 generic_element_hash(const void *key, Size keysize, FmgrInfo * hash)
 {
@@ -2700,7 +2694,7 @@ remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
 			case TEMPORALSEQ:
 			case TEMPORALS:
 			{
-				if(attrtypid == tupDesc->attrs[j].atttypid)
+				if (attrtypid == tupDesc->attrs[j].atttypid)
 				{
 					if (geom)
 					{
@@ -2803,14 +2797,13 @@ TBOX
 get_tnumber_bbox(Datum value, Oid oid)
 {
 	TBOX box = {0,0,0,0,0};
-	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT) )
+	if (oid == type_oid(T_TINT) || oid == type_oid(T_TFLOAT))
 	{
 		temporal_bbox(&box, DatumGetTemporal(value));
 		return box;
 	}
 	return box;
 }
-
 
 /*
  * tbox_deserialize: decompose a tbox value

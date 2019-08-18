@@ -20,9 +20,6 @@
 /*****************************************************************************/
 
 extern Datum tpoint_analyze(PG_FUNCTION_ARGS);
-extern Datum tpoint_analyze_internal(VacAttrStats *stats, int durationType);
-extern void tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-                                 int samplerows, double totalrows);
 
 /*****************************************************************************/
 
