@@ -18,7 +18,6 @@
 #include <utils/timestamp.h>
 #include <executor/spi.h>
 
-#include "timetypes.h"
 #include "period.h"
 #include "timeops.h"
 #include "temporaltypes.h"
@@ -524,7 +523,7 @@ datum_sum_double4(Datum l, Datum r)
  * Generic binary aggregate functions needed for parallelization
  *****************************************************************************/
 
-void 
+static void 
 aggstate_write(SkipList *state, StringInfo buf)
 {
 	Temporal **values = skiplist_values(state);
@@ -545,20 +544,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pfree(values);
 }
 
-void
-aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
-	size_t size)
-{
-	MemoryContext ctx;
-	assert(AggCheckCallContext(fcinfo, &ctx));
-	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
-	state->extra = palloc(size);
-	state->extrasize = size;
-	memcpy(state->extra, data, size);
-	MemoryContextSwitchTo(oldctx);
-}
-
-SkipList *
+static SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
 	int size = pq_getmsgint(buf, 4);
@@ -577,6 +563,19 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 		pfree(values[i]);
 	pfree(values);
 	return result;
+}
+
+void
+aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
+	size_t size)
+{
+	MemoryContext ctx;
+	assert(AggCheckCallContext(fcinfo, &ctx));
+	MemoryContext oldctx = MemoryContextSwitchTo(ctx);
+	state->extra = palloc(size);
+	state->extrasize = size;
+	memcpy(state->extra, data, size);
+	MemoryContextSwitchTo(oldctx);
 }
 
 PG_FUNCTION_INFO_V1(temporal_tagg_serialize);
@@ -881,7 +880,7 @@ tnumber_transform_tavg(Temporal *temp, int *count)
  * Returns new sequences that must be freed by the calling function.
  */
 
-TemporalInst **
+static TemporalInst **
 temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2, 
 	int count2, Datum (*func)(Datum, Datum), int *newcount)
 {
@@ -927,7 +926,7 @@ temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2
  * Returns new sequences that must be freed by the calling function.
  */
 
-void
+static void
 temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
@@ -1063,7 +1062,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
  * where both may be non contiguous
  * Returns new sequences that must be freed by the calling function.
  */
-TemporalSeq **
+static TemporalSeq **
 temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
 	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
@@ -1146,7 +1145,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
  * Generic aggregate transition functions
  *****************************************************************************/
 
-SkipList *
+static SkipList *
 temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	TemporalInst *inst, Datum (*func)(Datum, Datum))
 {

@@ -70,8 +70,6 @@ extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, 
 	void *data, size_t size);
 
-extern SkipList *temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-	TemporalInst *inst, Datum (*func)(Datum, Datum));
 extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool interpoint);
 extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
