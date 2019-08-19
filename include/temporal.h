@@ -37,7 +37,7 @@
 #define TEMPORALSEQ			3
 #define TEMPORALS			4
 
-#define TYPMOD_GET_DURATION(typmod) ((typmod == -1)? (0) : (typmod & 0x0000000F))
+#define TYPMOD_GET_DURATION(typmod) ((typmod == -1) ? (0) : (typmod & 0x0000000F))
 
 /* Structure for the type array */
 
@@ -221,14 +221,6 @@ typedef struct double4
 	double		c;
 	double		d;
 } double4;
-
-typedef struct AggregateState
-{
-	int 		size;
-	void		*extra;
-	size_t		extrasize;
-	Temporal 	*values[];
-} AggregateState;
 
 typedef int (*qsort_comparator) (const void *a, const void *b);
 

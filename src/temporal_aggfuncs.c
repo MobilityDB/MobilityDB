@@ -28,10 +28,10 @@
 #include "doublen.h"
 
 static TemporalInst **
-temporalinst_tagg2(TemporalInst **instants1, int count1, TemporalInst **instants2, 
+temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2, 
 	int count2, Datum (*func)(Datum, Datum), int *newcount);
 static TemporalSeq **
-temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
+temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
    int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
 
 /*****************************************************************************
@@ -52,6 +52,152 @@ static void
 unset_aggregation_context(MemoryContext ctx)
 {
 	MemoryContextSwitchTo(ctx);
+}
+
+static int
+skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
+{
+	list->length ++;
+	if (! list->freecount)
+	{
+		/* No free list, give first available entry */
+		if (list->next >= list->capacity)
+		{
+			/* No more capacity, let's grow */
+			list->capacity <<= SKIPLIST_GROW;
+			MemoryContext ctx = set_aggregation_context(fcinfo);
+			list->elems = repalloc(list->elems, sizeof(Elem) * list->capacity);
+			unset_aggregation_context(ctx);
+		}
+		list->next ++;
+		return list->next - 1;
+	}
+	else 
+	{
+		list->freecount --;
+		return list->freed[list->freecount];
+	}
+}
+
+static void
+skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
+{
+	if (! list->freed)
+	{
+		list->freecap = SKIPLIST_INITIAL_FREELIST;
+		MemoryContext ctx = set_aggregation_context(fcinfo);
+		list->freed = palloc(sizeof(int) * list->freecap);
+		unset_aggregation_context(ctx);
+	}
+	else if (list->freecount == list->freecap)
+	{
+		list->freecap <<= 1;
+		MemoryContext ctx = set_aggregation_context(fcinfo);
+		list->freed = repalloc(list->freed, sizeof(int) * list->freecap);
+		unset_aggregation_context(ctx);
+	}
+	list->freed[list->freecount ++] = cur;
+	list->length --;
+}
+
+typedef enum
+{
+	BEFORE,
+	DURING,
+	AFTER
+} RelativeTimePos;
+
+static RelativeTimePos
+pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
+{
+	int32 cmp = timestamp_cmp_internal(t1, t);
+	if (cmp > 0)
+		return BEFORE;
+	if (cmp < 0)
+		return AFTER;
+	return DURING;
+}
+
+static RelativeTimePos
+pos_period_timestamp(Period *p, TimestampTz t)
+{
+	int32 cmp = timestamp_cmp_internal(p->lower, t);
+	if (cmp > 0)
+		return BEFORE;
+	if (cmp == 0 && !(p->lower_inc))
+		return BEFORE;
+	cmp = timestamp_cmp_internal(p->upper, t);
+	if (cmp < 0)
+		return AFTER;
+	if (cmp == 0 && !(p->upper_inc))
+		return AFTER;
+	return DURING;
+}
+
+/* Comparison function used for skiplists */
+static RelativeTimePos 
+skiplist_elmpos(SkipList *list, int cur, TimestampTz t)
+{
+	if (cur == 0)
+		return AFTER; /* Head is -inf */
+	else if (cur == -1 || cur == list->tail)
+		return BEFORE; /* Tail is +inf */
+	else
+	{
+		if (list->elems[cur].value->duration == TEMPORALINST)
+			return pos_timestamp_timestamp(((TemporalInst *)list->elems[cur].value)->t, t);
+		else
+			return pos_period_timestamp(&((TemporalSeq *)list->elems[cur].value)->period, t);
+	}
+}
+
+/* Outputs the skiplist in graphviz dot format for visualisation and debugging purposes */
+static void 
+skiplist_print(SkipList *list)
+{
+	int len = 0;
+	char buf[16384];
+	len += sprintf(buf+len, "digraph skiplist {\n");
+	len += sprintf(buf+len, "\trankdir = LR;\n");
+	len += sprintf(buf+len, "\tnode [shape = record];\n");
+	int cur = 0;
+	while (cur != -1)
+	{
+		Elem *e = &list->elems[cur];
+		len += sprintf(buf+len, "\telm%d [label=\"", cur);
+		for (int l = e->height - 1; l > 0; l --)
+		{
+			len += sprintf(buf+len, "<p%d>|", l);
+		}
+		if (! e->value)
+			len += sprintf(buf+len, "<p0>\"];\n");
+		else
+			len += sprintf(buf+len, "<p0>%f\"];\n", 
+				DatumGetFloat8(temporal_min_value_internal(e->value)));
+		if (e->next[0] != -1)
+		{
+			for (int l = 0; l < e->height; l ++)
+			{
+				int next = e->next[l];
+				len += sprintf(buf+len, "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
+				if (l == 0)
+					len += sprintf(buf+len, "[weight=100];\n");
+				else
+					len += sprintf(buf+len, ";\n");
+			}
+		}
+		cur = e->next[0];
+	}
+	sprintf(buf+len, "}\n");
+	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
+}
+
+/* This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
+	spinning the RNG every time (courtesy of the internet) */
+static int
+random_level()
+{
+	return ffsl(~(random() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 SkipList *
@@ -110,10 +256,11 @@ skiplist_headval(SkipList *list)
 	return list->elems[list->elems[0].next[0]].value;
 }
 
-Temporal *
+/*  Function not currently used
+static Temporal *
 skiplist_tailval(SkipList *list)
 {
-	/* Despite the look, this is pretty much O(1) */
+	// Despite the look, this is pretty much O(1)
 	int cur = 0;
 	Elem *e = &list->elems[cur];
 	int height = e->height;
@@ -121,103 +268,7 @@ skiplist_tailval(SkipList *list)
 		e = &list->elems[e->next[height-1]];
 	return e->value;
 }
-
-int
-skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
-{
-	list->length ++;
-	if (! list->freecount)
-	{
-		/* No free list, give first available entry */
-		if (list->next >= list->capacity)
-		{
-			/* No more capacity, let's grow */
-			list->capacity <<= SKIPLIST_GROW;
-			MemoryContext ctx = set_aggregation_context(fcinfo);
-			list->elems = repalloc(list->elems, sizeof(Elem) * list->capacity);
-			unset_aggregation_context(ctx);
-		}
-		list->next ++;
-		return list->next - 1;
-	}
-	else 
-	{
-		list->freecount --;
-		return list->freed[list->freecount];
-	}
-}
-
-void
-skiplist_free(FunctionCallInfo fcinfo, SkipList *list, int cur)
-{
-	if (! list->freed)
-	{
-		list->freecap = SKIPLIST_INITIAL_FREELIST;
-		MemoryContext ctx = set_aggregation_context(fcinfo);
-		list->freed = palloc(sizeof(int) * list->freecap);
-		unset_aggregation_context(ctx);
-	}
-	else if (list->freecount == list->freecap)
-	{
-		list->freecap <<= 1;
-		MemoryContext ctx = set_aggregation_context(fcinfo);
-		list->freed = repalloc(list->freed, sizeof(int) * list->freecap);
-		unset_aggregation_context(ctx);
-	}
-	list->freed[list->freecount ++] = cur;
-	list->length --;
-}
-
-typedef enum
-{
-	BEFORE,
-	DURING,
-	AFTER
-} RelativeTimePos;
-
-RelativeTimePos
-pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
-{
-	int32 cmp = timestamp_cmp_internal(t1, t);
-	if (cmp > 0)
-		return BEFORE;
-	if (cmp < 0)
-		return AFTER;
-	return DURING;
-}
-
-RelativeTimePos
-pos_period_timestamp(Period *p, TimestampTz t)
-{
-	int32 cmp = timestamp_cmp_internal(p->lower, t);
-	if (cmp > 0)
-		return BEFORE;
-	if (cmp == 0 && !(p->lower_inc))
-		return BEFORE;
-	cmp = timestamp_cmp_internal(p->upper, t);
-	if (cmp < 0)
-		return AFTER;
-	if (cmp == 0 && !(p->upper_inc))
-		return AFTER;
-	return DURING;
-}
-
-/* Comparison function used for skiplists */
-RelativeTimePos 
-skiplist_elmpos(SkipList *list, int cur, TimestampTz t)
-{
-	if (cur == 0)
-		return AFTER; /* Head is -inf */
-	else if (cur == -1 || cur == list->tail)
-		return BEFORE; /* Tail is +inf */
-	else
-	{
-		if (list->elems[cur].value->duration == TEMPORALINST)
-			return pos_timestamp_timestamp(((TemporalInst *)list->elems[cur].value)->t, t);
-		else
-			return pos_period_timestamp(&((TemporalSeq *)list->elems[cur].value)->period, t);
-	}
-}
+*/
 
 Temporal **
 skiplist_values(SkipList *list)
@@ -231,55 +282,6 @@ skiplist_values(SkipList *list)
 		cur = list->elems[cur].next[0];
 	}
 	return result;
-}
-
-/* Outputs the skiplist in graphviz dot format for visualisation and debugging purposes */
-static void 
-skiplist_print(SkipList *list)
-{
-	int len = 0;
-	char buf[16384];
-	len += sprintf(buf+len, "digraph skiplist {\n");
-	len += sprintf(buf+len, "\trankdir = LR;\n");
-	len += sprintf(buf+len, "\tnode [shape = record];\n");
-	int cur = 0;
-	while (cur != -1)
-	{
-		Elem *e = &list->elems[cur];
-		len += sprintf(buf+len, "\telm%d [label=\"", cur);
-		for (int l = e->height - 1; l > 0; l --)
-		{
-			len += sprintf(buf+len, "<p%d>|", l);
-		}
-		if (! e->value)
-			len += sprintf(buf+len, "<p0>\"];\n");
-		else
-			len += sprintf(buf+len, "<p0>%f\"];\n", 
-				DatumGetFloat8(temporal_min_value_internal(e->value)));
-		if (e->next[0] != -1)
-		{
-			for (int l = 0; l < e->height; l ++)
-			{
-				int next = e->next[l];
-				len += sprintf(buf+len, "\telm%d:p%d -> elm%d:p%d ", cur, l, next, l);
-				if (l == 0)
-					len += sprintf(buf+len, "[weight=100];\n");
-				else
-					len += sprintf(buf+len, ";\n");
-			}
-		}
-		cur = e->next[0];
-	}
-	sprintf(buf+len, "}\n");
-	ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
-}
-
-/* This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without 
-	spinning the RNG every time (courtesy of the internet) */
-int
-random_level()
-{
-	return ffsl(~(random() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
 }
 
 void
@@ -369,10 +371,10 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 		int newcount = 0;
 		Temporal **newtemps;
 		if (duration == TEMPORALINST)
-			newtemps = (Temporal **)temporalinst_tagg2((TemporalInst **)spliced, 
+			newtemps = (Temporal **)temporalinst_tagg((TemporalInst **)spliced, 
 				spliced_count, (TemporalInst **)values, count, func, &newcount);
 		else
-			newtemps = (Temporal **)temporalseq_tagg2((TemporalSeq **)spliced, 
+			newtemps = (Temporal **)temporalseq_tagg((TemporalSeq **)spliced, 
 				spliced_count, (TemporalSeq **)values, count, func, crossings, &newcount);
 		values = newtemps;
 		count = newcount;
@@ -383,7 +385,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	}
 
 	/* Insert new elements */
-	for (int i = count - 1; i >= 0; i --)
+	for (int i = count - 1; i >= 0; i--)
 	{
 		int rheight = random_level();
 		if (rheight > height)
@@ -424,7 +426,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 }
 
 PG_FUNCTION_INFO_V1(sl_test);
-Datum
+PGDLLEXPORT Datum
 sl_test(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
@@ -543,7 +545,6 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pfree(values);
 }
 
-
 void
 aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
 	size_t size)
@@ -612,7 +613,7 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /*
- * Transform a temporal number into a temporal integer for performing count
+ * Transform a temporal type into a temporal integer for performing count
  * aggregation
  */
  
@@ -710,7 +711,7 @@ temporal_transform_tcount(Temporal *temp, int *count)
  * performing average aggregation 
  */
 
-TemporalInst *
+static TemporalInst *
 tnumberinst_transform_tavg(TemporalInst *inst)
 {
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
@@ -721,7 +722,7 @@ tnumberinst_transform_tavg(TemporalInst *inst)
 	return result;
 }
 
-TemporalInst **
+static TemporalInst **
 tnumberi_transform_tavg(TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
@@ -733,7 +734,7 @@ tnumberi_transform_tavg(TemporalI *ti)
 	return result;
 }
 
-int
+static int
 tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
@@ -784,7 +785,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	return count;
 }
 
-int 
+static int 
 tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -868,7 +869,6 @@ tnumber_transform_tavg(Temporal *temp, int *count)
 	return result;
 }
 
-
 /*****************************************************************************
  * TemporalInst generic aggregation functions
  *****************************************************************************/
@@ -878,12 +878,11 @@ tnumber_transform_tavg(Temporal *temp, int *count)
  * Arguments:
  * - instants1 is the accumulated state 
  * - instants2 are the instants of a TemporalI value
- * The function returns new instants in the result that must
- * be freed by the calling function. 
+ * Returns new sequences that must be freed by the calling function.
  */
 
 TemporalInst **
-temporalinst_tagg2(TemporalInst **instants1, int count1, TemporalInst **instants2, 
+temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2, 
 	int count2, Datum (*func)(Datum, Datum), int *newcount)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * (count1 + count2));
@@ -1062,11 +1061,10 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
  * - sequences1 is the accumulated state 
  * - sequences2 are the sequences of a TemporalS value
  * where both may be non contiguous
- * The function returns new sequences in the result that must
- * be freed by the calling function. 
+ * Returns new sequences that must be freed by the calling function.
  */
 TemporalSeq **
-temporalseq_tagg2(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
+temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2, 
 	int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount)
 {
 	/*

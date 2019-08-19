@@ -24,8 +24,6 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-extern char *wkt_out(Oid type, Datum value);
-
 /*****************************************************************************
  * Generic functions
  *****************************************************************************/
