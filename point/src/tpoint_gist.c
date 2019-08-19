@@ -415,11 +415,11 @@ PG_FUNCTION_INFO_V1(gist_tpoint_penalty);
 PGDLLEXPORT Datum
 gist_tpoint_penalty(PG_FUNCTION_ARGS)
 {
-	GISTENTRY* origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	GISTENTRY* newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
-	float* result = (float *) PG_GETARG_POINTER(2);
-	STBOX *oristbox = (STBOX *)DatumGetPointer(origentry->key);
-	STBOX *newbox = (STBOX *)DatumGetPointer(newentry->key);
+	GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+	float *result = (float *) PG_GETARG_POINTER(2);
+	STBOX *oristbox = (STBOX *) DatumGetPointer(origentry->key);
+	STBOX *newbox = (STBOX *) DatumGetPointer(newentry->key);
 	
 	*result = (float) stbox_penalty(oristbox, newbox);
 	PG_RETURN_POINTER(result);
@@ -1138,7 +1138,7 @@ PG_FUNCTION_INFO_V1(gist_tpoint_compress);
 PGDLLEXPORT Datum
 gist_tpoint_compress(PG_FUNCTION_ARGS)
 {
-	GISTENTRY* entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	if (entry->leafkey)
 	{
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));

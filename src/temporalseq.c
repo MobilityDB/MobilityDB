@@ -2436,7 +2436,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	bool lower_incl, bool upper_incl, RangeType *range)
 {
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(inst1->flags);
-	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
