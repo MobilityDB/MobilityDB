@@ -13,6 +13,7 @@
 
 #include "temporal_mathfuncs.h"
 
+#include <math.h>
 #include <utils/builtins.h>
 
 #include "temporaltypes.h"
