@@ -38,7 +38,7 @@
  * only way to achieve reasonable performance when manipulating mobility data.
  * Currently we do not manipulate points with M dimension.
  * The datum_* functions suppose that the GSERIALIZED has been already 
- * detoasted. This is typically the case when the datum is within a Temporal* 
+ * detoasted. This is typically the case when the datum is within a Temporal *
  * that has been already detoasted with PG_GETARG_TEMPORAL*  
  */
 
@@ -1969,7 +1969,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
-		Temporal* copy = temporal_copy(temp) ;
+		Temporal *copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_POINTER(copy);
@@ -1977,7 +1977,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	temporal_bbox(&box1, temp);
 	if (!overlaps_stbox_stbox_internal(&box1, &box2))
 	{
-		Temporal* copy = temporal_copy(temp) ;
+		Temporal *copy = temporal_copy(temp) ;
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_POINTER(copy);

@@ -574,7 +574,7 @@ temporal_out(PG_FUNCTION_ARGS)
 
 /* Send function */
 
-void temporal_write(Temporal* temp, StringInfo buf) 
+void temporal_write(Temporal *temp, StringInfo buf) 
 {
 	pq_sendint(buf, temp->duration, 2);
 	temporal_duration_is_valid(temp->duration);
@@ -604,7 +604,7 @@ temporal_send(PG_FUNCTION_ARGS)
 
 /* Receive function */
 
-Temporal* temporal_read(StringInfo buf, Oid valuetypid) 
+Temporal *temporal_read(StringInfo buf, Oid valuetypid) 
 {
 	int type = (int) pq_getmsgint(buf, 2);
 	Temporal *result = NULL;
@@ -629,7 +629,7 @@ temporal_recv(PG_FUNCTION_ARGS)
 	Oid temptypid = PG_GETARG_OID(1);
 	Oid valuetypid;
 	temporal_typinfo(temptypid, &valuetypid);
-	Temporal* result = temporal_read(buf, valuetypid) ;
+	Temporal *result = temporal_read(buf, valuetypid) ;
 	PG_RETURN_POINTER(result);
 }
 

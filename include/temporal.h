@@ -71,8 +71,6 @@ struct temporaltype_struct
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
 /* Only for TemporalInst */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
-/* Only for TemporalS */
-#define MOBDB_FLAGS_GET_TEMPCONTINUOUS(flags) 	(((flags) & 0x04)>>2)
 #define MOBDB_FLAGS_GET_X(flags) 				(((flags) & 0x08)>>3)
 #define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x10)>>4)
 #define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
@@ -83,9 +81,6 @@ struct temporaltype_struct
 /* Only for TemporalInst */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
-/* Only for TemporalS */
-#define MOBDB_FLAGS_SET_TEMPCONTINUOUS(flags, value) \
-	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_X(flags, value) \
 	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
@@ -323,8 +318,8 @@ extern Datum temporal_in(PG_FUNCTION_ARGS);
 extern Datum temporal_out(PG_FUNCTION_ARGS); 
 extern Datum temporal_send(PG_FUNCTION_ARGS); 
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
-extern Temporal* temporal_read(StringInfo buf, Oid valuetypid);
-extern void temporal_write(Temporal* temp, StringInfo buf);
+extern Temporal *temporal_read(StringInfo buf, Oid valuetypid);
+extern void temporal_write(Temporal *temp, StringInfo buf);
 
 /* Constructor functions */
 

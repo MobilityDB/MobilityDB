@@ -109,7 +109,6 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	assert(count > 0);
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
-	bool tempcontinuous = true;
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz = false;
 	int srid;
@@ -128,9 +127,6 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 		   sequences[i-1]->period.upper_inc && sequences[i]->period.lower_inc))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid sequence for temporal sequence set")));
-		tempcontinuous &= (timestamp_cmp_internal(sequences[i-1]->period.upper, 
-			sequences[i]->period.lower) == 0 && 
-			(sequences[i-1]->period.upper_inc || sequences[i]->period.lower_inc));
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
@@ -168,7 +164,6 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	result->duration = TEMPORALS;
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(newsequences[0]->flags);
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
-	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, tempcontinuous);
 #ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
@@ -227,7 +222,6 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	result->valuetypid = ts->valuetypid;
 	result->duration = TEMPORALS;
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(ts->flags));
-	MOBDB_FLAGS_SET_TEMPCONTINUOUS(result->flags, MOBDB_FLAGS_GET_TEMPCONTINUOUS(ts->flags));
 #ifdef WITH_POSTGIS
 	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
 		ts->valuetypid == type_oid(T_GEOGRAPHY))
