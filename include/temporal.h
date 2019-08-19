@@ -82,7 +82,6 @@ struct temporaltype_struct
 /* Only for TemporalInst */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
-/* Only for TemporalS */
 #define MOBDB_FLAGS_SET_X(flags, value) \
 	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
@@ -104,7 +103,7 @@ typedef struct
 	double		xmax;			/* maximum numeric value */
 	double		tmin;			/* minimum timestamp */
 	double		tmax;			/* maximum timestamp */
-	int32		flags;			/* flags */
+	int16		flags;			/* flags */
 } TBOX;
 
 /* STBOX */
@@ -119,7 +118,7 @@ typedef struct
 	double		zmax;			/* maximum z value */
 	double		tmin;			/* minimum timestamp */
 	double		tmax;			/* maximum timestamp */
-	int32		flags;			/* flags */
+	int16		flags;			/* flags */
 } STBOX;
 
 /* Temporal */
