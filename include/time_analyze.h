@@ -18,6 +18,9 @@
 
 /*****************************************************************************/
 
+extern int period_bound_qsort_cmp(const void *a1, const void *a2);
+extern int float8_qsort_cmp(const void *a1, const void *a2);
+
 extern Datum period_analyze(PG_FUNCTION_ARGS);
 extern Datum timestampset_analyze(PG_FUNCTION_ARGS);
 extern Datum periodset_analyze(PG_FUNCTION_ARGS);

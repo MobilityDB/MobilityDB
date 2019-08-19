@@ -401,203 +401,6 @@ get_temporal_cacheOp(Oid operator)
 
 /*****************************************************************************/
 
-/*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
- * contains (@>), contained (<@), and, same (~=). These operators depend on
- * volume. Contains and contained are tighter contraints than overlaps, so
- * the former should produce lower estimates than the latter. Similarly,
- * equals is a tighter constrain tha contains and contained.
- */
-
-PG_FUNCTION_INFO_V1(temporal_overlaps_sel);
-
-PGDLLEXPORT Datum
-temporal_overlaps_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
-	if (selec < 0.0)
-		selec = 0.005;
-	else if (selec > 1.0)
-		selec = 1.0;
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_overlaps_joinsel);
-
-PGDLLEXPORT Datum
-temporal_overlaps_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.005);
-}
-
-PG_FUNCTION_INFO_V1(temporal_contains_sel);
-
-PGDLLEXPORT Datum
-temporal_contains_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
-	if (selec < 0.0)
-		selec = 0.002;
-	else if (selec > 1.0)
-		selec = 1.0;
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
-
-PGDLLEXPORT Datum
-temporal_contains_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.002);
-}
-
-PG_FUNCTION_INFO_V1(temporal_same_sel);
-
-PGDLLEXPORT Datum
-temporal_same_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
-	if (selec < 0.0)
-		selec = 0.001;
-	else if (selec > 1.0)
-		selec = 1.0;
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_same_joinsel);
-
-PGDLLEXPORT Datum
-temporal_same_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.001);
-}
-
-/*****************************************************************************/
-
-/*
- * Selectivity for operators for relative position box operators, i.e.,
- * left (<<), overleft (&<), right (>>), overright (&>), before (<<#),
- * overbefore (&<#), after (#>>), overafter (#&>).
- */
-
-PG_FUNCTION_INFO_V1(temporal_position_sel);
-
-PGDLLEXPORT Datum
-temporal_position_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	VariableStatData vardata;
-	Node *other;
-	bool varonleft;
-	Selectivity selec = 0.001;
-	CachedOp cachedOp = get_temporal_cacheOp(operator) ;
-	/* In the case of unknown operator */
-	if (cachedOp == OVERLAPS_OP)
-		PG_RETURN_FLOAT8(selec);
-	/*
-	 * If expression is not (variable op something) or (something op
-	 * variable), then punt and return a default estimate.
-	 */
-	if (!get_restriction_variable(root, args, varRelid,
-								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-
-	/*
-	 * Can't do anything useful if the something is not a constant, either.
-	 */
-	if (!IsA(other, Const))
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-	}
-
-	/*
-	 * All the period operators are strict, so we can cope with a NULL constant
-	 * right away.
-	 */
-	if (((Const *) other)->constisnull)
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.0);
-	}
-
-	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
-	if (!varonleft)
-	{
-		switch (cachedOp)
-		{
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
-				break;
-			default:
-				selec = 0.001;
-		}
-	}
-	else
-	{
-		switch (cachedOp)
-		{
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
-				break;
-			default:
-				selec = 0.001;
-		}
-	}
-
-	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
-	ReleaseVariableStats(vardata);
-	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_position_joinsel);
-
-PGDLLEXPORT Datum
-temporal_position_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.001);
-}
-
-/*****************************************************************************/
-
 Selectivity
 period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 					Oid operator, StatisticsStrategy strategy)
@@ -1628,3 +1431,201 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	return true;
 }
 
+/*****************************************************************************/
+
+/*
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
+ * contains (@>), contained (<@), and, same (~=). These operators depend on
+ * volume. Contains and contained are tighter contraints than overlaps, so
+ * the former should produce lower estimates than the latter. Similarly,
+ * equals is a tighter constrain tha contains and contained.
+ */
+
+PG_FUNCTION_INFO_V1(temporal_overlaps_sel);
+
+PGDLLEXPORT Datum
+temporal_overlaps_sel(PG_FUNCTION_ARGS)
+{
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
+	if (selec < 0.0)
+		selec = 0.005;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(temporal_overlaps_joinsel);
+
+PGDLLEXPORT Datum
+temporal_overlaps_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.005);
+}
+
+PG_FUNCTION_INFO_V1(temporal_contains_sel);
+
+PGDLLEXPORT Datum
+temporal_contains_sel(PG_FUNCTION_ARGS)
+{
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
+	if (selec < 0.0)
+		selec = 0.002;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
+
+PGDLLEXPORT Datum
+temporal_contains_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.002);
+}
+
+PG_FUNCTION_INFO_V1(temporal_same_sel);
+
+PGDLLEXPORT Datum
+temporal_same_sel(PG_FUNCTION_ARGS)
+{
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
+	if (selec < 0.0)
+		selec = 0.001;
+	else if (selec > 1.0)
+		selec = 1.0;
+	PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(temporal_same_joinsel);
+
+PGDLLEXPORT Datum
+temporal_same_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.001);
+}
+
+/*****************************************************************************/
+
+/*
+ * Selectivity for operators for relative position box operators, i.e.,
+ * left (<<), overleft (&<), right (>>), overright (&>), before (<<#),
+ * overbefore (&<#), after (#>>), overafter (#&>).
+ */
+
+PG_FUNCTION_INFO_V1(temporal_position_sel);
+
+PGDLLEXPORT Datum
+temporal_position_sel(PG_FUNCTION_ARGS)
+{
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	Selectivity selec = 0.001;
+	CachedOp cachedOp = get_temporal_cacheOp(operator) ;
+	/* In the case of unknown operator */
+	if (cachedOp == OVERLAPS_OP)
+		PG_RETURN_FLOAT8(selec);
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		switch (cachedOp)
+		{
+			case BEFORE_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+				break;
+			case AFTER_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+				break;
+			case OVERBEFORE_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
+				break;
+			case OVERAFTER_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+				break;
+			default:
+				selec = 0.001;
+		}
+	}
+	else
+	{
+		switch (cachedOp)
+		{
+			case BEFORE_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+				break;
+			case AFTER_OP:
+				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+				break;
+			case OVERBEFORE_OP:
+				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+				break;
+			case OVERAFTER_OP:
+				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+				break;
+			default:
+				selec = 0.001;
+		}
+	}
+
+	if (selec < 0.0)
+		selec = default_temporaltypes_selectivity(operator);
+	ReleaseVariableStats(vardata);
+	CLAMP_PROBABILITY(selec);
+	PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(temporal_position_joinsel);
+
+PGDLLEXPORT Datum
+temporal_position_joinsel(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_FLOAT8(0.001);
+}
+
+/*****************************************************************************/

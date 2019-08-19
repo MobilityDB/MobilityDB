@@ -30,7 +30,8 @@ typedef enum {
 	DEFAULT_STATISTICS
 } StatisticsStrategy;
 
-typedef enum {
+typedef enum 
+{
 	SNCONST, /* Single Numeric Constant */
 	DNCONST, /* Double Numeric Constant */
 	STCONST, /* Single Temporal Constant */
@@ -78,6 +79,17 @@ extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 						   bool negate, StatisticsStrategy strategy);
+
+/*****************************************************************************/
+
+extern Datum temporal_overlaps_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_overlaps_joinsel(PG_FUNCTION_ARGS);
+extern Datum temporal_contains_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_contains_joinsel(PG_FUNCTION_ARGS);
+extern Datum temporal_same_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_same_joinsel(PG_FUNCTION_ARGS);
+extern Datum temporal_position_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_position_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

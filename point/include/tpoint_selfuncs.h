@@ -56,7 +56,6 @@ typedef struct ND_IBOX_T
 	int max[ND_DIMS];
 } ND_IBOX;
 
-
 /**
 * N-dimensional statistics structure. Well, actually
 * four-dimensional, but set up to handle arbirary dimensions

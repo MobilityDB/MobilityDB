@@ -33,8 +33,6 @@
 #include "temporal.h"
 #include "oidcache.h"
 
-static int float8_qsort_cmp(const void *a1, const void *a2);
-static int period_bound_qsort_cmp(const void *a1, const void *a2);
 static void timetype_compute_stats(CachedType type, VacAttrStats *stats, 
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void period_compute_stats(VacAttrStats *stats,
@@ -49,7 +47,7 @@ static void periodset_compute_stats(VacAttrStats *stats,
 /*
  * Comparison function for sorting float8s, used for period lengths.
  */
-static int
+int
 float8_qsort_cmp(const void *a1, const void *a2)
 {
 	const float8 *f1 = (const float8 *) a1;
@@ -65,7 +63,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
 /*
  * Comparison function for sorting PeriodBounds.
  */
-static int
+int
 period_bound_qsort_cmp(const void *a1, const void *a2)
 {
 	PeriodBound *b1 = (PeriodBound *) a1;
