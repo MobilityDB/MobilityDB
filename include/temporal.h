@@ -37,7 +37,7 @@
 #define TEMPORALSEQ			3
 #define TEMPORALS			4
 
-#define TYPMOD_GET_DURATION(typmod) ((typmod == -1)? (0) : (typmod & 0x0000000F))
+#define TYPMOD_GET_DURATION(typmod) ((typmod == -1) ? (0) : (typmod & 0x0000000F))
 
 /* Structure for the type array */
 
@@ -72,11 +72,10 @@ struct temporaltype_struct
 /* Only for TemporalInst */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
 /* Only for TemporalS */
-#define MOBDB_FLAGS_GET_TEMPCONTINUOUS(flags) 	(((flags) & 0x04)>>2)
-#define MOBDB_FLAGS_GET_X(flags) 				(((flags) & 0x08)>>3)
-#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x10)>>4)
+#define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
+#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
+#define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
 #define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
-#define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x40)>>6)
 
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
@@ -84,16 +83,14 @@ struct temporaltype_struct
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 /* Only for TemporalS */
-#define MOBDB_FLAGS_SET_TEMPCONTINUOUS(flags, value) \
-	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_X(flags, value) \
-	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
+	((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
+	((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
+#define MOBDB_FLAGS_SET_T(flags, value) \
 	((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
 	((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
-#define MOBDB_FLAGS_SET_T(flags, value) \
-	((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
 
 /*****************************************************************************
  * Struct definitions

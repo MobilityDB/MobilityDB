@@ -943,8 +943,8 @@ PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {
-	bytea *bytea_wkb = (bytea *)PG_GETARG_BYTEA_P(0);
-	uint8_t *wkb = (uint8_t *)VARDATA(bytea_wkb);
+	bytea *bytea_wkb = (bytea *) PG_GETARG_BYTEA_P(0);
+	uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
 
 	/* Initialize the state appropriately */
 	wkb_parse_state s;

@@ -22,6 +22,7 @@
 #include "period.h"
 #include "periodset.h"
 #include "timeops.h"
+#include "doublen.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
@@ -134,23 +135,35 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 {
 	double duration1 = (double)t2 - (double)t1;
 	double duration2 = (double)t3 - (double)t2;
+	double2 *x1new, *x3new;
 	if (duration1 < duration2)
 	{
 		double ratio = duration1 / duration2;
-		x3->a = x2->a + (x3->a - x2->a) * ratio;
-		x3->b = x2->b + (x3->b - x2->b) * ratio;
+		x3new = double2_construct(
+			x2->a + (x3->a - x2->a) * ratio,
+			x2->b + (x3->b - x2->b) * ratio);
 	}
-	else if (duration1 > duration2)
+	else
+		x3new = x3;
+	if (duration1 > duration2)
 	{
 		double ratio = duration2 / duration1;
-		x1->a = x1->a + (x2->a - x1->a) * ratio;
-		x1->b = x1->b + (x2->b - x1->b) * ratio;
+		x1new = double2_construct(
+			x1->a + (x2->a - x1->a) * ratio,
+			x1->b = x1->b + (x2->b - x1->b) * ratio);
 	}
+	else
+		x1new = x1;
 	double d1a = x2->a - x1->a;
 	double d1b = x2->b - x1->b;
 	double d2a = x3->a - x2->a;
 	double d2b = x3->b - x2->b;
-	return (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON);
+	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON);
+	if (duration1 < duration2)
+		pfree(x3new);
+	if (duration1 > duration2)
+		pfree(x1new);
+	return result;
 }
 
 #ifdef WITH_POSTGIS
@@ -216,28 +229,40 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 {
 	double duration1 = (double)t2 - (double)t1;
 	double duration2 = (double)t3 - (double)t2;
+	double3 *x1new, *x3new;
 	if (duration1 < duration2)
 	{
 		double ratio = duration1 / duration2;
-		x3->a = x2->a + (x3->a - x2->a) * ratio;
-		x3->b = x2->b + (x3->b - x2->b) * ratio;
-		x3->c = x2->c + (x3->c - x2->c) * ratio;
+		x3new = double3_construct(
+			x2->a + (x3->a - x2->a) * ratio,
+			x2->b + (x3->b - x2->b) * ratio,
+			x2->c + (x3->c - x2->c) * ratio);
 	}
-	else if (duration1 > duration2)
+	else
+		x3new = x3;
+	if (duration1 > duration2)
 	{
 		double ratio = duration2 / duration1;
-		x1->a = x1->a + (x2->a - x1->a) * ratio;
-		x1->b = x1->b + (x2->b - x1->b) * ratio;
-		x1->c = x1->c + (x2->c - x1->c) * ratio;
+		x1new = double3_construct(
+			x1->a + (x2->a - x1->a) * ratio,
+			x1->b + (x2->b - x1->b) * ratio,
+			x1->c + (x2->c - x1->c) * ratio);
 	}
+	else
+		x1new = x1;
 	double d1a = x2->a - x1->a;
 	double d1b = x2->b - x1->b;
 	double d1c = x2->c - x1->c;
 	double d2a = x3->a - x2->a;
 	double d2b = x3->b - x2->b;
 	double d2c = x3->c - x2->c;
-	return (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
+	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
 		fabs(d1c-d2c) <= EPSILON);
+	if (duration1 < duration2)
+		pfree(x3new);
+	if (duration1 > duration2)
+		pfree(x1new);
+	return result;
 }
 
 static bool
@@ -246,22 +271,29 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 {
 	double duration1 = (double)t2 - (double)t1;
 	double duration2 = (double)t3 - (double)t2;
+	double4 *x1new, *x3new;
 	if (duration1 < duration2)
 	{
 		double ratio = duration1 / duration2;
-		x3->a = x2->a + (x3->a - x2->a) * ratio;
-		x3->b = x2->b + (x3->b - x2->b) * ratio;
-		x3->c = x2->c + (x3->c - x2->c) * ratio;
-		x3->d = x2->d + (x3->d - x2->d) * ratio;
+		x3new = double4_construct(
+			x2->a + (x3->a - x2->a) * ratio,
+			x2->b + (x3->b - x2->b) * ratio,
+			x2->c + (x3->c - x2->c) * ratio,
+			x2->d + (x3->d - x2->d) * ratio);
 	}
-	else if (duration1 > duration2)
+	else
+		x3new = x3;
+	if (duration1 > duration2)
 	{
 		double ratio = duration2 / duration1;
-		x1->a = x1->a + (x2->a - x1->a) * ratio;
-		x1->b = x1->b + (x2->b - x1->b) * ratio;
-		x1->c = x1->c + (x2->c - x1->c) * ratio;
-		x1->d = x1->d + (x2->c - x1->d) * ratio;
+		x1new = double4_construct(
+			x1->a + (x2->a - x1->a) * ratio,
+			x1->b + (x2->b - x1->b) * ratio,
+			x1->c + (x2->c - x1->c) * ratio,
+			x1->d + (x2->c - x1->d) * ratio);
 	}
+	else
+		x1new = x1;
 	double d1a = x2->a - x1->a;
 	double d1b = x2->b - x1->b;
 	double d1c = x2->c - x1->c;
@@ -270,10 +302,14 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	double d2b = x3->b - x2->b;
 	double d2c = x3->c - x2->c;
 	double d2d = x3->d - x2->d;
-	return (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
+	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
 		fabs(d1c-d2c) <= EPSILON && fabs(d1d-d2d) <= EPSILON);
+	if (duration1 < duration2)
+		pfree(x3new);
+	if (duration1 > duration2)
+		pfree(x1new);
+	return result;
 }
-
 #endif
 
 static bool
@@ -383,7 +419,7 @@ temporalinstarr_normalize(TemporalInst **instants, int count, int *newcount)
 			*/
 			(datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
 			||
-			/* collinear float/point instants that have the same duration
+			/* collinear float/point instants
 				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
 			*/
 			(datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
@@ -412,14 +448,10 @@ temporalinstarr_normalize(TemporalInst **instants, int count, int *newcount)
  * values of the last two Boolean arguments */
 
 static TemporalSeq *
-temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last1, bool first1)
+temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 {
-	int count1 = seq1->count;
-	int start2 = 0;
-	/* If we need to remove also the last instant of the first sequence */
-	if (last1) count1--;		
-	/* If we need to remove also the last instant of the first sequence */
-	if (first1) start2++;		
+	int count1 = last ? seq1->count - 1 : seq1->count;
+	int start2 = first ? 1 : 0;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 
 		(count1 + seq2->count - start2));
 	int k = 0;
@@ -2404,7 +2436,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	bool lower_incl, bool upper_incl, RangeType *range)
 {
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(inst1->flags);
-	TypeCacheEntry* typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;

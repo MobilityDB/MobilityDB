@@ -62,7 +62,7 @@ double2_recv(PG_FUNCTION_ARGS)
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
 	double2* result = palloc(sizeof(double2));
-	const char* bytes = pq_getmsgbytes(buf, sizeof(double2));
+	const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
 	memcpy(result, bytes, sizeof(double2));
 	PG_RETURN_POINTER(result);
 }
@@ -75,7 +75,7 @@ double2_send(PG_FUNCTION_ARGS)
 	double2* d = (double2*) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void*) d, sizeof(double2));
+	pq_sendbytes(&buf, (void *) d, sizeof(double2));
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -158,8 +158,8 @@ PGDLLEXPORT Datum
 double3_recv(PG_FUNCTION_ARGS) 
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double3* result = palloc(sizeof(double3));
-	const char* bytes = pq_getmsgbytes(buf, sizeof(double3));
+	double3 *result = palloc(sizeof(double3));
+	const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
 	memcpy(result, bytes, sizeof(double3));
 	PG_RETURN_POINTER(result);
 }
@@ -169,10 +169,10 @@ PG_FUNCTION_INFO_V1(double3_send);
 PGDLLEXPORT Datum
 double3_send(PG_FUNCTION_ARGS) 
 {
-	double3* d = (double3*) PG_GETARG_POINTER(0);
+	double3 *d = (double3 *) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void*) d, sizeof(double3));
+	pq_sendbytes(&buf, (void *) d, sizeof(double3));
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -185,8 +185,7 @@ double3_send(PG_FUNCTION_ARGS)
 double3 *
 double3_construct(double a, double b, double c)
 {
-	double3 *result;
-	result = (double3 *) palloc(sizeof(double3));
+	double3 *result = (double3 *) palloc(sizeof(double3));
 	result->a = a;
 	result->b = b;
 	result->c = c;
@@ -263,7 +262,7 @@ double4_recv(PG_FUNCTION_ARGS)
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
 	double4* result = palloc(sizeof(double4));
-	const char* bytes = pq_getmsgbytes(buf, sizeof(double4));
+	const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
 	memcpy(result, bytes, sizeof(double4));
 	PG_RETURN_POINTER(result);
 }
@@ -276,7 +275,7 @@ double4_send(PG_FUNCTION_ARGS)
 	double4* d = (double4*) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendbytes(&buf, (void*) d, sizeof(double4));
+	pq_sendbytes(&buf, (void *) d, sizeof(double4));
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -289,8 +288,7 @@ double4_send(PG_FUNCTION_ARGS)
 double4 *
 double4_construct(double a, double b, double c, double d)
 {
-	double4 *result;
-	result = (double4 *) palloc(sizeof(double4));
+	double4 *result = (double4 *) palloc(sizeof(double4));
 	result->a = a;
 	result->b = b;
 	result->c = c;

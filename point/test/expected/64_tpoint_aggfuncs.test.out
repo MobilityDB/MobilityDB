@@ -21,14 +21,14 @@ SELECT astext(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint 'srid=5676;Point(1 1)@2000-01-01'),
   ('Point(2 2)@2000-01-01')) t(temp);
-ERROR:  Geometries need to have the same SRID for temporal aggregation
+ERROR:  Geometries must have the same SRID for temporal aggregation
 SELECT astext(tcentroid(temp)) FROM (VALUES 
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint 'Point(1 1)@2000-01-01'),
   ('Point(2 2 2)@2000-01-01')) t(temp);
-ERROR:  Geometries need to have the same dimensionality for temporal aggregation
+ERROR:  Geometries must have the same dimensionality for temporal aggregation
 SELECT astext(tcentroid(temp)) FROM (VALUES 
   (tgeompoint 'Point(0 0)@2000-01-01'),
-  (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'),
+  (tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}'),
   ('Point(2 2 2)@2000-01-01')) t(temp);
-ERROR:  Cannot aggregate temporal values of different duration
+ERROR:  Geometries must have the same dimensionality for temporal aggregation

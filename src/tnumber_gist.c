@@ -13,6 +13,7 @@
 
 #include "tnumber_gist.h"
 
+#include <math.h>
 #include <access/gist.h>
 #include <utils/builtins.h>
 
