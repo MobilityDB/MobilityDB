@@ -763,17 +763,17 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalinst_make(value1, inst2->t,
 			inst1->valuetypid);
 		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
-		bool upper_inc1 = upper_inc && 
+		bool upper_inc = ( (i == seq->count-2) ? seq->period.upper_inc : false ) &&
 			datum_eq(value1, value2, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc1, false);
+			lower_inc, upper_inc, false);
 		pfree(inst); pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
+		value1 = value2;
 		lower_inc = true;
 	}
 	if (seq->period.upper_inc && seq->count > 1 &&
-		datum_ne(value1, value2, inst1->valuetypid))
+		! result[seq->count-2]->period.upper_inc)
 	{
 		instants[0] = tnumberinst_transform_tavg(inst2);
 		result[seq->count-1] = temporalseq_from_temporalinstarr(instants, 1,
@@ -795,8 +795,8 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	result[0] = temporalseq_from_temporalinstarr(instants, 
-		seq->count,	seq->period.lower_inc, seq->period.upper_inc, false);
+	result[0] = temporalseq_from_temporalinstarr(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc, false);
 		
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);

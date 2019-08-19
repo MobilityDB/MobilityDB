@@ -721,7 +721,7 @@ select numSequences(tsum(seq)) from tbl_tintseq;
 select numSequences(tavg(seq)) from tbl_tintseq;
  numsequences 
 --------------
-          427
+          432
 (1 row)
 
 select numSequences(tmin(seq)) from tbl_tfloatseq;
@@ -880,16 +880,16 @@ select k%10, numSequences(tsum(seq)) from tbl_tintseq group by k%10 order by k%1
 select k%10, numSequences(tavg(seq)) from tbl_tintseq group by k%10 order by k%10;
  ?column? | numsequences 
 ----------+--------------
-        0 |           44
+        0 |           45
         1 |           35
         2 |           51
-        3 |           57
+        3 |           58
         4 |           45
         5 |           44
-        6 |           53
+        6 |           54
         7 |           37
         8 |           31
-        9 |           41
+        9 |           43
 (10 rows)
 
 select k%10, numSequences(tmin(seq)) from tbl_tfloatseq group by k%10 order by k%10;
@@ -1057,7 +1057,7 @@ select numSequences(tsum(ts)) from tbl_tints;
 select numSequences(tavg(ts)) from tbl_tints;
  numsequences 
 --------------
-         2057
+         2065
 (1 row)
 
 select numSequences(tmin(ts)) from tbl_tfloats;
@@ -1216,15 +1216,15 @@ select k%10, numSequences(tsum(ts)) from tbl_tints group by k%10 order by k%10;
 select k%10, numSequences(tavg(ts)) from tbl_tints group by k%10 order by k%10;
  ?column? | numsequences 
 ----------+--------------
-        0 |          207
-        1 |          218
-        2 |          153
-        3 |          246
-        4 |          161
-        5 |          193
-        6 |          251
-        7 |          207
-        8 |          222
+        0 |          206
+        1 |          220
+        2 |          154
+        3 |          247
+        4 |          162
+        5 |          195
+        6 |          250
+        7 |          208
+        8 |          224
         9 |          213
 (10 rows)
 
