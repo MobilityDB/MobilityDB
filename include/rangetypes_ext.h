@@ -24,7 +24,7 @@ extern Datum lower_datum(RangeType *range);
 extern Datum upper_datum(RangeType *range);
 extern bool lower_inc(RangeType *range);
 extern bool upper_inc(RangeType *range);
-extern RangeType *range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid subtypid);
+extern RangeType *range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid);
 extern RangeType **rangearr_normalize(RangeType **ranges, int *count);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);

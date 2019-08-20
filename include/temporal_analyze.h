@@ -19,16 +19,10 @@
 #include <parser/parse_oper.h>
 #include <statistics/extended_stats_internal.h>
 
-/**
-* The dimensions of temporal types our code can handle.
-* We'll use this to determine which part of our types
-* should have statistics
-*/
-#define TEMPORAL_STATISTIC	1
-#define TNUMBER_STATISTIC	2
-#define TPOINT_STATISTIC	3
-
-/* Extra data for compute_stats function */
+/* 
+ * Extra data for compute_stats function 
+ * Structure based on the ArrayAnalyzeExtraData from file array_typanalyze.c
+ */
 typedef struct 
 {
 	/* Information about array element type */
@@ -67,7 +61,7 @@ typedef struct
 	/* Saved state from std_typanalyze() */
 	AnalyzeAttrComputeStatsFunc std_compute_stats;
 	void *std_extra_data;
-} TemporalArrayAnalyzeExtraData;
+} TemporalAnalyzeExtraData;
 
 /* A hash table entry for the Lossy Counting algorithm */
 typedef struct

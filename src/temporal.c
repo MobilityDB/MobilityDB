@@ -1187,12 +1187,9 @@ tnumber_tbox(PG_FUNCTION_ARGS)
 
 /* Value range of a temporal integer */
 
-PG_FUNCTION_INFO_V1(tnumber_value_range);
-
-PGDLLEXPORT Datum
-tnumber_value_range(PG_FUNCTION_ARGS)
+RangeType *
+tnumber_value_range_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1203,6 +1200,16 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 		result = tnumberseq_value_range((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = tnumbers_value_range((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tnumber_value_range);
+
+PGDLLEXPORT Datum
+tnumber_value_range(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	RangeType *result = tnumber_value_range_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_RANGE_P(result);
 }

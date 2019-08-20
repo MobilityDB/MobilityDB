@@ -15,6 +15,8 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "timetypes.h"
 
 #ifndef USE_FLOAT4_BYVAL
@@ -368,6 +370,7 @@ extern Datum temporal_shift(PG_FUNCTION_ARGS);
 extern Datum tempdisc_get_values_internal(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
+extern RangeType *tnumber_value_range_internal(Temporal *temp);
 
 /* Restriction functions */
 
