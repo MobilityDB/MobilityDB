@@ -645,7 +645,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 
 	/* Get bounding box if needed */
 	STBOX *bbox = NULL;
-	STBOX tmp = {0,0,0,0,0,0,0,0,0};
+	STBOX tmp = {};
 	if (has_bbox)
 	{
 		temporal_bbox(&tmp, temp);
