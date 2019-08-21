@@ -40,11 +40,11 @@ typedef struct
 	char value_typalign;
 
 	/* Information about the temporal part of array element */
-	Oid temporal_type_id;	/* element type's OID */
-	Oid temporal_eq_opr;	/* default equality operator's OID */
-	bool temporal_typbyval;	/* physical properties of element type */
-	int16 temporal_typlen;
-	char temporal_typalign;
+	Oid time_type_id;	/* element type's OID */
+	Oid time_eq_opr;	/* default equality operator's OID */
+	bool time_typbyval;	/* physical properties of element type */
+	int16 time_typlen;
+	char time_typalign;
 
 	/*
 	 * Lookup data for element type's comparison and hash functions (these are
@@ -55,8 +55,8 @@ typedef struct
 	FmgrInfo *hash;
 	FmgrInfo *value_cmp;
 	FmgrInfo *value_hash;
-	FmgrInfo *temporal_cmp;
-	FmgrInfo *temporal_hash;
+	FmgrInfo *time_cmp;
+	FmgrInfo *time_hash;
 
 	/* Saved state from std_typanalyze() */
 	AnalyzeAttrComputeStatsFunc std_compute_stats;

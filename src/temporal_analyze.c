@@ -61,9 +61,9 @@ element_hash_value(const void *key, Size keysize)
 }
 
 static uint32
-element_hash_temporal(const void *key, Size keysize)
+element_hash_time(const void *key, Size keysize)
 {
-	return element_hash(key, keysize, temporal_extra_data->temporal_hash);
+	return element_hash(key, keysize, temporal_extra_data->time_hash);
 }
 
 /*
@@ -81,7 +81,7 @@ element_compare(const void *key1, const void *key2)
 	Datum	   d2 = *((const Datum *) key2);
 	Datum	   c;
 
-	c = FunctionCall2Coll(temporal_extra_data->temporal_cmp,
+	c = FunctionCall2Coll(temporal_extra_data->time_cmp,
 						  DEFAULT_COLLATION_OID,
 						  d1, d2);
 	return DatumGetInt32(c);
@@ -626,10 +626,6 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* Get TemporalInst value */
 		inst = DatumGetTemporalInst(value);
 
-		timestamp_values[non_null_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
-		timestamp_values[non_null_cnt].tupno = temporal_no;
-		timestamp_tupnoLink[non_null_cnt] = temporal_no;
-
 		if (valuestats)
 		{
 			if (typbyval)
@@ -639,6 +635,9 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			scalar_values[non_null_cnt].tupno = temporal_no;
 			scalar_tupnoLink[non_null_cnt] = temporal_no;
 		}
+		timestamp_values[non_null_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
+		timestamp_values[non_null_cnt].tupno = temporal_no;
+		timestamp_tupnoLink[non_null_cnt] = temporal_no;
 
 		non_null_cnt++;
 	}
@@ -685,27 +684,26 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 {
 	int		num_mcelem;
 	int		null_cnt = 0;
-	int		null_elem_cnt = 0;
 	int		analyzed_rows = 0;
 	double	total_width = 0;
 
 	/* This is D from the LC algorithm. */
-	HTAB	   *elements_tab_value, *elements_tab_temporal;
-	HASHCTL		elem_hash_ctl_value, elem_hash_ctl_temporal;
-	HASH_SEQ_STATUS scan_status_value, scan_status_temporal;
+	HTAB	   *elements_tab_value, *elements_tab_time;
+	HASHCTL		elem_hash_ctl_value, elem_hash_ctl_time;
+	HASH_SEQ_STATUS scan_status_value, scan_status_time;
 
 	/* This is the current bucket number from the LC algorithm */
-	int			b_current_value, b_current_temporal;
+	int			b_current_value, b_current_time;
 
 	/* This is 'w' from the LC algorithm */
 	int			bucket_width;
 	int			temporal_no;
-	int64		element_no_value, element_no_temporal;
-	TrackItem  *item_value, *item_temporal;
+	int64		element_no_value, element_no_time;
+	TrackItem  *item_value, *item_time;
 	int			slot_idx;
-	HTAB	   *count_tab_value, *count_tab_temporal;
-	HASHCTL		count_hash_ctl_value, count_hash_ctl_temporal;
-	DECountItem *count_item_value, *count_item_temporal;
+	HTAB	   *count_tab_value, *count_tab_time;
+	HASHCTL		count_hash_ctl_value, count_hash_ctl_time;
+	DECountItem *count_item_value, *count_item_time;
 
 	temporal_extra_data = (TemporalAnalyzeExtraData *) stats->extra_data;
 
@@ -737,7 +735,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		elem_hash_ctl_value.hash = element_hash_value;
 		elem_hash_ctl_value.match = element_match;
 		elem_hash_ctl_value.hcxt = CurrentMemoryContext;
-		elements_tab_value = hash_create("Analyzed elements table",
+		elements_tab_value = hash_create("Analyzed value elements table",
 										num_mcelem,
 										&elem_hash_ctl_value,
 										HASH_ELEM | HASH_FUNCTION | HASH_COMPARE | HASH_CONTEXT);
@@ -747,38 +745,38 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		count_hash_ctl_value.keysize = sizeof(int);
 		count_hash_ctl_value.entrysize = sizeof(DECountItem);
 		count_hash_ctl_value.hcxt = CurrentMemoryContext;
-		count_tab_value = hash_create("Array distinct element count table",
+		count_tab_value = hash_create("Array distinct value element count table",
 									64,
 									&count_hash_ctl_value,
 									HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
 	}
 
-	MemSet(&elem_hash_ctl_temporal, 0, sizeof(elem_hash_ctl_temporal));
-	elem_hash_ctl_temporal.keysize = sizeof(Datum);
-	elem_hash_ctl_temporal.entrysize = sizeof(TrackItem);
-	elem_hash_ctl_temporal.hash = element_hash_temporal;
-	elem_hash_ctl_temporal.match = element_match;
-	elem_hash_ctl_temporal.hcxt = CurrentMemoryContext;
-	elements_tab_temporal = hash_create("Analyzed elements table",
+	MemSet(&elem_hash_ctl_time, 0, sizeof(elem_hash_ctl_time));
+	elem_hash_ctl_time.keysize = sizeof(Datum);
+	elem_hash_ctl_time.entrysize = sizeof(TrackItem);
+	elem_hash_ctl_time.hash = element_hash_time;
+	elem_hash_ctl_time.match = element_match;
+	elem_hash_ctl_time.hcxt = CurrentMemoryContext;
+	elements_tab_time = hash_create("Analyzed time elements table",
 										num_mcelem,
-										&elem_hash_ctl_temporal,
+										&elem_hash_ctl_time,
 										HASH_ELEM | HASH_FUNCTION | HASH_COMPARE | HASH_CONTEXT);
 
 	/* hashtable for array distinct elements counts */
-	MemSet(&count_hash_ctl_temporal, 0, sizeof(count_hash_ctl_temporal));
-	count_hash_ctl_temporal.keysize = sizeof(int);
-	count_hash_ctl_temporal.entrysize = sizeof(DECountItem);
-	count_hash_ctl_temporal.hcxt = CurrentMemoryContext;
-	count_tab_temporal = hash_create("Array distinct element count table",
+	MemSet(&count_hash_ctl_time, 0, sizeof(count_hash_ctl_time));
+	count_hash_ctl_time.keysize = sizeof(int);
+	count_hash_ctl_time.entrysize = sizeof(DECountItem);
+	count_hash_ctl_time.hcxt = CurrentMemoryContext;
+	count_tab_time = hash_create("Array distinct time element count table",
 									 64,
-									 &count_hash_ctl_temporal,
+									 &count_hash_ctl_time,
 									 HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
 
 	/* Initialize counters. */
 	b_current_value = 1;
-	b_current_temporal = 1;
+	b_current_time = 1;
 	element_no_value = 0;
-	element_no_temporal = 0;
+	element_no_time = 0;
 
 	/* Loop over the arrays. */
 	for (temporal_no = 0; temporal_no < samplerows; temporal_no++)
@@ -786,12 +784,11 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum		value;
 		bool		isnull;
 		TemporalI  *ti;
-		bool		null_present;
 		int			j;
 		int64		prev_element_no_value = element_no_value,
-					prev_element_no_temporal = element_no_temporal;
-		int			distinct_count_value, distinct_count_temporal;
-		bool		count_item_found_value, count_item_found_temporal;
+					prev_element_no_time = element_no_time;
+		int			distinct_count_value, distinct_count_time;
+		bool		count_item_found_value, count_item_found_time;
 
 		vacuum_delay_point();
 
@@ -811,15 +808,12 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * We loop through the elements in the ti and add them to our
 		 * tracking hashtable.
 		 */
-		null_present = false;
 
-		if (ti->count < 1)
-			null_present = true;
 		for (j = 0; j < ti->count; j++)
 		{
 			TemporalInst *inst = temporali_inst_n(ti, j);
-			Datum elem_value, elem_temporal;
-			bool found_value, found_temporal;
+			Datum elem_value, elem_time;
+			bool found_value, found_time;
 
 			if (valuestats)
 			{
@@ -865,13 +859,13 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				element_no_value++;
 			}
 
-			/* Lookup current element temporal in hashtable, adding it if new */
-			elem_temporal = TimestampTzGetDatum(inst->t);
-			item_temporal = (TrackItem *) hash_search(elements_tab_temporal,
-													  (const void *) &elem_temporal,
-													  HASH_ENTER, &found_temporal);
+			/* Lookup current time element in hashtable, adding it if new */
+			elem_time = TimestampTzGetDatum(inst->t);
+			item_time = (TrackItem *) hash_search(elements_tab_time,
+													  (const void *) &elem_time,
+													  HASH_ENTER, &found_time);
 
-			if (found_temporal)
+			if (found_time)
 			{
 				/* The element value is already on the tracking list */
 
@@ -879,11 +873,11 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				 * The operators we assist ignore duplicate array elements, so
 				 * count a given distinct element only once per array.
 				 */
-				if (item_temporal->last_container == temporal_no)
+				if (item_time->last_container == temporal_no)
 					continue;
 
-				item_temporal->frequency++;
-				item_temporal->last_container = temporal_no;
+				item_time->frequency++;
+				item_time->last_container = temporal_no;
 			}
 			else
 			{
@@ -896,22 +890,18 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				 * limited by the size of the hashtable; if we kept all the
 				 * array values around, it could be much more.)
 				 */
-				item_temporal->key = elem_temporal;
+				item_time->key = elem_time;
 
-				item_temporal->frequency = 1;
-				item_temporal->delta = b_current_temporal - 1;
-				item_temporal->last_container = temporal_no;
+				item_time->frequency = 1;
+				item_time->delta = b_current_time - 1;
+				item_time->last_container = temporal_no;
 			}
 
 			/* element_no is the number of elements processed (ie N) */
-			element_no_temporal++;
+			element_no_time++;
 		}
 
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
-
-		/* Count null element presence once per array. */
-		if (null_present)
-			null_elem_cnt++;
 
 		/* Update frequency of the particular array distinct element count. */
 		if (valuestats)
@@ -926,14 +916,14 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				count_item_value->frequency = 1;
 		}
 
-		distinct_count_temporal = (int) (element_no_temporal - prev_element_no_temporal);
-		count_item_temporal = (DECountItem *) hash_search(count_tab_temporal, &distinct_count_temporal,
+		distinct_count_time = (int) (element_no_time - prev_element_no_time);
+		count_item_time = (DECountItem *) hash_search(count_tab_time, &distinct_count_time,
 														  HASH_ENTER,
-														  &count_item_found_temporal);
-		if (count_item_found_temporal)
-			count_item_temporal->frequency++;
+														  &count_item_found_time);
+		if (count_item_found_time)
+			count_item_time->frequency++;
 		else
-			count_item_temporal->frequency = 1;
+			count_item_time->frequency = 1;
 
 		analyzed_rows++;
 	}
@@ -1034,11 +1024,12 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				/*
 				* We sorted statistics on the element value, but we want to be
 				* able to find the minimal and maximal frequencies without going
-				* through all the values.  We also want the frequency of null
-				* elements.  Store these three values at the end of mcelem_freqs.
+				* through all the values.  We don't want the frequency of null
+				* elements since there are non null elements. Store these two
+				* values at the end of mcelem_freqs.
 				*/
 				mcelem_values = (Datum *) palloc(num_mcelem * sizeof(Datum));
-				mcelem_freqs = (float4 *) palloc((num_mcelem + 3) * sizeof(float4));
+				mcelem_freqs = (float4 *) palloc((num_mcelem + 2) * sizeof(float4));
 
 				/*
 				* See comments above about use of nonnull_cnt as the divisor for
@@ -1054,7 +1045,6 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				}
 				mcelem_freqs[i++] = (float4) minfreq / (float4) nonnull_cnt;
 				mcelem_freqs[i++] = (float4) maxfreq / (float4) nonnull_cnt;
-				mcelem_freqs[i++] = (float4) null_elem_cnt / (float4) nonnull_cnt;
 
 				MemoryContextSwitchTo(old_context);
 
@@ -1177,22 +1167,22 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * Since epsilon = s/10 and bucket_width = 1/epsilon, the cutoff
 		 * frequency is 9*N / bucket_width.
 		 */
-		cutoff_freq = 9 * element_no_temporal / bucket_width;
+		cutoff_freq = 9 * element_no_time / bucket_width;
 
-		i = (int) hash_get_num_entries(elements_tab_temporal); /* surely enough space */
+		i = (int) hash_get_num_entries(elements_tab_time); /* surely enough space */
 		sort_table = (TrackItem **) palloc(sizeof(TrackItem *) * i);
 
-		hash_seq_init(&scan_status_temporal, elements_tab_temporal);
+		hash_seq_init(&scan_status_time, elements_tab_time);
 		track_len = 0;
-		minfreq = element_no_temporal;
+		minfreq = element_no_time;
 		maxfreq = 0;
-		while ((item_temporal = (TrackItem *) hash_seq_search(&scan_status_temporal)) != NULL)
+		while ((item_time = (TrackItem *) hash_seq_search(&scan_status_time)) != NULL)
 		{
-			if (item_temporal->frequency > cutoff_freq)
+			if (item_time->frequency > cutoff_freq)
 			{
-				sort_table[track_len++] = item_temporal;
-				minfreq = Min(minfreq, item_temporal->frequency);
-				maxfreq = Max(maxfreq, item_temporal->frequency);
+				sort_table[track_len++] = item_time;
+				minfreq = Min(minfreq, item_time->frequency);
+				maxfreq = Max(maxfreq, item_time->frequency);
 			}
 		}
 		Assert(track_len <= i);
@@ -1202,7 +1192,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					 "bucket width = %d, "
 					 "# elements = " INT64_FORMAT ", hashtable size = %d, "
 												  "usable entries = %d",
-			 num_mcelem, bucket_width, element_no_temporal, i, track_len);
+			 num_mcelem, bucket_width, element_no_time, i, track_len);
 
 		/*
 		 * If we obtained more elements than we really want, get rid of those
@@ -1240,11 +1230,12 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/*
 			 * We sorted statistics on the element value, but we want to be
 			 * able to find the minimal and maximal frequencies without going
-			 * through all the values.  We also want the frequency of null
-			 * elements.  Store these three values at the end of mcelem_freqs.
+			 * through all the values.  We don't want the frequency of null
+			 * elements since there are non null elements. Store these two
+			 * values at the end of mcelem_freqs.
 			 */
 			mcelem_values = (Datum *) palloc(num_mcelem * sizeof(Datum));
-			mcelem_freqs = (float4 *) palloc((num_mcelem + 3) * sizeof(float4));
+			mcelem_freqs = (float4 *) palloc((num_mcelem + 2) * sizeof(float4));
 
 			/*
 			 * See comments above about use of nonnull_cnt as the divisor for
@@ -1260,28 +1251,27 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			}
 			mcelem_freqs[i++] = (float4) minfreq / (float4) nonnull_cnt;
 			mcelem_freqs[i++] = (float4) maxfreq / (float4) nonnull_cnt;
-			mcelem_freqs[i++] = (float4) null_elem_cnt / (float4) nonnull_cnt;
 
 			MemoryContextSwitchTo(old_context);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr;
 			stats->stanumbers[slot_idx] = mcelem_freqs;
 			/* See above comment about extra stanumber entries */
 			stats->numnumbers[slot_idx] = num_mcelem + 3;
 			stats->stavalues[slot_idx] = mcelem_values;
 			stats->numvalues[slot_idx] = num_mcelem;
 			/* We are storing values of element type */
-			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
-			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
-			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
-			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
+			stats->statypid[slot_idx] = temporal_extra_data->time_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->time_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->time_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->time_typalign;
 			stats->stats_valid = true;
 			slot_idx++;
 		}
 
 		/* Generate DECHIST slot entry */
-		count_items_count = (int)hash_get_num_entries(count_tab_temporal);
+		count_items_count = (int)hash_get_num_entries(count_tab_time);
 		if (count_items_count > 0)
 		{
 			int			num_hist = stats->attr->attstattarget;
@@ -1300,11 +1290,11 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 */
 			sorted_count_items = (DECountItem **)
 					palloc(sizeof(DECountItem *) * count_items_count);
-			hash_seq_init(&scan_status_temporal, count_tab_temporal);
+			hash_seq_init(&scan_status_time, count_tab_time);
 			j = 0;
-			while ((count_item_temporal = (DECountItem *) hash_seq_search(&scan_status_temporal)) != NULL)
+			while ((count_item_time = (DECountItem *) hash_seq_search(&scan_status_time)) != NULL)
 			{
-				sorted_count_items[j++] = count_item_temporal;
+				sorted_count_items[j++] = count_item_time;
 			}
 			qsort(sorted_count_items, count_items_count,
 				  sizeof(DECountItem *), countitem_compare_count);
@@ -1316,7 +1306,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			hist = (float4 *)
 					MemoryContextAlloc(stats->anl_context,
 									   sizeof(float4) * (num_hist + 1));
-			hist[num_hist] = (float4) element_no_temporal / (float4) nonnull_cnt;
+			hist[num_hist] = (float4) element_no_time / (float4) nonnull_cnt;
 
 			/*----------
 			 * Construct the histogram of distinct-element counts (DECs).
@@ -1367,7 +1357,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			Assert(j == count_items_count - 1);
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-			stats->staop[slot_idx] = temporal_extra_data->temporal_eq_opr;
+			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr;
 			stats->stanumbers[slot_idx] = hist;
 			stats->numnumbers[slot_idx] = num_hist + 1;
 		}
@@ -1459,7 +1449,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				value_length = DatumGetFloat8(value_uppers[non_null_cnt].val) -
 							DatumGetFloat8(value_lowers[non_null_cnt].val);
 			else if (valueRangeType == type_oid(T_INTRANGE))
-				value_length = (float8)(DatumGetInt32(value_uppers[non_null_cnt].val) -
+				value_length = (float8) (DatumGetInt32(value_uppers[non_null_cnt].val) -
 										DatumGetInt32(value_lowers[non_null_cnt].val));
 			value_lengths[non_null_cnt] = value_length;
 		}
@@ -1490,10 +1480,10 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
-		stats->stawidth = (int)(total_width / non_null_cnt);
+		stats->stawidth = (int) (total_width / non_null_cnt);
 
 		/* Estimate that non-null values are unique */
-		stats->stadistinct = (float4)(-1.0 * (1.0 - stats->stanullfrac));
+		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
 		/* Must copy the target values into anl_context */
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
@@ -1629,8 +1619,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		slot_idx = 2;
 
-		Datum *bound_hist_temporal;
-		Datum *length_hist_temporal;
+		Datum *bound_hist_time;
+		Datum *length_hist_time;
 
 		/*
 		 * Generate temporal histograms if there are at least two values.
@@ -1647,7 +1637,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
-			bound_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
+			bound_hist_time = (Datum *) palloc(num_hist * sizeof(Datum));
 
 			/*
 			 * The object of this loop is to construct periods from first and
@@ -1666,7 +1656,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 			for (i = 0; i < num_hist; i++)
 			{
-				bound_hist_temporal[i] =
+				bound_hist_time[i] =
 						PointerGetDatum(period_make(time_lowers[pos].val, time_uppers[pos].val,
 													time_lowers[pos].inclusive, time_uppers[pos].inclusive));
 
@@ -1681,12 +1671,12 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			}
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-			stats->stavalues[slot_idx] = bound_hist_temporal;
+			stats->stavalues[slot_idx] = bound_hist_time;
 			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = temporal_extra_data->temporal_type_id;
-			stats->statyplen[slot_idx] = temporal_extra_data->temporal_typlen;
-			stats->statypbyval[slot_idx] = temporal_extra_data->temporal_typbyval;
-			stats->statypalign[slot_idx] = temporal_extra_data->temporal_typalign;
+			stats->statypid[slot_idx] = temporal_extra_data->time_type_id;
+			stats->statyplen[slot_idx] = temporal_extra_data->time_typlen;
+			stats->statypbyval[slot_idx] = temporal_extra_data->time_typbyval;
+			stats->statypalign[slot_idx] = temporal_extra_data->time_typalign;
 			slot_idx++;
 
 			/* Generate a length histogram slot entry. */
@@ -1701,7 +1691,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
-			length_hist_temporal = (Datum *) palloc(num_hist * sizeof(Datum));
+			length_hist_time = (Datum *) palloc(num_hist * sizeof(Datum));
 
 			/*
 			 * The object of this loop is to copy the first and last lengths[]
@@ -1718,7 +1708,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 			for (i = 0; i < num_hist; i++)
 			{
-				length_hist_temporal[i] = Float8GetDatum(time_lengths[pos]);
+				length_hist_time[i] = Float8GetDatum(time_lengths[pos]);
 				pos += delta;
 				posfrac += deltafrac;
 				if (posfrac >= (num_hist - 1))
@@ -1737,12 +1727,12 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * because get_attstatsslot() errors if you ask for stavalues, and
 			 * it's NULL.
 			 */
-			length_hist_temporal = palloc(0);
+			length_hist_time = palloc(0);
 			num_hist = 0;
 		}
 		stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
 		stats->staop[slot_idx] = Float8LessOperator;
-		stats->stavalues[slot_idx] = length_hist_temporal;
+		stats->stavalues[slot_idx] = length_hist_time;
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statypid[slot_idx] = FLOAT8OID;
 		stats->statyplen[slot_idx] = sizeof(float8);
@@ -1907,13 +1897,13 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 											  TYPECACHE_CMP_PROC_FINFO |
 											  TYPECACHE_HASH_PROC_FINFO);
 
-	extra_data->temporal_type_id = time_typentry->type_id;
-	extra_data->temporal_eq_opr = time_typentry->eq_opr;
-	extra_data->temporal_typbyval = time_typentry->typbyval;
-	extra_data->temporal_typlen = time_typentry->typlen;
-	extra_data->temporal_typalign = time_typentry->typalign;
-	extra_data->temporal_cmp = &time_typentry->cmp_proc_finfo;
-	extra_data->temporal_hash = &time_typentry->hash_proc_finfo;
+	extra_data->time_type_id = time_typentry->type_id;
+	extra_data->time_eq_opr = time_typentry->eq_opr;
+	extra_data->time_typbyval = time_typentry->typbyval;
+	extra_data->time_typlen = time_typentry->typlen;
+	extra_data->time_typalign = time_typentry->typalign;
+	extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
+	extra_data->time_hash = &time_typentry->hash_proc_finfo;
 
 	extra_data->std_extra_data = stats->extra_data;
 	stats->extra_data = extra_data;
