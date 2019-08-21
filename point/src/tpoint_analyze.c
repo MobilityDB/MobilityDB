@@ -25,75 +25,32 @@
 
 /*****************************************************************************/
 
+/* 
+ * This function is used to remove the time part from the sample rows after
+ * getting the statistics from the time dimension, to be able to collect
+ * spatial statistics in the same stats variable.
+ */
 static HeapTuple
 remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
-				   Oid attrtypid, bool geom, Datum value)
+				   Oid attrtypid, Datum value)
 {
-	/* The variables below are used to remove the temporal part from
-	 * the sample rows after getting the temporal value,
-	 * to be able to collect other statistics in the same stats variable.
-	 */
 	Datum *values = (Datum *) palloc(attrNum * sizeof(Datum));
 	bool *null_v = (bool *) palloc(attrNum * sizeof(bool));
 	bool *rep_v = (bool *) palloc(attrNum * sizeof(bool));
 
 	for (int j = 0; j < attrNum; j++)
 	{
-		int typemod = TYPMOD_GET_DURATION(tupDesc->attrs[j].atttypmod);
-		switch (typemod)
+		if (attrtypid == tupDesc->attrs[j].atttypid)
 		{
-			case TEMPORAL:
-			case TEMPORALINST:
-			case TEMPORALI:
-			case TEMPORALSEQ:
-			case TEMPORALS:
-			{
-				if (attrtypid == tupDesc->attrs[j].atttypid)
-				{
-					if (geom)
-					{
-						if (attrtypid == type_oid(T_STBOX))
-						{
-							STBOX *box = DatumGetSTboxP(value);
-
-							//Convert STBOX to geometry
-							LWLINE *line;
-							LWPOINT *lwpoint = lwpoint_make2d(4326, box->xmin, box->ymin);
-							LWPOINT **points = palloc(sizeof(LWPOINT *) * 2);
-							points[0] = lwpoint;
-							lwpoint = lwpoint_make2d(4326, box->xmax, box->ymax);
-							points[1] = lwpoint;
-							line = lwline_from_ptarray(4326, 2, points);
-							value = PointerGetDatum(geometry_serialize(lwline_as_lwgeom(line)));
-							lwline_free(line);lwpoint_free(lwpoint);
-							pfree(points);
-							values[j] = value;
-						}
-						else
-							values[j] = tpoint_values_internal(DatumGetTemporal(value));
-					}
-
-					else
-						values[j] = tempdisc_get_values_internal(DatumGetTemporal(value));
-					rep_v[j] = true;
-					null_v[j] = false;
-				}
-				else
-				{
-					values[j] = 0;
-					rep_v[j] = false;
-					null_v[j] = false;
-				}
-
-				break;
-			}
-			default:
-			{
-				values[j] = 0;
-				rep_v[j] = false;
-				null_v[j] = false;
-				break;
-			}
+			values[j] = tpoint_values_internal(DatumGetTemporal(value));
+			rep_v[j] = true;
+			null_v[j] = false;
+		}
+		else
+		{
+			values[j] = 0;
+			rep_v[j] = false;
+			null_v[j] = false;
 		}
 	}
 	return heap_modify_tuple(tuple, tupDesc, values, null_v, rep_v);
@@ -103,16 +60,16 @@ static void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					 int samplerows, double totalrows)
 {
-	int type = TYPMOD_GET_DURATION(stats->attrtypmod);
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	int stawidth;
 
 	/* Compute statistics for the time component */
-	if (type == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		temporalinst_compute_stats(stats, fetchfunc, samplerows, totalrows);
-	else if (type == TEMPORALI)
+	else if (duration == TEMPORALI)
 		temporali_compute_stats(stats, fetchfunc, samplerows, totalrows);
-	else if (type == TEMPORALSEQ || type == TEMPORALS ||
-			 type == TEMPORAL)
+	else if (duration == TEMPORALSEQ || duration == TEMPORALS ||
+			 duration == TEMPORAL)
 		temporals_compute_stats(stats, fetchfunc, samplerows, totalrows);
 
 	stawidth = stats->stawidth;
@@ -126,7 +83,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		stats->rows[i] = remove_temporaldim(stats->rows[i],
 			stats->tupDesc, stats->tupDesc->natts,
-			stats->attrtypid, true, value);
+			stats->attrtypid, value);
 	}	
 	/* Compute statistics for the geometry component */
 	call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
@@ -134,26 +91,6 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	/* Put the total width of the column, variable size */
 	stats->stawidth = stawidth;
-}
-
-static Datum
-tpoint_analyze_internal(VacAttrStats *stats, int durationType)
-{
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	if (durationType == TEMPORALINST)
-		temporal_info(stats);
-	else
-		temporal_extra_info(stats, durationType);
-
-	stats->compute_stats = tpoint_compute_stats;
-
-	PG_RETURN_BOOL(true);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
@@ -166,7 +103,19 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 	assert(durationType == TEMPORAL || durationType == TEMPORALINST ||
 		   durationType == TEMPORALI || durationType == TEMPORALSEQ ||
 		   durationType == TEMPORALS);
-	return tpoint_analyze_internal(stats, durationType);
+	/*
+	 * Call the standard typanalyze function.  It may fail to find needed
+	 * operators, in which case we also can't do anything, so just fail.
+	 */
+	if (!std_typanalyze(stats))
+		PG_RETURN_BOOL(false);
+
+	if (durationType == TEMPORALINST)
+		temporal_info(stats);
+	else
+		temporal_extra_info(stats, durationType);
+	stats->compute_stats = tpoint_compute_stats;
+	PG_RETURN_BOOL(true);
 }
 
 /*****************************************************************************/
