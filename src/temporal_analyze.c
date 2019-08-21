@@ -13,6 +13,7 @@
 #include "temporal_analyze.h"
 
 #include <assert.h>
+#include <access/tuptoaster.h>
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_operator_d.h>
 #include <commands/vacuum.h>
@@ -27,7 +28,21 @@
 #include "oidcache.h"
 #include "temporal_util.h"
 
-/* Missing comment */
+/*
+ * To avoid consuming too much memory, IO and CPU load during analysis, and/or
+ * too much space in the resulting pg_statistic rows, we ignore arrays that
+ * are wider than TEMPORAL_WIDTH_THRESHOLD (after detoasting!).  Note that this
+ * number is considerably more than the similar WIDTH_THRESHOLD limit used
+ * in analyze.c's standard typanalyze code.
+ */
+#define TEMPORAL_WIDTH_THRESHOLD 0x10000
+
+/*
+ * While statistic functions are running, we keep a pointer to the extra data
+ * here for use by assorted subroutines.  The functions doesn't
+ * currently need to be re-entrant, so avoiding this is not worth the extra
+ * notational cruft that would be needed.
+ */
 TemporalAnalyzeExtraData *temporal_extra_data;
 
 /*****************************************************************************
@@ -201,7 +216,13 @@ compare_mcvs(const void *a, const void *b)
 	return da - db;
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Generic statistics functions for non-spatial temporal types.
+ * In these functions the last argument valuestats determines whether
+ * statistics are computed for the value dimension, i.e., in the case of
+ * temporal numbers. Otherwise, statistics are computed only for the temporal
+ * dimension, i.e., in the the case of temporal booleans and temporal text.
+ *****************************************************************************/
 
 /* 
  * Compute statistics for scalar values, used both for the value and the 
@@ -210,7 +231,7 @@ compare_mcvs(const void *a, const void *b)
  */
 static void
 scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
-					 ScalarMCVItem *track, int non_null_cnt, int null_cnt, Oid valueType,
+					 ScalarMCVItem *track, int nonnull_cnt, int null_cnt, Oid valuetypid,
 					 int slot_idx, int total_width, int totalrows, int samplerows)
 {
 	double corr_xysum;
@@ -223,23 +244,23 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		typlen;
 	bool typbyval;
 
-	if (valueType == TIMESTAMPTZOID)
+	if (valuetypid == TIMESTAMPTZOID)
 	{
 		typbyval = true;
 		typlen = sizeof(TimestampTz);
 	}
 	else 
 	{
-		typbyval = type_byval_fast(valueType);
-		typlen = get_typlen_fast(valueType);
+		typbyval = type_byval_fast(valuetypid);
+		typlen = get_typlen_fast(valuetypid);
 	}
 
 	/* We need to change the OID due to PostgreSQL internal behavior */
-	if (valueType == INT4OID)
-		valueType = INT8OID;
+	if (valuetypid == INT4OID)
+		valuetypid = INT8OID;
 
 	MemoryContext old_cxt;
-	int ndistinct,	/* # distinct values in sample */
+	int 	ndistinct,	/* # distinct values in sample */
 			nmultiple,	/* # that appear multiple times */
 			dups_cnt,
 			i;
@@ -255,10 +276,10 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	 * For now, don't perform abbreviated key conversion, because full values
 	 * are required for MCV slot generation. Supporting that optimization
 	 * would necessitate teaching compare_scalars() to call a tie-breaker.
-	*/
+	 */
 	ssup.abbreviate = false;
 
-	get_sort_group_operators(valueType,
+	get_sort_group_operators(valuetypid,
 							 false, false, false,
 							 &ltopr, &eqopr, NULL,
 							 NULL);
@@ -267,7 +288,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	/* Sort the collected values */
 	cxt.ssup = &ssup;
 	cxt.tupnoLink = tupnoLink;
-	qsort_arg((void *) values, (size_t)non_null_cnt, sizeof(ScalarItem),
+	qsort_arg((void *) values, (size_t)nonnull_cnt, sizeof(ScalarItem),
 			  compare_scalars, (void *) &cxt);
 
 	/* Must copy the target values into anl_context */
@@ -277,10 +298,9 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	ndistinct = 0;
 	nmultiple = 0;
 	dups_cnt = 0;
-	for (i = 0; i < non_null_cnt; i++)
+	for (i = 0; i < nonnull_cnt; i++)
 	{
 		int tupno = values[i].tupno;
-
 		corr_xysum += ((double) i) * ((double) tupno);
 		dups_cnt++;
 		if (tupnoLink[tupno] == tupno)
@@ -294,11 +314,11 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 					dups_cnt > track[track_cnt - 1].count)
 				{
 					/*
-						* Found a new item for the mcv list; find its
-						* position, bubbling down old items if needed. Loop
-						* invariant is that j points at an empty/replaceable
-						* slot.
-						*/
+					 * Found a new item for the mcv list; find its
+					 * position, bubbling down old items if needed. Loop
+					 * invariant is that j points at an empty/replaceable
+					 * slot.
+					 */
 					int j;
 
 					if (track_cnt < num_mcv)
@@ -319,29 +339,29 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	}
 
 	/*
-		* Decide how many values are worth storing as most-common values. If
-		* we are able to generate a complete MCV list (all the values in the
-		* sample will fit, and we think these are all the ones in the table),
-		* then do so.  Otherwise, store only those values that are
-		* significantly more common than the (estimated) average. We set the
-		* threshold rather arbitrarily at 25% more than average, with at
-		* least 2 instances in the sample.  Also, we won't suppress values
-		* that have a frequency of at least 1/K where K is the intended
-		* number of histogram bins; such values might otherwise cause us to
-		* emit duplicate histogram bin boundaries.  (We might end up with
-		* duplicate histogram entries anyway, if the distribution is skewed;
-		* but we prefer to treat such values as MCVs if at all possible.)
-		*
-		* Note: the first of these cases is meant to address columns with
-		* small, fixed sets of possible values, such as boolean or enum
-		* columns.  If we can *completely* represent the column population by
-		* an MCV list that will fit into the stats target, then we should do
-		* so and thus provide the planner with complete information.  But if
-		* the MCV list is not complete, it's generally worth being more
-		* selective, and not just filling it all the way up to the stats
-		* target.  So for an incomplete list, we try to take only MCVs that
-		* are significantly more common than average.
-		*/
+	* Decide how many values are worth storing as most-common values. If
+	* we are able to generate a complete MCV list (all the values in the
+	* sample will fit, and we think these are all the ones in the table),
+	* then do so.  Otherwise, store only those values that are
+	* significantly more common than the (estimated) average. We set the
+	* threshold rather arbitrarily at 25% more than average, with at
+	* least 2 instances in the sample.  Also, we won't suppress values
+	* that have a frequency of at least 1/K where K is the intended
+	* number of histogram bins; such values might otherwise cause us to
+	* emit duplicate histogram bin boundaries.  (We might end up with
+	* duplicate histogram entries anyway, if the distribution is skewed;
+	* but we prefer to treat such values as MCVs if at all possible.)
+	*
+	* Note: the first of these cases is meant to address columns with
+	* small, fixed sets of possible values, such as boolean or enum
+	* columns.  If we can *completely* represent the column population by
+	* an MCV list that will fit into the stats target, then we should do
+	* so and thus provide the planner with complete information.  But if
+	* the MCV list is not complete, it's generally worth being more
+	* selective, and not just filling it all the way up to the stats
+	* target.  So for an incomplete list, we try to take only MCVs that
+	* are significantly more common than average.
+	*/
 	if (((track_cnt) == (ndistinct == 0)) &&
 		(stats->stadistinct > 0) &&
 		(track_cnt <= num_mcv))
@@ -360,13 +380,13 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		if (ndistinct_table < 0)
 			ndistinct_table = -ndistinct_table * totalrows;
 		/* estimate # occurrences in sample of a typical nonnull value */
-		avgcount = (double) non_null_cnt / ndistinct_table;
+		avgcount = (double) nonnull_cnt / ndistinct_table;
 		/* set minimum threshold count to store a value */
 		mincount = avgcount * 1.25;
 		if (mincount < 2)
 			mincount = 2;
 		/* don't let threshold exceed 1/K, however */
-		maxmincount = (double) non_null_cnt / (double) num_bins;
+		maxmincount = (double) nonnull_cnt / (double) num_bins;
 		if (mincount > maxmincount)
 			mincount = maxmincount;
 		if (num_mcv > track_cnt)
@@ -395,7 +415,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 
 		for (i = 0; i < num_mcv; i++)
 		{
-			mcv_values[i] = datum_copy(values[track[i].first].value, valueType);
+			mcv_values[i] = datum_copy(values[track[i].first].value, valuetypid);
 			mcv_freqs[i] = (float4) track[i].count / (float4) samplerows;
 		}
 		MemoryContextSwitchTo(old_context);
@@ -407,16 +427,16 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		stats->stavalues[slot_idx] = mcv_values;
 		stats->numvalues[slot_idx] = num_mcv;
 		stats->statyplen[slot_idx] = (int16) typlen;
-		stats->statypid[slot_idx] = valueType;
+		stats->statypid[slot_idx] = valuetypid;
 		stats->statypbyval[slot_idx] = typbyval;
 	}
 	slot_idx++;
 
 	/*
-		* Generate a histogram slot entry if there are at least two distinct
-		* values not accounted for in the MCV list.  (This ensures the
-		* histogram won't collapse to empty or a singleton.)
-		*/
+	* Generate a histogram slot entry if there are at least two distinct
+	* values not accounted for in the MCV list.  (This ensures the
+	* histogram won't collapse to empty or a singleton.)
+	*/
 	num_hist = ndistinct - num_mcv;
 	if (num_hist > num_bins)
 		num_hist = num_bins + 1;
@@ -448,7 +468,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 
 			src = dest = 0;
 			j = 0;			/* index of next interesting MCV item */
-			while (src < non_null_cnt)
+			while (src < nonnull_cnt)
 			{
 				int ncopy;
 
@@ -466,7 +486,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 					ncopy = first - src;
 				}
 				else
-					ncopy = non_null_cnt - src;
+					ncopy = nonnull_cnt - src;
 				memmove(&values[dest], &values[src],
 						ncopy * sizeof(ScalarItem));
 				src += ncopy;
@@ -475,7 +495,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 			nvals = dest;
 		}
 		else
-			nvals = non_null_cnt;
+			nvals = nonnull_cnt;
 		Assert(nvals >= num_hist);
 
 		/* Must copy the target values into anl_context */
@@ -483,14 +503,14 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
 		/*
-			* The object of this loop is to copy the first and last values[]
-			* entries along with evenly-spaced values in between.  So the
-			* i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
-			* computing that subscript directly risks integer overflow when
-			* the stats target is more than a couple thousand.  Instead we
-			* add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			* the integral and fractional parts of the sum separately.
-			*/
+		* The object of this loop is to copy the first and last values[]
+		* entries along with evenly-spaced values in between.  So the
+		* i'th value is values[(i * (nvals - 1)) / (num_hist - 1)].  But
+		* computing that subscript directly risks integer overflow when
+		* the stats target is more than a couple thousand.  Instead we
+		* add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
+		* the integral and fractional parts of the sum separately.
+		*/
 		delta = (nvals - 1) / (num_hist - 1);
 		deltafrac = (nvals - 1) % (num_hist - 1);
 		pos = posfrac = 0;
@@ -498,7 +518,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		for (i = 0; i < num_hist; i++)
 		{
 			hist_values[i] =
-					datum_copy(values[pos].value, valueType);
+					datum_copy(values[pos].value, valuetypid);
 			pos += delta;
 			posfrac += deltafrac;
 			if (posfrac >= (num_hist - 1))
@@ -516,13 +536,13 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		stats->stavalues[slot_idx] = hist_values;
 		stats->numvalues[slot_idx] = num_hist;
 		stats->statyplen[slot_idx] = (int16)typlen;
-		stats->statypid[slot_idx] = valueType;
+		stats->statypid[slot_idx] = valuetypid;
 		stats->statypbyval[slot_idx] = true;
 		slot_idx++;
 	}
 
 	/* Generate a correlation entry if there are multiple values */
-	if (non_null_cnt > 1 && valueType != TIMESTAMPTZOID)
+	if (nonnull_cnt > 1 && valuetypid != TIMESTAMPTZOID)
 	{
 		MemoryContext old_context;
 		float4 *corrs;
@@ -543,14 +563,14 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		*		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
 		*----------
 		*/
-		corr_xsum = ((double) (non_null_cnt - 1)) *
-					((double) non_null_cnt) / 2.0;
-		corr_x2sum = ((double) (non_null_cnt - 1)) *
-					 ((double) non_null_cnt) * (double) (2 * non_null_cnt - 1) / 6.0;
+		corr_xsum = ((double) (nonnull_cnt - 1)) *
+					((double) nonnull_cnt) / 2.0;
+		corr_x2sum = ((double) (nonnull_cnt - 1)) *
+					 ((double) nonnull_cnt) * (double) (2 * nonnull_cnt - 1) / 6.0;
 
 		/* And the correlation coefficient reduces to */
-		corrs[0] = (float4) ((non_null_cnt * corr_xysum - corr_xsum * corr_xsum) /
-							 (non_null_cnt * corr_x2sum - corr_xsum * corr_xsum));
+		corrs[0] = (float4) ((nonnull_cnt * corr_xysum - corr_xsum * corr_xsum) /
+							 (nonnull_cnt * corr_x2sum - corr_xsum * corr_xsum));
 
 
 		stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
@@ -558,7 +578,7 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		stats->stanumbers[slot_idx] = corrs;
 		stats->numnumbers[slot_idx] = 1;
 		stats->statyplen[slot_idx] = (int16) typlen;
-		stats->statypid[slot_idx] = valueType;
+		stats->statypid[slot_idx] = valuetypid;
 		stats->statypbyval[slot_idx] = typbyval;
 
 
@@ -571,24 +591,23 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	MemoryContextSwitchTo(old_cxt);
 }
 
-/*****************************************************************************
- * Generic statistics functions for non-spatial temporal types
- *****************************************************************************/
-
+/* 
+ * Compute statistics for TemporalInst columns.
+ * Function derived from compute_scalar_stats of file analyze.c 
+ */
 static void
 tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						  int samplerows, double totalrows, bool valuestats)
+					   int samplerows, double totalrows, bool valuestats)
 {
 	int null_cnt = 0,
-		non_null_cnt = 0,
-		temporal_no,
+		nonnull_cnt = 0,
 		slot_idx = 0;
 	double total_width = 0;
 	ScalarItem *scalar_values, *timestamp_values;
 	int *scalar_tupnoLink, *timestamp_tupnoLink;
 	ScalarMCVItem *scalar_track, *timestamp_track;
 	int num_mcv = stats->attr->attstattarget;
-	Oid valueType;
+	Oid valuetypid;
 	bool typbyval;
 
 	if (valuestats)
@@ -596,8 +615,8 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		scalar_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
 		scalar_tupnoLink = (int *) palloc(samplerows * sizeof(int));
 		scalar_track = (ScalarMCVItem *) palloc(num_mcv * sizeof(ScalarMCVItem));
-		valueType = base_oid_from_temporal(stats->attrtypid);
-		typbyval = type_byval_fast(valueType);
+		valuetypid = base_oid_from_temporal(stats->attrtypid);
+		typbyval = type_byval_fast(valuetypid);
 	}
 
 	timestamp_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
@@ -605,15 +624,16 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	timestamp_track = (ScalarMCVItem *) palloc(num_mcv * sizeof(ScalarMCVItem));
 
 	/* Loop over the sample values. */
-	for (temporal_no = 0; temporal_no < samplerows; temporal_no++)
+	for (int i = 0; i < samplerows; i++)
 	{
 		Datum value;
 		bool isnull;
 		TemporalInst *inst;
 
+		/* missing comment */
 		vacuum_delay_point();
 
-		value = fetchfunc(stats, temporal_no, &isnull);
+		value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 		{
 			/* TemporalInst is null, just count that */
@@ -629,26 +649,27 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		if (valuestats)
 		{
 			if (typbyval)
-				scalar_values[non_null_cnt].value = datum_copy(temporalinst_value(inst), valueType);
+				scalar_values[nonnull_cnt].value = datum_copy(temporalinst_value(inst), valuetypid);
 			else
-				scalar_values[non_null_cnt].value = PointerGetDatum(temporalinst_value(inst));
-			scalar_values[non_null_cnt].tupno = temporal_no;
-			scalar_tupnoLink[non_null_cnt] = temporal_no;
+				scalar_values[nonnull_cnt].value = PointerGetDatum(temporalinst_value(inst));
+			scalar_values[nonnull_cnt].tupno = i;
+			scalar_tupnoLink[nonnull_cnt] = i;
 		}
-		timestamp_values[non_null_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
-		timestamp_values[non_null_cnt].tupno = temporal_no;
-		timestamp_tupnoLink[non_null_cnt] = temporal_no;
+		timestamp_values[nonnull_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
+		timestamp_values[nonnull_cnt].tupno = i;
+		timestamp_tupnoLink[nonnull_cnt] = i;
 
-		non_null_cnt++;
+		nonnull_cnt++;
 	}
 
 	/* We can only compute real stats if we found some non-null values. */
-	if (non_null_cnt > 0)
+	if (nonnull_cnt > 0)
 	{
 		stats->stats_valid = true;
+
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4)((double) null_cnt / (double) samplerows);
-		stats->stawidth = (int32) (total_width / (double) non_null_cnt);
+		stats->stawidth = (int32) (total_width / (double) nonnull_cnt);
 
 		/* Estimate that non-null values are unique */
 		stats->stadistinct = -1.0f * (1.0f - stats->stanullfrac);
@@ -657,7 +678,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		{
 			/* Compute the statistics for the value part */
 			scalar_compute_stats(stats, scalar_values, scalar_tupnoLink,
-								scalar_track, non_null_cnt, null_cnt, valueType,
+								scalar_track, nonnull_cnt, null_cnt, valuetypid,
 								slot_idx, total_width, totalrows, samplerows);
 		}
 
@@ -665,7 +686,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Compute the statistics for the time part */
 		scalar_compute_stats(stats, timestamp_values, timestamp_tupnoLink,
-							 timestamp_track, non_null_cnt, null_cnt, TIMESTAMPTZOID,
+							 timestamp_track, nonnull_cnt, null_cnt, TIMESTAMPTZOID,
 							 slot_idx, total_width, totalrows, samplerows);
 	}
 	else if (null_cnt > 0)
@@ -678,9 +699,237 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	}
 }
 
+/* 
+ * Compute statistics for TemporalI columns.
+ * The function is called twice for the values and for the time elements.
+ * Function derived from compute_array_stats of file array_typanalyze.c 
+ */
+static void
+tempi_elems_compute_stats(VacAttrStats *stats, HTAB *elements_tab, 
+	HTAB *count_tab, int64 element_no, int analyzed_rows, int num_mcelem, 
+	int bucket_width, int slot_idx)
+{
+	int			nonnull_cnt = analyzed_rows;
+	int			count_items_count;
+	TrackItem  *item;
+	TrackItem **sort_table;
+	int			track_len;
+	int64		cutoff_freq;
+	int64		minfreq,
+				maxfreq;
+	int		 	i;
+	HASH_SEQ_STATUS scan_status;
+	
+	/* 
+	* We assume the standard stats code already took care of setting
+	* stats_valid, stanullfrac, stawidth, stadistinct.  We'd have to
+	* re-compute those values if we wanted to not store the standard
+	* stats.
+	*/
+
+	/*
+	* Construct an array of the interesting hashtable items, that is,
+	* those meeting the cutoff frequency (s - epsilon)*N.  Also identify
+	* the minimum and maximum frequencies among these items.
+	*
+	* Since epsilon = s/10 and bucket_width = 1/epsilon, the cutoff
+	* frequency is 9*N / bucket_width.
+	*/
+	cutoff_freq = 9 * element_no / bucket_width;
+
+	i = (int) hash_get_num_entries(elements_tab); /* surely enough space */
+	sort_table = (TrackItem **) palloc(sizeof(TrackItem *) * i);
+
+	hash_seq_init(&scan_status, elements_tab);
+	track_len = 0;
+	minfreq = element_no;
+	maxfreq = 0;
+	while ((item = (TrackItem *) hash_seq_search(&scan_status)) != NULL)
+	{
+		if (item->frequency > cutoff_freq)
+		{
+			sort_table[track_len++] = item;
+			minfreq = Min(minfreq, item->frequency);
+			maxfreq = Max(maxfreq, item->frequency);
+		}
+	}
+
+	/*
+	* If we obtained more elements than we really want, get rid of those
+	* with least frequencies.  The easiest way is to qsort the array into
+	* descending frequency order and truncate the array.
+	*/
+	if (num_mcelem < track_len)
+	{
+		qsort(sort_table, track_len, sizeof(TrackItem *),
+			trackitem_compare_frequencies_desc);
+		/* reset minfreq to the smallest frequency we're keeping */
+		minfreq = sort_table[num_mcelem - 1]->frequency;
+	}
+	else
+		num_mcelem = track_len;
+
+	/* Generate MCELEM slot entry */
+	if (num_mcelem > 0)
+	{
+		MemoryContext old_context;
+		Datum	   *mcelem_values;
+		float4	   *mcelem_freqs;
+
+		/*
+		* We want to store statistics sorted on the element value using
+		* the element type's default comparison function.  This permits
+		* fast binary searches in selectivity estimation functions.
+		*/
+		qsort(sort_table, num_mcelem, sizeof(TrackItem *),
+			trackitem_compare_element);
+
+		/* Must copy the target values into anl_context */
+		old_context = MemoryContextSwitchTo(stats->anl_context);
+
+		/*
+		* We sorted statistics on the element value, but we want to be
+		* able to find the minimal and maximal frequencies without going
+		* through all the values.  We don't want the frequency of null
+		* elements since there are non null elements. Store these two
+		* values at the end of mcelem_freqs.
+		*/
+		mcelem_values = (Datum *) palloc(num_mcelem * sizeof(Datum));
+		mcelem_freqs = (float4 *) palloc((num_mcelem + 2) * sizeof(float4));
+
+		/*
+		* See comments above about use of nonnull_cnt as the divisor for
+		* the final frequency estimates.
+		*/
+		for (i = 0; i < num_mcelem; i++)
+		{
+			TrackItem  *item = sort_table[i];
+
+			mcelem_values[i] = item->key;
+			mcelem_freqs[i] = (float4) item->frequency /
+							(float4) nonnull_cnt;
+		}
+		mcelem_freqs[i++] = (float4) minfreq / (float4) nonnull_cnt;
+		mcelem_freqs[i++] = (float4) maxfreq / (float4) nonnull_cnt;
+
+		MemoryContextSwitchTo(old_context);
+
+		stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
+		stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
+		stats->stanumbers[slot_idx] = mcelem_freqs;
+		/* See above comment about extra stanumber entries */
+		stats->numnumbers[slot_idx] = num_mcelem + 2;
+		stats->stavalues[slot_idx] = mcelem_values;
+		stats->numvalues[slot_idx] = num_mcelem;
+		/* We are storing values of element type */
+		stats->statypid[slot_idx] = temporal_extra_data->value_type_id;
+		stats->statyplen[slot_idx] = temporal_extra_data->value_typlen;
+		stats->statypbyval[slot_idx] = temporal_extra_data->value_typbyval;
+		stats->statypalign[slot_idx] = temporal_extra_data->value_typalign;
+		slot_idx++;
+	}
+
+	/* Generate DECHIST slot entry */
+	count_items_count = (int) hash_get_num_entries(count_tab);
+	if (count_items_count > 0)
+	{
+		int			num_hist = stats->attr->attstattarget;
+		DECountItem **sorted_count_items;
+		DECountItem *count_item;
+		int			j;
+		int			delta;
+		int64		frac;
+		float4	   *hist;
+
+		/* num_hist must be at least 2 for the loop below to work */
+		num_hist = Max(num_hist, 2);
+
+		/*
+		* Create an array of DECountItem pointers, and sort them into
+		* increasing count order.
+		*/
+		sorted_count_items = (DECountItem **)
+				palloc(sizeof(DECountItem *) * count_items_count);
+		hash_seq_init(&scan_status, count_tab);
+		j = 0;
+		while ((count_item = (DECountItem *) hash_seq_search(&scan_status)) != NULL)
+		{
+			sorted_count_items[j++] = count_item;
+		}
+		qsort(sorted_count_items, count_items_count,
+			sizeof(DECountItem *), countitem_compare_count);
+
+		/*
+		* Prepare to fill stanumbers with the histogram, followed by the
+		* average count.  This array must be stored in anl_context.
+		*/
+		hist = (float4 *) MemoryContextAlloc(stats->anl_context,
+								sizeof(float4) * (num_hist + 1));
+		hist[num_hist] = (float4) element_no / (float4) nonnull_cnt;
+
+		/*----------
+		* Construct the histogram of distinct-element counts (DECs).
+		*
+		* The object of this loop is to copy the min and max DECs to
+		* hist[0] and hist[num_hist - 1], along with evenly-spaced DECs
+		* in between (where "evenly-spaced" is with reference to the
+		* whole input population of arrays).  If we had a complete sorted
+		* array of DECs, one per analyzed row, the i'th hist value would
+		* come from DECs[i * (analyzed_rows - 1) / (num_hist - 1)]
+		* (compare the histogram-making loop in compute_scalar_stats()).
+		* But instead of that we have the sorted_count_items[] array,
+		* which holds unique DEC values with their frequencies (that is,
+		* a run-length-compressed version of the full array).  So we
+		* control advancing through sorted_count_items[] with the
+		* variable "frac", which is defined as (x - y) * (num_hist - 1),
+		* where x is the index in the notional DECs array corresponding
+		* to the start of the next sorted_count_items[] element's run,
+		* and y is the index in DECs from which we should take the next
+		* histogram value.  We have to advance whenever x <= y, that is
+		* frac <= 0.  The x component is the sum of the frequencies seen
+		* so far (up through the current sorted_count_items[] element),
+		* and of course y * (num_hist - 1) = i * (analyzed_rows - 1),
+		* per the subscript calculation above.  (The subscript calculation
+		* implies dropping any fractional part of y; in this formulation
+		* that's handled by not advancing until frac reaches 1.)
+		*
+		* Even though frac has a bounded range, it could overflow int32
+		* when working with very large statistics targets, so we do that
+		* math in int64.
+		*----------
+		*/
+		delta = analyzed_rows - 1;
+		j = 0;				/* current index in sorted_count_items */
+		/* Initialize frac for sorted_count_items[0]; y is initially 0 */
+		frac = (int64) sorted_count_items[0]->frequency * (num_hist - 1);
+		for (i = 0; i < num_hist; i++)
+		{
+			while (frac <= 0)
+			{
+				/* Advance, and update x component of frac */
+				j++;
+				frac += (int64) sorted_count_items[j]->frequency * (num_hist - 1);
+			}
+			hist[i] = sorted_count_items[j]->count;
+			frac -= delta;	/* update y for upcoming i increment */
+		}
+		Assert(j == count_items_count - 1);
+
+		stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
+		stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
+		stats->stanumbers[slot_idx] = hist;
+		stats->numnumbers[slot_idx] = num_hist + 1;
+		slot_idx++;
+	}
+}
+
+/* 
+ * Compute statistics for TemporalI columns.
+ * Function derived from compute_array_stats of file array_typanalyze.c 
+ */
 static void
 tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					   int samplerows, double totalrows, bool valuestats)
+					int samplerows, double totalrows, bool valuestats)
 {
 	int		num_mcelem;
 	int		null_cnt = 0;
@@ -690,14 +939,12 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* This is D from the LC algorithm. */
 	HTAB	   *elements_tab_value, *elements_tab_time;
 	HASHCTL		elem_hash_ctl_value, elem_hash_ctl_time;
-	HASH_SEQ_STATUS scan_status_value, scan_status_time;
 
 	/* This is the current bucket number from the LC algorithm */
 	int			b_current_value, b_current_time;
 
 	/* This is 'w' from the LC algorithm */
 	int			bucket_width;
-	int			temporal_no;
 	int64		element_no_value, element_no_time;
 	TrackItem  *item_value, *item_time;
 	int			slot_idx;
@@ -745,7 +992,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		count_hash_ctl_value.keysize = sizeof(int);
 		count_hash_ctl_value.entrysize = sizeof(DECountItem);
 		count_hash_ctl_value.hcxt = CurrentMemoryContext;
-		count_tab_value = hash_create("Array distinct value element count table",
+		count_tab_value = hash_create("Distinct value element count table",
 									64,
 									&count_hash_ctl_value,
 									HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
@@ -767,7 +1014,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	count_hash_ctl_time.keysize = sizeof(int);
 	count_hash_ctl_time.entrysize = sizeof(DECountItem);
 	count_hash_ctl_time.hcxt = CurrentMemoryContext;
-	count_tab_time = hash_create("Array distinct time element count table",
+	count_tab_time = hash_create("Distinct time element count table",
 									 64,
 									 &count_hash_ctl_time,
 									 HASH_ELEM | HASH_BLOBS | HASH_CONTEXT);
@@ -778,8 +1025,8 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	element_no_value = 0;
 	element_no_time = 0;
 
-	/* Loop over the arrays. */
-	for (temporal_no = 0; temporal_no < samplerows; temporal_no++)
+	/* Loop over the TemporalI values. */
+	for (int i = 0; i < samplerows; i++)
 	{
 		Datum		value;
 		bool		isnull;
@@ -792,21 +1039,29 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		vacuum_delay_point();
 
-		value = fetchfunc(stats, temporal_no, &isnull);
+		value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 		{
-			/* ti is null, just count that */
+			/* TemporalI value is null, just count that */
 			null_cnt++;
 			continue;
 		}
+
+		/* Skip too-large values. */
+		if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
+			continue;
+		else
+			analyzed_rows++;
+
+		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/*
 		 * Now detoast the TemporalI value if needed, and deconstruct into datum.
 		 */
 		ti = DatumGetTemporalI(value);
 		/*
-		 * We loop through the elements in the ti and add them to our
-		 * tracking hashtable.
+		 * We loop through the elements in the TemporalI and add them to our
+		 * tracking hashtables.
 		 */
 
 		for (j = 0; j < ti->count; j++)
@@ -831,11 +1086,11 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					* The operators we assist ignore duplicate array elements, so
 					* count a given distinct element only once per array.
 					*/
-					if (item_value->last_container == temporal_no)
+					if (item_value->last_container == i)
 						continue;
 
 					item_value->frequency++;
-					item_value->last_container = temporal_no;
+					item_value->last_container = i;
 				}
 				else
 				{
@@ -849,10 +1104,9 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					* array values around, it could be much more.)
 					*/
 					item_value->key = elem_value;
-
 					item_value->frequency = 1;
 					item_value->delta = b_current_value - 1;
-					item_value->last_container = temporal_no;
+					item_value->last_container = i;
 				}
 
 				/* element_no is the number of elements processed (ie N) */
@@ -862,8 +1116,8 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/* Lookup current time element in hashtable, adding it if new */
 			elem_time = TimestampTzGetDatum(inst->t);
 			item_time = (TrackItem *) hash_search(elements_tab_time,
-													  (const void *) &elem_time,
-													  HASH_ENTER, &found_time);
+												  (const void *) &elem_time,
+												  HASH_ENTER, &found_time);
 
 			if (found_time)
 			{
@@ -873,11 +1127,11 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				 * The operators we assist ignore duplicate array elements, so
 				 * count a given distinct element only once per array.
 				 */
-				if (item_time->last_container == temporal_no)
+				if (item_time->last_container == i)
 					continue;
 
 				item_time->frequency++;
-				item_time->last_container = temporal_no;
+				item_time->last_container = i;
 			}
 			else
 			{
@@ -891,17 +1145,14 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				 * array values around, it could be much more.)
 				 */
 				item_time->key = elem_time;
-
 				item_time->frequency = 1;
 				item_time->delta = b_current_time - 1;
-				item_time->last_container = temporal_no;
+				item_time->last_container = i;
 			}
 
 			/* element_no is the number of elements processed (ie N) */
 			element_no_time++;
 		}
-
-		total_width += VARSIZE_ANY(DatumGetPointer(value));
 
 		/* Update frequency of the particular array distinct element count. */
 		if (valuestats)
@@ -918,21 +1169,19 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		distinct_count_time = (int) (element_no_time - prev_element_no_time);
 		count_item_time = (DECountItem *) hash_search(count_tab_time, &distinct_count_time,
-														  HASH_ENTER,
-														  &count_item_found_time);
+													  HASH_ENTER,
+													  &count_item_found_time);
 		if (count_item_found_time)
 			count_item_time->frequency++;
 		else
 			count_item_time->frequency = 1;
-
-		analyzed_rows++;
 	}
 
 	/* We can only compute real stats if we found some non-null values. */
 	if (analyzed_rows > 0)
 	{
-
 		stats->stats_valid = true;
+
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (double) null_cnt / (double) samplerows;
 		stats->stawidth = total_width / (double) analyzed_rows;
@@ -941,426 +1190,19 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
 
 		slot_idx = 0;
-		int			nonnull_cnt = analyzed_rows;
-		int			count_items_count;
-		TrackItem **sort_table;
-		int			track_len;
-		int64		cutoff_freq;
-		int64		minfreq,
-					maxfreq;
-		int		 i;
-
 		if (valuestats)
 		{
 			/* Value part statistics */
-
-			/*
-			* We assume the standard stats code already took care of setting
-			* stats_valid, stanullfrac, stawidth, stadistinct.  We'd have to
-			* re-compute those values if we wanted to not store the standard
-			* stats.
-			*/
-
-			/*
-			* Construct an array of the interesting hashtable items, that is,
-			* those meeting the cutoff frequency (s - epsilon)*N.  Also identify
-			* the minimum and maximum frequencies among these items.
-			*
-			* Since epsilon = s/10 and bucket_width = 1/epsilon, the cutoff
-			* frequency is 9*N / bucket_width.
-			*/
-			cutoff_freq = 9 * element_no_value / bucket_width;
-
-			i = (int)hash_get_num_entries(elements_tab_value); /* surely enough space */
-			sort_table = (TrackItem **) palloc(sizeof(TrackItem *) * i);
-
-			hash_seq_init(&scan_status_value, elements_tab_value);
-			track_len = 0;
-			minfreq = element_no_value;
-			maxfreq = 0;
-			while ((item_value = (TrackItem *) hash_seq_search(&scan_status_value)) != NULL)
-			{
-				if (item_value->frequency > cutoff_freq)
-				{
-					sort_table[track_len++] = item_value;
-					minfreq = Min(minfreq, item_value->frequency);
-					maxfreq = Max(maxfreq, item_value->frequency);
-				}
-			}
-
-			/*
-			* If we obtained more elements than we really want, get rid of those
-			* with least frequencies.  The easiest way is to qsort the array into
-			* descending frequency order and truncate the array.
-			*/
-			if (num_mcelem < track_len)
-			{
-				qsort(sort_table, track_len, sizeof(TrackItem *),
-					trackitem_compare_frequencies_desc);
-				/* reset minfreq to the smallest frequency we're keeping */
-				minfreq = sort_table[num_mcelem - 1]->frequency;
-			}
-			else
-				num_mcelem = track_len;
-
-			/* Generate MCELEM slot entry */
-			if (num_mcelem > 0)
-			{
-				MemoryContext old_context;
-				Datum	   *mcelem_values;
-				float4	   *mcelem_freqs;
-
-				/*
-				* We want to store statistics sorted on the element value using
-				* the element type's default comparison function.  This permits
-				* fast binary searches in selectivity estimation functions.
-				*/
-				qsort(sort_table, num_mcelem, sizeof(TrackItem *),
-					trackitem_compare_element);
-
-				/* Must copy the target values into anl_context */
-				old_context = MemoryContextSwitchTo(stats->anl_context);
-
-				/*
-				* We sorted statistics on the element value, but we want to be
-				* able to find the minimal and maximal frequencies without going
-				* through all the values.  We don't want the frequency of null
-				* elements since there are non null elements. Store these two
-				* values at the end of mcelem_freqs.
-				*/
-				mcelem_values = (Datum *) palloc(num_mcelem * sizeof(Datum));
-				mcelem_freqs = (float4 *) palloc((num_mcelem + 2) * sizeof(float4));
-
-				/*
-				* See comments above about use of nonnull_cnt as the divisor for
-				* the final frequency estimates.
-				*/
-				for (i = 0; i < num_mcelem; i++)
-				{
-					TrackItem  *item = sort_table[i];
-
-					mcelem_values[i] = item->key;
-					mcelem_freqs[i] = (float4) item->frequency /
-									(float4) nonnull_cnt;
-				}
-				mcelem_freqs[i++] = (float4) minfreq / (float4) nonnull_cnt;
-				mcelem_freqs[i++] = (float4) maxfreq / (float4) nonnull_cnt;
-
-				MemoryContextSwitchTo(old_context);
-
-				stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-				stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
-				stats->stanumbers[slot_idx] = mcelem_freqs;
-				/* See above comment about extra stanumber entries */
-				stats->numnumbers[slot_idx] = num_mcelem + 3;
-				stats->stavalues[slot_idx] = mcelem_values;
-				stats->numvalues[slot_idx] = num_mcelem;
-				/* We are storing values of element type */
-				stats->statypid[slot_idx] = temporal_extra_data->value_type_id;
-				stats->statyplen[slot_idx] = temporal_extra_data->value_typlen;
-				stats->statypbyval[slot_idx] = temporal_extra_data->value_typbyval;
-				stats->statypalign[slot_idx] = temporal_extra_data->value_typalign;
-				slot_idx++;
-			}
-
-			/* Generate DECHIST slot entry */
-			count_items_count = (int)hash_get_num_entries(count_tab_value);
-			if (count_items_count > 0)
-			{
-				int			num_hist = stats->attr->attstattarget;
-				DECountItem **sorted_count_items;
-				int			j;
-				int			delta;
-				int64		frac;
-				float4	   *hist;
-
-				/* num_hist must be at least 2 for the loop below to work */
-				num_hist = Max(num_hist, 2);
-
-				/*
-				* Create an array of DECountItem pointers, and sort them into
-				* increasing count order.
-				*/
-				sorted_count_items = (DECountItem **)
-						palloc(sizeof(DECountItem *) * count_items_count);
-				hash_seq_init(&scan_status_value, count_tab_value);
-				j = 0;
-				while ((count_item_value = (DECountItem *) hash_seq_search(&scan_status_value)) != NULL)
-				{
-					sorted_count_items[j++] = count_item_value;
-				}
-				qsort(sorted_count_items, count_items_count,
-					sizeof(DECountItem *), countitem_compare_count);
-
-				/*
-				* Prepare to fill stanumbers with the histogram, followed by the
-				* average count.  This array must be stored in anl_context.
-				*/
-				hist = (float4 *)
-						MemoryContextAlloc(stats->anl_context,
-										sizeof(float4) * (num_hist + 1));
-				hist[num_hist] = (float4) element_no_value / (float4) nonnull_cnt;
-
-				/*----------
-				* Construct the histogram of distinct-element counts (DECs).
-				*
-				* The object of this loop is to copy the min and max DECs to
-				* hist[0] and hist[num_hist - 1], along with evenly-spaced DECs
-				* in between (where "evenly-spaced" is with reference to the
-				* whole input population of arrays).  If we had a complete sorted
-				* array of DECs, one per analyzed row, the i'th hist value would
-				* come from DECs[i * (analyzed_rows - 1) / (num_hist - 1)]
-				* (compare the histogram-making loop in compute_scalar_stats()).
-				* But instead of that we have the sorted_count_items[] array,
-				* which holds unique DEC values with their frequencies (that is,
-				* a run-length-compressed version of the full array).  So we
-				* control advancing through sorted_count_items[] with the
-				* variable "frac", which is defined as (x - y) * (num_hist - 1),
-				* where x is the index in the notional DECs array corresponding
-				* to the start of the next sorted_count_items[] element's run,
-				* and y is the index in DECs from which we should take the next
-				* histogram value.  We have to advance whenever x <= y, that is
-				* frac <= 0.  The x component is the sum of the frequencies seen
-				* so far (up through the current sorted_count_items[] element),
-				* and of course y * (num_hist - 1) = i * (analyzed_rows - 1),
-				* per the subscript calculation above.  (The subscript calculation
-				* implies dropping any fractional part of y; in this formulation
-				* that's handled by not advancing until frac reaches 1.)
-				*
-				* Even though frac has a bounded range, it could overflow int32
-				* when working with very large statistics targets, so we do that
-				* math in int64.
-				*----------
-				*/
-				delta = analyzed_rows - 1;
-				j = 0;				/* current index in sorted_count_items */
-				/* Initialize frac for sorted_count_items[0]; y is initially 0 */
-				frac = (int64) sorted_count_items[0]->frequency * (num_hist - 1);
-				for (i = 0; i < num_hist; i++)
-				{
-					while (frac <= 0)
-					{
-						/* Advance, and update x component of frac */
-						j++;
-						frac += (int64) sorted_count_items[j]->frequency * (num_hist - 1);
-					}
-					hist[i] = sorted_count_items[j]->count;
-					frac -= delta;	/* update y for upcoming i increment */
-				}
-				Assert(j == count_items_count - 1);
-
-				stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-				stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
-				stats->stanumbers[slot_idx] = hist;
-				stats->numnumbers[slot_idx] = num_hist + 1;
-				slot_idx++;
-			}
+			tempi_elems_compute_stats(stats, elements_tab_value, 
+				count_tab_value, element_no_value, analyzed_rows, 
+				num_mcelem, bucket_width, slot_idx);
 		}
-
+		slot_idx = 2;
 		/*  Temporal part statistics */
+		tempi_elems_compute_stats(stats, elements_tab_time, 
+			count_tab_time, element_no_time, analyzed_rows, 
+			num_mcelem, bucket_width, slot_idx);
 
-		/*
-		 * Construct an array of the interesting hashtable items, that is,
-		 * those meeting the cutoff frequency (s - epsilon)*N.  Also identify
-		 * the minimum and maximum frequencies among these items.
-		 *
-		 * Since epsilon = s/10 and bucket_width = 1/epsilon, the cutoff
-		 * frequency is 9*N / bucket_width.
-		 */
-		cutoff_freq = 9 * element_no_time / bucket_width;
-
-		i = (int) hash_get_num_entries(elements_tab_time); /* surely enough space */
-		sort_table = (TrackItem **) palloc(sizeof(TrackItem *) * i);
-
-		hash_seq_init(&scan_status_time, elements_tab_time);
-		track_len = 0;
-		minfreq = element_no_time;
-		maxfreq = 0;
-		while ((item_time = (TrackItem *) hash_seq_search(&scan_status_time)) != NULL)
-		{
-			if (item_time->frequency > cutoff_freq)
-			{
-				sort_table[track_len++] = item_time;
-				minfreq = Min(minfreq, item_time->frequency);
-				maxfreq = Max(maxfreq, item_time->frequency);
-			}
-		}
-		Assert(track_len <= i);
-
-		/* emit some statistics for debug purposes */
-		elog(DEBUG3, "compute_array_stats: target # mces = %d, "
-					 "bucket width = %d, "
-					 "# elements = " INT64_FORMAT ", hashtable size = %d, "
-												  "usable entries = %d",
-			 num_mcelem, bucket_width, element_no_time, i, track_len);
-
-		/*
-		 * If we obtained more elements than we really want, get rid of those
-		 * with least frequencies.  The easiest way is to qsort the array into
-		 * descending frequency order and truncate the array.
-		 */
-		if (num_mcelem < track_len)
-		{
-			qsort(sort_table, track_len, sizeof(TrackItem *),
-				  trackitem_compare_frequencies_desc);
-			/* reset minfreq to the smallest frequency we're keeping */
-			minfreq = sort_table[num_mcelem - 1]->frequency;
-		}
-		else
-			num_mcelem = track_len;
-
-		/* Generate MCELEM slot entry */
-		if (num_mcelem > 0)
-		{
-			MemoryContext old_context;
-			Datum	   *mcelem_values;
-			float4	   *mcelem_freqs;
-
-			/*
-			 * We want to store statistics sorted on the element value using
-			 * the element type's default comparison function.  This permits
-			 * fast binary searches in selectivity estimation functions.
-			 */
-			qsort(sort_table, num_mcelem, sizeof(TrackItem *),
-				  trackitem_compare_element);
-
-			/* Must copy the target values into anl_context */
-			old_context = MemoryContextSwitchTo(stats->anl_context);
-
-			/*
-			 * We sorted statistics on the element value, but we want to be
-			 * able to find the minimal and maximal frequencies without going
-			 * through all the values.  We don't want the frequency of null
-			 * elements since there are non null elements. Store these two
-			 * values at the end of mcelem_freqs.
-			 */
-			mcelem_values = (Datum *) palloc(num_mcelem * sizeof(Datum));
-			mcelem_freqs = (float4 *) palloc((num_mcelem + 2) * sizeof(float4));
-
-			/*
-			 * See comments above about use of nonnull_cnt as the divisor for
-			 * the final frequency estimates.
-			 */
-			for (i = 0; i < num_mcelem; i++)
-			{
-				TrackItem  *item = sort_table[i];
-
-				mcelem_values[i] = item->key;
-				mcelem_freqs[i] = (float4) item->frequency /
-								  (float4) nonnull_cnt;
-			}
-			mcelem_freqs[i++] = (float4) minfreq / (float4) nonnull_cnt;
-			mcelem_freqs[i++] = (float4) maxfreq / (float4) nonnull_cnt;
-
-			MemoryContextSwitchTo(old_context);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr;
-			stats->stanumbers[slot_idx] = mcelem_freqs;
-			/* See above comment about extra stanumber entries */
-			stats->numnumbers[slot_idx] = num_mcelem + 3;
-			stats->stavalues[slot_idx] = mcelem_values;
-			stats->numvalues[slot_idx] = num_mcelem;
-			/* We are storing values of element type */
-			stats->statypid[slot_idx] = temporal_extra_data->time_type_id;
-			stats->statyplen[slot_idx] = temporal_extra_data->time_typlen;
-			stats->statypbyval[slot_idx] = temporal_extra_data->time_typbyval;
-			stats->statypalign[slot_idx] = temporal_extra_data->time_typalign;
-			stats->stats_valid = true;
-			slot_idx++;
-		}
-
-		/* Generate DECHIST slot entry */
-		count_items_count = (int)hash_get_num_entries(count_tab_time);
-		if (count_items_count > 0)
-		{
-			int			num_hist = stats->attr->attstattarget;
-			DECountItem **sorted_count_items;
-			int			j;
-			int			delta;
-			int64		frac;
-			float4	   *hist;
-
-			/* num_hist must be at least 2 for the loop below to work */
-			num_hist = Max(num_hist, 2);
-
-			/*
-			 * Create an array of DECountItem pointers, and sort them into
-			 * increasing count order.
-			 */
-			sorted_count_items = (DECountItem **)
-					palloc(sizeof(DECountItem *) * count_items_count);
-			hash_seq_init(&scan_status_time, count_tab_time);
-			j = 0;
-			while ((count_item_time = (DECountItem *) hash_seq_search(&scan_status_time)) != NULL)
-			{
-				sorted_count_items[j++] = count_item_time;
-			}
-			qsort(sorted_count_items, count_items_count,
-				  sizeof(DECountItem *), countitem_compare_count);
-
-			/*
-			 * Prepare to fill stanumbers with the histogram, followed by the
-			 * average count.  This array must be stored in anl_context.
-			 */
-			hist = (float4 *)
-					MemoryContextAlloc(stats->anl_context,
-									   sizeof(float4) * (num_hist + 1));
-			hist[num_hist] = (float4) element_no_time / (float4) nonnull_cnt;
-
-			/*----------
-			 * Construct the histogram of distinct-element counts (DECs).
-			 *
-			 * The object of this loop is to copy the min and max DECs to
-			 * hist[0] and hist[num_hist - 1], along with evenly-spaced DECs
-			 * in between (where "evenly-spaced" is with reference to the
-			 * whole input population of arrays).  If we had a complete sorted
-			 * array of DECs, one per analyzed row, the i'th hist value would
-			 * come from DECs[i * (analyzed_rows - 1) / (num_hist - 1)]
-			 * (compare the histogram-making loop in compute_scalar_stats()).
-			 * But instead of that we have the sorted_count_items[] array,
-			 * which holds unique DEC values with their frequencies (that is,
-			 * a run-length-compressed version of the full array).  So we
-			 * control advancing through sorted_count_items[] with the
-			 * variable "frac", which is defined as (x - y) * (num_hist - 1),
-			 * where x is the index in the notional DECs array corresponding
-			 * to the start of the next sorted_count_items[] element's run,
-			 * and y is the index in DECs from which we should take the next
-			 * histogram value.  We have to advance whenever x <= y, that is
-			 * frac <= 0.  The x component is the sum of the frequencies seen
-			 * so far (up through the current sorted_count_items[] element),
-			 * and of course y * (num_hist - 1) = i * (analyzed_rows - 1),
-			 * per the subscript calculation above.  (The subscript calculation
-			 * implies dropping any fractional part of y; in this formulation
-			 * that's handled by not advancing until frac reaches 1.)
-			 *
-			 * Even though frac has a bounded range, it could overflow int32
-			 * when working with very large statistics targets, so we do that
-			 * math in int64.
-			 *----------
-			 */
-			delta = analyzed_rows - 1;
-			j = 0;				/* current index in sorted_count_items */
-			/* Initialize frac for sorted_count_items[0]; y is initially 0 */
-			frac = (int64) sorted_count_items[0]->frequency * (num_hist - 1);
-			for (i = 0; i < num_hist; i++)
-			{
-				while (frac <= 0)
-				{
-					/* Advance, and update x component of frac */
-					j++;
-					frac += (int64) sorted_count_items[j]->frequency * (num_hist - 1);
-				}
-				hist[i] = sorted_count_items[j]->count;
-				frac -= delta;	/* update y for upcoming i increment */
-			}
-			Assert(j == count_items_count - 1);
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr;
-			stats->stanumbers[slot_idx] = hist;
-			stats->numnumbers[slot_idx] = num_hist + 1;
-		}
 	}
 
 	/*
@@ -1369,34 +1211,38 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 */
 }
 
+/* 
+ * Compute statistics for TemporalSeq and TemporalS columns.
+ * Function derived from compute_range_stats of file rangetypes_typanalyze.c 
+ */
 static void
 temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					   int samplerows, double totalrows, bool valuestats)
+					int samplerows, double totalrows, bool valuestats)
 {
-	int null_cnt = 0;
-	int non_null_cnt = 0;
-	int temporal_no;
-	int slot_idx;
-	int num_bins = stats->attr->attstattarget;
-	int num_hist;
-	float8 *value_lengths;
+	int null_cnt = 0,
+		analyzed_rows = 0,
+		slot_idx,
+		num_bins = stats->attr->attstattarget,
+		num_hist;
+	float8 *value_lengths, 
+		   *time_lengths;
 	RangeBound *value_lowers,
 			*value_uppers;
-	float8 *time_lengths;
 	PeriodBound *time_lowers,
 			*time_uppers;
 	double total_width = 0;
-	Oid valueRangeType;
+	Oid rangetypid;
 
-	TemporalAnalyzeExtraData *temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
+	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	if (valuestats)
 	{
+		/* This function is valid for temporal numbers */
+		numeric_base_type_oid(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
-			valueRangeType = type_oid(T_INTRANGE);
-		else
-			valueRangeType = type_oid(T_FLOATRANGE);
-
+			rangetypid = type_oid(T_INTRANGE);
+		else if (temporal_extra_data->value_type_id == FLOAT8OID)
+			rangetypid = type_oid(T_FLOATRANGE);
 		value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 		value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 		value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
@@ -1405,8 +1251,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
 	time_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
-	/* Loop over the arrays. */
-	for (temporal_no = 0; temporal_no < samplerows; temporal_no++)
+	/* Loop over the temporal values. */
+	for (int i = 0; i < samplerows; i++)
 	{
 		Datum value;
 		bool isnull, isempty;
@@ -1414,73 +1260,75 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		TypeCacheEntry *typcache;
 		RangeBound range_lower,
 				range_upper;
-		Oid rangetypid = 0; /* make copiler quiet */
 		Period period;
-		PeriodBound temp_lower,
-				temp_upper;
+		PeriodBound period_lower,
+				period_upper;
 		float8 value_length = 0, time_length = 0;
+		Temporal *temp;
+	
 		vacuum_delay_point();
 
-		value = fetchfunc(stats, temporal_no, &isnull);
+		value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 		{
-			/* array is null, just count that */
+			/* Temporal is null, just count that */
 			null_cnt++;
 			continue;
 		}
 
+		/* Skip too-large values. */
+		if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
+			continue;
+
 		total_width += VARSIZE_ANY(DatumGetPointer(value));
+
+		/* Get Temporal value */
+		temp = DatumGetTemporal(value);
 
 		/* Remember bounds and length for further usage in histograms */
 		if (valuestats)
 		{
-			range = tnumber_value_range_internal(DatumGetTemporal(value));
-			if (DatumGetTemporal(value)->valuetypid == INT4OID)
-				rangetypid = type_oid(T_INTRANGE);
-			else if (DatumGetTemporal(value)->valuetypid == FLOAT8OID)
-				rangetypid = type_oid(T_FLOATRANGE);
+			range = tnumber_value_range_internal(temp);
 			typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 			range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
+			value_lowers[analyzed_rows] = range_lower;
+			value_uppers[analyzed_rows] = range_upper;
 
-			value_lowers[non_null_cnt] = range_lower;
-			value_uppers[non_null_cnt] = range_upper;
-
-			if (valueRangeType == type_oid(T_FLOATRANGE))
-				value_length = DatumGetFloat8(value_uppers[non_null_cnt].val) -
-							DatumGetFloat8(value_lowers[non_null_cnt].val);
-			else if (valueRangeType == type_oid(T_INTRANGE))
-				value_length = (float8) (DatumGetInt32(value_uppers[non_null_cnt].val) -
-										DatumGetInt32(value_lowers[non_null_cnt].val));
-			value_lengths[non_null_cnt] = value_length;
+			if (temporal_extra_data->value_type_id == INT4OID)
+				value_length = DatumGetFloat8(value_uppers[analyzed_rows].val) -
+							DatumGetFloat8(value_lowers[analyzed_rows].val);
+			else if (temporal_extra_data->value_type_id == FLOAT8OID)
+				value_length = (float8) (DatumGetInt32(value_uppers[analyzed_rows].val) -
+										DatumGetInt32(value_lowers[analyzed_rows].val));
+			value_lengths[analyzed_rows] = value_length;
 		}
-		temporal_timespan_internal(&period, DatumGetTemporal(value));
-		period_deserialize(&period, &temp_lower, &temp_upper);
-		time_lowers[non_null_cnt] = temp_lower;
-		time_uppers[non_null_cnt] = temp_upper;
+		temporal_timespan_internal(&period, temp);
+		period_deserialize(&period, &period_lower, &period_upper);
+		time_lowers[analyzed_rows] = period_lower;
+		time_uppers[analyzed_rows] = period_upper;
+		time_length = period_duration_secs(period_upper.val, period_lower.val);
+		time_lengths[analyzed_rows] = time_length;
 
-		time_length = period_duration_secs(temp_upper.val, temp_lower.val);
-		time_lengths[non_null_cnt] = time_length;
-
-		non_null_cnt++;
+		analyzed_rows++;
 	}
 
 	slot_idx = 0;
 
 	/* We can only compute real stats if we found some non-null values. */
-	if (non_null_cnt > 0)
+	if (analyzed_rows > 0)
 	{
 		int pos,
 			posfrac,
 			delta,
 			deltafrac,
 			i;
-
 		MemoryContext old_cxt;
 
 		stats->stats_valid = true;
+
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
-		stats->stawidth = (int) (total_width / non_null_cnt);
+		stats->stawidth = (int) (total_width / analyzed_rows);
 
 		/* Estimate that non-null values are unique */
 		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
@@ -1496,15 +1344,15 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/*
 			* Generate value histograms if there are at least two values.
 			*/
-			if (non_null_cnt >= 2)
+			if (analyzed_rows >= 2)
 			{
 				/* Generate a bounds histogram slot entry */
 
 				/* Sort bound values */
-				qsort(value_lowers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
-				qsort(value_uppers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+				qsort(value_lowers, analyzed_rows, sizeof(RangeBound), range_bound_qsort_cmp);
+				qsort(value_uppers, analyzed_rows, sizeof(RangeBound), range_bound_qsort_cmp);
 
-				num_hist = non_null_cnt;
+				num_hist = analyzed_rows;
 				if (num_hist > num_bins)
 					num_hist = num_bins + 1;
 
@@ -1521,8 +1369,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* at each step, tracking the integral and fractional parts of the
 				* sum separately.
 				*/
-				delta = (non_null_cnt - 1) / (num_hist - 1);
-				deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+				delta = (analyzed_rows - 1) / (num_hist - 1);
+				deltafrac = (analyzed_rows - 1) % (num_hist - 1);
 				pos = posfrac = 0;
 
 				for (i = 0; i < num_hist; i++)
@@ -1541,7 +1389,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					}
 				}
 
-				TypeCacheEntry *range_typeentry = lookup_type_cache(valueRangeType,
+				TypeCacheEntry *range_typeentry = lookup_type_cache(rangetypid,
 																	TYPECACHE_EQ_OPR |
 																	TYPECACHE_CMP_PROC_FINFO |
 																	TYPECACHE_HASH_PROC_FINFO);
@@ -1562,9 +1410,9 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* Ascending sort of range lengths for further filling of
 				* histogram
 				*/
-				qsort(value_lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+				qsort(value_lengths, analyzed_rows, sizeof(float8), float8_qsort_cmp);
 
-				num_hist = non_null_cnt;
+				num_hist = analyzed_rows;
 				if (num_hist > num_bins)
 					num_hist = num_bins + 1;
 
@@ -1579,8 +1427,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
 				* the integral and fractional parts of the sum separately.
 				*/
-				delta = (non_null_cnt - 1) / (num_hist - 1);
-				deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+				delta = (analyzed_rows - 1) / (num_hist - 1);
+				deltafrac = (analyzed_rows - 1) % (num_hist - 1);
 				pos = posfrac = 0;
 
 				for (i = 0; i < num_hist; i++)
@@ -1625,15 +1473,15 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/*
 		 * Generate temporal histograms if there are at least two values.
 		 */
-		if (non_null_cnt >= 2)
+		if (analyzed_rows >= 2)
 		{
 			/* Generate a bounds histogram slot entry */
 
 			/* Sort bound values */
-			qsort(time_lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-			qsort(time_uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+			qsort(time_lowers, analyzed_rows, sizeof(PeriodBound), period_bound_qsort_cmp);
+			qsort(time_uppers, analyzed_rows, sizeof(PeriodBound), period_bound_qsort_cmp);
 
-			num_hist = non_null_cnt;
+			num_hist = analyzed_rows;
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
@@ -1650,8 +1498,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * at each step, tracking the integral and fractional parts of the
 			 * sum separately.
 			 */
-			delta = (non_null_cnt - 1) / (num_hist - 1);
-			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+			delta = (analyzed_rows - 1) / (num_hist - 1);
+			deltafrac = (analyzed_rows - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
 			for (i = 0; i < num_hist; i++)
@@ -1685,9 +1533,9 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * Ascending sort of period lengths for further filling of
 			 * histogram
 			 */
-			qsort(time_lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+			qsort(time_lengths, analyzed_rows, sizeof(float8), float8_qsort_cmp);
 
-			num_hist = non_null_cnt;
+			num_hist = analyzed_rows;
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
@@ -1702,8 +1550,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
 			 * the integral and fractional parts of the sum separately.
 			 */
-			delta = (non_null_cnt - 1) / (num_hist - 1);
-			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+			delta = (analyzed_rows - 1) / (num_hist - 1);
+			deltafrac = (analyzed_rows - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
 			for (i = 0; i < num_hist; i++)
@@ -1819,9 +1667,9 @@ temporal_info(VacAttrStats *stats)
 	if (attr->attstattarget < 0)
 		attr->attstattarget = default_statistics_target;
 
-	Oid valueType = base_oid_from_temporal(stats->attrtypid);
+	Oid valuetypid = base_oid_from_temporal(stats->attrtypid);
 
-	get_sort_group_operators(valueType,
+	get_sort_group_operators(valuetypid,
 							 false, false, false,
 							 &ltopr, &eqopr, NULL,
 							 NULL);
@@ -1835,7 +1683,6 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 	if (attr->attstattarget < 0)
 		attr->attstattarget = default_statistics_target;
 
-	Oid element_typeid;
 	TypeCacheEntry *typentry,
 			*value_typentry,
 			*time_typentry;
@@ -1844,16 +1691,15 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 	/*
 	 * Check attribute data type is a varlena array (or a domain over one).
 	 */
-	element_typeid = stats->attrtypid;
-	if (!OidIsValid(element_typeid))
+	if (!OidIsValid(stats->attrtypid))
 		elog(ERROR, "temporal_analyze was invoked with invalid type %u",
-			 element_typeid);
+			 stats->attrtypid);
 
 	/*
 	 * Gather information about the element type. If we fail to find
 	 * something, return leaving the state from std_typanalyze() in place.
 	 */
-	typentry = lookup_type_cache(element_typeid,
+	typentry = lookup_type_cache(stats->attrtypid,
 								 TYPECACHE_EQ_OPR |
 								 TYPECACHE_CMP_PROC_FINFO |
 								 TYPECACHE_HASH_PROC_FINFO);
@@ -1869,10 +1715,10 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 	extra_data->cmp = &typentry->cmp_proc_finfo;
 	extra_data->hash = &typentry->hash_proc_finfo;
 
-	if (element_typeid == type_oid(T_TBOOL) || element_typeid == type_oid(T_TTEXT) ||
-		element_typeid == type_oid(T_TINT) || element_typeid == type_oid(T_TFLOAT))
+	if (stats->attrtypid == type_oid(T_TBOOL) || stats->attrtypid == type_oid(T_TTEXT) ||
+		stats->attrtypid == type_oid(T_TINT) || stats->attrtypid == type_oid(T_TFLOAT))
 	{
-		value_typentry = lookup_type_cache(base_oid_from_temporal(element_typeid),
+		value_typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
 										   TYPECACHE_EQ_OPR |
 										   TYPECACHE_CMP_PROC_FINFO |
 										   TYPECACHE_HASH_PROC_FINFO);
@@ -1883,20 +1729,12 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 		extra_data->value_typalign = value_typentry->typalign;
 		extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
 		extra_data->value_hash = &value_typentry->hash_proc_finfo;
-
 	}
 
-	if (durationType == TEMPORALI)
-		time_typentry = lookup_type_cache(TIMESTAMPTZOID,
-											  TYPECACHE_EQ_OPR |
-											  TYPECACHE_CMP_PROC_FINFO |
-											  TYPECACHE_HASH_PROC_FINFO);
-	else
-		time_typentry = lookup_type_cache(type_oid(T_PERIOD),
-											  TYPECACHE_EQ_OPR |
-											  TYPECACHE_CMP_PROC_FINFO |
-											  TYPECACHE_HASH_PROC_FINFO);
-
+	time_typentry = lookup_type_cache(TIMESTAMPTZOID,
+									  TYPECACHE_EQ_OPR |
+									  TYPECACHE_CMP_PROC_FINFO |
+									  TYPECACHE_HASH_PROC_FINFO);
 	extra_data->time_type_id = time_typentry->type_id;
 	extra_data->time_eq_opr = time_typentry->eq_opr;
 	extra_data->time_typbyval = time_typentry->typbyval;

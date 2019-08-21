@@ -47,8 +47,7 @@ CREATE TYPE stbox (
 --	receive = stbox_recv,
 --	send = stbox_send,
 	storage = plain,
-	alignment = double,
-	analyze = tpoint_analyze
+	alignment = double
 );
 
 /******************************************************************************

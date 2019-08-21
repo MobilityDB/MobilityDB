@@ -47,8 +47,7 @@ CREATE TYPE tbox (
 --	receive = tbox_recv,
 --	send = tbox_send,
 	storage = plain,
-	alignment = double,
-    analyze = temporal_analyze
+	alignment = double
 );
 
 /******************************************************************************

@@ -157,6 +157,10 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
+
 /*
  * Compare two boxes
  */
