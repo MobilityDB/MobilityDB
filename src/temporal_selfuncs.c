@@ -28,6 +28,11 @@
 
 /*****************************************************************************/
 
+/*
+ * Retrieve stored statistics for the temporal type to compute the selectivity value of the bounding box
+ * operators: overlaps (&&), contains (@>), contained (<@), and same (~=).
+ */
+
 static Selectivity
 temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, 
 	CachedOp cachedOp)
@@ -85,7 +90,7 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 	}
 
 	/*
-	 * Set constant information
+	 * Get information about the constant type
 	 */
 	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
 					 &temporal, &period);
@@ -104,6 +109,9 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 		constantData.period = period;
 	}
 
+    /*
+    * Estimate the temporal selectivity value based on the required operator for all temporal durations.
+    */
 	selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
 
 	if (selec < 0.0)
