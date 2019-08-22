@@ -153,7 +153,8 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
+			TBOX box;
+			memset(&box, 0, sizeof(TBOX));
 			temporal_bbox(&box, temporal);
 			result->val = (TimestampTz)box.tmax;
 		}
@@ -194,7 +195,8 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
+			TBOX box;
+			memset(&box, 0, sizeof(TBOX));
 			temporal_bbox(&box, temporal);
 			result->val = (TimestampTz)box.tmin;
 		}
@@ -1207,7 +1209,8 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 	if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 	{
 		Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporal_bbox(&box, temp);
 		/* The boxes should have both dimensions X and T  */
 		assert(MOBDB_FLAGS_GET_X(box.flags) && MOBDB_FLAGS_GET_T(box.flags));
@@ -1315,23 +1318,28 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	HeapTuple typeTuple;
 	Form_pg_type typeForm;
 
-	switch (strategy) {
-		case VALUE_STATISTICS: {
+	switch (strategy) 
+	{
+		case VALUE_STATISTICS:
+		{
 			start = 0;
 			end = 2;
 			break;
 		}
-		case TEMPORAL_STATISTICS: {
+		case TEMPORAL_STATISTICS:
+		{
 			start = 2;
 			end = 5;
 			break;
 		}
-		case DEFAULT_STATISTICS: {
+		case DEFAULT_STATISTICS:
+		{
 			start = 0;
 			end = STATISTIC_NUM_SLOTS;
 			break;
 		}
-		default: {
+		default:
+		{
 			break;
 		}
 	}
@@ -1339,7 +1347,8 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 	/* initialize *sslot properly */
 	memset(sslot, 0, sizeof(AttStatsSlot));
 
-	for (i = start; i < end; i++) {
+	for (i = start; i < end; i++) 
+	{
 		if ((&stats->stakind1)[i] == reqkind &&
 			(reqop == InvalidOid || (&stats->staop1)[i] == reqop))
 			break;
@@ -1349,7 +1358,8 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 
 	sslot->staop = (&stats->staop1)[i];
 
-	if (flags & ATTSTATSSLOT_VALUES) {
+	if (flags & ATTSTATSSLOT_VALUES)
+	{
 		val = SysCacheGetAttr(STATRELATTINH, statstuple,
 							  Anum_pg_statistic_stavalues1 + i,
 							  &isnull);

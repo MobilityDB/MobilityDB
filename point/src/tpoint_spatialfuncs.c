@@ -1784,7 +1784,9 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	/* Bounding box test */
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	/* Non-empty geometries have a bounding box */
 	assert(geo_to_stbox_internal(&box2, gs));
@@ -1966,7 +1968,9 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	/* Bounding box test */
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		Temporal *copy = temporal_copy(temp) ;

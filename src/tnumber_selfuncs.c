@@ -453,7 +453,8 @@ lower_or_higher_value_bound(Node *other, bool higher)
 		if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
+			TBOX box;
+			memset(&box, 0, sizeof(TBOX));
 			temporal_bbox(&box, temporal);
 			result = box.xmax;
 		}
@@ -481,7 +482,8 @@ lower_or_higher_value_bound(Node *other, bool higher)
 		if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
 		{
 			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box = {0,0,0,0,0};
+			TBOX box;
+			memset(&box, 0, sizeof(TBOX));
 			temporal_bbox(&box, temporal);
 			result = box.xmin;
 		}

@@ -1787,7 +1787,9 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
 		base_to_tbox(&box2, value, seq->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -1828,7 +1830,8 @@ temporalseq_always_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		if (seq->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&
@@ -2075,7 +2078,9 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
 		base_to_tbox(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -2213,7 +2218,9 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
 		base_to_tbox(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
@@ -2533,7 +2540,9 @@ int
 tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporalseq_bbox(&box1, seq);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -2587,7 +2596,9 @@ int
 tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporalseq_bbox(&box1, seq);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
