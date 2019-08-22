@@ -26,8 +26,6 @@
 #include "rangetypes_ext.h"
 #include "tpoint.h"
 
-#define DEFAULT_SELECTIVITY 0.001
-
 /*****************************************************************************/
 
 static Selectivity
@@ -121,7 +119,6 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 static PeriodBound *
 lower_or_higher_temporal_bound(Node *other, bool higher)
 {
-
 	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
 	Oid consttype = ((Const *) other)->consttype;
 	if (higher)
@@ -309,7 +306,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
 
 		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
-							   TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
+							   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_TBOOL) ||
 			 vardata.vartype == type_oid(T_TINT) ||
@@ -359,9 +356,9 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 	return selec;
 }
 
-/* Get the name of the operator from different cases */
-static CachedOp
-get_temporal_cachedop(Oid operator)
+/* Get the enum associated to the operator from different cases */
+static bool
+get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
 {
 	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
 		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
@@ -374,9 +371,12 @@ get_temporal_cachedop(Oid operator)
 			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
 			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
 			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
-			return (CachedOp) i;
+			{
+				*cachedOp = (CachedOp) i;
+				return true;
+			}
 	}
-	return OVERLAPS_OP;
+	return false;
 }
 
 /*****************************************************************************/
@@ -731,7 +731,7 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 		*period = period_make((TimestampTz)box.tmin, (TimestampTz)box.tmax, true, true);
 		*bBoxBounds = DNCONST_DTCONST;
 	}
-	else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
+	else if (consttype == INT4OID || consttype == FLOAT8OID)
 	{
 		*numeric = true;
 		*lower = (double) ((Const *) other)->constvalue;
@@ -1471,8 +1471,13 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, 
-		get_temporal_cachedop(operator));
+	Selectivity	selec = DEFAULT_SELECTIVITY;
+	CachedOp cachedOp;
+	bool found = get_temporal_cachedop(operator, &cachedOp);
+	if (!found)
+		PG_RETURN_FLOAT8(selec);
+
+	selec = temporal_bbox_sel(root, operator, args, varRelid, cachedOp);
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -1534,9 +1539,10 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = DEFAULT_SELECTIVITY;
-	CachedOp cachedOp = get_temporal_cachedop(operator);
+	CachedOp cachedOp;
+	bool found = get_temporal_cachedop(operator, &cachedOp);
 	/* In the case of unknown operator */
-	if (cachedOp == OVERLAPS_OP)
+	if (!found)
 		PG_RETURN_FLOAT8(selec);
 	/*
 	 * If expression is not (variable op something) or (something op

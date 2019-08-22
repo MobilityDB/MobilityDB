@@ -54,6 +54,8 @@ typedef struct
 
 #define BTREE_AM_OID   403
 
+#define DEFAULT_SELECTIVITY 0.001
+
 /*****************************************************************************
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/

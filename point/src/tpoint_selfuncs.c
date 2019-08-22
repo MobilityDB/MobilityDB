@@ -261,9 +261,9 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 	return true;
 }
 
-/** Get the name of the operator from different cases */
-static CachedOp
-get_tpoint_cachedop(Oid operator)
+/* Get the enum associated to the operator from different cases */
+static bool
+get_tpoint_cachedop(Oid operator, CachedOp *cachedOp)
 {
 	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
@@ -278,10 +278,12 @@ get_tpoint_cachedop(Oid operator)
 			operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
 			operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
 			operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
-			return (CachedOp) i;
+			{
+				*cachedOp = (CachedOp) i;
+				return true;
+			}
 	}
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+	return false;
 }
 
 /** Estimate the selectivity for relative position x/y operators */
@@ -906,7 +908,13 @@ tpoint_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_tpoint_cachedop(operator));
+	Selectivity	selec = DEFAULT_SELECTIVITY;
+	CachedOp cachedOp;
+	bool found = get_tpoint_cachedop(operator, &cachedOp);
+	if (!found)
+		PG_RETURN_FLOAT8(selec);
+
+	selec = tpoint_sel(root, operator, args, varRelid, cachedOp);
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -967,7 +975,12 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, get_tpoint_cachedop(operator));
+	Selectivity	selec = DEFAULT_SELECTIVITY;
+	CachedOp cachedOp;
+	bool found = get_tpoint_cachedop(operator, &cachedOp);
+	if (!found)
+		PG_RETURN_FLOAT8(selec);
+	selec = tpoint_sel(root, operator, args, varRelid, cachedOp);
 	if (selec < 0.0)
 		selec = 0.001;
 	else if (selec > 1.0)
