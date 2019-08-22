@@ -18,7 +18,6 @@
 #include <utils/builtins.h>
 #include <utils/date.h>
 #include <utils/syscache.h>
-#include <timetypes.h>
 
 #include "timestampset.h"
 #include "period.h"
@@ -135,7 +134,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 {
 	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
 	Oid consttype = ((Const *) other)->consttype;
-    result->inclusive = ! higher;
+	result->inclusive = ! higher;
 
     if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     {
@@ -181,6 +180,10 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 
 	return result;
 }
+
+/*
+ * Estimate the selectivity value of the bounding box operators for temporal durations.
+ */
 
 Selectivity
 estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, 
@@ -260,6 +263,10 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 
 	return selec;
 }
+
+/*
+ * Estimate the selectivity value of the position operators for temporal durations.
+ */
 
 Selectivity
 estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
