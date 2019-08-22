@@ -87,31 +87,33 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	return selec;
 }
 
-/* Get the name of the operator from different cases */
-static CachedOp
-get_time_cacheOp(Oid operator)
+/* Get the enum associated to the operator from different cases */
+static bool
+get_time_cachedop(Oid operator, CachedOp *oprenum)
 {
 	for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
 	{
-		if (operator == oper_oid((CachedOp)i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPTZ, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPTZ, T_PERIODSET) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPSET, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TIMESTAMPSET, T_PERIODSET) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_TIMESTAMPTZ) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_TIMESTAMPSET) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_PERIODSET) ||
-			operator == oper_oid((CachedOp)i, T_PERIODSET, T_TIMESTAMPTZ) ||
-			operator == oper_oid((CachedOp)i, T_PERIODSET, T_TIMESTAMPSET) ||
-			operator == oper_oid((CachedOp)i, T_PERIODSET, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_PERIODSET, T_PERIODSET))
-			return (CachedOp)i;
+		if (operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
+			operator == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
+			operator == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
+			operator == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+			{
+				*oprenum = (CachedOp) i;
+				return true;
+			}
 	}
-	ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));
+	return false;
 }
 
 /*
@@ -130,7 +132,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	int			nhist, i;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_internal(&hslot, vardata->statsTuple,
+		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
 									STATISTIC_KIND_BOUNDS_HISTOGRAM, 
 									InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
@@ -145,15 +147,19 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		period_deserialize(DatumGetPeriod(hslot.values[i]),
 						   &hist_lower[i], &hist_upper[i]);
 
-	CachedOp opname = get_time_cacheOp(operator);
+	CachedOp oprenum;
+	bool found = get_time_cachedop(operator, &oprenum);
+	if (!found)
+		return -1.0;
+	
 
 	/* @> and @< also need a histogram of period lengths */
-	if (opname == CONTAINS_OP || opname == CONTAINED_OP)
+	if (oprenum == CONTAINS_OP || oprenum == CONTAINED_OP)
 	{
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
-			  get_attstatsslot(&lslot, vardata->statsTuple,
-							   STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM, InvalidOid,
-							   ATTSTATSSLOT_VALUES)))
+			  get_attstatsslot_mobdb(&lslot, vardata->statsTuple,
+									 STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM, 
+									 InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
 		{
 			free_attstatsslot(&hslot);
 			return -1.0;
@@ -177,7 +183,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	 * Calculate selectivity comparing the lower or upper bound of the
 	 * constant with the histogram of lower or upper bounds.
 	 */
-	if (opname == LT_OP)
+	if (oprenum == LT_OP)
 		/*
 		 * The regular b-tree comparison operators (<, <=, >, >=) compare
 		 * the lower bounds first, and the upper bounds for values with
@@ -190,32 +196,32 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		 */
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
 														 hist_lower, nhist, false);
-	else if (opname == LE_OP)
+	else if (oprenum == LE_OP)
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
 														 hist_lower, nhist, true);
-	else if (opname == GT_OP)
+	else if (oprenum == GT_OP)
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
 															 hist_lower, nhist, false);
-	else if (opname == GE_OP)
+	else if (oprenum == GE_OP)
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
 															 hist_lower, nhist, true);
-	else if (opname == BEFORE_OP)
+	else if (oprenum == BEFORE_OP)
 		/* var <<# const when upper(var) < lower(const)*/
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
 														 hist_upper, nhist, false);
-	else if (opname == AFTER_OP)
+	else if (oprenum == AFTER_OP)
 		/* var #>> const when lower(var) > upper(const) */
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_upper,
 															 hist_lower, nhist, true);
-	else if (opname == OVERAFTER_OP)
+	else if (oprenum == OVERAFTER_OP)
 		/* var #&> const when lower(var) >= lower(const)*/
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
 															 hist_lower, nhist, false);
-	else if (opname == OVERBEFORE_OP)
+	else if (oprenum == OVERBEFORE_OP)
 		/* var &<# const when upper(var) <= upper(const) */
 		hist_selec = calc_period_hist_selectivity_scalar(&const_upper,
 														 hist_upper, nhist, true);
-	else if (opname == OVERLAPS_OP)
+	else if (oprenum == OVERLAPS_OP)
 	{
 		/*
 		 * A && B <=> NOT (A <<# B OR A #>> B).
@@ -235,13 +241,13 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 																 hist_lower, nhist, true));
 		hist_selec = 1.0 - hist_selec;
 	}
-	else if (opname == CONTAINS_OP)
+	else if (oprenum == CONTAINS_OP)
 		hist_selec = calc_period_hist_selectivity_contains(&const_lower,
 														   &const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
-	else if (opname == CONTAINED_OP)
+	else if (oprenum == CONTAINED_OP)
 		hist_selec = calc_period_hist_selectivity_contained(&const_lower,
 															&const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
-	else if (opname == ADJACENT_OP)
+	else if (oprenum == ADJACENT_OP)
 		hist_selec = calc_period_hist_selectivity_adjacent(&const_lower,
 														   &const_upper, hist_lower, hist_upper,nhist);
 	else
@@ -403,9 +409,9 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 {
 	double		frac;
 	double		A,
-			B,
-			PA,
-			PB;
+				B,
+				PA,
+				PB;
 	double		pos;
 	int			i;
 	double		area;
@@ -556,7 +562,7 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
 									   int length_hist_nvalues)
 {
 	int			i,
-			upper_index;
+				upper_index;
 	float8		prev_dist;
 	double		bin_width;
 	double		upper_bin_width;

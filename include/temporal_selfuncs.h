@@ -24,7 +24,8 @@
 #include "temporal.h"
 #include "oidcache.h"
 
-typedef enum {
+typedef enum 
+{
 	VALUE_STATISTICS,
 	TEMPORAL_STATISTICS,
 	DEFAULT_STATISTICS
@@ -64,7 +65,7 @@ extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableSta
 
 extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
 									   Oid operator, StatisticsStrategy strategy);
-extern Selectivity scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
+extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 								  VariableStatData *vardata, Datum constval, Oid consttype,
 								  StatisticsStrategy strategy);
 
@@ -72,8 +73,8 @@ extern Selectivity scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bo
  * Some other helper functions.
  *****************************************************************************/
 
-extern bool get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
-									  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
+extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
+							 int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
 extern double default_temporaltypes_selectivity(Oid operator);
 extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);

@@ -106,7 +106,6 @@ typedef enum
 	OVERBEFORE_OP,
 	AFTER_OP,
 	OVERAFTER_OP,
-
 } CachedOp;
 
 

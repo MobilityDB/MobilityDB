@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * temporal_selFuncs.c
+ * temporal_selfuncs.c
  *	  Functions for selectivity estimation of operators on temporal types
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
@@ -26,28 +26,13 @@
 #include "rangetypes_ext.h"
 #include "tpoint.h"
 
-/*
- *	Selectivity functions for temporal types operators.  These are bogus --
- *	unless we know the actual key distribution in the index, we can't make
- *	a good prediction of the selectivity of these operators.
- *
- *	Note: the values used here may look unreasonably small.  Perhaps they
- *	are.  For now, we want to make sure that the optimizer will make use
- *	of a geometric index if one is available, so the selectivity had better
- *	be fairly small.
- *
- *	In general, GiST needs to search multiple subtrees in order to guarantee
- *	that all occurrences of the same key have been found.  Because of this,
- *	the estimated cost for scanning the index ought to be higher than the
- *	output selectivity would indicate.  gistcostestimate(), over in selfuncs.c,
- *	ought to be adjusted accordingly --- but until we can generate somewhat
- *	realistic numbers here, it hardly matters...
- */
+#define DEFAULT_SELECTIVITY 0.001
 
 /*****************************************************************************/
 
 static Selectivity
-temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, 
+	CachedOp cachedOp)
 {
 	VariableStatData vardata;
 	Node *other;
@@ -109,7 +94,6 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cac
 
 	constantData.bBoxBounds = bBoxBounds;
 	constantData.oid = ((Const *) other)->consttype;
-
 	constantData.lower = constantData.upper = 0;  /* keep compiler quiet */
 	constantData.period = NULL;   /* keep compiler quiet */
 	if (numeric)
@@ -145,7 +129,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		result->inclusive = false;
 		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
 		{
-			Period *p = (Period *)palloc(sizeof(Period));
+			Period *p = (Period *) palloc(sizeof(Period));
 			/* TODO MEMORY LEAK HERE !!!! */
 			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
 			result->val = p->upper;
@@ -160,7 +144,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		}
 		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
 		{
-			Period *p = (Period *)palloc(sizeof(Period));
+			Period *p = (Period *) palloc(sizeof(Period));
 			/* TODO MEMORY LEAK HERE !!!! */
 			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
 			result->val = p->upper;
@@ -187,7 +171,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		result->inclusive = true;
 		if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
 		{
-			Period *p = (Period *)palloc(sizeof(Period));
+			Period *p = (Period *) palloc(sizeof(Period));
 			/* TODO MEMORY LEAK HERE !!!! */
 			temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
 			result->val = p->lower;
@@ -202,7 +186,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 		}
 		else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
 		{
-			Period *p = (Period *)palloc(sizeof(Period));
+			Period *p = (Period *) palloc(sizeof(Period));
 			/* TODO MEMORY LEAK HERE !!!! */
 			temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
 			result->val = p->lower;
@@ -228,9 +212,10 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 }
 
 Selectivity
-estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
+estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, 
+	ConstantData constantData, CachedOp cachedOp)
 {
-	// Check the temporal types and inside each one check the cachedOp
+	/* Check the temporal types and inside each one check the cachedOp */
 	Selectivity  selec = 0.0;
 	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
 	switch (constantData.bBoxBounds)
@@ -271,10 +256,10 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Constant
 					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
-					selec = scalarineq_sel(root, opl, false, false, &vardata,
+					selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
 										   TimestampTzGetDatum(constantData.period->lower),
 										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-					selec += scalarineq_sel(root, opg, true, true, &vardata,
+					selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
 											TimestampTzGetDatum(constantData.period->upper),
 											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 					selec = 1 - selec;
@@ -323,7 +308,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
 
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
 							   TIMESTAMPTZOID,   TEMPORAL_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_TBOOL) ||
@@ -352,7 +337,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-		selec = scalarineq_sel(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
+		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
 							   TIMESTAMPTZOID, DEFAULT_STATISTICS);
 	}
 	else if (vardata.vartype == type_oid(T_PERIOD))
@@ -371,41 +356,34 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
 		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
 	}
-	else if (vardata.vartype == type_oid(T_TBOX))
-	{
-
-	}
-	else if (vardata.vartype == type_oid(T_STBOX))
-	{
-
-	}
 	return selec;
 }
 
-/** Get the name of the operator from different cases */
+/* Get the name of the operator from different cases */
 static CachedOp
-get_temporal_cacheOp(Oid operator)
+get_temporal_cachedop(Oid operator)
 {
 	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-		if (operator == oper_oid((CachedOp)i, T_PERIOD, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOX) ||
-			operator == oper_oid((CachedOp)i, T_TBOX, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_TBOOL, T_TBOOL) ||
-			operator == oper_oid((CachedOp)i, T_PERIOD, T_TTEXT) ||
-			operator == oper_oid((CachedOp)i, T_TTEXT, T_PERIOD) ||
-			operator == oper_oid((CachedOp)i, T_TTEXT, T_TTEXT))
-			return (CachedOp)i;
+		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+			return (CachedOp) i;
 	}
-	
 	return OVERLAPS_OP;
 }
 
 /*****************************************************************************/
 
 Selectivity
-period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
-					Oid operator, StatisticsStrategy strategy)
+period_sel_internal(PlannerInfo *root, VariableStatData *vardata, 
+	Period *constval, Oid operator, StatisticsStrategy strategy)
 {
 	double hist_selec;
 	Selectivity selec;
@@ -439,56 +417,7 @@ period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constv
 }
 
 /*
- *	mcv_selectivity			- Examine the MCV list for selectivity estimates
- *
- * Determine the fraction of the variable's MCV population that satisfies
- * the predicate (VAR OP CONST), or (CONST OP VAR) if !varonleft.  Also
- * compute the fraction of the total column population represented by the MCV
- * list.  This code will work for any boolean-returning predicate operator.
- *
- * The function result is the MCV selectivity, and the fraction of the
- * total population is returned into *sumcommonp.  Zeroes are returned
- * if there is no MCV list.
- */
-static Selectivity
-mcv_selectivity_internal(VariableStatData *vardata, FmgrInfo *opproc,
-						 Datum constval, Oid atttype, bool varonleft, double *sumcommonp,
-						 StatisticsStrategy strategy)
-{
-	double mcv_selec, sumcommon;
-	int i;
-	AttStatsSlot mcvslot;
-	mcv_selec = 0.0;
-	sumcommon = 0.0;
-	if (HeapTupleIsValid(vardata->statsTuple) &&
-		statistic_proc_security_check(vardata, opproc->fn_oid) &&
-		get_attstatsslot_internal(&mcvslot, vardata->statsTuple,
-								  STATISTIC_KIND_MCV, InvalidOid,
-								  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
-	{
-		for (i = 0; i < mcvslot.nvalues; i++)
-		{
-			if (varonleft ?
-				DatumGetBool(FunctionCall2Coll(opproc,
-											   DEFAULT_COLLATION_OID,
-											   mcvslot.values[i],
-											   constval)) :
-				DatumGetBool(FunctionCall2Coll(opproc,
-											   DEFAULT_COLLATION_OID,
-											   constval,
-											   mcvslot.values[i]))
-					)
-				mcv_selec += mcvslot.numbers[i];
-			sumcommon += mcvslot.numbers[i];
-		}
-		free_attstatsslot(&mcvslot);
-	}
-	*sumcommonp = sumcommon;
-	return mcv_selec;
-}
-
-/*
- * Do convert_to_scalar()'s work for any number data type.
+ * Do convert_to_scalar_mobdb()'s work for any number data type.
  */
 static double
 convert_numeric_to_scalar(Oid typid, Datum value)
@@ -534,7 +463,7 @@ convert_numeric_to_scalar(Oid typid, Datum value)
 }
 
 /*
- * Do convert_to_scalar()'s work for any timevalue data type.
+ * Do convert_to_scalar_mobdb()'s work for any timevalue data type.
  */
 static double
 convert_timevalue_to_scalar(Oid typid, Datum value)
@@ -553,9 +482,8 @@ convert_timevalue_to_scalar(Oid typid, Datum value)
 	}
 }
 
-
 static bool
-convert_to_scalar(Oid valuetypid, Datum value, double *scaledvalue,
+convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 				  Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
 				  double *scaledhibound)
 {
@@ -604,424 +532,6 @@ convert_to_scalar(Oid valuetypid, Datum value, double *scaledvalue,
 	/* Don't know how to convert */
 	*scaledvalue = *scaledlobound = *scaledhibound = 0;
 	return false;
-}
-
-/*
- * get_actual_variable_range
- *		Attempt to identify the current *actual* minimum and/or maximum
- *		of the specified variable, by looking for a suitable btree index
- *		and fetching its low and/or high values.
- *		If successful, store values in *min and *max, and return TRUE.
- *		(Either pointer can be NULL if that endpoint isn't needed.)
- *		If no data available, return false.
- *
- * sortop is the "<" comparison operator to use.
- */
-static bool
-get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
-						  Oid sortop,
-						  Datum *min, Datum *max)
-{
-	bool		have_data = false;
-	RelOptInfo *rel = vardata->rel;
-	//RangeTblEntry *rte;
-	ListCell   *lc;
-
-	/* No hope if no relation or it doesn't have indexes */
-	if (rel == NULL || rel->indexlist == NIL)
-		return false;
-	/* If it has indexes it must be a plain relation */
-	//rte = root->simple_rte_array[rel->relid];
-	//Assert(rte->rtekind == RTE_RELATION);
-
-	/* Search through the indexes to see if any match our problem */
-	foreach(lc, rel->indexlist)
-	{
-		IndexOptInfo *index = (IndexOptInfo *) lfirst(lc);
-		//ScanDirection indexscandir;
-
-		/* Ignore non-btree indexes */
-		if (index->relam != BTREE_AM_OID)
-			continue;
-
-		/*
-		 * Ignore partial indexes --- we only want stats that cover the entire
-		 * relation.
-		 */
-		if (index->indpred != NIL)
-			continue;
-	}
-
-	return have_data;
-}
-
-/*
- *	ineq_histogram_selectivity	- Examine the histogram for scalarineqsel
- *
- * Determine the fraction of the variable's histogram population that
- * satisfies the inequality condition, ie, VAR < CONST or VAR > CONST.
- *
- * Returns -1 if there is no histogram (valid results will always be >= 0).
- *
- * Note that the result disregards both the most-common-values (if any) and
- * null entries.  The caller is expected to combine this result with
- * statistics for those portions of the column population.
- */
-
-static double
-ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
-						   FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
-						   StatisticsStrategy strategy)
-{
-
-	double hist_selec;
-	AttStatsSlot sslot;
-	hist_selec = -1.0;
-
-	/*
-	 * Someday, ANALYZE might store more than one histogram per rel/att,
-	 * corresponding to more than one possible sort ordering defined for the
-	 * column type.  However, to make that work we will need to figure out
-	 * which staop to search for --- it's not necessarily the one we have at
-	 * hand!  (For example, we might have a '<=' operator rather than the '<'
-	 * operator that will appear in staop.)  For now, assume that whatever
-	 * appears in pg_statistic is sorted the same way our operator sorts, or
-	 * the reverse way if isgt is TRUE.
-	 */
-	if (HeapTupleIsValid(vardata->statsTuple) &&
-		statistic_proc_security_check(vardata, opproc->fn_oid) &&
-		get_attstatsslot_internal(&sslot, vardata->statsTuple,
-								  STATISTIC_KIND_HISTOGRAM, InvalidOid,
-								  ATTSTATSSLOT_VALUES, strategy))
-	{
-		if (sslot.nvalues > 1)
-		{
-			/*
-			 * Use binary search to find proper location, ie, the first slot
-			 * at which the comparison fails.  (If the given operator isn't
-			 * actually sort-compatible with the histogram, you'll get garbage
-			 * results ... but probably not any more garbage-y than you would
-			 * from the old linear search.)
-			 *
-			 * If the binary search accesses the first or last histogram
-			 * entry, we try to replace that endpoint with the true column min
-			 * or max as found by get_actual_variable_range().  This
-			 * ameliorates misestimates when the min or max is moving as a
-			 * result of changes since the last ANALYZE.  Note that this could
-			 * result in effectively including MCVs into the histogram that
-			 * weren't there before, but we don't try to correct for that.
-			 */
-			double histfrac;
-			int lobound = 0;	/* first possible slot to search */
-			int hibound = sslot.nvalues;		/* last+1 slot to search */
-			bool have_end = false;
-
-			/*
-			 * If there are only two histogram entries, we'll want up-to-date
-			 * values for both.  (If there are more than two, we need at most
-			 * one of them to be updated, so we deal with that within the
-			 * loop.)
-			 */
-			if (sslot.nvalues == 2)
-				have_end = get_actual_variable_range(root,
-													 vardata,
-													 sslot.staop,
-													 &sslot.values[0],
-													 &sslot.values[1]);
-
-			while (lobound < hibound)
-			{
-				int probe = (lobound + hibound) / 2;
-				bool ltcmp;
-
-				/*
-				 * If we find ourselves about to compare to the first or last
-				 * histogram entry, first try to replace it with the actual
-				 * current min or max (unless we already did so above).
-				 */
-				if (probe == 0 && sslot.nvalues > 2)
-					have_end = get_actual_variable_range(root, vardata,
-														 sslot.staop, &sslot.values[0], NULL);
-				else if (probe == sslot.nvalues - 1 && sslot.nvalues > 2)
-					have_end = get_actual_variable_range(root, vardata,
-														 sslot.staop, NULL, &sslot.values[probe]);
-
-				ltcmp = DatumGetBool(FunctionCall2Coll(opproc,
-													   DEFAULT_COLLATION_OID, sslot.values[probe], constval));
-				if (isgt)
-					ltcmp = !ltcmp;
-				if (ltcmp)
-					lobound = probe + 1;
-				else
-					hibound = probe;
-			}
-
-			if (lobound <= 0)
-			{
-				/* Constant is below lower histogram boundary. */
-				histfrac = 0.0;
-			}
-			else if (lobound >= sslot.nvalues)
-			{
-				/* Constant is above upper histogram boundary. */
-				histfrac = 1.0;
-			}
-			else
-			{
-				int i = lobound;
-				double val,
-						high,
-						low;
-				double binfrac;
-				double eq_selec = 0;
-
-				/*
-				 * In the cases where we'll need it below, obtain an estimate
-				 * of the selectivity of "x = constval".  We use a calculation
-				 * similar to what var_eq_const() does for a non-MCV constant,
-				 * ie, estimate that all distinct non-MCV values occur equally
-				 * often.  But multiplication by "1.0 - sumcommon - nullfrac"
-				 * will be done by our caller, so we shouldn't do that here.
-				 * Therefore we can't try to clamp the estimate by reference
-				 * to the least common MCV; the result would be too small.
-				 *
-				 * Note: since this is effectively assuming that constval
-				 * isn't an MCV, it's logically dubious if constval in fact is
-				 * one.  But we have to apply *some* correction for equality,
-				 * and anyway we cannot tell if constval is an MCV, since we
-				 * don't have a suitable equality operator at hand.
-				 */
-				if (i == 1 || isgt == iseq)
-				{
-					double otherdistinct;
-					bool isdefault;
-					AttStatsSlot mcvslot;
-
-					/* Get estimated number of distinct values */
-					otherdistinct = get_variable_numdistinct(vardata,
-															 &isdefault);
-
-
-
-					/* Subtract off the number of known MCVs */
-
-					/* Subtract off the number of known MCVs */
-					if (get_attstatsslot_internal(&mcvslot, vardata->statsTuple,
-												  STATISTIC_KIND_MCV, InvalidOid,
-												  ATTSTATSSLOT_NUMBERS, strategy))
-					{
-						otherdistinct -= mcvslot.nnumbers;
-						free_attstatsslot(&mcvslot);
-					}
-
-					/* If result doesn't seem sane, leave eq_selec at 0 */
-					if (otherdistinct > 1)
-						eq_selec = 1.0 / otherdistinct;
-				}
-
-
-				/*
-				 * We have values[i-1] <= constant <= values[i].
-				 *
-				 * Convert the constant and the two nearest bin boundary
-				 * values to a uniform comparison scale, and do a linear
-				 * interpolation within this bin.
-				 */
-				if (convert_to_scalar(consttype, constval, &val,
-									  sslot.values[i - 1], sslot.values[i], consttype,
-									  &low, &high))
-				{
-					if (high <= low)
-					{
-						/* cope if bin boundaries appear identical */
-						binfrac = 0.5;
-					}
-					else if (val <= low)
-						binfrac = 0.0;
-					else if (val >= high)
-						binfrac = 1.0;
-					else
-					{
-						binfrac = (val - low) / (high - low);
-
-						/*
-						 * Watch out for the possibility that we got a NaN or
-						 * Infinity from the division.  This can happen
-						 * despite the previous checks, if for example "low"
-						 * is -Infinity.
-						 */
-						if (isnan(binfrac) ||
-							binfrac < 0.0 || binfrac > 1.0)
-							binfrac = 0.5;
-					}
-				}
-				else
-				{
-					/*
-					 * Ideally we'd produce an error here, on the grounds that
-					 * the given operator shouldn't have scalarXXsel
-					 * registered as its selectivity func unless we can deal
-					 * with its operand types.  But currently, all manner of
-					 * stuff is invoking scalarXXsel, so give a default
-					 * estimate until that can be fixed.
-					 */
-					binfrac = 0.5;
-				}
-
-				/*
-				 * Now, compute the overall selectivity across the values
-				 * represented by the histogram.  We have i-1 full bins and
-				 * binfrac partial bin below the constant.
-				 */
-				histfrac = (double) (i - 1) + binfrac;
-				histfrac /= (double) (sslot.nvalues - 1);
-
-				/*
-				 * At this point, histfrac is an estimate of the fraction of
-				 * the population represented by the histogram that satisfies
-				 * "x <= constval".  Somewhat remarkably, this statement is
-				 * true regardless of which operator we were doing the probes
-				 * with, so long as convert_to_scalar() delivers reasonable
-				 * results.  If the probe constant is equal to some histogram
-				 * entry, we would have considered the bin to the left of that
-				 * entry if probing with "<" or ">=", or the bin to the right
-				 * if probing with "<=" or ">"; but binfrac would have come
-				 * out as 1.0 in the first case and 0.0 in the second, leading
-				 * to the same histfrac in either case.  For probe constants
-				 * between histogram entries, we find the same bin and get the
-				 * same estimate with any operator.
-				 *
-				 * The fact that the estimate corresponds to "x <= constval"
-				 * and not "x < constval" is because of the way that ANALYZE
-				 * constructs the histogram: each entry is, effectively, the
-				 * rightmost value in its sample bucket.  So selectivity
-				 * values that are exact multiples of 1/(histogram_size-1)
-				 * should be understood as estimates including a histogram
-				 * entry plus everything to its left.
-				 *
-				 * However, that breaks down for the first histogram entry,
-				 * which necessarily is the leftmost value in its sample
-				 * bucket.  That means the first histogram bin is slightly
-				 * narrower than the rest, by an amount equal to eq_selec.
-				 * Another way to say that is that we want "x <= leftmost" to
-				 * be estimated as eq_selec not zero.  So, if we're dealing
-				 * with the first bin (i==1), rescale to make that true while
-				 * adjusting the rest of that bin linearly.
-				 */
-				if (i == 1)
-					histfrac += eq_selec * (1.0 - binfrac);
-
-				/*
-				 * "x <= constval" is good if we want an estimate for "<=" or
-				 * ">", but if we are estimating for "<" or ">=", we now need
-				 * to decrease the estimate by eq_selec.
-				 */
-				if (isgt == iseq)
-					histfrac -= eq_selec;
-			}
-
-			/*
-			 * Now histfrac = fraction of histogram entries below the
-			 * constant.
-			 *
-			 * Account for "<" vs ">"
-			 */
-			hist_selec = isgt ? (1.0 - histfrac) : histfrac;
-
-			/*
-			 * The histogram boundaries are only approximate to begin with,
-			 * and may well be out of date anyway.  Therefore, don't believe
-			 * extremely small or large selectivity estimates --- unless we
-			 * got actual current endpoint values from the table.
-			 */
-			if (have_end)
-				CLAMP_PROBABILITY(hist_selec);
-			else
-			{
-				if (hist_selec < 0.0001)
-					hist_selec = 0.0001;
-				else if (hist_selec > 0.9999)
-					hist_selec = 0.9999;
-			}
-		}
-		free_attstatsslot(&sslot);
-	}
-	return hist_selec;
-}
-
-/*
- *	scalarineq_sel		- Selectivity of "<", "<=", ">", ">=" for scalars.
- *
- * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
- * The isgt and iseq flags distinguish which of the four cases apply.
- *
- * The caller has commuted the clause, if necessary, so that we can treat
- * the variable as being on the left.  The caller must also make sure that
- * the other side of the clause is a non-null Const, and dissect that into
- * a value and datatype.  (This definition simplifies some callers that
- * want to estimate against a computed value instead of a Const node.)
- *
- * This routine works for any datatype (or pair of datatypes) known to
- * convert_to_scalar().  If it is applied to some other datatype,
- * it will return a default estimate.
- */
-Selectivity
-scalarineq_sel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
-			   VariableStatData *vardata, Datum constval, Oid consttype,
-			   StatisticsStrategy strategy)
-{
-	Form_pg_statistic stats;
-	FmgrInfo opproc;
-	double mcv_selec, hist_selec, sumcommon;
-	Selectivity selec;
-
-	if (!HeapTupleIsValid(vardata->statsTuple))
-	{
-		/* no stats available, so default result */
-		return DEFAULT_INEQ_SEL;
-	}
-	stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-
-	fmgr_info(get_opcode(operator), &opproc);
-
-	/*
-	 * If we have most-common-values info, add up the fractions of the MCV
-	 * entries that satisfy MCV OP CONST.  These fractions contribute directly
-	 * to the result selectivity.  Also add up the total fraction represented
-	 * by MCV entries.
-	 */
-	mcv_selec = mcv_selectivity_internal(vardata, &opproc, constval, consttype, true,
-										 &sumcommon, strategy);
-
-	/*
-	 * If there is a histogram, determine which bin the constant falls in, and
-	 * compute the resulting contribution to selectivity.
-	 */
-	hist_selec = ineq_histogram_selectivity(root, vardata,
-											&opproc, isgt, iseq,
-											constval, consttype, strategy);
-
-	/*
-	 * Now merge the results from the MCV and histogram calculations,
-	 * realizing that the histogram covers only the non-null values that are
-	 * not listed in MCV.
-	 */
-	selec = 1.0 - stats->stanullfrac - sumcommon;
-
-	if (hist_selec >= 0.0)
-		selec *= hist_selec;
-	else
-	{
-		/*
-		 * If no histogram but there are values not accounted for by MCV,
-		 * arbitrarily assume half of them will match.
-		 */
-		selec *= 0.5;
-	}
-	selec += mcv_selec;
-	/* result should be in range, but make sure... */
-	CLAMP_PROBABILITY(selec);
-	return selec;
 }
 
 /*****************************************************************************
@@ -1113,7 +623,7 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 		 * don't like this, maybe you shouldn't be using eqsel for your
 		 * operator...)
 		 */
-		if (get_attstatsslot_internal(&mcvslot, vardata->statsTuple,
+		if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
 									  STATISTIC_KIND_MCV, InvalidOid,
 									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
 		{
@@ -1304,9 +814,487 @@ get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 			*bBoxBounds = DTCONST;
 	}
 }
+
+/*****************************************************************************
+ * The following functions is taken from PostgreSQL but much processing is
+ * removed ?????
+ *****************************************************************************/
+
+/*
+ * get_actual_variable_range
+ *		Attempt to identify the current *actual* minimum and/or maximum
+ *		of the specified variable, by looking for a suitable btree index
+ *		and fetching its low and/or high values.
+ *		If successful, store values in *min and *max, and return TRUE.
+ *		(Either pointer can be NULL if that endpoint isn't needed.)
+ *		If no data available, return false.
+ *
+ * sortop is the "<" comparison operator to use.
+ */
+static bool
+get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
+						  Oid sortop,
+						  Datum *min, Datum *max)
+{
+	bool		have_data = false;
+	RelOptInfo *rel = vardata->rel;
+	//RangeTblEntry *rte;
+	ListCell   *lc;
+
+	/* No hope if no relation or it doesn't have indexes */
+	if (rel == NULL || rel->indexlist == NIL)
+		return false;
+	/* If it has indexes it must be a plain relation */
+	//rte = root->simple_rte_array[rel->relid];
+	//Assert(rte->rtekind == RTE_RELATION);
+
+	/* Search through the indexes to see if any match our problem */
+	foreach(lc, rel->indexlist)
+	{
+		IndexOptInfo *index = (IndexOptInfo *) lfirst(lc);
+		//ScanDirection indexscandir;
+
+		/* Ignore non-btree indexes */
+		if (index->relam != BTREE_AM_OID)
+			continue;
+
+		/*
+		 * Ignore partial indexes --- we only want stats that cover the entire
+		 * relation.
+		 */
+		if (index->indpred != NIL)
+			continue;
+	}
+
+	return have_data;
+}
+
+/*****************************************************************************
+ * The following functions are taken from PostgreSQL and simply added the last
+ * argument to the equivalent PostgreSQL function in order to be able to 
+ * select specific statistic slots.
+ *****************************************************************************/
+
+/*
+ *	ineq_histogram_selectivity_mobdb	- Examine the histogram for scalarineqsel
+ *
+ * Determine the fraction of the variable's histogram population that
+ * satisfies the inequality condition, ie, VAR < CONST or VAR > CONST.
+ *
+ * Returns -1 if there is no histogram (valid results will always be >= 0).
+ *
+ * Note that the result disregards both the most-common-values (if any) and
+ * null entries.  The caller is expected to combine this result with
+ * statistics for those portions of the column population.
+ * This function simply added the last argument to the equivalent PostgreSQL
+ * function in order to be able to select specific statistic slots.
+ */
+
+static double
+ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
+						   FmgrInfo *opproc, bool isgt, bool iseq, Datum constval,
+						   Oid consttype, StatisticsStrategy strategy)
+{
+
+	double hist_selec = -1.0;
+	AttStatsSlot sslot;
+
+	/*
+	 * Someday, ANALYZE might store more than one histogram per rel/att,
+	 * corresponding to more than one possible sort ordering defined for the
+	 * column type.  However, to make that work we will need to figure out
+	 * which staop to search for --- it's not necessarily the one we have at
+	 * hand!  (For example, we might have a '<=' operator rather than the '<'
+	 * operator that will appear in staop.)  For now, assume that whatever
+	 * appears in pg_statistic is sorted the same way our operator sorts, or
+	 * the reverse way if isgt is TRUE.
+	 */
+	if (HeapTupleIsValid(vardata->statsTuple) &&
+		statistic_proc_security_check(vardata, opproc->fn_oid) &&
+		get_attstatsslot_mobdb(&sslot, vardata->statsTuple,
+								  STATISTIC_KIND_HISTOGRAM, InvalidOid,
+								  ATTSTATSSLOT_VALUES, strategy))
+	{
+		if (sslot.nvalues > 1)
+		{
+			/*
+			 * Use binary search to find proper location, ie, the first slot
+			 * at which the comparison fails.  (If the given operator isn't
+			 * actually sort-compatible with the histogram, you'll get garbage
+			 * results ... but probably not any more garbage-y than you would
+			 * from the old linear search.)
+			 *
+			 * If the binary search accesses the first or last histogram
+			 * entry, we try to replace that endpoint with the true column min
+			 * or max as found by get_actual_variable_range().  This
+			 * ameliorates misestimates when the min or max is moving as a
+			 * result of changes since the last ANALYZE.  Note that this could
+			 * result in effectively including MCVs into the histogram that
+			 * weren't there before, but we don't try to correct for that.
+			 */
+			double histfrac;
+			int lobound = 0;	/* first possible slot to search */
+			int hibound = sslot.nvalues;		/* last+1 slot to search */
+			bool have_end = false;
+
+			/*
+			 * If there are only two histogram entries, we'll want up-to-date
+			 * values for both.  (If there are more than two, we need at most
+			 * one of them to be updated, so we deal with that within the
+			 * loop.)
+			 */
+			if (sslot.nvalues == 2)
+				have_end = get_actual_variable_range(root,
+													 vardata,
+													 sslot.staop,
+													 &sslot.values[0],
+													 &sslot.values[1]);
+
+			while (lobound < hibound)
+			{
+				int probe = (lobound + hibound) / 2;
+				bool ltcmp;
+
+				/*
+				 * If we find ourselves about to compare to the first or last
+				 * histogram entry, first try to replace it with the actual
+				 * current min or max (unless we already did so above).
+				 */
+				if (probe == 0 && sslot.nvalues > 2)
+					have_end = get_actual_variable_range(root, vardata,
+														 sslot.staop, &sslot.values[0], NULL);
+				else if (probe == sslot.nvalues - 1 && sslot.nvalues > 2)
+					have_end = get_actual_variable_range(root, vardata,
+														 sslot.staop, NULL, &sslot.values[probe]);
+
+				ltcmp = DatumGetBool(FunctionCall2Coll(opproc,
+													   DEFAULT_COLLATION_OID, sslot.values[probe], constval));
+				if (isgt)
+					ltcmp = !ltcmp;
+				if (ltcmp)
+					lobound = probe + 1;
+				else
+					hibound = probe;
+			}
+
+			if (lobound <= 0)
+			{
+				/* Constant is below lower histogram boundary. */
+				histfrac = 0.0;
+			}
+			else if (lobound >= sslot.nvalues)
+			{
+				/* Constant is above upper histogram boundary. */
+				histfrac = 1.0;
+			}
+			else
+			{
+				int i = lobound;
+				double eq_selec = 0;
+				double val,
+						high,
+						low;
+				double binfrac;
+
+				/*
+				 * In the cases where we'll need it below, obtain an estimate
+				 * of the selectivity of "x = constval".  We use a calculation
+				 * similar to what var_eq_const() does for a non-MCV constant,
+				 * ie, estimate that all distinct non-MCV values occur equally
+				 * often.  But multiplication by "1.0 - sumcommon - nullfrac"
+				 * will be done by our caller, so we shouldn't do that here.
+				 * Therefore we can't try to clamp the estimate by reference
+				 * to the least common MCV; the result would be too small.
+				 *
+				 * Note: since this is effectively assuming that constval
+				 * isn't an MCV, it's logically dubious if constval in fact is
+				 * one.  But we have to apply *some* correction for equality,
+				 * and anyway we cannot tell if constval is an MCV, since we
+				 * don't have a suitable equality operator at hand.
+				 */
+				if (i == 1 || isgt == iseq)
+				{
+					double otherdistinct;
+					bool isdefault;
+					AttStatsSlot mcvslot;
+
+					/* Get estimated number of distinct values */
+					otherdistinct = get_variable_numdistinct(vardata,
+															 &isdefault);
+
+					/* Subtract off the number of known MCVs */
+					if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
+												  STATISTIC_KIND_MCV, InvalidOid,
+												  ATTSTATSSLOT_NUMBERS, strategy))
+					{
+						otherdistinct -= mcvslot.nnumbers;
+						free_attstatsslot(&mcvslot);
+					}
+
+					/* If result doesn't seem sane, leave eq_selec at 0 */
+					if (otherdistinct > 1)
+						eq_selec = 1.0 / otherdistinct;
+				}
+
+				/*
+				 * Convert the constant and the two nearest bin boundary
+				 * values to a uniform comparison scale, and do a linear
+				 * interpolation within this bin.
+				 */
+				if (convert_to_scalar_mobdb(consttype, constval, &val,
+									  sslot.values[i - 1], sslot.values[i], consttype,
+									  &low, &high))
+				{
+					if (high <= low)
+					{
+						/* cope if bin boundaries appear identical */
+						binfrac = 0.5;
+					}
+					else if (val <= low)
+						binfrac = 0.0;
+					else if (val >= high)
+						binfrac = 1.0;
+					else
+					{
+						binfrac = (val - low) / (high - low);
+
+						/*
+						 * Watch out for the possibility that we got a NaN or
+						 * Infinity from the division.  This can happen
+						 * despite the previous checks, if for example "low"
+						 * is -Infinity.
+						 */
+						if (isnan(binfrac) ||
+							binfrac < 0.0 || binfrac > 1.0)
+							binfrac = 0.5;
+					}
+				}
+				else
+				{
+					/*
+					 * Ideally we'd produce an error here, on the grounds that
+					 * the given operator shouldn't have scalarXXsel
+					 * registered as its selectivity func unless we can deal
+					 * with its operand types.  But currently, all manner of
+					 * stuff is invoking scalarXXsel, so give a default
+					 * estimate until that can be fixed.
+					 */
+					binfrac = 0.5;
+				}
+
+				/*
+				 * Now, compute the overall selectivity across the values
+				 * represented by the histogram.  We have i-1 full bins and
+				 * binfrac partial bin below the constant.
+				 */
+				histfrac = (double) (i - 1) + binfrac;
+				histfrac /= (double) (sslot.nvalues - 1);
+
+				/*
+				 * At this point, histfrac is an estimate of the fraction of
+				 * the population represented by the histogram that satisfies
+				 * "x <= constval".  Somewhat remarkably, this statement is
+				 * true regardless of which operator we were doing the probes
+				 * with, so long as convert_to_scalar_mobdb() delivers reasonable
+				 * results.  If the probe constant is equal to some histogram
+				 * entry, we would have considered the bin to the left of that
+				 * entry if probing with "<" or ">=", or the bin to the right
+				 * if probing with "<=" or ">"; but binfrac would have come
+				 * out as 1.0 in the first case and 0.0 in the second, leading
+				 * to the same histfrac in either case.  For probe constants
+				 * between histogram entries, we find the same bin and get the
+				 * same estimate with any operator.
+				 *
+				 * The fact that the estimate corresponds to "x <= constval"
+				 * and not "x < constval" is because of the way that ANALYZE
+				 * constructs the histogram: each entry is, effectively, the
+				 * rightmost value in its sample bucket.  So selectivity
+				 * values that are exact multiples of 1/(histogram_size-1)
+				 * should be understood as estimates including a histogram
+				 * entry plus everything to its left.
+				 *
+				 * However, that breaks down for the first histogram entry,
+				 * which necessarily is the leftmost value in its sample
+				 * bucket.  That means the first histogram bin is slightly
+				 * narrower than the rest, by an amount equal to eq_selec.
+				 * Another way to say that is that we want "x <= leftmost" to
+				 * be estimated as eq_selec not zero.  So, if we're dealing
+				 * with the first bin (i==1), rescale to make that true while
+				 * adjusting the rest of that bin linearly.
+				 */
+				if (i == 1)
+					histfrac += eq_selec * (1.0 - binfrac);
+
+				/*
+				 * "x <= constval" is good if we want an estimate for "<=" or
+				 * ">", but if we are estimating for "<" or ">=", we now need
+				 * to decrease the estimate by eq_selec.
+				 */
+				if (isgt == iseq)
+					histfrac -= eq_selec;
+			}
+
+			/*
+			 * Now histfrac = fraction of histogram entries below the
+			 * constant.
+			 *
+			 * Account for "<" vs ">"
+			 */
+			hist_selec = isgt ? (1.0 - histfrac) : histfrac;
+
+			/*
+			 * The histogram boundaries are only approximate to begin with,
+			 * and may well be out of date anyway.  Therefore, don't believe
+			 * extremely small or large selectivity estimates --- unless we
+			 * got actual current endpoint values from the table.
+			 */
+			if (have_end)
+				CLAMP_PROBABILITY(hist_selec);
+			else
+			{
+				if (hist_selec < 0.0001)
+					hist_selec = 0.0001;
+				else if (hist_selec > 0.9999)
+					hist_selec = 0.9999;
+			}
+		}
+		free_attstatsslot(&sslot);
+	}
+	return hist_selec;
+}
+
+/*
+ *	mcv_selectivity_mobdb	- Examine the MCV list for selectivity estimates
+ *
+ * Determine the fraction of the variable's MCV population that satisfies
+ * the predicate (VAR OP CONST), or (CONST OP VAR) if !varonleft.  Also
+ * compute the fraction of the total column population represented by the MCV
+ * list.  This code will work for any boolean-returning predicate operator.
+ *
+ * The function result is the MCV selectivity, and the fraction of the
+ * total population is returned into *sumcommonp.  Zeroes are returned
+ * if there is no MCV list.
+ */
+static Selectivity
+mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
+				Datum constval, Oid atttype, bool varonleft, 
+				double *sumcommonp, StatisticsStrategy strategy)
+{
+	double mcv_selec, sumcommon;
+	AttStatsSlot mcvslot;
+	int i;
+
+	mcv_selec = 0.0;
+	sumcommon = 0.0;
+	if (HeapTupleIsValid(vardata->statsTuple) &&
+		statistic_proc_security_check(vardata, opproc->fn_oid) &&
+		get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
+							   STATISTIC_KIND_MCV, InvalidOid,
+							   ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, 
+							   strategy))
+	{
+		for (i = 0; i < mcvslot.nvalues; i++)
+		{
+			if (varonleft ?
+				DatumGetBool(FunctionCall2Coll(opproc,
+											   DEFAULT_COLLATION_OID,
+											   mcvslot.values[i],
+											   constval)) :
+				DatumGetBool(FunctionCall2Coll(opproc,
+											   DEFAULT_COLLATION_OID,
+											   constval,
+											   mcvslot.values[i]))
+					)
+				mcv_selec += mcvslot.numbers[i];
+			sumcommon += mcvslot.numbers[i];
+		}
+		free_attstatsslot(&mcvslot);
+	}
+	*sumcommonp = sumcommon;
+	return mcv_selec;
+}
+
+/*
+ *	scalarineqsel_mobdb		- Selectivity of "<", "<=", ">", ">=" for scalars.
+ *
+ * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
+ * The isgt and iseq flags distinguish which of the four cases apply.
+ *
+ * The caller has commuted the clause, if necessary, so that we can treat
+ * the variable as being on the left.  The caller must also make sure that
+ * the other side of the clause is a non-null Const, and dissect that into
+ * a value and datatype.  (This definition simplifies some callers that
+ * want to estimate against a computed value instead of a Const node.)
+ *
+ * This routine works for any datatype (or pair of datatypes) known to
+ * convert_to_scalar_mobdb().  If it is applied to some other datatype,
+ * it will return a default estimate.
+ * This function simply added the last argument to the equivalent PostgreSQL
+ * function in order to be able to select specific statistic slots.
+ */
+Selectivity
+scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
+			   VariableStatData *vardata, Datum constval, Oid consttype,
+			   StatisticsStrategy strategy)
+{
+	Form_pg_statistic stats;
+	FmgrInfo opproc;
+	double mcv_selec, hist_selec, sumcommon;
+	Selectivity selec;
+
+	if (!HeapTupleIsValid(vardata->statsTuple))
+	{
+		/* no stats available, so default result */
+		return DEFAULT_INEQ_SEL;
+	}
+	stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+
+	fmgr_info(get_opcode(operator), &opproc);
+
+	/*
+	 * If we have most-common-values info, add up the fractions of the MCV
+	 * entries that satisfy MCV OP CONST.  These fractions contribute directly
+	 * to the result selectivity.  Also add up the total fraction represented
+	 * by MCV entries.
+	 */
+	mcv_selec = mcv_selectivity_mobdb(vardata, &opproc, constval, consttype, true,
+										 &sumcommon, strategy);
+
+	/*
+	 * If there is a histogram, determine which bin the constant falls in, and
+	 * compute the resulting contribution to selectivity.
+	 */
+	hist_selec = ineq_histogram_selectivity_mobdb(root, vardata,
+											&opproc, isgt, iseq,
+											constval, consttype, strategy);
+
+	/*
+	 * Now merge the results from the MCV and histogram calculations,
+	 * realizing that the histogram covers only the non-null values that are
+	 * not listed in MCV.
+	 */
+	selec = 1.0 - stats->stanullfrac - sumcommon;
+
+	if (hist_selec >= 0.0)
+		selec *= hist_selec;
+	else
+	{
+		/*
+		 * If no histogram but there are values not accounted for by MCV,
+		 * arbitrarily assume half of them will match.
+		 */
+		selec *= 0.5;
+	}
+	selec += mcv_selec;
+	/* result should be in range, but make sure... */
+	CLAMP_PROBABILITY(selec);
+	return selec;
+}
+
 bool
-get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
-						  int reqkind, Oid reqop, int flags, StatisticsStrategy strategy)
+get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
+					   int reqkind, Oid reqop, int flags, 
+					   StatisticsStrategy strategy)
 {
 	Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
 	int i, start = 0, end = 0;  /* keep compiler quiet */
@@ -1339,9 +1327,7 @@ get_attstatsslot_internal(AttStatsSlot *sslot, HeapTuple statstuple,
 			break;
 		}
 		default:
-		{
 			break;
-		}
 	}
 
 	/* initialize *sslot properly */
@@ -1485,7 +1471,8 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, get_temporal_cacheOp(operator));
+	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, 
+		get_temporal_cachedop(operator));
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -1512,7 +1499,7 @@ temporal_same_sel(PG_FUNCTION_ARGS)
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
 	if (selec < 0.0)
-		selec = 0.001;
+		selec = DEFAULT_SELECTIVITY;
 	else if (selec > 1.0)
 		selec = 1.0;
 	PG_RETURN_FLOAT8(selec);
@@ -1546,8 +1533,8 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = 0.001;
-	CachedOp cachedOp = get_temporal_cacheOp(operator) ;
+	Selectivity selec = DEFAULT_SELECTIVITY;
+	CachedOp cachedOp = get_temporal_cachedop(operator);
 	/* In the case of unknown operator */
 	if (cachedOp == OVERLAPS_OP)
 		PG_RETURN_FLOAT8(selec);
@@ -1599,7 +1586,7 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
 				break;
 			default:
-				selec = 0.001;
+				selec = DEFAULT_SELECTIVITY;
 		}
 	}
 	else
@@ -1619,7 +1606,7 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
 				break;
 			default:
-				selec = 0.001;
+				selec = DEFAULT_SELECTIVITY;
 		}
 	}
 

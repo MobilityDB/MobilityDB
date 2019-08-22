@@ -3,6 +3,26 @@
  * temporal_analyze.c
  *	  Functions for gathering statistics from temporal columns
  *
+ * The function collects various kind of statistics for both the value and the
+ * time part of temporal types. The kind of statistics also depend on the 
+ * duration of the temporal type, defined in the schema of table
+ * For TemporalInst it collects
+ * - STATISTIC_KIND_MCV in slot 0 for the value part
+ * - STATISTIC_KIND_HISTOGRAM in slot 1 for the value part
+ * - STATISTIC_KIND_MCV in slot 2 for the time part
+ * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time part
+ * For TemporalI
+ * - 
+ * - 
+ * - 
+ * - 
+ * For TemporalSeq and TemporalS and Temporal (all durations)
+ * - 
+ * - 
+ * - 
+ * - 
+ * - 
+ * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
@@ -27,6 +47,8 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+
+
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
@@ -1449,7 +1471,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				/*
 				* Even when we don't create the histogram, store an empty array
 				* to mean "no histogram". We can't just leave stavalues NULL,
-				* because get_attstatsslot() errors if you ask for stavalues, and
+				* because get_attstatsslot_mobdb() errors if you ask for stavalues, and
 				* it's NULL. We'll still store the empty fraction in stanumbers.
 				*/
 				value_length_hist_values = palloc(0);
@@ -1572,7 +1594,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot() errors if you ask for stavalues, and
+			 * because get_attstatsslot_mobdb() errors if you ask for stavalues, and
 			 * it's NULL.
 			 */
 			length_hist_time = palloc(0);

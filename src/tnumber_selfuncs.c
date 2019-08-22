@@ -137,9 +137,9 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 
 	/* Try to get histogram of ranges */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_internal(&hslot, vardata->statsTuple,
-									STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-									ATTSTATSSLOT_VALUES, strategy)))
+		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
+						   STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
+						   ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
 
 	/*
@@ -274,9 +274,9 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
 				{
 					Oid opl = oper_oid(LT_OP, vartype, vartype);
 					Oid opg = oper_oid(GT_OP, vartype, vartype);
-					selec1 = scalarineq_sel(root, opl, false, true, &vardata, (Datum) constantData.lower,
+					selec1 = scalarineqsel_mobdb(root, opl, false, true, &vardata, (Datum) constantData.lower,
 											type_oid(vartype), VALUE_STATISTICS);
-					selec1 += scalarineq_sel(root, opg, true, false, &vardata, (Datum) constantData.upper,
+					selec1 += scalarineqsel_mobdb(root, opg, true, false, &vardata, (Datum) constantData.upper,
 											 type_oid(vartype), VALUE_STATISTICS);
 				}
 				selec1 = 1 - selec1;
@@ -531,23 +531,23 @@ estimate_tnumber_position_sel(VariableStatData vardata,
 
 /* Get the name of the operator from different cases */
 static CachedOp
-get_tnumber_cacheOp(Oid operator)
+get_tnumber_cachedop(Oid operator)
 {
 	for (int i = LT_OP; i <= OVERAFTER_OP; i++)
 	{
-		if (operator == oper_oid((CachedOp)i, T_INTRANGE, T_TINT) ||
-			operator == oper_oid((CachedOp)i, T_TBOX, T_TINT) ||
-			operator == oper_oid((CachedOp)i, T_TINT, T_INTRANGE) ||
-			operator == oper_oid((CachedOp)i, T_TINT, T_TBOX) ||
-			operator == oper_oid((CachedOp)i, T_TINT, T_TINT) ||
-			operator == oper_oid((CachedOp)i, T_TINT, T_TFLOAT) ||
-			operator == oper_oid((CachedOp)i, T_FLOATRANGE, T_TFLOAT) ||
-			operator == oper_oid((CachedOp)i, T_TBOX, T_TFLOAT) ||
-			operator == oper_oid((CachedOp)i, T_TFLOAT, T_FLOATRANGE) ||
-			operator == oper_oid((CachedOp)i, T_TFLOAT, T_TBOX) ||
-			operator == oper_oid((CachedOp)i, T_TFLOAT, T_TINT) ||
-			operator == oper_oid((CachedOp)i, T_TFLOAT, T_TFLOAT))
-			return (CachedOp)i;
+		if (operator == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+			operator == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
+			operator == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
+			operator == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+			operator == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+			operator == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
+			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
+			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+			return (CachedOp) i;
 	}
 	return OVERLAPS_OP;
 	/*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -598,7 +598,7 @@ tnumber_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, get_tnumber_cacheOp(operator));
+	Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, get_tnumber_cachedop(operator));
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -660,7 +660,7 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.001;
-	CachedOp cachedOp = get_tnumber_cacheOp(operator);
+	CachedOp cachedOp = get_tnumber_cachedop(operator);
 
 	/* In the case of unknown position operator */
 	if (cachedOp == OVERLAPS_OP)
