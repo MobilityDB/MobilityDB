@@ -709,6 +709,18 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 	return selec;
 }
 
+/*
+ * Get the values of the constant type and check it's type which is one of two values: temporal type and constant type.
+ * The constant type is defined as the following:
+ * SNCONST for single numeric constant type such as integer, float.
+ * DNCONST for double numeric constant type such as intrange, floatrange.
+ * STCONST for single temporal constant type such as timestamp.
+ * DTCONST for double temporal constant type such as period.
+ * SNCONST_STCONST for single numeric constant and single temporal constant such as temporalInst
+ * DNCONST_DTCONST for double numeric constant and double temporal constant such as temporalI, temporalSeq,
+ * TemporalS and temporal for the generic type
+ */
+
 void
 get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 				 double *lower, double *upper, bool *temporal, Period **period)

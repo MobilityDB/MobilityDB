@@ -479,7 +479,7 @@ base_type_all_oid(Oid valuetypid)
 {
 	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
 		valuetypid == FLOAT8OID || valuetypid == TEXTOID ||
-		valuetypid ==  type_oid(T_DOUBLE2)
+		valuetypid == TIMESTAMPTZOID || valuetypid ==  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
 		|| valuetypid == type_oid(T_GEOMETRY)
 		|| valuetypid == type_oid(T_GEOGRAPHY)

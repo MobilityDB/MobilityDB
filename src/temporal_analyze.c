@@ -677,7 +677,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			scalar_values[nonnull_cnt].tupno = i;
 			scalar_tupnoLink[nonnull_cnt] = i;
 		}
-		timestamp_values[nonnull_cnt].value = datum_copy(inst->t, TIMESTAMPTZOID);
+		timestamp_values[nonnull_cnt].value = datum_copy(TimestampGetDatum(inst->t), TIMESTAMPTZOID);
 		timestamp_values[nonnull_cnt].tupno = i;
 		timestamp_tupnoLink[nonnull_cnt] = i;
 
