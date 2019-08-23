@@ -22,6 +22,7 @@
 #include "period.h"
 #include "rangetypes_ext.h"
 #include "oidcache.h"
+#include "time_selfuncs.h"
 #include "temporal_selfuncs.h"
 
 /*
@@ -306,7 +307,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
 				else
 				{
 					hasTemporal = true;
-					selec2 = period_sel_internal(root, &vardata, constantData.period,
+					selec2 = calc_periodsel(&vardata, constantData.period,
 												 oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
 				}
 				break;
@@ -328,7 +329,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
 				else
 				{
 					hasTemporal = true;
-					selec2 = period_sel_internal(root, &vardata, constantData.period,
+					selec2 = calc_periodsel(&vardata, constantData.period,
 												 oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 				}
 			}

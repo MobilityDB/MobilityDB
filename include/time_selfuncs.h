@@ -21,6 +21,8 @@
 
 /*****************************************************************************/
 
+extern double calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
+	StatStrategy strategy);
 extern double calc_period_hist_selectivity(VariableStatData *vardata,
 										   Period *constval, Oid operator, StatStrategy strategy);
 extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,

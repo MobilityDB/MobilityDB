@@ -65,8 +65,6 @@ extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatDat
 extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 												  Node *other, bool isgt, bool iseq, CachedOp operator);
 
-extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
-									   Oid operator, StatStrategy strategy);
 extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 								  VariableStatData *vardata, Datum constval, Oid consttype,
 								  StatStrategy strategy);

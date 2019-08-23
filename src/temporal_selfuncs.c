@@ -203,7 +203,7 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 									 false, TEMPORAL_STATISTICS);
 			}
 			else
-				selec = period_sel_internal(root, &vardata, constantData.period,
+				selec = calc_periodsel(&vardata, constantData.period,
 											oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
 
 			break;
@@ -250,7 +250,7 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 					selec = selec > 1 ? 1 : selec;
 				}
 				else
-					selec = period_sel_internal(root, &vardata, constantData.period,
+					selec = calc_periodsel(&vardata, constantData.period,
 											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 			}
 			break;
@@ -307,7 +307,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = period_sel_internal(root, &vardata, period, op, TEMPORAL_STATISTICS);
+		selec = calc_periodsel(&vardata, period, op, TEMPORAL_STATISTICS);
 	}
 	else if (vardata.vartype == TIMESTAMPTZOID)
 	{
@@ -330,7 +330,7 @@ estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = period_sel_internal(root, &vardata, period, op, DEFAULT_STATISTICS);
+		selec = calc_periodsel(&vardata, period, op, DEFAULT_STATISTICS);
 	}
 	return selec;
 }
@@ -359,41 +359,6 @@ get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 /*****************************************************************************/
-
-Selectivity
-period_sel_internal(PlannerInfo *root, VariableStatData *vardata, 
-	Period *constval, Oid operator, StatStrategy strategy)
-{
-	double hist_selec;
-	Selectivity selec;
-	float4 empty_frac, null_frac;
-
-	/*
-	 * First look up the fraction of NULLs and empty ranges from pg_statistic.
-	 */
-	if (HeapTupleIsValid(vardata->statsTuple))
-	{
-		Form_pg_statistic stats;
-		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-		null_frac = stats->stanullfrac;
-		empty_frac = 0.0;
-	}
-	else
-	{
-		/*
-		 * No stats are available. Follow through the calculations below
-		 * anyway, assuming no NULLs and no empty ranges. This still allows us
-		 * to give a better-than-nothing estimate based on whether the
-		 * constant is an empty range or not.
-		 */
-		null_frac = 0.0;
-		empty_frac = 0.0;
-	}
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, strategy);
-	selec = (1.0 - empty_frac) * hist_selec;
-	selec *= (1.0 - null_frac);
-	return selec;
-}
 
 /*
  * Do convert_to_scalar_mobdb()'s work for any number data type.
