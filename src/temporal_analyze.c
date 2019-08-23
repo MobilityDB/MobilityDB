@@ -1753,10 +1753,16 @@ temporal_extra_info(VacAttrStats *stats, int durationType)
 		extra_data->value_hash = &value_typentry->hash_proc_finfo;
 	}
 
-	time_typentry = lookup_type_cache(TIMESTAMPTZOID,
-									  TYPECACHE_EQ_OPR |
-									  TYPECACHE_CMP_PROC_FINFO |
-									  TYPECACHE_HASH_PROC_FINFO);
+	if (stats->attrtypmod == TEMPORALINST)
+	    time_typentry = lookup_type_cache(TIMESTAMPTZOID,
+                                          TYPECACHE_EQ_OPR |
+                                          TYPECACHE_CMP_PROC_FINFO |
+                                          TYPECACHE_HASH_PROC_FINFO);
+	else
+        time_typentry = lookup_type_cache(type_oid(T_PERIOD),
+                                          TYPECACHE_EQ_OPR |
+                                          TYPECACHE_CMP_PROC_FINFO |
+                                          TYPECACHE_HASH_PROC_FINFO);
 	extra_data->time_type_id = time_typentry->type_id;
 	extra_data->time_eq_opr = time_typentry->eq_opr;
 	extra_data->time_typbyval = time_typentry->typbyval;

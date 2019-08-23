@@ -1284,6 +1284,60 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	return selec;
 }
 
+/*
+ * get_attstatsslot
+ *
+ *      Extract the contents of a "slot" of a pg_statistic tuple.
+ *      Returns true if requested slot type was found, else false.
+ *
+ * Unlike other routines in this file, this takes a pointer to an
+ * already-looked-up tuple in the pg_statistic cache.  We do this since
+ * most callers will want to extract more than one value from the cache
+ * entry, and we don't want to repeat the cache lookup unnecessarily.
+ * Also, this API allows this routine to be used with statistics tuples
+ * that have been provided by a stats hook and didn't really come from
+ * pg_statistic.
+ *
+ * sslot: pointer to output area (typically, a local variable in the caller).
+ * statstuple: pg_statistic tuple to be examined.
+ * reqkind: STAKIND code for desired statistics slot kind.
+ * reqop: STAOP value wanted, or InvalidOid if don't care.
+ * flags: bitmask of ATTSTATSSLOT_VALUES and/or ATTSTATSSLOT_NUMBERS.
+ * strategy: the type of the extracted elements which is one of the following:
+ * VALUE_STATISTICS: retrieves the value slots that are from slot 0 to 2
+ * TEMPORAL_STATISTICS: retrieves the temporal slots that are from slot 2 to 5
+ * DEFAULT_STATISTICS: retrieves the slots for the default postgreSQL types
+ * that start from slot 0
+ *
+ * If a matching slot is found, true is returned, and *sslot is filled thus:
+ * staop: receives the actual STAOP value.
+ * stacoll: receives the actual STACOLL value.
+ * valuetype: receives actual datatype of the elements of stavalues.
+ * values: receives pointer to an array of the slot's stavalues.
+ * nvalues: receives number of stavalues.
+ * numbers: receives pointer to an array of the slot's stanumbers (as float4).
+ * nnumbers: receives number of stanumbers.
+ *
+ * valuetype/values/nvalues are InvalidOid/NULL/0 if ATTSTATSSLOT_VALUES
+ * wasn't specified.  Likewise, numbers/nnumbers are NULL/0 if
+ * ATTSTATSSLOT_NUMBERS wasn't specified.
+ *
+ * If no matching slot is found, false is returned, and *sslot is zeroed.
+ *
+ * Note that the current API doesn't allow for searching for a slot with
+ * a particular collation.  If we ever actually support recording more than
+ * one collation, we'll have to extend the API, but for now simple is good.
+ *
+ * The data referred to by the fields of sslot is locally palloc'd and
+ * is independent of the original pg_statistic tuple.  When the caller
+ * is done with it, call free_attstatsslot to release the palloc'd data.
+ *
+ * If it's desirable to call free_attstatsslot when get_attstatsslot might
+ * not have been called, memset'ing sslot to zeroes will allow that.
+ * This function simply added the last argument to the equivalent PostgreSQL
+ * function in order to be able to select specific statistic slots.
+ */
+
 bool
 get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 					   int reqkind, Oid reqop, int flags, 
