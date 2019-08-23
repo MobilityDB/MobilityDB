@@ -2,7 +2,8 @@
  *
  * tpoint_selfuncs.h
  * 		Selectivity functions for the temporal point types
- *
+ * Most definitions come from PostGIS file gserialized_estimate.c
+ * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
@@ -25,10 +26,10 @@
 * We'll use this to statically allocate a bunch of
 * arrays below.
 */
-#define X_DIMS  0
-#define Y_DIMS  1
-#define Z_DIMS  2
-#define T_DIMS  3
+#define X_DIM  0
+#define Y_DIM  1
+#define Z_DIM  2
+#define T_DIM  3
 #define ND_DIMS 4
 
 /**
@@ -36,11 +37,11 @@
 */
 #define FALLBACK_ND_SEL 0.2
 
-/**
-* N-dimensional box type for calculations, to avoid doing
-* explicit axis conversions from STBOX in all calculations
-* at every step.
-*/
+/*
+ * N-dimensional box type for calculations, to avoid doing
+ * explicit axis conversions from STBOX in all calculations
+ * at every step.
+ */
 typedef struct ND_BOX_T
 {
 	float4 min[ND_DIMS];
@@ -56,12 +57,12 @@ typedef struct ND_IBOX_T
 	int max[ND_DIMS];
 } ND_IBOX;
 
-/**
-* N-dimensional statistics structure. Well, actually
-* four-dimensional, but set up to handle arbirary dimensions
-* if necessary (really, we just want to get the 2,3,4-d cases
-* into one shared piece of code).
-*/
+/*
+ * N-dimensional statistics structure. Well, actually
+ * four-dimensional, but set up to handle arbirary dimensions
+ * if necessary (really, we just want to get the 2,3,4-d cases
+ * into one shared piece of code).
+ */
 typedef struct ND_STATS_T
 {
 	/* Dimensionality of the histogram. */
@@ -94,7 +95,6 @@ typedef struct ND_STATS_T
 	float4 cells_covered;
 
 	/* Variable length # of floats for histogram */
-
 	float4 value[1];
 } ND_STATS;
 

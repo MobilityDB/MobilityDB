@@ -132,9 +132,9 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	int			nhist, i;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
-									STATISTIC_KIND_BOUNDS_HISTOGRAM, 
-									InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
+		  get_attstatsslot(&hslot, vardata->statsTuple,
+						   STATISTIC_KIND_BOUNDS_HISTOGRAM, 
+						   InvalidOid, ATTSTATSSLOT_VALUES)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper
@@ -851,7 +851,7 @@ periodsel(PG_FUNCTION_ARGS)
 		/* the right argument is a constant TIMESTAMPTZ. We convert it into
 		 * a singleton period
 		 */
-		TimestampTz t = DatumGetTimestampTz( ((Const *) other)->constvalue );
+		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
 		constperiod = period_make(t, t, true, true);
 	}
 	else if (timetype == type_oid(T_TIMESTAMPSET))

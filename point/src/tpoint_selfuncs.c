@@ -29,7 +29,8 @@
 static STBOX
 get_stbox(Node *node)
 {
-	STBOX box = {0,0,0,0,0,0,0,0,0};
+	STBOX box;
+	memset(&box, 0, sizeof(STBOX));
 	Oid value_type = ((Const *) node)->consttype;
 
 	if (value_type == type_oid(T_TGEOMPOINT) ||
@@ -63,6 +64,7 @@ get_stbox(Node *node)
 * Given an n-d index array (counter), and a domain to increment it
 * in (ibox) increment it by one, unless it's already at the max of
 * the domain, in which case return false.
+* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
@@ -107,19 +109,14 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 	nd_box->min[d] = box->ymin;
 	nd_box->max[d] = box->ymax;
 	d++;
-	if (FLAGS_GET_GEODETIC(box->flags))
+	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) ||
+		MOBDB_FLAGS_GET_Z(box->flags))
 	{
 		nd_box->min[d] = box->zmin;
 		nd_box->max[d] = box->zmax;
-		return;
 	}
-	if (FLAGS_GET_Z(box->flags))
-	{
-		nd_box->min[d] = box->zmin;
-		nd_box->max[d] = box->zmax;
-		d++;
-	}
-	if (FLAGS_GET_M(box->flags))
+	d++;
+	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
 		nd_box->min[d] = box->tmin;
 		nd_box->max[d] = box->tmax;
@@ -155,6 +152,7 @@ nd_stats_value_index(const ND_STATS *stats, int *indexes)
 
 /**
 * Returns the proportion of b2 that is covered by b1.
+* PostGIS function copied from the file gserialized_estimate.c
 */
 static double
 nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
@@ -218,6 +216,7 @@ nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
 /**
 * What stats cells overlap with this ND_BOX? Put the lowest cell
 * addresses in ND_IBOX->min and the highest in ND_IBOX->max
+* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
@@ -248,6 +247,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 
 /**
 * Return true if #ND_BOX a overlaps b, false otherwise.
+* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -297,10 +297,10 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 	int at[ND_DIMS];
 	double cellWidth, imin, imax, iwidth;
 	int secondDim;
-	if (mainDim == X_DIMS)
-		secondDim = Y_DIMS;
+	if (mainDim == X_DIM)
+		secondDim = Y_DIM;
 	else
-		secondDim = X_DIMS;
+		secondDim = X_DIM;
 
 	/* Check the scope of the box with the extent */
 	switch (cacheOp)
@@ -351,7 +351,7 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 		/* We have to pro-rate partially overlapped cells. */
 		nd_cell.min[mainDim] = (float4)(nd_stats->extent.min[mainDim] + (at[mainDim] + 0) * cell_size[mainDim]);
 		nd_cell.max[mainDim] = (float4)(nd_stats->extent.min[mainDim] + (at[mainDim] + 1) * cell_size[mainDim]);
-		if (mainDim == X_DIMS)
+		if (mainDim == X_DIM)
 			cell_count = nd_stats->value[i * (int)nd_stats->size[1] + at[1]];
 		else
 			cell_count = nd_stats->value[at[0] * (int)nd_stats->size[1] + i];
@@ -384,7 +384,7 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 			case BELOW_OP:
 			case OVERBELOW_OP:
 			{
-				if (mainDim == X_DIMS)
+				if (mainDim == X_DIM)
 				{
 					for (int j = at[1] - 1; j >= 0; j--)
 					{
@@ -407,7 +407,7 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 			case ABOVE_OP:
 			case OVERABOVE_OP:
 			{
-				if (mainDim == X_DIMS)
+				if (mainDim == X_DIM)
 				{
 					for (int j = at[1] + 1; j < nd_stats->size[secondDim]; j++)
 					{
@@ -465,20 +465,20 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		at[1] = nd_ibox->min[1];
 	}
 
-	for (int i = 0; i < nd_stats->size[Z_DIMS]; i++)
+	for (int i = 0; i < nd_stats->size[Z_DIM]; i++)
 	{
-		at[Z_DIMS] = i;
+		at[Z_DIM] = i;
 		ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
 
 		/* We have to pro-rate partially overlapped cells. */
-		nd_cell.min[Z_DIMS] = (float4)(nd_stats->extent.min[Z_DIMS] + (at[Z_DIMS] + 0) * cell_size[Z_DIMS]);
-		nd_cell.max[Z_DIMS] = (float4)(nd_stats->extent.min[Z_DIMS] + (at[Z_DIMS] + 1) * cell_size[Z_DIMS]);
-		cell_count = nd_stats->value[at[X_DIMS] + at[Y_DIMS] * (int)nd_stats->size[X_DIMS] +
-									 at[Z_DIMS] * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
+		nd_cell.min[Z_DIM] = (float4)(nd_stats->extent.min[Z_DIM] + (at[Z_DIM] + 0) * cell_size[Z_DIM]);
+		nd_cell.max[Z_DIM] = (float4)(nd_stats->extent.min[Z_DIM] + (at[Z_DIM] + 1) * cell_size[Z_DIM]);
+		cell_count = nd_stats->value[at[X_DIM] + at[Y_DIM] * (int)nd_stats->size[X_DIM] +
+									 at[Z_DIM] * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
 
-		cellWidth = nd_cell.max[Z_DIMS] - nd_cell.min[Z_DIMS];
-		imin = Max(nd_box->min[Z_DIMS], nd_box->min[Z_DIMS]);
-		imax = Min(nd_cell.max[Z_DIMS], nd_cell.max[Z_DIMS]);
+		cellWidth = nd_cell.max[Z_DIM] - nd_cell.min[Z_DIM];
+		imin = Max(nd_box->min[Z_DIM], nd_box->min[Z_DIM]);
+		imax = Min(nd_cell.max[Z_DIM], nd_cell.max[Z_DIM]);
 		iwidth = imax - imin;
 		iwidth = Max(0.0, iwidth);
 
@@ -498,24 +498,24 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		/* Count the rest features */
 		if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
 		{
-			for (int x = at[X_DIMS] - 1; x >= 0; x--)
+			for (int x = at[X_DIM] - 1; x >= 0; x--)
 			{
-				for (int y = at[Y_DIMS] - 1; y >= 0; y--)
+				for (int y = at[Y_DIM] - 1; y >= 0; y--)
 				{
-					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIMS] +
-												 i * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
+					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIM] +
+												 i * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
 					total_count += cell_count;
 				}
 			}
 		}
 		else if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
 		{
-			for (int x = at[X_DIMS] + 1; x < nd_stats->size[0]; x++)
+			for (int x = at[X_DIM] + 1; x < nd_stats->size[0]; x++)
 			{
-				for (int y = at[Y_DIMS] + 1; y < nd_stats->size[1]; y++)
+				for (int y = at[Y_DIM] + 1; y < nd_stats->size[1]; y++)
 				{
-					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIMS] +
-												 i * (int)nd_stats->size[X_DIMS] * (int)nd_stats->size[Y_DIMS]];
+					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIM] +
+												 i * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
 					total_count += cell_count;
 				}
 			}
@@ -741,52 +741,52 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			return selec;
 		}
 		case LEFT_OP:
-			selec = (varonleft)?xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
+			selec = (varonleft)?xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
 			return selec;
 		case RIGHT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
 			return selec;
 		case OVERLEFT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
 			return selec;
 		case OVERRIGHT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
 			return selec;
 		case BELOW_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM);
 			return selec;
 		case ABOVE_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM);
 			return selec;
 		case OVERABOVE_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM);
 			return selec;
 		case OVERBELOW_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIMS):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIMS);
+			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM):
+					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM);
 			return selec;
 		case FRONT_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM):
+					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
 			return selec;
 		case BACK_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM):
+					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
 			return selec;
 		case OVERFRONT_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIMS):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIM):
+					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
 			return selec;
 		case OVERBACK_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIMS):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIMS);
+			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM):
+					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
 			return selec;
 		case BEFORE_OP:
 			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP):
