@@ -12,16 +12,15 @@
  * - STATISTIC_KIND_MCV in slot 2 for the time part
  * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time part
  * For TemporalI
- * - 
- * - 
- * - 
- * - 
+ * - STATISTIC_KIND_MCELEM in slot 0 for the value part
+ * - STATISTIC_KIND_DECHIST in slot 1 for the value part
+ * - STATISTIC_KIND_MCELEM in slot 2 for the temporal part
+ * - STATISTIC_KIND_DECHIST in slot 3 for the temporal part
  * For TemporalSeq and TemporalS and Temporal (all durations)
- * - 
- * - 
- * - 
- * - 
- * - 
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part
  * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
