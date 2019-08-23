@@ -46,7 +46,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	float4		null_frac;
 
 	/*
-	 * First look up the fraction of NULLs and empty periods from pg_statistic.
+	 * First look up the fraction of NULLs periods from pg_statistic.
 	 */
 	if (HeapTupleIsValid(vardata->statsTuple))
 	{

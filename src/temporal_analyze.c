@@ -48,8 +48,6 @@
 #include "oidcache.h"
 #include "temporal_util.h"
 
-
-
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
  * too much space in the resulting pg_statistic rows, we ignore arrays that

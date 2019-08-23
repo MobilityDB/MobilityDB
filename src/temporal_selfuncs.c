@@ -403,20 +403,20 @@ convert_numeric_to_scalar(Oid typid, Datum value)
 {
 	switch (typid) {
 		case BOOLOID:
-			return (double)DatumGetBool(value);
+			return (double) DatumGetBool(value);
 		case INT2OID:
-			return (double)DatumGetInt16(value);
+			return (double) DatumGetInt16(value);
 		case INT4OID:
-			return (double)DatumGetInt32(value);
+			return (double) DatumGetInt32(value);
 		case INT8OID:
-			return (double)DatumGetInt64(value);
+			return (double) DatumGetInt64(value);
 		case FLOAT4OID:
-			return (double)DatumGetFloat4(value);
+			return (double) DatumGetFloat4(value);
 		case FLOAT8OID:
-			return (double)DatumGetFloat8(value);
+			return (double) DatumGetFloat8(value);
 		case NUMERICOID:
 			/* Note: out-of-range values will be clamped to +-HUGE_VAL */
-			return (double)DatumGetFloat8(DirectFunctionCall1(
+			return (double) DatumGetFloat8(DirectFunctionCall1(
 												  numeric_float8_no_overflow, value));
 		case OIDOID:
 		case REGPROCOID:
