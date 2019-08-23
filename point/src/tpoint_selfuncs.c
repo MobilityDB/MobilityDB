@@ -542,9 +542,12 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 	constantData.bBoxBounds = DTCONST;
 	constantData.oid = ((Const *) other)->consttype;
 
-	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
+	constantData.lower = constantData.upper = 0;  /* keep compiler quiet */
 	constantData.period = period;
-	switch (cachedOp)
+	if (cachedOp == OVERLAPS_OP || cachedOp == SAME_OP || 
+		cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+			selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
+
 	{
 		case OVERLAPS_OP:
 			selec = estimate_temporal_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
@@ -571,7 +574,7 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 /** Estimate the selectivity of geometry/geography types */
 static Selectivity
 estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box,
-					 CachedOp op, bool varonleft)
+					 CachedOp op)
 {
 	int d; /* counter */
 	ND_BOX nd_box;
@@ -664,7 +667,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			do
 			{
 				float cell_count, ratio;
-				ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
+				ND_BOX nd_cell;
+				memset(&nd_cell, 0, sizeof(ND_BOX));
 
 				/* We have to pro-rate partially overlapped cells. */
 				for (d = 0; d < nd_stats->ndims; d++)
@@ -691,8 +695,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			do
 			{
 				float cell_count, ratio;
-				ND_BOX nd_cell = {{0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0}};
+				ND_BOX nd_cell;
+				memset(&nd_cell, 0, sizeof(ND_BOX));
 
 				/* We have to pro-rate partially overlapped cells. */
 				for (d = 0; d < nd_stats->ndims; d++)
@@ -721,8 +725,8 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			do
 			{
 				float cell_count, ratio;
-				ND_BOX nd_cell = {{0.0, 0.0, 0.0, 0.0},
-								  {0.0, 0.0, 0.0, 0.0}};
+				ND_BOX nd_cell;
+				memset(&nd_cell, 0, sizeof(ND_BOX));
 
 				/* We have to pro-rate partially overlapped cells. */
 				for (d = 0; d < nd_stats->ndims; d++)
@@ -741,68 +745,52 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			return selec;
 		}
 		case LEFT_OP:
-			selec = (varonleft)?xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
 			return selec;
 		case RIGHT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
 			return selec;
 		case OVERLEFT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIM);
 			return selec;
 		case OVERRIGHT_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIM);
 			return selec;
 		case BELOW_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM);
 			return selec;
 		case ABOVE_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM);
 			return selec;
 		case OVERABOVE_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM);
 			return selec;
 		case OVERBELOW_OP:
-			selec = (varonleft)? xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM):
-					xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM);
+			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM);
 			return selec;
 		case FRONT_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
 			return selec;
 		case BACK_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
 			return selec;
 		case OVERFRONT_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIM):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIM);
 			return selec;
 		case OVERBACK_OP:
-			selec = (varonleft)? z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM):
-					z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
+			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM);
 			return selec;
 		case BEFORE_OP:
-			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP):
-					estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
+			selec = estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
 			return selec;
 		case AFTER_OP:
-			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP):
-					estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
+			selec = estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
 			return selec;
 		case OVERBEFORE_OP:
-			selec = (varonleft)? estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP):
-					estimate_temporal_position_sel(root, *vardata, other, true, true, GE_OP);
+			selec = estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
 			return selec;
 		case OVERAFTER_OP:
-			selec = (varonleft)? 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP):
-					estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
+			selec = 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP);
 			return selec;
 		default:
 			return 0.001;
@@ -810,44 +798,14 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 }
 
 static Selectivity
-tpoint_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, CachedOp cachedOp)
+tpoint_sel(PlannerInfo *root, VariableStatData vardata, Node *other, CachedOp cachedOp)
 {
-	VariableStatData vardata;
-	Node *other;
-	bool varonleft;
 	bool selec2Flag = false;
 	Selectivity selec1 = 0.0, selec2 = 0.0, selec = 0.0; /* keep compiler quiet */
 
-	/*
-	 * If expression is not (variable op something) or (something op
-	 * variable), then punt and return a default estimate.
-	 */
-	if (!get_restriction_variable(root, args, varRelid,
-								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(0.01);
-
-	/*
-	 * Can't do anything useful if the something is not a constant, either.
-	 */
-	if (!IsA(other, Const))
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.01);
-	}
-
-	/*
-	 * All the period operators are strict, so we can cope with a NULL constant
-	 * right away.
-	 */
-	if (((Const *) other)->constisnull)
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.0);
-	}
-
 	STBOX box = get_stbox(other);
 
-	selec1 = estimate_selectivity(root, &vardata, other, &box, cachedOp, varonleft);
+	selec1 = estimate_selectivity(root, &vardata, other, &box, cachedOp);
 
 	if (MOBDB_FLAGS_GET_T(box.flags) && (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
 										 cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
@@ -880,10 +838,40 @@ PGDLLEXPORT Datum
 tpoint_overlaps_sel(PG_FUNCTION_ARGS)
 {
 	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
+	/*	Oid operator = PG_GETARG_OID(1); */
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, OVERLAPS_OP);
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(0.01);
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.01);
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	Selectivity	selec = tpoint_sel(root, vardata, other, OVERLAPS_OP);
 	if (selec < 0.0)
 		selec = 0.005;
 	else if (selec > 1.0)
@@ -910,11 +898,58 @@ tpoint_contains_sel(PG_FUNCTION_ARGS)
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = DEFAULT_SELECTIVITY;
 	CachedOp cachedOp;
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(0.01);
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.01);
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* TODO: check whether there might still be a way to estimate.
+			* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		}
+	}
+
 	bool found = get_tpoint_cachedop(operator, &cachedOp);
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
 
-	selec = tpoint_sel(root, operator, args, varRelid, cachedOp);
+	selec = tpoint_sel(root, vardata, other, cachedOp);
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -939,7 +974,54 @@ tpoint_same_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tpoint_sel(root, operator, args, varRelid, SAME_OP);
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(0.01);
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.01);
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* TODO: check whether there might still be a way to estimate.
+			* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		}
+	}
+
+	Selectivity	selec = tpoint_sel(root, vardata, other, SAME_OP);
 	if (selec < 0.0)
 		selec = 0.001;
 	else if (selec > 1.0)
@@ -977,10 +1059,57 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = DEFAULT_SELECTIVITY;
 	CachedOp cachedOp;
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	/*
+	 * If expression is not (variable op something) or (something op
+	 * variable), then punt and return a default estimate.
+	 */
+	if (!get_restriction_variable(root, args, varRelid,
+								  &vardata, &other, &varonleft))
+		PG_RETURN_FLOAT8(0.01);
+
+	/*
+	 * Can't do anything useful if the something is not a constant, either.
+	 */
+	if (!IsA(other, Const))
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.01);
+	}
+
+	/*
+	 * All the period operators are strict, so we can cope with a NULL constant
+	 * right away.
+	 */
+	if (((Const *) other)->constisnull)
+	{
+		ReleaseVariableStats(vardata);
+		PG_RETURN_FLOAT8(0.0);
+	}
+
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* TODO: check whether there might still be a way to estimate.
+			* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		}
+	}
+
 	bool found = get_tpoint_cachedop(operator, &cachedOp);
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
-	selec = tpoint_sel(root, operator, args, varRelid, cachedOp);
+	selec = tpoint_sel(root, vardata, other, cachedOp);
 	if (selec < 0.0)
 		selec = 0.001;
 	else if (selec > 1.0)
