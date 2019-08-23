@@ -22,7 +22,7 @@
 /*****************************************************************************/
 
 extern double calc_period_hist_selectivity(VariableStatData *vardata,
-										   Period *constval, Oid operator, StatisticsStrategy strategy);
+										   Period *constval, Oid operator, StatStrategy strategy);
 extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
 												  PeriodBound *hist, int hist_nvalues, bool equal);
 extern double calc_length_hist_frac(Datum *length_hist_values,

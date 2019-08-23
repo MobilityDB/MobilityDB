@@ -492,7 +492,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 /* Transform a value to a box (internal function only) */
 
 void
-base_to_tbox(TBOX *box, Datum value, Oid valuetypid)
+number_to_box(TBOX *box, Datum value, Oid valuetypid)
 {
 	numeric_base_type_oid(valuetypid);
 	if (valuetypid == INT4OID)

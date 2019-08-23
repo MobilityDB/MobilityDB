@@ -125,7 +125,7 @@ calc_hist_selectivity_scalar(TypeCacheEntry *typcache, Datum constbound,
  */
 static Selectivity
 calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
-							TypeCacheEntry *typcache, bool isgt, bool iseq, StatisticsStrategy strategy)
+							TypeCacheEntry *typcache, bool isgt, bool iseq, StatStrategy strategy)
 {
 	int nhist;
 	RangeBound *hist_lower;
@@ -176,7 +176,7 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 
 static Selectivity
 range_sel_internal(VariableStatData *vardata, Datum constval,
-				   bool isgt, bool iseq, TypeCacheEntry *typcache, StatisticsStrategy strategy)
+				   bool isgt, bool iseq, TypeCacheEntry *typcache, StatStrategy strategy)
 {
 	double hist_selec;
 	Selectivity selec;

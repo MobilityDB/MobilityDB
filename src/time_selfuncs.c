@@ -123,7 +123,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
-							 Oid operator, StatisticsStrategy strategy)
+							 Oid operator, StatStrategy strategy)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -132,9 +132,9 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	int			nhist, i;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot(&hslot, vardata->statsTuple,
+		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
 						   STATISTIC_KIND_BOUNDS_HISTOGRAM, 
-						   InvalidOid, ATTSTATSSLOT_VALUES)))
+						   InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper

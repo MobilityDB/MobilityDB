@@ -1231,7 +1231,7 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, ts->valuetypid);
+		number_to_box(&box2, value, ts->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -1357,7 +1357,7 @@ temporals_at_value(TemporalS *ts, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
@@ -1401,7 +1401,7 @@ temporals_minus_value(TemporalS *ts, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporals_copy(ts);
 	}

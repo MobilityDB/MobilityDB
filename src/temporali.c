@@ -774,7 +774,7 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, ti->valuetypid);
+		number_to_box(&box2, value, ti->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -853,7 +853,7 @@ temporali_at_value(TemporalI *ti, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
@@ -895,7 +895,7 @@ temporali_minus_value(TemporalI *ti, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporali_copy(ti);
 	}

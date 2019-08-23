@@ -1791,7 +1791,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, seq->valuetypid);
+		number_to_box(&box2, value, seq->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -2082,7 +2082,7 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return 0;			
 	}
@@ -2222,7 +2222,7 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		memset(&box1, 0, sizeof(TBOX));
 		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 		{
 			result[0] = temporalseq_copy(seq);

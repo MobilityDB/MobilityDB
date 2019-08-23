@@ -362,7 +362,7 @@ get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
 
 Selectivity
 period_sel_internal(PlannerInfo *root, VariableStatData *vardata, 
-	Period *constval, Oid operator, StatisticsStrategy strategy)
+	Period *constval, Oid operator, StatStrategy strategy)
 {
 	double hist_selec;
 	Selectivity selec;
@@ -560,7 +560,7 @@ default_temporaltypes_selectivity(Oid operator)
  */
 double
 var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
-			 bool negate, StatisticsStrategy strategy)
+			 bool negate, StatStrategy strategy)
 {
 	double selec;
 	bool isdefault;
@@ -884,7 +884,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 static double
 ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 						   FmgrInfo *opproc, bool isgt, bool iseq, Datum constval,
-						   Oid consttype, StatisticsStrategy strategy)
+						   Oid consttype, StatStrategy strategy)
 {
 
 	double hist_selec = -1.0;
@@ -1169,7 +1169,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 static Selectivity
 mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
 				Datum constval, Oid atttype, bool varonleft, 
-				double *sumcommonp, StatisticsStrategy strategy)
+				double *sumcommonp, StatStrategy strategy)
 {
 	double mcv_selec, sumcommon;
 	AttStatsSlot mcvslot;
@@ -1226,7 +1226,7 @@ mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
 Selectivity
 scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 			   VariableStatData *vardata, Datum constval, Oid consttype,
-			   StatisticsStrategy strategy)
+			   StatStrategy strategy)
 {
 	Form_pg_statistic stats;
 	FmgrInfo opproc;
@@ -1339,7 +1339,7 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 bool
 get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 					   int reqkind, Oid reqop, int flags, 
-					   StatisticsStrategy strategy)
+					   StatStrategy strategy)
 {
 	Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
 	int i, start = 0, end = 0;  /* keep compiler quiet */

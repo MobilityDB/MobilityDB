@@ -29,7 +29,7 @@ typedef enum
 	VALUE_STATISTICS,
 	TEMPORAL_STATISTICS,
 	DEFAULT_STATISTICS
-} StatisticsStrategy;
+} StatStrategy;
 
 typedef enum 
 {
@@ -66,22 +66,22 @@ extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableSta
 												  Node *other, bool isgt, bool iseq, CachedOp operator);
 
 extern Selectivity period_sel_internal(PlannerInfo *root, VariableStatData *vardata, Period *constval,
-									   Oid operator, StatisticsStrategy strategy);
+									   Oid operator, StatStrategy strategy);
 extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 								  VariableStatData *vardata, Datum constval, Oid consttype,
-								  StatisticsStrategy strategy);
+								  StatStrategy strategy);
 
 /*****************************************************************************
  * Some other helper functions.
  *****************************************************************************/
 
 extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
-							 int reqkind, Oid reqop, int flags, StatisticsStrategy strategy);
+							 int reqkind, Oid reqop, int flags, StatStrategy strategy);
 extern double default_temporaltypes_selectivity(Oid operator);
 extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
 							 double *lower, double *upper, bool *temporal, Period **period);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
-						   bool negate, StatisticsStrategy strategy);
+						   bool negate, StatStrategy strategy);
 
 /*****************************************************************************/
 
