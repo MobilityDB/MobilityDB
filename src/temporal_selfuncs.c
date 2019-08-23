@@ -1585,10 +1585,7 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 	bool varonleft;
 	Selectivity selec = DEFAULT_SELECTIVITY;
 	CachedOp cachedOp;
-	bool found = get_temporal_cachedop(operator, &cachedOp);
-	/* In the case of unknown operator */
-	if (!found)
-		PG_RETURN_FLOAT8(selec);
+
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
@@ -1616,50 +1613,50 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(0.0);
 	}
 
+    /*
+     * If var is on the right, commute the operator, so that we can assume the
+     * var is on the left in what follows.
+     */
+    if (!varonleft)
+    {
+        /* we have other Op var, commute to make var Op other */
+        operator = get_commutator(operator);
+        if (!operator)
+        {
+            /* TODO: check whether there might still be a way to estimate.
+            * Use default selectivity (should we raise an error instead?) */
+            ReleaseVariableStats(vardata);
+            PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+        }
+    }
+
+    bool found = get_temporal_cachedop(operator, &cachedOp);
+    /* In the case of unknown operator */
+    if (!found)
+        PG_RETURN_FLOAT8(selec);
 	/*
 	 * If var is on the right, commute the operator, so that we can assume the
 	 * var is on the left in what follows.
 	 */
-	if (!varonleft)
-	{
-		switch (cachedOp)
-		{
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
-				break;
-			default:
-				selec = DEFAULT_SELECTIVITY;
-		}
-	}
-	else
-	{
-		switch (cachedOp)
-		{
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
-				break;
-			default:
-				selec = DEFAULT_SELECTIVITY;
-		}
-	}
+
+    switch (cachedOp)
+    {
+        case BEFORE_OP:
+            selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+            break;
+        case AFTER_OP:
+            selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+            break;
+        case OVERBEFORE_OP:
+            selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
+            break;
+        case OVERAFTER_OP:
+            selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+            break;
+        default:
+            selec = DEFAULT_SELECTIVITY;
+    }
+
 
 	if (selec < 0.0)
 		selec = default_temporaltypes_selectivity(operator);
