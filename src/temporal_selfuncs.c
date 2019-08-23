@@ -1304,8 +1304,8 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
  * reqop: STAOP value wanted, or InvalidOid if don't care.
  * flags: bitmask of ATTSTATSSLOT_VALUES and/or ATTSTATSSLOT_NUMBERS.
  * strategy: the type of the extracted elements which is one of the following:
- * VALUE_STATISTICS: retrieves the value slots that are from slot 0 to 2
- * TEMPORAL_STATISTICS: retrieves the temporal slots that are from slot 2 to 5
+ * VALUE_STATISTICS: retrieves the value part from slot 0 to 2
+ * TEMPORAL_STATISTICS: retrieves the temporal part from slot 2 to 5
  * DEFAULT_STATISTICS: retrieves the slots for the default postgreSQL types
  * that start from slot 0
  *

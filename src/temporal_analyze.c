@@ -40,6 +40,7 @@
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
 #include <utils/timestamp.h>
+#include <temporal_analyze.h>
 
 #include "period.h"
 #include "time_analyze.h"
@@ -729,7 +730,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 static void
 tempi_elems_compute_stats(VacAttrStats *stats, HTAB *elements_tab, 
 	HTAB *count_tab, int64 element_no, int analyzed_rows, int num_mcelem, 
-	int bucket_width, int slot_idx)
+	int bucket_width, int slot_idx, bool valuestats)
 {
 	int			nonnull_cnt = analyzed_rows;
 	int			count_items_count;
@@ -837,17 +838,22 @@ tempi_elems_compute_stats(VacAttrStats *stats, HTAB *elements_tab,
 		MemoryContextSwitchTo(old_context);
 
 		stats->stakind[slot_idx] = STATISTIC_KIND_MCELEM;
-		stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
+		stats->staop[slot_idx] = (valuestats) ? temporal_extra_data->value_eq_opr :
+                                 temporal_extra_data->time_eq_opr;
 		stats->stanumbers[slot_idx] = mcelem_freqs;
 		/* See above comment about extra stanumber entries */
 		stats->numnumbers[slot_idx] = num_mcelem + 2;
 		stats->stavalues[slot_idx] = mcelem_values;
 		stats->numvalues[slot_idx] = num_mcelem;
 		/* We are storing values of element type */
-		stats->statypid[slot_idx] = temporal_extra_data->value_type_id;
-		stats->statyplen[slot_idx] = temporal_extra_data->value_typlen;
-		stats->statypbyval[slot_idx] = temporal_extra_data->value_typbyval;
-		stats->statypalign[slot_idx] = temporal_extra_data->value_typalign;
+		stats->statypid[slot_idx] = (valuestats) ? temporal_extra_data->value_type_id :
+                                    temporal_extra_data->time_type_id;
+		stats->statyplen[slot_idx] = (valuestats) ? temporal_extra_data->value_typlen :
+                                     temporal_extra_data->time_typlen;
+		stats->statypbyval[slot_idx] = (valuestats) ? temporal_extra_data->value_typbyval :
+                                       temporal_extra_data->time_typbyval;
+		stats->statypalign[slot_idx] = (valuestats) ? temporal_extra_data->value_typalign :
+                                       temporal_extra_data->time_typalign;
 		slot_idx++;
 	}
 
@@ -938,10 +944,10 @@ tempi_elems_compute_stats(VacAttrStats *stats, HTAB *elements_tab,
 		Assert(j == count_items_count - 1);
 
 		stats->stakind[slot_idx] = STATISTIC_KIND_DECHIST;
-		stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
+		stats->staop[slot_idx] = (valuestats) ? temporal_extra_data->value_eq_opr :
+                                 temporal_extra_data->time_eq_opr;
 		stats->stanumbers[slot_idx] = hist;
 		stats->numnumbers[slot_idx] = num_hist + 1;
-		slot_idx++;
 	}
 }
 
@@ -1217,13 +1223,13 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/* Value part statistics */
 			tempi_elems_compute_stats(stats, elements_tab_value, 
 				count_tab_value, element_no_value, analyzed_rows, 
-				num_mcelem, bucket_width, slot_idx);
+				num_mcelem, bucket_width, slot_idx, true);
 		}
 		slot_idx = 2;
 		/*  Temporal part statistics */
 		tempi_elems_compute_stats(stats, elements_tab_time, 
 			count_tab_time, element_no_time, analyzed_rows, 
-			num_mcelem, bucket_width, slot_idx);
+			num_mcelem, bucket_width, slot_idx, false);
 
 	}
 
