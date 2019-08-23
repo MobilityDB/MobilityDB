@@ -29,10 +29,10 @@
 /*****************************************************************************/
 
 /*
- * Retrieve stored statistics for the temporal type to compute the selectivity value of the bounding box
- * operators: overlaps (&&), contains (@>), contained (<@), and same (~=).
+ * Retrieve stored statistics for the temporal type to compute the selectivity 
+ * value of the bounding box operators: overlaps (&&), contains (@>), 
+ * contained (<@), and same (~=).
  */
-
 static Selectivity
 temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, 
 	CachedOp cachedOp)
@@ -126,9 +126,8 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 
 /*
  * Get the lower or the upper value of the temporal type based on the position operator:
- * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), and etc.
+ * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), etc.
  */
-
 static PeriodBound *
 lower_or_higher_temporal_bound(Node *other, bool higher)
 {
@@ -184,7 +183,6 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 /*
  * Estimate the selectivity value of the bounding box operators for temporal durations.
  */
-
 Selectivity
 estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, 
 	ConstantData constantData, CachedOp cachedOp)

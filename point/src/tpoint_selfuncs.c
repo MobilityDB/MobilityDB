@@ -288,7 +288,8 @@ get_tpoint_cachedop(Oid operator, CachedOp *cachedOp)
 
 /** Estimate the selectivity for relative position x/y operators */
 static double
-xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats, CachedOp cacheOp, int mainDim)
+xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, 
+	const ND_STATS *nd_stats, CachedOp cacheOp, int mainDim)
 {
 	double total_count = 0.0;
 	float cell_count, ratio;
@@ -332,7 +333,8 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 	}
 	/* Work out some measurements of the histogram */
 	/* Cell size in each dim */
-	cell_size[mainDim] = (nd_stats->extent.max[mainDim] - nd_stats->extent.min[mainDim]) / nd_stats->size[mainDim];
+	cell_size[mainDim] = (nd_stats->extent.max[mainDim] - 
+		nd_stats->extent.min[mainDim]) / nd_stats->size[mainDim];
 
 	at[mainDim] = nd_ibox->min[mainDim];
 
@@ -346,11 +348,14 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 	for (int i = 0; i < nd_stats->size[mainDim]; i++)
 	{
 		at[mainDim] = i;
-		ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
+		ND_BOX nd_cell;
+		memset(&nd_cell, 0, sizeof(ND_BOX));
 
 		/* We have to pro-rate partially overlapped cells. */
-		nd_cell.min[mainDim] = (float4)(nd_stats->extent.min[mainDim] + (at[mainDim] + 0) * cell_size[mainDim]);
-		nd_cell.max[mainDim] = (float4)(nd_stats->extent.min[mainDim] + (at[mainDim] + 1) * cell_size[mainDim]);
+		nd_cell.min[mainDim] = (float4) (nd_stats->extent.min[mainDim] + 
+			(at[mainDim] + 0) * cell_size[mainDim]);
+		nd_cell.max[mainDim] = (float4) (nd_stats->extent.min[mainDim] + 
+			(at[mainDim] + 1) * cell_size[mainDim]);
 		if (mainDim == X_DIM)
 			cell_count = nd_stats->value[i * (int)nd_stats->size[1] + at[1]];
 		else
@@ -364,12 +369,12 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd
 
 		if (cacheOp == ABOVE_OP || cacheOp == OVERABOVE_OP	||
 			cacheOp == RIGHT_OP || cacheOp == OVERRIGHT_OP)
-			ratio= (float)(iwidth / cellWidth);
+			ratio= (float) (iwidth / cellWidth);
 		else
-			ratio = 1.0f - (float)(iwidth / cellWidth);
+			ratio = 1.0f - (float) (iwidth / cellWidth);
 
 		if (ratio > 1.0)
-			ratio = (float)(cellWidth / iwidth);
+			ratio = (float) (cellWidth / iwidth);
 		else if (ratio < 0.0)
 			ratio = 0.0;
 
@@ -468,7 +473,8 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 	for (int i = 0; i < nd_stats->size[Z_DIM]; i++)
 	{
 		at[Z_DIM] = i;
-		ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
+		ND_BOX nd_cell;
+		memset(&nd_cell, 0, sizeof(ND_BOX));
 
 		/* We have to pro-rate partially overlapped cells. */
 		nd_cell.min[Z_DIM] = (float4)(nd_stats->extent.min[Z_DIM] + (at[Z_DIM] + 0) * cell_size[Z_DIM]);
@@ -547,23 +553,6 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 	if (cachedOp == OVERLAPS_OP || cachedOp == SAME_OP || 
 		cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
 			selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
-
-	{
-		case OVERLAPS_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constantData, OVERLAPS_OP);
-			break;
-		case SAME_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constantData, SAME_OP);
-			break;
-		case CONTAINS_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constantData, CONTAINS_OP);
-			break;
-		case CONTAINED_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constantData, CONTAINED_OP);
-			break;
-		default:
-			break;
-	}
 
 	if (selec < 0.0)
 		selec = 0.1;
