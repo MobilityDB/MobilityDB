@@ -530,8 +530,8 @@ estimate_tnumber_position_sel(VariableStatData vardata,
 }
 
 /* Get the name of the operator from different cases */
-static CachedOp
-get_tnumber_cachedop(Oid operator)
+static bool
+get_tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 {
 	for (int i = LT_OP; i <= OVERAFTER_OP; i++)
 	{
@@ -547,11 +547,12 @@ get_tnumber_cachedop(Oid operator)
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
-			return (CachedOp) i;
+            {
+                *cachedOp = (CachedOp) i;
+                return true;
+            }
 	}
-	return OVERLAPS_OP;
-	/*ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Operation not supported")));*/
+	return false;
 }
 
 /*****************************************************************************/
@@ -598,7 +599,15 @@ tnumber_contains_sel(PG_FUNCTION_ARGS)
 	Oid operator = PG_GETARG_OID(1);
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, get_tnumber_cachedop(operator));
+    Selectivity	selec = DEFAULT_SELECTIVITY;
+    CachedOp cachedOp;
+    bool found = get_tnumber_cachedop(operator, &cachedOp);
+
+    /* In the case of unknown operator */
+    if (!found)
+        PG_RETURN_FLOAT8(selec);
+
+	selec = tnumber_bbox_sel(root, operator, args, varRelid, cachedOp);
 	if (selec < 0.0)
 		selec = 0.002;
 	else if (selec > 1.0)
@@ -659,12 +668,13 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = 0.001;
-	CachedOp cachedOp = get_tnumber_cachedop(operator);
+	Selectivity selec = DEFAULT_SELECTIVITY;
+	CachedOp cachedOp;
+    bool found = get_tnumber_cachedop(operator, &cachedOp);
 
-	/* In the case of unknown position operator */
-	if (cachedOp == OVERLAPS_OP)
-		PG_RETURN_FLOAT8(selec);
+    /* In the case of unknown operator */
+    if (!found)
+        PG_RETURN_FLOAT8(selec);
 
 	/*
 	 * If expression is not (variable op something) or (something op
