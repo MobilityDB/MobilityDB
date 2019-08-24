@@ -113,7 +113,7 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 	if (durationType == TEMPORALINST)
 		temporal_info(stats);
 	else
-		temporal_extra_info(stats, durationType);
+		temporal_extra_info(stats);
 	stats->compute_stats = tpoint_compute_stats;
 	PG_RETURN_BOOL(true);
 }

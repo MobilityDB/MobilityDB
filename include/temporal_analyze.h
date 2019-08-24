@@ -99,7 +99,7 @@ typedef struct
  *****************************************************************************/
 
 extern void temporal_info(VacAttrStats *stats);
-extern void temporal_extra_info(VacAttrStats *stats, int durationType);
+extern void temporal_extra_info(VacAttrStats *stats);
 
 /*****************************************************************************
  * Statistics functions for Temporal* type
