@@ -18,6 +18,7 @@
 #include <utils/builtins.h>
 #include <utils/date.h>
 #include <utils/syscache.h>
+#include <temporal_boxops.h>
 
 #include "timestampset.h"
 #include "period.h"
@@ -41,11 +42,8 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-	BBoxBounds bBoxBounds;
-	bool numeric, temporal;
-	double lower, upper;
-	Period *period;
-	ConstantData constantData;
+	TBOX constBox;
+	memset(&constBox, 0, sizeof(TBOX));
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
@@ -92,27 +90,12 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 	/*
 	 * Get information about the constant type
 	 */
-	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-					 &temporal, &period);
-
-	constantData.bBoxBounds = bBoxBounds;
-	constantData.oid = ((Const *) other)->consttype;
-	constantData.lower = constantData.upper = 0;  /* keep compiler quiet */
-	constantData.period = NULL;   /* keep compiler quiet */
-	if (numeric)
-	{
-		constantData.lower = lower;
-		constantData.upper = upper;
-	}
-	if (temporal)
-	{
-		constantData.period = period;
-	}
+	get_const_bounds(other, &constBox);
 
     /*
     * Estimate the temporal selectivity value based on the required operator for all temporal durations.
     */
-	selec = estimate_temporal_bbox_sel(root, vardata, constantData, cachedOp);
+	selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
 
 	if (selec < 0.0)
 		selec = default_temporaltypes_selectivity(operator);
@@ -184,79 +167,54 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
  * Estimate the selectivity value of the bounding box operators for temporal durations.
  */
 Selectivity
-estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, 
-	ConstantData constantData, CachedOp cachedOp)
+estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
+						   TBOX box, CachedOp cachedOp)
 {
 	/* Check the temporal types and inside each one check the cachedOp */
 	Selectivity  selec = 0.0;
 	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
-	switch (constantData.bBoxBounds)
+	assert(MOBDB_FLAGS_GET_T(box.flags));
+
+	if (durationType == TEMPORALINST)
 	{
-		case STCONST:
-		case SNCONST_STCONST:
-		case DNCONST_STCONST:
+		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 		{
-			if (durationType == TEMPORALINST)
-			{
-				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-				selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-									 false, TEMPORAL_STATISTICS);
-			}
-			else
-				selec = calc_periodsel(&vardata, constantData.period,
-											oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-
-			break;
+			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmin),
+								 false, TEMPORAL_STATISTICS);
+			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmax),
+								  false, TEMPORAL_STATISTICS);
+			selec = selec > 1 ? 1 : selec;
 		}
-		case DTCONST:
-		case SNCONST_DTCONST:
-		case DNCONST_DTCONST:
+		else
 		{
-			if (durationType == TEMPORALINST)
-			{
-				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
-				{
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-										 false, TEMPORAL_STATISTICS);
-					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
-										  false, TEMPORAL_STATISTICS);
-					selec = selec > 1 ? 1 : selec;
-				}
-				else
-				{
-					Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
-					selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
-										   TimestampTzGetDatum(constantData.period->lower),
-										   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-					selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
-											TimestampTzGetDatum(constantData.period->upper),
-											TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-					selec = 1 - selec;
-					selec = selec < 0 ? 0 : selec;
-				}
-			}
-			else
-			{
-				if (cachedOp == SAME_OP)
-				{
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-										 false, TEMPORAL_STATISTICS);
-					selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->upper),
-										  false, TEMPORAL_STATISTICS);
-					selec = selec > 1 ? 1 : selec;
-				}
-				else
-					selec = calc_periodsel(&vardata, constantData.period,
-											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
-			}
-			break;
+			selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
+										TimestampTzGetDatum(box.tmin),
+										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
+										 TimestampTzGetDatum(box.tmax),
+										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			selec = 1 - selec;
+			selec = selec < 0 ? 0 : selec;
 		}
-		default:
-			break;
+	}
+	else
+	{
+		if (cachedOp == SAME_OP)
+		{
+			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmin),
+								 false, TEMPORAL_STATISTICS);
+			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmax),
+								  false, TEMPORAL_STATISTICS);
+			selec = selec > 1 ? 1 : selec;
+		}
+		else
+			selec = calc_periodsel(&vardata, period_make(box.tmin, box.tmax, true, true),
+								   oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 	}
 
 	return selec;
@@ -654,121 +612,40 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 }
 
 /*
- * Get the values of the constant type and check it's type which is one of two values: temporal type and constant type.
- * The constant type is defined as the following:
- * SNCONST for single numeric constant type such as integer, float.
- * DNCONST for double numeric constant type such as intrange, floatrange.
- * STCONST for single temporal constant type such as timestamp.
- * DTCONST for double temporal constant type such as period.
- * SNCONST_STCONST for single numeric constant and single temporal constant such as temporalInst
- * DNCONST_DTCONST for double numeric constant and double temporal constant such as temporalI, temporalSeq,
- * TemporalS and temporal for the generic type
+ * Get the bounds of the constant type
  */
 
-void
-get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
-				 double *lower, double *upper, bool *temporal, Period **period)
+bool
+get_const_bounds(Node *other, TBOX *box)
 {
 	Oid consttype = ((Const *) other)->consttype;
-	*numeric = false;
-	*temporal = false;
-	if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-	{
-		Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporal_bbox(&box, temp);
-		/* The boxes should have both dimensions X and T  */
-		assert(MOBDB_FLAGS_GET_X(box.flags) && MOBDB_FLAGS_GET_T(box.flags));
-		*numeric = true;
-		*temporal = true;
-		*lower = box.xmin;
-		*upper = box.xmax;
-		*period = period_make((TimestampTz)box.tmin, (TimestampTz)box.tmax, true, true);
-		*bBoxBounds = DNCONST_DTCONST;
-	}
-	else if (consttype == INT4OID || consttype == FLOAT8OID)
-	{
-		*numeric = true;
-		*lower = (double) ((Const *) other)->constvalue;
-		*bBoxBounds = SNCONST;
 
-	}
-	else if (consttype == type_oid(T_INTRANGE))
-	{
-		*numeric = true;
-		*lower = (double) DatumGetInt32(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		*upper = (double) DatumGetInt32(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		*bBoxBounds = DNCONST;
-	}
-	else if (consttype == type_oid(T_FLOATRANGE))
-	{
-		*numeric = true;
-		*lower = (double) DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		*upper = (double) DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		*bBoxBounds = DNCONST;
-
-	}
-	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-	{
-		Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-		*period = palloc(sizeof(Period));
-		temporal_bbox(*period, temp);
-		*temporal = true;
-		*bBoxBounds = DTCONST;
-	}
-	else if (consttype == TIMESTAMPTZOID)
-	{
-		*temporal = true;
-		TimestampTz temp = DatumGetTimestampTz(((Const *) other)->constvalue);
-		*period = period_make(temp, temp, true, true);
-		*bBoxBounds = STCONST;
-	}
+	if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT) ||
+		consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+		temporal_bbox(&box, DatumGetTemporal(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
 			 consttype == type_oid(T_PERIOD))
-	{
-		*temporal = true;
-		*period = period_copy((Period *) ((Const *) other)->constvalue);
-		*bBoxBounds = DTCONST;
-	}
+		period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
+	else if (consttype == INT4OID || consttype == FLOAT8OID)
+		float_to_tbox_internal(box, (double) ((Const *) other)->constvalue);
+	else if (consttype == type_oid(T_INTRANGE))
+		intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_FLOATRANGE))
+		floatrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+	else if (consttype == TIMESTAMPTZOID)
+		timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_PERIODSET))
-	{
-		*temporal = true;
-		*period = periodset_bbox(((PeriodSet *)((Const *) other)->constvalue));
-		*bBoxBounds = DTCONST;
-	}
+		periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_TIMESTAMPSET))
-	{
-		*temporal = true;
-		*period = timestampset_bbox(((TimestampSet *)((Const *) other)->constvalue));
-		*bBoxBounds = DTCONST;
-	}
+		timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_TBOX))
 	{
-		TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
-		if (MOBDB_FLAGS_GET_X(box->flags))
-		{
-			*numeric = true;
-			*lower = box->xmin;
-			*upper = box->xmax;
-		}
-		if (MOBDB_FLAGS_GET_T(box->flags))
-		{
-			*temporal = true;
-			*period = period_make((TimestampTz)box->tmin, (TimestampTz)box->tmax, true, true);
-		}
-		if (*numeric && *temporal)
-			*bBoxBounds = DNCONST_DTCONST;
-		else if (*numeric)
-		{
-			if (box->xmin == box->xmax)
-				*bBoxBounds = SNCONST;
-			else
-				*bBoxBounds = DNCONST;
-		}
-		else if (*temporal)
-			*bBoxBounds = DTCONST;
+		TBOX *boxTemp = DatumGetTboxP(((Const *) other)->constvalue);
+		memcpy((void *) box, (void *) boxTemp, sizeof(TBOX));
 	}
+	else
+		return false;
+	return true;
 }
 
 /*****************************************************************************
@@ -1599,28 +1476,24 @@ temporal_position_sel(PG_FUNCTION_ARGS)
     /* In the case of unknown operator */
     if (!found)
         PG_RETURN_FLOAT8(selec);
-	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
 
-    switch (cachedOp)
-    {
-        case BEFORE_OP:
-            selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-            break;
-        case AFTER_OP:
-            selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-            break;
-        case OVERBEFORE_OP:
-            selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
-            break;
-        case OVERAFTER_OP:
-            selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
-            break;
-        default:
-            selec = DEFAULT_SELECTIVITY;
-    }
+	switch (cachedOp)
+	{
+		case BEFORE_OP:
+			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+			break;
+		case AFTER_OP:
+			selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+			break;
+		case OVERBEFORE_OP:
+			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+			break;
+		case OVERAFTER_OP:
+			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+			break;
+		default:
+			selec = DEFAULT_SELECTIVITY;
+	}
 
 
 	if (selec < 0.0)

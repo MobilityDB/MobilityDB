@@ -135,12 +135,15 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 	bool empty;
 	Selectivity hist_selec = -1; /* keep compiler quiet */
 	AttStatsSlot hslot;
+	int staKind = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 
+	if (vardata->atttypmod == TEMPORALINST)
+		staKind = STATISTIC_KIND_HISTOGRAM;
 	/* Try to get histogram of ranges */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
-						   STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-						   ATTSTATSSLOT_VALUES, strategy)))
+								 staKind, InvalidOid,
+								 ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
 
 	/*
@@ -211,7 +214,7 @@ range_sel_internal(VariableStatData *vardata, Datum constval,
 }
 
 static Selectivity
-estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData, CachedOp cachedOp)
+estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box, CachedOp cachedOp)
 {
 	// Check the temporal types and inside each one check the cachedOp
 	Selectivity  selec = 0.0;
@@ -225,116 +228,80 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantD
 		 * Compute the selectivity with regard to the value of the constant.
 		 */
 		double selec1 = 0.0;
-		switch (constantData.bBoxBounds)
+		if (MOBDB_FLAGS_GET_X(box.flags))
 		{
-			case SNCONST:
-			case SNCONST_STCONST:
-			case SNCONST_DTCONST:
+			if (durationType == TEMPORALINST)
 			{
-				if (durationType == TEMPORALINST)
-				{
-					hasNumeric = true;
-					Oid op = oper_oid(EQ_OP, vartype, vartype);
-					selec1 = var_eq_const(&vardata, op, (Datum) constantData.lower, false, VALUE_STATISTICS);
-				}
-				else
-				{
-					hasNumeric = true;
-					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-					selec1 = range_sel_internal(&vardata, (Datum) constantData.lower, false, true, typcache,
-												VALUE_STATISTICS);
-					selec1 += range_sel_internal(&vardata, (Datum) constantData.lower, true, true, typcache,
-												 VALUE_STATISTICS);
-					selec1 = 1 - selec1;
-					selec1 = selec1 < 0 ? 0 : selec1;
-				}
-				break;
+				hasNumeric = true;
+				Oid op = oper_oid(EQ_OP, vartype, vartype);
+				selec1 = var_eq_const(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
 			}
-			case DNCONST:
-			case DNCONST_STCONST:
-			case DNCONST_DTCONST:
+			else
 			{
 				hasNumeric = true;
 				if (cachedOp == OVERLAPS_OP)
 				{
 					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-					selec1 = range_sel_internal(&vardata, (Datum)constantData.lower, false, false, typcache,
+					selec1 = range_sel_internal(&vardata, (Datum) box.xmin, false, false, typcache,
 												VALUE_STATISTICS);
-					selec1 += range_sel_internal(&vardata, (Datum)constantData.upper, true, false, typcache,
+					selec1 += range_sel_internal(&vardata, (Datum) box.xmax, true, false, typcache,
 												 VALUE_STATISTICS);
+
 				}
 				else if (cachedOp == CONTAINS_OP)
 				{
 					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-					selec1 = range_sel_internal(&vardata, (Datum)constantData.lower, false, false, typcache,
+					selec1 = range_sel_internal(&vardata, (Datum) box.xmin, false, false, typcache,
 												VALUE_STATISTICS);
-					selec1 += range_sel_internal(&vardata, (Datum)constantData.upper, false, false, typcache,
+					selec1 += range_sel_internal(&vardata, (Datum) box.xmax, false, false, typcache,
 												 VALUE_STATISTICS);
 				}
 				else if (cachedOp == CONTAINED_OP)
 				{
 					Oid opl = oper_oid(LT_OP, vartype, vartype);
 					Oid opg = oper_oid(GT_OP, vartype, vartype);
-					selec1 = scalarineqsel_mobdb(root, opl, false, true, &vardata, (Datum) constantData.lower,
-											type_oid(vartype), VALUE_STATISTICS);
-					selec1 += scalarineqsel_mobdb(root, opg, true, false, &vardata, (Datum) constantData.upper,
-											 type_oid(vartype), VALUE_STATISTICS);
+					selec1 = scalarineqsel_mobdb(root, opl, false, true, &vardata, (Datum) box.xmin,
+												 type_oid(vartype), VALUE_STATISTICS);
+					selec1 += scalarineqsel_mobdb(root, opg, true, false, &vardata, (Datum) box.xmax,
+												  type_oid(vartype), VALUE_STATISTICS);
 				}
 				selec1 = 1 - selec1;
 				selec1 = selec1 < 0 ? 0 : selec1;
-				break;
 			}
-			default:
-				break;
+
 		}
 		/*
 		 * Compute the selectivity with regard to the time dimension of the constant.
 		 */
 		double selec2 = 0.0;
-		switch (constantData.bBoxBounds)
+		if (MOBDB_FLAGS_GET_T(box.flags))
 		{
-			case STCONST:
-			case SNCONST_STCONST:
-			case DNCONST_STCONST:
+			if (durationType == TEMPORALINST)
 			{
-				if (durationType == TEMPORALINST)
-				{
-					hasTemporal = true;
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec2 = var_eq_const(&vardata, op, TimestampTzGetDatum(constantData.period->lower),
-										  false, TEMPORAL_STATISTICS);
-				}
-				else
-				{
-					hasTemporal = true;
-					selec2 = calc_periodsel(&vardata, constantData.period,
-												 oper_oid(cachedOp, T_PERIOD, T_TIMESTAMPTZ), TEMPORAL_STATISTICS);
-				}
-				break;
+				hasTemporal = true;
+				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+				selec2 = var_eq_const(&vardata, op, (Datum) box.tmin,
+									  false, TEMPORAL_STATISTICS);
 			}
-			case DTCONST:
-			case SNCONST_DTCONST:
-			case DNCONST_DTCONST:
+			else
 			{
 				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 				{
 					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 					hasTemporal = true;
-					selec2 = var_eq_const(&vardata, op, (Datum) constantData.period->lower, false,
+					selec2 = var_eq_const(&vardata, op, (Datum) box.tmin, false,
 										  TEMPORAL_STATISTICS);
-					selec2 *= var_eq_const(&vardata, op, (Datum) constantData.period->upper, false,
+					selec2 *= var_eq_const(&vardata, op, (Datum) box.tmax, false,
 										   TEMPORAL_STATISTICS);
 					selec2 = selec2 > 1 ? 1 : selec2;
 				}
 				else
 				{
 					hasTemporal = true;
-					selec2 = calc_periodsel(&vardata, constantData.period,
-												 oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+					selec2 = calc_periodsel(&vardata, period_make(box.tmin, box.tmax, true, true),
+											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 				}
 			}
-			default:
-				break;
 		}
 		if (hasNumeric && hasTemporal)
 			selec = selec1 * selec2;
@@ -353,11 +320,8 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 	Node *other;
 	bool varonleft;
 	Selectivity selec = 0.0;
-	BBoxBounds bBoxBounds;
-	bool numeric, temporal;
-	double lower, upper;
-	Period *period;
-	ConstantData constantData;
+	TBOX constBox;
+	memset(&constBox, 0, sizeof(TBOX));
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
@@ -402,34 +366,16 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 	}
 
 	/*
-	 * Set constant information
+	 * Get information about the constant type
 	 */
-	get_const_bounds(other, &bBoxBounds, &numeric, &lower, &upper,
-					 &temporal, &period);
-
-	constantData.bBoxBounds = bBoxBounds;
-	constantData.oid = ((Const *) other)->consttype;
-
-	constantData.lower = 0;constantData.upper = 0;  /* keep compiler quiet */
-	constantData.period = NULL;   /* keep compiler quiet */
-	if (numeric)
-	{
-		constantData.lower = lower;
-		constantData.upper = upper;
-		if (lower == upper && varonleft &&(cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
-			constantData.bBoxBounds = DNCONST;
-	}
-	if (temporal)
-	{
-		constantData.period = period;
-	}
+	get_const_bounds(other, &constBox);
 
 	if (cachedOp == CONTAINS_OP && !varonleft)
-		selec = estimate_tnumber_bbox_sel(root, vardata, constantData, CONTAINED_OP);
+		selec = estimate_tnumber_bbox_sel(root, vardata, constBox, CONTAINED_OP);
 	else if (cachedOp == CONTAINED_OP && !varonleft)
-		selec = estimate_tnumber_bbox_sel(root, vardata, constantData, CONTAINS_OP);
+		selec = estimate_tnumber_bbox_sel(root, vardata, constBox, CONTAINS_OP);
 	else
-		selec = estimate_tnumber_bbox_sel(root, vardata, constantData, cachedOp);
+		selec = estimate_tnumber_bbox_sel(root, vardata, constBox, cachedOp);
 
 
 	if (selec < 0.0)
@@ -705,72 +651,50 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
 	}
 
 	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
+     * If var is on the right, commute the operator, so that we can assume the
+     * var is on the left in what follows.
+     */
 	if (!varonleft)
 	{
-		switch (cachedOp)
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
 		{
-			case LEFT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, true, false);
-				break;
-			case RIGHT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, false, false);
-				break;
-			case OVERLEFT_OP:
-				selec = 1.0 - estimate_tnumber_position_sel(vardata, other, false, false);
-				break;
-			case OVERRIGHT_OP:
-				selec = 1.0 - estimate_tnumber_position_sel(vardata, other, true, false);
-				break;
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, true, GE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
-				break;
-			default:
-				selec = 0.001;
+			/* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
 		}
 	}
-	else
+
+
+	switch (cachedOp)
 	{
-		switch (cachedOp)
-		{
-			case LEFT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, false, false);
-				break;
-			case RIGHT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, true, false);
-				break;
-			case OVERLEFT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, false, true);
-				break;
-			case OVERRIGHT_OP:
-				selec = estimate_tnumber_position_sel(vardata, other, true, true);
-				break;
-			case BEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
-				break;
-			case AFTER_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
-				break;
-			case OVERBEFORE_OP:
-				selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
-				break;
-			case OVERAFTER_OP:
-				selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
-				break;
-			default:
-				selec = 0.001;
-		}
+		case LEFT_OP:
+			selec = estimate_tnumber_position_sel(vardata, other, false, false);
+			break;
+		case RIGHT_OP:
+			selec = estimate_tnumber_position_sel(vardata, other, true, false);
+			break;
+		case OVERLEFT_OP:
+			selec = estimate_tnumber_position_sel(vardata, other, false, true);
+			break;
+		case OVERRIGHT_OP:
+			selec = estimate_tnumber_position_sel(vardata, other, true, true);
+			break;
+		case BEFORE_OP:
+			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+			break;
+		case AFTER_OP:
+			selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+			break;
+		case OVERBEFORE_OP:
+			selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+			break;
+		case OVERAFTER_OP:
+			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+			break;
+		default:
+			selec = 0.001;
 	}
 
 	if (selec < 0.0)

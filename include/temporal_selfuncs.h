@@ -31,27 +31,6 @@ typedef enum
 	DEFAULT_STATISTICS
 } StatStrategy;
 
-typedef enum 
-{
-	SNCONST, /* Single Numeric Constant */
-	DNCONST, /* Double Numeric Constant */
-	STCONST, /* Single Temporal Constant */
-	DTCONST, /* Double Temporal Constant */
-	SNCONST_STCONST, /* Single Numeric Constant and Single Temporal Constant*/
-	SNCONST_DTCONST, /* Single Numeric Constant and Double Temporal Constant*/
-	DNCONST_STCONST, /* Double Numeric Constant and Single Temporal Constant*/
-	DNCONST_DTCONST, /* Double Numeric Constant and Double Temporal Constant*/
-} BBoxBounds;
-
-/* Temporal Unit Instant */
-typedef struct
-{
-	BBoxBounds bBoxBounds;
-	double lower, upper;
-	Period *period;
-	Oid oid;
-} ConstantData;
-
 #define BTREE_AM_OID   403
 
 #define DEFAULT_SELECTIVITY 0.001
@@ -60,7 +39,7 @@ typedef struct
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, ConstantData constantData,
+extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 											  CachedOp cachedOp);
 extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 												  Node *other, bool isgt, bool iseq, CachedOp operator);
@@ -76,8 +55,7 @@ extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isg
 extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 							 int reqkind, Oid reqop, int flags, StatStrategy strategy);
 extern double default_temporaltypes_selectivity(Oid operator);
-extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
-							 double *lower, double *upper, bool *temporal, Period **period);
+extern bool get_const_bounds(Node *other, TBOX *box);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 						   bool negate, StatStrategy strategy);
 
