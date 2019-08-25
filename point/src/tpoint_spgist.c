@@ -461,8 +461,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	double *highYs = palloc(sizeof(double) * in->nTuples);
 	double *lowZs = palloc(sizeof(double) * in->nTuples);
 	double *highZs = palloc(sizeof(double) * in->nTuples);
-	double *lowMs = palloc(sizeof(double) * in->nTuples);
-	double *highMs = palloc(sizeof(double) * in->nTuples);
+	double *lowTs = palloc(sizeof(double) * in->nTuples);
+	double *highTs = palloc(sizeof(double) * in->nTuples);
 	
 	/* Calculate median of all 8D coordinates */
 	for (i = 0; i < in->nTuples; i++)
@@ -475,8 +475,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		highYs[i] = box->ymax;
 		lowZs[i] = box->zmin;
 		highZs[i] = box->zmax;
-		lowMs[i] = box->tmin;
-		highMs[i] = box->tmax;
+		lowTs[i] = box->tmin;
+		highTs[i] = box->tmax;
 	}
 
 	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
@@ -485,8 +485,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	qsort(highYs, in->nTuples, sizeof(double), compareDoubles);
 	qsort(lowZs, in->nTuples, sizeof(double), compareDoubles);
 	qsort(highZs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowMs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highMs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
@@ -498,8 +498,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	centroid->ymax = highYs[median];
 	centroid->zmin = lowZs[median];
 	centroid->zmax = highZs[median];
-	centroid->tmin = lowMs[median];
-	centroid->tmax = highMs[median];
+	centroid->tmin = lowTs[median];
+	centroid->tmax = highTs[median];
 
 	/* Fill the output */
 	out->hasPrefix = true;
@@ -526,7 +526,7 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	pfree(lowXs); pfree(highXs);
 	pfree(lowYs); pfree(highYs);
 	pfree(lowZs); pfree(highZs);
-	pfree(lowMs); pfree(highMs);
+	pfree(lowTs); pfree(highTs);
 	
 	PG_RETURN_VOID();
 }
