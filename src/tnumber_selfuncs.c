@@ -18,7 +18,6 @@
 #include <access/htup_details.h>
 #include <nodes/relation.h>
 #include <utils/selfuncs.h>
-#include <temporal.h>
 
 #include "period.h"
 #include "rangetypes_ext.h"
