@@ -925,6 +925,7 @@ tpoint_contains_sel(PG_FUNCTION_ARGS)
 	}
 
 	bool found = get_tpoint_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
 
