@@ -18,6 +18,7 @@
 #include <access/htup_details.h>
 #include <nodes/relation.h>
 #include <utils/selfuncs.h>
+#include <temporal.h>
 
 #include "period.h"
 #include "rangetypes_ext.h"
@@ -223,7 +224,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 	{
 		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
 		CachedType varRangeType = (vardata.vartype == type_oid(T_TINT)) ? T_INTRANGE : T_FLOATRANGE;
-		bool hasNumeric = false, hasTemporal = false;
 		/*
 		 * Compute the selectivity with regard to the value of the constant.
 		 */
@@ -232,13 +232,11 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 		{
 			if (durationType == TEMPORALINST)
 			{
-				hasNumeric = true;
 				Oid op = oper_oid(EQ_OP, vartype, vartype);
 				selec1 = var_eq_const(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
 			}
 			else
 			{
-				hasNumeric = true;
 				if (cachedOp == OVERLAPS_OP)
 				{
 					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
@@ -278,7 +276,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 		{
 			if (durationType == TEMPORALINST)
 			{
-				hasTemporal = true;
 				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 				selec2 = var_eq_const(&vardata, op, (Datum) box.tmin,
 									  false, TEMPORAL_STATISTICS);
@@ -288,7 +285,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 				{
 					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					hasTemporal = true;
 					selec2 = var_eq_const(&vardata, op, (Datum) box.tmin, false,
 										  TEMPORAL_STATISTICS);
 					selec2 *= var_eq_const(&vardata, op, (Datum) box.tmax, false,
@@ -297,17 +293,16 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 				}
 				else
 				{
-					hasTemporal = true;
 					selec2 = calc_periodsel(&vardata, period_make(box.tmin, box.tmax, true, true),
 											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 				}
 			}
 		}
-		if (hasNumeric && hasTemporal)
+		if (MOBDB_FLAGS_GET_X(box.flags) && MOBDB_FLAGS_GET_T(box.flags))
 			selec = selec1 * selec2;
-		else if (hasNumeric)
+		else if (MOBDB_FLAGS_GET_X(box.flags))
 			selec = selec1;
-		else if (hasTemporal)
+		else if (MOBDB_FLAGS_GET_T(box.flags))
 			selec = selec2;
 	}
 	return selec;
@@ -319,7 +314,7 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = 0.0;
+	Selectivity selec;
 	TBOX constBox;
 	memset(&constBox, 0, sizeof(TBOX));
 	/*
@@ -384,9 +379,6 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 		selec = 1.0;
 
 	ReleaseVariableStats(vardata);
-
-	CLAMP_PROBABILITY(selec);
-
 	return selec;
 }
 
@@ -522,10 +514,7 @@ tnumber_overlaps_sel(PG_FUNCTION_ARGS)
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
-	if (selec < 0.0)
-		selec = 0.005;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -549,16 +538,12 @@ tnumber_contains_sel(PG_FUNCTION_ARGS)
     Selectivity	selec = DEFAULT_SELECTIVITY;
     CachedOp cachedOp;
     bool found = get_tnumber_cachedop(operator, &cachedOp);
-
     /* In the case of unknown operator */
     if (!found)
         PG_RETURN_FLOAT8(selec);
 
 	selec = tnumber_bbox_sel(root, operator, args, varRelid, cachedOp);
-	if (selec < 0.0)
-		selec = 0.002;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -580,10 +565,7 @@ tnumber_same_sel(PG_FUNCTION_ARGS)
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = tnumber_bbox_sel(root, operator, args, varRelid, SAME_OP);
-	if (selec < 0.0)
-		selec = 0.001;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
