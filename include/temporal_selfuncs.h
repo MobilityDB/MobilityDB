@@ -33,6 +33,8 @@ typedef enum
 
 #define BTREE_AM_OID   403
 
+#define DEFAULT_OVERLAPS_SELECTIVITY 0.005
+#define DEFAULT_CONTAINS_SELECTIVITY 0.002
 #define DEFAULT_SELECTIVITY 0.001
 
 /*****************************************************************************

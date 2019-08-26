@@ -806,12 +806,6 @@ tpoint_sel(PlannerInfo *root, VariableStatData vardata, Node *other, CachedOp ca
 	else
 		selec = selec1 * selec2;
 
-	/* Prevent rounding overflows */
-	if (selec > 1.0) selec = 1.0;
-	else if (selec < 0.0 ) selec = 0.0;
-
-	ReleaseVariableStats(vardata);
-	CLAMP_PROBABILITY(selec);
 	return selec;
 }
 
@@ -858,9 +852,9 @@ tpoint_overlaps_sel(PG_FUNCTION_ARGS)
 
 	Selectivity	selec = tpoint_sel(root, vardata, other, OVERLAPS_OP);
 	if (selec < 0.0)
-		selec = 0.005;
-	else if (selec > 1.0)
-		selec = 1.0;
+		selec = default_temporaltypes_selectivity(OVERLAPS_OP);
+	ReleaseVariableStats(vardata);
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -936,9 +930,9 @@ tpoint_contains_sel(PG_FUNCTION_ARGS)
 
 	selec = tpoint_sel(root, vardata, other, cachedOp);
 	if (selec < 0.0)
-		selec = 0.002;
-	else if (selec > 1.0)
-		selec = 1.0;
+		selec = default_temporaltypes_selectivity(cachedOp);
+	ReleaseVariableStats(vardata);
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -1008,11 +1002,10 @@ tpoint_same_sel(PG_FUNCTION_ARGS)
 
 	Selectivity	selec = tpoint_sel(root, vardata, other, SAME_OP);
 	if (selec < 0.0)
-		selec = 0.001;
-	else if (selec > 1.0)
-		selec = 1.0;
+		selec = default_temporaltypes_selectivity(SAME_OP);
+	ReleaseVariableStats(vardata);
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
-
 }
 
 PG_FUNCTION_INFO_V1(tpoint_same_joinsel);
@@ -1096,9 +1089,9 @@ tpoint_position_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(selec);
 	selec = tpoint_sel(root, vardata, other, cachedOp);
 	if (selec < 0.0)
-		selec = 0.001;
-	else if (selec > 1.0)
-		selec = 1.0;
+		selec = default_temporaltypes_selectivity(cachedOp);
+	ReleaseVariableStats(vardata);
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 

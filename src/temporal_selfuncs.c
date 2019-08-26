@@ -98,12 +98,9 @@ temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid,
 	selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
 
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
+		selec = default_temporaltypes_selectivity(cachedOp);
 
 	ReleaseVariableStats(vardata);
-
-	CLAMP_PROBABILITY(selec);
-
 	return selec;
 }
 
@@ -446,34 +443,38 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 double
 default_temporaltypes_selectivity(Oid operator)
 {
-	if (operator == oper_oid(OVERLAPS_OP, T_PERIOD, T_PERIOD))
-		return 0.01;
+	switch (operator)
+	{
+		case OVERLAPS_OP:
+			return 0.005;
 
-	if (operator == oper_oid(CONTAINS_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(CONTAINED_OP, T_PERIOD, T_PERIOD))
-		return 0.005;
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+			return 0.002;
 
-	if (operator == oper_oid(CONTAINS_OP, T_PERIOD, T_TIMESTAMPTZ) ||
-		operator == oper_oid(CONTAINED_OP, T_TIMESTAMPTZ, T_PERIOD))
-		/*
-		 * "period @> elem" is more or less identical to a scalar
-		 * inequality "A >= b AND A <= c".
-		 */
-		return DEFAULT_RANGE_INEQ_SEL;
+		case SAME_OP:
+			return 0.001;
 
-	if (operator == oper_oid(LT_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(LE_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(GT_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(GE_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(LEFT_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(RIGHT_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(OVERLEFT_OP, T_PERIOD, T_PERIOD) ||
-		operator == oper_oid(OVERRIGHT_OP, T_PERIOD, T_PERIOD))
-		/* these are similar to regular scalar inequalities */
-		return DEFAULT_INEQ_SEL;
+		case LEFT_OP:
+		case RIGHT_OP:
+		case OVERLEFT_OP:
+		case OVERRIGHT_OP:
+		case ABOVE_OP:
+		case BELOW_OP:
+		case OVERABOVE_OP:
+		case OVERBELOW_OP:
+		case AFTER_OP:
+		case BEFORE_OP:
+		case OVERAFTER_OP:
+		case OVERBEFORE_OP:
 
-	/* all period operators should be handled above, but just in case */
-	return 0.01;
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all operators should be handled above, but just in case */
+			return 0.01;
+	}
 }
 
 /*
@@ -1334,10 +1335,7 @@ temporal_overlaps_sel(PG_FUNCTION_ARGS)
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
-	if (selec < 0.0)
-		selec = 0.005;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -1361,14 +1359,11 @@ temporal_contains_sel(PG_FUNCTION_ARGS)
 	Selectivity	selec = DEFAULT_SELECTIVITY;
 	CachedOp cachedOp;
 	bool found = get_temporal_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
-
 	selec = temporal_bbox_sel(root, operator, args, varRelid, cachedOp);
-	if (selec < 0.0)
-		selec = 0.002;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -1390,10 +1385,7 @@ temporal_same_sel(PG_FUNCTION_ARGS)
 	List *args = (List *) PG_GETARG_POINTER(2);
 	int varRelid = PG_GETARG_INT32(3);
 	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
-	if (selec < 0.0)
-		selec = DEFAULT_SELECTIVITY;
-	else if (selec > 1.0)
-		selec = 1.0;
+	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
@@ -1495,9 +1487,8 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 			selec = DEFAULT_SELECTIVITY;
 	}
 
-
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
+		selec = default_temporaltypes_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);

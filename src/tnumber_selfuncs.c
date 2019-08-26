@@ -244,7 +244,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 												VALUE_STATISTICS);
 					selec1 += range_sel_internal(&vardata, (Datum) box.xmax, true, false, typcache,
 												 VALUE_STATISTICS);
-
 				}
 				else if (cachedOp == CONTAINS_OP)
 				{
@@ -266,7 +265,6 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 				selec1 = 1 - selec1;
 				selec1 = selec1 < 0 ? 0 : selec1;
 			}
-
 		}
 		/*
 		 * Compute the selectivity with regard to the time dimension of the constant.
@@ -372,12 +370,8 @@ tnumber_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, Cach
 	else
 		selec = estimate_tnumber_bbox_sel(root, vardata, constBox, cachedOp);
 
-
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
-	else if (selec > 1.0)
-		selec = 1.0;
-
+		selec = default_temporaltypes_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	return selec;
 }
@@ -541,7 +535,6 @@ tnumber_contains_sel(PG_FUNCTION_ARGS)
     /* In the case of unknown operator */
     if (!found)
         PG_RETURN_FLOAT8(selec);
-
 	selec = tnumber_bbox_sel(root, operator, args, varRelid, cachedOp);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
@@ -680,7 +673,7 @@ tnumber_position_sel(PG_FUNCTION_ARGS)
 	}
 
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(operator);
+		selec = default_temporaltypes_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8((float8) selec);
