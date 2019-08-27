@@ -33,15 +33,13 @@ typedef enum
 
 #define BTREE_AM_OID   403
 
-#define DEFAULT_OVERLAPS_SELECTIVITY 0.005
-#define DEFAULT_CONTAINS_SELECTIVITY 0.002
 #define DEFAULT_SELECTIVITY 0.001
 
 /*****************************************************************************
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
+extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Period box,
 											  CachedOp cachedOp);
 extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
 												  Node *other, bool isgt, bool iseq, CachedOp operator);
@@ -58,6 +56,7 @@ extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 							 int reqkind, Oid reqop, int flags, StatStrategy strategy);
 extern double default_temporaltypes_selectivity(Oid operator);
 extern bool get_const_bounds(Node *other, TBOX *box);
+extern bool temporal_const_bounds(Node *other, Period *box);
 extern double var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 						   bool negate, StatStrategy strategy);
 

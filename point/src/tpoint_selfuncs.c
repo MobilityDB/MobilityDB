@@ -543,12 +543,10 @@ estimate_selectivity_temporal_dimension(PlannerInfo *root, VariableStatData vard
 										Period *period, CachedOp cachedOp)
 {
 	Selectivity selec = 0.0;	/* keep compiler quiet */
-	TBOX constBox;
-	memset(&constBox, 0, sizeof(TBOX));
 
 	if (cachedOp == OVERLAPS_OP || cachedOp == SAME_OP || 
 		cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
-			selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
+			selec = estimate_temporal_bbox_sel(root, vardata, *period, cachedOp);
 
 	if (selec < 0.0)
 		selec = 0.1;

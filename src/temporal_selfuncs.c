@@ -19,6 +19,7 @@
 #include <utils/date.h>
 #include <utils/syscache.h>
 #include <temporal_boxops.h>
+#include <timetypes.h>
 
 #include "timestampset.h"
 #include "period.h"
@@ -28,82 +29,6 @@
 #include "tpoint.h"
 
 /*****************************************************************************/
-
-/*
- * Retrieve stored statistics for the temporal type to compute the selectivity 
- * value of the bounding box operators: overlaps (&&), contains (@>), 
- * contained (<@), and same (~=).
- */
-static Selectivity
-temporal_bbox_sel(PlannerInfo *root, Oid operator, List *args, int varRelid, 
-	CachedOp cachedOp)
-{
-	VariableStatData vardata;
-	Node *other;
-	bool varonleft;
-	Selectivity selec = 0.0;
-	TBOX constBox;
-	memset(&constBox, 0, sizeof(TBOX));
-	/*
-	 * If expression is not (variable op something) or (something op
-	 * variable), then punt and return a default estimate.
-	 */
-	if (!get_restriction_variable(root, args, varRelid,
-								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-
-	/*
-	 * Can't do anything useful if the something is not a constant, either.
-	 */
-	if (!IsA(other, Const))
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-	}
-
-	/*
-	 * All the period operators are strict, so we can cope with a NULL constant
-	 * right away.
-	 */
-	if (((Const *) other)->constisnull)
-	{
-		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.0);
-	}
-
-	/*
-	 * If var is on the right, commute the operator, so that we can assume the
-	 * var is on the left in what follows.
-	 */
-	if (!varonleft)
-	{
-		/* we have other Op var, commute to make var Op other */
-		operator = get_commutator(operator);
-		if (!operator)
-		{
-			/* Use default selectivity (should we raise an error instead?) */
-			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-		}
-	}
-
-	/*
-	 * Get information about the constant type
-	 */
-	get_const_bounds(other, &constBox);
-
-    /*
-    * Estimate the temporal selectivity value based on the required operator for all temporal durations.
-    */
-	selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
-
-	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(cachedOp);
-
-	ReleaseVariableStats(vardata);
-	return selec;
-}
-
 /*
  * Get the lower or the upper value of the temporal type based on the position operator:
  * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), etc.
@@ -165,21 +90,20 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
  */
 Selectivity
 estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
-						   TBOX box, CachedOp cachedOp)
+						   Period box, CachedOp cachedOp)
 {
 	/* Check the temporal types and inside each one check the cachedOp */
 	Selectivity  selec = 0.0;
 	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
-	assert(MOBDB_FLAGS_GET_T(box.flags));
 
 	if (durationType == TEMPORALINST)
 	{
 		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 		{
 			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmin),
+			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.lower),
 								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmax),
+			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.upper),
 								  false, TEMPORAL_STATISTICS);
 			selec = selec > 1 ? 1 : selec;
 		}
@@ -189,10 +113,10 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
 			selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
-										TimestampTzGetDatum(box.tmin),
+										TimestampTzGetDatum(box.lower),
 										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 			selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
-										 TimestampTzGetDatum(box.tmax),
+										 TimestampTzGetDatum(box.upper),
 										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 			selec = 1 - selec;
 			selec = selec < 0 ? 0 : selec;
@@ -203,14 +127,14 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 		if (cachedOp == SAME_OP)
 		{
 			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmin),
+			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.lower),
 								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.tmax),
+			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.upper),
 								  false, TEMPORAL_STATISTICS);
 			selec = selec > 1 ? 1 : selec;
 		}
 		else
-			selec = calc_periodsel(&vardata, period_make(box.tmin, box.tmax, true, true),
+			selec = calc_periodsel(&vardata, &box,
 								   oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 	}
 
@@ -649,6 +573,30 @@ get_const_bounds(Node *other, TBOX *box)
 	return true;
 }
 
+bool
+temporal_const_bounds(Node *other, Period *box)
+{
+	Oid consttype = ((Const *) other)->consttype;
+
+	if (consttype == TIMESTAMPTZOID)
+	{
+		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+		period_set(box, t, t, true, true);
+	}
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+		memcpy(box, timestampset_bbox(
+				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_PERIOD))
+		memcpy(box, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
+	else if (consttype== type_oid(T_PERIODSET))
+		memcpy(box, periodset_bbox(
+				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+	else
+		return false;
+	return true;
+}
 /*****************************************************************************
  * The following functions is taken from PostgreSQL but much processing is
  * removed ?????
@@ -1325,90 +1273,10 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
  * equals is a tighter constrain tha contains and contained.
  */
 
-PG_FUNCTION_INFO_V1(temporal_overlaps_sel);
+PG_FUNCTION_INFO_V1(temporal_sel);
 
 PGDLLEXPORT Datum
-temporal_overlaps_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, OVERLAPS_OP);
-	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_overlaps_joinsel);
-
-PGDLLEXPORT Datum
-temporal_overlaps_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.005);
-}
-
-PG_FUNCTION_INFO_V1(temporal_contains_sel);
-
-PGDLLEXPORT Datum
-temporal_contains_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = DEFAULT_SELECTIVITY;
-	CachedOp cachedOp;
-	bool found = get_temporal_cachedop(operator, &cachedOp);
-	/* In the case of unknown operator */
-	if (!found)
-		PG_RETURN_FLOAT8(selec);
-	selec = temporal_bbox_sel(root, operator, args, varRelid, cachedOp);
-	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_contains_joinsel);
-
-PGDLLEXPORT Datum
-temporal_contains_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.002);
-}
-
-PG_FUNCTION_INFO_V1(temporal_same_sel);
-
-PGDLLEXPORT Datum
-temporal_same_sel(PG_FUNCTION_ARGS)
-{
-	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-	Oid operator = PG_GETARG_OID(1);
-	List *args = (List *) PG_GETARG_POINTER(2);
-	int varRelid = PG_GETARG_INT32(3);
-	Selectivity	selec = temporal_bbox_sel(root, operator, args, varRelid, SAME_OP);
-	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8(selec);
-}
-
-PG_FUNCTION_INFO_V1(temporal_same_joinsel);
-
-PGDLLEXPORT Datum
-temporal_same_joinsel(PG_FUNCTION_ARGS)
-{
-	PG_RETURN_FLOAT8(0.001);
-}
-
-/*****************************************************************************/
-
-/*
- * Selectivity for operators for relative position box operators, i.e.,
- * left (<<), overleft (&<), right (>>), overright (&>), before (<<#),
- * overbefore (&<#), after (#>>), overafter (#&>).
- */
-
-PG_FUNCTION_INFO_V1(temporal_position_sel);
-
-PGDLLEXPORT Datum
-temporal_position_sel(PG_FUNCTION_ARGS)
+temporal_sel(PG_FUNCTION_ARGS)
 {
 	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
 	Oid operator = PG_GETARG_OID(1);
@@ -1417,9 +1285,9 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = DEFAULT_SELECTIVITY;
+	Selectivity selec = 0.0;
 	CachedOp cachedOp;
-
+	Period constBox;
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
@@ -1447,30 +1315,45 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(0.0);
 	}
 
-    /*
-     * If var is on the right, commute the operator, so that we can assume the
-     * var is on the left in what follows.
-     */
-    if (!varonleft)
-    {
-        /* we have other Op var, commute to make var Op other */
-        operator = get_commutator(operator);
-        if (!operator)
-        {
-            /* TODO: check whether there might still be a way to estimate.
-            * Use default selectivity (should we raise an error instead?) */
-            ReleaseVariableStats(vardata);
-            PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
-        }
-    }
+	/*
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		}
+	}
 
-    bool found = get_temporal_cachedop(operator, &cachedOp);
-    /* In the case of unknown operator */
-    if (!found)
-        PG_RETURN_FLOAT8(selec);
+	bool found = get_temporal_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
+	if (!found)
+		PG_RETURN_FLOAT8(selec);
 
+	/*
+	 * Get information about the constant type
+	 */
+	found = temporal_const_bounds(other, &constBox);
+	/* In the case of unknown constant */
+	if (!found)
+		PG_RETURN_FLOAT8(selec);
+	/*
+    * Estimate the temporal selectivity value based on the required operator for all temporal durations.
+    */
 	switch (cachedOp)
 	{
+		case OVERLAPS_OP:
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+		case SAME_OP:
+			selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
+			break;
 		case BEFORE_OP:
 			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
 			break;
@@ -1489,17 +1372,18 @@ temporal_position_sel(PG_FUNCTION_ARGS)
 
 	if (selec < 0.0)
 		selec = default_temporaltypes_selectivity(cachedOp);
+
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
 
-PG_FUNCTION_INFO_V1(temporal_position_joinsel);
+PG_FUNCTION_INFO_V1(temporal_joinsel);
 
 PGDLLEXPORT Datum
-temporal_position_joinsel(PG_FUNCTION_ARGS)
+temporal_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(0.001);
+	PG_RETURN_FLOAT8(DEFAULT_STATISTICS);
 }
 
 /*****************************************************************************/

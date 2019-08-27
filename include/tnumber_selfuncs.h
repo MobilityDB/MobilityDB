@@ -15,6 +15,12 @@
 
 #include <postgres.h>
 #include <catalog/pg_operator.h>
+#include "temporal.h"
+
+/*****************************************************************************
+ * Some other helper functions.
+ *****************************************************************************/
+extern bool tnumber_const_bounds(Node *other, TBOX *box);
 
 /*****************************************************************************/
 
