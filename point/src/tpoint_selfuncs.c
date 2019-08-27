@@ -812,6 +812,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	/* In the case of unknown constant */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
+
     selec = estimate_selectivity(root, &vardata, other, &constBox, cachedOp);
 
     if (MOBDB_FLAGS_GET_T(constBox.flags) && (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
@@ -833,7 +834,7 @@ PG_FUNCTION_INFO_V1(tpoint_joinsel);
 PGDLLEXPORT Datum
 tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(DEFAULT_STATISTICS);
+	PG_RETURN_FLOAT8(DEFAULT_SELECTIVITY);
 }
 
 /*****************************************************************************/

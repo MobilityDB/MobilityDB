@@ -1383,7 +1383,7 @@ PG_FUNCTION_INFO_V1(temporal_joinsel);
 PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(DEFAULT_STATISTICS);
+	PG_RETURN_FLOAT8(DEFAULT_SELECTIVITY);
 }
 
 /*****************************************************************************/
