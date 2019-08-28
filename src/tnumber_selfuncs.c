@@ -233,7 +233,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 			if (durationType == TEMPORALINST)
 			{
 				Oid op = oper_oid(EQ_OP, vartype, vartype);
-				selec1 = var_eq_const(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
+				selec1 = var_eq_const_mobdb(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
 			}
 			else
 			{
@@ -275,7 +275,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 			if (durationType == TEMPORALINST)
 			{
 				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-				selec2 = var_eq_const(&vardata, op, (Datum) box.tmin,
+				selec2 = var_eq_const_mobdb(&vardata, op, (Datum) box.tmin,
 									  false, TEMPORAL_STATISTICS);
 			}
 			else
@@ -283,9 +283,9 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 				{
 					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec2 = var_eq_const(&vardata, op, (Datum) box.tmin, false,
+					selec2 = var_eq_const_mobdb(&vardata, op, (Datum) box.tmin, false,
 										  TEMPORAL_STATISTICS);
-					selec2 *= var_eq_const(&vardata, op, (Datum) box.tmax, false,
+					selec2 *= var_eq_const_mobdb(&vardata, op, (Datum) box.tmax, false,
 										   TEMPORAL_STATISTICS);
 					selec2 = selec2 > 1 ? 1 : selec2;
 				}
@@ -482,7 +482,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	 */
 	if (!get_restriction_variable(root, args, varRelid,
 								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 
 	/*
 	 * Can't do anything useful if the something is not a constant, either.
@@ -490,7 +490,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	if (!IsA(other, Const))
 	{
 		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 	}
 
 	/*
@@ -515,7 +515,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 		{
 			/* Use default selectivity (should we raise an error instead?) */
 			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+			PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 		}
 	}
 
@@ -570,7 +570,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	}
 
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(cachedOp);
+		selec = default_temporal_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8((float8) selec);

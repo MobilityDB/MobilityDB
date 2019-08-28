@@ -90,7 +90,7 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
  */
 Selectivity
 estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
-						   Period box, CachedOp cachedOp)
+						   Period period, CachedOp cachedOp)
 {
 	/* Check the temporal types and inside each one check the cachedOp */
 	Selectivity  selec = 0.0;
@@ -101,9 +101,9 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 		{
 			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.lower),
+			selec = var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.lower),
 								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.upper),
+			selec *= var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.upper),
 								  false, TEMPORAL_STATISTICS);
 			selec = selec > 1 ? 1 : selec;
 		}
@@ -113,10 +113,10 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 
 			selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
-										TimestampTzGetDatum(box.lower),
+										TimestampTzGetDatum(period.lower),
 										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 			selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
-										 TimestampTzGetDatum(box.upper),
+										 TimestampTzGetDatum(period.upper),
 										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 			selec = 1 - selec;
 			selec = selec < 0 ? 0 : selec;
@@ -127,14 +127,14 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 		if (cachedOp == SAME_OP)
 		{
 			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const(&vardata, op, TimestampTzGetDatum(box.lower),
+			selec = var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.lower),
 								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const(&vardata, op, TimestampTzGetDatum(box.upper),
+			selec *= var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.upper),
 								  false, TEMPORAL_STATISTICS);
 			selec = selec > 1 ? 1 : selec;
 		}
 		else
-			selec = calc_periodsel(&vardata, &box,
+			selec = calc_periodsel(&vardata, &period,
 								   oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
 	}
 
@@ -402,25 +402,16 @@ default_temporaltypes_selectivity(Oid operator)
 }
 
 /*
- * var_eq_const --- eqsel for var = const case
- *
- * This is split out so that some other estimation functions can use it.
+ * var_eq_const_mobdb --- eqsel for var = const case
  */
 double
-var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
+var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
 			 bool negate, StatStrategy strategy)
 {
 	double selec;
 	bool isdefault;
 	Oid opfuncoid;
 	double nullfrac = 0.0;
-
-	/*
-	 * If the constant is NULL, assume operator is strict and return zero, ie,
-	 * operator will never return TRUE.
-	 */
-	if (!constval)
-		return 0.0;
 
 	/*
 	 * If we matched the var to a unique index or DISTINCT clause, assume
@@ -440,9 +431,13 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 		int i;
 		AttStatsSlot mcvslot;
 
+		/*
+		* Grab the nullfrac for use below.  Note we allow use of nullfrac
+		* regardless of security check.
+		*/
 		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-
 		nullfrac = stats->stanullfrac;
+
 		/*
 		 * Is the constant "=" to any of the column's most common values?
 		 * (Although the given operator may not really be "=", we will assume
@@ -458,8 +453,6 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 			fmgr_info(opfuncoid, &eqproc);
 			for (i = 0; i < mcvslot.nvalues; i++)
 			{
-				/* be careful to apply operator right way 'round */
-//				if (varonleft)
 				match = DatumGetBool(FunctionCall2Coll(&eqproc,
 													   DEFAULT_COLLATION_OID,
 													   mcvslot.values[i],
@@ -537,62 +530,29 @@ var_eq_const(VariableStatData *vardata, Oid operator, Datum constval,
 }
 
 /*
- * Get the bounds of the constant type
+ * Transform the constant to a period
  */
 
-bool
-get_const_bounds(Node *other, TBOX *box)
-{
-	Oid consttype = ((Const *) other)->consttype;
-
-	if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT) ||
-		consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-		temporal_bbox(&box, DatumGetTemporal(((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
-			 consttype == type_oid(T_PERIOD))
-		period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
-	else if (consttype == INT4OID || consttype == FLOAT8OID)
-		float_to_tbox_internal(box, (double) ((Const *) other)->constvalue);
-	else if (consttype == type_oid(T_INTRANGE))
-		intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_FLOATRANGE))
-		floatrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-	else if (consttype == TIMESTAMPTZOID)
-		timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_PERIODSET))
-		periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_TIMESTAMPSET))
-		timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
-	else if (consttype == type_oid(T_TBOX))
-	{
-		TBOX *boxTemp = DatumGetTboxP(((Const *) other)->constvalue);
-		memcpy((void *) box, (void *) boxTemp, sizeof(TBOX));
-	}
-	else
-		return false;
-	return true;
-}
-
-bool
-temporal_const_bounds(Node *other, Period *box)
+static bool
+temporal_const_to_period(Node *other, Period *period)
 {
 	Oid consttype = ((Const *) other)->consttype;
 
 	if (consttype == TIMESTAMPTZOID)
 	{
 		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-		period_set(box, t, t, true, true);
+		period_set(period, t, t, true, true);
 	}
 	else if (consttype == type_oid(T_TIMESTAMPSET))
-		memcpy(box, timestampset_bbox(
+		memcpy(period, timestampset_bbox(
 				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
 	else if (consttype == type_oid(T_PERIOD))
-		memcpy(box, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
+		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
 	else if (consttype== type_oid(T_PERIODSET))
-		memcpy(box, periodset_bbox(
+		memcpy(period, periodset_bbox(
 				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
 	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
 	else
 		return false;
 	return true;
@@ -781,7 +741,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 				/*
 				 * In the cases where we'll need it below, obtain an estimate
 				 * of the selectivity of "x = constval".  We use a calculation
-				 * similar to what var_eq_const() does for a non-MCV constant,
+				 * similar to what var_eq_const_mobdb() does for a non-MCV constant,
 				 * ie, estimate that all distinct non-MCV values occur equally
 				 * often.  But multiplication by "1.0 - sumcommon - nullfrac"
 				 * will be done by our caller, so we shouldn't do that here.
@@ -1093,10 +1053,10 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
  * reqop: STAOP value wanted, or InvalidOid if don't care.
  * flags: bitmask of ATTSTATSSLOT_VALUES and/or ATTSTATSSLOT_NUMBERS.
  * strategy: the type of the extracted elements which is one of the following:
- * VALUE_STATISTICS: retrieves the value part from slot 0 to 2
- * TEMPORAL_STATISTICS: retrieves the temporal part from slot 2 to 5
- * DEFAULT_STATISTICS: retrieves the slots for the default postgreSQL types
- * that start from slot 0
+ * - VALUE_STATISTICS: retrieves the value part from slot 0 to 2
+ * - TEMPORAL_STATISTICS: retrieves the temporal part from slot 2 to 5
+ * - DEFAULT_STATISTICS: retrieves the slots for the default postgreSQL types
+ *   that start from slot 0
  *
  * If a matching slot is found, true is returned, and *sslot is filled thus:
  * staop: receives the actual STAOP value.
@@ -1331,6 +1291,9 @@ temporal_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
+	/*
+	 * Get enumeration value associated to the operator
+	 */
 	bool found = get_temporal_cachedop(operator, &cachedOp);
 	/* In the case of unknown operator */
 	if (!found)
@@ -1339,10 +1302,11 @@ temporal_sel(PG_FUNCTION_ARGS)
 	/*
 	 * Get information about the constant type
 	 */
-	found = temporal_const_bounds(other, &constBox);
+	found = temporal_const_to_period(other, &constBox);
 	/* In the case of unknown constant */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
+
 	/*
     * Estimate the temporal selectivity value based on the required operator for all temporal durations.
     */

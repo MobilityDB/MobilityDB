@@ -823,7 +823,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
     }
 
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(cachedOp);
+		selec = default_temporal_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
