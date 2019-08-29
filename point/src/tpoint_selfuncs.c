@@ -542,9 +542,12 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 	double min[ND_DIMS];
 	double max[ND_DIMS];
 	Selectivity selec = 0.0; /* keep compiler quiet */
-
 	ND_STATS *nd_stats;
 	AttStatsSlot sslot;
+	Period period;
+
+	stbox_to_period(&period, box);
+
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, InvalidOid,
 									ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
@@ -739,16 +742,16 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM);
 			return selec;
 		case BEFORE_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, false, false, LT_OP);
+			selec = temporal_position_sel(root, vardata, &period, false, false, LT_OP);
 			return selec;
 		case AFTER_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, true, false, GT_OP);
+			selec = temporal_position_sel(root, vardata, &period, true, false, GT_OP);
 			return selec;
 		case OVERBEFORE_OP:
-			selec = estimate_temporal_position_sel(root, *vardata, other, false, true, LE_OP);
+			selec = temporal_position_sel(root, vardata, &period, false, true, LE_OP);
 			return selec;
 		case OVERAFTER_OP:
-			selec = 1.0 - estimate_temporal_position_sel(root, *vardata, other, false, false, GE_OP);
+			selec = 1.0 - temporal_position_sel(root, vardata, &period, false, false, GE_OP);
 			return selec;
 		default:
 			return 0.001;
@@ -772,6 +775,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
     Node *other;
     bool varonleft;
 	STBOX constBox;
+	
 	memset(&constBox, 0, sizeof(STBOX));
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -806,7 +810,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
         PG_RETURN_FLOAT8(selec);
 
     /*
-     * Get information about the constant type
+     * Transform the constant into an STBOX and a Period
      */
      found = tpoint_const_bounds(other, &constBox);
 	/* In the case of unknown constant */
@@ -819,7 +823,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
                                          cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
     {
         Period *period = period_make((TimestampTz)constBox.tmin, (TimestampTz)constBox.tmax, true, true);
-		selec *= estimate_temporal_bbox_sel(root, vardata, *period, cachedOp);
+		selec *= temporal_bbox_sel(root, &vardata, period, cachedOp);
     }
 
 	if (selec < 0.0)

@@ -20,18 +20,13 @@
 /*****************************************************************************
  * Some other helper functions.
  *****************************************************************************/
+
 extern bool tnumber_const_bounds(Node *other, TBOX *box);
 
 /*****************************************************************************/
 
-extern Datum tnumber_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_contains_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_same_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_position_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_position_joinsel(PG_FUNCTION_ARGS);
+extern Datum tnumber_sel(PG_FUNCTION_ARGS);
+extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

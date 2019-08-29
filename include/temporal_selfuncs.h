@@ -39,14 +39,13 @@ typedef enum
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata, Period box,
-											  CachedOp cachedOp);
-extern Selectivity estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
-												  Node *other, bool isgt, bool iseq, CachedOp operator);
-
-extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
-								  VariableStatData *vardata, Datum constval, Oid consttype,
-								  StatStrategy strategy);
+extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, 
+	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
+	Oid consttype, StatStrategy strategy);
+extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, bool isgt, bool iseq, CachedOp operator);
 
 /*****************************************************************************
  * Some other helper functions.
@@ -60,14 +59,8 @@ extern double var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum 
 
 /*****************************************************************************/
 
-extern Datum temporal_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum temporal_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum temporal_contains_sel(PG_FUNCTION_ARGS);
-extern Datum temporal_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum temporal_same_sel(PG_FUNCTION_ARGS);
-extern Datum temporal_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum temporal_position_sel(PG_FUNCTION_ARGS);
-extern Datum temporal_position_joinsel(PG_FUNCTION_ARGS);
+extern Datum temporal_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

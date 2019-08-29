@@ -31,6 +31,8 @@ extern Datum tbox_eq(PG_FUNCTION_ARGS);
 extern Datum tbox_ne(PG_FUNCTION_ARGS);
 extern Datum tbox_cmp(PG_FUNCTION_ARGS);
 
+extern void tbox_to_period(Period *period, const TBOX *box); 
+
 extern int tbox_cmp_internal(const TBOX *box1, const TBOX *box2);
 extern bool tbox_eq_internal(const TBOX *box1, const TBOX *box2);
 

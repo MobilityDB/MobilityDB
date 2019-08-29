@@ -14,6 +14,7 @@
 
 #include <assert.h>
 
+#include "period.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"
 
@@ -39,6 +40,15 @@ stbox_copy(const STBOX *box)
 	memcpy(result, box, sizeof(STBOX));
 	return result;
 }
+
+void
+stbox_to_period(Period *period, const STBOX *box)
+{
+	assert(MOBDB_FLAGS_GET_T(box->flags));
+	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
+	return;
+}
+
 
 /*****************************************************************************
  * Input/output functions
@@ -211,57 +221,6 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		result->tmin = tmin;
 		result->tmax = tmax;
 	}
-
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(stboxt_constructor);
-
-PGDLLEXPORT Datum
-stboxt_constructor(PG_FUNCTION_ARGS)
-{
-	double xmin, xmax, ymin, ymax, 
-		tmin, tmax, tmp;
-
-	xmin = PG_GETARG_FLOAT8(0);
-	ymin = PG_GETARG_FLOAT8(1);
-	tmin = PG_GETARG_FLOAT8(2);
-	xmax = PG_GETARG_FLOAT8(3);
-	ymax = PG_GETARG_FLOAT8(4);
-	tmax = PG_GETARG_FLOAT8(5);
-
-	STBOX *result = stbox_new(true, false, true, false);
-	
-	/* Process X min/max */
-	if (xmin > xmax)
-	{
-		tmp = xmin;
-		xmin = xmax;
-		xmax = tmp;
-	}
-	result->xmin = xmin;
-	result->xmax = xmax;
-
-	/* Process Y min/max */
-	if (ymin > ymax)
-	{
-		tmp = ymin;
-		ymin = ymax;
-		ymax = tmp;
-	}
-	result->ymin = ymin;
-	result->ymax = ymax;
-
-	/* Process M min/max */
-	if (tmin > tmax)
-	{
-		tmp = tmin;
-		tmin = tmax;
-		tmax = tmp;
-	}
-	result->tmin = tmin;
-	result->tmax = tmax;
-	MOBDB_FLAGS_SET_T(result->flags, true);
 
 	PG_RETURN_POINTER(result);
 }

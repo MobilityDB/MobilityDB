@@ -14,6 +14,7 @@
 
 #include <assert.h>
 
+#include "period.h"
 #include "temporal.h"
 #include "temporal_parser.h"
 
@@ -155,6 +156,18 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	result->tmin = tmin;
 	result->tmax = tmax;
 	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+void
+tbox_to_period(Period *period, const TBOX *box)
+{
+	assert(MOBDB_FLAGS_GET_T(box->flags));
+	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
+	return;
 }
 
 /*****************************************************************************

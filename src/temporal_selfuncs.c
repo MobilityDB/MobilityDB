@@ -6,8 +6,9 @@
  * The operators currently supported can be obtained by the following query
  * 
  * SELECT oprname, l.typname as oprleft, r.typname as oprright
- * FROM pg_operator op join pg_type l on op.oprleft = l.oid join pg_type r on op.oprright = r.oid
- * WHERE l.typname = 'tbool' and oprresult = 16
+ * FROM pg_operator op JOIN pg_type l ON op.oprleft = l.oid 
+ *	  JOIN pg_type r ON op.oprright = r.oid
+ * WHERE l.typname = 'tbool' AND oprresult = 16 -- boolean operator
  * ORDER BY oprname, oprleft, oprright;
  * 
  * -- B-tree comparison operators
@@ -42,6 +43,11 @@
  * "&=";"tbool";"bool"
  * "@=";"tbool";"bool"
  *
+ * Due to implicit casting, a condition such as tbool <<# timestamptz will be
+ * transformed into tbool <<# period. This allows to reduce the number of 
+ * cases for the operator definitions, indexes, selectivity, etc. Furthermore,
+ * xxx
+ * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
@@ -52,11 +58,23 @@
 #include "temporal_selfuncs.h"
 
 #include <assert.h>
+#include <access/heapam.h>
 #include <access/htup_details.h>
+#include <access/itup.h>
+#include <access/relscan.h>
+#include <access/visibilitymap.h>
+#include <access/skey.h>
 #include <catalog/pg_collation_d.h>
+#include <executor/tuptable.h>
+#include <optimizer/paths.h>
+#include <storage/bufmgr.h>
 #include <utils/builtins.h>
 #include <utils/date.h>
+#include <utils/datum.h>
+#include <utils/memutils.h>
+#include <utils/rel.h>
 #include <utils/syscache.h>
+#include <utils/tqual.h>
 #include <temporal_boxops.h>
 #include <timetypes.h>
 
@@ -67,164 +85,18 @@
 #include "rangetypes_ext.h"
 #include "tpoint.h"
 
-/*****************************************************************************/
-/*
- * Get the lower or the upper value of the temporal type based on the position operator:
- * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), etc.
- */
-static PeriodBound *
-lower_or_higher_temporal_bound(Node *other, bool higher)
-{
-	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
-	Oid consttype = ((Const *) other)->consttype;
-	result->inclusive = ! higher;
 
-    if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    {
-        Period *p = (Period *) palloc(sizeof(Period));
-        /* TODO MEMORY LEAK HERE !!!! */
-        temporal_bbox(p, DatumGetTemporal(((Const *) other)->constvalue));
-        result->val = (higher) ? p->upper: p->lower;
-    }
-    else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-    {
-        Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-        TBOX box;
-        memset(&box, 0, sizeof(TBOX));
-        temporal_bbox(&box, temporal);
-        result->val = (higher) ? (TimestampTz)box.tmax : (TimestampTz)box.tmin;
-    }
-    else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
-    {
-        Period *p = (Period *) palloc(sizeof(Period));
-        /* TODO MEMORY LEAK HERE !!!! */
-        temporal_timespan_internal(p, DatumGetTemporal(((Const *) other)->constvalue));
-        result->val = (higher) ? p->upper : p->lower;
-    }
-    else if (consttype == TIMESTAMPTZOID)
-    {
-        result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
-    }
-    else if (consttype == type_oid(T_PERIOD))
-    {
-        result->val = (higher) ? DatumGetPeriod(((Const *) other)->constvalue)->upper :
-                      DatumGetPeriod(((Const *) other)->constvalue)->lower;
-    }
-    else if (consttype == type_oid(T_TBOX))
-    {
-        result->val = (higher) ? (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmax :
-                      (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmin;
-    }
-    else if (consttype == type_oid(T_STBOX))
-    {
-        result->val = (higher) ? (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmax :
-                      (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
-    }
-
-	return result;
-}
-
-/*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
- * contains (@>), contained (<@), and, same (~=). These operators depend on
- * volume. Contains and contained are tighter contraints than overlaps, so
- * the former should produce lower estimates than the latter. Similarly,
- * equals is a tighter constrain tha contains and contained.
- */
-Selectivity
-estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
-						   Period period, CachedOp cachedOp)
-{
-	/* Check the temporal types and inside each one check the cachedOp */
-	Selectivity  selec = 0.0;
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-
-	if (duration == TEMPORALINST)
-	{
-		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
-		{
-			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.lower),
-								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.upper),
-								  false, TEMPORAL_STATISTICS);
-			selec = selec > 1 ? 1 : selec;
-		}
-		else
-		{
-			Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-
-			selec = scalarineqsel_mobdb(root, opl, false, false, &vardata,
-										TimestampTzGetDatum(period.lower),
-										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-			selec += scalarineqsel_mobdb(root, opg, true, true, &vardata,
-										 TimestampTzGetDatum(period.upper),
-										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-			selec = 1 - selec;
-			selec = selec < 0 ? 0 : selec;
-		}
-	}
-	else if (duration == TEMPORALINST)
-	{
-		/* TODO */
-	}
-	else
-	{
-		if (cachedOp == SAME_OP)
-		{
-			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.lower),
-								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const_mobdb(&vardata, op, TimestampTzGetDatum(period.upper),
-								  false, TEMPORAL_STATISTICS);
-			selec = selec > 1 ? 1 : selec;
-		}
-		else
-			selec = calc_period_hist_selectivity(&vardata, &period, cachedOp, TEMPORAL_STATISTICS);
-	}
-
-	return selec;
-}
-
-/*
- * Estimate the selectivity value of the position operators for temporal types.
- */
-Selectivity
-estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
-	Node *other, bool isgt, bool iseq, CachedOp operator)
-{
-	double selec = 0.0;
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-
-	if (duration == TEMPORALINST)
-	{
-		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
-							   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-	}
-	else if (duration == TEMPORALINST)
-	{
-		/* TODO */
-	}
-	else 
-	{
-		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = calc_period_hist_selectivity(&vardata, period, operator, 
-			TEMPORAL_STATISTICS);
-	}
-	return selec;
-}
-
-/*****************************************************************************/
+/*****************************************************************************
+ * The following functions are streamlined versions of the correspoinding 
+ * functions from PostgreSQL to only cover the types we are manipulating, 
+ * that is, numbers and timestamps
+ *****************************************************************************/
 
 /*
  * Do convert_to_scalar_mobdb()'s work for any number data type.
  */
 static double
-convert_numeric_to_scalar(Oid typid, Datum value)
+convert_numeric_to_scalar_mobdb(Oid typid, Datum value)
 {
 	switch (typid) {
 		case BOOLOID:
@@ -243,34 +115,17 @@ convert_numeric_to_scalar(Oid typid, Datum value)
 			/* Note: out-of-range values will be clamped to +-HUGE_VAL */
 			return (double) DatumGetFloat8(DirectFunctionCall1(
 												  numeric_float8_no_overflow, value));
-		case OIDOID:
-		case REGPROCOID:
-		case REGPROCEDUREOID:
-		case REGOPEROID:
-		case REGOPERATOROID:
-		case REGCLASSOID:
-		case REGTYPEOID:
-		case REGCONFIGOID:
-		case REGDICTIONARYOID:
-		case REGROLEOID:
-		case REGNAMESPACEOID:
-			/* we can treat OIDs as integers... */
-			return (double)DatumGetObjectId(value);
+		default:
+			elog(ERROR, "unsupported type: %u", typid);
+			return 0;
 	}
-
-	/*
-	 * Can't get here unless someone tries to use scalarltsel/scalargtsel on
-	 * an operator with one number and one non-number operand.
-	 */
-	elog(ERROR, "unsupported type: %u", typid);
-	return 0;
 }
 
 /*
  * Do convert_to_scalar_mobdb()'s work for any timevalue data type.
  */
 static double
-convert_timevalue_to_scalar(Oid typid, Datum value)
+convert_timevalue_to_scalar_mobdb(Oid typid, Datum value)
 {
 	switch (typid)
 	{
@@ -288,8 +143,8 @@ convert_timevalue_to_scalar(Oid typid, Datum value)
 
 static bool
 convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
-				  Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
-				  double *scaledhibound)
+	Datum lobound, Datum hibound, Oid boundstypid, double *scaledlobound,
+	double *scaledhibound)
 {
 	/*
 	* Both the valuetypid and the boundstypid should exactly match the
@@ -318,19 +173,18 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 		case FLOAT4OID:
 		case FLOAT8OID:
 		case NUMERICOID:
-		case OIDOID:
-			*scaledvalue = convert_numeric_to_scalar(valuetypid, value);
-			*scaledlobound = convert_numeric_to_scalar(boundstypid, lobound);
-			*scaledhibound = convert_numeric_to_scalar(boundstypid, hibound);
+			*scaledvalue = convert_numeric_to_scalar_mobdb(valuetypid, value);
+			*scaledlobound = convert_numeric_to_scalar_mobdb(boundstypid, lobound);
+			*scaledhibound = convert_numeric_to_scalar_mobdb(boundstypid, hibound);
 			return true;
 
 		/*
 		* Built-in time types
 		*/
 		case TIMESTAMPTZOID:
-			*scaledvalue = convert_timevalue_to_scalar(valuetypid, value);
-			*scaledlobound = convert_timevalue_to_scalar(boundstypid, lobound);
-			*scaledhibound = convert_timevalue_to_scalar(boundstypid, hibound);
+			*scaledvalue = convert_timevalue_to_scalar_mobdb(valuetypid, value);
+			*scaledlobound = convert_timevalue_to_scalar_mobdb(boundstypid, lobound);
+			*scaledhibound = convert_timevalue_to_scalar_mobdb(boundstypid, hibound);
 			return true;
 	}
 	/* Don't know how to convert */
@@ -339,207 +193,136 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 }
 
 /*****************************************************************************
- * Helper functions for calculating selectivity.
+ * The following functions are copied from PostgreSQL since they are not 
+ * exported
  *****************************************************************************/
-/*
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
- */
-double
-default_temporal_selectivity(Oid operator)
-{
-	switch (operator)
-	{
-		case OVERLAPS_OP:
-			return 0.005;
-
-		case CONTAINS_OP:
-		case CONTAINED_OP:
-			return 0.002;
-
-		case SAME_OP:
-			return 0.001;
-
-		case LEFT_OP:
-		case RIGHT_OP:
-		case OVERLEFT_OP:
-		case OVERRIGHT_OP:
-		case ABOVE_OP:
-		case BELOW_OP:
-		case OVERABOVE_OP:
-		case OVERBELOW_OP:
-		case AFTER_OP:
-		case BEFORE_OP:
-		case OVERAFTER_OP:
-		case OVERBEFORE_OP:
-
-			/* these are similar to regular scalar inequalities */
-			return DEFAULT_INEQ_SEL;
-
-		default:
-			/* all operators should be handled above, but just in case */
-			return 0.01;
-	}
-}
 
 /*
- * var_eq_const_mobdb --- eqsel for var = const case
- */
-double
-var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
-			 bool negate, StatStrategy strategy)
-{
-	double selec;
-	bool isdefault;
-	Oid opfuncoid;
-	double nullfrac = 0.0;
-
-	/*
-	 * If we matched the var to a unique index or DISTINCT clause, assume
-	 * there is exactly one match regardless of anything else.  (This is
-	 * slightly bogus, since the index or clause's equality operator might be
-	 * different from ours, but it's much more likely to be right than
-	 * ignoring the information.)
-	 */
-	if (vardata->isunique && vardata->rel && vardata->rel->tuples >= 1.0)
-		return 1.0 / vardata->rel->tuples;
-
-	if (HeapTupleIsValid(vardata->statsTuple) &&
-		statistic_proc_security_check(vardata, (opfuncoid = get_opcode(operator))))
-	{
-		Form_pg_statistic stats;
-		bool match = false;
-		int i;
-		AttStatsSlot mcvslot;
-
-		/*
-		* Grab the nullfrac for use below.  Note we allow use of nullfrac
-		* regardless of security check.
-		*/
-		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-		nullfrac = stats->stanullfrac;
-
-		/*
-		 * Is the constant "=" to any of the column's most common values?
-		 * (Although the given operator may not really be "=", we will assume
-		 * that seeing whether it returns TRUE is an appropriate test.  If you
-		 * don't like this, maybe you shouldn't be using eqsel for your
-		 * operator...)
-		 */
-		if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
-									  STATISTIC_KIND_MCV, InvalidOid,
-									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
-		{
-			FmgrInfo eqproc;
-			fmgr_info(opfuncoid, &eqproc);
-			for (i = 0; i < mcvslot.nvalues; i++)
-			{
-				match = DatumGetBool(FunctionCall2Coll(&eqproc,
-													   DEFAULT_COLLATION_OID,
-													   mcvslot.values[i],
-													   constval));
-				if (match)
-					break;
-			}
-		}
-		else
-		{
-			/* no most-common-value info available */
-			mcvslot.values = NULL;
-			mcvslot.numbers = NULL;
-			i = mcvslot.nvalues = mcvslot.nnumbers = 0;
-		}
-		if (match)
-		{
-			/*
-			 * Constant is "=" to this common value.  We know selectivity
-			 * exactly (or as exactly as ANALYZE could calculate it, anyway).
-			 */
-			selec = mcvslot.numbers[i];
-		}
-		else
-		{
-			/*
-			 * Comparison is against a constant that is neither NULL nor any
-			 * of the common values.  Its selectivity cannot be more than
-			 * this:
-			 */
-			double sumcommon = 0.0;
-			double otherdistinct;
-
-			for (i = 0; i < mcvslot.nnumbers; i++)
-				sumcommon += mcvslot.numbers[i];
-			selec = 1.0 - sumcommon - nullfrac;
-			CLAMP_PROBABILITY(selec);
-
-			/*
-			 * and in fact it's probably a good deal less. We approximate that
-			 * all the not-common values share this remaining fraction
-			 * equally, so we divide by the number of other distinct values.
-			 */
-			otherdistinct = get_variable_numdistinct(vardata, &isdefault) - mcvslot.nnumbers;
-			if (otherdistinct > 1)
-				selec /= otherdistinct;
-
-			/*
-			 * Another cross-check: selectivity shouldn't be estimated as more
-			 * than the least common "most common value".
-			 */
-			if (mcvslot.nnumbers > 0 && selec > mcvslot.numbers[mcvslot.nnumbers - 1])
-				selec = mcvslot.numbers[mcvslot.nnumbers - 1];
-		}
-
-		free_attstatsslot(&mcvslot);
-	}
-	else
-	{
-		/*
-		 * No ANALYZE stats available, so make a guess using estimated number
-		 * of distinct values and assuming they are equally common. (The guess
-		 * is unlikely to be very good, but we do know a few special cases.)
-		 */
-		selec = 1.0 / get_variable_numdistinct(vardata, &isdefault);
-	}
-
-	/* now adjust if we wanted <> rather than = */
-	if (negate)
-		selec = 1.0 - selec - nullfrac;
-
-	/* result should be in range, but make sure... */
-	CLAMP_PROBABILITY(selec);
-	return selec;
-}
-
-/*
- * Transform the constant to a period
+ * Get one endpoint datum (min or max depending on indexscandir) from the
+ * specified index.  Return true if successful, false if index is empty.
+ * On success, endpoint value is stored to *endpointDatum (and copied into
+ * outercontext).
+ *
+ * scankeys is a 1-element scankey array set up to reject nulls.
+ * typLen/typByVal describe the datatype of the index's first column.
+ * (We could compute these values locally, but that would mean computing them
+ * twice when get_actual_variable_range needs both the min and the max.)
  */
 static bool
-temporal_const_to_period(Node *other, Period *period)
+get_actual_variable_endpoint(Relation heapRel,
+							 Relation indexRel,
+							 ScanDirection indexscandir,
+							 ScanKey scankeys,
+							 int16 typLen,
+							 bool typByVal,
+							 MemoryContext outercontext,
+							 Datum *endpointDatum)
 {
-	Oid consttype = ((Const *) other)->consttype;
+	bool		have_data = false;
+	SnapshotData SnapshotNonVacuumable;
+	IndexScanDesc index_scan;
+	Buffer		vmbuffer = InvalidBuffer;
+	ItemPointer tid;
+	Datum		values[INDEX_MAX_KEYS];
+	bool		isnull[INDEX_MAX_KEYS];
+	MemoryContext oldcontext;
 
-	if (consttype == TIMESTAMPTZOID)
+	/*
+	 * We use the index-only-scan machinery for this.  With mostly-static
+	 * tables that's a win because it avoids a heap visit.  It's also a win
+	 * for dynamic data, but the reason is less obvious; read on for details.
+	 *
+	 * In principle, we should scan the index with our current active
+	 * snapshot, which is the best approximation we've got to what the query
+	 * will see when executed.  But that won't be exact if a new snap is taken
+	 * before running the query, and it can be very expensive if a lot of
+	 * recently-dead or uncommitted rows exist at the beginning or end of the
+	 * index (because we'll laboriously fetch each one and reject it).
+	 * Instead, we use SnapshotNonVacuumable.  That will accept recently-dead
+	 * and uncommitted rows as well as normal visible rows.  On the other
+	 * hand, it will reject known-dead rows, and thus not give a bogus answer
+	 * when the extreme value has been deleted (unless the deletion was quite
+	 * recent); that case motivates not using SnapshotAny here.
+	 *
+	 * A crucial point here is that SnapshotNonVacuumable, with
+	 * RecentGlobalXmin as horizon, yields the inverse of the condition that
+	 * the indexscan will use to decide that index entries are killable (see
+	 * heap_hot_search_buffer()).  Therefore, if the snapshot rejects a tuple
+	 * (or more precisely, all tuples of a HOT chain) and we have to continue
+	 * scanning past it, we know that the indexscan will mark that index entry
+	 * killed.  That means that the next get_actual_variable_endpoint() call
+	 * will not have to re-consider that index entry.  In this way we avoid
+	 * repetitive work when this function is used a lot during planning.
+	 *
+	 * But using SnapshotNonVacuumable creates a hazard of its own.  In a
+	 * recently-created index, some index entries may point at "broken" HOT
+	 * chains in which not all the tuple versions contain data matching the
+	 * index entry.  The live tuple version(s) certainly do match the index,
+	 * but SnapshotNonVacuumable can accept recently-dead tuple versions that
+	 * don't match.  Hence, if we took data from the selected heap tuple, we
+	 * might get a bogus answer that's not close to the index extremal value,
+	 * or could even be NULL.  We avoid this hazard because we take the data
+	 * from the index entry not the heap.
+	 */
+	InitNonVacuumableSnapshot(SnapshotNonVacuumable, RecentGlobalXmin);
+
+	index_scan = index_beginscan(heapRel, indexRel,
+								 &SnapshotNonVacuumable,
+								 1, 0);
+	/* Set it up for index-only scan */
+	index_scan->xs_want_itup = true;
+	index_rescan(index_scan, scankeys, 1, NULL, 0);
+
+	/* Fetch first/next tuple in specified direction */
+	while ((tid = index_getnext_tid(index_scan, indexscandir)) != NULL)
 	{
-		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-		period_set(period, t, t, true, true);
+		if (!VM_ALL_VISIBLE(heapRel,
+							ItemPointerGetBlockNumber(tid),
+							&vmbuffer))
+		{
+			/* Rats, we have to visit the heap to check visibility */
+			if (index_fetch_heap(index_scan) == NULL)
+				continue;		/* no visible tuple, try next index entry */
+
+			/*
+			 * We don't care whether there's more than one visible tuple in
+			 * the HOT chain; if any are visible, that's good enough.
+			 */
+		}
+
+		/*
+		 * We expect that btree will return data in IndexTuple not HeapTuple
+		 * format.  It's not lossy either.
+		 */
+		if (!index_scan->xs_itup)
+			elog(ERROR, "no data returned for index-only scan");
+		if (index_scan->xs_recheck)
+			elog(ERROR, "unexpected recheck indication from btree");
+
+		/* OK to deconstruct the index tuple */
+		index_deform_tuple(index_scan->xs_itup,
+						   index_scan->xs_itupdesc,
+						   values, isnull);
+
+		/* Shouldn't have got a null, but be careful */
+		if (isnull[0])
+			elog(ERROR, "found unexpected null value in index \"%s\"",
+				 RelationGetRelationName(indexRel));
+
+		/* Copy the index column value out to caller's context */
+		oldcontext = MemoryContextSwitchTo(outercontext);
+		*endpointDatum = datumCopy(values[0], typByVal, typLen);
+		MemoryContextSwitchTo(oldcontext);
+		have_data = true;
+		break;
 	}
-	else if (consttype == type_oid(T_TIMESTAMPSET))
-		memcpy(period, timestampset_bbox(
-				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
-	else if (consttype == type_oid(T_PERIOD))
-		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
-	else if (consttype== type_oid(T_PERIODSET))
-		memcpy(period, periodset_bbox(
-				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
-	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
-	else
-		return false;
-	return true;
+
+	if (vmbuffer != InvalidBuffer)
+		ReleaseBuffer(vmbuffer);
+	index_endscan(index_scan);
+
+	return have_data;
 }
-/*****************************************************************************
- * The following functions is copied from PostgreSQL since it is not exported
- *****************************************************************************/
 
 /*
  * get_actual_variable_range
@@ -627,7 +410,6 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			MemoryContext oldcontext;
 			Relation	heapRel;
 			Relation	indexRel;
-			TupleTableSlot *slot;
 			int16		typLen;
 			bool		typByVal;
 			ScanKeyData scankeys[1];
@@ -640,13 +422,13 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 
 			/*
 			 * Open the table and index so we can read from them.  We should
-			 * already have some type of lock on each.
+			 * already have at least AccessShareLock on the table, but not
+			 * necessarily on the index.
 			 */
-			heapRel = table_open(rte->relid, NoLock);
-			indexRel = index_open(index->indexoid, NoLock);
+			heapRel = heap_open(rte->relid, NoLock);
+			indexRel = index_open(index->indexoid, AccessShareLock);
 
 			/* build some stuff needed for indexscan execution */
-			slot = table_slot_create(heapRel, NULL);
 			get_typlenbyval(vardata->atttype, &typLen, &typByVal);
 
 			/* set up an IS NOT NULL scan key so that we ignore nulls */
@@ -668,7 +450,6 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
-														 slot,
 														 oldcontext,
 														 min);
 			}
@@ -688,16 +469,13 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
-														 slot,
 														 oldcontext,
 														 max);
 			}
 
 			/* Clean everything up */
-			ExecDropSingleTupleTableSlot(slot);
-
-			index_close(indexRel, NoLock);
-			table_close(heapRel, NoLock);
+			index_close(indexRel, AccessShareLock);
+			heap_close(heapRel, NoLock);
 
 			MemoryContextSwitchTo(oldcontext);
 			MemoryContextDelete(tmpcontext);
@@ -1131,8 +909,8 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 /*
  * get_attstatsslot
  *
- *      Extract the contents of a "slot" of a pg_statistic tuple.
- *      Returns true if requested slot type was found, else false.
+ *	  Extract the contents of a "slot" of a pg_statistic tuple.
+ *	  Returns true if requested slot type was found, else false.
  *
  * Unlike other routines in this file, this takes a pointer to an
  * already-looked-up tuple in the pg_statistic cache.  We do this since
@@ -1317,6 +1095,355 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 }
 
 /*****************************************************************************/
+/*
+ * Get the lower or the upper value of the temporal type based on the position operator:
+ * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), etc.
+ */
+static PeriodBound *
+lower_or_higher_temporal_bound(Node *other, bool higher)
+{
+	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
+	Oid consttype = ((Const *) other)->consttype;
+	result->inclusive = ! higher;
+
+	Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
+	if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+	{
+		Period p;
+		temporal_bbox(&p, temp);
+		result->val = (higher) ? p.upper : p.lower;
+	}
+	else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporal_bbox(&box, temp);
+		result->val = (higher) ? (TimestampTz) box.tmax : (TimestampTz) box.tmin;
+	}
+	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+	{
+		STBOX box;
+		memset(&box, 0, sizeof(STBOX));
+		temporal_bbox(&box, temp);
+		result->val = (higher) ? (TimestampTz) box.tmax : (TimestampTz) box.tmin;
+	}
+	else if (consttype == TIMESTAMPTZOID)
+	{
+		result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
+	}
+	else if (consttype == type_oid(T_PERIOD))
+	{
+		result->val = (higher) ? DatumGetPeriod(((Const *) other)->constvalue)->upper :
+					  DatumGetPeriod(((Const *) other)->constvalue)->lower;
+	}
+	else if (consttype == type_oid(T_TBOX))
+	{
+		result->val = (higher) ? (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmax :
+					  (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmin;
+	}
+	else if (consttype == type_oid(T_STBOX))
+	{
+		result->val = (higher) ? (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmax :
+					  (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
+	}
+
+	return result;
+}
+
+/*
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
+ * contains (@>), contained (<@), and, same (~=). These operators depend on
+ * volume. Contains and contained are tighter contraints than overlaps, so
+ * the former should produce lower estimates than the latter. Similarly,
+ * same is a tighter constraint than contains and contained.
+ */
+Selectivity
+temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp)
+{
+	/* Check the temporal types and inside each one check the cachedOp */
+	Selectivity  selec = 0.0;
+	int duration = TYPMOD_GET_DURATION(vardata->atttypmod);
+
+	if (duration == TEMPORALINST)
+	{
+		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
+		{
+			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			selec = var_eq_const_mobdb(vardata, op, TimestampTzGetDatum(period->lower),
+								 false, TEMPORAL_STATISTICS);
+			selec *= var_eq_const_mobdb(vardata, op, TimestampTzGetDatum(period->upper),
+								  false, TEMPORAL_STATISTICS);
+			selec = selec > 1 ? 1 : selec;
+		}
+		else
+		{
+			Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+
+			selec = scalarineqsel_mobdb(root, opl, false, false, vardata,
+										TimestampTzGetDatum(period->lower),
+										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			selec += scalarineqsel_mobdb(root, opg, true, true, vardata,
+										 TimestampTzGetDatum(period->upper),
+										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			selec = 1 - selec;
+			selec = selec < 0 ? 0 : selec;
+		}
+	}
+	else if (duration == TEMPORALI)
+	{
+		/* TODO */
+	}
+	else
+	{
+		/*
+		 * There is no ~= operator for time types and thus it is necessary to
+		 * take care of this operator here.
+		 */
+		if (cachedOp == SAME_OP)
+		{
+			Oid op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+			selec = var_eq_const_mobdb(vardata, op, PeriodGetDatum(period),
+				false, TEMPORAL_STATISTICS);
+		}
+		else
+			selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
+				TEMPORAL_STATISTICS);
+	}
+	return selec;
+}
+
+/*
+ * Selectivity for operators for relative position operators, that is,
+ * left (<<), overleft (&<), right (>>), overright (&>), before (<<#), 
+ * overbefore (&<#), after (#>>), overafter (#&>). 
+ */
+Selectivity
+temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, bool isgt, bool iseq, CachedOp operator)
+{
+	double selec = 0.0;
+	int duration = TYPMOD_GET_DURATION(vardata->atttypmod);
+
+	if (duration == TEMPORALINST)
+	{
+		TimestampTz t = (isgt) ? period->upper : period->lower;
+		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, op, isgt, iseq, vardata, t,
+			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+	}
+	else if (duration == TEMPORALINST)
+	{
+		/* TODO */
+	}
+	else 
+	{
+		selec = calc_period_hist_selectivity(vardata, period, operator, 
+			TEMPORAL_STATISTICS);
+	}
+	return selec;
+}
+
+/*****************************************************************************
+ * Helper functions for calculating selectivity.
+ *****************************************************************************/
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ */
+double
+default_temporal_selectivity(Oid operator)
+{
+	switch (operator)
+	{
+		case OVERLAPS_OP:
+			return 0.005;
+
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+			return 0.002;
+
+		case SAME_OP:
+			return 0.001;
+
+		case LEFT_OP:
+		case RIGHT_OP:
+		case OVERLEFT_OP:
+		case OVERRIGHT_OP:
+		case ABOVE_OP:
+		case BELOW_OP:
+		case OVERABOVE_OP:
+		case OVERBELOW_OP:
+		case AFTER_OP:
+		case BEFORE_OP:
+		case OVERAFTER_OP:
+		case OVERBEFORE_OP:
+
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all operators should be handled above, but just in case */
+			return 0.01;
+	}
+}
+
+/*
+ * var_eq_const_mobdb --- eqsel for var = const case
+ */
+double
+var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
+			 bool negate, StatStrategy strategy)
+{
+	double selec;
+	bool isdefault;
+	Oid opfuncoid;
+	double nullfrac = 0.0;
+
+	/*
+	 * If we matched the var to a unique index or DISTINCT clause, assume
+	 * there is exactly one match regardless of anything else.  (This is
+	 * slightly bogus, since the index or clause's equality operator might be
+	 * different from ours, but it's much more likely to be right than
+	 * ignoring the information.)
+	 */
+	if (vardata->isunique && vardata->rel && vardata->rel->tuples >= 1.0)
+		return 1.0 / vardata->rel->tuples;
+
+	if (HeapTupleIsValid(vardata->statsTuple) &&
+		statistic_proc_security_check(vardata, (opfuncoid = get_opcode(operator))))
+	{
+		Form_pg_statistic stats;
+		bool match = false;
+		int i;
+		AttStatsSlot mcvslot;
+
+		/*
+		* Grab the nullfrac for use below.  Note we allow use of nullfrac
+		* regardless of security check.
+		*/
+		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+		nullfrac = stats->stanullfrac;
+
+		/*
+		 * Is the constant "=" to any of the column's most common values?
+		 * (Although the given operator may not really be "=", we will assume
+		 * that seeing whether it returns TRUE is an appropriate test.  If you
+		 * don't like this, maybe you shouldn't be using eqsel for your
+		 * operator...)
+		 */
+		if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
+									  STATISTIC_KIND_MCV, InvalidOid,
+									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
+		{
+			FmgrInfo eqproc;
+			fmgr_info(opfuncoid, &eqproc);
+			for (i = 0; i < mcvslot.nvalues; i++)
+			{
+				match = DatumGetBool(FunctionCall2Coll(&eqproc,
+													   DEFAULT_COLLATION_OID,
+													   mcvslot.values[i],
+													   constval));
+				if (match)
+					break;
+			}
+		}
+		else
+		{
+			/* no most-common-value info available */
+			mcvslot.values = NULL;
+			mcvslot.numbers = NULL;
+			i = mcvslot.nvalues = mcvslot.nnumbers = 0;
+		}
+		if (match)
+		{
+			/*
+			 * Constant is "=" to this common value.  We know selectivity
+			 * exactly (or as exactly as ANALYZE could calculate it, anyway).
+			 */
+			selec = mcvslot.numbers[i];
+		}
+		else
+		{
+			/*
+			 * Comparison is against a constant that is neither NULL nor any
+			 * of the common values.  Its selectivity cannot be more than
+			 * this:
+			 */
+			double sumcommon = 0.0;
+			double otherdistinct;
+
+			for (i = 0; i < mcvslot.nnumbers; i++)
+				sumcommon += mcvslot.numbers[i];
+			selec = 1.0 - sumcommon - nullfrac;
+			CLAMP_PROBABILITY(selec);
+
+			/*
+			 * and in fact it's probably a good deal less. We approximate that
+			 * all the not-common values share this remaining fraction
+			 * equally, so we divide by the number of other distinct values.
+			 */
+			otherdistinct = get_variable_numdistinct(vardata, &isdefault) - mcvslot.nnumbers;
+			if (otherdistinct > 1)
+				selec /= otherdistinct;
+
+			/*
+			 * Another cross-check: selectivity shouldn't be estimated as more
+			 * than the least common "most common value".
+			 */
+			if (mcvslot.nnumbers > 0 && selec > mcvslot.numbers[mcvslot.nnumbers - 1])
+				selec = mcvslot.numbers[mcvslot.nnumbers - 1];
+		}
+
+		free_attstatsslot(&mcvslot);
+	}
+	else
+	{
+		/*
+		 * No ANALYZE stats available, so make a guess using estimated number
+		 * of distinct values and assuming they are equally common. (The guess
+		 * is unlikely to be very good, but we do know a few special cases.)
+		 */
+		selec = 1.0 / get_variable_numdistinct(vardata, &isdefault);
+	}
+
+	/* now adjust if we wanted <> rather than = */
+	if (negate)
+		selec = 1.0 - selec - nullfrac;
+
+	/* result should be in range, but make sure... */
+	CLAMP_PROBABILITY(selec);
+	return selec;
+}
+
+/*
+ * Transform the constant to a period
+ */
+static bool
+temporal_const_to_period(Node *other, Period *period)
+{
+	Oid consttype = ((Const *) other)->consttype;
+
+	if (consttype == TIMESTAMPTZOID)
+	{
+		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+		period_set(period, t, t, true, true);
+	}
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+		memcpy(period, timestampset_bbox(
+				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_PERIOD))
+		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
+	else if (consttype== type_oid(T_PERIODSET))
+		memcpy(period, periodset_bbox(
+				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
+	else
+		return false;
+	return true;
+}
 
 /* Get the enum associated to the operator from different cases */
 static bool
@@ -1340,6 +1467,8 @@ get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
 	}
 	return false;
 }
+
+/*****************************************************************************/
 
 /*
  * Estimate the selectivity value of the operators for temporal types whose
@@ -1411,8 +1540,21 @@ temporal_sel(PG_FUNCTION_ARGS)
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
 
+	/* TODO 
+	switch (cachedOp)
+	{
+		case EQ_OP:
+		case NE_OP:
+		case LT_OP:
+		case LE_OP:
+		case GT_OP:
+		case GE_OP:
+			break;
+	}
+	*/
+
 	/*
-	 * Get information about the constant type
+	 * Transform the constant into a period
 	 */
 	found = temporal_const_to_period(other, &constperiod);
 	/* In the case of unknown constant */
@@ -1420,35 +1562,52 @@ temporal_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(selec);
 
 	/*
-     * Estimate selectivity based on the operator for all temporal durations.
+	 * Estimate selectivity based on the operator for all temporal durations.
 	 * There are three types of operators, b-tree comparison operators 
 	 * (<, <=, >, >=), bounding box operators (&&, @>, <@, ~=), and relative
 	 * position operators (<<#, &<#, #>>, #&>)
-     */
+	 */
 	switch (cachedOp)
 	{
-		case LT_OP:
-		case LE_OP:
-		case GT_OP:
-		case GE_OP:
-			/* TODO */
-		case OVERLAPS_OP:
 		case CONTAINS_OP:
 		case CONTAINED_OP:
 		case SAME_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constperiod, cachedOp);
+			selec = temporal_bbox_sel(root, &vardata, &constperiod, cachedOp);
 			break;
+		/* The following operators call the function temporal_position_sel 
+		 * where the two boolean arguments isgt and iseq determine whether 
+		 * the comparison is done with lower/upper bound and whether is
+		 * strict/equal.
+		 */
+		case OVERLAPS_OP:
+		{
+			/*
+			* A && B <=> NOT (A <<# B OR A #>> B).
+			*
+			* Since A <<# B and A #>> B are mutually exclusive events we can
+			* sum their probabilities to find probability of (A <<# B OR
+			* A #>> B).
+			*/
+			selec = temporal_position_sel(root, &vardata, &constperiod, true, false, LT_OP);
+			selec += temporal_position_sel(root, &vardata, &constperiod, false, false, GT_OP);
+			selec = 1.0 - selec;
+			break;
+		}
 		case BEFORE_OP:
-			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+			/* var <<# const when upper(var) < lower(const)*/
+			selec = temporal_position_sel(root, &vardata, &constperiod, true, false, LT_OP);
 			break;
 		case AFTER_OP:
-			selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+			/* var #>> const when lower(var) > upper(const) */
+			selec = temporal_position_sel(root, &vardata, &constperiod, false, false, GT_OP);
 			break;
 		case OVERBEFORE_OP:
-			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, true, true, LE_OP);
+			/* var &<# const when upper(var) <= upper(const) */
+			selec = 1.0 - temporal_position_sel(root, &vardata, &constperiod, true, true, LE_OP);
 			break;
 		case OVERAFTER_OP:
-			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+			/* var #&> const when lower(var) >= lower(const)*/
+			selec = 1.0 - temporal_position_sel(root, &vardata, &constperiod, false, true, GE_OP);
 			break;
 		default:
 			selec = DEFAULT_SELECTIVITY;

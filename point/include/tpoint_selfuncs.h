@@ -121,14 +121,8 @@ typedef struct ND_STATS_T
 
 /*****************************************************************************/
 
-extern Datum tpoint_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum tpoint_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum tpoint_contains_sel(PG_FUNCTION_ARGS);
-extern Datum tpoint_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum tpoint_same_sel(PG_FUNCTION_ARGS);
-extern Datum tpoint_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum tpoint_position_sel(PG_FUNCTION_ARGS);
-extern Datum tpoint_position_joinsel(PG_FUNCTION_ARGS);
+extern Datum tpoint_sel(PG_FUNCTION_ARGS);
+extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

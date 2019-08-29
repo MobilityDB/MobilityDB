@@ -23,6 +23,7 @@
 #include "period.h"
 #include "rangetypes_ext.h"
 #include "oidcache.h"
+#include "tbox.h"
 #include "time_selfuncs.h"
 #include "temporal_selfuncs.h"
 
@@ -215,7 +216,7 @@ range_sel_internal(VariableStatData *vardata, Datum constval,
 }
 
 static Selectivity
-estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box, CachedOp cachedOp)
+tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box, CachedOp cachedOp)
 {
 	// Check the temporal types and inside each one check the cachedOp
 	Selectivity  selec = 0.0;
@@ -374,7 +375,7 @@ lower_or_higher_value_bound(Node *other, bool higher)
 }
 
 static Selectivity
-estimate_tnumber_position_sel(VariableStatData vardata,
+tnumber_position_sel(VariableStatData vardata,
 							  Node *other, bool isgt, bool iseq)
 {
 	double selec = 0.0;
@@ -475,6 +476,8 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	Selectivity selec = DEFAULT_SELECTIVITY;
 	CachedOp cachedOp;
 	TBOX constBox;
+	Period period;
+
     memset(&constBox, 0, sizeof(TBOX));
 	/*
 	 * If expression is not (variable op something) or (something op
@@ -526,12 +529,14 @@ tnumber_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(selec);
 
     /*
-     * Get information about the constant type
+     * Transform the constant into a TBOX and a Period
      */
     found = tnumber_const_bounds(other, &constBox);
     /* In the case of unknown constant */
     if (!found)
         PG_RETURN_FLOAT8(selec);
+
+	tbox_to_period(&period, &constBox);
 
 	switch (cachedOp)
 	{
@@ -539,31 +544,31 @@ tnumber_sel(PG_FUNCTION_ARGS)
 		case CONTAINS_OP:
 		case CONTAINED_OP:
 		case SAME_OP:
-			selec = estimate_tnumber_bbox_sel(root, vardata, constBox, cachedOp);
+			selec = tnumber_bbox_sel(root, vardata, constBox, cachedOp);
 			break;
 		case LEFT_OP:
-			selec = estimate_tnumber_position_sel(vardata, other, false, false);
+			selec = tnumber_position_sel(vardata, other, false, false);
 			break;
 		case RIGHT_OP:
-			selec = estimate_tnumber_position_sel(vardata, other, true, false);
+			selec = tnumber_position_sel(vardata, other, true, false);
 			break;
 		case OVERLEFT_OP:
-			selec = estimate_tnumber_position_sel(vardata, other, false, true);
+			selec = tnumber_position_sel(vardata, other, false, true);
 			break;
 		case OVERRIGHT_OP:
-			selec = estimate_tnumber_position_sel(vardata, other, true, true);
+			selec = tnumber_position_sel(vardata, other, true, true);
 			break;
 		case BEFORE_OP:
-			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
+			selec = temporal_position_sel(root, &vardata, &period, false, false, LT_OP);
 			break;
 		case AFTER_OP:
-			selec = estimate_temporal_position_sel(root, vardata, other, true, false, GT_OP);
+			selec = temporal_position_sel(root, &vardata, &period, true, false, GT_OP);
 			break;
 		case OVERBEFORE_OP:
-			selec = estimate_temporal_position_sel(root, vardata, other, false, true, LE_OP);
+			selec = temporal_position_sel(root, &vardata, &period, false, true, LE_OP);
 			break;
 		case OVERAFTER_OP:
-			selec = 1.0 - estimate_temporal_position_sel(root, vardata, other, false, false, GE_OP);
+			selec = 1.0 - temporal_position_sel(root, &vardata, &period, false, false, GE_OP);
 			break;
 		default:
 			selec = 0.001;

@@ -5,22 +5,37 @@
  *
  * The function collects various kind of statistics for both the value and the
  * time part of temporal types. The kind of statistics also depend on the 
- * duration of the temporal type, defined in the schema of table
+ * duration of the temporal type, defined in the schema of table by the 
+ * typmod attribute.
+ * 
  * For TemporalInst it collects
- * - STATISTIC_KIND_MCV in slot 0 for the value part
- * - STATISTIC_KIND_HISTOGRAM in slot 1 for the value part
- * - STATISTIC_KIND_MCV in slot 2 for the time part
- * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time part
+ * - STATISTIC_KIND_MCV in slot 0 for the value part (a number for each 
+ *   temporal value)
+ * - STATISTIC_KIND_HISTOGRAM in slot 1 for the value part (a number for each
+ *   temporal value)
+ * - STATISTIC_KIND_MCV in slot 2 for the time part (a TimestampTz for each
+ *   temporal value)
+ * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time part (a TimestampTz for
+ *   each temporal value)
  * For TemporalI
- * - STATISTIC_KIND_MCELEM in slot 0 for the value part
- * - STATISTIC_KIND_DECHIST in slot 1 for the value part
- * - STATISTIC_KIND_MCELEM in slot 2 for the temporal part
- * - STATISTIC_KIND_DECHIST in slot 3 for the temporal part
+ * - STATISTIC_KIND_MCELEM in slot 0 for the value part (an array of 
+ *   numbers for each temporal value)
+ * - STATISTIC_KIND_DECHIST in slot 1 for the value part (an array of 
+ *   numbers for each temporal value)
+ * - STATISTIC_KIND_MCELEM in slot 2 for the temporal part (an array of 
+ *   TimestampTz for each temporal value)
+ * - STATISTIC_KIND_DECHIST in slot 3 for the temporal part (an array of 
+ *   TimestampTz for each temporal value)
  * For TemporalSeq and TemporalS and Temporal (all durations)
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part (a 
+ *   bounding range for each temporal value)
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part (a 
+ *   bounding range for each temporal value)
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part (a 
+ *   bounding period for each temporal value)
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part (a 
+ *   bounding period for each temporal value)
+ * 
  * In the case of temporal types having a Period as bounding box, that is,
  * tbool and ttext, no statistics are collected for the value part and
  * the statistics for the temporal part are still stored in slots 2 and 3.

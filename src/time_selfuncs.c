@@ -199,32 +199,32 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		 * values, not their BBoxes.
 		 */
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
-														 hist_lower, nhist, false);
+			hist_lower, nhist, false);
 	else if (cachedOp == LE_OP)
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
-														 hist_lower, nhist, true);
+			hist_lower, nhist, true);
 	else if (cachedOp == GT_OP)
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
-															 hist_lower, nhist, false);
+			hist_lower, nhist, false);
 	else if (cachedOp == GE_OP)
 		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
-															 hist_lower, nhist, true);
+			hist_lower, nhist, true);
 	else if (cachedOp == BEFORE_OP)
 		/* var <<# const when upper(var) < lower(const)*/
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
-														 hist_upper, nhist, false);
-	else if (cachedOp == AFTER_OP)
-		/* var #>> const when lower(var) > upper(const) */
-		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_upper,
-															 hist_lower, nhist, true);
-	else if (cachedOp == OVERAFTER_OP)
-		/* var #&> const when lower(var) >= lower(const)*/
-		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
-															 hist_lower, nhist, false);
+			hist_upper, nhist, false);
 	else if (cachedOp == OVERBEFORE_OP)
 		/* var &<# const when upper(var) <= upper(const) */
 		hist_selec = calc_period_hist_selectivity_scalar(&const_upper,
-														 hist_upper, nhist, true);
+			hist_upper, nhist, true);
+	else if (cachedOp == AFTER_OP)
+		/* var #>> const when lower(var) > upper(const) */
+		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_upper,
+			hist_lower, nhist, true);
+	else if (cachedOp == OVERAFTER_OP)
+		/* var #&> const when lower(var) >= lower(const)*/
+		hist_selec = 1 - calc_period_hist_selectivity_scalar(&const_lower,
+			hist_lower, nhist, false);
 	else if (cachedOp == OVERLAPS_OP)
 	{
 		/*
@@ -240,20 +240,20 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		 * constant, so just treat it the same as &&.
 		 */
 		hist_selec = calc_period_hist_selectivity_scalar(&const_lower,
-														 hist_upper, nhist, false);
+			hist_upper, nhist, false);
 		hist_selec += (1.0 - calc_period_hist_selectivity_scalar(&const_upper,
-																 hist_lower, nhist, true));
+			hist_lower, nhist, true));
 		hist_selec = 1.0 - hist_selec;
 	}
 	else if (cachedOp == CONTAINS_OP)
 		hist_selec = calc_period_hist_selectivity_contains(&const_lower,
-														   &const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
+			&const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
 	else if (cachedOp == CONTAINED_OP)
 		hist_selec = calc_period_hist_selectivity_contained(&const_lower,
-															&const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
+			&const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
 	else if (cachedOp == ADJACENT_OP)
 		hist_selec = calc_period_hist_selectivity_adjacent(&const_lower,
-														   &const_upper, hist_lower, hist_upper,nhist);
+			&const_upper, hist_lower, hist_upper,nhist);
 	else
 	{
 		elog(ERROR, "Unable to compute selectivity for unknown period operator");
