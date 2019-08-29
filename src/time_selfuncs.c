@@ -38,56 +38,6 @@ default_period_selectivity(Oid operator)
 	return 0.01;
 }
 
-double
-calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
-	StatStrategy strategy)
-{
-	double		hist_selec;
-	double		selec;
-	float4		null_frac;
-
-	/*
-	 * First look up the fraction of NULLs periods from pg_statistic.
-	 */
-	if (HeapTupleIsValid(vardata->statsTuple))
-	{
-		Form_pg_statistic stats;
-
-		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-		null_frac = stats->stanullfrac;
-	}
-	else
-	{
-		/*
-		 * No stats are available. Follow through the calculations below
-		 * anyway, assuming no NULLs periods. This still allows us
-		 * to give a better-than-nothing estimate.
-		 */
-		null_frac = 0.0;
-	}
-
-	/*
-	 * Calculate selectivity using bound histograms. If that fails for
-	 * some reason, e.g no histogram in pg_statistic, use the default
-	 * constant estimate. This is still somewhat better than just
-	 * returning the default estimate, because this still takes into
-	 * account the fraction of NULL tuples, if we had statistics for them.
-	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, strategy);
-	if (hist_selec < 0.0)
-		hist_selec = default_period_selectivity(operator);
-
-	selec = hist_selec;
-
-	/* all period operators are strict */
-	selec *= (1.0 - null_frac);
-
-	/* result should be in period, but make sure... */
-	CLAMP_PROBABILITY(selec);
-
-	return selec;
-}
-
 /* Get the enum associated to the operator from different cases */
 static bool
 get_time_cachedop(Oid operator, CachedOp *cachedOp)
@@ -117,6 +67,65 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 	return false;
 }
 
+double
+calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
+	StatStrategy strategy)
+{
+	double		hist_selec;
+	double		selec;
+	float4		null_frac;
+
+	/*
+	 * First look up the fraction of NULLs periods from pg_statistic.
+	 */
+	if (HeapTupleIsValid(vardata->statsTuple))
+	{
+		Form_pg_statistic stats;
+
+		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+		null_frac = stats->stanullfrac;
+	}
+	else
+	{
+		/*
+		 * No stats are available. Follow through the calculations below
+		 * anyway, assuming no NULLs periods. This still allows us
+		 * to give a better-than-nothing estimate.
+		 */
+		null_frac = 0.0;
+	}
+
+	/*
+	 * Get enumeration value associated to the operator
+	 */
+	CachedOp cachedOp;
+	bool found = get_time_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
+	if (!found)
+		return default_period_selectivity(operator);
+
+	/*
+	 * Calculate selectivity using bound histograms. If that fails for
+	 * some reason, e.g no histogram in pg_statistic, use the default
+	 * constant estimate. This is still somewhat better than just
+	 * returning the default estimate, because this still takes into
+	 * account the fraction of NULL tuples, if we had statistics for them.
+	 */
+	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp, strategy);
+	if (hist_selec < 0.0)
+		hist_selec = default_period_selectivity(operator);
+
+	selec = hist_selec;
+
+	/* all period operators are strict */
+	selec *= (1.0 - null_frac);
+
+	/* result should be in period, but make sure... */
+	CLAMP_PROBABILITY(selec);
+
+	return selec;
+}
+
 /*
  * Calculate period operator selectivity using histograms of period bounds.
  *
@@ -124,7 +133,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
-							 Oid operator, StatStrategy strategy)
+							 CachedOp cachedOp, StatStrategy strategy)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -147,11 +156,6 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	for (i = 0; i < nhist; i++)
 		period_deserialize(DatumGetPeriod(hslot.values[i]),
 						   &hist_lower[i], &hist_upper[i]);
-
-	CachedOp cachedOp;
-	bool found = get_time_cachedop(operator, &cachedOp);
-	if (!found)
-		return -1.0;
 
 	/* @> and @< also need a histogram of period lengths */
 	if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
@@ -252,7 +256,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 														   &const_upper, hist_lower, hist_upper,nhist);
 	else
 	{
-		elog(ERROR, "unknown period operator %u", operator);
+		elog(ERROR, "Unable to compute selectivity for unknown period operator");
 		hist_selec = -1.0;  /* keep compiler quiet */
 	}
 

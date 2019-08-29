@@ -99,10 +99,10 @@ PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(durationType == TEMPORAL || durationType == TEMPORALINST ||
-		   durationType == TEMPORALI || durationType == TEMPORALSEQ ||
-		   durationType == TEMPORALS);
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(duration == TEMPORAL || duration == TEMPORALINST ||
+		   duration == TEMPORALI || duration == TEMPORALSEQ ||
+		   duration == TEMPORALS);
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
 	 * operators, in which case we also can't do anything, so just fail.
@@ -110,7 +110,7 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		temporal_info(stats);
 	else
 		temporal_extra_info(stats);

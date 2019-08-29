@@ -219,7 +219,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 {
 	// Check the temporal types and inside each one check the cachedOp
 	Selectivity  selec = 0.0;
-	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
 	{
 		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
@@ -230,7 +230,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 		double selec1 = 0.0;
 		if (MOBDB_FLAGS_GET_X(box.flags))
 		{
-			if (durationType == TEMPORALINST)
+			if (duration == TEMPORALINST)
 			{
 				Oid op = oper_oid(EQ_OP, vartype, vartype);
 				selec1 = var_eq_const_mobdb(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
@@ -272,7 +272,7 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 		double selec2 = 0.0;
 		if (MOBDB_FLAGS_GET_T(box.flags))
 		{
-			if (durationType == TEMPORALINST)
+			if (duration == TEMPORALINST)
 			{
 				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 				selec2 = var_eq_const_mobdb(&vardata, op, (Datum) box.tmin,
@@ -291,8 +291,8 @@ estimate_tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box,
 				}
 				else
 				{
-					selec2 = calc_periodsel(&vardata, period_make(box.tmin, box.tmax, true, true),
-											oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+					selec2 = calc_period_hist_selectivity(&vardata, period_make(box.tmin, box.tmax, true, true),
+											cachedOp, TEMPORAL_STATISTICS);
 				}
 			}
 		}

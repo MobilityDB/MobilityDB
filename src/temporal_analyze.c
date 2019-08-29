@@ -1792,10 +1792,10 @@ PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(durationType == TEMPORAL || durationType == TEMPORALINST ||
-		   durationType == TEMPORALI || durationType == TEMPORALSEQ ||
-		   durationType == TEMPORALS);
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(duration == TEMPORAL || duration == TEMPORALINST ||
+		   duration == TEMPORALI || duration == TEMPORALSEQ ||
+		   duration == TEMPORALS);
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
 	 * operators, in which case we also can't do anything, so just fail.
@@ -1803,14 +1803,14 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		temporal_info(stats);
 	else
 		temporal_extra_info(stats);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		stats->compute_stats = temporalinst_compute_stats;
-	else if (durationType == TEMPORALI)
+	else if (duration == TEMPORALI)
 		stats->compute_stats = temporali_compute_stats;
 	else 
     	stats->compute_stats = temporals_compute_stats;
@@ -1824,10 +1824,10 @@ PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int durationType = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(durationType == TEMPORAL || durationType == TEMPORALINST ||
-		   durationType == TEMPORALI || durationType == TEMPORALSEQ ||
-		   durationType == TEMPORALS);
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(duration == TEMPORAL || duration == TEMPORALINST ||
+		   duration == TEMPORALI || duration == TEMPORALSEQ ||
+		   duration == TEMPORALS);
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
 	 * operators, in which case we also can't do anything, so just fail.
@@ -1835,14 +1835,14 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		temporal_info(stats);
 	else
 		temporal_extra_info(stats);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 		stats->compute_stats = tnumberinst_compute_stats;
-	else if (durationType == TEMPORALI)
+	else if (duration == TEMPORALI)
 		stats->compute_stats = tnumberi_compute_stats;
 	else
 		stats->compute_stats = tnumbers_compute_stats;

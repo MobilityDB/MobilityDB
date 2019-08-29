@@ -86,7 +86,11 @@ lower_or_higher_temporal_bound(Node *other, bool higher)
 }
 
 /*
- * Estimate the selectivity value of the bounding box operators for temporal durations.
+ * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
+ * contains (@>), contained (<@), and, same (~=). These operators depend on
+ * volume. Contains and contained are tighter contraints than overlaps, so
+ * the former should produce lower estimates than the latter. Similarly,
+ * equals is a tighter constrain tha contains and contained.
  */
 Selectivity
 estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
@@ -94,9 +98,9 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 {
 	/* Check the temporal types and inside each one check the cachedOp */
 	Selectivity  selec = 0.0;
-	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 
-	if (durationType == TEMPORALINST)
+	if (duration == TEMPORALINST)
 	{
 		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 		{
@@ -122,6 +126,10 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 			selec = selec < 0 ? 0 : selec;
 		}
 	}
+	else if (duration == TEMPORALINST)
+	{
+		/* TODO */
+	}
 	else
 	{
 		if (cachedOp == SAME_OP)
@@ -134,107 +142,41 @@ estimate_temporal_bbox_sel(PlannerInfo *root, VariableStatData vardata,
 			selec = selec > 1 ? 1 : selec;
 		}
 		else
-			selec = calc_periodsel(&vardata, &period,
-								   oper_oid(cachedOp, T_PERIOD, T_PERIOD), TEMPORAL_STATISTICS);
+			selec = calc_period_hist_selectivity(&vardata, &period, cachedOp, TEMPORAL_STATISTICS);
 	}
 
 	return selec;
 }
 
 /*
- * Estimate the selectivity value of the position operators for temporal durations.
+ * Estimate the selectivity value of the position operators for temporal types.
  */
-
 Selectivity
 estimate_temporal_position_sel(PlannerInfo *root, VariableStatData vardata,
-							   Node *other, bool isgt, bool iseq, CachedOp operator)
+	Node *other, bool isgt, bool iseq, CachedOp operator)
 {
 	double selec = 0.0;
-	int durationType = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 
-	if (durationType == TEMPORALINST && (vardata.vartype == type_oid(T_TBOOL) ||
-										 vardata.vartype == type_oid(T_TINT) ||
-										 vardata.vartype == type_oid(T_TFLOAT) ||
-										 vardata.vartype == type_oid(T_TTEXT) ||
-										 vardata.vartype == type_oid(T_TGEOMPOINT) ||
-										 vardata.vartype == type_oid(T_TGEOGPOINT)))
+	if (duration == TEMPORALINST)
 	{
 		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-
 		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-
 		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
 							   TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 	}
-	else if (vardata.vartype == type_oid(T_TBOOL) ||
-			 vardata.vartype == type_oid(T_TINT) ||
-			 vardata.vartype == type_oid(T_TFLOAT) ||
-			 vardata.vartype == type_oid(T_TTEXT) ||
-			 vardata.vartype == type_oid(T_TGEOMPOINT) ||
-			 vardata.vartype == type_oid(T_TGEOGPOINT))
+	else if (duration == TEMPORALINST)
 	{
-		Oid op = (Oid) 0;
-
-		if (!isgt && !iseq)
-			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && iseq)
-			op = oper_oid(GE_OP, T_PERIOD, T_PERIOD);
-		else if (iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		else if (isgt)
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-
+		/* TODO */
+	}
+	else 
+	{
 		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
 		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = calc_periodsel(&vardata, period, op, TEMPORAL_STATISTICS);
-	}
-	else if (vardata.vartype == TIMESTAMPTZOID)
-	{
-		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		PeriodBound *constant = lower_or_higher_temporal_bound(other, isgt);
-		selec = scalarineqsel_mobdb(root, op, isgt, iseq, &vardata, TimestampTzGetDatum(constant->val),
-							   TIMESTAMPTZOID, DEFAULT_STATISTICS);
-	}
-	else if (vardata.vartype == type_oid(T_PERIOD))
-	{
-		Oid op = (Oid) 0;
-		if (!isgt && !iseq)
-			op = oper_oid(LT_OP, T_PERIOD, T_PERIOD);
-		else if (!isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && !iseq)
-			op = oper_oid(GT_OP, T_PERIOD, T_PERIOD);
-		else if (isgt && iseq)
-			op = oper_oid(LE_OP, T_PERIOD, T_PERIOD);
-
-		PeriodBound *periodBound = lower_or_higher_temporal_bound(other, isgt);
-		Period *period = period_make(periodBound->val, periodBound->val, true, true);
-		selec = calc_periodsel(&vardata, period, op, DEFAULT_STATISTICS);
+		selec = calc_period_hist_selectivity(&vardata, period, operator, 
+			TEMPORAL_STATISTICS);
 	}
 	return selec;
-}
-
-/* Get the enum associated to the operator from different cases */
-static bool
-get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
-{
-	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-			operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
-			{
-				*cachedOp = (CachedOp) i;
-				return true;
-			}
-	}
-	return false;
 }
 
 /*****************************************************************************/
@@ -365,7 +307,7 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
  * have statistics or cannot use them for some reason.
  */
 double
-default_temporaltypes_selectivity(Oid operator)
+default_temporal_selectivity(Oid operator)
 {
 	switch (operator)
 	{
@@ -532,7 +474,6 @@ var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
 /*
  * Transform the constant to a period
  */
-
 static bool
 temporal_const_to_period(Node *other, Period *period)
 {
@@ -558,8 +499,7 @@ temporal_const_to_period(Node *other, Period *period)
 	return true;
 }
 /*****************************************************************************
- * The following functions is taken from PostgreSQL but much processing is
- * removed ?????
+ * The following functions is copied from PostgreSQL since it is not exported
  *****************************************************************************/
 
 /*
@@ -567,7 +507,7 @@ temporal_const_to_period(Node *other, Period *period)
  *		Attempt to identify the current *actual* minimum and/or maximum
  *		of the specified variable, by looking for a suitable btree index
  *		and fetching its low and/or high values.
- *		If successful, store values in *min and *max, and return TRUE.
+ *		If successful, store values in *min and *max, and return true.
  *		(Either pointer can be NULL if that endpoint isn't needed.)
  *		If no data available, return false.
  *
@@ -580,21 +520,21 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 {
 	bool		have_data = false;
 	RelOptInfo *rel = vardata->rel;
-	//RangeTblEntry *rte;
+	RangeTblEntry *rte;
 	ListCell   *lc;
 
 	/* No hope if no relation or it doesn't have indexes */
 	if (rel == NULL || rel->indexlist == NIL)
 		return false;
 	/* If it has indexes it must be a plain relation */
-	//rte = root->simple_rte_array[rel->relid];
-	//Assert(rte->rtekind == RTE_RELATION);
+	rte = root->simple_rte_array[rel->relid];
+	Assert(rte->rtekind == RTE_RELATION);
 
 	/* Search through the indexes to see if any match our problem */
 	foreach(lc, rel->indexlist)
 	{
 		IndexOptInfo *index = (IndexOptInfo *) lfirst(lc);
-		//ScanDirection indexscandir;
+		ScanDirection indexscandir;
 
 		/* Ignore non-btree indexes */
 		if (index->relam != BTREE_AM_OID)
@@ -606,6 +546,126 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 		 */
 		if (index->indpred != NIL)
 			continue;
+
+		/*
+		 * The index list might include hypothetical indexes inserted by a
+		 * get_relation_info hook --- don't try to access them.
+		 */
+		if (index->hypothetical)
+			continue;
+
+		/*
+		 * The first index column must match the desired variable and sort
+		 * operator --- but we can use a descending-order index.
+		 */
+		if (!match_index_to_operand(vardata->var, 0, index))
+			continue;
+		switch (get_op_opfamily_strategy(sortop, index->sortopfamily[0]))
+		{
+			case BTLessStrategyNumber:
+				if (index->reverse_sort[0])
+					indexscandir = BackwardScanDirection;
+				else
+					indexscandir = ForwardScanDirection;
+				break;
+			case BTGreaterStrategyNumber:
+				if (index->reverse_sort[0])
+					indexscandir = ForwardScanDirection;
+				else
+					indexscandir = BackwardScanDirection;
+				break;
+			default:
+				/* index doesn't match the sortop */
+				continue;
+		}
+
+		/*
+		 * Found a suitable index to extract data from.  Set up some data that
+		 * can be used by both invocations of get_actual_variable_endpoint.
+		 */
+		{
+			MemoryContext tmpcontext;
+			MemoryContext oldcontext;
+			Relation	heapRel;
+			Relation	indexRel;
+			TupleTableSlot *slot;
+			int16		typLen;
+			bool		typByVal;
+			ScanKeyData scankeys[1];
+
+			/* Make sure any cruft gets recycled when we're done */
+			tmpcontext = AllocSetContextCreate(CurrentMemoryContext,
+											   "get_actual_variable_range workspace",
+											   ALLOCSET_DEFAULT_SIZES);
+			oldcontext = MemoryContextSwitchTo(tmpcontext);
+
+			/*
+			 * Open the table and index so we can read from them.  We should
+			 * already have some type of lock on each.
+			 */
+			heapRel = table_open(rte->relid, NoLock);
+			indexRel = index_open(index->indexoid, NoLock);
+
+			/* build some stuff needed for indexscan execution */
+			slot = table_slot_create(heapRel, NULL);
+			get_typlenbyval(vardata->atttype, &typLen, &typByVal);
+
+			/* set up an IS NOT NULL scan key so that we ignore nulls */
+			ScanKeyEntryInitialize(&scankeys[0],
+								   SK_ISNULL | SK_SEARCHNOTNULL,
+								   1,	/* index col to scan */
+								   InvalidStrategy, /* no strategy */
+								   InvalidOid,	/* no strategy subtype */
+								   InvalidOid,	/* no collation */
+								   InvalidOid,	/* no reg proc for this */
+								   (Datum) 0);	/* constant */
+
+			/* If min is requested ... */
+			if (min)
+			{
+				have_data = get_actual_variable_endpoint(heapRel,
+														 indexRel,
+														 indexscandir,
+														 scankeys,
+														 typLen,
+														 typByVal,
+														 slot,
+														 oldcontext,
+														 min);
+			}
+			else
+			{
+				/* If min not requested, assume index is nonempty */
+				have_data = true;
+			}
+
+			/* If max is requested, and we didn't find the index is empty */
+			if (max && have_data)
+			{
+				/* scan in the opposite direction; all else is the same */
+				have_data = get_actual_variable_endpoint(heapRel,
+														 indexRel,
+														 -indexscandir,
+														 scankeys,
+														 typLen,
+														 typByVal,
+														 slot,
+														 oldcontext,
+														 max);
+			}
+
+			/* Clean everything up */
+			ExecDropSingleTupleTableSlot(slot);
+
+			index_close(indexRel, NoLock);
+			table_close(heapRel, NoLock);
+
+			MemoryContextSwitchTo(oldcontext);
+			MemoryContextDelete(tmpcontext);
+
+			/* And we're done */
+			break;
+		}
 	}
 
 	return have_data;
@@ -628,8 +688,6 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
  * Note that the result disregards both the most-common-values (if any) and
  * null entries.  The caller is expected to combine this result with
  * statistics for those portions of the column population.
- * This function simply added the last argument to the equivalent PostgreSQL
- * function in order to be able to select specific statistic slots.
  */
 
 static double
@@ -971,8 +1029,6 @@ mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
  * This routine works for any datatype (or pair of datatypes) known to
  * convert_to_scalar_mobdb().  If it is applied to some other datatype,
  * it will return a default estimate.
- * This function simply added the last argument to the equivalent PostgreSQL
- * function in order to be able to select specific statistic slots.
  */
 Selectivity
 scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
@@ -1083,8 +1139,6 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
  *
  * If it's desirable to call free_attstatsslot when get_attstatsslot might
  * not have been called, memset'ing sslot to zeroes will allow that.
- * This function simply added the last argument to the equivalent PostgreSQL
- * function in order to be able to select specific statistic slots.
  */
 
 bool
@@ -1225,14 +1279,33 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 
 /*****************************************************************************/
 
-/*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
- * contains (@>), contained (<@), and, same (~=). These operators depend on
- * volume. Contains and contained are tighter contraints than overlaps, so
- * the former should produce lower estimates than the latter. Similarly,
- * equals is a tighter constrain tha contains and contained.
- */
+/* Get the enum associated to the operator from different cases */
+static bool
+get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
+{
+	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
+		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+			{
+				*cachedOp = (CachedOp) i;
+				return true;
+			}
+	}
+	return false;
+}
 
+/*
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a Perid, that is, tbool and ttext.
+ */
 PG_FUNCTION_INFO_V1(temporal_sel);
 
 PGDLLEXPORT Datum
@@ -1247,14 +1320,14 @@ temporal_sel(PG_FUNCTION_ARGS)
 	bool varonleft;
 	Selectivity selec = 0.0;
 	CachedOp cachedOp;
-	Period constBox;
+	Period constperiod;
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
 	 */
 	if (!get_restriction_variable(root, args, varRelid,
 								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 
 	/*
 	 * Can't do anything useful if the something is not a constant, either.
@@ -1262,7 +1335,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 	if (!IsA(other, Const))
 	{
 		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 	}
 
 	/*
@@ -1287,7 +1360,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 		{
 			/* Use default selectivity (should we raise an error instead?) */
 			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporaltypes_selectivity(operator));
+			PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
 		}
 	}
 
@@ -1302,21 +1375,29 @@ temporal_sel(PG_FUNCTION_ARGS)
 	/*
 	 * Get information about the constant type
 	 */
-	found = temporal_const_to_period(other, &constBox);
+	found = temporal_const_to_period(other, &constperiod);
 	/* In the case of unknown constant */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
 
 	/*
-    * Estimate the temporal selectivity value based on the required operator for all temporal durations.
-    */
+     * Estimate selectivity based on the operator for all temporal durations.
+	 * There are three types of operators, b-tree comparison operators 
+	 * (<, <=, >, >=), bounding box operators (&&, @>, <@, ~=), and relative
+	 * position operators (<<#, &<#, #>>, #&>)
+     */
 	switch (cachedOp)
 	{
+		case LT_OP:
+		case LE_OP:
+		case GT_OP:
+		case GE_OP:
+			/* TODO */
 		case OVERLAPS_OP:
 		case CONTAINS_OP:
 		case CONTAINED_OP:
 		case SAME_OP:
-			selec = estimate_temporal_bbox_sel(root, vardata, constBox, cachedOp);
+			selec = estimate_temporal_bbox_sel(root, vardata, constperiod, cachedOp);
 			break;
 		case BEFORE_OP:
 			selec = estimate_temporal_position_sel(root, vardata, other, false, false, LT_OP);
@@ -1335,7 +1416,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 	}
 
 	if (selec < 0.0)
-		selec = default_temporaltypes_selectivity(cachedOp);
+		selec = default_temporal_selectivity(operator);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
