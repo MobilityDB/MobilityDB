@@ -36,6 +36,83 @@
  * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part (a 
  *   bounding period for each temporal value)
  * 
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part
+/////////////////////////////////////////////////////////////////////////////////////////
+ * We have five slots which is provided by PostgreSQL to store the statistics.
+ * For TemporalInst
+ * - Slot 0
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
+ * 		- stavalues stores the most common non-null values (MCV) for the value part.
+ * 		- stanumbers stores the frequencies of the MCV for the value part.
+ * 		- staop contains the OID of the "=" operator used to decide whether values are the same or not.
+ * 		- numnumbers contains the number of elements in the stanumbers array.
+ * 		- numvalues contains the number of elements in the most common values array.
+ * - Slot 1
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
+ * 		- stavalues stores the histogram of scalar data for the value part
+ * 		- staop contains the OID of the "<" operator that describes the sort ordering.
+ * 		- numvalues contains the number of buckets in the histogram.
+ * - Slot 2
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
+ * 		- stavalues stores the most common values (MCV) for the time part.
+ * 		- stanumbers stores the frequencies of the MCV for the time part.
+ * 		- staop contains the equality operator appropriate to the time part.
+ * 		- staop contains the OID of the "=" operator used to decide whether values are the same or not.
+ * 		- numnumbers contains the number of elements in the stanumbers array.
+ * 		- numvalues contains the number of elements in the most common values array.
+ * - Slot 3
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
+ * 		- stavalues stores the histogram for the time part.
+ * 		- staop contains the OID of the "<" operator that describes the sort ordering.
+ * For TemporalI
+ * - Slot 0
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCELEM.
+ * 		- stavalues stores the most common elements (MCELEM) for the value part.
+ * 		- stanumbers stores the frequencies of the MCELEM for the value part. There are three
+ * 		  extra members of stanumbers, holding the values of the minimum, maximum and null elements frequencies.
+ * 		- staop contains the equality operator appropriate to the value part.
+ * - Slot 1
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_DECHIST.
+ * 		- stanumbers stores the histogram for the number of distinct element values
+ * 		  present in each row for the value part. There is another member of stanumbers, holding
+ * 		  the average count of distinct element values over all non-null rows.
+ * - Slot 2
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCELEM.
+ * 		- stavalues stores the most common elements (MCELEM) for the time part.
+ * 		- stanumbers stores the frequencies of the MCELEM for the time part. There are three
+ * 		  extra members of stanumbers, holding copies of the minimum, maximum frequencies and the frequency of
+ * 		  null elements.
+ * 		- staop contains the equality operator appropriate to the time part.
+ * - Slot 3
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_DECHIST.
+ * 		- stanumbers stores the histogram for the number of distinct element values
+ * 		  present in each row for the time part. There is another member of stanumbers, holding
+ * 		  the average count of distinct element values over all non-null rows.
+ * For TemporalSeq and TemporalS and Temporal (all durations)
+ * - Slot 0
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
+ * 		- stavalues stores the histogram of ranges for the value part.
+ * 		- staop contains the equality operator appropriate to the value part.
+ * 		- numvalues contains the number of buckets in the histogram.
+ * - Slot 1
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
+ * 		- stavalues stores the length of the histogram of ranges for the value part.
+ * 		- staop contains the value of Float8LessOperator to the value part.
+ * 		- numvalues contains the number of buckets in the histogram.
+ * - Slot 2
+ *      - stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
+ * 		- stavalues stores the histogram of ranges for the time part.
+ * 		- staop contains the equality operator appropriate to the time part.
+ * 		- numvalues contains the number of buckets in the histogram.
+ * - Slot 3
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
+ * 		- stavalues stores the length of the histogram of ranges for the time part.
+ * 		- staop contains the equality operator appropriate to the time part.
+ * 		- numvalues contains the number of buckets in the histogram.
+/////////////////////////////////////////////////////////////////////////////////////////
  * In the case of temporal types having a Period as bounding box, that is,
  * tbool and ttext, no statistics are collected for the value part and
  * the statistics for the temporal part are still stored in slots 2 and 3.
