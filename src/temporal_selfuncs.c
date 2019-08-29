@@ -3,6 +3,45 @@
  * temporal_selfuncs.c
  *	  Functions for selectivity estimation of operators on temporal types
  *
+ * The operators currently supported can be obtained by the following query
+ * 
+ * SELECT oprname, l.typname as oprleft, r.typname as oprright
+ * FROM pg_operator op join pg_type l on op.oprleft = l.oid join pg_type r on op.oprright = r.oid
+ * WHERE l.typname = 'tbool' and oprresult = 16
+ * ORDER BY oprname, oprleft, oprright;
+ * 
+ * -- B-tree comparison operators
+ * "=";"tbool";"tbool"
+ * "<>";"tbool";"tbool"
+ * "<";"tbool";"tbool"
+ * "<=";"tbool";"tbool"
+ * ">";"tbool";"tbool"
+ * ">=";"tbool";"tbool"
+ * 
+ * -- Bounding box operators
+ * "&&";"tbool";"period"
+ * "&&";"tbool";"tbool"
+ * "@>";"tbool";"period"
+ * "@>";"tbool";"tbool"
+ * "<@";"tbool";"period"
+ * "<@";"tbool";"tbool"
+ * "~=";"tbool";"period"
+ * "~=";"tbool";"tbool"
+ * 
+ * -- Relative position operators
+ * "<<#";"tbool";"period"
+ * "<<#";"tbool";"tbool"
+ * "&<#";"tbool";"period"
+ * "&<#";"tbool";"tbool"
+ * "#>>";"tbool";"period"
+ * "#>>";"tbool";"tbool"
+ * "#&>";"tbool";"period"
+ * "#&>";"tbool";"tbool"
+ * 
+ * -- Ever/always equal operators
+ * "&=";"tbool";"bool"
+ * "@=";"tbool";"bool"
+ *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group

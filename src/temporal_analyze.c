@@ -21,6 +21,9 @@
  * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part
  * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part
  * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part
+ * In the case of temporal types having a Period as bounding box, that is,
+ * tbool and ttext, no statistics are collected for the value part and
+ * the statistics for the temporal part are still stored in slots 2 and 3.
  * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
