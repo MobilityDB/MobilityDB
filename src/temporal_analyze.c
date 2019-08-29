@@ -637,53 +637,6 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 		slot_idx++;
 	}
 
-	/* Generate a correlation entry if there are multiple values */
-	if (nonnull_cnt > 1 && valuetypid != TIMESTAMPTZOID)
-	{
-		MemoryContext old_context;
-		float4 *corrs;
-		double corr_xsum,
-				corr_x2sum;
-
-		/* Must copy the target values into anl_context */
-		old_context = MemoryContextSwitchTo(stats->anl_context);
-		corrs = (float4 *) palloc(sizeof(float4));
-		MemoryContextSwitchTo(old_context);
-
-		/*----------
-		* Since we know the x and y value sets are both
-		*		0, 1, ..., values_cnt-1
-		* we have sum(x) = sum(y) =
-		*		(values_cnt-1)*values_cnt / 2
-		* and sum(x^2) = sum(y^2) =
-		*		(values_cnt-1)*values_cnt*(2*values_cnt-1) / 6.
-		*----------
-		*/
-		corr_xsum = ((double) (nonnull_cnt - 1)) *
-					((double) nonnull_cnt) / 2.0;
-		corr_x2sum = ((double) (nonnull_cnt - 1)) *
-					 ((double) nonnull_cnt) * (double) (2 * nonnull_cnt - 1) / 6.0;
-
-		/* And the correlation coefficient reduces to */
-		corrs[0] = (float4) ((nonnull_cnt * corr_xysum - corr_xsum * corr_xsum) /
-							 (nonnull_cnt * corr_x2sum - corr_xsum * corr_xsum));
-
-
-		stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
-		stats->staop[slot_idx] = ltopr;
-		stats->stanumbers[slot_idx] = corrs;
-		stats->numnumbers[slot_idx] = 1;
-		stats->statyplen[slot_idx] = (int16) typlen;
-		stats->statypid[slot_idx] = valuetypid;
-		stats->statypbyval[slot_idx] = typbyval;
-
-
-		stats->stats_valid = true;
-		stats->stadistinct = -(float4)ndistinct/samplerows;
-		stats->stanullfrac = (float4)null_cnt/samplerows;
-		stats->stawidth = (int32)total_width;
-	}
-
 	MemoryContextSwitchTo(old_cxt);
 }
 
