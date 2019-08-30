@@ -87,7 +87,7 @@
 
 
 /*****************************************************************************
- * The following functions are streamlined versions of the correspoinding 
+ * The following functions are streamlined versions of the corresponding 
  * functions from PostgreSQL to only cover the types we are manipulating, 
  * that is, numbers and timestamps
  *****************************************************************************/
@@ -1094,160 +1094,336 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 	return true;
 }
 
-/*****************************************************************************/
 /*
- * Get the lower or the upper value of the temporal type based on the position operator:
- * Left (<<), Right (>>), OverLeft (<&), OverRight (&>), etc.
+ * var_eq_const_mobdb --- eqsel for var = const case
+ * 
+ * This function is derived from the one in PosgreSQL by adding the last
+ * parameter and by removing some cases already taken care before, that is, 
+ * we are sure that the constant is not null and that the variable is on left
  */
-static PeriodBound *
-lower_or_higher_temporal_bound(Node *other, bool higher)
+double
+var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
+	bool negate, StatStrategy strategy)
 {
-	PeriodBound *result = (PeriodBound *) palloc0(sizeof(PeriodBound));
-	Oid consttype = ((Const *) other)->consttype;
-	result->inclusive = ! higher;
+	double selec;
+	double nullfrac = 0.0;
+	bool isdefault;
+	Oid opfuncoid;
 
-	Temporal *temp = DatumGetTemporal(((Const *) other)->constvalue);
-	if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-	{
-		Period p;
-		temporal_bbox(&p, temp);
-		result->val = (higher) ? p.upper : p.lower;
-	}
-	else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporal_bbox(&box, temp);
-		result->val = (higher) ? (TimestampTz) box.tmax : (TimestampTz) box.tmin;
-	}
-	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
-	{
-		STBOX box;
-		memset(&box, 0, sizeof(STBOX));
-		temporal_bbox(&box, temp);
-		result->val = (higher) ? (TimestampTz) box.tmax : (TimestampTz) box.tmin;
-	}
-	else if (consttype == TIMESTAMPTZOID)
-	{
-		result->val = DatumGetTimestampTz(((Const *) other)->constvalue);
-	}
-	else if (consttype == type_oid(T_PERIOD))
-	{
-		result->val = (higher) ? DatumGetPeriod(((Const *) other)->constvalue)->upper :
-					  DatumGetPeriod(((Const *) other)->constvalue)->lower;
-	}
-	else if (consttype == type_oid(T_TBOX))
-	{
-		result->val = (higher) ? (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmax :
-					  (TimestampTz) DatumGetTboxP(((Const *) other)->constvalue)->tmin;
-	}
-	else if (consttype == type_oid(T_STBOX))
-	{
-		result->val = (higher) ? (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmax :
-					  (TimestampTz) DatumGetSTboxP(((Const *) other)->constvalue)->tmin;
-	}
+	/*
+	 * If we matched the var to a unique index or DISTINCT clause, assume
+	 * there is exactly one match regardless of anything else.  (This is
+	 * slightly bogus, since the index or clause's equality operator might be
+	 * different from ours, but it's much more likely to be right than
+	 * ignoring the information.)
+	 */
+	if (vardata->isunique && vardata->rel && vardata->rel->tuples >= 1.0)
+		return 1.0 / vardata->rel->tuples;
 
-	return result;
-}
-
-/*
- * Selectivity for operators for bounding box operators, i.e., overlaps (&&),
- * contains (@>), contained (<@), and, same (~=). These operators depend on
- * volume. Contains and contained are tighter contraints than overlaps, so
- * the former should produce lower estimates than the latter. Similarly,
- * same is a tighter constraint than contains and contained.
- */
-Selectivity
-temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp)
-{
-	/* Check the temporal types and inside each one check the cachedOp */
-	Selectivity  selec = 0.0;
-	int duration = TYPMOD_GET_DURATION(vardata->atttypmod);
-
-	if (duration == TEMPORALINST)
+	if (HeapTupleIsValid(vardata->statsTuple) &&
+		statistic_proc_security_check(vardata, (opfuncoid = get_opcode(operator))))
 	{
-		if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
+		Form_pg_statistic stats;
+		AttStatsSlot sslot;
+		bool match = false;
+		int i;
+
+		/*
+		* Grab the nullfrac for use below.  Note we allow use of nullfrac
+		* regardless of security check.
+		*/
+		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
+		nullfrac = stats->stanullfrac;
+
+		/*
+		 * Is the constant "=" to any of the column's most common values?
+		 * (Although the given operator may not really be "=", we will assume
+		 * that seeing whether it returns TRUE is an appropriate test.  If you
+		 * don't like this, maybe you shouldn't be using eqsel for your
+		 * operator...)
+		 */
+		if (get_attstatsslot_mobdb(&sslot, vardata->statsTuple,
+									  STATISTIC_KIND_MCV, InvalidOid,
+									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
 		{
-			Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec = var_eq_const_mobdb(vardata, op, TimestampTzGetDatum(period->lower),
-								 false, TEMPORAL_STATISTICS);
-			selec *= var_eq_const_mobdb(vardata, op, TimestampTzGetDatum(period->upper),
-								  false, TEMPORAL_STATISTICS);
-			selec = selec > 1 ? 1 : selec;
+			FmgrInfo eqproc;
+			fmgr_info(opfuncoid, &eqproc);
+			for (i = 0; i < sslot.nvalues; i++)
+			{
+				/* We are sure that the variable in on the left */
+				match = DatumGetBool(FunctionCall2Coll(&eqproc,
+													   DEFAULT_COLLATION_OID,
+													   sslot.values[i],
+													   constval));
+				if (match)
+					break;
+			}
 		}
 		else
 		{
-			Oid opl = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			Oid opg = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-
-			selec = scalarineqsel_mobdb(root, opl, false, false, vardata,
-										TimestampTzGetDatum(period->lower),
-										TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-			selec += scalarineqsel_mobdb(root, opg, true, true, vardata,
-										 TimestampTzGetDatum(period->upper),
-										 TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-			selec = 1 - selec;
-			selec = selec < 0 ? 0 : selec;
+			/* no most-common-value info available */
+			sslot.values = NULL;
+			sslot.numbers = NULL;
+			i = sslot.nvalues = sslot.nnumbers = 0;
 		}
-	}
-	else if (duration == TEMPORALI)
-	{
-		/* TODO */
+		if (match)
+		{
+			/*
+			 * Constant is "=" to this common value.  We know selectivity
+			 * exactly (or as exactly as ANALYZE could calculate it, anyway).
+			 */
+			selec = sslot.numbers[i];
+		}
+		else
+		{
+			/*
+			 * Comparison is against a constant that is neither NULL nor any
+			 * of the common values.  Its selectivity cannot be more than
+			 * this:
+			 */
+			double sumcommon = 0.0;
+			double otherdistinct;
+
+			for (i = 0; i < sslot.nnumbers; i++)
+				sumcommon += sslot.numbers[i];
+			selec = 1.0 - sumcommon - nullfrac;
+			CLAMP_PROBABILITY(selec);
+
+			/*
+			 * and in fact it's probably a good deal less. We approximate that
+			 * all the not-common values share this remaining fraction
+			 * equally, so we divide by the number of other distinct values.
+			 */
+			otherdistinct = get_variable_numdistinct(vardata, &isdefault) - sslot.nnumbers;
+			if (otherdistinct > 1)
+				selec /= otherdistinct;
+
+			/*
+			 * Another cross-check: selectivity shouldn't be estimated as more
+			 * than the least common "most common value".
+			 */
+			if (sslot.nnumbers > 0 && selec > sslot.numbers[sslot.nnumbers - 1])
+				selec = sslot.numbers[sslot.nnumbers - 1];
+		}
+
+		free_attstatsslot(&sslot);
 	}
 	else
 	{
 		/*
-		 * There is no ~= operator for time types and thus it is necessary to
-		 * take care of this operator here.
+		 * No ANALYZE stats available, so make a guess using estimated number
+		 * of distinct values and assuming they are equally common. (The guess
+		 * is unlikely to be very good, but we do know a few special cases.)
 		 */
-		if (cachedOp == SAME_OP)
-		{
-			Oid op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-			selec = var_eq_const_mobdb(vardata, op, PeriodGetDatum(period),
-				false, TEMPORAL_STATISTICS);
-		}
-		else
-			selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
-				TEMPORAL_STATISTICS);
+		selec = 1.0 / get_variable_numdistinct(vardata, &isdefault);
 	}
-	return selec;
-}
 
-/*
- * Selectivity for operators for relative position operators, that is,
- * left (<<), overleft (&<), right (>>), overright (&>), before (<<#), 
- * overbefore (&<#), after (#>>), overafter (#&>). 
- */
-Selectivity
-temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, bool isgt, bool iseq, CachedOp operator)
-{
-	double selec = 0.0;
-	int duration = TYPMOD_GET_DURATION(vardata->atttypmod);
+	/* now adjust if we wanted <> rather than = */
+	if (negate)
+		selec = 1.0 - selec - nullfrac;
 
-	if (duration == TEMPORALINST)
-	{
-		TimestampTz t = (isgt) ? period->upper : period->lower;
-		Oid op = oper_oid(operator, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, isgt, iseq, vardata, t,
-			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-	}
-	else if (duration == TEMPORALINST)
-	{
-		/* TODO */
-	}
-	else 
-	{
-		selec = calc_period_hist_selectivity(vardata, period, operator, 
-			TEMPORAL_STATISTICS);
-	}
+	/* result should be in range, but make sure... */
+	CLAMP_PROBABILITY(selec);
 	return selec;
 }
 
 /*****************************************************************************
- * Helper functions for calculating selectivity.
+ * Internal functions computing selectivity
  *****************************************************************************/
+
+/*
+ * Transform the constant to a period
+ */
+static bool
+temporal_const_to_period(Node *other, Period *period)
+{
+	Oid consttype = ((Const *) other)->consttype;
+
+	if (consttype == TIMESTAMPTZOID)
+	{
+		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+		period_set(period, t, t, true, true);
+	}
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+		memcpy(period, timestampset_bbox(
+				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_PERIOD))
+		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
+	else if (consttype== type_oid(T_PERIODSET))
+		memcpy(period, periodset_bbox(
+				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
+	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
+	else
+		return false;
+	return true;
+}
+
+/* Get the enum associated to the operator from different cases */
+static bool
+temporal_cachedop(Oid operator, CachedOp *cachedOp)
+{
+	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
+		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+			operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+			{
+				*cachedOp = (CachedOp) i;
+				return true;
+			}
+	}
+	return false;
+}
+
+Selectivity
+temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp)
+{
+	double selec = 0.0;
+	if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
+	{
+		/* If the period is not equivalent to a TimestampTz return 0.0 */
+		if (period->lower != period->upper)
+			return selec;
+		
+		Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = var_eq_const_mobdb(vardata, op, 
+			TimestampTzGetDatum(period->lower), false, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
+	{
+		/* 
+		 * For TemporalInst, the two conditions TimestampTz t <@ Period p and
+		 * TimestampTz t && Period p are equivalent. Furtheremore, if the
+		 * lower and upper bounds of the period are inclusive, then
+		 * 
+		 * TimestampTz t <@ Period p <=> lower(p) <= t AND t <= upper(p)
+		 * 		<=> NOT (lower(p) > t OR t > upper(p))
+		 * 		<=> NOT (t < lower(p) OR t > upper(p))
+		 *
+		 * Since t < lower(p) and t > upper(p) are mutually exclusive 
+		 * events we can sum their probabilities to find probability of 
+		 * t < lower(p) OR t > upper(p). In the code that follows we
+		 * take care of whether the lower bounds are inclusive or not
+		 */			
+		Oid opl = period->lower_inc ? 
+			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		Oid opg = period->upper_inc ? 
+			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, opl, false, period->lower_inc, 
+			vardata, TimestampTzGetDatum(period->lower),
+			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+		selec += scalarineqsel_mobdb(root, opg, true, period->upper_inc, 
+			vardata, TimestampTzGetDatum(period->upper),
+			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+		selec = 1 - selec;
+		selec = selec < 0 ? 0 : selec;
+	}
+	else if (cachedOp == BEFORE_OP)
+	{
+		/* TimestampTz t <<# Period p <=> t < (<=) lower(p) depending on
+		 * whether lower_inc(p) is true or false */
+		Oid op = period->lower_inc ? 
+			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, op, false, ! period->lower_inc, 
+			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == AFTER_OP)
+	{
+		/* TimestampTz t #>> Period p <=> t > (>=) upper(p) depending on 
+		 * whether lower_inc(p) is true or false */
+		Oid op = period->upper_inc ? 
+			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, op, true, ! period->upper_inc, 
+			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == OVERBEFORE_OP)
+	{
+		/* TimestampTz t &<# Period p <=> t <= (<) upper(p) depending on 
+		 * whether lower_inc(p) is true or false */
+		Oid op = period->upper_inc ? 
+			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, op, false, period->upper_inc, 
+			vardata, period->upper, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == OVERAFTER_OP)
+	{
+		/* TimestampTz t #&> Period p <=> t >= (>) lower(p) depending on
+		 * whether lower_inc(p) is true or false */
+		Oid op = period->lower_inc ? 
+			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = scalarineqsel_mobdb(root, op, true, period->lower_inc, 
+			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == EQ_OP || cachedOp == NE_OP || cachedOp == LT_OP ||
+		cachedOp == LE_OP || cachedOp == GT_OP || cachedOp == GE_OP) 
+	{
+		/* TODO */
+	}
+	else /* Unknown operator */
+	{
+		/* TODO */
+	}
+	return selec;
+}
+
+Selectivity
+temporali_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp)
+{
+	double selec = 0.0;
+	/* TODO */
+	return selec;	
+}
+
+Selectivity
+temporals_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp)
+{
+	double selec = 0.0;
+	/*
+	 * There is no ~= operator for time types and thus it is necessary to
+	 * take care of this operator here.
+	 */
+	if (cachedOp == SAME_OP)
+	{
+		Oid op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+		selec = var_eq_const_mobdb(vardata, op, PeriodGetDatum(period),
+			false, TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
+		cachedOp == CONTAINED_OP || cachedOp == BEFORE_OP ||
+		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
+		cachedOp == OVERAFTER_OP) 
+	{
+		selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
+			TEMPORAL_STATISTICS);
+	}
+	else if (cachedOp == EQ_OP || cachedOp == NE_OP || cachedOp == LT_OP ||
+		cachedOp == LE_OP || cachedOp == GT_OP || cachedOp == GE_OP) 
+	{
+		/* TODO */
+	}
+	else /* Unknown operator */
+	{
+		/* TODO */
+	}
+	return selec;
+}
+
 /*
  * Returns a default selectivity estimate for given operator, when we don't
  * have statistics or cannot use them for some reason.
@@ -1285,187 +1461,8 @@ default_temporal_selectivity(Oid operator)
 
 		default:
 			/* all operators should be handled above, but just in case */
-			return 0.01;
+			return 0.001;
 	}
-}
-
-/*
- * var_eq_const_mobdb --- eqsel for var = const case
- */
-double
-var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
-			 bool negate, StatStrategy strategy)
-{
-	double selec;
-	bool isdefault;
-	Oid opfuncoid;
-	double nullfrac = 0.0;
-
-	/*
-	 * If we matched the var to a unique index or DISTINCT clause, assume
-	 * there is exactly one match regardless of anything else.  (This is
-	 * slightly bogus, since the index or clause's equality operator might be
-	 * different from ours, but it's much more likely to be right than
-	 * ignoring the information.)
-	 */
-	if (vardata->isunique && vardata->rel && vardata->rel->tuples >= 1.0)
-		return 1.0 / vardata->rel->tuples;
-
-	if (HeapTupleIsValid(vardata->statsTuple) &&
-		statistic_proc_security_check(vardata, (opfuncoid = get_opcode(operator))))
-	{
-		Form_pg_statistic stats;
-		bool match = false;
-		int i;
-		AttStatsSlot mcvslot;
-
-		/*
-		* Grab the nullfrac for use below.  Note we allow use of nullfrac
-		* regardless of security check.
-		*/
-		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-		nullfrac = stats->stanullfrac;
-
-		/*
-		 * Is the constant "=" to any of the column's most common values?
-		 * (Although the given operator may not really be "=", we will assume
-		 * that seeing whether it returns TRUE is an appropriate test.  If you
-		 * don't like this, maybe you shouldn't be using eqsel for your
-		 * operator...)
-		 */
-		if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
-									  STATISTIC_KIND_MCV, InvalidOid,
-									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
-		{
-			FmgrInfo eqproc;
-			fmgr_info(opfuncoid, &eqproc);
-			for (i = 0; i < mcvslot.nvalues; i++)
-			{
-				match = DatumGetBool(FunctionCall2Coll(&eqproc,
-													   DEFAULT_COLLATION_OID,
-													   mcvslot.values[i],
-													   constval));
-				if (match)
-					break;
-			}
-		}
-		else
-		{
-			/* no most-common-value info available */
-			mcvslot.values = NULL;
-			mcvslot.numbers = NULL;
-			i = mcvslot.nvalues = mcvslot.nnumbers = 0;
-		}
-		if (match)
-		{
-			/*
-			 * Constant is "=" to this common value.  We know selectivity
-			 * exactly (or as exactly as ANALYZE could calculate it, anyway).
-			 */
-			selec = mcvslot.numbers[i];
-		}
-		else
-		{
-			/*
-			 * Comparison is against a constant that is neither NULL nor any
-			 * of the common values.  Its selectivity cannot be more than
-			 * this:
-			 */
-			double sumcommon = 0.0;
-			double otherdistinct;
-
-			for (i = 0; i < mcvslot.nnumbers; i++)
-				sumcommon += mcvslot.numbers[i];
-			selec = 1.0 - sumcommon - nullfrac;
-			CLAMP_PROBABILITY(selec);
-
-			/*
-			 * and in fact it's probably a good deal less. We approximate that
-			 * all the not-common values share this remaining fraction
-			 * equally, so we divide by the number of other distinct values.
-			 */
-			otherdistinct = get_variable_numdistinct(vardata, &isdefault) - mcvslot.nnumbers;
-			if (otherdistinct > 1)
-				selec /= otherdistinct;
-
-			/*
-			 * Another cross-check: selectivity shouldn't be estimated as more
-			 * than the least common "most common value".
-			 */
-			if (mcvslot.nnumbers > 0 && selec > mcvslot.numbers[mcvslot.nnumbers - 1])
-				selec = mcvslot.numbers[mcvslot.nnumbers - 1];
-		}
-
-		free_attstatsslot(&mcvslot);
-	}
-	else
-	{
-		/*
-		 * No ANALYZE stats available, so make a guess using estimated number
-		 * of distinct values and assuming they are equally common. (The guess
-		 * is unlikely to be very good, but we do know a few special cases.)
-		 */
-		selec = 1.0 / get_variable_numdistinct(vardata, &isdefault);
-	}
-
-	/* now adjust if we wanted <> rather than = */
-	if (negate)
-		selec = 1.0 - selec - nullfrac;
-
-	/* result should be in range, but make sure... */
-	CLAMP_PROBABILITY(selec);
-	return selec;
-}
-
-/*
- * Transform the constant to a period
- */
-static bool
-temporal_const_to_period(Node *other, Period *period)
-{
-	Oid consttype = ((Const *) other)->consttype;
-
-	if (consttype == TIMESTAMPTZOID)
-	{
-		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-		period_set(period, t, t, true, true);
-	}
-	else if (consttype == type_oid(T_TIMESTAMPSET))
-		memcpy(period, timestampset_bbox(
-				DatumGetTimestampSet(((Const *) other)->constvalue)), sizeof(Period));
-	else if (consttype == type_oid(T_PERIOD))
-		memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
-	else if (consttype== type_oid(T_PERIODSET))
-		memcpy(period, periodset_bbox(
-				DatumGetPeriodSet(((Const *) other)->constvalue)), sizeof(Period));
-	else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-		temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
-	else
-		return false;
-	return true;
-}
-
-/* Get the enum associated to the operator from different cases */
-static bool
-get_temporal_cachedop(Oid operator, CachedOp *cachedOp)
-{
-	for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-		if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-			operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-			operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-			operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-			operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
-			operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
-			{
-				*cachedOp = (CachedOp) i;
-				return true;
-			}
-	}
-	return false;
 }
 
 /*****************************************************************************/
@@ -1535,23 +1532,10 @@ temporal_sel(PG_FUNCTION_ARGS)
 	/*
 	 * Get enumeration value associated to the operator
 	 */
-	bool found = get_temporal_cachedop(operator, &cachedOp);
+	bool found = temporal_cachedop(operator, &cachedOp);
 	/* In the case of unknown operator */
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
-
-	/* TODO 
-	switch (cachedOp)
-	{
-		case EQ_OP:
-		case NE_OP:
-		case LT_OP:
-		case LE_OP:
-		case GT_OP:
-		case GE_OP:
-			break;
-	}
-	*/
 
 	/*
 	 * Transform the constant into a period
@@ -1561,57 +1545,17 @@ temporal_sel(PG_FUNCTION_ARGS)
 	if (!found)
 		PG_RETURN_FLOAT8(selec);
 
-	/*
-	 * Estimate selectivity based on the operator for all temporal durations.
-	 * There are three types of operators, b-tree comparison operators 
-	 * (<, <=, >, >=), bounding box operators (&&, @>, <@, ~=), and relative
-	 * position operators (<<#, &<#, #>>, #&>)
-	 */
-	switch (cachedOp)
-	{
-		case CONTAINS_OP:
-		case CONTAINED_OP:
-		case SAME_OP:
-			selec = temporal_bbox_sel(root, &vardata, &constperiod, cachedOp);
-			break;
-		/* The following operators call the function temporal_position_sel 
-		 * where the two boolean arguments isgt and iseq determine whether 
-		 * the comparison is done with lower/upper bound and whether is
-		 * strict/equal.
-		 */
-		case OVERLAPS_OP:
-		{
-			/*
-			* A && B <=> NOT (A <<# B OR A #>> B).
-			*
-			* Since A <<# B and A #>> B are mutually exclusive events we can
-			* sum their probabilities to find probability of (A <<# B OR
-			* A #>> B).
-			*/
-			selec = temporal_position_sel(root, &vardata, &constperiod, true, false, LT_OP);
-			selec += temporal_position_sel(root, &vardata, &constperiod, false, false, GT_OP);
-			selec = 1.0 - selec;
-			break;
-		}
-		case BEFORE_OP:
-			/* var <<# const when upper(var) < lower(const)*/
-			selec = temporal_position_sel(root, &vardata, &constperiod, true, false, LT_OP);
-			break;
-		case AFTER_OP:
-			/* var #>> const when lower(var) > upper(const) */
-			selec = temporal_position_sel(root, &vardata, &constperiod, false, false, GT_OP);
-			break;
-		case OVERBEFORE_OP:
-			/* var &<# const when upper(var) <= upper(const) */
-			selec = 1.0 - temporal_position_sel(root, &vardata, &constperiod, true, true, LE_OP);
-			break;
-		case OVERAFTER_OP:
-			/* var #&> const when lower(var) >= lower(const)*/
-			selec = 1.0 - temporal_position_sel(root, &vardata, &constperiod, false, true, GE_OP);
-			break;
-		default:
-			selec = DEFAULT_SELECTIVITY;
-	}
+	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	assert(duration == TEMPORAL || duration == TEMPORALINST ||
+		   duration == TEMPORALI || duration == TEMPORALSEQ ||
+		   duration == TEMPORALS);
+	if (duration == TEMPORALINST)
+		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
+	else if (duration == TEMPORAL)
+		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
+	else
+		/* duration is equal to  TEMPORAL, TEMPORALSEQ, or TEMPORALS */
+		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
 
 	if (selec < 0.0)
 		selec = default_temporal_selectivity(operator);
