@@ -13,9 +13,14 @@
 #include "tbox.h"
 
 #include <assert.h>
+#include <utils/timestamp.h>
 
 #include "temporal.h"
 #include "temporal_parser.h"
+#include "temporal_util.h"
+
+/* Buffer size for input and output of TBOX */
+#define MAXTBOXLEN		128
 
 /*****************************************************************************
  * Input/output functions
@@ -42,23 +47,33 @@ tbox_in(PG_FUNCTION_ARGS)
 char *
 tbox_to_string(const TBOX *box)
 {
-	static int sz = 128;
-	char *str = NULL;
+	static int sz = MAXTBOXLEN + 1;
+	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *)palloc(sz);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		strtmin = call_output(TIMESTAMPTZOID, box->tmin);
+		strtmax = call_output(TIMESTAMPTZOID, box->tmax);
+	}
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, sz, "TBOX((%.8g,%.8g),(%.8g,%.8g))", 
-				box->xmin, box->tmin, box->xmax, box->tmax);
+			snprintf(str, sz, "TBOX((%.8g,%s),(%.8g,%s))", 
+				box->xmin, strtmin, box->xmax, strtmax);
 		else 
 			snprintf(str, sz, "TBOX((%.8g,),(%.8g,))", 
 				box->xmin,box->xmax);
 	}
 	else
 		/* Missing X dimension */
-		snprintf(str, sz, "TBOX((,%.8g),(,%.8g))", 
-			box->tmin, box->tmax);
+		snprintf(str, sz, "TBOX((,%s),(,%s))", 
+			strtmin, strtmax);
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		pfree(strtmin);
+		pfree(strtmax);
+	}
 	return str;
 }
 
@@ -84,11 +99,11 @@ PG_FUNCTION_INFO_V1(tbox_constructor);
 PGDLLEXPORT Datum
 tbox_constructor(PG_FUNCTION_ARGS)
 {
-	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
-	double xmin = 0, xmax = 0, /* keep compiler quiet */
-		tmin, tmax, tmp;
+	double xmin = 0, xmax = 0, tmp; /* keep compiler quiet */
+	TimestampTz tmin, tmax, ttmp;
 	bool hast = false;
 
+	assert (PG_NARGS() == 2 || PG_NARGS() == 4);
 	if (PG_NARGS() == 2)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
@@ -97,9 +112,9 @@ tbox_constructor(PG_FUNCTION_ARGS)
 	else if (PG_NARGS() == 4)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
-		tmin = PG_GETARG_FLOAT8(1);
+		tmin = PG_GETARG_TIMESTAMPTZ(1);
 		xmax = PG_GETARG_FLOAT8(2);
-		tmax = PG_GETARG_FLOAT8(3);
+		tmax = PG_GETARG_TIMESTAMPTZ(3);
 		hast = true;
 	}
 
@@ -122,9 +137,9 @@ tbox_constructor(PG_FUNCTION_ARGS)
 	{
 		if (tmin > tmax)
 		{
-			tmp = tmin;
+			ttmp = tmin;
 			tmin = tmax;
-			tmax = tmp;
+			tmax = ttmp;
 		}
 		result->tmin = tmin;
 		result->tmax = tmax;
@@ -137,9 +152,9 @@ PG_FUNCTION_INFO_V1(tboxt_constructor);
 PGDLLEXPORT Datum
 tboxt_constructor(PG_FUNCTION_ARGS)
 {
-	double tmin, tmax, tmp;
-	tmin = PG_GETARG_FLOAT8(0);
-	tmax = PG_GETARG_FLOAT8(1);
+	TimestampTz tmin, tmax, ttmp;
+	tmin = PG_GETARG_TIMESTAMPTZ(0);
+	tmax = PG_GETARG_TIMESTAMPTZ(1);
 
 	TBOX *result = palloc0(sizeof(TBOX));
 	MOBDB_FLAGS_SET_X(result->flags, false);
@@ -148,9 +163,9 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	/* Process T min/max */
 	if (tmin > tmax)
 	{
-		tmp = tmin;
+		ttmp = tmin;
 		tmin = tmax;
-		tmax = tmp;
+		tmax = ttmp;
 	}
 	result->tmin = tmin;
 	result->tmax = tmax;

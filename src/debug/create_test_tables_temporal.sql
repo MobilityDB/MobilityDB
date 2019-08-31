@@ -48,7 +48,7 @@ create table tbl_tbox as
 /* Add perc NULL values */
 select k, NULL as b
 from generate_series(1, perc) as k union
-select k, random_tbox(0, 100, 0, 100, 10)
+select k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
 from generate_series(perc+1, size) as k;
 
 drop table if exists tbl_interval;

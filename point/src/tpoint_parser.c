@@ -23,7 +23,8 @@
 STBOX *
 stbox_parse(char **str) 
 {
-	double xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax, tmp;
+	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
+	TimestampTz tmin = 0, tmax = 0, ttmp; /* make compiler quiet */
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	p_whitespace(str);
 	if (strncasecmp(*str, "STBOX", 5) == 0) 
@@ -118,7 +119,8 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
-		tmin = strtod(*str, &nextstr);
+		nextstr = *str;
+		tmin = timestamp_parse(&nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -176,7 +178,9 @@ stbox_parse(char **str)
 	{	
 		p_whitespace(str);
 		p_comma(str);
-		tmax = strtod(*str, &nextstr);
+		nextstr = *str;
+		tmin = timestamp_parse(&nextstr);
+		// tmax = strtod(*str, &nextstr);
 			if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
@@ -222,9 +226,9 @@ stbox_parse(char **str)
 	{
 		if (tmin > tmax)
 		{
-			tmp = tmin;
+			ttmp = tmin;
 			tmin = tmax;
-			tmax = tmp;
+			tmax = ttmp;
 		}
 		result->tmin = tmin;
 		result->tmax = tmax;

@@ -22,7 +22,7 @@
 
 #include <postgres.h>
 #include <access/stratnum.h>
-#include <datatype/timestamp.h>
+#include <utils/timestamp.h>
 
 typedef struct 
 {

@@ -159,26 +159,25 @@ SELECT k, random_textarr(20, 10) AS text
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
--- Box Types
+-- Tbox Type
 -------------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION random_tbox(lowx float, highx float, 
-	lowy float, highy float, maxsize float) 
-	RETURNS box AS $$
+	lowt timestamptz, hight timestamptz, maxsize float, maxminutes int) 
+	RETURNS tbox AS $$
 DECLARE
 	xmin float;
-	ymin float;
-	size float;
+	tmin timestamptz;
 BEGIN
 	xmin = random_float(lowx, highx);
-	ymin = random_float(lowy, highy);
-	size = random_float(1, maxsize);
-	RETURN box(point(xmin, ymin), point(xmin + size, ymin + size));
+	tmin = random_timestamptz(lowt, hight);
+	RETURN tbox(xmin, tmin, xmin + random_float(1, maxsize), 
+		tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tbox(0, 100, 0, 100, 10) AS b
+SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------

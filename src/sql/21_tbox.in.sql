@@ -54,11 +54,11 @@ CREATE TYPE tbox (
 	RETURNS tbox
 	AS 'MODULE_PATHNAME', 'tbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- CREATE FUNCTION tboxt(float8, float8)
+ CREATE FUNCTION tboxt(timestamptz, timestamptz)
 	RETURNS tbox
 	AS 'MODULE_PATHNAME', 'tboxt_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- CREATE FUNCTION tbox(float8, float8, float8, float8)
+ CREATE FUNCTION tbox(float8, timestamptz, float8, timestamptz)
 	RETURNS tbox
 	AS 'MODULE_PATHNAME', 'tbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

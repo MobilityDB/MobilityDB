@@ -15,7 +15,7 @@ IF perc < 1 THEN perc := 1; END IF;
 
 drop table if exists tbl_stbox;
 create table tbl_stbox as
-select k, random_stbox(0, 100, 0, 100, 0, 100, 0, 100, 10) as b
+select k, random_stbox(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) as b
 from generate_series(1, size) k;
 
 drop table if exists tbl_geompoint;

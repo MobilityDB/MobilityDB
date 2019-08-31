@@ -342,7 +342,7 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 		if (dimNum == 0)
 			range = context->boundingBox.xmax - context->boundingBox.xmin;
 		else
-			range = context->boundingBox.tmax - context->boundingBox.tmin;
+			range = (double) (context->boundingBox.tmax - context->boundingBox.tmin);
 
 		overlap = (leftUpper - rightLower) / range;
 

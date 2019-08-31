@@ -2,27 +2,28 @@
 -- STBox Type
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_stbox(lowx float, highx float, lowy float, 
-	highy float, lowz float, highz float, lowt float, hight float, maxsize float) 
+CREATE OR REPLACE FUNCTION random_stbox(lowx float, highx float, 
+	lowy float, highy float, lowz float, highz float, 
+	lowt timestamptz, hight timestamptz, maxsize float, maxminutes int) 
 	RETURNS stbox AS $$
 DECLARE
 	xmin float;
 	ymin float;
 	zmin float;
-	tmin float;
-	size float;
+	tmin timestamptz;
 BEGIN
 	xmin = random_float(lowx, highx);
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
-	tmin = random_float(lowt, hight);
-	size = random_float(1, maxsize);
-	RETURN stbox(xmin, xmin + size, ymin, ymin + size, zmin, zmin + size, tmin, tmin + size);
+	tmin = random_timestamptz(lowt, hight);
+	RETURN stbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize), 
+		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize), 
+		tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_stbox(0, 100, 0, 100, 0, 100, 0, 100, 10) AS b
+SELECT k, random_stbox(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS b
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
