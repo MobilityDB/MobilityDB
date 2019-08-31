@@ -464,13 +464,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		highYs[i] = box->ymax;
 		lowZs[i] = box->zmin;
 		highZs[i] = box->zmax;
-<<<<<<< HEAD
 		lowTs[i] = (double) box->tmin;
 		highTs[i] = (double) box->tmax;
-=======
-		lowTs[i] = box->tmin;
-		highTs[i] = box->tmax;
->>>>>>> 8011ae5bfbdd9b807a10be1bea6df8545fc20bf7
 	}
 
 	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
@@ -492,13 +487,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	centroid->ymax = highYs[median];
 	centroid->zmin = lowZs[median];
 	centroid->zmax = highZs[median];
-<<<<<<< HEAD
 	centroid->tmin = (TimestampTz) lowTs[median];
 	centroid->tmax = (TimestampTz) highTs[median];
-=======
-	centroid->tmin = lowTs[median];
-	centroid->tmax = highTs[median];
->>>>>>> 8011ae5bfbdd9b807a10be1bea6df8545fc20bf7
 
 	/* Fill the output */
 	out->hasPrefix = true;
