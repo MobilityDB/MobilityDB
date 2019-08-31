@@ -168,8 +168,8 @@ initCubeSTbox(void)
 	cube_stbox->left.zmin = cube_stbox->right.zmin = -infinity;
 	cube_stbox->left.zmax = cube_stbox->right.zmax = infinity;
 
-	cube_stbox->left.zmin = cube_stbox->right.zmin = DT_NOBEGIN;
-	cube_stbox->left.zmax = cube_stbox->right.zmax = DT_NOEND;
+	cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
+	cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
 
 	return cube_stbox;
 }
