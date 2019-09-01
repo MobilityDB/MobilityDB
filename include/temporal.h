@@ -103,8 +103,8 @@ typedef struct
 {
 	double		xmin;			/* minimum numeric value */
 	double		xmax;			/* maximum numeric value */
-	double		tmin;			/* minimum timestamp */
-	double		tmax;			/* maximum timestamp */
+	TimestampTz	tmin;			/* minimum timestamp */
+	TimestampTz	tmax;			/* maximum timestamp */
 	int16		flags;			/* flags */
 } TBOX;
 
@@ -118,8 +118,8 @@ typedef struct
 	double		ymax;			/* maximum y value */
 	double		zmin;			/* minimum z value */
 	double		zmax;			/* maximum z value */
-	double		tmin;			/* minimum timestamp */
-	double		tmax;			/* maximum timestamp */
+	TimestampTz	tmin;			/* minimum timestamp */
+	TimestampTz	tmax;			/* maximum timestamp */
 	int16		flags;			/* flags */
 } STBOX;
 

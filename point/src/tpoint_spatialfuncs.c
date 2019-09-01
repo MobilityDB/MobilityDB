@@ -1011,7 +1011,7 @@ tpointseq_speed1(TemporalSeq *seq)
 			else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 				length = DatumGetFloat8(call_function2(geography_length, traj, BoolGetDatum(true)));
 			pfree(DatumGetPointer(traj)); 
-			speed = length / (((double)(inst2->t) - (double)(inst1->t))/ 1000000);
+			speed = length / ((double)(inst2->t - inst1->t) / 1000000);
 		}
 		instants[0] = temporalinst_make(Float8GetDatum(speed),
 			inst1->t, FLOAT8OID);
@@ -1584,7 +1584,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 		LWGEOM_numgeometries_collection, intersections));
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
-	double duration = (double)(inst2->t) - (double)(inst1->t);
+	double duration = (double)(inst2->t - inst1->t);
 	int k = 0;
 	for (int i = 1; i <= countinter; i++)
 	{

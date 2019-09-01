@@ -80,7 +80,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 	int countinter = DatumGetInt32(call_function1(
 		LWGEOM_numgeometries_collection, intersections));
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 2 * countinter);
-	double duration = (double)inst2->t - (double)inst1->t;
+	double duration = (double)(inst2->t - inst1->t);
 	int k = 0;
 	for (int i = 1; i <= countinter; i++) 
 	{
@@ -91,7 +91,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 		{
 			double fraction = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, inter));
-			TimestampTz time = (double)inst1->t + duration * fraction;
+			TimestampTz time = (double)(inst1->t) + duration * fraction;
 			/* If the point intersection is not at an exclusive bound */
 			if ((lower_inc || timestamp_cmp_internal(inst1->t, time) != 0) &&
 				(upper_inc || timestamp_cmp_internal(inst2->t, time) != 0))
@@ -105,7 +105,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 			Datum point1 = call_function2(LWGEOM_pointn_linestring, inter, 1);
 			double fraction1 = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, point1));
-			TimestampTz time1 = (double)inst1->t + duration * fraction1;
+			TimestampTz time1 = (double)(inst1->t) + duration * fraction1;
 			/* If the point intersection is not at an exclusive bound */
 			if ((lower_inc || timestamp_cmp_internal(inst1->t, time1) != 0) &&
 				(upper_inc || timestamp_cmp_internal(inst2->t, time1) != 0))
@@ -116,7 +116,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 			Datum point2 = call_function2(LWGEOM_pointn_linestring, inter, 2);
 			double fraction2 = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, point2));
-			TimestampTz time2 = (double)inst1->t + duration * fraction2;
+			TimestampTz time2 = (double)(inst1->t) + duration * fraction2;
 
 			/* If the point intersection is not at an exclusive bound and 
 			 * time2 != time1 (this last condition arrives when point1 is 

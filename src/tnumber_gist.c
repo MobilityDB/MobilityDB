@@ -73,7 +73,7 @@ size_tbox(const TBOX *box)
 	 * and a non-NaN is infinite.  Note the previous check eliminated the
 	 * possibility that the low fields are NaNs.
 	 */
-	if (isnan(box->xmax) || isnan(box->tmax))
+	if (isnan(box->xmax))
 		return get_float8_infinity();
 	return (box->xmax - box->xmin) * (box->tmax - box->tmin);
 }
@@ -342,7 +342,7 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 		if (dimNum == 0)
 			range = context->boundingBox.xmax - context->boundingBox.xmin;
 		else
-			range = context->boundingBox.tmax - context->boundingBox.tmin;
+			range = (double) (context->boundingBox.tmax - context->boundingBox.tmin);
 
 		overlap = (leftUpper - rightLower) / range;
 

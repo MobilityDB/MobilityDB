@@ -37,13 +37,13 @@ SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 
 SELECT expandSpatial(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', 0.5);
 SELECT expandSpatial(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', 0.5);
-SELECT expandSpatial(stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', 0.5);
-SELECT expandSpatial(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', 0.5);
+SELECT expandSpatial(stbox 'STBOX T((1.0, 2.0, 2000-01-03), (1.0, 2.0, 2000-01-03))', 0.5);
+SELECT expandSpatial(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.0, 2000-01-03))', 0.5);
 SELECT expandSpatial(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', 0.5);
 
-SELECT expandTemporal(stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
-SELECT expandTemporal(stbox 'STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', '1 day');
-SELECT expandTemporal(stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0))', '1 day');
+SELECT expandTemporal(stbox 'STBOX T((1.0, 2.0, 2000-01-03), (1.0, 2.0, 2000-01-03))', '1 day');
+SELECT expandTemporal(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.0, 2000-01-04))', '1 day');
+SELECT expandTemporal(stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.0, 2000-01-04))', '1 day');
 /* Errors */
 SELECT expandTemporal(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', '1 day');
 SELECT expandTemporal(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
@@ -71,10 +71,10 @@ SELECT expandTemporal(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02
 
 -------------------------------------------------------------------------------
 
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' @> stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <@ stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' @> stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <@ stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' ~= stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 3.0))';
 
 /* Errors */

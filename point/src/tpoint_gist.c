@@ -12,6 +12,7 @@
 
 #include "tpoint_gist.h"
 
+#include <utils/timestamp.h>
 #include <access/gist.h>
 
 #include "temporaltypes.h"
@@ -310,9 +311,9 @@ adjust_stbox(STBOX *b, const STBOX *addon)
 		b->zmax = addon->zmax;
 	if (FLOAT8_GT(b->zmin, addon->zmin))
 		b->zmin = addon->zmin;
-	if (FLOAT8_LT(b->tmax, addon->tmax))
+	if (timestamp_cmp_internal(b->tmax, addon->tmax) < 0)
 		b->tmax = addon->tmax;
-	if (FLOAT8_GT(b->tmin, addon->tmin))
+	if (timestamp_cmp_internal(b->tmin, addon->tmin) > 0)
 		b->tmin = addon->tmin;
 }
 
@@ -355,11 +356,11 @@ rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
 	n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
 	n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
 	n->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-	n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
+	n->tmax = timestamp_cmp_internal(a->tmax, b->tmax) > 0 ? a->tmax : b->tmax;
 	n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
 	n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
 	n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-	n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+	n->tmin = timestamp_cmp_internal(a->tmin, b->tmin) < 0 ? a->tmin : b->tmin;
 }
 
 /*
@@ -379,7 +380,7 @@ size_stbox(const STBOX *box)
 	if (FLOAT8_LE(box->xmax, box->xmin) ||
 		FLOAT8_LE(box->ymax, box->ymin) ||
 		FLOAT8_LE(box->zmax, box->zmin) ||
-		FLOAT8_LE(box->tmax, box->tmin))
+		timestamp_cmp_internal(box->tmax, box->tmin) <= 0)
 		return 0.0;
 	
 	/*
@@ -387,7 +388,7 @@ size_stbox(const STBOX *box)
 	 * and a non-NaN is infinite.  Note the previous check eliminated the
 	 * possibility that the low fields are NaNs.
 	 */
-	if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax) || isnan(box->tmax))
+	if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
 		return get_float8_infinity();
 	return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
 		(box->tmax - box->tmin) * (box->tmax - box->tmin);
@@ -1119,11 +1120,11 @@ gist_tpoint_same(PG_FUNCTION_ARGS)
 		*result = (FLOAT8_EQ(b1->xmin, b2->xmin) &&
 				   FLOAT8_EQ(b1->ymin, b2->ymin) &&
 				   FLOAT8_EQ(b1->zmin, b2->zmin) &&
-				   FLOAT8_EQ(b1->tmin, b2->tmin) &&
+				   float8_cmp_internal(b1->tmin, b2->tmin) == 0 &&
 				   FLOAT8_EQ(b1->xmax, b2->xmax) &&
 				   FLOAT8_EQ(b1->ymax, b2->ymax) &&
 				   FLOAT8_EQ(b1->zmax, b2->zmax) &&
-				   FLOAT8_EQ(b1->tmax, b2->tmax));
+				   timestamp_cmp_internal(b1->tmax, b2->tmax) == 0);
 	else
 		*result = (b1 == NULL && b2 == NULL);
 	PG_RETURN_POINTER(result);

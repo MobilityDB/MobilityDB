@@ -73,7 +73,7 @@ extern Datum temporali_max_value(TemporalI *ti);
 extern void temporali_timespan(Period *p, TemporalI *ti);
 extern TemporalInst **temporali_instants(TemporalI *ti);
 extern ArrayType *temporali_instants_array(TemporalI *ti);
-extern Timestamp temporali_start_timestamp(TemporalI *ti);
+extern TimestampTz temporali_start_timestamp(TemporalI *ti);
 extern TimestampTz temporali_end_timestamp(TemporalI *ti);
 extern ArrayType *temporali_timestamps(TemporalI *ti);
 extern bool temporali_ever_equals(TemporalI *ti, Datum value);

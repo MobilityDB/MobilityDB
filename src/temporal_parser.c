@@ -153,8 +153,11 @@ basetype_parse(char **str, Oid basetype)
 TBOX *
 tbox_parse(char **str) 
 {
-	double xmin, xmax, tmin, tmax, tmp;
+	double xmin, xmax, tmp;
+	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hast = false;
+	char *nextstr;
+
 	p_whitespace(str);
 	if (strncasecmp(*str, "TBOX", 4) == 0) 
 	{
@@ -168,14 +171,17 @@ tbox_parse(char **str)
 	/* Parse double opening parenthesis */
 	if (!p_oparen(str) || !p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
-	p_whitespace(str);
+			errmsg("Could not parse TBOX: Missing opening parenthesis")));
 
 	/* Determine whether there is an X dimension */
-	char *nextstr = *str;
-	xmin = strtod(*str, &nextstr);
-	if (*str != nextstr)
+	p_whitespace(str);
+	if (((*str)[0]) != ',')
 	{
+		nextstr = *str;
+		xmin = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		hasx = true;
 		*str = nextstr; 
 	}
@@ -185,11 +191,15 @@ tbox_parse(char **str)
 	p_whitespace(str);		
 
 	/* Determine whether there is a T dimension */
-	tmin = strtod(*str, &nextstr);
-	if (*str != nextstr)
+	if (((*str)[0]) != ')')
 	{
-		hast = true;
-		*str = nextstr; 
+		nextstr = *str;
+		tmin = timestamp_parse(&nextstr);
+		if (*str != nextstr)
+		{
+			hast = true;
+			*str = nextstr; 
+		}
 	}
 
 	if (! hasx && ! hast)
@@ -199,7 +209,7 @@ tbox_parse(char **str)
 	p_whitespace(str);
 	if (!p_cparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse TBOX: Missing closing parenthesis")));
 	p_whitespace(str);
 	p_comma(str);
 	p_whitespace(str);		
@@ -207,14 +217,14 @@ tbox_parse(char **str)
 	/* Parse upper bounds */
 	if (!p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse TBOX: Missing opening parenthesis")));
 
 	if (hasx)
 	{
 		xmax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
@@ -222,16 +232,17 @@ tbox_parse(char **str)
 	p_whitespace(str);
 	if (hast)
 	{	
-		tmax = strtod(*str, &nextstr);
+		nextstr = *str;
+		tmax = timestamp_parse(&nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
+				errmsg("Could not parse TBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
 	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse TBOX: Missing closing parenthesis")));
 
 	TBOX *result = palloc0(sizeof(TBOX));
 	MOBDB_FLAGS_SET_X(result->flags, hasx);
@@ -251,9 +262,9 @@ tbox_parse(char **str)
 	{
 		if (tmin > tmax)
 		{
-			tmp = tmin;
+			ttmp = tmin;
 			tmin = tmax;
-			tmax = tmp;
+			tmax = ttmp;
 		}
 		result->tmin = tmin;
 		result->tmax = tmax;
@@ -290,7 +301,7 @@ period_parse(char **str)
 		lower_inc = false;
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+			errmsg("Could not parse period")));
 
 	TimestampTz lower = timestamp_parse(str);
 	p_comma(str);
@@ -302,7 +313,7 @@ period_parse(char **str)
 		upper_inc = false;
 	else
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse temporal value")));
+			errmsg("Could not parse period")));
 
 	Period *result = period_make(lower, upper, lower_inc, upper_inc);
 
