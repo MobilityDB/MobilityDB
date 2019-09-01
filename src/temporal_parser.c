@@ -172,9 +172,9 @@ tbox_parse(char **str)
 	if (!p_oparen(str) || !p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX: Missing opening parenthesis")));
-	p_whitespace(str);
 
 	/* Determine whether there is an X dimension */
+	p_whitespace(str);
 	if (((*str)[0]) != ',')
 	{
 		nextstr = *str;

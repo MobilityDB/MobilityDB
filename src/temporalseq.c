@@ -1716,7 +1716,7 @@ temporalseq_instants_array(TemporalSeq *seq)
 
 /* Start timestamptz */
 
-Timestamp
+TimestampTz
 temporalseq_start_timestamp(TemporalSeq *seq)
 {
 	return (temporalseq_inst_n(seq, 0))->t;
@@ -1724,7 +1724,7 @@ temporalseq_start_timestamp(TemporalSeq *seq)
 
 /* End timestamptz */
 
-Timestamp
+TimestampTz
 temporalseq_end_timestamp(TemporalSeq *seq)
 {
 	return (temporalseq_inst_n(seq, seq->count - 1))->t;
@@ -1882,7 +1882,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
  *****************************************************************************/
 
 /*
- * Timestamp at which a temporal continuous segment takes a value.
+ * TimestampTz at which a temporal continuous segment takes a value.
  * The function supposes that the value is between the range defined by
  * the values of inst1 and inst2 (both exclusive). 
  */

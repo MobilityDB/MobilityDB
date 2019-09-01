@@ -460,8 +460,8 @@ period_as_tstzrange(PG_FUNCTION_ARGS)
 {
 	Period	   *period = PG_GETARG_PERIOD(0);
 	RangeType  *range;
-	range = range_make(TimestampGetDatum(period->lower), 
-		TimestampGetDatum(period->upper), period->lower_inc, 
+	range = range_make(TimestampTzGetDatum(period->lower), 
+		TimestampTzGetDatum(period->upper), period->lower_inc, 
 		period->upper_inc, TIMESTAMPTZOID);
 	PG_RETURN_POINTER(range);
 }
@@ -489,8 +489,8 @@ tstzrange_as_period(PG_FUNCTION_ARGS)
 			errmsg("Range bounds cannot be infinite")));
 
 	range_deserialize(typcache, range, &lower, &upper, &empty);
-	period = period_make(DatumGetTimestamp(lower.val), 
-		DatumGetTimestamp(upper.val), lower.inclusive, upper.inclusive);
+	period = period_make(DatumGetTimestampTz(lower.val),
+		DatumGetTimestampTz(upper.val), lower.inclusive, upper.inclusive);
 	PG_RETURN_POINTER(period);
 }
 

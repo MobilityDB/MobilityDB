@@ -16,13 +16,13 @@ SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
                                stbox                                
 --------------------------------------------------------------------
- STBOX T((1,2,2000-01-01 00:00:00+00),(1,2,2001-01-03 00:00:00+00))
+ STBOX T((1,2,2001-01-03 00:00:00+00),(1,2,2001-01-03 00:00:00+00))
 (1 row)
 
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
                                   stbox                                  
 -------------------------------------------------------------------------
- STBOX ZT((1,2,3,2000-01-01 00:00:00+00),(1,2,3,2001-01-04 00:00:00+00))
+ STBOX ZT((1,2,3,2001-01-04 00:00:00+00),(1,2,3,2001-01-04 00:00:00+00))
 (1 row)
 
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
@@ -34,19 +34,19 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
                                    stbox                                    
 ----------------------------------------------------------------------------
- GEODSTBOX T((1,2,3,2000-01-01 00:00:00+00),(1,2,3,2001-01-03 00:00:00+00))
+ GEODSTBOX T((1,2,3,2001-01-03 00:00:00+00),(1,2,3,2001-01-04 00:00:00+00))
 (1 row)
 
 SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
                              stbox                              
 ----------------------------------------------------------------
- STBOX T((,,2000-01-01 00:00:00+00),(,,2001-01-03 00:00:00+00))
+ STBOX T((,,2001-01-03 00:00:00+00),(,,2001-01-03 00:00:00+00))
 (1 row)
 
 SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
                                   stbox                                  
 -------------------------------------------------------------------------
- STBOX ZT((1,2,3,2000-01-01 00:00:00+00),(5,6,7,2001-01-04 00:00:00+00))
+ STBOX ZT((1,2,3,2001-01-04 00:00:00+00),(5,6,7,2001-01-08 00:00:00+00))
 (1 row)
 
 /* Errors */
@@ -55,19 +55,19 @@ ERROR:  Could not parse STBOX
 LINE 2: SELECT stbox 'AAA(1, 2, 3)';
                      ^
 SELECT stbox 'stbox(1, 2, 3)';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse STBOX: Missing opening parenthesis
 LINE 1: SELECT stbox 'stbox(1, 2, 3)';
                      ^
 SELECT stbox 'stbox((AA, 2, 3))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox((AA, 2, 3))';
                      ^
 SELECT stbox 'stbox((1, AA, 3))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox((1, AA, 3))';
                      ^
 SELECT stbox 'stbox z((1, 2, AA))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox z((1, 2, AA))';
                      ^
 SELECT stbox 'stbox t((1, 2, AA))';
@@ -75,23 +75,23 @@ ERROR:  invalid input syntax for type timestamp with time zone: "AA"
 LINE 1: SELECT stbox 'stbox t((1, 2, AA))';
                      ^
 SELECT stbox 'stbox((1, 2, 3))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse STBOX: Missing closing parenthesis
 LINE 1: SELECT stbox 'stbox((1, 2, 3))';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03))';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse STBOX: Missing opening parenthesis
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03))';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),()';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),()';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1)';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),(1)';
                      ^
 SELECT stbox 'stbox z((1, 2, 3),(1,2)';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse TBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox z((1, 2, 3),(1,2)';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2)';
@@ -99,7 +99,7 @@ ERROR:  invalid input syntax for type timestamp with time zone: ""
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2)';
                      ^
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
-ERROR:  Could not parse STBOX
+ERROR:  Could not parse STBOX: Missing closing parenthesis
 LINE 1: SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
                      ^
 SELECT stbox(1,2,3,4);
@@ -309,7 +309,7 @@ SELECT count(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
  count 
 -------
-   106
+   100
 (1 row)
 
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;

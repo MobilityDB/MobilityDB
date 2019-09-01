@@ -1111,7 +1111,7 @@ Datum temporal_get_time(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Timestamp of a temporal instant */
+/* TimestampTz of a temporal instant */
 
 PG_FUNCTION_INFO_V1(temporalinst_timestamp);
 

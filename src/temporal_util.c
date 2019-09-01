@@ -461,7 +461,7 @@ datum_sort(Datum *values, int count, Oid type)
 void
 timestamp_sort(TimestampTz *times, int count)
 {
-	qsort(times, count, sizeof(Timestamp), 
+	qsort(times, count, sizeof(TimestampTz), 
 		(qsort_comparator) &timestamp_sort_cmp);
 }
 

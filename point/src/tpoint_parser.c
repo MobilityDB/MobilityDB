@@ -26,6 +26,8 @@ stbox_parse(char **str)
 	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
 	TimestampTz tmin = 0, tmax = 0, ttmp; /* make compiler quiet */
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
+	char *nextstr;
+
 	p_whitespace(str);
 	if (strncasecmp(*str, "STBOX", 5) == 0) 
 	{
@@ -67,32 +69,34 @@ stbox_parse(char **str)
 	/* Parse double opening parenthesis */
 	if (!p_oparen(str) || !p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse STBOX")));
+			errmsg("Could not parse STBOX: Missing opening parenthesis")));
 
 	/* Determine whether there is an XY(Z) dimension */
 	p_whitespace(str);
-	char *nextstr = *str;
-	tmp = strtod(*str, &nextstr);
-	if (*str == nextstr)
-	{
-		if (! hast || hasz)
-			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
-	}
-	else
+	if (((*str)[0]) != ',')
 		hasx = true;
+
+	if (! hasx && ! hast)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse TBOX")));
 
 	if (hasx)
 	{
-		xmin = tmp;
+		/* xmin */
+		nextstr = *str;
+		xmin = strtod(*str, &nextstr);
+		if (*str == nextstr)
+			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
+		/* ymin */
 		p_whitespace(str);
 		p_comma(str);
 		p_whitespace(str);
 		ymin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		if (hasz)
 		{	
@@ -102,7 +106,7 @@ stbox_parse(char **str)
 			zmin = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse STBOX")));
+					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 			*str = nextstr; 
 		}
 	}
@@ -129,7 +133,7 @@ stbox_parse(char **str)
 	p_whitespace(str);
 	if (!p_cparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse STBOX")));
+			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	p_whitespace(str);
 	p_comma(str);
 	p_whitespace(str);
@@ -137,14 +141,14 @@ stbox_parse(char **str)
 	/* Parse upper bounds */
 	if (!p_oparen(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse STBOX")));
+			errmsg("Could not parse STBOX: Missing opening parenthesis")));
 
 	if (hasx)
 	{
 		xmax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		p_whitespace(str);
 		p_comma(str);
@@ -152,7 +156,7 @@ stbox_parse(char **str)
 		ymax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse STBOX")));
+				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		if (hasz != 0)
 		{	
@@ -160,9 +164,9 @@ stbox_parse(char **str)
 			p_comma(str);
 			p_whitespace(str);
 			zmax = strtod(*str, &nextstr);
-				if (*str == nextstr)
+			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse STBOX")));
+					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		}
 	}
@@ -179,17 +183,16 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 		nextstr = *str;
-		tmin = timestamp_parse(&nextstr);
-		// tmax = strtod(*str, &nextstr);
-			if (*str == nextstr)
+		tmax = timestamp_parse(&nextstr);
+		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse STBOX")));
 		*str = nextstr; 
 	}
 	p_whitespace(str);
 	if (!p_cparen(str) || !p_cparen(str) )
-	ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse STBOX")));
+		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
+			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	
 	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
 	if (hasx)

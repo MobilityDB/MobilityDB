@@ -822,8 +822,8 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 }
 
 /*
-* Timestamp aka int64
-*/
+ * TimestampTz aka int64
+ */
 static uint8_t*
 timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {

@@ -495,11 +495,11 @@ static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
 	STBOX *result = stbox_copy(box);
-	Datum tmin = TimestampGetDatum((Timestamp)box->tmin);
-	Datum tmax = TimestampGetDatum((Timestamp)box->tmax);
-	result->tmin = DatumGetTimestamp(call_function2(timestamp_mi_interval, 
+	Datum tmin = TimestampTzGetDatum(box->tmin);
+	Datum tmax = TimestampTzGetDatum(box->tmax);
+	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
 		tmin, interval));
-	result->tmax = DatumGetTimestamp(call_function2(timestamp_pl_interval, 
+	result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval, 
 		tmax, interval));
 	return result;
 }
