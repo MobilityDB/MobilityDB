@@ -21,13 +21,13 @@ CREATE TABLE test_geoboundboxops(
 -- <type> op tgeompoint
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g && temp;
+SELECT '&&', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g && temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g @> temp;
+SELECT '@>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g @> temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <@ temp;
+SELECT '<@', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <@ temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g ~= temp;
+SELECT '~=', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g ~= temp;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'timestamptz', 'tgeompoint', count(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t && temp;
@@ -78,13 +78,13 @@ SELECT '~=', 'stbox', 'tgeompoint', count(*) FROM tbl_stbox, tbl_tgeompoint WHER
 -- <type> op tgeogpoint
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g && temp;
+SELECT '&&', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g && temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g @> temp;
+SELECT '@>', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g @> temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g <@ temp;
+SELECT '<@', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g <@ temp;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g ~= temp;
+SELECT '~=', 'geogcollection', 'tgeogpoint', count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g ~= temp;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'timestamptz', 'tgeogpoint', count(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t && temp;
@@ -135,13 +135,13 @@ SELECT '~=', 'stbox', 'tgeogpoint', count(*) FROM tbl_stbox, tbl_tgeogpoint WHER
 --  tgeompoint op <type>
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp && g;
+SELECT '&&', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp @> g;
+SELECT '@>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp @> g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <@ g;
+SELECT '<@', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <@ g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp ~= g;
+SELECT '~=', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp ~= g;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tgeompoint', 'timestamptz', count(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp && t;
@@ -201,13 +201,13 @@ SELECT '~=', 'tgeompoint', 'tgeompoint', count(*) FROM tbl_tgeompoint t1, tbl_tg
 --  tgeogpoint op <type>
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '&&', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp && g;
+SELECT '&&', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp && g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '@>', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp @> g;
+SELECT '@>', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp @> g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '<@', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp <@ g;
+SELECT '<@', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp <@ g;
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
-SELECT '~=', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp ~= g;
+SELECT '~=', 'tgeogpoint', 'geogcollection', count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp ~= g;
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '&&', 'tgeogpoint', 'timestamptz', count(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp && t;
@@ -272,16 +272,16 @@ CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING GIST(temp);
 -- <type> op tgeompoint
 
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g && temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g && temp )
 WHERE op = '&&' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g @> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g @> temp )
 WHERE op = '@>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <@ temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <@ temp )
 WHERE op = '<@' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g ~= temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g ~= temp )
 WHERE op = '~=' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 UPDATE test_geoboundboxops
@@ -353,16 +353,16 @@ WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeompoint';
 -- <type> op tgeogpoint
 
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g && temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g && temp )
 WHERE op = '&&' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g @> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g @> temp )
 WHERE op = '@>' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g <@ temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g <@ temp )
 WHERE op = '<@' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g ~= temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g ~= temp )
 WHERE op = '~=' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 
 UPDATE test_geoboundboxops
@@ -434,16 +434,16 @@ WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeogpoint';
 -- tgeompoint op <type>
 
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp && g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g )
 WHERE op = '&&' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp @> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp @> g )
 WHERE op = '@>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <@ g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <@ g )
 WHERE op = '<@' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp ~= g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp ~= g )
 WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_geoboundboxops
@@ -528,16 +528,16 @@ WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 -- tgeogpoint op <type>
 
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp && g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp && g )
 WHERE op = '&&' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp @> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp @> g )
 WHERE op = '@>' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp <@ g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp <@ g )
 WHERE op = '<@' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp ~= g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp ~= g )
 WHERE op = '~=' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 
 UPDATE test_geoboundboxops
@@ -630,16 +630,16 @@ CREATE INDEX tbl_tgeogpoint_spgist_idx ON tbl_tgeogpoint USING SPGIST(temp);
 -- <type> op tgeompoint
 
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g && temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g && temp )
 WHERE op = '&&' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g @> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g @> temp )
 WHERE op = '@>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <@ temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <@ temp )
 WHERE op = '<@' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g ~= temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g ~= temp )
 WHERE op = '~=' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 UPDATE test_geoboundboxops
@@ -711,16 +711,16 @@ WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeompoint';
 -- <type> op tgeogpoint
 
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g && temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g && temp )
 WHERE op = '&&' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g @> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g @> temp )
 WHERE op = '@>' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g <@ temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g <@ temp )
 WHERE op = '<@' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_geogcollection, tbl_tgeogpoint WHERE g ~= temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE g ~= temp )
 WHERE op = '~=' and leftarg = 'geogcollection' and rightarg = 'tgeogpoint';
 
 UPDATE test_geoboundboxops
@@ -792,16 +792,16 @@ WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeogpoint';
 -- tgeompoint op <type>
 
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp && g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp && g )
 WHERE op = '&&' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp @> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp @> g )
 WHERE op = '@>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <@ g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <@ g )
 WHERE op = '<@' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp ~= g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp ~= g )
 WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_geoboundboxops
@@ -886,16 +886,16 @@ WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 -- tgeogpoint op <type>
 
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp && g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp && g )
 WHERE op = '&&' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp @> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp @> g )
 WHERE op = '@>' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp <@ g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp <@ g )
 WHERE op = '<@' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 UPDATE test_geoboundboxops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geogcollection WHERE temp ~= g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE temp ~= g )
 WHERE op = '~=' and leftarg = 'tgeogpoint' and rightarg = 'geogcollection';
 
 UPDATE test_geoboundboxops

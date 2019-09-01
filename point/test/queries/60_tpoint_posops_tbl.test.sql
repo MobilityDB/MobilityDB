@@ -20,21 +20,21 @@ CREATE TABLE test_georelativeposops(
 /*****************************************************************************/
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g << temp;
+SELECT '<<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g >> temp;
+SELECT '>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &< temp;
+SELECT '&<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &> temp;
+SELECT '&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp;
+SELECT '<<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp;
+SELECT '|>>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &<| temp;
+SELECT '&<|', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |&> temp;
+SELECT '|&>', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp;
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'timestamptz', 'tgeompoint', count(*) FROM tbl_timestamptz, tbl_tgeompoint WHERE t <<# temp;
@@ -113,21 +113,21 @@ SELECT '#&>', 'periodset', 'tgeogpoint', count(*) FROM tbl_periodset, tbl_tgeogp
 /*****************************************************************************/
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp << g;
+SELECT '<<', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '>>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp >> g;
+SELECT '>>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &< g;
+SELECT '&<', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &> g;
+SELECT '&>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<|', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <<| g;
+SELECT '<<|', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|>>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |>> g;
+SELECT '|>>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<|', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &<| g;
+SELECT '&<|', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|&>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |&> g;
+SELECT '|&>', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g;
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'tgeompoint', 'timestamptz', count(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp <<# t;
@@ -238,29 +238,29 @@ CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING GIST(temp);
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g << temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g >> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
 WHERE op = '>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &< temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
 WHERE op = '&<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
 WHERE op = '&>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &<| temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
 WHERE op = '&<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |&> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
 WHERE op = '|&>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 UPDATE test_georelativeposops
@@ -372,29 +372,29 @@ WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint';
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp << g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp >> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
 WHERE op = '>>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &< g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
 WHERE op = '&<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
 WHERE op = '&>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <<| g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
 WHERE op = '<<|' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |>> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
 WHERE op = '|>>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &<| g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
 WHERE op = '&<|' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |&> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
 WHERE op = '|&>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_georelativeposops
@@ -553,29 +553,29 @@ CREATE INDEX tbl_tgeogpoint_spgist_idx ON tbl_tgeogpoint USING SPGIST(temp);
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g << temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g >> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g >> temp )
 WHERE op = '>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &< temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &< temp )
 WHERE op = '&<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &> temp )
 WHERE op = '&>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g <<| temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |>> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g &<| temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g &<| temp )
 WHERE op = '&<|' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection, tbl_tgeompoint WHERE g |&> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g |&> temp )
 WHERE op = '|&>' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
 
 
@@ -688,29 +688,29 @@ WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint';
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp << g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp >> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp >> g )
 WHERE op = '>>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &< g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &< g )
 WHERE op = '&<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &> g )
 WHERE op = '&>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp <<| g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp <<| g )
 WHERE op = '<<|' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |>> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |>> g )
 WHERE op = '|>>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp &<| g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp &<| g )
 WHERE op = '&<|' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geomcollection WHERE temp |&> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp |&> g )
 WHERE op = '|&>' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
 
 UPDATE test_georelativeposops
