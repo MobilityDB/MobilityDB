@@ -162,11 +162,11 @@ select 1 as k, geography 'multipolygon Z empty' as g union
 select k, random_geogmultipolygon3D(-10, 32, 35, 72, 0, 1000, 10, 10)
 from generate_series(2, size) k;
 
-drop table if exists tbl_geomcollection;
-create table tbl_geomcollection (
+drop table if exists tbl_geometry;
+create table tbl_geometry (
 	k serial primary key,
 	g geometry);
-insert into tbl_geomcollection(g)
+insert into tbl_geometry(g)
 (select g from tbl_geompoint order by k limit (size * 0.1)) union all
 (select g from tbl_geomlinestring order by k limit (size * 0.1)) union all
 (select g from tbl_geompolygon order by k limit (size * 0.2)) union all
@@ -174,11 +174,11 @@ insert into tbl_geomcollection(g)
 (select g from tbl_geommultilinestring order by k limit (size * 0.2)) union all
 (select g from tbl_geommultipolygon order by k limit (size * 0.2));
 
-drop table if exists tbl_geomcollection3D;
-create table tbl_geomcollection3D (
+drop table if exists tbl_geometry3D;
+create table tbl_geometry3D (
 	k serial primary key,
 	g geometry);
-insert into tbl_geomcollection3D(g)
+insert into tbl_geometry3D(g)
 (select g from tbl_geompoint3D order by k limit (size * 0.1)) union all
 (select g from tbl_geomlinestring3D order by k limit (size * 0.1)) union all
 (select g from tbl_geompolygon3D order by k limit (size * 0.2)) union all
@@ -186,11 +186,11 @@ insert into tbl_geomcollection3D(g)
 (select g from tbl_geommultilinestring3D order by k limit (size * 0.2)) union all
 (select g from tbl_geommultipolygon3D order by k limit (size * 0.2));
 
-drop table if exists tbl_geogcollection;
-create table tbl_geogcollection (
+drop table if exists tbl_geography;
+create table tbl_geography (
 	k serial primary key,
 	g geography);
-insert into tbl_geogcollection(g)
+insert into tbl_geography(g)
 (select g from tbl_geogpoint order by k limit (size * 0.1)) union all
 (select g from tbl_geoglinestring order by k limit (size * 0.1)) union all
 (select g from tbl_geogpolygon order by k limit (size * 0.2)) union all
@@ -198,11 +198,11 @@ insert into tbl_geogcollection(g)
 (select g from tbl_geogmultilinestring order by k limit (size * 0.2)) union all
 (select g from tbl_geogmultipolygon order by k limit (size * 0.2));
 
-drop table if exists tbl_geogcollection3D;
-create table tbl_geogcollection3D (
+drop table if exists tbl_geography3D;
+create table tbl_geography3D (
 	k serial primary key,
 	g geography);
-insert into tbl_geogcollection3D(g)
+insert into tbl_geography3D(g)
 (select g from tbl_geogpoint3D order by k limit (size * 0.1)) union all
 (select g from tbl_geoglinestring3D order by k limit (size * 0.1)) union all
 (select g from tbl_geogpolygon3D order by k limit (size * 0.2)) union all
