@@ -20,6 +20,53 @@
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 
+/*****************************************************************************
+ * Internal functions computing selectivity
+ *****************************************************************************/
+
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ */
+static double
+default_tpoint_selectivity(CachedOp operator)
+{
+	switch (operator)
+	{
+		case OVERLAPS_OP:
+			return 0.005;
+
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+			return 0.002;
+
+		case SAME_OP:
+			return 0.001;
+
+		case LEFT_OP:
+		case RIGHT_OP:
+		case OVERLEFT_OP:
+		case OVERRIGHT_OP:
+		case ABOVE_OP:
+		case BELOW_OP:
+		case OVERABOVE_OP:
+		case OVERBELOW_OP:
+		case FRONT_OP:
+		case BACK_OP:
+		case OVERFRONT_OP:
+		case OVERBACK_OP:
+		case AFTER_OP:
+		case BEFORE_OP:
+		case OVERAFTER_OP:
+		case OVERBEFORE_OP:
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all operators should be handled above, but just in case */
+			return 0.001;
+	}
+}
 
 /*****************************************************************************
  * Helper functions for calculating the selectivity.
@@ -838,7 +885,7 @@ PG_FUNCTION_INFO_V1(tpoint_joinsel);
 PGDLLEXPORT Datum
 tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(DEFAULT_SELECTIVITY);
+	PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
 }
 
 /*****************************************************************************/

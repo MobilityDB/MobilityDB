@@ -492,7 +492,7 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /*
- * Expand the box on the temporal dimension
+ * Expand the box on the time dimension
  */
 static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
@@ -522,7 +522,7 @@ stbox_expand_temporal(PG_FUNCTION_ARGS)
 }
 
 /*
- * Expand the temporal point on the temporal dimension
+ * Expand the temporal point on the time dimension
  */
 
 PG_FUNCTION_INFO_V1(tpoint_expand_temporal);

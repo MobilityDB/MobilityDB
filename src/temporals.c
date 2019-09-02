@@ -2286,7 +2286,7 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		if (result) 
 			return result;
 	}
-	/* The first count sequences of both temporals are equal */
+	/* The first count sequences of ts1 and ts2 are equal */
 	if (ts1->count < ts2->count) /* ts1 has less sequences than ts2 */
 		return -1;
 	else if (ts2->count < ts1->count) /* ts2 has less sequences than ts1 */

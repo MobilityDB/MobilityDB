@@ -1282,18 +1282,58 @@ temporal_cachedop(Oid operator, CachedOp *cachedOp)
 	return false;
 }
 
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ */
+static double
+default_temporal_selectivity(CachedOp operator)
+{
+	switch (operator)
+	{
+		case OVERLAPS_OP:
+			return 0.005;
+
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+			return 0.002;
+
+		case SAME_OP:
+			return 0.001;
+
+		case LEFT_OP:
+		case RIGHT_OP:
+		case OVERLEFT_OP:
+		case OVERRIGHT_OP:
+		case AFTER_OP:
+		case BEFORE_OP:
+		case OVERAFTER_OP:
+		case OVERBEFORE_OP:
+
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all operators should be handled above, but just in case */
+			return 0.001;
+	}
+}
+
 Selectivity
 temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
 	double selec = 0.0;
+	Oid op;
+	bool iseq;
+
 	if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 	{
 		/* If the period is not equivalent to a TimestampTz return 0.0 */
 		if (period->lower != period->upper)
 			return selec;
 		
-		Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = var_eq_const_mobdb(vardata, op, 
 			TimestampTzGetDatum(period->lower), false, TEMPORAL_STATISTICS);
 	}
@@ -1313,46 +1353,52 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * t < lower(p) OR t > upper(p). In the code that follows we
 		 * take care of whether the lower bounds are inclusive or not
 		 */			
-		Oid opl = period->lower_inc ? 
+		op = period->lower_inc ? 
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		Oid opg = period->upper_inc ? 
-			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
-			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, opl, false, period->lower_inc, 
+		selec = scalarineqsel_mobdb(root, op, false, period->lower_inc, 
 			vardata, TimestampTzGetDatum(period->lower),
 			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
-		selec += scalarineqsel_mobdb(root, opg, true, period->upper_inc, 
+		op = period->upper_inc ? 
+			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
+			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec += scalarineqsel_mobdb(root, op, true, period->upper_inc, 
 			vardata, TimestampTzGetDatum(period->upper),
 			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 		selec = 1 - selec;
-		selec = selec < 0 ? 0 : selec;
 	}
-	else if (cachedOp == BEFORE_OP)
+	/* For b-tree comparisons, temporal values are first compared wrt 
+	 * their bounding boxes, and if these are equal, other criteria apply.
+	 * For selectivity estimation we approximate by taking into account
+	 * only the bounding boxes. In the case here we use the scalar 
+	 * inequality selectivity */
+	else if (cachedOp == BEFORE_OP || cachedOp == LT_OP || cachedOp == LE_OP)
 	{
 		/* TimestampTz t <<# Period p <=> t < (<=) lower(p) depending on
 		 * whether lower_inc(p) is true or false */
-		Oid op = period->lower_inc ? 
+		op = period->lower_inc ? 
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, false, ! period->lower_inc, 
+		iseq = (cachedOp == LE_OP) ? true : ! period->lower_inc;
+		selec = scalarineqsel_mobdb(root, op, false, iseq, 
 			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 	}
-	else if (cachedOp == AFTER_OP)
+	else if (cachedOp == AFTER_OP || cachedOp == GT_OP || cachedOp == GE_OP)
 	{
 		/* TimestampTz t #>> Period p <=> t > (>=) upper(p) depending on 
 		 * whether lower_inc(p) is true or false */
-		Oid op = period->upper_inc ? 
+		op = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, true, ! period->upper_inc, 
+		iseq = (cachedOp == LE_OP) ? true : ! period->upper_inc;
+		selec = scalarineqsel_mobdb(root, op, true, iseq, 
 			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
 		/* TimestampTz t &<# Period p <=> t <= (<) upper(p) depending on 
 		 * whether lower_inc(p) is true or false */
-		Oid op = period->upper_inc ? 
+		op = period->upper_inc ? 
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel_mobdb(root, op, false, period->upper_inc, 
@@ -1362,20 +1408,15 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	{
 		/* TimestampTz t #&> Period p <=> t >= (>) lower(p) depending on
 		 * whether lower_inc(p) is true or false */
-		Oid op = period->lower_inc ? 
+		op = period->lower_inc ? 
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel_mobdb(root, op, true, period->lower_inc, 
 			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
 	}
-	else if (cachedOp == EQ_OP || cachedOp == NE_OP || cachedOp == LT_OP ||
-		cachedOp == LE_OP || cachedOp == GT_OP || cachedOp == GE_OP) 
-	{
-		/* TODO */
-	}
 	else /* Unknown operator */
 	{
-		/* TODO */
+		selec = default_temporal_selectivity(cachedOp);
 	}
 	return selec;
 }
@@ -1386,6 +1427,7 @@ temporali_sel(PlannerInfo *root, VariableStatData *vardata,
 {
 	double selec = 0.0;
 	/* TODO */
+	selec = default_temporal_selectivity(cachedOp);
 	return selec;	
 }
 
@@ -1412,64 +1454,29 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
 			TEMPORAL_STATISTICS);
 	}
-	else if (cachedOp == EQ_OP || cachedOp == NE_OP || cachedOp == LT_OP ||
-		cachedOp == LE_OP || cachedOp == GT_OP || cachedOp == GE_OP) 
+	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
+		cachedOp == GT_OP || cachedOp == GE_OP) 
 	{
-		/* TODO */
+		/* For b-tree comparisons, temporal values are first compared wrt 
+		 * their bounding boxes, and if these are equal, other criteria apply.
+		 * For selectivity estimation we approximate by taking into account
+		 * only the bounding boxes. In the case here the bounding box is a
+		 * period and thus we can use the period selectivity estimation */
+		selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
+			TEMPORAL_STATISTICS);
 	}
 	else /* Unknown operator */
 	{
-		/* TODO */
+		selec = default_temporal_selectivity(cachedOp);
 	}
 	return selec;
-}
-
-/*
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
- */
-double
-default_temporal_selectivity(Oid operator)
-{
-	switch (operator)
-	{
-		case OVERLAPS_OP:
-			return 0.005;
-
-		case CONTAINS_OP:
-		case CONTAINED_OP:
-			return 0.002;
-
-		case SAME_OP:
-			return 0.001;
-
-		case LEFT_OP:
-		case RIGHT_OP:
-		case OVERLEFT_OP:
-		case OVERRIGHT_OP:
-		case ABOVE_OP:
-		case BELOW_OP:
-		case OVERABOVE_OP:
-		case OVERBELOW_OP:
-		case AFTER_OP:
-		case BEFORE_OP:
-		case OVERAFTER_OP:
-		case OVERBEFORE_OP:
-
-			/* these are similar to regular scalar inequalities */
-			return DEFAULT_INEQ_SEL;
-
-		default:
-			/* all operators should be handled above, but just in case */
-			return 0.001;
-	}
 }
 
 /*****************************************************************************/
 
 /*
  * Estimate the selectivity value of the operators for temporal types whose
- * bounding box is a Perid, that is, tbool and ttext.
+ * bounding box is a Period, that is, tbool and ttext.
  */
 PG_FUNCTION_INFO_V1(temporal_sel);
 
@@ -1483,16 +1490,25 @@ temporal_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = 0.0;
+	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
 	CachedOp cachedOp;
 	Period constperiod;
+
+	/*
+	 * Get enumeration value associated to the operator
+	 */
+	bool found = temporal_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
+	if (!found)
+		PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
 	 */
 	if (!get_restriction_variable(root, args, varRelid,
 								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	/*
 	 * Can't do anything useful if the something is not a constant, either.
@@ -1500,7 +1516,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 	if (!IsA(other, Const))
 	{
 		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
+		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 	}
 
 	/*
@@ -1525,25 +1541,17 @@ temporal_sel(PG_FUNCTION_ARGS)
 		{
 			/* Use default selectivity (should we raise an error instead?) */
 			ReleaseVariableStats(vardata);
-			PG_RETURN_FLOAT8(default_temporal_selectivity(operator));
+			PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 		}
 	}
 
 	/*
-	 * Get enumeration value associated to the operator
-	 */
-	bool found = temporal_cachedop(operator, &cachedOp);
-	/* In the case of unknown operator */
-	if (!found)
-		PG_RETURN_FLOAT8(selec);
-
-	/*
-	 * Transform the constant into a period
+	 * Transform the constant into a Period
 	 */
 	found = temporal_const_to_period(other, &constperiod);
 	/* In the case of unknown constant */
 	if (!found)
-		PG_RETURN_FLOAT8(selec);
+		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	assert(duration == TEMPORAL || duration == TEMPORALINST ||
@@ -1554,11 +1562,8 @@ temporal_sel(PG_FUNCTION_ARGS)
 	else if (duration == TEMPORAL)
 		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
 	else
-		/* duration is equal to  TEMPORAL, TEMPORALSEQ, or TEMPORALS */
+		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
 		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
-
-	if (selec < 0.0)
-		selec = default_temporal_selectivity(operator);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
@@ -1570,7 +1575,7 @@ PG_FUNCTION_INFO_V1(temporal_joinsel);
 PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_FLOAT8(DEFAULT_SELECTIVITY);
+	PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
 }
 
 /*****************************************************************************/

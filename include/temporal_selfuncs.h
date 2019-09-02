@@ -33,7 +33,7 @@ typedef enum
 
 #define BTREE_AM_OID   403
 
-#define DEFAULT_SELECTIVITY 0.001
+#define DEFAULT_TEMP_SELECTIVITY 0.001
 
 /*****************************************************************************
  * Internal selectivity functions for Temporal types.
@@ -53,7 +53,6 @@ extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *va
 
 extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 							 int reqkind, Oid reqop, int flags, StatStrategy strategy);
-extern double default_temporal_selectivity(Oid operator);
 extern double var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
 						   bool negate, StatStrategy strategy);
 

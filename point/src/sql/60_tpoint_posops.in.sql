@@ -1,11 +1,11 @@
 /*****************************************************************************
  *
  * tpoint_relposops.sql
- *	  Relative position operators for 4D (2D/3D spatial value + 1D time)
+ *	  Relative position operators for 4D (2D/3D spatial value + 1D time value)
  *	  temporal points
  *
  * Temporal geometric points have associated operators for the spatial and
- * temporal dimensions while temporal geographic points only for the temporal
+ * time dimensions while temporal geographic points only for the temporal
  * dimension.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 

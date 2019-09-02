@@ -3644,13 +3644,25 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		if (result) 
 			return result;
 	}
-	/* The first count instants of both TemporalSeq values are equal */
+	/* The first count instants of seq1 and seq2 are equal */
 	if (seq1->count < seq2->count) /* seq1 has less instants than seq2 */
 		return -1;
 	else if (seq2->count < seq1->count) /* seq2 has less instants than seq1 */
 		return 1;
-	else /* compare the time spans of seq1 and seq2 */
-		return period_cmp_internal(&seq1->period, &seq2->period);
+	else  
+	{
+		/* All instants of seq1 and seq2 are equal, compare the period bounds */
+		if (!seq1->period.lower_inc && seq2->period.lower_inc)
+			return -1;
+		else if (seq1->period.lower_inc && !seq2->period.lower_inc)
+			return 1;
+		else if (!seq1->period.upper_inc && seq2->period.upper_inc)
+			return -1;
+		else if (seq1->period.upper_inc && !seq2->period.upper_inc)
+			return 1;
+		else
+			return 0;
+	}
 }
 
 /*****************************************************************************

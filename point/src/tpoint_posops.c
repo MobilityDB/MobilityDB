@@ -8,7 +8,7 @@
  *   front, overfront, back, overback
  * There are no equivalent operators for the temporal geography points since
  * PostGIS does not currently provide such functionality for geography.
- * The following operators for the temporal dimension:
+ * The following operators for the time dimension:
  * - before, overbefore, after, overafter
  * for both temporal geometry and geography points are "inherited" from the
  * basic temporal types. In this file they are defined when one of the

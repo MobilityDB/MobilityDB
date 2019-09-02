@@ -180,6 +180,19 @@ period_cmp_upper(const void** a, const void** b)
  * period_make: construct a period value from bounds
  */
  
+Period *
+period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
+{
+	/* Note: zero-fill is required here, just as in heap tuples */
+	Period 	   *period = (Period *) palloc0(sizeof(Period));
+	period_set(period, lower, upper, lower_inc, upper_inc);
+	return period;
+}
+
+/*
+ * period_set: set a period value from argument values
+ */
+ 
 void
 period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc)
@@ -201,15 +214,6 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
 	p->upper = upper;
 	p->lower_inc = lower_inc;
 	p->upper_inc = upper_inc;
-}
-
-Period *
-period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
-{
-	/* Note: zero-fill is required here, just as in heap tuples */
-	Period 	   *period = (Period *) palloc0(sizeof(Period));
-	period_set(period, lower, upper, lower_inc, upper_inc);
-	return period;
 }
 
 /* Copy a period */

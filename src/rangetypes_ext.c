@@ -72,17 +72,17 @@ upper_inc(RangeType *range)
 RangeType *
 range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 {
-	Oid range_oid = 0;
+	Oid rangetypid = 0;
 	assert (basetypid == INT4OID || basetypid == FLOAT8OID || 
 		basetypid == TIMESTAMPTZOID);
 	if (basetypid == INT4OID)
-		range_oid = type_oid(T_INTRANGE);
+		rangetypid = type_oid(T_INTRANGE);
 	else if (basetypid == FLOAT8OID)
-		range_oid = type_oid(T_FLOATRANGE);
+		rangetypid = type_oid(T_FLOATRANGE);
 	else if (basetypid == TIMESTAMPTZOID)
-		range_oid = TSTZRANGEOID;
+		rangetypid = TSTZRANGEOID;
 	
-	TypeCacheEntry* typcache = lookup_type_cache(range_oid, TYPECACHE_RANGE_INFO);
+	TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 
 	RangeBound lower;
 	RangeBound upper;

@@ -6,7 +6,7 @@
  * The bounding box of temporal values are 
  * - a period for temporal Booleans
  * - a TBOX for temporal integers and floats, where the x coordinate is for 
- *   the value dimension and the y coordinate is for the temporal dimension.
+ *   the value dimension and the t coordinate is for the time dimension.
  * The following operators are defined:
  *	  overlaps, contains, contained, same
  * The operators consider as many dimensions as they are shared in both 

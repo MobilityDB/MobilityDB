@@ -2717,6 +2717,16 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
 	assert(t1->valuetypid == t2->valuetypid);
 
+	/* Compare bounding box */
+	union bboxunion box1, box2;
+	memset(&box1, 0, sizeof(bboxunion));
+	memset(&box2, 0, sizeof(bboxunion));
+	temporal_bbox(&box1, t1);
+	temporal_bbox(&box2, t2);
+	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	if (cmp != 0)
+		return cmp;
+
 	/* If both are of the same duration use the specific comparison */
 	if (t1->duration == t2->duration)
 	{
@@ -2731,14 +2741,6 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 			return temporals_cmp((TemporalS *)t1, (TemporalS *)t2);
 	}
 	
-	/* Compare bounding box */
-	union bboxunion box1 = {{0}}, box2 = {{0}};
-	temporal_bbox(&box1, t1);
-	temporal_bbox(&box2, t2);
-	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
-	if (cmp != 0)
-		return cmp;
-
 	/* Use the hash comparison */
 	uint32 hash1 = temporal_hash_internal(t1);
 	uint32 hash2 = temporal_hash_internal(t2);

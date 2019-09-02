@@ -2691,7 +2691,7 @@ SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;
 				</listitem>
 			</itemizedlist>
 
-			<para>The operators for the temporal dimension of all the temporal types are as follows.</para>
+			<para>The operators for the time dimension of all the temporal types are as follows.</para>
 			<itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;#</varname>: Is the bounding box always before?</para>
@@ -2859,7 +2859,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ~=
 
 			<para>On the other hand, the temporal distance operator computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
 		
-			<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the temporal dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
+			<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
 
 			<itemizedlist>
 				<listitem>
