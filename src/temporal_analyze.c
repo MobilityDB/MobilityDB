@@ -4,117 +4,117 @@
  *	  Functions for gathering statistics from temporal columns
  *
  * The function collects various kind of statistics for both the value and the
- * time part of temporal types. The kind of statistics also depend on the 
+ * time dimension of temporal types. The kind of statistics also depend on the 
  * duration of the temporal type, defined in the schema of table by the 
  * typmod attribute.
  * 
  * For TemporalInst it collects
- * - STATISTIC_KIND_MCV in slot 0 for the value part (a number for each 
+ * - STATISTIC_KIND_MCV in slot 0 for the value dimension (a number for each 
  *   temporal value)
- * - STATISTIC_KIND_HISTOGRAM in slot 1 for the value part (a number for each
+ * - STATISTIC_KIND_HISTOGRAM in slot 1 for the value dimension (a number for each
  *   temporal value)
- * - STATISTIC_KIND_MCV in slot 2 for the time part (a TimestampTz for each
+ * - STATISTIC_KIND_MCV in slot 2 for the time dimension (a TimestampTz for each
  *   temporal value)
- * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time part (a TimestampTz for
+ * - STATISTIC_KIND_HISTOGRAM in slot 3 for the time dimension (a TimestampTz for
  *   each temporal value)
  * For TemporalI
- * - STATISTIC_KIND_MCELEM in slot 0 for the value part (an array of 
+ * - STATISTIC_KIND_MCELEM in slot 0 for the value dimension (an array of 
  *   numbers for each temporal value)
- * - STATISTIC_KIND_DECHIST in slot 1 for the value part (an array of 
+ * - STATISTIC_KIND_DECHIST in slot 1 for the value dimension (an array of 
  *   numbers for each temporal value)
  * - STATISTIC_KIND_MCELEM in slot 2 for the temporal part (an array of 
  *   TimestampTz for each temporal value)
  * - STATISTIC_KIND_DECHIST in slot 3 for the temporal part (an array of 
  *   TimestampTz for each temporal value)
  * For TemporalSeq and TemporalS and Temporal (all durations)
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part (a 
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value dimension (a 
  *   bounding range for each temporal value)
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part (a 
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value dimension (a 
  *   bounding range for each temporal value)
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part (a 
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time dimension (a 
  *   bounding period for each temporal value)
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part (a 
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time dimension (a 
  *   bounding period for each temporal value)
  * 
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value part
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value part
- * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time part
- * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time part
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 0 for the value dimension
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 1 for the value dimension
+ * - STATISTIC_KIND_BOUNDS_HISTOGRAM in slot 2 for the time dimension
+ * - STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM in slot 3 for the time dimension
 /////////////////////////////////////////////////////////////////////////////////////////
  * We have five slots which is provided by PostgreSQL to store the statistics.
  * For TemporalInst
  * - Slot 0
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
- * 		- stavalues stores the most common non-null values (MCV) for the value part.
- * 		- stanumbers stores the frequencies of the MCV for the value part.
+ * 		- stavalues stores the most common non-null values (MCV) for the value dimension.
+ * 		- stanumbers stores the frequencies of the MCV for the value dimension.
  * 		- staop contains the OID of the "=" operator used to decide whether values are the same or not.
  * 		- numnumbers contains the number of elements in the stanumbers array.
  * 		- numvalues contains the number of elements in the most common values array.
  * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
- * 		- stavalues stores the histogram of scalar data for the value part
+ * 		- stavalues stores the histogram of scalar data for the value dimension
  * 		- staop contains the OID of the "<" operator that describes the sort ordering.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 2
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
- * 		- stavalues stores the most common values (MCV) for the time part.
- * 		- stanumbers stores the frequencies of the MCV for the time part.
- * 		- staop contains the equality operator appropriate to the time part.
+ * 		- stavalues stores the most common values (MCV) for the time dimension.
+ * 		- stanumbers stores the frequencies of the MCV for the time dimension.
+ * 		- staop contains the equality operator appropriate to the time dimension.
  * 		- staop contains the OID of the "=" operator used to decide whether values are the same or not.
  * 		- numnumbers contains the number of elements in the stanumbers array.
  * 		- numvalues contains the number of elements in the most common values array.
  * - Slot 3
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
- * 		- stavalues stores the histogram for the time part.
+ * 		- stavalues stores the histogram for the time dimension.
  * 		- staop contains the OID of the "<" operator that describes the sort ordering.
  * For TemporalI
  * - Slot 0
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCELEM.
- * 		- stavalues stores the most common elements (MCELEM) for the value part.
- * 		- stanumbers stores the frequencies of the MCELEM for the value part. There are three
+ * 		- stavalues stores the most common elements (MCELEM) for the value dimension.
+ * 		- stanumbers stores the frequencies of the MCELEM for the value dimension. There are three
  * 		  extra members of stanumbers, holding the values of the minimum, maximum and null elements frequencies.
- * 		- staop contains the equality operator appropriate to the value part.
+ * 		- staop contains the equality operator appropriate to the value dimension.
  * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_DECHIST.
  * 		- stanumbers stores the histogram for the number of distinct element values
- * 		  present in each row for the value part. There is another member of stanumbers, holding
+ * 		  present in each row for the value dimension. There is another member of stanumbers, holding
  * 		  the average count of distinct element values over all non-null rows.
  * - Slot 2
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCELEM.
- * 		- stavalues stores the most common elements (MCELEM) for the time part.
- * 		- stanumbers stores the frequencies of the MCELEM for the time part. There are three
+ * 		- stavalues stores the most common elements (MCELEM) for the time dimension.
+ * 		- stanumbers stores the frequencies of the MCELEM for the time dimension. There are three
  * 		  extra members of stanumbers, holding copies of the minimum, maximum frequencies and the frequency of
  * 		  null elements.
- * 		- staop contains the equality operator appropriate to the time part.
+ * 		- staop contains the equality operator appropriate to the time dimension.
  * - Slot 3
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_DECHIST.
  * 		- stanumbers stores the histogram for the number of distinct element values
- * 		  present in each row for the time part. There is another member of stanumbers, holding
+ * 		  present in each row for the time dimension. There is another member of stanumbers, holding
  * 		  the average count of distinct element values over all non-null rows.
  * For TemporalSeq and TemporalS and Temporal (all durations)
  * - Slot 0
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
- * 		- stavalues stores the histogram of ranges for the value part.
- * 		- staop contains the equality operator appropriate to the value part.
+ * 		- stavalues stores the histogram of ranges for the value dimension.
+ * 		- staop contains the equality operator appropriate to the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
- * 		- stavalues stores the length of the histogram of ranges for the value part.
- * 		- staop contains the value of Float8LessOperator to the value part.
+ * 		- stavalues stores the length of the histogram of ranges for the value dimension.
+ * 		- staop contains the value of Float8LessOperator to the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 2
  *      - stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
- * 		- stavalues stores the histogram of ranges for the time part.
- * 		- staop contains the equality operator appropriate to the time part.
+ * 		- stavalues stores the histogram of periods for the time dimension.
+ * 		- staop contains the equality operator appropriate to the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 3
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
- * 		- stavalues stores the length of the histogram of ranges for the time part.
- * 		- staop contains the equality operator appropriate to the time part.
+ * 		- stavalues stores the length of the histogram of periods for the time dimension.
+ * 		- staop contains the equality operator appropriate to the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
 /////////////////////////////////////////////////////////////////////////////////////////
  * In the case of temporal types having a Period as bounding box, that is,
- * tbool and ttext, no statistics are collected for the value part and
+ * tbool and ttext, no statistics are collected for the value dimension and
  * the statistics for the temporal part are still stored in slots 2 and 3.
  * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
@@ -744,7 +744,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		if (valuestats)
 		{
-			/* Compute the statistics for the value part */
+			/* Compute the statistics for the value dimension */
 			scalar_compute_stats(stats, scalar_values, scalar_tupnoLink,
 								scalar_track, nonnull_cnt, null_cnt, valuetypid,
 								slot_idx, total_width, totalrows, samplerows);
@@ -752,7 +752,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		slot_idx += 2;
 
-		/* Compute the statistics for the time part */
+		/* Compute the statistics for the time dimension */
 		scalar_compute_stats(stats, timestamp_values, timestamp_tupnoLink,
 							 timestamp_track, nonnull_cnt, null_cnt, TIMESTAMPTZOID,
 							 slot_idx, total_width, totalrows, samplerows);
@@ -1265,7 +1265,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		slot_idx = 0;
 		if (valuestats)
 		{
-			/* Value part statistics */
+			/* value dimension statistics */
 			tempi_elems_compute_stats(stats, elements_tab_value, 
 				count_tab_value, element_no_value, analyzed_rows, 
 				num_mcelem, bucket_width, slot_idx, true);
@@ -1468,6 +1468,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 																	TYPECACHE_HASH_PROC_FINFO);
 
 				stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+				stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
 				stats->stavalues[slot_idx] = value_bound_hist_values;
 				stats->numvalues[slot_idx] = num_hist;
 				stats->statypid[slot_idx] = range_typeentry->type_id;
@@ -1592,6 +1593,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			}
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr; 
 			stats->stavalues[slot_idx] = bound_hist_time;
 			stats->numvalues[slot_idx] = num_hist;
 			stats->statypid[slot_idx] = temporal_extra_data->time_type_id;
@@ -1821,9 +1823,12 @@ temporal_extra_info(VacAttrStats *stats)
     else
     {
         extra_data->time_type_id = type_oid(T_PERIOD);
+        extra_data->time_eq_opr = oper_oid(EQ_OP, extra_data->time_type_id, extra_data->time_type_id);
         extra_data->time_typbyval = false;
         extra_data->time_typlen = sizeof(Period);
         extra_data->time_typalign = 'd';
+        // extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
+        // extra_data->time_hash = &time_typentry->hash_proc_finfo;
     }
 
 	extra_data->std_extra_data = stats->extra_data;

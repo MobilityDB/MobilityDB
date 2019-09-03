@@ -1559,7 +1559,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 		   duration == TEMPORALS);
 	if (duration == TEMPORALINST)
 		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
-	else if (duration == TEMPORAL)
+	else if (duration == TEMPORALI)
 		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
 	else
 		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
