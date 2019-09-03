@@ -32,10 +32,36 @@
 #define T_DIM  3
 #define ND_DIMS 4
 
+/*****************************************************************************
+ * Definitions copied from PostGIS file gserialized_estimate.c
+ *****************************************************************************/
+
+/*
+* The SD factor restricts the side of the statistics histogram
+* based on the standard deviation of the extent of the data.
+* SDFACTOR is the number of standard deviations from the mean
+* the histogram will extend.
+*/
+#define SDFACTOR 3.25
+
+/**
+* Minimum width of a dimension that we'll bother trying to
+* compute statistics on. Bearing in mind we have no control
+* over units, but noting that for geographics, 10E-5 is in the
+* range of meters, we go lower than that.
+*/
+#define MIN_DIMENSION_WIDTH 0.000000001
+
+#define STATISTIC_KIND_ND 102
+#define STATISTIC_KIND_2D 103
+#define STATISTIC_SLOT_ND 0
+#define STATISTIC_SLOT_2D 1
+
 /**
 * More modest fallafter selectivity factor
 */
 #define FALLBACK_ND_SEL 0.2
+#define FALLBACK_ND_JOINSEL 0.3
 
 /*
  * N-dimensional box type for calculations, to avoid doing
@@ -62,6 +88,8 @@ typedef struct ND_IBOX_T
  * four-dimensional, but set up to handle arbirary dimensions
  * if necessary (really, we just want to get the 2,3,4-d cases
  * into one shared piece of code).
+ * 
+ * Definition copied from PostGIS file gserialized_estimate.c
  */
 typedef struct ND_STATS_T
 {
@@ -97,27 +125,6 @@ typedef struct ND_STATS_T
 	/* Variable length # of floats for histogram */
 	float4 value[1];
 } ND_STATS;
-
-/*
-* The SD factor restricts the side of the statistics histogram
-* based on the standard deviation of the extent of the data.
-* SDFACTOR is the number of standard deviations from the mean
-* the histogram will extend.
-*/
-#define SDFACTOR 3.25
-
-/**
-* Minimum width of a dimension that we'll bother trying to
-* compute statistics on. Bearing in mind we have no control
-* over units, but noting that for geographics, 10E-5 is in the
-* range of meters, we go lower than that.
-*/
-#define MIN_DIMENSION_WIDTH 0.000000001
-
-#define STATISTIC_KIND_ND 102
-#define STATISTIC_KIND_2D 103
-#define STATISTIC_SLOT_ND 0
-#define STATISTIC_SLOT_2D 1
 
 /*****************************************************************************/
 

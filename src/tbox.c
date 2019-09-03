@@ -174,18 +174,6 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Conversion functions
- *****************************************************************************/
-
-void
-tbox_to_period(Period *period, const TBOX *box)
-{
-	assert(MOBDB_FLAGS_GET_T(box->flags));
-	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
-	return;
-}
-
-/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

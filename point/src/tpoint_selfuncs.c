@@ -12,6 +12,7 @@
 
 #include "tpoint_selfuncs.h"
 
+#include <assert.h>
 #include <float.h>
 
 #include "period.h"
@@ -21,89 +22,14 @@
 #include "tpoint_boxops.h"
 
 /*****************************************************************************
- * Internal functions computing selectivity
+ * PostGIS functions copied from the file gserialized_estimate.c since they
+ * are not exported
  *****************************************************************************/
-
-/*
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
- */
-static double
-default_tpoint_selectivity(CachedOp operator)
-{
-	switch (operator)
-	{
-		case OVERLAPS_OP:
-			return 0.005;
-
-		case CONTAINS_OP:
-		case CONTAINED_OP:
-			return 0.002;
-
-		case SAME_OP:
-			return 0.001;
-
-		case LEFT_OP:
-		case RIGHT_OP:
-		case OVERLEFT_OP:
-		case OVERRIGHT_OP:
-		case ABOVE_OP:
-		case BELOW_OP:
-		case OVERABOVE_OP:
-		case OVERBELOW_OP:
-		case FRONT_OP:
-		case BACK_OP:
-		case OVERFRONT_OP:
-		case OVERBACK_OP:
-		case AFTER_OP:
-		case BEFORE_OP:
-		case OVERAFTER_OP:
-		case OVERBEFORE_OP:
-			/* these are similar to regular scalar inequalities */
-			return DEFAULT_INEQ_SEL;
-
-		default:
-			/* all operators should be handled above, but just in case */
-			return 0.001;
-	}
-}
-
-/*****************************************************************************
- * Helper functions for calculating the selectivity.
- *****************************************************************************/
-/** Generic selectivity function for all operators */
-
-/** Set the values of #STBOX from #Node */
-bool
-tpoint_const_bounds(Node *other, STBOX *box)
-{
-    Oid consttype = ((Const *) other)->consttype;
-
-    if (consttype == type_oid(T_GEOMETRY) || consttype == type_oid(T_GEOGRAPHY))
-        geo_to_stbox_internal(box,
-                              (GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
-    else if (consttype == TIMESTAMPTZOID)
-        timestamp_to_stbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_TIMESTAMPSET))
-        timestampset_to_stbox_internal(box, DatumGetTimestampSet(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_PERIOD))
-        period_to_stbox_internal(box, DatumGetPeriod(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_PERIODSET))
-        periodset_to_stbox_internal(box, DatumGetPeriodSet(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_STBOX))
-        memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-    else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
-        temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
-    else
-        return false;
-    return true;
-}
 
 /**
 * Given an n-d index array (counter), and a domain to increment it
 * in (ibox) increment it by one, unless it's already at the max of
 * the domain, in which case return false.
-* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
@@ -135,34 +61,6 @@ nd_box_init(ND_BOX *a)
 	return true;
 }
 
-/** Set the values of an #ND_BOX from a #STBOX */
-static void
-nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
-{
-	int d = 0;
-
-	nd_box_init(nd_box);
-	nd_box->min[d] = box->xmin;
-	nd_box->max[d] = box->xmax;
-	d++;
-	nd_box->min[d] = box->ymin;
-	nd_box->max[d] = box->ymax;
-	d++;
-	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) ||
-		MOBDB_FLAGS_GET_Z(box->flags))
-	{
-		nd_box->min[d] = box->zmin;
-		nd_box->max[d] = box->zmax;
-	}
-	d++;
-	if (MOBDB_FLAGS_GET_T(box->flags))
-	{
-		nd_box->min[d] = box->tmin;
-		nd_box->max[d] = box->tmax;
-	}
-	return;
-}
-
 /**
 * Given a position in the n-d histogram (i,j,k) return the
 * position in the 1-d values array.
@@ -191,7 +89,6 @@ nd_stats_value_index(const ND_STATS *stats, int *indexes)
 
 /**
 * Returns the proportion of b2 that is covered by b1.
-* PostGIS function copied from the file gserialized_estimate.c
 */
 static double
 nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
@@ -255,7 +152,6 @@ nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
 /**
 * What stats cells overlap with this ND_BOX? Put the lowest cell
 * addresses in ND_IBOX->min and the highest in ND_IBOX->max
-* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
@@ -286,7 +182,6 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 
 /**
 * Return true if #ND_BOX a overlaps b, false otherwise.
-* PostGIS function copied from the file gserialized_estimate.c
 */
 static int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -300,9 +195,67 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 	return true;
 }
 
-/* Get the enum associated to the operator from different cases */
+/*****************************************************************************
+ * Internal functions computing selectivity
+ *****************************************************************************/
+
+/* Transform the constant into an STBOX */
+bool
+tpoint_const_to_stbox(Node *other, STBOX *box)
+{
+	Oid consttype = ((Const *) other)->consttype;
+
+	if (consttype == type_oid(T_GEOMETRY) || consttype == type_oid(T_GEOGRAPHY))
+		geo_to_stbox_internal(box,
+							  (GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
+	else if (consttype == TIMESTAMPTZOID)
+		timestamp_to_stbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+		timestampset_to_stbox_internal(box, DatumGetTimestampSet(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_PERIOD))
+		period_to_stbox_internal(box, DatumGetPeriod(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_PERIODSET))
+		periodset_to_stbox_internal(box, DatumGetPeriodSet(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_STBOX))
+		memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
+	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+	else
+		return false;
+	return true;
+}
+
+/* Set the values of an ND_BOX from an STBOX */
+static void
+nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
+{
+	int d = 0;
+
+	nd_box_init(nd_box);
+	nd_box->min[d] = box->xmin;
+	nd_box->max[d] = box->xmax;
+	d++;
+	nd_box->min[d] = box->ymin;
+	nd_box->max[d] = box->ymax;
+	d++;
+	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) ||
+		MOBDB_FLAGS_GET_Z(box->flags))
+	{
+		nd_box->min[d] = box->zmin;
+		nd_box->max[d] = box->zmax;
+	}
+	d++;
+	if (MOBDB_FLAGS_GET_T(box->flags))
+	{
+		nd_box->min[d] = box->tmin;
+		nd_box->max[d] = box->tmax;
+	}
+	return;
+}
+
+/* Get the enum value associated to the operator */
 static bool
-get_tpoint_cachedop(Oid operator, CachedOp *cachedOp)
+tpoint_cachedop(Oid operator, CachedOp *cachedOp)
 {
 	for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
 	{
@@ -323,6 +276,50 @@ get_tpoint_cachedop(Oid operator, CachedOp *cachedOp)
 			}
 	}
 	return false;
+}
+
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ */
+static double
+default_tpoint_selectivity(CachedOp operator)
+{
+	switch (operator)
+	{
+		case OVERLAPS_OP:
+			return 0.005;
+
+		case CONTAINS_OP:
+		case CONTAINED_OP:
+			return 0.002;
+
+		case SAME_OP:
+			return 0.001;
+
+		case LEFT_OP:
+		case RIGHT_OP:
+		case OVERLEFT_OP:
+		case OVERRIGHT_OP:
+		case ABOVE_OP:
+		case BELOW_OP:
+		case OVERABOVE_OP:
+		case OVERBELOW_OP:
+		case FRONT_OP:
+		case BACK_OP:
+		case OVERFRONT_OP:
+		case OVERBACK_OP:
+		case AFTER_OP:
+		case BEFORE_OP:
+		case OVERAFTER_OP:
+		case OVERBEFORE_OP:
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all operators should be handled above, but just in case */
+			return 0.001;
+	}
 }
 
 /** Estimate the selectivity for relative position x/y operators */
@@ -476,16 +473,14 @@ xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box,
 	}
 	/* Scale by the number of features in our histogram to get the proportion */
 	selectivity = total_count / nd_stats->histogram_features;
-	/* Prevent rounding overflows */
-	if (selectivity > 1.0) selectivity = 1.0;
-	else if (selectivity < 0.0) selectivity = 0.0;
 
 	return selectivity;
 }
 
 /** Estimate the selectivity for relative position z operators */
 static double
-z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_stats, CachedOp cacheOp, int dim)
+z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, 
+	const ND_STATS *nd_stats, CachedOp cacheOp, int dim)
 {
 	double total_count = 0.0;
 	float cell_count, ratio;
@@ -528,7 +523,7 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 		iwidth = Max(0.0, iwidth);
 
 		if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
-			ratio= (float)(iwidth / cellWidth);
+			ratio = (float)(iwidth / cellWidth);
 		else
 			ratio = 1.0f - (float)(iwidth / cellWidth);
 
@@ -569,16 +564,13 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, const ND_STATS *nd_
 
 	/* Scale by the number of features in our histogram to get the proportion */
 	selectivity = total_count / nd_stats->histogram_features;
-	/* Prevent rounding overflows */
-	if (selectivity > 1.0) selectivity = 1.0;
-	else if (selectivity < 0.0) selectivity = 0.0;
 
 	return selectivity;
 }
 
-/** Estimate the selectivity of geometry/geography types */
+/* Estimate the selectivity of temporal points */
 static Selectivity
-estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box,
+tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box,
 					 CachedOp op)
 {
 	int d; /* counter */
@@ -593,7 +585,7 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 	AttStatsSlot sslot;
 	Period period;
 
-	stbox_to_period(&period, box);
+	// stbox_to_period(&period, box);
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, InvalidOid,
@@ -610,7 +602,7 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 	/* Calculate the overlap of the box on the histogram */
 	if (!nd_stats)
 	{
-		elog(NOTICE, " estimate_selectivity called with null input");
+		elog(NOTICE, " tpoint_selectivity called with null input");
 		return FALLBACK_ND_SEL;
 	}
 
@@ -789,17 +781,17 @@ estimate_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
 			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM);
 			return selec;
 		case BEFORE_OP:
-			selec = temporal_position_sel(root, vardata, &period, false, false, LT_OP);
-			return selec;
+			// selec = temporal_position_sel(root, &vardata, &period, false, false, LT_OP);
+			// return selec;
 		case AFTER_OP:
-			selec = temporal_position_sel(root, vardata, &period, true, false, GT_OP);
-			return selec;
+			// selec = temporal_position_sel(root, &vardata, &period, true, false, GT_OP);
+			// return selec;
 		case OVERBEFORE_OP:
-			selec = temporal_position_sel(root, vardata, &period, false, true, LE_OP);
-			return selec;
+			// selec = temporal_position_sel(root, &vardata, &period, false, true, LE_OP);
+			// return selec;
 		case OVERAFTER_OP:
-			selec = 1.0 - temporal_position_sel(root, vardata, &period, false, false, GE_OP);
-			return selec;
+			// selec = 1.0 - temporal_position_sel(root, &vardata, &period, false, false, GE_OP);
+			// return selec;
 		default:
 			return 0.001;
 	}
@@ -812,25 +804,32 @@ PG_FUNCTION_INFO_V1(tpoint_sel);
 PGDLLEXPORT Datum
 tpoint_sel(PG_FUNCTION_ARGS)
 {
-    PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-    Oid operator = PG_GETARG_OID(1);
-    List *args = (List *) PG_GETARG_POINTER(2);
-    int varRelid = PG_GETARG_INT32(3);
-    Selectivity selec = DEFAULT_STATISTICS; /* keep compiler quiet */
-    CachedOp cachedOp;
-    VariableStatData vardata;
-    Node *other;
-    bool varonleft;
+	PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+	Oid operator = PG_GETARG_OID(1);
+	List *args = (List *) PG_GETARG_POINTER(2);
+	int varRelid = PG_GETARG_INT32(3);
+	VariableStatData vardata;
+	Node *other;
+	bool varonleft;
+	Selectivity selec;
+	CachedOp cachedOp;
 	STBOX constBox;
 	
-	memset(&constBox, 0, sizeof(STBOX));
+	/*
+	 * Get enumeration value associated to the operator
+	 */
+	bool found = tpoint_cachedop(operator, &cachedOp);
+	/* In the case of unknown operator */
+	if (!found)
+		PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+
 	/*
 	 * If expression is not (variable op something) or (something op
 	 * variable), then punt and return a default estimate.
 	 */
 	if (!get_restriction_variable(root, args, varRelid,
 								  &vardata, &other, &varonleft))
-		PG_RETURN_FLOAT8(0.01);
+		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
 	/*
 	 * Can't do anything useful if the something is not a constant, either.
@@ -838,7 +837,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	if (!IsA(other, Const))
 	{
 		ReleaseVariableStats(vardata);
-		PG_RETURN_FLOAT8(0.01);
+		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 	}
 
 	/*
@@ -851,30 +850,35 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(0.0);
 	}
 
-    bool found = get_tpoint_cachedop(operator, &cachedOp);
-    /* In the case of unknown operator */
-    if (!found)
-        PG_RETURN_FLOAT8(selec);
-
-    /*
-     * Transform the constant into an STBOX and a Period
+	/*
+     * If var is on the right, commute the operator, so that we can assume the
+     * var is on the left in what follows.
      */
-     found = tpoint_const_bounds(other, &constBox);
+	if (!varonleft)
+	{
+		/* we have other Op var, commute to make var Op other */
+		operator = get_commutator(operator);
+		if (!operator)
+		{
+			/* Use default selectivity (should we raise an error instead?) */
+			ReleaseVariableStats(vardata);
+			PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
+		}
+	}
+
+	/*
+	 * Transform the constant into an STBOX
+	 */
+	memset(&constBox, 0, sizeof(STBOX));
+	found = tpoint_const_to_stbox(other, &constBox);
 	/* In the case of unknown constant */
 	if (!found)
-		PG_RETURN_FLOAT8(selec);
+		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
-    selec = estimate_selectivity(root, &vardata, other, &constBox, cachedOp);
+	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
-    if (MOBDB_FLAGS_GET_T(constBox.flags) && (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
-                                         cachedOp == CONTAINED_OP || cachedOp == SAME_OP))
-    {
-        Period *period = period_make((TimestampTz)constBox.tmin, (TimestampTz)constBox.tmax, true, true);
-		selec *= temporal_bbox_sel(root, &vardata, period, cachedOp);
-    }
+	selec = tpoint_selectivity(root, &vardata, other, &constBox, cachedOp);
 
-	if (selec < 0.0)
-		selec = default_temporal_selectivity(cachedOp);
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);

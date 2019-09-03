@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <access/htup_details.h>
 #include <nodes/relation.h>
+#include <utils/builtins.h>
 #include <utils/selfuncs.h>
 #include <temporal_boxops.h>
 
@@ -27,7 +28,10 @@
 #include "time_selfuncs.h"
 #include "temporal_selfuncs.h"
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Functions copied from PostgreSQL file rangetypes_selfuncs.c since they 
+ * are not exported.
+ *****************************************************************************/
 
 /*
  * Binary search on an array of range bounds. Returns greatest index of range
@@ -38,22 +42,21 @@
  * This function is used in scalar operator selectivity estimation. Another
  * goal of this function is to find a histogram bin where to stop
  * interpolation of portion of bounds which are less or equal to given bound.
- * 
- * Functions adapted from PostgreSQL file rangetypes_selfuncs.c since they 
- * are not exported.
  */
 static int
-rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
+rbound_bsearch(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist,
 			   int hist_length, bool equal)
 {
-	int lower = -1, upper = hist_length - 1, cmp, middle;
+	int			lower = -1,
+				upper = hist_length - 1,
+				cmp,
+				middle;
 
 	while (lower < upper)
 	{
 		middle = (lower + upper + 1) / 2;
-		cmp = DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-											  typcache->rng_collation,
-											  (&hist[middle])->val, value));
+		cmp = range_cmp_bounds(typcache, &hist[middle], value);
+
 		if (cmp < 0 || (equal && cmp == 0))
 			lower = middle;
 		else
@@ -63,74 +66,379 @@ rbound_bsearch(TypeCacheEntry *typcache, Datum value, RangeBound *hist,
 }
 
 /*
+ * Get relative position of value in histogram bin in [0,1] range.
+ */
+static float8
+get_position(TypeCacheEntry *typcache, RangeBound *value, RangeBound *hist1,
+			 RangeBound *hist2)
+{
+	bool		has_subdiff = OidIsValid(typcache->rng_subdiff_finfo.fn_oid);
+	float8		position;
+
+	if (!hist1->infinite && !hist2->infinite)
+	{
+		float8		bin_width;
+
+		/*
+		 * Both bounds are finite. Assuming the subtype's comparison function
+		 * works sanely, the value must be finite, too, because it lies
+		 * somewhere between the bounds. If it doesn't, just return something.
+		 */
+		if (value->infinite)
+			return 0.5;
+
+		/* Can't interpolate without subdiff function */
+		if (!has_subdiff)
+			return 0.5;
+
+		/* Calculate relative position using subdiff function. */
+		bin_width = DatumGetFloat8(FunctionCall2Coll(
+													 &typcache->rng_subdiff_finfo,
+													 typcache->rng_collation,
+													 hist2->val,
+													 hist1->val));
+		if (bin_width <= 0.0)
+			return 0.5;			/* zero width bin */
+
+		position = DatumGetFloat8(FunctionCall2Coll(
+													&typcache->rng_subdiff_finfo,
+													typcache->rng_collation,
+													value->val,
+													hist1->val))
+			/ bin_width;
+
+		/* Relative position must be in [0,1] range */
+		position = Max(position, 0.0);
+		position = Min(position, 1.0);
+		return position;
+	}
+	else if (hist1->infinite && !hist2->infinite)
+	{
+		/*
+		 * Lower bin boundary is -infinite, upper is finite. If the value is
+		 * -infinite, return 0.0 to indicate it's equal to the lower bound.
+		 * Otherwise return 1.0 to indicate it's infinitely far from the lower
+		 * bound.
+		 */
+		return ((value->infinite && value->lower) ? 0.0 : 1.0);
+	}
+	else if (!hist1->infinite && hist2->infinite)
+	{
+		/* same as above, but in reverse */
+		return ((value->infinite && !value->lower) ? 1.0 : 0.0);
+	}
+	else
+	{
+		/*
+		 * If both bin boundaries are infinite, they should be equal to each
+		 * other, and the value should also be infinite and equal to both
+		 * bounds. (But don't Assert that, to avoid crashing if a user creates
+		 * a datatype with a broken comparison function).
+		 *
+		 * Assume the value to lie in the middle of the infinite bounds.
+		 */
+		return 0.5;
+	}
+}
+
+/*
  * Look up the fraction of values less than (or equal, if 'equal' argument
  * is true) a given const in a histogram of range bounds.
  */
-static Selectivity
-calc_hist_selectivity_scalar(TypeCacheEntry *typcache, Datum constbound,
+static double
+calc_hist_selectivity_scalar(TypeCacheEntry *typcache, RangeBound *constbound,
 							 RangeBound *hist, int hist_nvalues, bool equal)
 {
 	Selectivity selec;
-	int index;
+	int			index;
 
 	/*
-	* Find the histogram bin the given constant falls into. Estimate
-	* selectivity as the number of preceding whole bins.
-	*/
+	 * Find the histogram bin the given constant falls into. Estimate
+	 * selectivity as the number of preceding whole bins.
+	 */
 	index = rbound_bsearch(typcache, constbound, hist, hist_nvalues, equal);
 	selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues - 1);
 
 	/* Adjust using linear interpolation within the bin */
 	if (index >= 0 && index < hist_nvalues - 1)
-	{
-		float8 bin_width, position;
-		bin_width = DatumGetFloat8(FunctionCall2Coll(
-				&typcache->rng_subdiff_finfo,
-				typcache->rng_collation,
-				hist[index + 1].val,
-				hist[index].val));
-		if (bin_width <= 0.0)
-			return 0.5;			/* zero width bin */
-
-		position = DatumGetFloat8(FunctionCall2Coll(
-				&typcache->rng_subdiff_finfo,
-				typcache->rng_collation,
-				constbound,
-				hist[index].val)) / bin_width;
-		/* Relative position must be in [0,1] range */
-		position = Max(position, 0.0);
-		position = Min(position, 1.0);
-		selec += position / (Selectivity) (hist_nvalues - 1);
-	}
+		selec += get_position(typcache, constbound, &hist[index],
+							  &hist[index + 1]) / (Selectivity) (hist_nvalues - 1);
 
 	return selec;
 }
 
 /*
+ * Measure distance between two range bounds.
+ */
+static float8
+get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
+{
+	bool		has_subdiff = OidIsValid(typcache->rng_subdiff_finfo.fn_oid);
+
+	if (!bound1->infinite && !bound2->infinite)
+	{
+		/*
+		 * No bounds are infinite, use subdiff function or return default
+		 * value of 1.0 if no subdiff is available.
+		 */
+		if (has_subdiff)
+			return
+				DatumGetFloat8(FunctionCall2Coll(&typcache->rng_subdiff_finfo,
+												 typcache->rng_collation,
+												 bound2->val,
+												 bound1->val));
+		else
+			return 1.0;
+	}
+	else if (bound1->infinite && bound2->infinite)
+	{
+		/* Both bounds are infinite */
+		if (bound1->lower == bound2->lower)
+			return 0.0;
+		else
+			return get_float8_infinity();
+	}
+	else
+	{
+		/* One bound is infinite, another is not */
+		return get_float8_infinity();
+	}
+}
+
+/*
+ * Calculate selectivity of "var <@ const" operator, ie. estimate the fraction
+ * of ranges that fall within the constant lower and upper bounds. This uses
+ * the histograms of range lower bounds and range lengths, on the assumption
+ * that the range lengths are independent of the lower bounds.
+ *
+ * The caller has already checked that constant lower and upper bounds are
+ * finite.
+ */
+static double
+calc_hist_selectivity_contained(TypeCacheEntry *typcache,
+								RangeBound *lower, RangeBound *upper,
+								RangeBound *hist_lower, int hist_nvalues,
+								Datum *length_hist_values, int length_hist_nvalues)
+{
+	int			i,
+				upper_index;
+	float8		prev_dist;
+	double		bin_width;
+	double		upper_bin_width;
+	double		sum_frac;
+
+	/*
+	 * Begin by finding the bin containing the upper bound, in the lower bound
+	 * histogram. Any range with a lower bound > constant upper bound can't
+	 * match, ie. there are no matches in bins greater than upper_index.
+	 */
+	upper->inclusive = !upper->inclusive;
+	upper->lower = true;
+	upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues,
+								 false);
+
+	/*
+	 * Calculate upper_bin_width, ie. the fraction of the (upper_index,
+	 * upper_index + 1) bin which is greater than upper bound of query range
+	 * using linear interpolation of subdiff function.
+	 */
+	if (upper_index >= 0 && upper_index < hist_nvalues - 1)
+		upper_bin_width = get_position(typcache, upper,
+									   &hist_lower[upper_index],
+									   &hist_lower[upper_index + 1]);
+	else
+		upper_bin_width = 0.0;
+
+	/*
+	 * In the loop, dist and prev_dist are the distance of the "current" bin's
+	 * lower and upper bounds from the constant upper bound.
+	 *
+	 * bin_width represents the width of the current bin. Normally it is 1.0,
+	 * meaning a full width bin, but can be less in the corner cases: start
+	 * and end of the loop. We start with bin_width = upper_bin_width, because
+	 * we begin at the bin containing the upper bound.
+	 */
+	prev_dist = 0.0;
+	bin_width = upper_bin_width;
+
+	sum_frac = 0.0;
+	for (i = upper_index; i >= 0; i--)
+	{
+		double		dist;
+		double		length_hist_frac;
+		bool		final_bin = false;
+
+		/*
+		 * dist -- distance from upper bound of query range to lower bound of
+		 * the current bin in the lower bound histogram. Or to the lower bound
+		 * of the constant range, if this is the final bin, containing the
+		 * constant lower bound.
+		 */
+		if (range_cmp_bounds(typcache, &hist_lower[i], lower) < 0)
+		{
+			dist = get_distance(typcache, lower, upper);
+
+			/*
+			 * Subtract from bin_width the portion of this bin that we want to
+			 * ignore.
+			 */
+			bin_width -= get_position(typcache, lower, &hist_lower[i],
+									  &hist_lower[i + 1]);
+			if (bin_width < 0.0)
+				bin_width = 0.0;
+			final_bin = true;
+		}
+		else
+			dist = get_distance(typcache, &hist_lower[i], upper);
+
+		/*
+		 * Estimate the fraction of tuples in this bin that are narrow enough
+		 * to not exceed the distance to the upper bound of the query range.
+		 */
+		length_hist_frac = calc_length_hist_frac(length_hist_values,
+												 length_hist_nvalues,
+												 prev_dist, dist, true);
+
+		/*
+		 * Add the fraction of tuples in this bin, with a suitable length, to
+		 * the total.
+		 */
+		sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
+
+		if (final_bin)
+			break;
+
+		bin_width = 1.0;
+		prev_dist = dist;
+	}
+
+	return sum_frac;
+}
+
+/*
+ * Calculate selectivity of "var @> const" operator, ie. estimate the fraction
+ * of ranges that contain the constant lower and upper bounds. This uses
+ * the histograms of range lower bounds and range lengths, on the assumption
+ * that the range lengths are independent of the lower bounds.
+ *
+ * Note, this is "var @> const", ie. estimate the fraction of ranges that
+ * contain the constant lower and upper bounds.
+ */
+static double
+calc_hist_selectivity_contains(TypeCacheEntry *typcache,
+							   RangeBound *lower, RangeBound *upper,
+							   RangeBound *hist_lower, int hist_nvalues,
+							   Datum *length_hist_values, int length_hist_nvalues)
+{
+	int			i,
+				lower_index;
+	double		bin_width,
+				lower_bin_width;
+	double		sum_frac;
+	float8		prev_dist;
+
+	/* Find the bin containing the lower bound of query range. */
+	lower_index = rbound_bsearch(typcache, lower, hist_lower, hist_nvalues,
+								 true);
+
+	/*
+	 * Calculate lower_bin_width, ie. the fraction of the of (lower_index,
+	 * lower_index + 1) bin which is greater than lower bound of query range
+	 * using linear interpolation of subdiff function.
+	 */
+	if (lower_index >= 0 && lower_index < hist_nvalues - 1)
+		lower_bin_width = get_position(typcache, lower, &hist_lower[lower_index],
+									   &hist_lower[lower_index + 1]);
+	else
+		lower_bin_width = 0.0;
+
+	/*
+	 * Loop through all the lower bound bins, smaller than the query lower
+	 * bound. In the loop, dist and prev_dist are the distance of the
+	 * "current" bin's lower and upper bounds from the constant upper bound.
+	 * We begin from query lower bound, and walk backwards, so the first bin's
+	 * upper bound is the query lower bound, and its distance to the query
+	 * upper bound is the length of the query range.
+	 *
+	 * bin_width represents the width of the current bin. Normally it is 1.0,
+	 * meaning a full width bin, except for the first bin, which is only
+	 * counted up to the constant lower bound.
+	 */
+	prev_dist = get_distance(typcache, lower, upper);
+	sum_frac = 0.0;
+	bin_width = lower_bin_width;
+	for (i = lower_index; i >= 0; i--)
+	{
+		float8		dist;
+		double		length_hist_frac;
+
+		/*
+		 * dist -- distance from upper bound of query range to current value
+		 * of lower bound histogram or lower bound of query range (if we've
+		 * reach it).
+		 */
+		dist = get_distance(typcache, &hist_lower[i], upper);
+
+		/*
+		 * Get average fraction of length histogram which covers intervals
+		 * longer than (or equal to) distance to upper bound of query range.
+		 */
+		length_hist_frac =
+			1.0 - calc_length_hist_frac(length_hist_values,
+										length_hist_nvalues,
+										prev_dist, dist, false);
+
+		sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
+
+		bin_width = 1.0;
+		prev_dist = dist;
+	}
+
+	return sum_frac;
+}
+
+
+/*****************************************************************************
+ * This function is derived from the one in PosgreSQL by adding the last
+ * parameter in order to select the slot from which the statistics are read
+ * and by replacing the parameter (Oid operator) by (CachedOp cachedOp)
+ *****************************************************************************/
+
+/*
  * Calculate range operator selectivity using histograms of range bounds.
  *
- * This estimate is for the portion of values that are not empty and not NULL.
+ * This estimate is for the portion of values that are not empty and not
+ * NULL.
  */
-static Selectivity
-calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
-							TypeCacheEntry *typcache, bool isgt, bool iseq, StatStrategy strategy)
+static double
+calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
+					  RangeType *constval, Oid cachedOp, StatStrategy strategy)
 {
-	int nhist;
+	AttStatsSlot hslot;
+	AttStatsSlot lslot;
+	int			nhist;
 	RangeBound *hist_lower;
 	RangeBound *hist_upper;
-	int i;
-	bool empty;
-	Selectivity hist_selec = -1; /* keep compiler quiet */
-	AttStatsSlot hslot;
-	int staKind = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+	int			i;
+	RangeBound	const_lower;
+	RangeBound	const_upper;
+	bool		empty;
+	double		hist_selec;
 
-	if (vardata->atttypmod == TEMPORALINST)
-		staKind = STATISTIC_KIND_HISTOGRAM;
+	/* Can't use the histogram with insecure range support functions */
+	if (!statistic_proc_security_check(vardata,
+									   typcache->rng_cmp_proc_finfo.fn_oid))
+		return -1;
+	if (OidIsValid(typcache->rng_subdiff_finfo.fn_oid) &&
+		!statistic_proc_security_check(vardata,
+									   typcache->rng_subdiff_finfo.fn_oid))
+		return -1;
+
 	/* Try to get histogram of ranges */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
-								 staKind, InvalidOid,
-								 ATTSTATSSLOT_VALUES, strategy)))
+						   STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
+						   ATTSTATSSLOT_VALUES, strategy)))
 		return -1.0;
 
 	/*
@@ -140,7 +448,6 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 	nhist = hslot.nvalues;
 	hist_lower = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
 	hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
-
 	for (i = 0; i < nhist; i++)
 	{
 		range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
@@ -150,245 +457,174 @@ calc_range_hist_selectivity(VariableStatData *vardata, Datum constval,
 			elog(ERROR, "bounds histogram contains an empty range");
 	}
 
-	if (!isgt && !iseq)
-		hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, false);
-	else if (isgt && iseq)
-		hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, true);
-	else if (isgt)
-		hist_selec = 1 - calc_hist_selectivity_scalar(typcache, constval, hist_lower, nhist, false);
-	else if (iseq)
-		hist_selec = calc_hist_selectivity_scalar(typcache, constval, hist_upper, nhist, true);
+	/* @> and @< also need a histogram of range lengths */
+	if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+	{
+		if (!(HeapTupleIsValid(vardata->statsTuple) &&
+			  get_attstatsslot_mobdb(&lslot, vardata->statsTuple,
+							   STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM,
+							   InvalidOid,
+							   ATTSTATSSLOT_VALUES, strategy)))
+		{
+			free_attstatsslot(&hslot);
+			return -1.0;
+		}
 
+		/* check that it's a histogram, not just a dummy entry */
+		if (lslot.nvalues < 2)
+		{
+			free_attstatsslot(&lslot);
+			free_attstatsslot(&hslot);
+			return -1.0;
+		}
+	}
+	else
+		memset(&lslot, 0, sizeof(lslot));
 
+	/* Extract the bounds of the constant value. */
+	range_deserialize(typcache, constval, &const_lower, &const_upper, &empty);
+	Assert(!empty);
+
+	/*
+	 * Calculate selectivity comparing the lower or upper bound of the
+	 * constant with the histogram of lower or upper bounds.
+	 */
+	switch (cachedOp)
+	{
+		case LT_OP:
+
+			/*
+			 * The regular b-tree comparison operators (<, <=, >, >=) compare
+			 * the lower bounds first, and the upper bounds for values with
+			 * equal lower bounds. Estimate that by comparing the lower bounds
+			 * only. This gives a fairly accurate estimate assuming there
+			 * aren't many rows with a lower bound equal to the constant's
+			 * lower bound.
+			 */
+			hist_selec =
+				calc_hist_selectivity_scalar(typcache, &const_lower,
+											 hist_lower, nhist, false);
+			break;
+
+		case LE_OP:
+			hist_selec =
+				calc_hist_selectivity_scalar(typcache, &const_lower,
+											 hist_lower, nhist, true);
+			break;
+
+		case GT_OP:
+			hist_selec =
+				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+												 hist_lower, nhist, false);
+			break;
+
+		case GE_OP:
+			hist_selec =
+				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+												 hist_lower, nhist, true);
+			break;
+
+		case LEFT_OP:
+			/* var << const when upper(var) < lower(const) */
+			hist_selec =
+				calc_hist_selectivity_scalar(typcache, &const_lower,
+											 hist_upper, nhist, false);
+			break;
+
+		case RIGHT_OP:
+			/* var >> const when lower(var) > upper(const) */
+			hist_selec =
+				1 - calc_hist_selectivity_scalar(typcache, &const_upper,
+												 hist_lower, nhist, true);
+			break;
+
+		case OVERRIGHT_OP:
+			/* compare lower bounds */
+			hist_selec =
+				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+												 hist_lower, nhist, false);
+			break;
+
+		case OVERLEFT_OP:
+			/* compare upper bounds */
+			hist_selec =
+				calc_hist_selectivity_scalar(typcache, &const_upper,
+											 hist_upper, nhist, true);
+			break;
+
+		case OVERLAPS_OP:
+			/*
+			 * A && B <=> NOT (A << B OR A >> B).
+			 *
+			 * Since A << B and A >> B are mutually exclusive events we can
+			 * sum their probabilities to find probability of (A << B OR A >>
+			 * B).
+			 *
+			 * "range @> elem" is equivalent to "range && [elem,elem]". The
+			 * caller already constructed the singular range from the element
+			 * constant, so just treat it the same as &&.
+			 */
+			hist_selec =
+				calc_hist_selectivity_scalar(typcache, &const_lower, hist_upper,
+											 nhist, false);
+			hist_selec +=
+				(1.0 - calc_hist_selectivity_scalar(typcache, &const_upper, hist_lower,
+													nhist, true));
+			hist_selec = 1.0 - hist_selec;
+			break;
+
+		case CONTAINS_OP:
+			hist_selec =
+				calc_hist_selectivity_contains(typcache, &const_lower,
+											   &const_upper, hist_lower, nhist,
+											   lslot.values, lslot.nvalues);
+			break;
+
+		case CONTAINED_OP:
+			if (const_lower.infinite)
+			{
+				/*
+				 * Lower bound no longer matters. Just estimate the fraction
+				 * with an upper bound <= const upper bound
+				 */
+				hist_selec =
+					calc_hist_selectivity_scalar(typcache, &const_upper,
+												 hist_upper, nhist, true);
+			}
+			else if (const_upper.infinite)
+			{
+				hist_selec =
+					1.0 - calc_hist_selectivity_scalar(typcache, &const_lower,
+													   hist_lower, nhist, false);
+			}
+			else
+			{
+				hist_selec =
+					calc_hist_selectivity_contained(typcache, &const_lower,
+													&const_upper, hist_lower, nhist,
+													lslot.values, lslot.nvalues);
+			}
+			break;
+
+		default:
+			elog(ERROR, "unknown range operator");
+			hist_selec = -1.0;	/* keep compiler quiet */
+			break;
+	}
+
+	free_attstatsslot(&lslot);
 	free_attstatsslot(&hslot);
 
 	return hist_selec;
 }
 
-static Selectivity
-range_sel_internal(VariableStatData *vardata, Datum constval,
-				   bool isgt, bool iseq, TypeCacheEntry *typcache, StatStrategy strategy)
-{
-	double hist_selec;
-	Selectivity selec;
-	float4 empty_frac, null_frac;
-
-	/*
-	 * First look up the fraction of NULLs and empty ranges from pg_statistic.
-	 */
-	if (HeapTupleIsValid(vardata->statsTuple))
-	{
-		Form_pg_statistic stats;
-		stats = (Form_pg_statistic) GETSTRUCT(vardata->statsTuple);
-		null_frac = stats->stanullfrac;
-		empty_frac = 0.0;
-	}
-	else
-	{
-		/*
-		 * No stats are available. Follow through the calculations below
-		 * anyway, assuming no NULLs and no empty ranges. This still allows us
-		 * to give a better-than-nothing estimate based on whether the
-		 * constant is an empty range or not.
-		 */
-		null_frac = 0.0;
-		empty_frac = 0.0;
-	}
-	hist_selec = calc_range_hist_selectivity(vardata, constval, typcache, isgt, iseq, strategy);
-	selec = (1.0 - empty_frac) * hist_selec;
-	selec *= (1.0 - null_frac);
-	return selec;
-}
-
 /*****************************************************************************
  * Internal functions computing selectivity
  *****************************************************************************/
 
-static Selectivity
-tnumber_bbox_sel(PlannerInfo *root, VariableStatData vardata, TBOX box, CachedOp cachedOp)
-{
-	// Check the temporal types and inside each one check the cachedOp
-	Selectivity  selec = 0.0;
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-	{
-		CachedType vartype = (vardata.vartype == type_oid(T_TINT)) ? T_INT4 : T_FLOAT8;
-		CachedType varRangeType = (vardata.vartype == type_oid(T_TINT)) ? T_INTRANGE : T_FLOATRANGE;
-		/*
-		 * Compute the selectivity with regard to the value of the constant.
-		 */
-		double selec1 = 0.0;
-		if (MOBDB_FLAGS_GET_X(box.flags))
-		{
-			if (duration == TEMPORALINST)
-			{
-				Oid op = oper_oid(EQ_OP, vartype, vartype);
-				selec1 = var_eq_const_mobdb(&vardata, op, (Datum) box.xmin, false, VALUE_STATISTICS);
-			}
-			else
-			{
-				if (cachedOp == OVERLAPS_OP)
-				{
-					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-					selec1 = range_sel_internal(&vardata, (Datum) box.xmin, false, false, typcache,
-												VALUE_STATISTICS);
-					selec1 += range_sel_internal(&vardata, (Datum) box.xmax, true, false, typcache,
-												 VALUE_STATISTICS);
-				}
-				else if (cachedOp == CONTAINS_OP)
-				{
-					TypeCacheEntry *typcache = lookup_type_cache(type_oid(varRangeType), TYPECACHE_RANGE_INFO);
-					selec1 = range_sel_internal(&vardata, (Datum) box.xmin, false, false, typcache,
-												VALUE_STATISTICS);
-					selec1 += range_sel_internal(&vardata, (Datum) box.xmax, false, false, typcache,
-												 VALUE_STATISTICS);
-				}
-				else if (cachedOp == CONTAINED_OP)
-				{
-					Oid opl = oper_oid(LT_OP, vartype, vartype);
-					Oid opg = oper_oid(GT_OP, vartype, vartype);
-					selec1 = scalarineqsel_mobdb(root, opl, false, true, &vardata, (Datum) box.xmin,
-												 type_oid(vartype), VALUE_STATISTICS);
-					selec1 += scalarineqsel_mobdb(root, opg, true, false, &vardata, (Datum) box.xmax,
-												  type_oid(vartype), VALUE_STATISTICS);
-				}
-				selec1 = 1 - selec1;
-				selec1 = selec1 < 0 ? 0 : selec1;
-			}
-		}
-		/*
-		 * Compute the selectivity with regard to the time dimension of the constant.
-		 */
-		double selec2 = 0.0;
-		if (MOBDB_FLAGS_GET_T(box.flags))
-		{
-			if (duration == TEMPORALINST)
-			{
-				Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-				selec2 = var_eq_const_mobdb(&vardata, op, (Datum) box.tmin,
-									  false, TEMPORAL_STATISTICS);
-			}
-			else
-			{
-				if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
-				{
-					Oid op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-					selec2 = var_eq_const_mobdb(&vardata, op, (Datum) box.tmin, false,
-										  TEMPORAL_STATISTICS);
-					selec2 *= var_eq_const_mobdb(&vardata, op, (Datum) box.tmax, false,
-										   TEMPORAL_STATISTICS);
-					selec2 = selec2 > 1 ? 1 : selec2;
-				}
-				else
-				{
-					selec2 = calc_period_hist_selectivity(&vardata, period_make(box.tmin, box.tmax, true, true),
-											cachedOp, TEMPORAL_STATISTICS);
-				}
-			}
-		}
-		if (MOBDB_FLAGS_GET_X(box.flags) && MOBDB_FLAGS_GET_T(box.flags))
-			selec = selec1 * selec2;
-		else if (MOBDB_FLAGS_GET_X(box.flags))
-			selec = selec1;
-		else if (MOBDB_FLAGS_GET_T(box.flags))
-			selec = selec2;
-	}
-	return selec;
-}
-
-
-static double
-lower_or_higher_value_bound(Node *other, bool higher)
-{
-	double result = 0.0;
-	Oid consttype = ((Const *) other)->consttype;
-	if (higher)
-	{
-		if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-		{
-			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box;
-			memset(&box, 0, sizeof(TBOX));
-			temporal_bbox(&box, temporal);
-			result = box.xmax;
-		}
-		else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
-		{
-			result = (double) ((Const *) other)->constvalue;
-		}
-		else if (consttype == type_oid(T_INTRANGE))
-		{
-			result = DatumGetInt32(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		}
-		else if (consttype == type_oid(T_FLOATRANGE))
-		{
-			result = DatumGetFloat8(upper_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		}
-		else if (consttype == type_oid(T_TBOX))
-		{
-			TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
-			assert(MOBDB_FLAGS_GET_X(box->flags));
-			result = box->xmax;
-		}
-	}
-	else
-	{
-		if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-		{
-			Temporal *temporal = DatumGetTemporal(((Const *) other)->constvalue);
-			TBOX box;
-			memset(&box, 0, sizeof(TBOX));
-			temporal_bbox(&box, temporal);
-			result = box.xmin;
-		}
-		else if (consttype == type_oid(T_INT4) || consttype == type_oid(T_FLOAT8))
-		{
-			result = (double) ((Const *) other)->constvalue;
-		}
-		else if (consttype == type_oid(T_INTRANGE))
-		{
-			result = DatumGetInt32(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		}
-		else if (consttype == type_oid(T_FLOATRANGE))
-		{
-			result = DatumGetFloat8(lower_datum(DatumGetRangeTypeP(((Const *) other)->constvalue)));
-		}
-		else if (consttype == type_oid(T_TBOX))
-		{
-			TBOX *box = DatumGetTboxP(((Const *) other)->constvalue);
-			assert(MOBDB_FLAGS_GET_X(box->flags));
-			result = box->xmin;
-		}
-	}
-	return result;
-}
-
-static Selectivity
-tnumber_position_sel(VariableStatData vardata,
-							  Node *other, bool isgt, bool iseq)
-{
-	double selec = 0.0;
-	if (vardata.vartype == type_oid(T_TINT) || vardata.vartype == type_oid(T_TFLOAT))
-	{
-		TypeCacheEntry *typcache;
-		if (vardata.vartype == type_oid(T_TINT))
-			typcache = lookup_type_cache(type_oid(T_INTRANGE),
-										 TYPECACHE_RANGE_INFO);
-		else
-			typcache = lookup_type_cache(type_oid(T_FLOATRANGE),
-										 TYPECACHE_RANGE_INFO);
-		selec = range_sel_internal(&vardata, (Datum)lower_or_higher_value_bound(other, isgt),
-								   isgt, iseq, typcache, VALUE_STATISTICS);
-	}
-	return selec;
-}
-
-/*****************************************************************************
- * Internal functions computing selectivity
- *****************************************************************************/
-
+/* Transform the contant into a TBOX */
 static bool
-tnumber_const_to_period(Node *other, TBOX *box)
+tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
     Oid consttype = ((Const *) other)->consttype;
 
@@ -404,8 +640,7 @@ tnumber_const_to_period(Node *other, TBOX *box)
         timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
     else if (consttype == type_oid(T_TIMESTAMPSET))
         timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT) ||
-             consttype == type_oid(T_PERIOD))
+    else if (consttype == type_oid(T_PERIOD))
         period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
     else if (consttype == type_oid(T_PERIODSET))
         periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
@@ -418,7 +653,7 @@ tnumber_const_to_period(Node *other, TBOX *box)
     return true;
 }
 
-/* Get the name of the operator from different cases */
+/* Get the enum value associated to the operator */
 static bool
 tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 {
@@ -490,14 +725,11 @@ default_tnumber_selectivity(CachedOp operator)
  * by analyzing the histograms for each dimension can be multiplied */
 Selectivity
 tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
-	TBOX *box, CachedOp cachedOp)
+	TBOX *box, CachedOp cachedOp, Oid valuetypid)
 {
 	double selec; 
-	Oid op, valuetypid;
+	Oid op;
 
-	valuetypid = base_oid_from_temporal(vardata->atttype);
-	numeric_base_type_oid(valuetypid);
-	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
 	{
 		/* If the box is not equivalent to a temporal instant return 0.0 */
@@ -505,7 +737,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			return 0.0;
 
 		/* Enable the multiplication of the selectivity of the value and time 
-		 * dimensions since either may be missing*/
+		 * dimensions since either may be missing */
 		selec = 1.0; 
 
 		/* Selectivity for the value dimension */
@@ -513,7 +745,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		{
 			op = oper_oid(EQ_OP, valuetypid, valuetypid);
 			selec *= var_eq_const_mobdb(vardata, op, 
-			Float8GetDatum(box->xmin), false, VALUE_STATISTICS);
+				Float8GetDatum(box->xmin), false, VALUE_STATISTICS);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
@@ -540,14 +772,14 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		 */
 
 		/* Enable the addition of the selectivity of the value and time 
-		 * dimensions since either may be missing*/
+		 * dimensions since either may be missing */
 		selec = 0.0; 
 
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(LT_OP, valuetypid, valuetypid);
-			selec = scalarineqsel_mobdb(root, op, false, false, vardata, 
+			selec += scalarineqsel_mobdb(root, op, false, false, vardata, 
 				Float8GetDatum(box->xmin), valuetypid, VALUE_STATISTICS);
 			op = oper_oid(GT_OP, valuetypid, valuetypid);
 			selec += scalarineqsel_mobdb(root, op, true, false, vardata, 
@@ -631,7 +863,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		/* TemporalInst v@t < TBOX b <=> v < box->xmin AND t < box->tmin */
 
 		/* Enable the multiplication of the selectivity of the value and time 
-		 * dimensions since either may be missing*/
+		 * dimensions since either may be missing */
 		selec = 1.0; 
 
 		/* Selectivity for the value dimension */
@@ -681,7 +913,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 
 Selectivity
 tnumberi_sel(PlannerInfo *root, VariableStatData *vardata,
-	TBOX *box, CachedOp cachedOp)
+	TBOX *box, CachedOp cachedOp, Oid valuetypid)
 {
 	double selec = 0.0;
 	/* TODO */
@@ -691,20 +923,18 @@ tnumberi_sel(PlannerInfo *root, VariableStatData *vardata,
 
 Selectivity
 tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
-	TBOX *box, CachedOp cachedOp)
+	TBOX *box, CachedOp cachedOp, Oid valuetypid)
 {
 	Period period;
 	RangeType *range;
 	TypeCacheEntry *typcache;
 	double selec;
-	Oid op, valuetypid, rangetypid;
+	Oid op, rangetypid;
 
 	/* Enable the multiplication of the selectivity of the value and time 
 	 * dimensions since either may be missing */
 	selec = 1.0; 
 
-	valuetypid = base_oid_from_temporal(vardata->atttype);
-	numeric_base_type_oid(valuetypid);
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		range = range_make(Float8GetDatum(box->xmin), 
@@ -713,7 +943,7 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 	}
 	if (MOBDB_FLAGS_GET_T(box->flags))
-		tbox_to_period(&period, box);
+		period_set(&period, box->tmin, box->tmax, true, true);
 
 	/*
 	 * There is no ~= operator for range/time types and thus it is necessary to
@@ -741,13 +971,9 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
 		cachedOp == OVERAFTER_OP) 
 	{
-		/* Enable the multiplication of the selectivity of the value and time 
-		 * dimensions since either may be missing*/
-		selec = 1.0; 
-
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
-			selec *= calc_range_hist_selectivity(typcache, vardata, range, cachedOp, 
+			selec *= calc_hist_selectivity_mobdb(typcache, vardata, range, cachedOp, 
 				VALUE_STATISTICS);
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
@@ -764,18 +990,18 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * period and thus we can use the period selectivity estimation */
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
-			selec = calc_range_hist_selectivity(typcache, vardata, range, cachedOp, 
+			selec *= calc_hist_selectivity_mobdb(typcache, vardata, range, cachedOp, 
 				VALUE_STATISTICS);
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			selec = calc_period_hist_selectivity(vardata, &period, cachedOp, 
+			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp, 
 				TEMPORAL_STATISTICS);
 	}
 	else /* Unknown operator */
 	{
 		selec = default_tnumber_selectivity(cachedOp);
 	}
-	if (MOBDB_FLAGS_GET_T(box->flags))
+	if (MOBDB_FLAGS_GET_X(box->flags))
 		pfree(range);
 	return selec;
 }
@@ -798,9 +1024,10 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
+	Selectivity selec;
 	CachedOp cachedOp;
 	TBOX constBox;
+	Oid valuetypid;
 
 	/*
 	 * Get enumeration value associated to the operator
@@ -853,74 +1080,38 @@ tnumber_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-    /*
-     * Transform the constant into a TBOX and a Period
-     */
+    /* 
+	 * Transform the constant into a TBOX 
+	 */
     memset(&constBox, 0, sizeof(TBOX));
-    found = tnumber_const_to_period(other, &constBox);
+    found = tnumber_const_to_tbox(other, &constBox);
     /* In the case of unknown constant */
     if (!found)
 		PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
 
+	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
+	
+	/* Get the base type and duration of the temporal column */
+	valuetypid = base_oid_from_temporal(vardata.atttype);
+	numeric_base_type_oid(valuetypid);
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	assert(duration == TEMPORAL || duration == TEMPORALINST ||
 		   duration == TEMPORALI || duration == TEMPORALSEQ ||
 		   duration == TEMPORALS);
+
+	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)
-		selec = tnumberinst_sel(root, &vardata, &constBox, cachedOp);
-	else if (duration == TEMPORAL)
-		selec = tnumberi_sel(root, &vardata, &constBox, cachedOp);
+		selec = tnumberinst_sel(root, &vardata, &constBox, cachedOp, valuetypid);
+	else if (duration == TEMPORALI)
+		selec = tnumberi_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 	else
 		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
-		selec = tnumbers_sel(root, &vardata, &constBox, cachedOp);
+		selec = tnumbers_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);
 	PG_RETURN_FLOAT8(selec);
 }
-
-/*
-	switch (cachedOp)
-	{
-		case OVERLAPS_OP:
-		case CONTAINS_OP:
-		case CONTAINED_OP:
-		case SAME_OP:
-			selec = tnumber_bbox_sel(root, vardata, constBox, cachedOp);
-			break;
-		case LEFT_OP:
-			selec = tnumber_position_sel(vardata, other, false, false);
-			break;
-		case RIGHT_OP:
-			selec = tnumber_position_sel(vardata, other, true, false);
-			break;
-		case OVERLEFT_OP:
-			selec = tnumber_position_sel(vardata, other, false, true);
-			break;
-		case OVERRIGHT_OP:
-			selec = tnumber_position_sel(vardata, other, true, true);
-			break;
-		case BEFORE_OP:
-			selec = temporal_position_sel(root, &vardata, &period, false, false, LT_OP);
-			break;
-		case AFTER_OP:
-			selec = temporal_position_sel(root, &vardata, &period, true, false, GT_OP);
-			break;
-		case OVERBEFORE_OP:
-			selec = temporal_position_sel(root, &vardata, &period, false, true, LE_OP);
-			break;
-		case OVERAFTER_OP:
-			selec = 1.0 - temporal_position_sel(root, &vardata, &period, false, false, GE_OP);
-			break;
-		default:
-			selec = 0.001;
-	}
-
-	ReleaseVariableStats(vardata);
-	CLAMP_PROBABILITY(selec);
-	PG_RETURN_FLOAT8((float8) selec);
-}
-*/
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
 
@@ -929,6 +1120,5 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
 }
-
 
 /*****************************************************************************/

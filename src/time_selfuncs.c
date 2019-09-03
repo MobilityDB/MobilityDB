@@ -67,7 +67,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 	return false;
 }
 
-double
+static double
 calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
 	StatStrategy strategy)
 {
@@ -301,6 +301,30 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 }
 
 /*
+ * Get relative position of value in histogram bin in [0,1] period.
+ */
+static float8
+get_period_position(PeriodBound *value, PeriodBound *hist1,
+					PeriodBound *hist2)
+{
+	float8		position;
+	float8		bin_width;
+
+	/* Calculate relative position using subdiff function. */
+	bin_width = period_duration_secs(hist2->val, hist1->val);
+	if (bin_width <= 0.0)
+		return 0.5;			/* zero width bin */
+
+	position = period_duration_secs(value->val, hist1->val)
+			   / bin_width;
+
+	/* Relative position must be in [0,1] period */
+	position = Max(position, 0.0);
+	position = Min(position, 1.0);
+	return position;
+}
+
+/*
  * Look up the fraction of values less than (or equal, if 'equal' argument
  * is true) a given const in a histogram of period bounds.
  */
@@ -331,6 +355,8 @@ calc_period_hist_selectivity_scalar(PeriodBound *constbound,
  * histogram which is less than (less than or equal) the given length value. If
  * all lengths in the histogram are greater than (greater than or equal) the
  * given length, returns -1.
+ * 
+ * Function copied from file rangetypes_selfuncs.c snce it is not exported
  */
 int
 length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
@@ -356,47 +382,57 @@ length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
 }
 
 /*
- * Get relative position of value in histogram bin in [0,1] period.
- */
-float8
-get_period_position(PeriodBound *value, PeriodBound *hist1,
-					PeriodBound *hist2)
-{
-	float8		position;
-	float8		bin_width;
-
-	/* Calculate relative position using subdiff function. */
-	bin_width = period_duration_secs(hist2->val, hist1->val);
-	if (bin_width <= 0.0)
-		return 0.5;			/* zero width bin */
-
-	position = period_duration_secs(value->val, hist1->val)
-			   / bin_width;
-
-	/* Relative position must be in [0,1] period */
-	position = Max(position, 0.0);
-	position = Min(position, 1.0);
-	return position;
-}
-
-/*
- * Get relative position of value in a length histogram bin in [0,1] period.
+ * Get relative position of value in a length histogram bin in [0,1] range.
+ * 
+ * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is 
+ * not exported.
  */
 double
 get_len_position(double value, double hist1, double hist2)
 {
-	/*
-	 * Both bounds are finite. The value should be finite too, because it
-	 * lies somewhere between the bounds. If it doesn't, just return
-	 * something.
-	 */
-	return 1.0 - (hist2 - value) / (hist2 - hist1);
+	if (!isinf(hist1) && !isinf(hist2))
+	{
+		/*
+		 * Both bounds are finite. The value should be finite too, because it
+		 * lies somewhere between the bounds. If it doesn't, just return
+		 * something.
+		 */
+		if (isinf(value))
+			return 0.5;
+
+		return 1.0 - (hist2 - value) / (hist2 - hist1);
+	}
+	else if (isinf(hist1) && !isinf(hist2))
+	{
+		/*
+		 * Lower bin boundary is -infinite, upper is finite. Return 1.0 to
+		 * indicate the value is infinitely far from the lower bound.
+		 */
+		return 1.0;
+	}
+	else if (isinf(hist1) && isinf(hist2))
+	{
+		/* same as above, but in reverse */
+		return 0.0;
+	}
+	else
+	{
+		/*
+		 * If both bin boundaries are infinite, they should be equal to each
+		 * other, and the value should also be infinite and equal to both
+		 * bounds. (But don't Assert that, to avoid crashing unnecessarily if
+		 * the caller messes up)
+		 *
+		 * Assume the value to lie in the middle of the infinite bounds.
+		 */
+		return 0.5;
+	}
 }
 
 /*
  * Measure distance between two period bounds.
  */
-float8
+static float8
 get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
 {
 	return period_duration_secs(bound2->val, bound1->val);
@@ -406,6 +442,9 @@ get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
  * Calculate the average of function P(x), in the interval [length1, length2],
  * where P(x) is the fraction of tuples with length < x (or length <= x if
  * 'equal' is true).
+ * 
+ * Function copied from PostgreSQL file rangetypes_selfuncs.c since it is
+ * not exported.
  */
 double
 calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
@@ -424,6 +463,10 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 
 	if (length2 < 0.0)
 		return 0.0;				/* shouldn't happen, but doesn't hurt to check */
+
+	/* All lengths in the table are <= infinite. */
+	if (isinf(length2) && equal)
+		return 1.0;
 
 	/*----------
 	 * The average of a function between A and B can be calculated by the
@@ -534,8 +577,8 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 		if (DatumGetFloat8(length_hist_values[i]) == DatumGetFloat8(length_hist_values[i + 1]))
 			pos = 0.0;
 		else
-			pos = get_len_position(length2, DatumGetFloat8(length_hist_values[i]),
-								   DatumGetFloat8(length_hist_values[i + 1]));
+			pos = get_len_position(length2, DatumGetFloat8(length_hist_values[i]), 
+				DatumGetFloat8(length_hist_values[i + 1]));
 	}
 	PB = (((double) i) + pos) / (double) (length_hist_nvalues - 1);
 
@@ -545,8 +588,15 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 	/*
 	 * Ok, we have calculated the area, ie. the integral. Divide by width to
 	 * get the requested average.
+	 *
+	 * Avoid NaN arising from infinite / infinite. This happens at least if
+	 * length2 is infinite. It's not clear what the correct value would be in
+	 * that case, so 0.5 seems as good as any value.
 	 */
-	frac = area / (length2 - length1);
+	if (isinf(area) && isinf(length2))
+		frac = 0.5;
+	else
+		frac = area / (length2 - length1);
 
 	return frac;
 }
