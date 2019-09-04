@@ -1809,26 +1809,29 @@ temporal_extra_info(VacAttrStats *stats)
     if (stats->attrtypmod == TEMPORALINST)
     {
         time_typentry = lookup_type_cache(TIMESTAMPTZOID,
-                                          TYPECACHE_EQ_OPR |
                                           TYPECACHE_CMP_PROC_FINFO |
                                           TYPECACHE_HASH_PROC_FINFO);
-        extra_data->time_type_id = time_typentry->type_id;
-        extra_data->time_eq_opr = time_typentry->eq_opr;
-        extra_data->time_typbyval = time_typentry->typbyval;
-        extra_data->time_typlen = time_typentry->typlen;
-        extra_data->time_typalign = time_typentry->typalign;
+        extra_data->time_type_id = TIMESTAMPTZOID;
+        extra_data->time_eq_opr = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+        extra_data->time_typbyval = false;
+        extra_data->time_typlen = sizeof(TimestampTz);
+        extra_data->time_typalign = 'd';
         extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
         extra_data->time_hash = &time_typentry->hash_proc_finfo;
     }
     else
     {
-        extra_data->time_type_id = type_oid(T_PERIOD);
-        extra_data->time_eq_opr = oper_oid(EQ_OP, extra_data->time_type_id, extra_data->time_type_id);
+		Oid oid = type_oid(T_PERIOD);
+        time_typentry = lookup_type_cache(oid,
+                                          TYPECACHE_CMP_PROC_FINFO |
+                                          TYPECACHE_HASH_PROC_FINFO);
+        extra_data->time_type_id = oid;
+        extra_data->time_eq_opr = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
         extra_data->time_typbyval = false;
         extra_data->time_typlen = sizeof(Period);
         extra_data->time_typalign = 'd';
-        // extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
-        // extra_data->time_hash = &time_typentry->hash_proc_finfo;
+        extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
+        extra_data->time_hash = &time_typentry->hash_proc_finfo;
     }
 
 	extra_data->std_extra_data = stats->extra_data;

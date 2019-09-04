@@ -490,13 +490,14 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box,
 	double cellWidth, imin, imax, iwidth;
 
 	/* Work out some measurements of the histogram */
-	/* Cell size in each dim */
-	cell_size[dim] = (nd_stats->extent.max[dim] - nd_stats->extent.min[dim]) / nd_stats->size[dim];
+	/* Cell size in requested dim */
+	cell_size[dim] = (nd_stats->extent.max[dim] - nd_stats->extent.min[dim]) / 
+		nd_stats->size[dim];
 
 	if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
 	{
-		at[1] = nd_ibox->max[1];
 		at[0] = nd_ibox->max[0];
+		at[1] = nd_ibox->max[1];
 	}
 	else
 	{
@@ -570,8 +571,8 @@ z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box,
 
 /* Estimate the selectivity of temporal points */
 static Selectivity
-tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, const STBOX *box,
-					 CachedOp op)
+tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
+	const STBOX *box, CachedOp op)
 {
 	int d; /* counter */
 	ND_BOX nd_box;
@@ -589,7 +590,7 @@ tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, co
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, InvalidOid,
-									ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
+								 ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
 	{
 		return -1;
 	}
@@ -602,7 +603,7 @@ tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, co
 	/* Calculate the overlap of the box on the histogram */
 	if (!nd_stats)
 	{
-		elog(NOTICE, " tpoint_selectivity called with null input");
+		elog(NOTICE, "tpoint_selectivity called with null input");
 		return FALLBACK_ND_SEL;
 	}
 
