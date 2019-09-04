@@ -26,11 +26,11 @@
  * are not exported
  *****************************************************************************/
 
-/**
-* Given an n-d index array (counter), and a domain to increment it
-* in (ibox) increment it by one, unless it's already at the max of
-* the domain, in which case return false.
-*/
+/*
+ * Given an n-d index array (counter), and a domain to increment it
+ * in (ibox) increment it by one, unless it's already at the max of
+ * the domain, in which case return false.
+ */
 static int
 nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 {
@@ -53,7 +53,7 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 	return true;
 }
 
-/** Zero out an ND_BOX */
+/* Zero out an ND_BOX */
 static int
 nd_box_init(ND_BOX *a)
 {
@@ -61,37 +61,196 @@ nd_box_init(ND_BOX *a)
 	return true;
 }
 
-/**
-* Given a position in the n-d histogram (i,j,k) return the
-* position in the 1-d values array.
-*/
+/*
+ * Given a position in the n-d histogram (i,j,k,l) return the
+ * position in the 1-d values array.
+ */
 static int
 nd_stats_value_index(const ND_STATS *stats, int *indexes)
 {
 	int d;
 	int accum = 1, vdx = 0;
 
-	/* Calculate the index into the 1-d values array that the (i,j,k,l) */
-	/* n-d histogram coordinate implies. */
-	/* index = x + y * sizex + z * sizex * sizey + m * sizex * sizey * sizez */
+	/* Calculate the index into the 1-d values array that the (i,j,k,l) 
+	 * n-d histogram coordinate implies. 
+	 * index = x + y * sizex + z * sizex * sizey + m * sizex * sizey * sizez */
 	for (d = 0; d < (int) (stats->ndims); d++)
 	{
 		int size = (int) (stats->size[d]);
 		if (indexes[d] < 0 || indexes[d] >= size)
-		{
 			return -1;
-		}
 		vdx += indexes[d] * accum;
 		accum *= size;
 	}
 	return vdx;
 }
 
-/**
-* Returns the proportion of b2 that is covered by b1.
-*/
+/*
+ * What stats cells overlap with this ND_BOX? Put the lowest cell
+ * addresses in ND_IBOX->min and the highest in ND_IBOX->max
+ */
+static int
+nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
+{
+	int d;
+
+	/* Initialize ibox */
+	memset(nd_ibox, 0, sizeof(ND_IBOX));
+
+	/* In each dimension... */
+	for (d = 0; d < nd_stats->ndims; d++)
+	{
+		double smin = nd_stats->extent.min[d];
+		double smax = nd_stats->extent.max[d];
+		double width = smax - smin;
+		int size = roundf(nd_stats->size[d]);
+
+		/* ... find cells the box overlaps with in this dimension */
+		nd_ibox->min[d] = floor(size * (nd_box->min[d] - smin) / width);
+		nd_ibox->max[d] = floor(size * (nd_box->max[d] - smin) / width);
+
+		/* Push any out-of range values into range */
+		nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
+		nd_ibox->max[d] = Min(nd_ibox->max[d], size - 1);
+	}
+	return true;
+}
+
+/*****************************************************************************
+ * Boolean functions for the operators
+ * The first two functions are copied from PostGIS
+ *****************************************************************************/
+
+/* Return true if a overlaps b, false otherwise. */
+static int
+nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
+{
+	int d;
+	for (d = 0; d < ndims; d++)
+	{
+		if ((a->min[d] > b->max[d]) || (a->max[d] < b->min[d]))
+			return false;
+	}
+	return true;
+}
+
+/* Return true if a contains b, false otherwise. */
+static int
+nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
+{
+	int d;
+	for (d = 0; d < ndims; d++)
+	{
+		if (!((a->min[d] < b->min[d]) && (a->max[d] > b->max[d])))
+			return false;
+	}
+	return true;
+}
+
+/* Return true if a is strictly left of b, false otherwise. */
+
+bool
+nd_box_left(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[X_DIM] < b->min[X_DIM]);
+}
+
+/* Return true if a does not extend to right of b, false otherwise. */
+
+bool
+nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[X_DIM] <= b->max[X_DIM]);
+}
+
+/* Return true if a is strictly right of b, false otherwise. */
+
+bool
+nd_box_right(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[X_DIM] > b->max[X_DIM]);
+}
+
+/* Return true if a does not extend to left of b, false otherwise. */
+
+bool
+nd_box_overright(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[X_DIM] >= b->min[X_DIM]);
+}
+
+/* Return true if a is strictly below of b, false otherwise. */
+
+bool
+nd_box_below(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[Y_DIM] < b->min[Y_DIM]);
+}
+
+/* Return true if a does not extend above of b, false otherwise. */
+
+bool
+nd_box_overbelow(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[Y_DIM] <= b->max[Y_DIM]);
+}
+
+/* Return true if a is strictly above of b, false otherwise. */
+
+bool
+nd_box_above(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[Y_DIM] > b->max[Y_DIM]);
+}
+
+/* Return true if a does not extend below of b, false otherwise. */
+
+bool
+nd_box_overabove(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[Y_DIM] >= b->min[Y_DIM]);
+}
+
+/* Return true if a is strictly front of b, false otherwise. */
+
+bool
+nd_box_front(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[Z_DIM] < b->min[Z_DIM]);
+}
+
+/* Return true if a does not extend to the back of b, false otherwise. */
+
+bool
+nd_box_overfront(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->max[Z_DIM] <= b->max[Z_DIM]);
+}
+
+/* Return true if a strictly back of b, false otherwise. */
+
+bool
+nd_box_back(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[Z_DIM] > b->max[Z_DIM]);
+}
+
+/* Return true if a does not extend to the front of b, false otherwise. */
+
+bool
+nd_box_overback(const ND_BOX *a, const ND_BOX *b)
+{
+	return (a->min[Z_DIM] >= b->min[Z_DIM]);
+}
+
+/*****************************************************************************
+ * Proportion functions for the operators
+ * The first function is copied from PostGIS
+ *****************************************************************************/
+
+/* Returns the proportion of b2 that is covered by b1. */
 static double
-nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
 	int d;
 	bool covered = true;
@@ -134,65 +293,239 @@ nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 	return ivol / vol2;
 }
 
-/**
-* Return true if #ND_BOX a contains b, false otherwise.
-*/
-static int
-nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
+/* Returns the proportion of b2 that is left of b1. */
+static double
+nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
-	int d;
-	for (d = 0; d < ndims; d++)
-	{
-		if (!((a->min[d] < b->min[d]) && (a->max[d] > b->max[d])))
-			return false;
-	}
-	return true;
+	double delta, width;
+
+	if (nd_box_overright(b2, b1))
+		return 0.0; 
+	else if (nd_box_left(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the left of b1 */
+	delta = b1->min[X_DIM] - b2->min[X_DIM];
+	width = b2->max[X_DIM] - b2->min[X_DIM];
+	return delta / width;
 }
 
-/**
-* What stats cells overlap with this ND_BOX? Put the lowest cell
-* addresses in ND_IBOX->min and the highest in ND_IBOX->max
-*/
-static int
-nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
+/* Returns the proportion of b2 that is overleft of b1. */
+static double
+nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
-	int d;
+	double delta, width;
 
-	/* Initialize ibox */
-	memset(nd_ibox, 0, sizeof(ND_IBOX));
+	if (nd_box_right(b2, b1))
+		return 0.0; 
+	else if (nd_box_overleft(b2, b1))
+		return 1.0;
 
-	/* In each dimension... */
-	for (d = 0; d < nd_stats->ndims; d++)
-	{
-		double smin = nd_stats->extent.min[d];
-		double smax = nd_stats->extent.max[d];
-		double width = smax - smin;
-		int size = roundf(nd_stats->size[d]);
-
-		/* ... find cells the box overlaps with in this dimension */
-		nd_ibox->min[d] = floor(size * (nd_box->min[d] - smin) / width);
-		nd_ibox->max[d] = floor(size * (nd_box->max[d] - smin) / width);
-
-		/* Push any out-of range values into range */
-		nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
-		nd_ibox->max[d] = Min(nd_ibox->max[d], size - 1);
-	}
-	return true;
+	/* b2 is partially to the right of b1 */
+	delta = b2->max[X_DIM] - b1->max[X_DIM];
+	width = b2->max[X_DIM] - b2->min[X_DIM];
+	return delta / width;
 }
 
-/**
-* Return true if #ND_BOX a overlaps b, false otherwise.
-*/
-static int
-nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
+/* Returns the proportion of b2 that is right of b1. */
+static double
+nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 {
-	int d;
-	for (d = 0; d < ndims; d++)
-	{
-		if ((a->min[d] > b->max[d]) || (a->max[d] < b->min[d]))
-			return false;
-	}
-	return true;
+	double delta, width;
+
+	if (nd_box_overleft(b2, b1))
+		return 0.0; 
+	else if (nd_box_right(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the right of b1 */
+	delta = b2->max[X_DIM] - b1->max[X_DIM];
+	width = b2->max[X_DIM] - b2->min[X_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is overright of b1. */
+static double
+nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_left(b2, b1))
+		return 0.0; 
+	else if (nd_box_overright(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the left of b1 */
+	delta = b1->min[X_DIM] - b2->min[X_DIM];
+	width = b2->max[X_DIM] - b2->min[X_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is below of b1. */
+static double
+nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_overabove(b2, b1))
+		return 0.0; 
+	else if (nd_box_below(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the below of b1 */
+	delta = b1->min[Y_DIM] - b2->min[Y_DIM];
+	width = b2->max[Y_DIM] - b2->min[Y_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is overbelow of b1. */
+static double
+nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_above(b2, b1))
+		return 0.0; 
+	else if (nd_box_overbelow(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the above of b1 */
+	delta = b2->max[Y_DIM] - b1->max[Y_DIM];
+	width = b2->max[Y_DIM] - b2->min[Y_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is above of b1. */
+static double
+nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_overbelow(b2, b1))
+		return 0.0; 
+	else if (nd_box_above(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the above of b1 */
+	delta = b2->max[Y_DIM] - b1->max[Y_DIM];
+	width = b2->max[Y_DIM] - b2->min[Y_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is overabove of b1. */
+static double
+nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_below(b2, b1))
+		return 0.0; 
+	else if (nd_box_overabove(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the below of b1 */
+	delta = b1->min[Y_DIM] - b2->min[Y_DIM];
+	width = b2->max[Y_DIM] - b2->min[Y_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is front of b1. */
+static double
+nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_overback(b2, b1))
+		return 0.0; 
+	else if (nd_box_front(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the front of b1 */
+	delta = b1->min[Z_DIM] - b2->min[Z_DIM];
+	width = b2->max[Z_DIM] - b2->min[Z_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is overfront of b1. */
+static double
+nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_back(b2, b1))
+		return 0.0; 
+	else if (nd_box_overfront(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the back of b1 */
+	delta = b2->max[Z_DIM] - b1->max[Z_DIM];
+	width = b2->max[Z_DIM] - b2->min[Z_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is back of b1. */
+static double
+nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_overfront(b2, b1))
+		return 0.0; 
+	else if (nd_box_back(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the back of b1 */
+	delta = b2->max[Z_DIM] - b1->max[Z_DIM];
+	width = b2->max[Z_DIM] - b2->min[Z_DIM];
+	return delta / width;
+}
+
+/* Returns the proportion of b2 that is overback of b1. */
+static double
+nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+{
+	double delta, width;
+
+	if (nd_box_front(b2, b1))
+		return 0.0; 
+	else if (nd_box_overback(b2, b1))
+		return 1.0;
+
+	/* b2 is partially to the front of b1 */
+	delta = b1->min[Z_DIM] - b2->min[Z_DIM];
+	width = b2->max[Z_DIM] - b2->min[Z_DIM];
+	return delta / width;
+}
+
+/* Dispatch function for the position operators */
+static double
+nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, int ndims, CachedOp op)
+{
+	if (op == LEFT_OP)
+		return nd_box_ratio_left(b1, b2, ndims);
+	else if (op == OVERLEFT_OP)
+		return nd_box_ratio_overleft(b1, b2, ndims);
+	else if (op == RIGHT_OP)
+		return nd_box_ratio_right(b1, b2, ndims);
+	else if (op == OVERRIGHT_OP)
+		return nd_box_ratio_overright(b1, b2, ndims);
+	else if (op == BELOW_OP)
+		return nd_box_ratio_below(b1, b2, ndims);
+	else if (op == OVERBELOW_OP)
+		return nd_box_ratio_overbelow(b1, b2, ndims);
+	else if (op == ABOVE_OP)
+		return nd_box_ratio_above(b1, b2, ndims);
+	else if (op == OVERABOVE_OP)
+		return nd_box_ratio_overabove(b1, b2, ndims);
+	else if (op == FRONT_OP)
+		return nd_box_ratio_front(b1, b2, ndims);
+	else if (op == OVERFRONT_OP)
+		return nd_box_ratio_overfront(b1, b2, ndims);
+	else if (op == BACK_OP)
+		return nd_box_ratio_back(b1, b2, ndims);
+	else if (op == OVERBACK_OP)
+		return nd_box_ratio_overback(b1, b2, ndims);
+	return FALLBACK_ND_SEL; /* make compiler quiet */
 }
 
 /*****************************************************************************
@@ -322,480 +655,206 @@ default_tpoint_selectivity(CachedOp operator)
 	}
 }
 
-/** Estimate the selectivity for relative position x/y operators */
-static double
-xy_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, 
-	const ND_STATS *nd_stats, CachedOp cacheOp, int mainDim)
+/*
+ * This function returns an estimate of the selectivity of a search STBOX by
+ * looking at data in the ND_STATS structure. The selectivity is a float from 
+ * 0-1, that estimates the proportion of the rows in the table that will be 
+ * returned as a result of the search box.
+ *
+ * To get our estimate, we need sum up the values * the proportion of each 
+ * cell in the histogram that satisfies the operator wrt the search box, 
+ * then divide by the number of features that generated the histogram.
+ *
+ * This function generalizes PostGIS function estimate_selectivity in file
+ * gserialized_estimate.c
+ */
+static float8
+calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 {
-	double total_count = 0.0;
-	float cell_count, ratio;
-	float8 selectivity;
-	double cell_size[ND_DIMS];
-	int at[ND_DIMS];
-	double cellWidth, imin, imax, iwidth;
-	int secondDim;
-	if (mainDim == X_DIM)
-		secondDim = Y_DIM;
-	else
-		secondDim = X_DIM;
-
-	/* Check the scope of the box with the extent */
-	switch (cacheOp)
-	{
-		case LEFT_OP:
-		case OVERLEFT_OP:
-		case BELOW_OP:
-		case OVERBELOW_OP:
-		{
-			if ((nd_stats->extent.min[mainDim]) > nd_box->min[mainDim])
-				return 0.0;
-			else if (nd_box->min[mainDim] >= (nd_stats->extent.max[mainDim]))
-				return 1.0;
-			break;
-		}
-		case RIGHT_OP:
-		case OVERRIGHT_OP:
-		case ABOVE_OP:
-		case OVERABOVE_OP:
-		{
-			if (nd_stats->extent.max[mainDim]  < nd_box->max[mainDim])
-				return 0.0;
-			else if (nd_box->max[mainDim] <= nd_stats->extent.min[mainDim] )
-				return 1.0;
-			break;
-		}
-		default:
-			break;
-	}
-	/* Work out some measurements of the histogram */
-	/* Cell size in each dim */
-	cell_size[mainDim] = (nd_stats->extent.max[mainDim] - 
-		nd_stats->extent.min[mainDim]) / nd_stats->size[mainDim];
-
-	at[mainDim] = nd_ibox->min[mainDim];
-
-	if (cacheOp == ABOVE_OP || cacheOp == OVERBELOW_OP	||
-		cacheOp == RIGHT_OP || cacheOp == OVERLEFT_OP)
-		at[secondDim] = nd_ibox->max[secondDim];
-	else
-		at[secondDim] = nd_ibox->min[secondDim];
-
-	/* Loop through the rows and columns */
-	for (int i = 0; i < nd_stats->size[mainDim]; i++)
-	{
-		at[mainDim] = i;
-		ND_BOX nd_cell;
-		memset(&nd_cell, 0, sizeof(ND_BOX));
-
-		/* We have to pro-rate partially overlapped cells. */
-		nd_cell.min[mainDim] = (float4) (nd_stats->extent.min[mainDim] + 
-			(at[mainDim] + 0) * cell_size[mainDim]);
-		nd_cell.max[mainDim] = (float4) (nd_stats->extent.min[mainDim] + 
-			(at[mainDim] + 1) * cell_size[mainDim]);
-		if (mainDim == X_DIM)
-			cell_count = nd_stats->value[i * (int)nd_stats->size[1] + at[1]];
-		else
-			cell_count = nd_stats->value[at[0] * (int)nd_stats->size[1] + i];
-
-		cellWidth = nd_cell.max[mainDim] - nd_cell.min[mainDim];
-		imin = Max(nd_box->min[mainDim], nd_box->min[mainDim]);
-		imax = Min(nd_cell.max[mainDim], nd_cell.max[mainDim]);
-		iwidth = imax - imin;
-		iwidth = Max(0.0, iwidth);
-
-		if (cacheOp == ABOVE_OP || cacheOp == OVERABOVE_OP	||
-			cacheOp == RIGHT_OP || cacheOp == OVERRIGHT_OP)
-			ratio= (float) (iwidth / cellWidth);
-		else
-			ratio = 1.0f - (float) (iwidth / cellWidth);
-
-		if (ratio > 1.0)
-			ratio = (float) (cellWidth / iwidth);
-		else if (ratio < 0.0)
-			ratio = 0.0;
-
-		/* Add the pro-rated count for this cell to the overall total */
-		total_count += cell_count * ratio;
-
-		/* Count the rest features */
-		switch (cacheOp)
-		{
-			case LEFT_OP:
-			case OVERLEFT_OP:
-			case BELOW_OP:
-			case OVERBELOW_OP:
-			{
-				if (mainDim == X_DIM)
-				{
-					for (int j = at[1] - 1; j >= 0; j--)
-					{
-						cell_count = nd_stats->value[i * (int)nd_stats->size[1] + j];
-						total_count += cell_count;
-					}
-				}
-				else
-				{
-					for (int j = at[0] - 1; j >= 0; j--)
-					{
-						cell_count = nd_stats->value[j * (int)nd_stats->size[1] + i];
-						total_count += cell_count;
-					}
-				}
-				break;
-			}
-			case RIGHT_OP:
-			case OVERRIGHT_OP:
-			case ABOVE_OP:
-			case OVERABOVE_OP:
-			{
-				if (mainDim == X_DIM)
-				{
-					for (int j = at[1] + 1; j < nd_stats->size[secondDim]; j++)
-					{
-						cell_count = nd_stats->value[i * (int)nd_stats->size[1] + j];
-						total_count += cell_count;
-					}
-				}
-				else
-				{
-					for (int j = at[0] + 1; j < nd_stats->size[secondDim]; j++)
-					{
-						cell_count = nd_stats->value[j * (int)nd_stats->size[1] + i];
-						total_count += cell_count;
-					}
-				}
-				break;
-			}
-			default:
-				break;
-		}
-
-	}
-	/* Scale by the number of features in our histogram to get the proportion */
-	selectivity = total_count / nd_stats->histogram_features;
-
-	return selectivity;
-}
-
-/** Estimate the selectivity for relative position z operators */
-static double
-z_position_sel(const ND_IBOX *nd_ibox, const ND_BOX *nd_box, 
-	const ND_STATS *nd_stats, CachedOp cacheOp, int dim)
-{
-	double total_count = 0.0;
-	float cell_count, ratio;
-	float8 selectivity;
-	double cell_size[ND_DIMS];
-	int at[ND_DIMS];
-	double cellWidth, imin, imax, iwidth;
-
-	/* Work out some measurements of the histogram */
-	/* Cell size in requested dim */
-	cell_size[dim] = (nd_stats->extent.max[dim] - nd_stats->extent.min[dim]) / 
-		nd_stats->size[dim];
-
-	if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
-	{
-		at[0] = nd_ibox->max[0];
-		at[1] = nd_ibox->max[1];
-	}
-	else
-	{
-		at[0] = nd_ibox->min[0];
-		at[1] = nd_ibox->min[1];
-	}
-
-	for (int i = 0; i < nd_stats->size[Z_DIM]; i++)
-	{
-		at[Z_DIM] = i;
-		ND_BOX nd_cell;
-		memset(&nd_cell, 0, sizeof(ND_BOX));
-
-		/* We have to pro-rate partially overlapped cells. */
-		nd_cell.min[Z_DIM] = (float4)(nd_stats->extent.min[Z_DIM] + (at[Z_DIM] + 0) * cell_size[Z_DIM]);
-		nd_cell.max[Z_DIM] = (float4)(nd_stats->extent.min[Z_DIM] + (at[Z_DIM] + 1) * cell_size[Z_DIM]);
-		cell_count = nd_stats->value[at[X_DIM] + at[Y_DIM] * (int)nd_stats->size[X_DIM] +
-									 at[Z_DIM] * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
-
-		cellWidth = nd_cell.max[Z_DIM] - nd_cell.min[Z_DIM];
-		imin = Max(nd_box->min[Z_DIM], nd_box->min[Z_DIM]);
-		imax = Min(nd_cell.max[Z_DIM], nd_cell.max[Z_DIM]);
-		iwidth = imax - imin;
-		iwidth = Max(0.0, iwidth);
-
-		if (cacheOp == BACK_OP || cacheOp == OVERFRONT_OP)
-			ratio = (float)(iwidth / cellWidth);
-		else
-			ratio = 1.0f - (float)(iwidth / cellWidth);
-
-		if (ratio > 1.0)
-			ratio = (float)(cellWidth / iwidth);
-		else if (ratio < 0.0)
-			ratio = 0.0;
-
-		/* Add the pro-rated count for this cell to the overall total */
-		total_count += cell_count * ratio;
-
-		/* Count the rest features */
-		if (cacheOp == BACK_OP || cacheOp == OVERBACK_OP)
-		{
-			for (int x = at[X_DIM] - 1; x >= 0; x--)
-			{
-				for (int y = at[Y_DIM] - 1; y >= 0; y--)
-				{
-					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIM] +
-												 i * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
-					total_count += cell_count;
-				}
-			}
-		}
-		else if (cacheOp == FRONT_OP || cacheOp == OVERFRONT_OP)
-		{
-			for (int x = at[X_DIM] + 1; x < nd_stats->size[0]; x++)
-			{
-				for (int y = at[Y_DIM] + 1; y < nd_stats->size[1]; y++)
-				{
-					cell_count = nd_stats->value[x + y * (int)nd_stats->size[X_DIM] +
-												 i * (int)nd_stats->size[X_DIM] * (int)nd_stats->size[Y_DIM]];
-					total_count += cell_count;
-				}
-			}
-		}
-	}
-
-	/* Scale by the number of features in our histogram to get the proportion */
-	selectivity = total_count / nd_stats->histogram_features;
-
-	return selectivity;
-}
-
-/* Estimate the selectivity of temporal points */
-static Selectivity
-tpoint_selectivity(PlannerInfo *root, VariableStatData *vardata, Node *other, 
-	const STBOX *box, CachedOp op)
-{
+	ND_STATS *nd_stats;
+	AttStatsSlot sslot;	
 	int d; /* counter */
+	float8 selectivity;
 	ND_BOX nd_box;
-	ND_IBOX nd_ibox;
+	ND_IBOX nd_ibox, search_ibox;
 	int at[ND_DIMS];
 	double cell_size[ND_DIMS];
 	double min[ND_DIMS];
 	double max[ND_DIMS];
-	Selectivity selec = 0.0; /* keep compiler quiet */
-	ND_STATS *nd_stats;
-	AttStatsSlot sslot;
-	Period period;
+	double total_count = 0.0;
+	int ndims_max;
+	/* 
+	 * The statistics currently collected by PostGIS does not allow us to
+	 * differentiate between the bounding box operators for computing the
+	 * selectivity. 
+	 */
+	bool bboxop = (op == OVERLAPS_OP || op == CONTAINS_OP ||
+		op == CONTAINED_OP || op == SAME_OP);
 
-	// stbox_to_period(&period, box);
-
+	/* Get statistics */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, InvalidOid,
-								 ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
-	{
+		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, 
+			InvalidOid, ATTSTATSSLOT_NUMBERS, VALUE_STATISTICS)))
 		return -1;
-	}
 	/* Clone the stats here so we can release the attstatsslot immediately */
 	nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
 	memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
 
-	free_attstatsslot(&sslot);
-
-	/* Calculate the overlap of the box on the histogram */
-	if (!nd_stats)
-	{
-		elog(NOTICE, "tpoint_selectivity called with null input");
-		return FALLBACK_ND_SEL;
-	}
+	free_attstatsslot(&sslot);		
+	/* Calculate the number of common coordinate dimensions  on the histogram */
+	ndims_max = Max(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
 
 	/* Initialize nd_box. */
 	nd_box_from_stbox(box, &nd_box);
 
-	/*
-	 * To return 2D stats on an ND sample, we need to make the
-	 * 2D box cover the full range of the other dimensions in the
-	 * histogram.
-	 */
-
-	int ndims_max = (int)nd_stats->ndims;
-
-	/*
-	 * Search box completely misses histogram extent?
-	 * We have to intersect in all N dimensions or else we have
-	 * zero interaction under the &&& operator. It's important
-	 * to short circuit in this case, as some of the tests below
-	 * will return junk results when run on non-intersecting inputs.
-	 */
-	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP) &&
-		!nd_box_intersects(&nd_box, &(nd_stats->extent), ndims_max))
+	/* Full histogram extent op box is false? */
+	if (bboxop)
 	{
-		return 0.0;
+	 	if(! nd_box_intersects(&(nd_stats->extent), &nd_box, ndims_max))
+			return 0.0;
+	}
+	else
+	{
+		if ((op == LEFT_OP && nd_box_overright(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERLEFT_OP && nd_box_right(&(nd_stats->extent), &nd_box)) ||
+			(op == RIGHT_OP && nd_box_overleft(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERRIGHT_OP && nd_box_left(&(nd_stats->extent), &nd_box)) ||
+
+			(op == BELOW_OP && nd_box_overabove(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERBELOW_OP && nd_box_above(&(nd_stats->extent), &nd_box)) ||
+			(op == ABOVE_OP && nd_box_overbelow(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERABOVE_OP && nd_box_below(&(nd_stats->extent), &nd_box)) ||
+
+			(op == FRONT_OP && nd_box_overback(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERFRONT_OP && nd_box_back(&(nd_stats->extent), &nd_box)) ||
+			(op == BACK_OP && nd_box_overfront(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERBACK_OP && nd_box_front(&(nd_stats->extent), &nd_box)))
+			return 0.0;
 	}
 
-	/* Search box completely contains histogram extent! */
-	if ((op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP) &&
-		nd_box_contains(&nd_box, &(nd_stats->extent), ndims_max) )
+	/* Full histogram extent op box is true? */
+	if (bboxop)
 	{
-		return 1.0;
+	 	if(! nd_box_contains(&(nd_stats->extent), &nd_box, ndims_max))
+			return 1.0;
 	}
+	else
+	{
+		if ((op == LEFT_OP && nd_box_left(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERLEFT_OP && nd_box_overleft(&(nd_stats->extent), &nd_box)) ||
+			(op == RIGHT_OP && nd_box_right(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERRIGHT_OP && nd_box_overright(&(nd_stats->extent), &nd_box)) ||
 
+			(op == BELOW_OP && nd_box_below(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERBELOW_OP && nd_box_overbelow(&(nd_stats->extent), &nd_box)) ||
+			(op == ABOVE_OP && nd_box_above(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERABOVE_OP && nd_box_overabove(&(nd_stats->extent), &nd_box)) ||
+
+			(op == FRONT_OP && nd_box_front(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERFRONT_OP && nd_box_overfront(&(nd_stats->extent), &nd_box)) ||
+			(op == BACK_OP && nd_box_back(&(nd_stats->extent), &nd_box)) ||
+			(op == OVERBACK_OP && nd_box_overback(&(nd_stats->extent), &nd_box)))
+			return 1.0;
+	}
+	
 	/* Calculate the overlap of the box on the histogram */
-	if (!nd_box_overlap(nd_stats, &nd_box, &nd_ibox))
+	if (! nd_box_overlap(nd_stats, &nd_box, &nd_ibox))
 	{
 		return FALLBACK_ND_SEL;
 	}
 
-	if (op == OVERLAPS_OP || op == CONTAINS_OP || op == CONTAINED_OP || op == SAME_OP)
+	/* Work out some measurements of the histogram */
+	for (d = 0; d < nd_stats->ndims; d++)
 	{
-		/* Work out some measurements of the histogram */
+		/* Cell size in each dim */
+		min[d] = nd_stats->extent.min[d];
+		max[d] = nd_stats->extent.max[d];
+		cell_size[d] = (max[d] - min[d]) / nd_stats->size[d];
+	}
+
+	/* Determine the cells to traverse */
+	memset(&search_ibox, 0, sizeof(ND_IBOX));
+	if (bboxop)
+		/* Traverse only the cells that overlap the box */
 		for (d = 0; d < nd_stats->ndims; d++)
 		{
-			/* Cell size in each dim */
-			min[d] = nd_stats->extent.min[d];
-			max[d] = nd_stats->extent.max[d];
-			cell_size[d] = (max[d] - min[d]) / nd_stats->size[d];
-
-			/* Initialize the counter */
-			at[d] = nd_ibox.min[d];
+			search_ibox.min[d] = nd_ibox.min[d];
+			search_ibox.max[d] = nd_ibox.max[d];
 		}
-	}
-
-	switch (op)
+	else
 	{
-		case OVERLAPS_OP:
-		case SAME_OP:
+		/* Initialize to traverse all the cells */
+		for (d = 0; d < nd_stats->ndims; d++)
 		{
-			double total_count = 0.0;
-			do
-			{
-				float cell_count, ratio;
-				ND_BOX nd_cell;
-				memset(&nd_cell, 0, sizeof(ND_BOX));
-
-				/* We have to pro-rate partially overlapped cells. */
-				for (d = 0; d < nd_stats->ndims; d++)
-				{
-					nd_cell.min[d] = (float4)(min[d] + (at[d] + 0) * cell_size[d]);
-					nd_cell.max[d] = (float4)(min[d] + (at[d] + 1) * cell_size[d]);
-				}
-				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
-				ratio = (float4)nd_box_ratio(&nd_box, &nd_cell, (int) nd_stats->ndims);
-
-				/* Add the pro-rated count for this cell to the overall total */
-				total_count += cell_count * ratio;
-			} while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
-
-			/* Scale by the number of features in our histogram to get the proportion */
-			selec = total_count / nd_stats->histogram_features;
-
-			return selec;
+			search_ibox.min[d] = 0;
+			search_ibox.max[d] = nd_stats->size[d] - 1;
+			/* Initialize the counter */
+			at[d] = search_ibox.min[d];
 		}
-		case CONTAINS_OP:
-		{
-			selec = FLT_MIN;
-			double maxx = 0;
-			do
-			{
-				float cell_count, ratio;
-				ND_BOX nd_cell;
-				memset(&nd_cell, 0, sizeof(ND_BOX));
-
-				/* We have to pro-rate partially overlapped cells. */
-				for (d = 0; d < nd_stats->ndims; d++)
-				{
-					nd_cell.min[d] = (float4)(min[d] + (at[d] + 0) * cell_size[d]);
-					nd_cell.max[d] = (float4)(min[d] + (at[d] + 1) * cell_size[d]);
-				}
-
-				ratio = (float4)nd_box_ratio(&nd_box, &nd_cell, (int)nd_stats->ndims);
-				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
-
-				maxx = cell_count * ratio;
-				if (selec < maxx)
-					selec = maxx;
-			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
-
-			/* Scale by the number of features in our histogram to get the proportion */
-			selec = selec / nd_stats->histogram_features;
-
-			return selec;
-		}
-		case CONTAINED_OP:
-		{
-			selec = FLT_MAX;
-			double minx;
-			do
-			{
-				float cell_count, ratio;
-				ND_BOX nd_cell;
-				memset(&nd_cell, 0, sizeof(ND_BOX));
-
-				/* We have to pro-rate partially overlapped cells. */
-				for (d = 0; d < nd_stats->ndims; d++)
-				{
-					nd_cell.min[d] = (float4)(min[d] + (at[d] + 0) * cell_size[d]);
-					nd_cell.max[d] = (float4)(min[d] + (at[d] + 1) * cell_size[d]);
-				}
-
-				ratio = (float4)nd_box_ratio(&nd_box, &nd_cell, (int)nd_stats->ndims);
-				cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
-
-				minx = cell_count * ratio;
-				if (selec > minx)
-					selec = minx;
-			} while (nd_increment(&nd_ibox, (int)nd_stats->ndims, at));
-			return selec;
-		}
-		case LEFT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, LEFT_OP, X_DIM);
-			return selec;
-		case RIGHT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, RIGHT_OP, X_DIM);
-			return selec;
-		case OVERLEFT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERLEFT_OP, X_DIM);
-			return selec;
-		case OVERRIGHT_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERRIGHT_OP, X_DIM);
-			return selec;
-		case BELOW_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, BELOW_OP, Y_DIM);
-			return selec;
-		case ABOVE_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, ABOVE_OP, Y_DIM);
-			return selec;
-		case OVERABOVE_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERABOVE_OP, Y_DIM);
-			return selec;
-		case OVERBELOW_OP:
-			selec = xy_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBELOW_OP, Y_DIM);
-			return selec;
-		case FRONT_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, FRONT_OP, Z_DIM);
-			return selec;
-		case BACK_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, BACK_OP, Z_DIM);
-			return selec;
-		case OVERFRONT_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERFRONT_OP, Z_DIM);
-			return selec;
-		case OVERBACK_OP:
-			selec = z_position_sel(&nd_ibox, &nd_box, nd_stats, OVERBACK_OP, Z_DIM);
-			return selec;
-		case BEFORE_OP:
-			// selec = temporal_position_sel(root, &vardata, &period, false, false, LT_OP);
-			// return selec;
-		case AFTER_OP:
-			// selec = temporal_position_sel(root, &vardata, &period, true, false, GT_OP);
-			// return selec;
-		case OVERBEFORE_OP:
-			// selec = temporal_position_sel(root, &vardata, &period, false, true, LE_OP);
-			// return selec;
-		case OVERAFTER_OP:
-			// selec = 1.0 - temporal_position_sel(root, &vardata, &period, false, false, GE_OP);
-			// return selec;
-		default:
-			return 0.001;
+		/* Restrict the cells according to the position operator */
+		if (op == LEFT_OP)
+			search_ibox.max[X_DIM] = nd_ibox.min[X_DIM];
+		else if (op == OVERLEFT_OP)
+			search_ibox.max[X_DIM] = nd_ibox.max[X_DIM];
+		else if (op == RIGHT_OP)
+			search_ibox.min[X_DIM] = nd_ibox.max[X_DIM];
+		else if (op == OVERRIGHT_OP)
+			search_ibox.min[X_DIM] = nd_ibox.min[X_DIM];
+		else if (op == BELOW_OP)
+			search_ibox.max[Y_DIM] = nd_ibox.min[Y_DIM];
+		else if (op == OVERBELOW_OP)
+			search_ibox.max[Y_DIM] = nd_ibox.max[Y_DIM];
+		else if (op == ABOVE_OP)
+			search_ibox.min[Y_DIM] = nd_ibox.max[Y_DIM];
+		else if (op == OVERABOVE_OP)
+			search_ibox.min[Y_DIM] = nd_ibox.min[Y_DIM];
+		else if (op == FRONT_OP)
+			search_ibox.max[Z_DIM] = nd_ibox.min[Z_DIM];
+		else if (op == OVERFRONT_OP)
+			search_ibox.max[Z_DIM] = nd_ibox.max[Z_DIM];
+		else if (op == BACK_OP)
+			search_ibox.min[Z_DIM] = nd_ibox.max[Z_DIM];
+		else if (op == OVERBACK_OP)
+			search_ibox.min[Z_DIM] = nd_ibox.min[Z_DIM];
 	}
+
+	/* Initialize the counter */
+	memset(at, 0, sizeof(int) * ND_DIMS);
+	for (d = 0; d < nd_stats->ndims; d++)
+		at[d] = search_ibox.min[d];
+
+	/* Move through all the overlap values and sum them */
+	do
+	{
+		float cell_count, ratio;
+		ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
+
+		/* We have to pro-rate partially overlapped cells. */
+		for (d = 0; d < nd_stats->ndims; d++)
+		{
+			nd_cell.min[d] = min[d] + (at[d]+0) * cell_size[d];
+			nd_cell.max[d] = min[d] + (at[d]+1) * cell_size[d];
+		}
+
+		if (bboxop)
+			ratio = nd_box_ratio_overlaps(&nd_box, &nd_cell, nd_stats->ndims);
+		else 
+			ratio = nd_box_ratio_position(&nd_box, &nd_cell, nd_stats->ndims, op);
+		cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
+
+		/* Add the pro-rated count for this cell to the overall total */
+		total_count += cell_count * ratio;
+	}
+	while (nd_increment(&search_ibox, nd_stats->ndims, at));
+
+	/* Scale by the number of features in our histogram to get the proportion */
+	selectivity = total_count / nd_stats->histogram_features;
+
+	/* Prevent rounding overflows */
+	if (selectivity > 1.0) selectivity = 1.0;
+	else if (selectivity < 0.0) selectivity = 0.0;
+
+	return selectivity;
 }
 
 /*****************************************************************************/
@@ -812,10 +871,11 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec;
+	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
 	CachedOp cachedOp;
 	STBOX constBox;
-	
+	Period constperiod;
+
 	/*
 	 * Get enumeration value associated to the operator
 	 */
@@ -852,9 +912,9 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	}
 
 	/*
-     * If var is on the right, commute the operator, so that we can assume the
-     * var is on the left in what follows.
-     */
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
 	if (!varonleft)
 	{
 		/* we have other Op var, commute to make var Op other */
@@ -867,18 +927,49 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-	/*
+    /* 
 	 * Transform the constant into an STBOX
 	 */
-	memset(&constBox, 0, sizeof(STBOX));
-	found = tpoint_const_to_stbox(other, &constBox);
-	/* In the case of unknown constant */
-	if (!found)
+    memset(&constBox, 0, sizeof(STBOX));
+    found = tpoint_const_to_stbox(other, &constBox);
+    /* In the case of unknown constant */
+    if (!found)
 		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
 	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
-
-	selec = tpoint_selectivity(root, &vardata, other, &constBox, cachedOp);
+	
+	/* Enable the multiplication of the selectivity of the spatial and time 
+	 * dimensions since either may be missing */
+	selec = 1.0; 
+	
+	/*
+	 * Estimate selectivity for the spatial dimension
+	 */
+	if (MOBDB_FLAGS_GET_X(constBox.flags))
+	{
+		selec *= calc_geo_selectivity(&vardata, &constBox, cachedOp);
+	}
+	/*
+	 * Estimate selectivity for the time dimension
+	 */
+	if (MOBDB_FLAGS_GET_T(constBox.flags))
+	{
+		int duration;
+		
+		/* Transform the constant into a Period */
+		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
+		duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+		assert(duration == TEMPORAL || duration == TEMPORALINST ||
+			   duration == TEMPORALI || duration == TEMPORALSEQ ||
+			   duration == TEMPORALS);
+		if (duration == TEMPORALINST)
+			selec *= temporalinst_sel(root, &vardata, &constperiod, cachedOp);
+		else if (duration == TEMPORALI)
+			selec *= temporali_sel(root, &vardata, &constperiod, cachedOp);
+		else
+			/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
+			selec *= temporals_sel(root, &vardata, &constperiod, cachedOp);
+	}
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);

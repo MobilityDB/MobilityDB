@@ -47,6 +47,14 @@ extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardat
 extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, bool isgt, bool iseq, CachedOp operator);
 
+extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+extern Selectivity temporali_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+
+
 /*****************************************************************************
  * Some other helper functions.
  *****************************************************************************/
