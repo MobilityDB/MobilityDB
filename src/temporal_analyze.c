@@ -133,8 +133,9 @@
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
+#include <utils/fmgrprotos.h>
+#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
-#include <temporal_analyze.h>
 
 #include "period.h"
 #include "time_analyze.h"
@@ -142,6 +143,7 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+#include "temporal_analyze.h"
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
@@ -159,6 +161,50 @@
  * notational cruft that would be needed.
  */
 TemporalAnalyzeExtraData *temporal_extra_data;
+
+/*****************************************************************************
+ * These function are used to remove the time part from the sample rows after
+ * getting the statistics from the time dimension, to be able to collect
+ * range or array statistics in the same stats variable.
+ *****************************************************************************/
+
+static HeapTuple
+tnumber_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
+				   Oid attrtypid, Oid valuetypid, Datum value)
+{
+	Datum *values = (Datum *) palloc(attrNum * sizeof(Datum));
+	bool *null_v = (bool *) palloc(attrNum * sizeof(bool));
+	bool *rep_v = (bool *) palloc(attrNum * sizeof(bool));
+
+	for (int j = 0; j < attrNum; j++)
+	{
+		if (attrtypid == tupDesc->attrs[j].atttypid)
+		{
+			if (valuetypid == INT4OID)
+			{
+				values[j] = tempdisc_get_values_internal(DatumGetTemporal(value));
+				/* Change the attribute typid */
+				// tupDesc->attrs[j].atttypid = type_oid(T_INTRANGE);
+			}
+			else
+			{
+				values[j] = RangeTypePGetDatum(tnumber_value_range_internal(
+						DatumGetTemporal(value)));
+				/* Change the attribute typid */
+				// tupDesc->attrs[j].atttypid = type_oid(T_FLOATRANGE);
+			}
+			rep_v[j] = true;
+			null_v[j] = false;
+		}
+		else
+		{
+			values[j] = 0;
+			rep_v[j] = false;
+			null_v[j] = false;
+		}
+	}
+	return heap_modify_tuple(tuple, tupDesc, values, null_v, rep_v);
+}
 
 /*****************************************************************************
  * Comparison functions for different data types
@@ -1270,7 +1316,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				count_tab_value, element_no_value, analyzed_rows, 
 				num_mcelem, bucket_width, slot_idx, true);
 		}
-		slot_idx = 2;
+		slot_idx = TIMEDIM_FIRST_STATS_SLOT;
 		/*  Temporal part statistics */
 		tempi_elems_compute_stats(stats, elements_tab_time, 
 			count_tab_time, element_no_time, analyzed_rows, 
@@ -1539,7 +1585,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			stats->statypalign[slot_idx] = 'd';
 		}
 
-		slot_idx = 2;
+		slot_idx = TIMEDIM_FIRST_STATS_SLOT;
 
 		Datum *bound_hist_time;
 		Datum *length_hist_time;
@@ -1871,6 +1917,86 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	else 
     	stats->compute_stats = temporals_compute_stats;
 
+	PG_RETURN_BOOL(true);
+}
+
+
+/*****************************************************************************/
+
+static void
+tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+					 int samplerows, double totalrows)
+{
+	Oid valuetypid = base_oid_from_temporal(stats->attrtypid);
+	Oid oidsave = stats->attrtypid;
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	int stawidth;
+
+	/* Ensure it is a temporal number */
+	numeric_base_type_oid(valuetypid);
+
+	/* Compute statistics for the time component */
+	if (duration == TEMPORALINST)
+		temporalinst_compute_stats(stats, fetchfunc, samplerows, totalrows);
+	else if (duration == TEMPORALI)
+		temporali_compute_stats(stats, fetchfunc, samplerows, totalrows);
+	else if (duration == TEMPORALSEQ || duration == TEMPORALS ||
+			 duration == TEMPORAL)
+		temporals_compute_stats(stats, fetchfunc, samplerows, totalrows);
+
+	stawidth = stats->stawidth;
+
+	/* Remove time component for the tuples */
+	for (int i = 0; i < samplerows; i++)
+	{
+		bool isnull;
+		Datum value = fetchfunc(stats, i, &isnull);
+		if (isnull)
+			continue;
+		stats->rows[i] = tnumber_remove_timedim(stats->rows[i],
+			stats->tupDesc, stats->tupDesc->natts,
+			stats->attrtypid, valuetypid, value);
+	}
+
+	/* Change the attribute typid for computing the statistics */
+	if (valuetypid == INT4OID)
+		stats->attrtypid = type_oid(T_INTRANGE);
+	else
+		stats->attrtypid = type_oid(T_FLOATRANGE);
+
+	/* Compute statistics on the value dimension */
+	call_function1(range_typanalyze, PointerGetDatum(stats));
+	stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
+
+	/* Put the total width of the column, variable size */
+	stats->stawidth = stawidth;
+
+	/* Reset the original attribute typid */
+	stats->attrtypid = oidsave;
+}
+
+PG_FUNCTION_INFO_V1(tnumber_analyze_new);
+
+PGDLLEXPORT Datum
+tnumber_analyze_new(PG_FUNCTION_ARGS)
+{
+	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	assert(duration == TEMPORAL || duration == TEMPORALINST ||
+		   duration == TEMPORALI || duration == TEMPORALSEQ ||
+		   duration == TEMPORALS);
+	/*
+	 * Call the standard typanalyze function.  It may fail to find needed
+	 * operators, in which case we also can't do anything, so just fail.
+	 */
+	if (!std_typanalyze(stats))
+		PG_RETURN_BOOL(false);
+
+	if (duration == TEMPORALINST)
+		temporal_info(stats);
+	else
+		temporal_extra_info(stats);
+	stats->compute_stats = tnumber_compute_stats;
 	PG_RETURN_BOOL(true);
 }
 

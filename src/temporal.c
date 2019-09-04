@@ -1068,12 +1068,9 @@ tempdisc_get_values(PG_FUNCTION_ARGS)
 
 /* Ranges of a temporal float */
 
-PG_FUNCTION_INFO_V1(tfloat_ranges);
-
-PGDLLEXPORT Datum
-tfloat_ranges(PG_FUNCTION_ARGS)
+Datum
+tfloat_ranges_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1084,8 +1081,18 @@ tfloat_ranges(PG_FUNCTION_ARGS)
 		result = tfloatseq_ranges((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = tfloats_ranges((TemporalS *)temp);
+	return PointerGetDatum(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_ranges);
+
+PGDLLEXPORT Datum
+tfloat_ranges(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum result = tfloat_ranges_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
+	PG_RETURN_POINTER(result);
 }
 
 /* Value of a temporal instant */

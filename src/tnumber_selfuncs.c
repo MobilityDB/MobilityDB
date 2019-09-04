@@ -26,6 +26,7 @@
 #include "oidcache.h"
 #include "tbox.h"
 #include "time_selfuncs.h"
+#include "temporal.h"
 #include "temporal_selfuncs.h"
 
 /*****************************************************************************

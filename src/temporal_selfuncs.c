@@ -978,12 +978,12 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 		case VALUE_STATISTICS:
 		{
 			start = 0;
-			end = 2;
+			end = 3;
 			break;
 		}
 		case TEMPORAL_STATISTICS:
 		{
-			start = 2;
+			start = 3;
 			end = 5;
 			break;
 		}

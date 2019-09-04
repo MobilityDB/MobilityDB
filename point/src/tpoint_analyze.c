@@ -31,7 +31,7 @@
  * spatial statistics in the same stats variable.
  */
 static HeapTuple
-remove_temporaldim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
+tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
 				   Oid attrtypid, Datum value)
 {
 	Datum *values = (Datum *) palloc(attrNum * sizeof(Datum));
@@ -81,7 +81,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 			continue;
-		stats->rows[i] = remove_temporaldim(stats->rows[i],
+		stats->rows[i] = tpoint_remove_timedim(stats->rows[i],
 			stats->tupDesc, stats->tupDesc->natts,
 			stats->attrtypid, value);
 	}	
