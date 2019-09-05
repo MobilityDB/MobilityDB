@@ -83,6 +83,7 @@
 #include "periodset.h"
 #include "time_selfuncs.h"
 #include "rangetypes_ext.h"
+#include "temporal_analyze.h"
 #include "tpoint.h"
 
 
@@ -510,7 +511,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 static double
 ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 						   FmgrInfo *opproc, bool isgt, bool iseq, Datum constval,
-						   Oid consttype, StatStrategy strategy)
+						   Oid consttype, int startslot)
 {
 
 	double hist_selec = -1.0;
@@ -530,7 +531,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 		statistic_proc_security_check(vardata, opproc->fn_oid) &&
 		get_attstatsslot_mobdb(&sslot, vardata->statsTuple,
 								  STATISTIC_KIND_HISTOGRAM, InvalidOid,
-								  ATTSTATSSLOT_VALUES, strategy))
+								  ATTSTATSSLOT_VALUES, startslot))
 	{
 		if (sslot.nvalues > 1)
 		{
@@ -642,7 +643,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 					/* Subtract off the number of known MCVs */
 					if (get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
 												  STATISTIC_KIND_MCV, InvalidOid,
-												  ATTSTATSSLOT_NUMBERS, strategy))
+												  ATTSTATSSLOT_NUMBERS, startslot))
 					{
 						otherdistinct -= mcvslot.nnumbers;
 						free_attstatsslot(&mcvslot);
@@ -795,7 +796,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root, VariableStatData *vardata,
 static Selectivity
 mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
 				Datum constval, Oid atttype, bool varonleft, 
-				double *sumcommonp, StatStrategy strategy)
+				double *sumcommonp, int startslot)
 {
 	double mcv_selec, sumcommon;
 	AttStatsSlot mcvslot;
@@ -808,7 +809,7 @@ mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
 		get_attstatsslot_mobdb(&mcvslot, vardata->statsTuple,
 							   STATISTIC_KIND_MCV, InvalidOid,
 							   ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, 
-							   strategy))
+							   startslot))
 	{
 		for (i = 0; i < mcvslot.nvalues; i++)
 		{
@@ -850,7 +851,7 @@ mcv_selectivity_mobdb(VariableStatData *vardata, FmgrInfo *opproc,
 Selectivity
 scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 			   VariableStatData *vardata, Datum constval, Oid consttype,
-			   StatStrategy strategy)
+			   int startslot)
 {
 	Form_pg_statistic stats;
 	FmgrInfo opproc;
@@ -873,7 +874,7 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	 * by MCV entries.
 	 */
 	mcv_selec = mcv_selectivity_mobdb(vardata, &opproc, constval, consttype, true,
-										 &sumcommon, strategy);
+										 &sumcommon, startslot);
 
 	/*
 	 * If there is a histogram, determine which bin the constant falls in, and
@@ -881,7 +882,7 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	 */
 	hist_selec = ineq_histogram_selectivity_mobdb(root, vardata,
 											&opproc, isgt, iseq,
-											constval, consttype, strategy);
+											constval, consttype, startslot);
 
 	/*
 	 * Now merge the results from the MCV and histogram calculations,
@@ -925,11 +926,10 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
  * reqkind: STAKIND code for desired statistics slot kind.
  * reqop: STAOP value wanted, or InvalidOid if don't care.
  * flags: bitmask of ATTSTATSSLOT_VALUES and/or ATTSTATSSLOT_NUMBERS.
- * strategy: the type of the extracted elements which is one of the following:
- * - VALUE_STATISTICS: retrieves the value part from slot 0 to 2
- * - TEMPORAL_STATISTICS: retrieves the temporal part from slot 2 to 5
- * - DEFAULT_STATISTICS: retrieves the slots for the default postgreSQL types
- *   that start from slot 0
+ * startslot: the first slot from which to look for the statistics slot kind.
+ * By default, PostgreSQL starts from slot 0. Slots for the value dimension 
+ * also start from 0 while slots for the time dimension start from 
+ * TIMEDIM_FIRST_STATS_SLOT.
  *
  * If a matching slot is found, true is returned, and *sslot is filled thus:
  * staop: receives the actual STAOP value.
@@ -960,11 +960,10 @@ scalarineqsel_mobdb(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 
 bool
 get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
-					   int reqkind, Oid reqop, int flags, 
-					   StatStrategy strategy)
+					   int reqkind, Oid reqop, int flags, int startslot)
 {
 	Form_pg_statistic stats = (Form_pg_statistic) GETSTRUCT(statstuple);
-	int i, start = 0, end = 0;  /* keep compiler quiet */
+	int i; 
 	Datum val;
 	bool isnull;
 	ArrayType *statarray;
@@ -973,40 +972,16 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
 	HeapTuple typeTuple;
 	Form_pg_type typeForm;
 
-	switch (strategy) 
-	{
-		case VALUE_STATISTICS:
-		{
-			start = 0;
-			end = 3;
-			break;
-		}
-		case TEMPORAL_STATISTICS:
-		{
-			start = 3;
-			end = 5;
-			break;
-		}
-		case DEFAULT_STATISTICS:
-		{
-			start = 0;
-			end = STATISTIC_NUM_SLOTS;
-			break;
-		}
-		default:
-			break;
-	}
-
 	/* initialize *sslot properly */
 	memset(sslot, 0, sizeof(AttStatsSlot));
 
-	for (i = start; i < end; i++) 
+	for (i = startslot; i < STATISTIC_NUM_SLOTS; i++) 
 	{
 		if ((&stats->stakind1)[i] == reqkind &&
 			(reqop == InvalidOid || (&stats->staop1)[i] == reqop))
 			break;
 	}
-	if (i >= end)
+	if (i >= STATISTIC_NUM_SLOTS)
 		return false;			/* not there */
 
 	sslot->staop = (&stats->staop1)[i];
@@ -1103,7 +1078,7 @@ get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
  */
 double
 var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
-	bool negate, StatStrategy strategy)
+	bool negate, int startslot)
 {
 	double selec;
 	double nullfrac = 0.0;
@@ -1144,7 +1119,7 @@ var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
 		 */
 		if (get_attstatsslot_mobdb(&sslot, vardata->statsTuple,
 									  STATISTIC_KIND_MCV, InvalidOid,
-									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, strategy))
+									  ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS, startslot))
 		{
 			FmgrInfo eqproc;
 			fmgr_info(opfuncoid, &eqproc);
@@ -1335,7 +1310,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		
 		op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = var_eq_const_mobdb(vardata, op, 
-			TimestampTzGetDatum(period->lower), false, TEMPORAL_STATISTICS);
+			TimestampTzGetDatum(period->lower), false, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
 	{
@@ -1358,13 +1333,13 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel_mobdb(root, op, false, period->lower_inc, 
 			vardata, TimestampTzGetDatum(period->lower),
-			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 		op = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec += scalarineqsel_mobdb(root, op, true, period->upper_inc, 
 			vardata, TimestampTzGetDatum(period->upper),
-			TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 		selec = 1 - selec;
 	}
 	/* For b-tree comparisons, temporal values are first compared wrt 
@@ -1381,7 +1356,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->lower_inc;
 		selec = scalarineqsel_mobdb(root, op, false, iseq, 
-			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			vardata, period->lower, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == AFTER_OP || cachedOp == GT_OP || cachedOp == GE_OP)
 	{
@@ -1392,7 +1367,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->upper_inc;
 		selec = scalarineqsel_mobdb(root, op, true, iseq, 
-			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			vardata, period->lower, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
@@ -1402,7 +1377,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel_mobdb(root, op, false, period->upper_inc, 
-			vardata, period->upper, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			vardata, period->upper, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
@@ -1412,7 +1387,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec = scalarineqsel_mobdb(root, op, true, period->lower_inc, 
-			vardata, period->lower, TIMESTAMPTZOID, TEMPORAL_STATISTICS);
+			vardata, period->lower, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else /* Unknown operator */
 	{
@@ -1444,7 +1419,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	{
 		Oid op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 		selec = var_eq_const_mobdb(vardata, op, PeriodGetDatum(period),
-			false, TEMPORAL_STATISTICS);
+			false, TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
 		cachedOp == CONTAINED_OP || cachedOp == BEFORE_OP ||
@@ -1452,7 +1427,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		cachedOp == OVERAFTER_OP) 
 	{
 		selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
-			TEMPORAL_STATISTICS);
+			TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
 		cachedOp == GT_OP || cachedOp == GE_OP) 
@@ -1463,7 +1438,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * only the bounding boxes. In the case here the bounding box is a
 		 * period and thus we can use the period selectivity estimation */
 		selec = calc_period_hist_selectivity(vardata, period, cachedOp, 
-			TEMPORAL_STATISTICS);
+			TIMEDIM_FIRST_STATS_SLOT);
 	}
 	else /* Unknown operator */
 	{

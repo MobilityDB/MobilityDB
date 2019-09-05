@@ -22,7 +22,7 @@
 /*****************************************************************************/
 
 extern double calc_period_hist_selectivity(VariableStatData *vardata,
-	Period *constval, CachedOp cachedOp, StatStrategy strategy);
+	Period *constval, CachedOp cachedOp, int startslot);
 extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
 	PeriodBound *hist, int hist_nvalues, bool equal);
 extern double calc_period_hist_selectivity_contained(PeriodBound *lower,

@@ -24,13 +24,6 @@
 #include "temporal.h"
 #include "oidcache.h"
 
-typedef enum 
-{
-	VALUE_STATISTICS,
-	TEMPORAL_STATISTICS,
-	DEFAULT_STATISTICS
-} StatStrategy;
-
 #define BTREE_AM_OID   403
 
 #define DEFAULT_TEMP_SELECTIVITY 0.001
@@ -41,7 +34,7 @@ typedef enum
 
 extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, 
 	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
-	Oid consttype, StatStrategy strategy);
+	Oid consttype, int startslot);
 extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
 extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
@@ -60,9 +53,9 @@ extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
  *****************************************************************************/
 
 extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
-							 int reqkind, Oid reqop, int flags, StatStrategy strategy);
+							 int reqkind, Oid reqop, int flags, int startslot);
 extern double var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
-						   bool negate, StatStrategy strategy);
+						   bool negate, int startslot);
 
 /*****************************************************************************/
 

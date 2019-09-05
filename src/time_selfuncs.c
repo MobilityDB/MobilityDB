@@ -69,7 +69,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 
 static double
 calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
-	StatStrategy strategy)
+	int startslot)
 {
 	double		hist_selec;
 	double		selec;
@@ -111,7 +111,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator,
 	 * returning the default estimate, because this still takes into
 	 * account the fraction of NULL tuples, if we had statistics for them.
 	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp, strategy);
+	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp, startslot);
 	if (hist_selec < 0.0)
 		hist_selec = default_period_selectivity(operator);
 
@@ -133,7 +133,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator,
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
-							 CachedOp cachedOp, StatStrategy strategy)
+							 CachedOp cachedOp, int startslot)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -144,7 +144,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
 						   STATISTIC_KIND_BOUNDS_HISTOGRAM, 
-						   InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
+						   InvalidOid, ATTSTATSSLOT_VALUES, startslot)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper
@@ -163,7 +163,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
 			  get_attstatsslot_mobdb(&lslot, vardata->statsTuple,
 									 STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM, 
-									 InvalidOid, ATTSTATSSLOT_VALUES, strategy)))
+									 InvalidOid, ATTSTATSSLOT_VALUES, startslot)))
 		{
 			free_attstatsslot(&hslot);
 			return -1.0;
@@ -938,7 +938,7 @@ periodsel(PG_FUNCTION_ARGS)
 	 * PERIOD_ELEM_CONTAINED_OP.
 	 */
 	if (constperiod)
-		selec = calc_periodsel(&vardata, constperiod, operator, DEFAULT_STATISTICS);
+		selec = calc_periodsel(&vardata, constperiod, operator, 0);
 	else
 		selec = default_period_selectivity(operator);
 
