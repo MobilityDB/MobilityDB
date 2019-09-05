@@ -399,13 +399,6 @@ calc_hist_selectivity_contains(TypeCacheEntry *typcache,
 	return sum_frac;
 }
 
-
-/*****************************************************************************
- * This function is derived from the one in PosgreSQL by adding the last
- * parameter in order to select the slot from which the statistics are read
- * and by replacing the parameter (Oid operator) by (CachedOp cachedOp)
- *****************************************************************************/
-
 /*
  * Calculate range operator selectivity using histograms of range bounds.
  *
@@ -413,8 +406,8 @@ calc_hist_selectivity_contains(TypeCacheEntry *typcache,
  * NULL.
  */
 static double
-calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
-					  RangeType *constval, Oid cachedOp, int startslot)
+calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
+					  RangeType *constval, Oid operator)
 {
 	AttStatsSlot hslot;
 	AttStatsSlot lslot;
@@ -438,9 +431,9 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 	/* Try to get histogram of ranges */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
+		  get_attstatsslot(&hslot, vardata->statsTuple,
 						   STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-						   ATTSTATSSLOT_VALUES, startslot)))
+						   ATTSTATSSLOT_VALUES)))
 		return -1.0;
 
 	/*
@@ -460,13 +453,14 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 	}
 
 	/* @> and @< also need a histogram of range lengths */
-	if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+	if (operator == OID_RANGE_CONTAINS_OP ||
+		operator == OID_RANGE_CONTAINED_OP)
 	{
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
-			  get_attstatsslot_mobdb(&lslot, vardata->statsTuple,
+			  get_attstatsslot(&lslot, vardata->statsTuple,
 							   STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM,
 							   InvalidOid,
-							   ATTSTATSSLOT_VALUES, startslot)))
+							   ATTSTATSSLOT_VALUES)))
 		{
 			free_attstatsslot(&hslot);
 			return -1.0;
@@ -491,9 +485,9 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 	 * Calculate selectivity comparing the lower or upper bound of the
 	 * constant with the histogram of lower or upper bounds.
 	 */
-	switch (cachedOp)
+	switch (operator)
 	{
-		case LT_OP:
+		case OID_RANGE_LESS_OP:
 
 			/*
 			 * The regular b-tree comparison operators (<, <=, >, >=) compare
@@ -508,53 +502,55 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 											 hist_lower, nhist, false);
 			break;
 
-		case LE_OP:
+		case OID_RANGE_LESS_EQUAL_OP:
 			hist_selec =
 				calc_hist_selectivity_scalar(typcache, &const_lower,
 											 hist_lower, nhist, true);
 			break;
 
-		case GT_OP:
+		case OID_RANGE_GREATER_OP:
 			hist_selec =
 				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
 												 hist_lower, nhist, false);
 			break;
 
-		case GE_OP:
+		case OID_RANGE_GREATER_EQUAL_OP:
 			hist_selec =
 				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
 												 hist_lower, nhist, true);
 			break;
 
-		case LEFT_OP:
+		case OID_RANGE_LEFT_OP:
 			/* var << const when upper(var) < lower(const) */
 			hist_selec =
 				calc_hist_selectivity_scalar(typcache, &const_lower,
 											 hist_upper, nhist, false);
 			break;
 
-		case RIGHT_OP:
+		case OID_RANGE_RIGHT_OP:
 			/* var >> const when lower(var) > upper(const) */
 			hist_selec =
 				1 - calc_hist_selectivity_scalar(typcache, &const_upper,
 												 hist_lower, nhist, true);
 			break;
 
-		case OVERRIGHT_OP:
+		case OID_RANGE_OVERLAPS_RIGHT_OP:
 			/* compare lower bounds */
 			hist_selec =
 				1 - calc_hist_selectivity_scalar(typcache, &const_lower,
 												 hist_lower, nhist, false);
 			break;
 
-		case OVERLEFT_OP:
+		case OID_RANGE_OVERLAPS_LEFT_OP:
 			/* compare upper bounds */
 			hist_selec =
 				calc_hist_selectivity_scalar(typcache, &const_upper,
 											 hist_upper, nhist, true);
 			break;
 
-		case OVERLAPS_OP:
+		case OID_RANGE_OVERLAP_OP:
+		case OID_RANGE_CONTAINS_ELEM_OP:
+
 			/*
 			 * A && B <=> NOT (A << B OR A >> B).
 			 *
@@ -575,14 +571,14 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 			hist_selec = 1.0 - hist_selec;
 			break;
 
-		case CONTAINS_OP:
+		case OID_RANGE_CONTAINS_OP:
 			hist_selec =
 				calc_hist_selectivity_contains(typcache, &const_lower,
 											   &const_upper, hist_lower, nhist,
 											   lslot.values, lslot.nvalues);
 			break;
 
-		case CONTAINED_OP:
+		case OID_RANGE_CONTAINED_OP:
 			if (const_lower.infinite)
 			{
 				/*
@@ -609,7 +605,7 @@ calc_hist_selectivity_mobdb(TypeCacheEntry *typcache, VariableStatData *vardata,
 			break;
 
 		default:
-			elog(ERROR, "unknown range operator");
+			elog(ERROR, "unknown range operator %u", operator);
 			hist_selec = -1.0;	/* keep compiler quiet */
 			break;
 	}
@@ -746,15 +742,15 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(EQ_OP, valuetypid, valuetypid);
-			selec *= var_eq_const_mobdb(vardata, op, 
-				Float8GetDatum(box->xmin), false, 0);
+			selec *= var_eq_const(vardata, op, Float8GetDatum(box->xmin), 
+				false, false, false);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			op *= oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec *= var_eq_const_mobdb(vardata, op, 
-				TimestampTzGetDatum(box->tmin), false, TIMEDIM_FIRST_STATS_SLOT);
+			selec *= var_eq_const(vardata, op, TimestampTzGetDatum(box->tmin), 
+				false, false, false);
 		}
 	}
 	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
@@ -781,21 +777,21 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(LT_OP, valuetypid, valuetypid);
-			selec += scalarineqsel_mobdb(root, op, false, false, vardata, 
-				Float8GetDatum(box->xmin), valuetypid, 0);
+			selec += scalarineqsel(root, op, false, false, vardata, 
+				Float8GetDatum(box->xmin), valuetypid);
 			op = oper_oid(GT_OP, valuetypid, valuetypid);
-			selec += scalarineqsel_mobdb(root, op, true, false, vardata, 
-				Float8GetDatum(box->xmax), valuetypid, 0);
+			selec += scalarineqsel(root, op, true, false, vardata, 
+				Float8GetDatum(box->xmax), valuetypid);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec += scalarineqsel_mobdb(root, op, false, false, vardata, 
-				TimestampTzGetDatum(box->tmin), TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+			selec += scalarineqsel(root, op, false, false, vardata, 
+				TimestampTzGetDatum(box->tmin), TIMESTAMPTZOID);
 			op = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec += scalarineqsel_mobdb(root, op, true, false,  vardata, 
-				TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+			selec += scalarineqsel(root, op, true, false,  vardata, 
+				TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID);
 		}
 		selec = 1 - selec;
 	}
@@ -803,57 +799,57 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	{
 		/* TemporalInst v@t << TBOX b <=> v < box->xmin */
 		op = oper_oid(LT_OP, valuetypid, valuetypid);
-		selec = scalarineqsel_mobdb(root, op, false, false, vardata, 
-			box->xmin, valuetypid, 0);
+		selec = scalarineqsel(root, op, false, false, vardata, 
+			box->xmin, valuetypid);
 	}
 	else if (cachedOp == RIGHT_OP)
 	{
 		/* TemporalInst v@t >> TBOX b <=> v > box->xmax */
 		op = oper_oid(GT_OP, valuetypid, valuetypid);
-		selec = scalarineqsel_mobdb(root, op, true, false, vardata, 
-			box->xmax, valuetypid, 0);
+		selec = scalarineqsel(root, op, true, false, vardata, 
+			box->xmax, valuetypid);
 	}
 	else if (cachedOp == OVERLEFT_OP)
 	{
 		/* TemporalInst v@t &< TBOX b <=> v <= box->xmax */
 		op = oper_oid(LE_OP, valuetypid, valuetypid);
-		selec = scalarineqsel_mobdb(root, op, false, true, vardata, 
-			box->xmax, valuetypid, 0);
+		selec = scalarineqsel(root, op, false, true, vardata, 
+			box->xmax, valuetypid);
 	}
 	else if (cachedOp == OVERRIGHT_OP)
 	{
 		/* TemporalInst v@t &> TBOX b <=> v >= box->xmin */
 		op = oper_oid(GE_OP, valuetypid, valuetypid);
-		selec = scalarineqsel_mobdb(root, op, true, true, vardata, 
-			box->xmin, valuetypid, 0);
+		selec = scalarineqsel(root, op, true, true, vardata, 
+			box->xmin, valuetypid);
 	}
 	else if (cachedOp == BEFORE_OP)
 	{
 		/* TemporalInst v@t <<# TBOX b <=> t < box->tmin */
 		op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, false, false, vardata, 
-			box->tmin, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+		selec = scalarineqsel(root, op, false, false, vardata, 
+			box->tmin, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == AFTER_OP)
 	{
 		/* TemporalInst v@t #>> TBOX b <=> t > box->tmax */
 		op = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, true, false, vardata, 
-			box->tmax, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+		selec = scalarineqsel(root, op, true, false, vardata, 
+			box->tmax, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
 		/* TemporalInst v@t &<# TBOX b <=> t <= box->tmax */
 		op = oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, false, true, vardata, 
-			box->tmax, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+		selec = scalarineqsel(root, op, false, true, vardata, 
+			box->tmax, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
 		/* TemporalInst v@t #&> TBOX b <=> t >= box->tmin */
 		op = oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel_mobdb(root, op, true, true, vardata, 
-			box->tmin, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+		selec = scalarineqsel(root, op, true, true, vardata, 
+			box->tmin, TIMESTAMPTZOID);
 	}
 	/* For b-tree comparisons, temporal values are first compared wrt 
 	 * their bounding boxes, and if these are equal, other criteria apply.
@@ -872,15 +868,15 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(LT_OP, valuetypid, valuetypid);
-			selec *= scalarineqsel_mobdb(root, op, false, cachedOp == LT_OP, 
-				vardata, box->xmin, valuetypid, 0);
+			selec *= scalarineqsel(root, op, false, cachedOp == LT_OP, 
+				vardata, box->xmin, valuetypid);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			op = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec *= scalarineqsel_mobdb(root, op, false, cachedOp == LT_OP, 
-				vardata, box->tmin, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+			selec *= scalarineqsel(root, op, false, cachedOp == LT_OP, 
+				vardata, box->tmin, TIMESTAMPTZOID);
 		}
 	}
 	else if (cachedOp == GT_OP || cachedOp == GE_OP)
@@ -895,15 +891,15 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(GT_OP, valuetypid, valuetypid);
-			selec *= scalarineqsel_mobdb(root, op, true, cachedOp == GT_OP, 
-				vardata, box->xmax, valuetypid, 0);
+			selec *= scalarineqsel(root, op, true, cachedOp == GT_OP, 
+				vardata, box->xmax, valuetypid);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			op = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec *= scalarineqsel_mobdb(root, op, true, cachedOp == GT_OP, 
-				vardata, box->tmax, TIMESTAMPTZOID, TIMEDIM_FIRST_STATS_SLOT);
+			selec *= scalarineqsel(root, op, true, cachedOp == GT_OP, 
+				vardata, box->tmax, TIMESTAMPTZOID);
 		}
 	}
 	else /* Unknown operator */
@@ -957,15 +953,15 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			op = oper_oid(EQ_OP, valuetypid, valuetypid);
-			selec *= var_eq_const_mobdb(vardata, op, RangeTypePGetDatum(range),
-				false, 0);
+			selec *= var_eq_const(vardata, op, RangeTypePGetDatum(range),
+				false, false, false);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-			selec *= var_eq_const_mobdb(vardata, op, PeriodGetDatum(&period),
-			false, TIMEDIM_FIRST_STATS_SLOT);
+			selec *= var_eq_const(vardata, op, PeriodGetDatum(&period), 
+				false, false, false);
 		}
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
@@ -975,12 +971,12 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 	{
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
-			selec *= calc_hist_selectivity_mobdb(typcache, vardata, range, cachedOp, 
-				0);
+			selec *= calc_hist_selectivity(typcache, vardata, range, 
+				cachedOp);
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp, 
-				TIMEDIM_FIRST_STATS_SLOT);
+			selec *= calc_period_hist_selectivity(vardata, &period, 
+				cachedOp);
 	}
 	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
 		cachedOp == GT_OP || cachedOp == GE_OP) 
@@ -992,12 +988,12 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * period and thus we can use the period selectivity estimation */
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
-			selec *= calc_hist_selectivity_mobdb(typcache, vardata, range, 
-				cachedOp, 0);
+			selec *= calc_hist_selectivity(typcache, vardata, range, 
+				cachedOp);
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			selec *= calc_period_hist_selectivity(vardata, &period, cachedOp, 
-				TIMEDIM_FIRST_STATS_SLOT);
+			selec *= calc_period_hist_selectivity(vardata, &period, 
+				cachedOp);
 	}
 	else /* Unknown operator */
 	{

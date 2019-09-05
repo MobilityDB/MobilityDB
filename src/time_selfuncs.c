@@ -68,8 +68,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 static double
-calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator, 
-	int startslot)
+calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 {
 	double		hist_selec;
 	double		selec;
@@ -111,7 +110,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator,
 	 * returning the default estimate, because this still takes into
 	 * account the fraction of NULL tuples, if we had statistics for them.
 	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp, startslot);
+	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp);
 	if (hist_selec < 0.0)
 		hist_selec = default_period_selectivity(operator);
 
@@ -133,7 +132,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator,
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
-							 CachedOp cachedOp, int startslot)
+							 CachedOp cachedOp)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -142,9 +141,9 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	int			nhist, i;
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_mobdb(&hslot, vardata->statsTuple,
+		  get_attstatsslot(&hslot, vardata->statsTuple,
 						   STATISTIC_KIND_BOUNDS_HISTOGRAM, 
-						   InvalidOid, ATTSTATSSLOT_VALUES, startslot)))
+						   InvalidOid, ATTSTATSSLOT_VALUES)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper
@@ -161,9 +160,9 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 	if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
 	{
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
-			  get_attstatsslot_mobdb(&lslot, vardata->statsTuple,
-									 STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM, 
-									 InvalidOid, ATTSTATSSLOT_VALUES, startslot)))
+			  get_attstatsslot(&lslot, vardata->statsTuple,
+							   STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM, 
+							   InvalidOid, ATTSTATSSLOT_VALUES)))
 		{
 			free_attstatsslot(&hslot);
 			return -1.0;
@@ -938,7 +937,7 @@ periodsel(PG_FUNCTION_ARGS)
 	 * PERIOD_ELEM_CONTAINED_OP.
 	 */
 	if (constperiod)
-		selec = calc_periodsel(&vardata, constperiod, operator, 0);
+		selec = calc_periodsel(&vardata, constperiod, operator);
 	else
 		selec = default_period_selectivity(operator);
 

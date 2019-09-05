@@ -32,9 +32,9 @@
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity scalarineqsel_mobdb(PlannerInfo *root, Oid operator, 
+extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
 	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
-	Oid consttype, int startslot);
+	Oid consttype);
 extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
 extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
@@ -52,10 +52,8 @@ extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
  * Some other helper functions.
  *****************************************************************************/
 
-extern bool get_attstatsslot_mobdb(AttStatsSlot *sslot, HeapTuple statstuple,
-							 int reqkind, Oid reqop, int flags, int startslot);
-extern double var_eq_const_mobdb(VariableStatData *vardata, Oid operator, Datum constval,
-						   bool negate, int startslot);
+extern double var_eq_const(VariableStatData *vardata, Oid operator,
+	Datum constval, bool constisnull, bool varonleft, bool negate);
 
 /*****************************************************************************/
 

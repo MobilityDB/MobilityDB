@@ -19,9 +19,6 @@
 #include <parser/parse_oper.h>
 #include <statistics/extended_stats_internal.h>
 
-/* First stlot used for the statistics to the time dimension for temporal types */
-#define TIMEDIM_FIRST_STATS_SLOT 2
-
 /* 
  * Extra data for compute_stats function 
  * Structure based on the ArrayAnalyzeExtraData from file array_typanalyze.c

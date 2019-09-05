@@ -693,8 +693,8 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
 	/* Get statistics */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
-		  get_attstatsslot_mobdb(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, 
-			InvalidOid, ATTSTATSSLOT_NUMBERS, 0)))
+		  get_attstatsslot(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, 
+			InvalidOid, ATTSTATSSLOT_NUMBERS)))
 		return -1;
 	/* Clone the stats here so we can release the attstatsslot immediately */
 	nd_stats = palloc(sizeof(float4) * sslot.nnumbers);

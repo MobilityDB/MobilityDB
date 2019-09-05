@@ -1316,7 +1316,7 @@ tempi_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				count_tab_value, element_no_value, analyzed_rows, 
 				num_mcelem, bucket_width, slot_idx, true);
 		}
-		slot_idx = TIMEDIM_FIRST_STATS_SLOT;
+		slot_idx = 2;
 		/*  Temporal part statistics */
 		tempi_elems_compute_stats(stats, elements_tab_time, 
 			count_tab_time, element_no_time, analyzed_rows, 
@@ -1569,7 +1569,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				/*
 				* Even when we don't create the histogram, store an empty array
 				* to mean "no histogram". We can't just leave stavalues NULL,
-				* because get_attstatsslot_mobdb() errors if you ask for stavalues, and
+				* because get_attstatsslot() errors if you ask for stavalues, and
 				* it's NULL. We'll still store the empty fraction in stanumbers.
 				*/
 				value_length_hist_values = palloc(0);
@@ -1585,7 +1585,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			stats->statypalign[slot_idx] = 'd';
 		}
 
-		slot_idx = TIMEDIM_FIRST_STATS_SLOT;
+		slot_idx = 2;
 
 		Datum *bound_hist_time;
 		Datum *length_hist_time;
@@ -1693,7 +1693,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot_mobdb() errors if you ask for stavalues, and
+			 * because get_attstatsslot() errors if you ask for stavalues, and
 			 * it's NULL.
 			 */
 			length_hist_time = palloc(0);

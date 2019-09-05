@@ -271,7 +271,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			/*
 			 * Even when we don't create the histogram, store an empty array
 			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot_mobdb() errors if you ask for stavalues, and
+			 * because get_attstatsslot() errors if you ask for stavalues, and
 			 * it's NULL.
 			 */
 			length_hist_values = palloc(0);
