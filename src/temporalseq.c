@@ -743,9 +743,9 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	int newcount = seq->count + 1;
 	if (seq->count > 1)
 	{
-		inst1 = temporalseq_inst_n(seq, seq->count-2);
+		inst1 = temporalseq_inst_n(seq, seq->count - 2);
 		Datum value1 = temporalinst_value(inst1);
-		TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count-1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count - 1);
 		Datum value2 = temporalinst_value(inst2);
 		Datum value3 = temporalinst_value(inst);
 		if (
@@ -773,7 +773,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	for (int i = 0; i < newcount; i++)
+	for (int i = 0; i < newcount - 1; i++)
 		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq, i)));
 	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
@@ -809,7 +809,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	/* Initialization of the variable-length part */
 	size_t *offsets = temporalseq_offsets_ptr(result);
 	size_t pos = 0;
-	for (int i = 0; i < newcount-1; i++)
+	for (int i = 0; i < newcount - 1; i++)
 	{
 		inst1 = temporalseq_inst_n(seq, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
@@ -818,7 +818,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	}
 	/* Append the instant */
 	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	offsets[newcount-1] = pos;
+	offsets[newcount - 1] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
@@ -830,7 +830,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 #ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
-		offsets[newcount+1] = pos;
+		offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));

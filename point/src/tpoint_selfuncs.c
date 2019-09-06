@@ -962,13 +962,9 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		/* Transform the constant into a Period */
 		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
 		duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-		assert(duration == TEMPORAL || duration == TEMPORALINST ||
-			   duration == TEMPORALI || duration == TEMPORALSEQ ||
-			   duration == TEMPORALS);
+		temporal_duration_all_is_valid(duration);
 		if (duration == TEMPORALINST)
 			selec *= temporalinst_sel(root, &vardata, &constperiod, cachedOp);
-		else if (duration == TEMPORALI)
-			selec *= temporali_sel(root, &vardata, &constperiod, cachedOp);
 		else
 			/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
 			selec *= temporals_sel(root, &vardata, &constperiod, cachedOp);

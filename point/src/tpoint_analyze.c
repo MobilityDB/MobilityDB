@@ -66,10 +66,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* Compute statistics for the time component */
 	if (duration == TEMPORALINST)
 		temporalinst_compute_stats(stats, fetchfunc, samplerows, totalrows);
-	else if (duration == TEMPORALI)
-		temporali_compute_stats(stats, fetchfunc, samplerows, totalrows);
-	else if (duration == TEMPORALSEQ || duration == TEMPORALS ||
-			 duration == TEMPORAL)
+	else
 		temporals_compute_stats(stats, fetchfunc, samplerows, totalrows);
 
 	stawidth = stats->stawidth;

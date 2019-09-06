@@ -8,8 +8,6 @@
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
- *	These functions are only stubs, they need to be written TODO
- *
  *****************************************************************************/
 
 #include "tnumber_selfuncs.h"
@@ -940,16 +938,6 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 }
 
 Selectivity
-tnumberi_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
-	Oid operator, CachedOp cachedOp, Oid valuetypid)
-{
-	double selec = 0.0;
-	/* TODO */
-	selec = default_tnumber_selectivity(cachedOp);
-	return selec;	
-}
-
-Selectivity
 tnumbers_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
 	CachedOp cachedOp, Oid valuetypid)
 {
@@ -1122,17 +1110,12 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	valuetypid = base_oid_from_temporal(vardata.atttype);
 	numeric_base_type_oid(valuetypid);
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	assert(duration == TEMPORAL || duration == TEMPORALINST ||
-		   duration == TEMPORALI || duration == TEMPORALSEQ ||
-		   duration == TEMPORALS);
+	temporal_duration_all_is_valid(duration);
 
 	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)
 		selec = tnumberinst_sel(root, &vardata, &constBox, cachedOp, valuetypid);
-	else if (duration == TEMPORALI)
-		selec = tnumberi_sel(root, &vardata, &constBox, operator, cachedOp, valuetypid);
 	else
-		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
 		selec = tnumbers_sel(root, &vardata, &constBox, cachedOp, valuetypid);
 
 	ReleaseVariableStats(vardata);

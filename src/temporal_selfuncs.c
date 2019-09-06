@@ -1261,16 +1261,6 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 }
 
 Selectivity
-temporali_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp)
-{
-	double selec = 0.0;
-	/* TODO */
-	selec = default_temporal_selectivity(cachedOp);
-	return selec;	
-}
-
-Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
@@ -1396,8 +1386,6 @@ temporal_sel(PG_FUNCTION_ARGS)
 	temporal_duration_all_is_valid(duration);
 	if (duration == TEMPORALINST)
 		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
-	else if (duration == TEMPORALI)
-		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
 	else
 		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
 		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);

@@ -206,12 +206,12 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count + 1) * sizeof(size_t));
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	for (int i = 0; i < ts->count-1; i++)
+	for (int i = 0; i < ts->count - 1; i++)
 		memsize += double_pad(VARSIZE(temporals_seq_n(ts, i)));
 	memsize += double_pad(VARSIZE(newseq));
 	/* Create the TemporalS */
@@ -230,7 +230,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	/* Initialization of the variable-length part */
 	size_t *offsets = temporals_offsets_ptr(result);
 	size_t pos = 0;	
-	for (int i = 0; i < ts->count-1; i++)
+	for (int i = 0; i < ts->count - 1; i++)
 	{
 		seq = temporals_seq_n(ts,i);
 		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
@@ -238,8 +238,8 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 		pos += double_pad(VARSIZE(seq));
 	}
 	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
-	offsets[ts->count-1] = pos;
-	pos += double_pad(VARSIZE(seq));
+	offsets[ts->count - 1] = pos;
+	pos += double_pad(VARSIZE(newseq));
 	/*
 	 * Precompute the bounding box 
 	 * Only external types have precomputed bounding box, internal types such

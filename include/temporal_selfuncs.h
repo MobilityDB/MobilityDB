@@ -42,8 +42,6 @@ extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *va
 
 extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
-extern Selectivity temporali_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp);
 extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
 

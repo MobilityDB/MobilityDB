@@ -66,22 +66,6 @@ typedef struct
 	void *std_extra_data;
 } TemporalAnalyzeExtraData;
 
-/* A hash table entry for the Lossy Counting algorithm */
-typedef struct
-{
-	Datum		key;			/* This is 'e' from the LC algorithm. */
-	int			frequency;		/* This is 'f'. */
-	int			delta;			/* And this is 'delta'. */
-	int			last_container;	/* For de-duplication of array elements. */
-} TrackItem;
-
-/* A hash table entry for distinct-elements counts */
-typedef struct
-{
-	int			count; 	 	  /* Count of distinct elements in an array */
-	int			frequency; 	  /* Number of arrays seen with this count */
-} DECountItem;
-
 /*
  * Extra information used by the default analysis routines
  */
@@ -105,9 +89,6 @@ extern void temporal_extra_info(VacAttrStats *stats);
 
 extern void temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									   int samplerows, double totalrows);
-
-extern void temporali_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-									int samplerows, double totalrows);
 
 extern void temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									int samplerows, double totalrows);
