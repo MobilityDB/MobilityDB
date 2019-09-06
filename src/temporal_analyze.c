@@ -164,50 +164,6 @@
 TemporalAnalyzeExtraData *temporal_extra_data;
 
 /*****************************************************************************
- * These function are used to remove the time part from the sample rows after
- * getting the statistics from the time dimension, to be able to collect
- * range or array statistics in the same stats variable.
- *****************************************************************************/
-
-static HeapTuple
-tnumber_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
-				   Oid attrtypid, Oid valuetypid, Datum value)
-{
-	Datum *values = (Datum *) palloc(attrNum * sizeof(Datum));
-	bool *null_v = (bool *) palloc(attrNum * sizeof(bool));
-	bool *rep_v = (bool *) palloc(attrNum * sizeof(bool));
-
-	for (int j = 0; j < attrNum; j++)
-	{
-		if (attrtypid == tupDesc->attrs[j].atttypid)
-		{
-			if (valuetypid == INT4OID)
-			{
-				values[j] = tempdisc_get_values_internal(DatumGetTemporal(value));
-				/* Change the attribute typid */
-				// tupDesc->attrs[j].atttypid = type_oid(T_INTRANGE);
-			}
-			else
-			{
-				values[j] = RangeTypePGetDatum(tnumber_value_range_internal(
-						DatumGetTemporal(value)));
-				/* Change the attribute typid */
-				// tupDesc->attrs[j].atttypid = type_oid(T_FLOATRANGE);
-			}
-			rep_v[j] = true;
-			null_v[j] = false;
-		}
-		else
-		{
-			values[j] = 0;
-			rep_v[j] = false;
-			null_v[j] = false;
-		}
-	}
-	return heap_modify_tuple(tuple, tupDesc, values, null_v, rep_v);
-}
-
-/*****************************************************************************
  * Comparison functions for different data types
  * Functions borrowed from array_typanalyze.c
  *****************************************************************************/

@@ -15,6 +15,7 @@
 
 #include "time_selfuncs.h"
 
+#include <port.h>
 #include <access/htup_details.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
