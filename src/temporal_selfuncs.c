@@ -1,52 +1,19 @@
 /*****************************************************************************
  *
  * temporal_selfuncs.c
- *	  Functions for selectivity estimation of operators on temporal types
+ * 
+ * Functions for selectivity estimation of operators on temporal types whose
+ * bounding box is a period, that is, tbool and ttext.
  *
- * The operators currently supported can be obtained by the following query
- * 
- * SELECT oprname, l.typname as oprleft, r.typname as oprright
- * FROM pg_operator op JOIN pg_type l ON op.oprleft = l.oid 
- *	  JOIN pg_type r ON op.oprright = r.oid
- * WHERE l.typname = 'tbool' AND oprresult = 16 -- boolean operator
- * ORDER BY oprname, oprleft, oprright;
- * 
- * -- B-tree comparison operators
- * "=";"tbool";"tbool"
- * "<>";"tbool";"tbool"
- * "<";"tbool";"tbool"
- * "<=";"tbool";"tbool"
- * ">";"tbool";"tbool"
- * ">=";"tbool";"tbool"
- * 
- * -- Bounding box operators
- * "&&";"tbool";"period"
- * "&&";"tbool";"tbool"
- * "@>";"tbool";"period"
- * "@>";"tbool";"tbool"
- * "<@";"tbool";"period"
- * "<@";"tbool";"tbool"
- * "~=";"tbool";"period"
- * "~=";"tbool";"tbool"
- * 
- * -- Relative position operators
- * "<<#";"tbool";"period"
- * "<<#";"tbool";"tbool"
- * "&<#";"tbool";"period"
- * "&<#";"tbool";"tbool"
- * "#>>";"tbool";"period"
- * "#>>";"tbool";"tbool"
- * "#&>";"tbool";"period"
- * "#&>";"tbool";"tbool"
- * 
- * -- Ever/always equal operators
- * "&=";"tbool";"bool"
- * "@=";"tbool";"bool"
+ * The operators currently supported are as follows
+ * - B-tree comparison operators: <, <=, >, >=
+ * - Bounding box operators: &&, @>, <@, ~=
+ * - Relative position operators: <<#, &<#, #>>, #>>
+ * - Ever/always equal operators: &=, @= // TODO
  *
  * Due to implicit casting, a condition such as tbool <<# timestamptz will be
  * transformed into tbool <<# period. This allows to reduce the number of 
- * cases for the operator definitions, indexes, selectivity, etc. Furthermore,
- * xxx
+ * cases for the operator definitions, indexes, selectivity, etc. 
  * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
@@ -86,11 +53,11 @@
 #include "temporal_analyze.h"
 #include "tpoint.h"
 
-
 /*****************************************************************************
  * The following functions are streamlined versions of the corresponding 
  * functions from PostgreSQL to only cover the types we are manipulating, 
- * that is, numbers and timestamps
+ * that is, numbers and timestamps. Otherwise, it is necessary to copy too 
+ * many other functions.
  *****************************************************************************/
 
 /*
@@ -502,9 +469,10 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
  * null entries.  The caller is expected to combine this result with
  * statistics for those portions of the column population.
  */
+// EZ We needed to add the operator as additional argument of the function
 static double
 ineq_histogram_selectivity(PlannerInfo *root,
-						   VariableStatData *vardata,
+						   VariableStatData *vardata, Oid operator,
 						   FmgrInfo *opproc, bool isgt, bool iseq,
 						   Datum constval, Oid consttype)
 {
@@ -525,8 +493,9 @@ ineq_histogram_selectivity(PlannerInfo *root,
 	 */
 	if (HeapTupleIsValid(vardata->statsTuple) &&
 		statistic_proc_security_check(vardata, opproc->fn_oid) &&
+		// EZ replaced InvalidOid by operator
 		get_attstatsslot(&sslot, vardata->statsTuple,
-						 STATISTIC_KIND_HISTOGRAM, InvalidOid,
+						 STATISTIC_KIND_HISTOGRAM, operator, 
 						 ATTSTATSSLOT_VALUES))
 	{
 		if (sslot.nvalues > 1)
@@ -661,8 +630,9 @@ ineq_histogram_selectivity(PlannerInfo *root,
 															 &isdefault);
 
 					/* Subtract off the number of known MCVs */
+					// EZ replaced InvalidOid by operator
 					if (get_attstatsslot(&mcvslot, vardata->statsTuple,
-										 STATISTIC_KIND_MCV, InvalidOid,
+										 STATISTIC_KIND_MCV, operator,
 										 ATTSTATSSLOT_NUMBERS))
 					{
 						otherdistinct -= mcvslot.nnumbers;
@@ -857,7 +827,8 @@ scalarineqsel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	 * If there is a histogram, determine which bin the constant falls in, and
 	 * compute the resulting contribution to selectivity.
 	 */
-	hist_selec = ineq_histogram_selectivity(root, vardata,
+	// EZ added the operator paramenter
+	hist_selec = ineq_histogram_selectivity(root, vardata, operator,
 											&opproc, isgt, iseq,
 											constval, consttype);
 
@@ -948,7 +919,8 @@ var_eq_const(VariableStatData *vardata, Oid operator,
 		 * operator...)
 		 */
 		if (get_attstatsslot(&sslot, vardata->statsTuple,
-							 STATISTIC_KIND_MCV, InvalidOid,
+							 // EZ replaced InvalidOid by operator
+							 STATISTIC_KIND_MCV, operator, 
 							 ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
 		{
 			FmgrInfo	eqproc;
@@ -1138,7 +1110,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
 	double selec = 0.0;
-	Oid op;
+	Oid operator;
 	bool iseq;
 
 	if (cachedOp == SAME_OP || cachedOp == CONTAINS_OP)
@@ -1147,8 +1119,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		if (period->lower != period->upper)
 			return selec;
 		
-		op = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = var_eq_const(vardata, op, TimestampTzGetDatum(period->lower), 
+		operator = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		selec = var_eq_const(vardata, operator, TimestampTzGetDatum(period->lower), 
 			false, false, false);
 	}
 	else if (cachedOp == CONTAINED_OP || cachedOp == OVERLAPS_OP)
@@ -1167,15 +1139,15 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * t < lower(p) OR t > upper(p). In the code that follows we
 		 * take care of whether the lower bounds are inclusive or not
 		 */			
-		op = period->lower_inc ? 
+		operator = period->lower_inc ? 
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, op, false, period->lower_inc, 
+		selec = scalarineqsel(root, operator, false, period->lower_inc, 
 			vardata, TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
-		op = period->upper_inc ? 
+		operator = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec += scalarineqsel(root, op, true, period->upper_inc, 
+		selec += scalarineqsel(root, operator, true, period->upper_inc, 
 			vardata, TimestampTzGetDatum(period->upper), TIMESTAMPTZOID);
 		selec = 1 - selec;
 	}
@@ -1188,42 +1160,42 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	{
 		/* TimestampTz t <<# Period p <=> t < (<=) lower(p) depending on
 		 * whether lower_inc(p) is true or false */
-		op = period->lower_inc ? 
+		operator = period->lower_inc ? 
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->lower_inc;
-		selec = scalarineqsel(root, op, false, iseq, vardata, 
+		selec = scalarineqsel(root, operator, false, iseq, vardata, 
 			period->lower, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == AFTER_OP || cachedOp == GT_OP || cachedOp == GE_OP)
 	{
 		/* TimestampTz t #>> Period p <=> t > (>=) upper(p) depending on 
 		 * whether lower_inc(p) is true or false */
-		op = period->upper_inc ? 
+		operator = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->upper_inc;
-		selec = scalarineqsel(root, op, true, iseq, vardata, 
+		selec = scalarineqsel(root, operator, true, iseq, vardata, 
 			period->lower, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
 		/* TimestampTz t &<# Period p <=> t <= (<) upper(p) depending on 
 		 * whether lower_inc(p) is true or false */
-		op = period->upper_inc ? 
+		operator = period->upper_inc ? 
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, op, false, period->upper_inc, vardata, 
+		selec = scalarineqsel(root, operator, false, period->upper_inc, vardata, 
 			period->upper, TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
 		/* TimestampTz t #&> Period p <=> t >= (>) lower(p) depending on
 		 * whether lower_inc(p) is true or false */
-		op = period->lower_inc ? 
+		operator = period->lower_inc ? 
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, op, true, period->lower_inc, vardata, 
+		selec = scalarineqsel(root, operator, true, period->lower_inc, vardata, 
 			period->lower, TIMESTAMPTZOID);
 	}
 	else /* Unknown operator */
@@ -1245,7 +1217,7 @@ temporali_sel(PlannerInfo *root, VariableStatData *vardata,
 
 Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp)
+	Period *period, Oid operator, CachedOp cachedOp)
 {
 	double selec = 0.0;
 	/*
@@ -1254,8 +1226,8 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	 */
 	if (cachedOp == SAME_OP)
 	{
-		Oid op = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-		selec = var_eq_const(vardata, op, PeriodGetDatum(period), 
+		Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+		selec = var_eq_const(vardata, operator, PeriodGetDatum(period), 
 			false, false, false);
 	}
 	else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||
@@ -1263,7 +1235,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
 		cachedOp == OVERAFTER_OP) 
 	{
-		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
+		selec = calc_period_hist_selectivity(vardata, period, operator, cachedOp);
 	}
 	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
 		cachedOp == GT_OP || cachedOp == GE_OP) 
@@ -1273,7 +1245,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * For selectivity estimation we approximate by taking into account
 		 * only the bounding boxes. In the case here the bounding box is a
 		 * period and thus we can use the period selectivity estimation */
-		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
+		selec = calc_period_hist_selectivity(vardata, period, operator, cachedOp);
 	}
 	else /* Unknown operator */
 	{
@@ -1373,7 +1345,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
 	else
 		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
-		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
+		selec = temporals_sel(root, &vardata, &constperiod, operator, cachedOp);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);

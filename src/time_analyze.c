@@ -277,7 +277,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			length_hist_values = palloc(0);
 			num_hist = 0;
 		}
-		stats->stakind[slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+		stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
 		stats->staop[slot_idx] = Float8LessOperator;
 		stats->stavalues[slot_idx] = length_hist_values;
 		stats->numvalues[slot_idx] = num_hist;

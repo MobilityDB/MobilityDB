@@ -691,11 +691,14 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 	bool bboxop = (op == OVERLAPS_OP || op == CONTAINS_OP ||
 		op == CONTAINED_OP || op == SAME_OP);
 
-	/* Get statistics */
+	/* Get statistics 
+	 * Currently PostGIS does not set the associated staopN so we
+	 * can pass InvalidOid */
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot(&sslot, vardata->statsTuple, STATISTIC_KIND_ND, 
 			InvalidOid, ATTSTATSSLOT_NUMBERS)))
 		return -1;
+
 	/* Clone the stats here so we can release the attstatsslot immediately */
 	nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
 	memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
@@ -967,8 +970,11 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		else if (duration == TEMPORALI)
 			selec *= temporali_sel(root, &vardata, &constperiod, cachedOp);
 		else
+		{
 			/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
-			selec *= temporals_sel(root, &vardata, &constperiod, cachedOp);
+			selec *= temporals_sel(root, &vardata, &constperiod, 
+				operator, cachedOp);
+		}
 	}
 
 	ReleaseVariableStats(vardata);
