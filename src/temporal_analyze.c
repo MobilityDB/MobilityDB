@@ -1781,104 +1781,85 @@ tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  *****************************************************************************/
 
 void
-temporal_info(VacAttrStats *stats)
-{
-	Oid ltopr, eqopr;
-	Form_pg_attribute attr = stats->attr;
-
-	if (attr->attstattarget < 0)
-		attr->attstattarget = default_statistics_target;
-
-	Oid valuetypid = base_oid_from_temporal(stats->attrtypid);
-
-	get_sort_group_operators(valuetypid,
-							 false, false, false,
-							 &ltopr, &eqopr, NULL,
-							 NULL);
-}
-
-void
 temporal_extra_info(VacAttrStats *stats)
 {
+	TypeCacheEntry *typentry;
+	TemporalAnalyzeExtraData *extra_data;
 	Form_pg_attribute attr = stats->attr;
 
-	if (attr->attstattarget < 0)
-		attr->attstattarget = default_statistics_target;
-
-	TypeCacheEntry *typentry,
-			*value_typentry,
-			*time_typentry;
-	TemporalAnalyzeExtraData *extra_data;
-
 	/*
-	 * Check attribute data type is a varlena array (or a domain over one).
+	 * Check attribute data type is a temporal type.
 	 */
-	if (!OidIsValid(stats->attrtypid))
+	if (! temporal_type_oid(stats->attrtypid))
 		elog(ERROR, "temporal_analyze was invoked with invalid type %u",
 			 stats->attrtypid);
-
-	/*
-	 * Gather information about the element type. If we fail to find
-	 * something, return leaving the state from std_typanalyze() in place.
-	 */
-	typentry = lookup_type_cache(stats->attrtypid,
-								 TYPECACHE_EQ_OPR |
-								 TYPECACHE_CMP_PROC_FINFO |
-								 TYPECACHE_HASH_PROC_FINFO);
 
 	/* Store our findings for use by stats functions */
 	extra_data = (TemporalAnalyzeExtraData *) palloc(sizeof(TemporalAnalyzeExtraData));
 
+	/*
+	 * Gather information about the temporal type and its value and time types.
+	 */
+
+	/* Information about the temporal type */
+	typentry = lookup_type_cache(stats->attrtypid,
+								 TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
+								 TYPECACHE_CMP_PROC_FINFO |
+								 TYPECACHE_HASH_PROC_FINFO);
 	extra_data->type_id = typentry->type_id;
 	extra_data->eq_opr = typentry->eq_opr;
+	extra_data->lt_opr = typentry->lt_opr;
 	extra_data->typbyval = typentry->typbyval;
 	extra_data->typlen = typentry->typlen;
 	extra_data->typalign = typentry->typalign;
 	extra_data->cmp = &typentry->cmp_proc_finfo;
 	extra_data->hash = &typentry->hash_proc_finfo;
 
-	if (stats->attrtypid == type_oid(T_TBOOL) || stats->attrtypid == type_oid(T_TTEXT) ||
-		stats->attrtypid == type_oid(T_TINT) || stats->attrtypid == type_oid(T_TFLOAT))
-	{
-		value_typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
-										   TYPECACHE_EQ_OPR |
-										   TYPECACHE_CMP_PROC_FINFO |
-										   TYPECACHE_HASH_PROC_FINFO);
-		extra_data->value_type_id = value_typentry->type_id;
-		extra_data->value_eq_opr = value_typentry->eq_opr;
-		extra_data->value_typbyval = value_typentry->typbyval;
-		extra_data->value_typlen = value_typentry->typlen;
-		extra_data->value_typalign = value_typentry->typalign;
-		extra_data->value_cmp = &value_typentry->cmp_proc_finfo;
-		extra_data->value_hash = &value_typentry->hash_proc_finfo;
-	}
+	/* Information about the value type */
+	typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
+										TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
+										TYPECACHE_CMP_PROC_FINFO |
+										TYPECACHE_HASH_PROC_FINFO);
+	extra_data->value_type_id = typentry->type_id;
+	extra_data->value_eq_opr = typentry->eq_opr;
+	extra_data->value_lt_opr = typentry->lt_opr;
+	extra_data->value_typbyval = typentry->typbyval;
+	extra_data->value_typlen = typentry->typlen;
+	extra_data->value_typalign = typentry->typalign;
+	extra_data->value_cmp = &typentry->cmp_proc_finfo;
+	extra_data->value_hash = &typentry->hash_proc_finfo;
 
+	/* Information about the time type */
     if (stats->attrtypmod == TEMPORALINST)
     {
-        time_typentry = lookup_type_cache(TIMESTAMPTZOID,
+        typentry = lookup_type_cache(TIMESTAMPTZOID,
+										  TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
                                           TYPECACHE_CMP_PROC_FINFO |
                                           TYPECACHE_HASH_PROC_FINFO);
         extra_data->time_type_id = TIMESTAMPTZOID;
-        extra_data->time_eq_opr = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+        extra_data->time_eq_opr = typentry->eq_opr;
+        extra_data->time_lt_opr = typentry->lt_opr;
         extra_data->time_typbyval = false;
         extra_data->time_typlen = sizeof(TimestampTz);
         extra_data->time_typalign = 'd';
-        extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
-        extra_data->time_hash = &time_typentry->hash_proc_finfo;
+        extra_data->time_cmp = &typentry->cmp_proc_finfo;
+        extra_data->time_hash = &typentry->hash_proc_finfo;
     }
     else
     {
-		Oid oid = type_oid(T_PERIOD);
-        time_typentry = lookup_type_cache(oid,
+		Oid pertypoid = type_oid(T_PERIOD);
+        typentry = lookup_type_cache(pertypoid,
+										  TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
                                           TYPECACHE_CMP_PROC_FINFO |
                                           TYPECACHE_HASH_PROC_FINFO);
-        extra_data->time_type_id = oid;
-        extra_data->time_eq_opr = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+        extra_data->time_type_id = pertypoid;
+        extra_data->time_eq_opr = typentry->eq_opr;
+        extra_data->time_lt_opr = typentry->lt_opr;
         extra_data->time_typbyval = false;
         extra_data->time_typlen = sizeof(Period);
         extra_data->time_typalign = 'd';
-        extra_data->time_cmp = &time_typentry->cmp_proc_finfo;
-        extra_data->time_hash = &time_typentry->hash_proc_finfo;
+        extra_data->time_cmp = &typentry->cmp_proc_finfo;
+        extra_data->time_hash = &typentry->hash_proc_finfo;
     }
 
 	extra_data->std_extra_data = stats->extra_data;
@@ -1895,10 +1876,8 @@ PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(duration == TEMPORAL || duration == TEMPORALINST ||
-		   duration == TEMPORALI || duration == TEMPORALSEQ ||
-		   duration == TEMPORALS);
+	int duration;
+
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
 	 * operators, in which case we also can't do anything, so just fail.
@@ -1906,11 +1885,15 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-	if (duration == TEMPORALINST)
-		temporal_info(stats);
-	else
-		temporal_extra_info(stats);
+	/* 
+	 * Collect extra information about the temporal type and its value
+	 * and time types
+	 */
+	temporal_extra_info(stats);
 
+	/* Ensure duration is valid */
+	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	temporal_duration_all_is_valid(duration);
 	if (duration == TEMPORALINST)
 		stats->compute_stats = temporalinst_compute_stats;
 	else if (duration == TEMPORALI)
@@ -1921,8 +1904,51 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(true);
 }
 
-
 /*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tnumber_analyze);
+
+PGDLLEXPORT Datum
+tnumber_analyze(PG_FUNCTION_ARGS)
+{
+	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+	int duration;
+
+	/*
+	 * Call the standard typanalyze function.  It may fail to find needed
+	 * operators, in which case we also can't do anything, so just fail.
+	 */
+	if (!std_typanalyze(stats))
+		PG_RETURN_BOOL(false);
+
+	/* 
+	 * Collect extra information about the temporal type and its value
+	 * and time types
+	 */
+	temporal_extra_info(stats);
+
+	/*
+	 * Ensure duration is valid and call the corresponding function to 
+	 * compute statistics.
+	 */
+	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	temporal_duration_all_is_valid(duration);
+	if (duration == TEMPORALINST)
+		stats->compute_stats = tnumberinst_compute_stats;
+	else if (duration == TEMPORALI)
+		stats->compute_stats = tnumberi_compute_stats;
+	else
+		stats->compute_stats = tnumbers_compute_stats;
+
+	PG_RETURN_BOOL(true);
+}
+
+/*****************************************************************************
+ * Test function to see whether it is possible to use the same approach for
+ * collecting statistics as for geometry, that is, by removing the time
+ * dimension for the sample tuples and calling the function for the value 
+ * dimension.
+ *****************************************************************************/
 
 static void
 tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
@@ -1976,16 +2002,13 @@ tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	stats->attrtypid = oidsave;
 }
 
-PG_FUNCTION_INFO_V1(tnumber_analyze);
+PG_FUNCTION_INFO_V1(tnumber_analyze_new);
 
 PGDLLEXPORT Datum
-tnumber_analyze(PG_FUNCTION_ARGS)
+tnumber_analyze_new(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(duration == TEMPORAL || duration == TEMPORALINST ||
-		   duration == TEMPORALI || duration == TEMPORALSEQ ||
-		   duration == TEMPORALS);
+
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
 	 * operators, in which case we also can't do anything, so just fail.
@@ -1993,43 +2016,13 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	if (!std_typanalyze(stats))
 		PG_RETURN_BOOL(false);
 
-	if (duration == TEMPORALINST)
-		temporal_info(stats);
-	else
-		temporal_extra_info(stats);
+	/* 
+	 * Collect extra information about the temporal type and its value
+	 * and time types
+	 */
+	temporal_extra_info(stats);
+
 	stats->compute_stats = tnumber_compute_stats;
-	PG_RETURN_BOOL(true);
-}
-
-PG_FUNCTION_INFO_V1(tnumber_analyze_old);
-
-PGDLLEXPORT Datum
-tnumber_analyze_old(PG_FUNCTION_ARGS)
-{
-	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	assert(duration == TEMPORAL || duration == TEMPORALINST ||
-		   duration == TEMPORALI || duration == TEMPORALSEQ ||
-		   duration == TEMPORALS);
-	/*
-	 * Call the standard typanalyze function.  It may fail to find needed
-	 * operators, in which case we also can't do anything, so just fail.
-	 */
-	if (!std_typanalyze(stats))
-		PG_RETURN_BOOL(false);
-
-	if (duration == TEMPORALINST)
-		temporal_info(stats);
-	else
-		temporal_extra_info(stats);
-
-	if (duration == TEMPORALINST)
-		stats->compute_stats = tnumberinst_compute_stats;
-	else if (duration == TEMPORALI)
-		stats->compute_stats = tnumberi_compute_stats;
-	else
-		stats->compute_stats = tnumbers_compute_stats;
-
 	PG_RETURN_BOOL(true);
 }
 

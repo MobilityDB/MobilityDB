@@ -28,6 +28,7 @@ typedef struct
 	/* Information about array element type */
 	Oid type_id;			/* element type's OID */
 	Oid eq_opr;				/* default equality operator's OID */
+	Oid lt_opr;				/* default less than operator's OID */
 	bool typbyval;			/* physical properties of element type */
 	int16 typlen;
 	char typalign;
@@ -35,6 +36,7 @@ typedef struct
 	/* Information about the value part of array element */
 	Oid value_type_id;		/* element type's OID */
 	Oid value_eq_opr;		/* default equality operator's OID */
+	Oid value_lt_opr;		/* default less than operator's OID */
 	bool value_typbyval;	/* physical properties of element type */
 	int16 value_typlen;
 	char value_typalign;
@@ -42,6 +44,7 @@ typedef struct
 	/* Information about the temporal part of array element */
 	Oid time_type_id;	/* element type's OID */
 	Oid time_eq_opr;	/* default equality operator's OID */
+	Oid time_lt_opr;	/* default less than operator's OID */
 	bool time_typbyval;	/* physical properties of element type */
 	int16 time_typlen;
 	char time_typalign;
@@ -95,15 +98,10 @@ typedef struct
 } CompareScalarsContext;
 
 /*****************************************************************************
- * Statistics information for Temporal types
+ * Statistics information for temporal types
  *****************************************************************************/
 
-extern void temporal_info(VacAttrStats *stats);
 extern void temporal_extra_info(VacAttrStats *stats);
-
-/*****************************************************************************
- * Statistics functions for Temporal* type
- *****************************************************************************/
 
 extern void temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 									   int samplerows, double totalrows);

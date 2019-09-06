@@ -111,7 +111,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
 	 * returning the default estimate, because this still takes into
 	 * account the fraction of NULL tuples, if we had statistics for them.
 	 */
-	hist_selec = calc_period_hist_selectivity(vardata, constval, operator, cachedOp);
+	hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp);
 	if (hist_selec < 0.0)
 		hist_selec = default_period_selectivity(operator);
 
@@ -133,7 +133,7 @@ calc_periodsel(VariableStatData *vardata, Period *constval, Oid operator)
  */
 double
 calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
-	Oid operator, CachedOp cachedOp)
+	CachedOp cachedOp)
 {
 	AttStatsSlot hslot, lslot;
 	PeriodBound *hist_lower, *hist_upper;
@@ -143,8 +143,8 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 
 	if (!(HeapTupleIsValid(vardata->statsTuple) &&
 		  get_attstatsslot(&hslot, vardata->statsTuple,
-						   STATISTIC_KIND_BOUNDS_HISTOGRAM, 
-						   operator, ATTSTATSSLOT_VALUES)))
+						   STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, 
+						   InvalidOid, ATTSTATSSLOT_VALUES)))
 		return -1.0;
 	/*
 	 * Convert histogram of periods into histograms of its lower and upper
@@ -163,7 +163,7 @@ calc_period_hist_selectivity(VariableStatData *vardata, Period *constval,
 		if (!(HeapTupleIsValid(vardata->statsTuple) &&
 			  get_attstatsslot(&lslot, vardata->statsTuple,
 							   STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, 
-							   operator, ATTSTATSSLOT_VALUES)))
+							   InvalidOid, ATTSTATSSLOT_VALUES)))
 		{
 			free_attstatsslot(&hslot);
 			return -1.0;
@@ -899,9 +899,9 @@ periodsel(PG_FUNCTION_ARGS)
 	 * in what follows.
 	 */
 
-	Oid timetype = ((Const *) other)->consttype;
-	time_type_oid(timetype);
-	if (timetype == TIMESTAMPTZOID)
+	Oid timetypid = ((Const *) other)->consttype;
+	time_type_oid(timetypid);
+	if (timetypid == TIMESTAMPTZOID)
 	{
 		/* the right argument is a constant TIMESTAMPTZ. We convert it into
 		 * a singleton period
@@ -909,7 +909,7 @@ periodsel(PG_FUNCTION_ARGS)
 		TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
 		constperiod = period_make(t, t, true, true);
 	}
-	else if (timetype == type_oid(T_TIMESTAMPSET))
+	else if (timetypid == type_oid(T_TIMESTAMPSET))
 	{
 		/* the right argument is a constant TIMESTAMPSET. We convert it into
 		 * a period, which is its bounding box.
@@ -917,12 +917,12 @@ periodsel(PG_FUNCTION_ARGS)
 		constperiod =  timestampset_bbox(
 				DatumGetTimestampSet(((Const *) other)->constvalue));
 	}
-	else if (timetype == type_oid(T_PERIOD))
+	else if (timetypid == type_oid(T_PERIOD))
 	{
 		/* just copy the value */
 		constperiod = DatumGetPeriod(((Const *) other)->constvalue);
 	}
-	else if (timetype== type_oid(T_PERIODSET))
+	else if (timetypid == type_oid(T_PERIODSET))
 	{
 		/* the right argument is a constant PERIODSET. We convert it into
 		 * a period, which is its bounding box.

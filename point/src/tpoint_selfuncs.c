@@ -970,11 +970,8 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		else if (duration == TEMPORALI)
 			selec *= temporali_sel(root, &vardata, &constperiod, cachedOp);
 		else
-		{
 			/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
-			selec *= temporals_sel(root, &vardata, &constperiod, 
-				operator, cachedOp);
-		}
+			selec *= temporals_sel(root, &vardata, &constperiod, cachedOp);
 	}
 
 	ReleaseVariableStats(vardata);

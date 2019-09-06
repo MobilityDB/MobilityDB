@@ -449,10 +449,20 @@ type_has_precomputed_trajectory(Oid valuetypid)
  * Assertion tests
  *****************************************************************************/
 
+/* Used for the dispatch functions */
 void 
 temporal_duration_is_valid(int16 duration)
 {
 	assert(duration == TEMPORALINST || duration == TEMPORALI || 
+		duration == TEMPORALSEQ || duration == TEMPORALS);
+}
+
+/* Used for the analyze and selectivity functions */
+void 
+temporal_duration_all_is_valid(int16 duration)
+{
+	assert(duration == TEMPORAL || 
+		duration == TEMPORALINST || duration == TEMPORALI || 
 		duration == TEMPORALSEQ || duration == TEMPORALS);
 }
 

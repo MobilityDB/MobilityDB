@@ -778,6 +778,60 @@ ineq_histogram_selectivity(PlannerInfo *root,
 }
 
 /*
+ *	mcv_selectivity			- Examine the MCV list for selectivity estimates
+ *
+ * Determine the fraction of the variable's MCV population that satisfies
+ * the predicate (VAR OP CONST), or (CONST OP VAR) if !varonleft.  Also
+ * compute the fraction of the total column population represented by the MCV
+ * list.  This code will work for any boolean-returning predicate operator.
+ *
+ * The function result is the MCV selectivity, and the fraction of the
+ * total population is returned into *sumcommonp.  Zeroes are returned
+ * if there is no MCV list.
+ */
+// EZ added the operator parameter
+// The sufix was added since the function mcv_selectivity is exported in selfuncs.h
+static double
+mcv_selectivity_mobdb(VariableStatData *vardata, Oid operator, FmgrInfo *opproc,
+				Datum constval, bool varonleft, double *sumcommonp)
+{
+	double		mcv_selec,
+				sumcommon;
+	AttStatsSlot sslot;
+	int			i;
+
+	mcv_selec = 0.0;
+	sumcommon = 0.0;
+
+	if (HeapTupleIsValid(vardata->statsTuple) &&
+		statistic_proc_security_check(vardata, opproc->fn_oid) &&
+		// EZ changed InvalidOid by parameter
+		get_attstatsslot(&sslot, vardata->statsTuple,
+						 STATISTIC_KIND_MCV, operator,
+						 ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
+	{
+		for (i = 0; i < sslot.nvalues; i++)
+		{
+			if (varonleft ?
+				DatumGetBool(FunctionCall2Coll(opproc,
+											   DEFAULT_COLLATION_OID,
+											   sslot.values[i],
+											   constval)) :
+				DatumGetBool(FunctionCall2Coll(opproc,
+											   DEFAULT_COLLATION_OID,
+											   constval,
+											   sslot.values[i])))
+				mcv_selec += sslot.numbers[i];
+			sumcommon += sslot.numbers[i];
+		}
+		free_attstatsslot(&sslot);
+	}
+
+	*sumcommonp = sumcommon;
+	return mcv_selec;
+}
+
+/*
  *	scalarineqsel		- Selectivity of "<", "<=", ">", ">=" for scalars.
  *
  * This is the guts of scalarltsel/scalarlesel/scalargtsel/scalargesel.
@@ -820,14 +874,15 @@ scalarineqsel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	 * to the result selectivity.  Also add up the total fraction represented
 	 * by MCV entries.
 	 */
-	mcv_selec = mcv_selectivity(vardata, &opproc, constval, true,
+	// EZ added the operator parameter
+	mcv_selec = mcv_selectivity_mobdb(vardata, operator, &opproc, constval, true,
 								&sumcommon);
 
 	/*
 	 * If there is a histogram, determine which bin the constant falls in, and
 	 * compute the resulting contribution to selectivity.
 	 */
-	// EZ added the operator paramenter
+	// EZ added the operator parameter
 	hist_selec = ineq_histogram_selectivity(root, vardata, operator,
 											&opproc, isgt, iseq,
 											constval, consttype);
@@ -1217,16 +1272,18 @@ temporali_sel(PlannerInfo *root, VariableStatData *vardata,
 
 Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, Oid operator, CachedOp cachedOp)
+	Period *period, CachedOp cachedOp)
 {
 	double selec = 0.0;
+	Oid operator = oper_oid(cachedOp, T_PERIOD, T_PERIOD);
+
 	/*
 	 * There is no ~= operator for time types and thus it is necessary to
 	 * take care of this operator here.
 	 */
 	if (cachedOp == SAME_OP)
 	{
-		Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+		operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 		selec = var_eq_const(vardata, operator, PeriodGetDatum(period), 
 			false, false, false);
 	}
@@ -1235,7 +1292,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		cachedOp == AFTER_OP || cachedOp == OVERBEFORE_OP || 
 		cachedOp == OVERAFTER_OP) 
 	{
-		selec = calc_period_hist_selectivity(vardata, period, operator, cachedOp);
+		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
 	}
 	else if (cachedOp == LT_OP || cachedOp == LE_OP || 
 		cachedOp == GT_OP || cachedOp == GE_OP) 
@@ -1245,7 +1302,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 		 * For selectivity estimation we approximate by taking into account
 		 * only the bounding boxes. In the case here the bounding box is a
 		 * period and thus we can use the period selectivity estimation */
-		selec = calc_period_hist_selectivity(vardata, period, operator, cachedOp);
+		selec = calc_period_hist_selectivity(vardata, period, cachedOp);
 	}
 	else /* Unknown operator */
 	{
@@ -1336,16 +1393,14 @@ temporal_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	assert(duration == TEMPORAL || duration == TEMPORALINST ||
-		   duration == TEMPORALI || duration == TEMPORALSEQ ||
-		   duration == TEMPORALS);
+	temporal_duration_all_is_valid(duration);
 	if (duration == TEMPORALINST)
 		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
 	else if (duration == TEMPORALI)
 		selec = temporali_sel(root, &vardata, &constperiod, cachedOp);
 	else
 		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
-		selec = temporals_sel(root, &vardata, &constperiod, operator, cachedOp);
+		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
 
 	ReleaseVariableStats(vardata);
 	CLAMP_PROBABILITY(selec);

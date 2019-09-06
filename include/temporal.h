@@ -308,6 +308,7 @@ extern bool type_has_precomputed_trajectory(Oid valuetypid);
 /* Assertion tests */
 
 extern void temporal_duration_is_valid(int16 type);
+extern void temporal_duration_all_is_valid(int16 type);
 extern void numrange_type_oid(Oid type);
 extern void base_type_oid(Oid valuetypid);
 extern void base_type_all_oid(Oid valuetypid);
