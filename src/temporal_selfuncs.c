@@ -1382,12 +1382,14 @@ temporal_sel(PG_FUNCTION_ARGS)
 	if (!found)
 		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
+	/* Get the duration of the temporal column */
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	temporal_duration_all_is_valid(duration);
+
+	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)
 		selec = temporalinst_sel(root, &vardata, &constperiod, cachedOp);
 	else
-		/* duration is equal to TEMPORAL, TEMPORALSEQ, or TEMPORALS */
 		selec = temporals_sel(root, &vardata, &constperiod, cachedOp);
 
 	ReleaseVariableStats(vardata);

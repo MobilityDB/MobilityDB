@@ -172,32 +172,30 @@ range_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 /*****************************************************************************
- * Generic statistics functions for non-spatial temporal types.
- * In these functions the last argument valuestats determines whether
- * statistics are computed for the value dimension, i.e., in the case of
- * temporal numbers. Otherwise, statistics are computed only for the temporal
- * dimension, i.e., in the the case of temporal booleans and temporal text.
- *****************************************************************************/
-
-/* 
  * Compute statistics for scalar values, used both for the value and the 
  * time components of TemporalInst columns.
  * Function derived from compute_scalar_stats of file analyze.c 
- */
+ *****************************************************************************/
+
 static void
 scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 					 ScalarMCVItem *track, int nonnull_cnt, int null_cnt, Oid valuetypid,
 					 int slot_idx, int total_width, int totalrows, int samplerows)
 {
-	double corr_xysum;
 	SortSupportData ssup;
 	Oid ltopr, eqopr;
 	int track_cnt = 0,
 		num_bins = stats->attr->attstattarget,
 		num_mcv = stats->attr->attstattarget,
 		num_hist,
-		typlen;
+		typlen,
+		ndistinct,	/* # distinct values in sample */
+		nmultiple,	/* # that appear multiple times */
+		dups_cnt,
+		i;
 	bool typbyval;
+	MemoryContext old_cxt;
+	CompareScalarsContext cxt;
 
 	if (valuetypid == TIMESTAMPTZOID)
 	{
@@ -213,13 +211,6 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	/* We need to change the OID due to PostgreSQL internal behavior */
 	if (valuetypid == INT4OID)
 		valuetypid = INT8OID;
-
-	MemoryContext old_cxt;
-	int 	ndistinct,	/* # distinct values in sample */
-			nmultiple,	/* # that appear multiple times */
-			dups_cnt,
-			i;
-	CompareScalarsContext cxt;
 
 	memset(&ssup, 0, sizeof(ssup));
 	ssup.ssup_cxt = CurrentMemoryContext;
@@ -249,14 +240,10 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	/* Must copy the target values into anl_context */
 	old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
-	corr_xysum = 0;
-	ndistinct = 0;
-	nmultiple = 0;
-	dups_cnt = 0;
+	ndistinct = 0, nmultiple = 0, dups_cnt = 0;
 	for (i = 0; i < nonnull_cnt; i++)
 	{
 		int tupno = values[i].tupno;
-		corr_xysum += ((double) i) * ((double) tupno);
 		dups_cnt++;
 		if (tupnoLink[tupno] == tupno)
 		{
@@ -499,6 +486,14 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	MemoryContextSwitchTo(old_cxt);
 }
 
+/*****************************************************************************
+ * Generic statistics functions for alphanumeric temporal types.
+ * In these functions the last argument valuestats determines whether
+ * statistics are computed for the value dimension, that is, it is true for
+ * temporal numbers. Otherwise, statistics are computed only for the temporal
+ * dimension, that is, in the the case of temporal boolean and temporal text.
+ *****************************************************************************/
+
 /* 
  * Compute statistics for TemporalInst columns.
  * Function derived from compute_scalar_stats of file analyze.c 
@@ -608,7 +603,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /* 
- * Compute statistics for TemporalSeq and TemporalS columns.
+ * Compute statistics for all durations distinct from TemporalInst.
  * Function derived from compute_range_stats of file rangetypes_typanalyze.c 
  */
 static void
@@ -633,7 +628,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	if (valuestats)
 	{
-		/* This function is valid for temporal numbers */
+		/* Ensure function is called for temporal numbers */
 		numeric_base_type_oid(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
 			rangetypid = type_oid(T_INTRANGE);

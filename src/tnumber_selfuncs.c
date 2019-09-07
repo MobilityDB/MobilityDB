@@ -953,10 +953,14 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
+		/* Fetch the range operator corresponding to the cachedOp */
+		value_oprid = tnumber_cachedop_rangeop(cachedOp);
+		/* If the corresponding range operator is not found */
+		if (value_oprid == InvalidOid)
+			return default_tnumber_selectivity(cachedOp);
 		range = range_make(Float8GetDatum(box->xmin), 
 			Float8GetDatum(box->xmax), true, true, valuetypid);
 		rangetypid = range_oid_from_base(valuetypid);		
-		value_oprid = tnumber_cachedop_rangeop(cachedOp);
 		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 	}
 	if (MOBDB_FLAGS_GET_T(box->flags))
