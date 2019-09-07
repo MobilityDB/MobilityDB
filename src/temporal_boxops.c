@@ -242,7 +242,7 @@ static void
 temporalinstarr_to_period(Period *period, TemporalInst **instants, int count, 
 	bool lower_inc, bool upper_inc) 
 {
-	period_set(period, instants[0]->t, instants[count-1]->t, lower_inc, upper_inc);
+	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
 	return;
 }
 
@@ -326,7 +326,7 @@ static void
 temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int count) 
 {
 	Period *first = &sequences[0]->period;
-	Period *last = &sequences[count-1]->period;
+	Period *last = &sequences[count - 1]->period;
 	period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
 	return;
 }

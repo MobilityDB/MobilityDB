@@ -65,11 +65,11 @@ CREATE OPERATOR CLASS gist_tbool_ops
 	OPERATOR	31		#&> (tbool, tbool),
 	-- functions
 	FUNCTION	1	gist_tbool_consistent(internal, tbool, smallint, oid, internal),
-	FUNCTION	2	gist_time_union(internal, internal),
+	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_tbool_compress(internal),
-	FUNCTION	5	gist_time_penalty(internal, internal, internal),
-	FUNCTION	6	gist_time_picksplit(internal, internal),
-	FUNCTION	7	gist_time_same(period, period, internal);
+	FUNCTION	5	gist_period_penalty(internal, internal, internal),
+	FUNCTION	6	gist_period_picksplit(internal, internal),
+	FUNCTION	7	gist_period_same(period, period, internal);
 
 /******************************************************************************/
 
@@ -267,10 +267,10 @@ CREATE OPERATOR CLASS gist_ttext_ops
 	OPERATOR	31		#&> (ttext, ttext),
 	-- functions
 	FUNCTION	1	gist_ttext_consistent(internal, ttext, smallint, oid, internal),
-	FUNCTION	2	gist_time_union(internal, internal),
+	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_ttext_compress(internal),
-	FUNCTION	5	gist_time_penalty(internal, internal, internal),
-	FUNCTION	6	gist_time_picksplit(internal, internal),
-	FUNCTION	7	gist_time_same(period, period, internal);
+	FUNCTION	5	gist_period_penalty(internal, internal, internal),
+	FUNCTION	6	gist_period_picksplit(internal, internal),
+	FUNCTION	7	gist_period_same(period, period, internal);
 
 /******************************************************************************/

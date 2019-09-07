@@ -274,7 +274,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 			if (!isnew) 
 			{
 				result[count1++] = palloc(sizeof(Period));
-				memcpy(result[count1-1], current, sizeof(Period));
+				memcpy(result[count1 - 1], current, sizeof(Period));
 			} 
 			else
 				result[count1++] = current;
@@ -285,7 +285,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 	if (!isnew)
 	{
 		result[count1++] = palloc(sizeof(Period));
-		memcpy(result[count1-1], current, sizeof(Period));
+		memcpy(result[count1 - 1], current, sizeof(Period));
 	}
 	else
 		result[count1++] = current;

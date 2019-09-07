@@ -214,7 +214,7 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 		capacity <<= 1;
 	SkipList *result = palloc0(sizeof(SkipList));
 	result->elems = palloc0(sizeof(Elem) * capacity);
-	int height = (int) ceil(log2(count-1));
+	int height = (int) ceil(log2(count - 1));
 	result->capacity = capacity;
 	result->next = count;
 	result->length = count - 2;
@@ -224,9 +224,9 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 	/* Fill values first */
 	result->elems[0].value = NULL;
 	for (int i = 0; i < count-2; i ++)
-		result->elems[i+1].value = temporal_copy(values[i]);
-	result->elems[count-1].value = NULL;
-	result->tail = count-1;
+		result->elems[i + 1].value = temporal_copy(values[i]);
+	result->elems[count - 1].value = NULL;
+	result->tail = count - 1;
 
 	/* Link the list in a balanced fashion */
 	for (int level = 0; level < height; level ++)
@@ -265,8 +265,8 @@ skiplist_tailval(SkipList *list)
 	int cur = 0;
 	Elem *e = &list->elems[cur];
 	int height = e->height;
-	while (e->next[height-1] != list->tail)
-		e = &list->elems[e->next[height-1]];
+	while (e->next[height - 1] != list->tail)
+		e = &list->elems[e->next[height - 1]];
 	return e->value;
 }
 */
@@ -297,18 +297,18 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	int16 duration = skiplist_headval(list)->duration;
 	Period period;
 	if (duration == TEMPORALINST)
-		period_set(&period, ((TemporalInst *)values[0])->t, ((TemporalInst *)values[count-1])->t,
+		period_set(&period, ((TemporalInst *)values[0])->t, ((TemporalInst *)values[count - 1])->t,
 			true, true);
 	else
-		period_set(&period, ((TemporalSeq *)values[0])->period.lower, ((TemporalSeq *)values[count-1])->period.upper,
-			((TemporalSeq *)values[0])->period.lower_inc, ((TemporalSeq *)values[count-1])->period.upper_inc);
+		period_set(&period, ((TemporalSeq *)values[0])->period.lower, ((TemporalSeq *)values[count - 1])->period.upper,
+			((TemporalSeq *)values[0])->period.lower_inc, ((TemporalSeq *)values[count - 1])->period.upper_inc);
 
 	int update[SKIPLIST_MAXLEVEL];
 	memset(update, 0, sizeof(update));
 	int cur = 0;
 	int height = list->elems[cur].height;
 	Elem *e = &list->elems[cur];
-	for (int level = height-1; level >= 0; level --)
+	for (int level = height - 1; level >= 0; level --)
 	{
 		while (e->next[level] != -1 && 
 			skiplist_elmpos(list, e->next[level], period.lower) == AFTER)
@@ -359,7 +359,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	/* Level down head & tail if necessary */
 	Elem *head = &list->elems[0];
 	Elem *tail = &list->elems[list->tail];
-	while (head->height > 1 && head->next[head->height-1] == list->tail)
+	while (head->height > 1 && head->next[head->height - 1] == list->tail)
 	{
 		head->height --;
 		tail->height --;
@@ -755,9 +755,9 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2;
 	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		inst2 = temporalseq_inst_n(seq, i+1);
+		inst2 = temporalseq_inst_n(seq, i + 1);
 		value2 = temporalinst_value(inst2);
 		instants[0] = tnumberinst_transform_tavg(inst1);
 		TemporalInst *inst = temporalinst_make(value1, inst2->t,
@@ -776,7 +776,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		! result[seq->count-2]->period.upper_inc)
 	{
 		instants[0] = tnumberinst_transform_tavg(inst2);
-		result[seq->count-1] = temporalseq_from_temporalinstarr(instants, 1,
+		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
 			true, true, false);
 		count = seq->count;
 		pfree(instants[0]);
