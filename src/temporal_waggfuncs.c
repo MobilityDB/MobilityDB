@@ -67,7 +67,7 @@ tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false ;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 		TimestampTz upper = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst2->t),
@@ -98,7 +98,7 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		Datum value2 = temporalinst_value(inst2);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false ;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
 		/* Constant segment */
 		if (datum_eq(value1, value2, inst1->valuetypid))
@@ -267,7 +267,7 @@ temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *i
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false ;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
 			timestamptz_pl_interval, TimestampTzGetDatum(inst2->t), 
 			PointerGetDatum(interval)));
@@ -401,7 +401,7 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false ;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 		double value = DatumGetInt32(temporalinst_value(inst1)); 
 		double2 *dvalue = double2_construct(value, 1);
 		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(

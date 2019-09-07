@@ -615,7 +615,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
 	if (!continuous && count > 1 && !upper_inc &&
 		datum_ne(temporalinst_value(instants[count - 1]), 
-			temporalinst_value(instants[count-2]), valuetypid))
+			temporalinst_value(instants[count - 2]), valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Invalid end value for temporal sequence")));
 
@@ -743,7 +743,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	int newcount = seq->count + 1;
 	if (seq->count > 1)
 	{
-		inst1 = temporalseq_inst_n(seq, seq->count-2);
+		inst1 = temporalseq_inst_n(seq, seq->count - 2);
 		Datum value1 = temporalinst_value(inst1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count - 1);
 		Datum value2 = temporalinst_value(inst2);
@@ -1461,7 +1461,7 @@ tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 	}
 	if (seq->period.upper_inc)
 	{
-		Datum value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count-2));
+		Datum value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
 		Datum value2 = temporalinst_value(inst2);
 		if (datum_ne(value1, value2, INT4OID))
 		{
@@ -2249,7 +2249,7 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 				{
 					instants[j] = temporalinst_make(temporalinst_value(instants[j - 1]),
 						inst->t, valuetypid);
-					bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+					bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 					result[k++] = temporalseq_from_temporalinstarr(instants, j + 1,
 						lower_inc, upper_inc, false);
 					pfree(instants[j]);

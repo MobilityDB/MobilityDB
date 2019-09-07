@@ -322,7 +322,7 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, geo, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
@@ -591,7 +591,7 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2, geo, param, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];

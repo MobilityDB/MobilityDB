@@ -1017,7 +1017,7 @@ tpointseq_speed1(TemporalSeq *seq)
 			inst1->t, FLOAT8OID);
 		instants[1] = temporalinst_make(Float8GetDatum(speed),
 			inst2->t, FLOAT8OID);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false);
 		pfree(instants[0]); pfree(instants[1]);

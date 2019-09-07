@@ -223,7 +223,7 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 
 	/* Fill values first */
 	result->elems[0].value = NULL;
-	for (int i = 0; i < count-2; i ++)
+	for (int i = 0; i < count - 2; i ++)
 		result->elems[i + 1].value = temporal_copy(values[i]);
 	result->elems[count - 1].value = NULL;
 	result->tail = count - 1;
@@ -763,7 +763,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalinst_make(value1, inst2->t,
 			inst1->valuetypid);
 		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = ( (i == seq->count-2) ? seq->period.upper_inc : false ) &&
+		bool upper_inc = ( (i == seq->count - 2) ? seq->period.upper_inc : false ) &&
 			datum_eq(value1, value2, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false);
@@ -773,7 +773,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		lower_inc = true;
 	}
 	if (seq->period.upper_inc && seq->count > 1 &&
-		! result[seq->count-2]->period.upper_inc)
+		! result[seq->count - 2]->period.upper_inc)
 	{
 		instants[0] = tnumberinst_transform_tavg(inst2);
 		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
