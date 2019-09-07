@@ -174,7 +174,8 @@ range_bound_qsort_cmp(const void *a1, const void *a2)
 /*****************************************************************************
  * Compute statistics for scalar values, used both for the value and the 
  * time components of TemporalInst columns.
- * Function derived from compute_scalar_stats of file analyze.c 
+ * Function derived from compute_scalar_stats of file analyze.c so it can be
+ * called twice, for the value and for the time dimension.
  *****************************************************************************/
 
 static void
@@ -503,7 +504,8 @@ static void
 tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					   int samplerows, double totalrows, bool valuestats)
 {
-	int null_cnt = 0,
+	int i,
+		null_cnt = 0,
 		nonnull_cnt = 0,
 		slot_idx = 0;
 	double total_width = 0;
