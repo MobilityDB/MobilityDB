@@ -34,7 +34,7 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-    char errmsg[PGC_ERRMSG_MAXLEN+1];
+    char errmsg[PGC_ERRMSG_MAXLEN + 1];
 
     vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
 
@@ -45,7 +45,7 @@ pg_error(const char *fmt, va_list ap)
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-    char errmsg[PGC_ERRMSG_MAXLEN+1];
+    char errmsg[PGC_ERRMSG_MAXLEN + 1];
 
     vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
 

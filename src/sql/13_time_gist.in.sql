@@ -12,9 +12,9 @@
 
 CREATE FUNCTION gist_timestampset_consistent(internal, timestampset, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_time_consistent'
+	AS 'MODULE_PATHNAME', 'gist_period_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_time_union(internal, internal)
+CREATE FUNCTION gist_period_union(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -22,19 +22,19 @@ CREATE FUNCTION gist_timestampset_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_timestampset_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_time_penalty(internal, internal, internal)
+CREATE FUNCTION gist_period_penalty(internal, internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_time_picksplit(internal, internal)
+CREATE FUNCTION gist_period_picksplit(internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_time_same(period, period, internal)
+CREATE FUNCTION gist_period_same(period, period, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION gist_time_fetch(internal)
+CREATE FUNCTION gist_period_fetch(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
@@ -75,24 +75,24 @@ CREATE OPERATOR CLASS gist_timestampset_ops
 	OPERATOR	31		#&> (timestampset, periodset),
 	-- functions
 	FUNCTION	1	gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
-	FUNCTION	2	gist_time_union(internal, internal),
+	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_timestampset_compress(internal),
-	FUNCTION	5	gist_time_penalty(internal, internal, internal),
-	FUNCTION	6	gist_time_picksplit(internal, internal),
-	FUNCTION	7	gist_time_same(period, period, internal);
+	FUNCTION	5	gist_period_penalty(internal, internal, internal),
+	FUNCTION	6	gist_period_picksplit(internal, internal),
+	FUNCTION	7	gist_period_same(period, period, internal);
 	
 /******************************************************************************/
 
 CREATE FUNCTION gist_period_consistent(internal, period, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_time_consistent'
+	AS 'MODULE_PATHNAME', 'gist_period_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_period_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_period_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_time_ops
+CREATE OPERATOR CLASS gist_period_ops
 	DEFAULT FOR TYPE period USING gist AS
 	STORAGE period,
 	-- overlaps
@@ -129,18 +129,18 @@ CREATE OPERATOR CLASS gist_time_ops
 	OPERATOR	31		#&> (period, periodset),
 	-- functions
 	FUNCTION	1	gist_period_consistent(internal, period, smallint, oid, internal),
-	FUNCTION	2	gist_time_union(internal, internal),
+	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_period_compress(internal),
-	FUNCTION	5	gist_time_penalty(internal, internal, internal),
-	FUNCTION	6	gist_time_picksplit(internal, internal),
-	FUNCTION	7	gist_time_same(period, period, internal),
-	FUNCTION	9	gist_time_fetch(internal);
+	FUNCTION	5	gist_period_penalty(internal, internal, internal),
+	FUNCTION	6	gist_period_picksplit(internal, internal),
+	FUNCTION	7	gist_period_same(period, period, internal),
+	FUNCTION	9	gist_period_fetch(internal);
 	
 /******************************************************************************/
 
 CREATE FUNCTION gist_periodset_consistent(internal, periodset, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_time_consistent'
+	AS 'MODULE_PATHNAME', 'gist_period_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_periodset_compress(internal)
 	RETURNS internal
@@ -184,10 +184,10 @@ CREATE OPERATOR CLASS gist_periodset_ops
 	OPERATOR	31		#&> (periodset, periodset),
 	-- functions
 	FUNCTION	1	gist_periodset_consistent(internal, periodset, smallint, oid, internal),
-	FUNCTION	2	gist_time_union(internal, internal),
+	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_periodset_compress(internal),
-	FUNCTION	5	gist_time_penalty(internal, internal, internal),
-	FUNCTION	6	gist_time_picksplit(internal, internal),
-	FUNCTION	7	gist_time_same(period, period, internal);
+	FUNCTION	5	gist_period_penalty(internal, internal, internal),
+	FUNCTION	6	gist_period_picksplit(internal, internal),
+	FUNCTION	7	gist_period_same(period, period, internal);
 
 /******************************************************************************/

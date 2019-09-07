@@ -29,10 +29,10 @@
  * SP-GiST config functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_time_config);
+PG_FUNCTION_INFO_V1(spgist_period_config);
 
 PGDLLEXPORT Datum
-spgist_time_config(PG_FUNCTION_ARGS)
+spgist_period_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -92,10 +92,10 @@ getQuadrant(Period *centroid, Period *tst)
 	}
 }
 
-PG_FUNCTION_INFO_V1(spgist_time_choose);
+PG_FUNCTION_INFO_V1(spgist_period_choose);
 
 PGDLLEXPORT Datum
-spgist_time_choose(PG_FUNCTION_ARGS)
+spgist_period_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -144,10 +144,10 @@ period_bound_cmp(const void *a, const void *b)
 		ba->inclusive, bb->inclusive);
 }
 
-PG_FUNCTION_INFO_V1(spgist_time_picksplit);
+PG_FUNCTION_INFO_V1(spgist_period_picksplit);
 
 PGDLLEXPORT Datum
-spgist_time_picksplit(PG_FUNCTION_ARGS)
+spgist_period_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -204,10 +204,10 @@ spgist_time_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions for temporal types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_time_inner_consistent);
+PG_FUNCTION_INFO_V1(spgist_period_inner_consistent);
 
 PGDLLEXPORT Datum
-spgist_time_inner_consistent(PG_FUNCTION_ARGS)
+spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -453,10 +453,10 @@ spgist_time_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_time_leaf_consistent);
+PG_FUNCTION_INFO_V1(spgist_period_leaf_consistent);
 
 PGDLLEXPORT Datum
-spgist_time_leaf_consistent(PG_FUNCTION_ARGS)
+spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -477,7 +477,7 @@ spgist_time_leaf_consistent(PG_FUNCTION_ARGS)
 		Period	   *query, period;
 
 		/* Update the recheck flag according to the strategy */
-		out->recheck |= index_time_bbox_recheck(strategy);
+		out->recheck |= index_period_bbox_recheck(strategy);
 			
 		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
 		{

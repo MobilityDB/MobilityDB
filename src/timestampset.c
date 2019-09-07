@@ -54,7 +54,7 @@ static char *
 timestampset_data_ptr(TimestampSet *ts)
 {
 	return (char *)ts + double_pad(sizeof(TimestampSet) + 
-		sizeof(size_t) * (ts->count+1));
+		sizeof(size_t) * (ts->count + 1));
 }
 
 /* N-th TimestampTz of a TimestampSet */
@@ -83,9 +83,9 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 {
 	Period bbox;
 	/* Test the validity of the timestamps */
-	for (int i = 0; i < count-1; i++)
+	for (int i = 0; i < count - 1; i++)
 	{
-		if (timestamp_cmp_internal(times[i], times[i+1]) >= 0)
+		if (timestamp_cmp_internal(times[i], times[i + 1]) >= 0)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid value for timestamp set")));
 	}
@@ -108,7 +108,7 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 		pos += sizeof(TimestampTz);
 	}
 	/* Precompute the bounding box */
-	period_set(&bbox, times[0], times[count-1], true, true);
+	period_set(&bbox, times[0], times[count - 1], true, true);
 	offsets[count] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
 	pos += double_pad(sizeof(Period));

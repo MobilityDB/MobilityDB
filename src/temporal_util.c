@@ -510,7 +510,7 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 	for (int i = 1; i < count; i++)
 		if (datum_ne(values[newcount], values[i], type))
 			values[++ newcount] = values[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 /* Remove duplicates from an array of timestamps */
@@ -523,7 +523,7 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 	for (int i = 1; i < count; i++)
 		if (values[newcount] != values[i])
 			values[++ newcount] = values[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 /*****************************************************************************

@@ -66,7 +66,7 @@ static char *
 temporali_data_ptr(TemporalI *ti) 
 {
 	return (char *)ti + double_pad(sizeof(TemporalI) + 
-		sizeof(size_t) * (ti->count+1));
+		sizeof(size_t) * (ti->count + 1));
 }
 
 /* N-th TemporalInst of a TemporalI */
@@ -119,7 +119,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(instants[i-1]->t, instants[i]->t) >= 0)
+		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Invalid timestamps for temporal value")));
 #ifdef WITH_POSTGIS
@@ -185,7 +185,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 {
 	Oid valuetypid = ti->valuetypid;
 	/* Test the validity of the instant */
-	TemporalInst *inst1 = temporali_inst_n(ti, ti->count-1);
+	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Invalid timestamps for temporal value")));
@@ -245,7 +245,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_expand_bbox(bbox, ti, inst);
-		offsets[ti->count+1] = pos;
+		offsets[ti->count + 1] = pos;
 	}
 	return result;
 }

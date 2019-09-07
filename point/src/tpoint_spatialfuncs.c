@@ -639,7 +639,7 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 		if (replace)
 		{
 			int numpoints = call_function1(LWGEOM_numpoints_linestring, traj);
-			return call_function3(LWGEOM_setpoint_linestring, traj, numpoints-1, point);
+			return call_function3(LWGEOM_setpoint_linestring, traj, numpoints - 1, point);
 		}
 		else
 			return call_function2(LWGEOM_addpoint, traj, point);
@@ -988,15 +988,15 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 static TemporalSeq **
 tpointseq_speed1(TemporalSeq *seq)
 {
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count-1));
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * (seq->count - 1));
 	TemporalInst *instants[2];
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
 	double speed = 0; /* To make the compiler quiet */
 	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		Datum value2 = temporalinst_value(inst2);
 		if (datum_point_eq(value1, value2))
 			speed = 0;
@@ -1017,7 +1017,7 @@ tpointseq_speed1(TemporalSeq *seq)
 			inst1->t, FLOAT8OID);
 		instants[1] = temporalinst_make(Float8GetDatum(speed),
 			inst2->t, FLOAT8OID);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false);
 		pfree(instants[0]); pfree(instants[1]);
@@ -1037,9 +1037,9 @@ tpointseq_speed(TemporalSeq *seq)
 	
 	TemporalSeq **sequences = tpointseq_speed1(seq);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, 
-		seq->count-1, true);
+		seq->count - 1, true);
 	
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 		
@@ -1057,8 +1057,8 @@ tpoints_speed(TemporalS *ts)
 		if (seq->count > 1)
 		{
 			sequences[i] = tpointseq_speed1(seq);
-			/* The number of sequences in the result is always seq->count-1 */
-			totalseqs += seq->count-1;
+			/* The number of sequences in the result is always seq->count - 1 */
+			totalseqs += seq->count - 1;
 		}
 	}
 	if (totalseqs == 0)
@@ -1404,7 +1404,7 @@ tpointseq_azimuth2(TemporalSeq **result, TemporalSeq *seq)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		Datum value2 = temporalinst_value(inst2);
-		upper_inc = (i == seq->count-1) ? seq->period.upper_inc : false;
+		upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 		if (datum_ne(value1, value2, seq->valuetypid))
 		{
 			azimuth = tpointseq_azimuth1(inst1, inst2);
@@ -2114,9 +2114,9 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	TimestampTz tmin = 0; /* keep compiler quiet */
 	bool mintofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		TimestampTz t;
 		bool tofree;
 		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
@@ -2650,15 +2650,15 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		}
 		else if (pos == ts1->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts1, ts1->count-1);
-			inst1 = temporalseq_inst_n(seq, seq->count-1);
+			TemporalSeq *seq = temporals_seq_n(ts1, ts1->count - 1);
+			inst1 = temporalseq_inst_n(seq, seq->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts1, pos-1);
+			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
 			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
-				inst1 = temporalseq_inst_n(seq1, seq1->count-1);
+				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
 			}		
@@ -2677,15 +2677,15 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		}
 		else if (pos == ts2->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts2, ts2->count-1);
-			inst2 = temporalseq_inst_n(seq, seq->count-1);
+			TemporalSeq *seq = temporals_seq_n(ts2, ts2->count - 1);
+			inst2 = temporalseq_inst_n(seq, seq->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts2, pos-1);
+			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
 			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
-				inst2 = temporalseq_inst_n(seq1, seq1->count-1);
+				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);
 			}		

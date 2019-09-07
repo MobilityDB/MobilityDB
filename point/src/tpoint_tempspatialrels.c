@@ -256,7 +256,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 			/* Find the middle time between current instant and the next one 
 			 * and compute the func at that point */
 			double time1 = (interinstants[i])->t;
-			double time2 = (interinstants[i+1])->t;
+			double time2 = (interinstants[i + 1])->t;
 			TimestampTz inttime = time1 + ((time2 - time1)/2);
 			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue) :
@@ -319,10 +319,10 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	int totalseqs = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, geo, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
@@ -522,7 +522,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 			/* Find the middle time between current instant and the next one 
 			 * and compute the func at that point */
 			double time1 = (interinstants[i])->t;
-			double time2 = (interinstants[i+1])->t;
+			double time2 = (interinstants[i + 1])->t;
 			TimestampTz inttime = time1 + ((time2 - time1)/2);
 			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue, param) :
@@ -588,10 +588,10 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	int totalseqs = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i+1);
-		bool upper_inc = (i == seq->count-2) ? seq->period.upper_inc : false;
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2, geo, param, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
@@ -604,7 +604,7 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	{
 		for (int j = 0; j < countseqs[i]; j++)
 			result[k++] = sequences[i][j];
-		if (countseqs[i] != 0 && i < seq->count-1)
+		if (countseqs[i] != 0 && i < seq->count - 1)
 			pfree(sequences[i]);
 	}
 
@@ -1253,7 +1253,7 @@ tdwithin_tpointseq_tpointseq3(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
-		bool upper_inc = (i == seq1->count-1) ? seq1->period.upper_inc : false;
+		bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
 		tdwithin_tpointseq_tpointseq2(&result[k], start1, end1, start2, end2, 
 			lower_inc, upper_inc, d, hasz, func, &countseq);
 		/* The previous step has added between one and three sequences */

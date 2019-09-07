@@ -102,7 +102,7 @@ BLRauenberg (double x, double y, double z)
 		f1 = newF(f, x, y, p);
 		f2 = f;
 		f = f1;
-	} while ((fabs(f2-f1) >= (10E-10)));
+	} while ((fabs(f2 - f1) >= (10E-10)));
 
 	result.x = f;
 	result.y = atan(y / x);

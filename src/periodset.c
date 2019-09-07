@@ -56,7 +56,7 @@ static char *
 periodset_data_ptr(PeriodSet *ps)
 {
 	return (char *)ps + double_pad(sizeof(PeriodSet) + 
-		sizeof(size_t) * (ps->count+1));
+		sizeof(size_t) * (ps->count + 1));
 }
 
 /* N-th Period of a PeriodSet */
@@ -85,11 +85,11 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 {
 	Period bbox;
 	/* Test the validity of the periods */
-	for (int i = 0; i < count-1; i++)
+	for (int i = 0; i < count - 1; i++)
 	{
-		if (timestamp_cmp_internal(periods[i]->upper, periods[i+1]->lower) > 0 ||
-			(timestamp_cmp_internal(periods[i]->upper, periods[i+1]->lower) == 0 &&
-			periods[i]->upper_inc && periods[i+1]->lower_inc))
+		if (timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower) > 0 ||
+			(timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower) == 0 &&
+			periods[i]->upper_inc && periods[i + 1]->lower_inc))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid value for period set")));
 	}
@@ -98,10 +98,10 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 	int newcount = count;
 	if (normalize && count > 1)
 		newperiods = periodarr_normalize(periods, count, &newcount);
-	size_t memsize = double_pad(sizeof(Period)) * (newcount+1);
+	size_t memsize = double_pad(sizeof(Period)) * (newcount + 1);
 	/* Array of pointers containing the pointers to the component Period,
 	   and a pointer to the bbox */
-	size_t pdata = double_pad(sizeof(PeriodSet) + (newcount+1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(PeriodSet) + (newcount + 1) * sizeof(size_t));
 	PeriodSet *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
@@ -115,8 +115,8 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 		pos += double_pad(sizeof(Period));
 	}
 	/* Precompute the bounding box */
-	period_set(&bbox, newperiods[0]->lower, newperiods[newcount-1]->upper,
-		newperiods[0]->lower_inc, newperiods[newcount-1]->upper_inc);
+	period_set(&bbox, newperiods[0]->lower, newperiods[newcount - 1]->upper,
+		newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc);
 	offsets[newcount] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
 	pos += double_pad(sizeof(Period));
@@ -657,9 +657,9 @@ periodset_timestamps(PG_FUNCTION_ARGS)
 	for (int i = 1; i < ps->count; i++)
 	{
 		p = periodset_per_n(ps, i);
-		if (timestamp_cmp_internal(times[k-1], p->lower) != 0)
+		if (timestamp_cmp_internal(times[k - 1], p->lower) != 0)
 			times[k++] = p->lower;
-		if (timestamp_cmp_internal(times[k-1], p->upper) != 0)
+		if (timestamp_cmp_internal(times[k - 1], p->upper) != 0)
 			times[k++] = p->upper;
 	}
 	ArrayType *result = timestamparr_to_array(times, k);

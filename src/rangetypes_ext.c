@@ -178,7 +178,7 @@ rangearr_normalize(RangeType **ranges, int *count)
 			if (copy) 
 			{
 				result[newcount++] = palloc(VARSIZE(current));
-				memcpy(result[newcount-1], current, VARSIZE(current));
+				memcpy(result[newcount - 1], current, VARSIZE(current));
 			} 
 			else
 				result[newcount++] = current;
@@ -189,7 +189,7 @@ rangearr_normalize(RangeType **ranges, int *count)
 	if (copy)
 	{
 		result[newcount++] = palloc(VARSIZE(current));
-		memcpy(result[newcount-1], current, VARSIZE(current));
+		memcpy(result[newcount - 1], current, VARSIZE(current));
 	} else
 		result[newcount++] = current;
 

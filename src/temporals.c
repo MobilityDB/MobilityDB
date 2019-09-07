@@ -65,7 +65,7 @@ static char *
 temporals_data_ptr(TemporalS *ts)
 {
 	return (char *)ts + double_pad(sizeof(TemporalS) + 
-		sizeof(size_t) * (ts->count+1));
+		sizeof(size_t) * (ts->count + 1));
 }
 
 /* N-th TemporalSeq of a TemporalS */
@@ -122,9 +122,9 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(sequences[i-1]->period.upper, sequences[i]->period.lower) > 0 ||
-		   (timestamp_cmp_internal(sequences[i-1]->period.upper, sequences[i]->period.lower) == 0 &&
-		   sequences[i-1]->period.upper_inc && sequences[i]->period.lower_inc))
+		if (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) > 0 ||
+		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
+		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid sequence for temporal sequence set")));
 #ifdef WITH_POSTGIS
@@ -145,7 +145,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	if (normalize && count > 1)
 		newsequences = temporalseqarr_normalize(sequences, count, &newcount);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (newcount+1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS) + (newcount + 1) * sizeof(size_t));
 	size_t memsize = 0;
 	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
@@ -1010,7 +1010,7 @@ temporals_num_instants(TemporalS *ts)
 			if (temporalinst_eq(lastinst, temporalseq_inst_n(seq, 0)))
 				result --;
 		}
-		lastinst = temporalseq_inst_n(seq, seq->count-1);
+		lastinst = temporalseq_inst_n(seq, seq->count - 1);
 		first = false;
 	}
 	return result;
@@ -1049,7 +1049,7 @@ temporals_instant_n(TemporalS *ts, int n)
 			break;
 		}
 		prevcount = count;
-		prev = temporalseq_inst_n(seq, seq->count-1);
+		prev = temporalseq_inst_n(seq, seq->count - 1);
 		first = false;
 		i++;
 	}
@@ -1068,7 +1068,7 @@ temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
 	for (int i = 1; i < count; i++) 
 		if (! temporalinst_eq(instants[newcount], instants[i]))
 			instants[++ newcount] = instants[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 ArrayType *
@@ -1123,7 +1123,7 @@ temporals_num_timestamps(TemporalS *ts)
 			if (lasttime == temporalseq_inst_n(seq, 0)->t)
 				result --;
 		}
-		lasttime = temporalseq_inst_n(seq, seq->count-1)->t;
+		lasttime = temporalseq_inst_n(seq, seq->count - 1)->t;
 		first = false;
 	}
 	return result;
@@ -1165,7 +1165,7 @@ temporals_timestamp_n(TemporalS *ts, int n, TimestampTz *result)
 			break;
 		}
 		prevcount = count;
-		prev = temporalseq_inst_n(seq, seq->count-1)->t;
+		prev = temporalseq_inst_n(seq, seq->count - 1)->t;
 		first = false;
 		i++;
 	}
@@ -1669,7 +1669,7 @@ temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 	for (int i = 1; i < count; i++) 
 		if (! temporalseq_eq(sequences[newcount], sequences[i]))
 			sequences[++ newcount] = sequences[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 static TemporalS *
