@@ -363,8 +363,8 @@ tpoint_set_srid_internal(Temporal *temp, int32 srid)
     else if (temp->duration == TEMPORALS)
         result = (Temporal *)tpoints_set_srid_internal((TemporalS *)temp, srid);
 
-    assert(result != NULL) ;
-    return result ;
+    assert(result != NULL);
+    return result;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_set_srid);
