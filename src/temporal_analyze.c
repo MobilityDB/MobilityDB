@@ -44,7 +44,7 @@
  * 		- stavalues stores the length of the histogram of ranges for the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 2
- *      - stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM.
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM.
  * 		- staop contains the "=" operator of the time dimension.
  * 		- stavalues stores the histogram of periods for the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
@@ -533,7 +533,6 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		bool isnull;
 		TemporalInst *inst;
 
-		/* missing comment */
 		vacuum_delay_point();
 
 		value = fetchfunc(stats, i, &isnull);
@@ -552,13 +551,13 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		if (valuestats)
 		{
 			if (typbyval)
-				scalar_values[nonnull_cnt].value = datum_copy(temporalinst_value(inst), valuetypid);
+				scalar_values[nonnull_cnt].value = temporalinst_value(inst);
 			else
-				scalar_values[nonnull_cnt].value = PointerGetDatum(temporalinst_value(inst));
+				scalar_values[nonnull_cnt].value = datum_copy(temporalinst_value(inst), valuetypid);
 			scalar_values[nonnull_cnt].tupno = i;
 			scalar_tupnoLink[nonnull_cnt] = i;
 		}
-		timestamp_values[nonnull_cnt].value = datum_copy(TimestampGetDatum(inst->t), TIMESTAMPTZOID);
+		timestamp_values[nonnull_cnt].value = TimestampTzGetDatum(inst->t);
 		timestamp_values[nonnull_cnt].tupno = i;
 		timestamp_tupnoLink[nonnull_cnt] = i;
 

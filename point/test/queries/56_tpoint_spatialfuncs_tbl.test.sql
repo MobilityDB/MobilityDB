@@ -2,7 +2,7 @@
 
 -- set parallel_tuple_cost=0;
 -- set parallel_setup_cost=0;
--- set force_parallel_mode=regress;
+set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
 
@@ -192,6 +192,6 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -- set parallel_tuple_cost=100;
 -- set parallel_setup_cost=100;
--- set force_parallel_mode=off;
+set force_parallel_mode=off;
 
 -------------------------------------------------------------------------------
