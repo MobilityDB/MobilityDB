@@ -88,10 +88,10 @@ typedef struct
 extern void temporal_extra_info(VacAttrStats *stats);
 
 extern void temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-									   int samplerows, double totalrows);
+	int samplerows, double totalrows);
 
 extern void temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-									int samplerows, double totalrows);
+	int samplerows, double totalrows);
 
 /*****************************************************************************/
 
