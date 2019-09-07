@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * temporal.c
- *	Basic functions for temporal types of any duration.
+ *	Basic functionss of any duration.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -116,7 +116,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 	if (typmod < 0)
 		return temp;
 	int32 typmod_duration = TYPMOD_GET_DURATION(typmod);
-	/* Typmod has a preference for temporal type */
+	/* Typmod has a preference */
 	if (typmod_duration > 0 && typmod_duration != temp->duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Temporal type (%s) does not match column type (%s)",
@@ -453,88 +453,110 @@ type_has_precomputed_trajectory(Oid valuetypid)
 void 
 temporal_duration_is_valid(int16 duration)
 {
-	assert(duration == TEMPORALINST || duration == TEMPORALI || 
-		duration == TEMPORALSEQ || duration == TEMPORALS);
+	if (duration != TEMPORALINST && duration != TEMPORALI && 
+		duration != TEMPORALSEQ && duration != TEMPORALS)
+		elog(ERROR, "unknown duration for temporal type: %d", duration);
+	return;
 }
 
 /* Used for the analyze and selectivity functions */
 void 
 temporal_duration_all_is_valid(int16 duration)
 {
-	assert(duration == TEMPORAL || 
-		duration == TEMPORALINST || duration == TEMPORALI || 
-		duration == TEMPORALSEQ || duration == TEMPORALS);
+	if (duration != TEMPORAL && 
+		duration != TEMPORALINST && duration != TEMPORALI && 
+		duration != TEMPORALSEQ && duration != TEMPORALS)
+		elog(ERROR, "unknown duration for temporal type: %d", duration);
+	return;
 }
 
 void 
-numrange_type_oid(Oid type)
+numrange_type_oid(Oid typid)
 {
-	assert(type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE));
+	if (typid != type_oid(T_INTRANGE) && typid != type_oid(T_FLOATRANGE))
+		elog(ERROR, "unknown numeric range type: %d", typid);
+	return;
 }
 
 void
 base_type_oid(Oid valuetypid)
 {
-	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
-		valuetypid == FLOAT8OID || valuetypid == TEXTOID
+	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
 #endif
-		);
+		)
+		elog(ERROR, "unknown base type: %d", valuetypid);
+	return;
 }
 
 void
 base_type_all_oid(Oid valuetypid)
 {
-	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
-		valuetypid == FLOAT8OID || valuetypid == TEXTOID ||
-		valuetypid == TIMESTAMPTZOID || valuetypid ==  type_oid(T_DOUBLE2)
+	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
+		/* The next line is needed since the base type for tint must be 
+		 * changed to INT8OID in function scalar_compute_stats for 
+		 * collecting statistics */
+		valuetypid != INT8OID && 
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
+		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
-		|| valuetypid == type_oid(T_DOUBLE3)
-		|| valuetypid == type_oid(T_DOUBLE4)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_DOUBLE3)
+		&& valuetypid != type_oid(T_DOUBLE4)
 #endif
-		);
+		)
+		elog(ERROR, "unknown base type: %d", valuetypid);
+	return;
 }
 
 void
 continuous_base_type_oid(Oid valuetypid)
 {
-	assert(valuetypid == FLOAT8OID
+	if (valuetypid != FLOAT8OID
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
 #endif
-		);
+		)
+		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+	return;
 }
 
 void
 continuous_base_type_all_oid(Oid valuetypid)
 {
-	assert(valuetypid == FLOAT8OID ||
-		valuetypid ==  type_oid(T_DOUBLE2)
+	if (valuetypid != FLOAT8OID &&
+		valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
-		|| valuetypid == type_oid(T_DOUBLE3)
-		|| valuetypid == type_oid(T_DOUBLE4)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_DOUBLE3)
+		&& valuetypid != type_oid(T_DOUBLE4)
 #endif
-		);
+		)
+		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+	return;
 }
 
 void 
-numeric_base_type_oid(Oid type)
+numeric_base_type_oid(Oid valuetypid)
 {
-	assert(type == INT4OID || type == FLOAT8OID);
+	if (valuetypid != INT4OID && valuetypid != FLOAT8OID)
+		elog(ERROR, "unknown numeric base type: %d", valuetypid);
+	return;
 }
 
 #ifdef WITH_POSTGIS
 void 
-point_base_type_oid(Oid type)
+point_base_type_oid(Oid valuetypid)
 {
-	assert(type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY));
+	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
+		elog(ERROR, "unknown point base type: %d", valuetypid);
+	return;
 }
 #endif
 
