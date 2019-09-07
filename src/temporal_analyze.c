@@ -209,8 +209,9 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	}
 
 	/* We need to change the OID due to PostgreSQL internal behavior */
-	if (valuetypid == INT4OID)
-		valuetypid = INT8OID;
+	// Is this still needed ????
+	// if (valuetypid == INT4OID)
+	//	valuetypid = INT8OID;
 
 	memset(&ssup, 0, sizeof(ssup));
 	ssup.ssup_cxt = CurrentMemoryContext;
@@ -281,29 +282,29 @@ scalar_compute_stats(VacAttrStats *stats, ScalarItem *values, int *tupnoLink,
 	}
 
 	/*
-	* Decide how many values are worth storing as most-common values. If
-	* we are able to generate a complete MCV list (all the values in the
-	* sample will fit, and we think these are all the ones in the table),
-	* then do so.  Otherwise, store only those values that are
-	* significantly more common than the (estimated) average. We set the
-	* threshold rather arbitrarily at 25% more than average, with at
-	* least 2 instances in the sample.  Also, we won't suppress values
-	* that have a frequency of at least 1/K where K is the intended
-	* number of histogram bins; such values might otherwise cause us to
-	* emit duplicate histogram bin boundaries.  (We might end up with
-	* duplicate histogram entries anyway, if the distribution is skewed;
-	* but we prefer to treat such values as MCVs if at all possible.)
-	*
-	* Note: the first of these cases is meant to address columns with
-	* small, fixed sets of possible values, such as boolean or enum
-	* columns.  If we can *completely* represent the column population by
-	* an MCV list that will fit into the stats target, then we should do
-	* so and thus provide the planner with complete information.  But if
-	* the MCV list is not complete, it's generally worth being more
-	* selective, and not just filling it all the way up to the stats
-	* target.  So for an incomplete list, we try to take only MCVs that
-	* are significantly more common than average.
-	*/
+	 * Decide how many values are worth storing as most-common values. If
+	 * we are able to generate a complete MCV list (all the values in the
+	 * sample will fit, and we think these are all the ones in the table),
+	 * then do so.  Otherwise, store only those values that are
+	 * significantly more common than the (estimated) average. We set the
+	 * threshold rather arbitrarily at 25% more than average, with at
+	 * least 2 instances in the sample.  Also, we won't suppress values
+	 * that have a frequency of at least 1/K where K is the intended
+	 * number of histogram bins; such values might otherwise cause us to
+	 * emit duplicate histogram bin boundaries.  (We might end up with
+	 * duplicate histogram entries anyway, if the distribution is skewed;
+	 * but we prefer to treat such values as MCVs if at all possible.)
+	 *
+	 * Note: the first of these cases is meant to address columns with
+	 * small, fixed sets of possible values, such as boolean or enum
+	 * columns.  If we can *completely* represent the column population by
+	 * an MCV list that will fit into the stats target, then we should do
+	 * so and thus provide the planner with complete information.  But if
+	 * the MCV list is not complete, it's generally worth being more
+	 * selective, and not just filling it all the way up to the stats
+	 * target.  So for an incomplete list, we try to take only MCVs that
+	 * are significantly more common than average.
+	 */
 	if (((track_cnt) == (ndistinct == 0)) &&
 		(stats->stadistinct > 0) &&
 		(track_cnt <= num_mcv))

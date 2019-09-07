@@ -499,7 +499,8 @@ base_type_all_oid(Oid valuetypid)
 		/* The next line is needed since the base type for tint must be 
 		 * changed to INT8OID in function scalar_compute_stats for 
 		 * collecting statistics */
-		valuetypid != INT8OID && 
+		// Is this still needed ???
+		// valuetypid != INT8OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
 		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
