@@ -109,7 +109,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	TemporalInst *result;
 	size_t value_size;
 	/* Copy value */
-	bool byval = type_byval_fast(valuetypid);
+	bool byval = get_typbyval_fast(valuetypid);
 	if (byval)
 	{
 		/* For base types passed by value */

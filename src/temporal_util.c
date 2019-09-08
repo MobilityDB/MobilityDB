@@ -69,17 +69,18 @@ double_pad(size_t size)
 
 /* 
  * Is the type passed by value?
- * This function is called only for the base types of the temporal types. 
- * To avoid a call of the slow function get_typbyval (which makes a 
- * lookup call), the known base types are explicitly enumerated.
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval 
+ * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 
 bool
-type_byval_fast(Oid type)
+get_typbyval_fast(Oid type)
 {
 	base_type_all_oid(type);
 	bool result = false;
-	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
+	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID || 
+		type == TIMESTAMPTZOID)
 		result = true;
 	else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
 		result = false;
@@ -93,9 +94,9 @@ type_byval_fast(Oid type)
 
 /* 
  * Get length of type
- * This function is called only for the base types of the temporal types. 
- * To avoid a call of the slow function get_typlen (which makes a 
- * lookup call), the known base types are explicitly enumerated.
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typlen 
+ * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 
 int
@@ -107,7 +108,7 @@ get_typlen_fast(Oid type)
 		result = 1;
 	else if (type == INT4OID)
 		result = 4;
-	else if (type == FLOAT8OID)
+	else if (type == FLOAT8OID || type == TIMESTAMPTZOID)
 		result = 8;
 	else if (type == type_oid(T_DOUBLE2))
 		result = 16;
@@ -130,7 +131,7 @@ Datum
 datum_copy(Datum value, Oid type)
 {
 	/* For types passed by value */
-	if (type_byval_fast(type))
+	if (get_typbyval_fast(type))
 		return value;
 	/* For types passed by reference */
 	int typlen = get_typlen_fast(type);
