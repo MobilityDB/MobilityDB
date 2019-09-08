@@ -925,8 +925,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	double total_width = 0;
 	Oid rangetypid;
 
-	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
-
 	if (valuestats)
 	{
 		/* Ensure function is called for temporal numbers */
@@ -1453,6 +1451,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	 * and time types
 	 */
 	temporal_extra_info(stats);
+	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	/* Ensure duration is valid */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
@@ -1487,6 +1486,7 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	 * and time types
 	 */
 	temporal_extra_info(stats);
+	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	/*
 	 * Ensure duration is valid and call the corresponding function to 

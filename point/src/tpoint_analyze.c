@@ -42,6 +42,14 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
+/*
+ * While statistic functions are running, we keep a pointer to the extra data
+ * here for use by assorted subroutines.  The functions doesn't
+ * currently need to be re-entrant, so avoiding this is not worth the extra
+ * notational cruft that would be needed.
+ */
+TemporalAnalyzeExtraData *temporal_extra_data;
+
 /*****************************************************************************/
 
 /* 
@@ -128,6 +136,7 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 	 * and time types
 	 */
 	temporal_extra_info(stats);
+	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	/* Compute statistics */
 	stats->compute_stats = tpoint_compute_stats;
