@@ -68,6 +68,7 @@
 #include "temporal_analyze.h"
 
 #include <assert.h>
+#include <math.h>
 #include <access/tuptoaster.h>
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_operator_d.h>
