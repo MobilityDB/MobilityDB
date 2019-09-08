@@ -319,7 +319,7 @@ analyze_mcv_list(int *mcv_counts,
 static int
 compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth, 
 	int toowide_cnt, ScalarItem *values, int *tupnoLink, ScalarMCVItem *track, 
-	Oid valuetypid, Oid ltopr, Oid eqopr, int nonnull_cnt, int null_cnt, 
+	Oid valuetypid, Oid eqopr, Oid ltopr, int nonnull_cnt, int null_cnt, 
 	int slot_idx, int total_width, int totalrows, int samplerows, bool correlation)
 {
 	int			ndistinct,	/* # distinct values in sample */
