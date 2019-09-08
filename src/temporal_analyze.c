@@ -319,7 +319,7 @@ analyze_mcv_list(int *mcv_counts,
 static int
 compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth, 
 	int toowide_cnt, ScalarItem *values, int *tupnoLink, ScalarMCVItem *track, 
-	Oid valuetypid, Oid eqopr, Oid ltopr, int nonnull_cnt, int null_cnt, 
+	Oid valuetypid, int nonnull_cnt, int null_cnt, 
 	int slot_idx, int total_width, int totalrows, int samplerows, bool correlation)
 {
 	int			ndistinct,	/* # distinct values in sample */
@@ -335,6 +335,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 	double		corr_xysum;
 	bool 		typbyval = get_typbyval_fast(valuetypid);
 	int			typlen = get_typlen_fast(valuetypid);
+	Oid 		ltopr, eqopr;
 
 	memset(&ssup, 0, sizeof(ssup));
 	ssup.ssup_cxt = CurrentMemoryContext;
@@ -349,6 +350,12 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 	 */
 	ssup.abbreviate = false;
 
+	/* With respect to the original PostgreSQL function we need to look for 
+	 * the specific operators for the value and type components */
+	get_sort_group_operators(valuetypid,
+							 false, false, false,
+							 &ltopr, &eqopr, NULL,
+							 NULL);
 	PrepareSortSupportFromOrderingOp(ltopr, &ssup);
 
 	/* Sort the collected values */
@@ -772,6 +779,9 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int			num_mcv = stats->attr->attstattarget;
 	Oid valuetypid;
 
+	// For the moment this is not necessary
+	// temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
+	
 	if (valuestats)
 	{
 		scalar_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
@@ -859,9 +869,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/* Compute the statistics for the value dimension */
 			slot_idx = compute_scalar_stats_mdb(stats, values_cnt, is_varwidth, 
 				toowide_cnt, scalar_values, scalar_tupnoLink, scalar_track, 
-				valuetypid, temporal_extra_data->value_eq_opr,
-				temporal_extra_data->value_lt_opr,
-				nonnull_cnt, null_cnt, slot_idx, 
+				valuetypid, nonnull_cnt, null_cnt, slot_idx, 
 				total_width, totalrows, samplerows, true);
 		}
 
@@ -869,9 +877,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		 * We don't need to get the next available slot */
 		compute_scalar_stats_mdb(stats, values_cnt, is_varwidth,
 			toowide_cnt, timestamp_values, timestamp_tupnoLink, timestamp_track, 
-			TIMESTAMPTZOID, temporal_extra_data->time_eq_opr,
-			temporal_extra_data->time_lt_opr,
-			nonnull_cnt, null_cnt, slot_idx, 
+			TIMESTAMPTZOID, nonnull_cnt, null_cnt, slot_idx, 
 			total_width, totalrows, samplerows, false);
 	}
 	else if (nonnull_cnt > 0)
@@ -924,6 +930,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			*time_uppers;
 	double total_width = 0;
 	Oid rangetypid;
+
+	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	if (valuestats)
 	{
@@ -1451,7 +1459,6 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	 * and time types
 	 */
 	temporal_extra_info(stats);
-	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	/* Ensure duration is valid */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
@@ -1486,7 +1493,6 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	 * and time types
 	 */
 	temporal_extra_info(stats);
-	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
 	/*
 	 * Ensure duration is valid and call the corresponding function to 
