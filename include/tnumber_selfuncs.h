@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * tnumber_selfuncs.c
+ * tnumber_selfuncs.h
  *	  Functions for selectivity estimation of operators on temporal numeric types
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, Anas Al Bassit

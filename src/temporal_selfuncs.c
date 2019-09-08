@@ -1070,10 +1070,13 @@ var_eq_const(VariableStatData *vardata, Oid operator,
 
 /*****************************************************************************
  * Internal functions computing selectivity
+ * The functions assume that the value and time dimensions of temporal values 
+ * are independent and thus the selectivity values obtained by analyzing the 
+ * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
 /*
- * Transform the constant to a period
+ * Transform the constant into a period
  */
 static bool
 temporal_const_to_period(Node *other, Period *period)
@@ -1100,7 +1103,7 @@ temporal_const_to_period(Node *other, Period *period)
 	return true;
 }
 
-/* Get the enum associated to the operator from different cases */
+/* Get the enum value associated to the operator */
 static bool
 temporal_cachedop(Oid operator, CachedOp *cachedOp)
 {
@@ -1160,6 +1163,9 @@ default_temporal_selectivity(CachedOp operator)
 	}
 }
 
+/* 
+ * Compute selectivity for columns of TemporalInst duration 
+ */
 Selectivity
 temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
@@ -1260,6 +1266,10 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	return selec;
 }
 
+/*
+ * Compute selectivity for columns of durations distinct from TemporalInst,
+ * including columns containing temporal values of mixed durations.
+ */
 Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)

@@ -1,62 +1,74 @@
 /*****************************************************************************
  *
  * temporal_analyze.c
- *	  Functions for gathering statistics from temporal columns
+ *	  Functions for gathering statistics from temporal alphanumeric columns
  *
- * The function collects various kind of statistics for both the value and the
- * time dimension of temporal types. The kind of statistics depends on the 
- * duration of the temporal type, which is defined in the schema of table by 
- * the typmod attribute.
+ * Various kind of statistics are collected for both the value and the time
+ * dimension of temporal types. The kind of statistics depends on the duration
+ * of the temporal type, which is defined in the table schema by the typmod
+ * attribute. Please refer to the PostgreSQL file pg_statistic_d.h for more
+ * information about the statistics collected.
  * 
  * For TemporalInst
- * - Slot 0
+ * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
  * 		- staop contains the OID of the "=" operator for the value dimension.
  * 		- stavalues stores the most common non-null values (MCV) for the value dimension.
  * 		- stanumbers stores the frequencies of the MCV for the value dimension.
  * 		- numnumbers contains the number of elements in the stanumbers array.
  * 		- numvalues contains the number of elements in the most common values array.
- * - Slot 1
+ * - Slot 2
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
  * 		- staop contains the OID of the "<" operator that describes the sort ordering.
  * 		- stavalues stores the histogram of scalar data for the value dimension
  * 		- numvalues contains the number of buckets in the histogram.
- * - Slot 2
+ * - Slot 3
+ * 		- stakind contains the type of statistics which is STATISTIC_KIND_CORRELATION.
+ * 		- staop contains the OID of the "<" operator that describes the sort ordering.
+ * 		- stavalues is NULL
+ * 		- stanumbers contains the correlation coefficient between the sequence 
+ * 		  of data values and the sequence of their actual tuple positions
+ * 		- numvalues contains the number of buckets in the histogram.
+ * - Slot 4
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_MCV.
  * 		- staop contains the "=" operator of the time dimension.
  * 		- stavalues stores the most common values (MCV) for the time dimension.
  * 		- stanumbers stores the frequencies of the MCV for the time dimension.
  * 		- numnumbers contains the number of elements in the stanumbers array.
  * 		- numvalues contains the number of elements in the most common values array.
- * - Slot 3
+ * - Slot 5
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_HISTOGRAM.
  * 		- staop contains the OID of the "<" operator that describes the sort ordering.
  * 		- stavalues stores the histogram for the time dimension.
  * For all other durations
- * - Slot 0
+ * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
  * 		- staop contains the "=" operator of the value dimension.
  * 		- stavalues stores the histogram of ranges for the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
- * - Slot 1
+ * - Slot 2
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM.
  * 		- staop contains the "<" operator to the value dimension.
  * 		- stavalues stores the length of the histogram of ranges for the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
- * - Slot 2
+ * - Slot 3
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM.
  * 		- staop contains the "=" operator of the time dimension.
  * 		- stavalues stores the histogram of periods for the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
- * - Slot 3
+ * - Slot 4
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM.
  * 		- staop contains the "<" operator of the time dimension.
  * 		- stavalues stores the length of the histogram of periods for the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  *
+ * Notice that some statistics may not be collected, for example, since there
+ * are no most common values. In that case, the next statistics collected is
+ * stored in the next available slot.
+ *
  * In the case of temporal types having a Period as bounding box, that is,
  * tbool and ttext, no statistics are collected for the value dimension and
- * the statistics for the temporal part are still stored in slots 2 and 3.
+ * the statistics for the temporal part are stored in slots 1 and 2.
  * 
  * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
@@ -89,12 +101,12 @@
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or
- * too much space in the resulting pg_statistic rows, we ignore arrays that
- * are wider than TEMPORAL_WIDTH_THRESHOLD (after detoasting!).  Note that this
- * number is considerably more than the similar WIDTH_THRESHOLD limit used
- * in analyze.c's standard typanalyze code.
+ * too much space in the resulting pg_statistic rows, we ignore temporal values
+ * that are wider than TEMPORAL_WIDTH_THRESHOLD (after detoasting!).  Note that 
+ * this number is bigger than the similar WIDTH_THRESHOLD limit used in
+ * analyze.c's standard typanalyze code, which is 1024.
  */
-#define TEMPORAL_WIDTH_THRESHOLD 0x10000 // ORIGINALLY 1024
+#define TEMPORAL_WIDTH_THRESHOLD 4096 // Should it be 0x10000 i.e. 64K as before ?
 
 /*
  * While statistic functions are running, we keep a pointer to the extra data
@@ -105,8 +117,8 @@
 TemporalAnalyzeExtraData *temporal_extra_data;
 
 /*****************************************************************************
- * Comparison functions for different data types
- * Functions copied from files analyze.c and rangetypes_typanalyze.c
+ * Functions copied from files analyze.c and rangetypes_typanalyze.c since
+ * they are not exported.
  *****************************************************************************/
 
 /*
@@ -172,13 +184,6 @@ range_bound_qsort_cmp(const void *a1, const void *a2)
 							 r1->inclusive, r2->inclusive);
 }
 
-/*****************************************************************************
- * Compute statistics for scalar values, used both for the value and the 
- * time components of TemporalInst columns.
- * Functions derived from compute_scalar_stats of file analyze.c so that the
- * inner part of the original function can be called twice, for the value and 
- * for the time dimension.
- *****************************************************************************/
 
 /*
  * Analyze the list of common values in the sample and decide how many are
@@ -304,11 +309,18 @@ analyze_mcv_list(int *mcv_counts,
 	return num_mcv;
 }
 
+/*****************************************************************************
+ * Compute statistics for scalar values, used both for the value and the 
+ * time dimension of TemporalInst columns. Function derived from the inner 
+ * part of function compute_scalar_stats of file analyze.c so that it can be 
+ * called twice, for the value and for the time dimension.
+ *****************************************************************************/
+
 static int
-scalar_compute_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth, 
+compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth, 
 	int toowide_cnt, ScalarItem *values, int *tupnoLink, ScalarMCVItem *track, 
-	Oid valuetypid, int nonnull_cnt, int null_cnt, int slot_idx, int total_width, 
-	int totalrows, int samplerows, bool correlation)
+	Oid valuetypid, Oid ltopr, Oid eqopr, int nonnull_cnt, int null_cnt, 
+	int slot_idx, int total_width, int totalrows, int samplerows, bool correlation)
 {
 	int			ndistinct,	/* # distinct values in sample */
 				nmultiple,	/* # that appear multiple times */
@@ -320,7 +332,6 @@ scalar_compute_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 				i;
 	CompareScalarsContext cxt;
 	SortSupportData ssup;
-	Oid ltopr, eqopr;
 	double		corr_xysum;
 	bool 		typbyval = get_typbyval_fast(valuetypid);
 	int			typlen = get_typlen_fast(valuetypid);
@@ -338,12 +349,6 @@ scalar_compute_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 	 */
 	ssup.abbreviate = false;
 
-	/* With respect to the original PostgreSQL function we need to look for 
-	 * the specific operators for the value and type components */
-	get_sort_group_operators(valuetypid,
-							 false, false, false,
-							 &ltopr, &eqopr, NULL,
-							 NULL);
 	PrepareSortSupportFromOrderingOp(ltopr, &ssup);
 
 	/* Sort the collected values */
@@ -829,7 +834,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		}
 
 		/* Get the temporal instant value and add its value and its timestamp
-		 * components to the lists to be sorted */
+		 * dimensions to the lists to be sorted */
 		inst = DatumGetTemporalInst(value);
 		if (valuestats)
 		{
@@ -852,18 +857,22 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		if (valuestats)
 		{
 			/* Compute the statistics for the value dimension */
-			slot_idx = scalar_compute_stats_mdb(stats, values_cnt, is_varwidth, 
+			slot_idx = compute_scalar_stats_mdb(stats, values_cnt, is_varwidth, 
 				toowide_cnt, scalar_values, scalar_tupnoLink, scalar_track, 
-				valuetypid, nonnull_cnt, null_cnt, slot_idx, total_width, totalrows, 
-				samplerows, true);
+				valuetypid, temporal_extra_data->value_eq_opr,
+				temporal_extra_data->value_lt_opr,
+				nonnull_cnt, null_cnt, slot_idx, 
+				total_width, totalrows, samplerows, true);
 		}
 
 		/* Compute the statistics for the time dimension 
 		 * We don't need to get the next available slot */
-		scalar_compute_stats_mdb(stats, values_cnt, is_varwidth,
+		compute_scalar_stats_mdb(stats, values_cnt, is_varwidth,
 			toowide_cnt, timestamp_values, timestamp_tupnoLink, timestamp_track, 
-			TIMESTAMPTZOID, nonnull_cnt, null_cnt, slot_idx, total_width, totalrows, 
-			samplerows, false);
+			TIMESTAMPTZOID, temporal_extra_data->time_eq_opr,
+			temporal_extra_data->time_lt_opr,
+			nonnull_cnt, null_cnt, slot_idx, 
+			total_width, totalrows, samplerows, false);
 	}
 	else if (nonnull_cnt > 0)
 	{

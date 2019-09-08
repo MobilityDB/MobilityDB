@@ -616,9 +616,12 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 /*****************************************************************************
  * Internal functions computing selectivity
+ * The functions assume that the value and time dimensions of temporal values 
+ * are independent and thus the selectivity values obtained by analyzing the 
+ * histograms for each dimension can be multiplied.
  *****************************************************************************/
 
-/* Transform the contant into a TBOX */
+/* Transform the constant into a TBOX */
 static bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
@@ -746,9 +749,9 @@ default_tnumber_selectivity(CachedOp operator)
 	}
 }
 
-/* The selectivity functions assume that the value and time dimensions of
- * temporal values are independent and thus the selectivity values obtained
- * by analyzing the histograms for each dimension can be multiplied */
+/* 
+ * Compute selectivity for columns of TemporalInst duration 
+ */
 Selectivity
 tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
 	CachedOp cachedOp, Oid valuetypid)
@@ -937,6 +940,10 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 	return selec;
 }
 
+/*
+ * Compute selectivity for columns of durations distinct from TemporalInst,
+ * including columns containing temporal values of mixed durations.
+ */
 Selectivity
 tnumbers_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box, 
 	CachedOp cachedOp, Oid valuetypid)

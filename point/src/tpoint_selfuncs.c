@@ -148,7 +148,6 @@ nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /* Return true if a is strictly left of b, false otherwise. */
-
 bool
 nd_box_left(const ND_BOX *a, const ND_BOX *b)
 {
@@ -156,7 +155,6 @@ nd_box_left(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend to right of b, false otherwise. */
-
 bool
 nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
 {
@@ -164,7 +162,6 @@ nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a is strictly right of b, false otherwise. */
-
 bool
 nd_box_right(const ND_BOX *a, const ND_BOX *b)
 {
@@ -172,7 +169,6 @@ nd_box_right(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend to left of b, false otherwise. */
-
 bool
 nd_box_overright(const ND_BOX *a, const ND_BOX *b)
 {
@@ -180,7 +176,6 @@ nd_box_overright(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a is strictly below of b, false otherwise. */
-
 bool
 nd_box_below(const ND_BOX *a, const ND_BOX *b)
 {
@@ -188,7 +183,6 @@ nd_box_below(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend above of b, false otherwise. */
-
 bool
 nd_box_overbelow(const ND_BOX *a, const ND_BOX *b)
 {
@@ -196,7 +190,6 @@ nd_box_overbelow(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a is strictly above of b, false otherwise. */
-
 bool
 nd_box_above(const ND_BOX *a, const ND_BOX *b)
 {
@@ -204,7 +197,6 @@ nd_box_above(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend below of b, false otherwise. */
-
 bool
 nd_box_overabove(const ND_BOX *a, const ND_BOX *b)
 {
@@ -212,7 +204,6 @@ nd_box_overabove(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a is strictly front of b, false otherwise. */
-
 bool
 nd_box_front(const ND_BOX *a, const ND_BOX *b)
 {
@@ -220,7 +211,6 @@ nd_box_front(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend to the back of b, false otherwise. */
-
 bool
 nd_box_overfront(const ND_BOX *a, const ND_BOX *b)
 {
@@ -228,7 +218,6 @@ nd_box_overfront(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a strictly back of b, false otherwise. */
-
 bool
 nd_box_back(const ND_BOX *a, const ND_BOX *b)
 {
@@ -236,7 +225,6 @@ nd_box_back(const ND_BOX *a, const ND_BOX *b)
 }
 
 /* Return true if a does not extend to the front of b, false otherwise. */
-
 bool
 nd_box_overback(const ND_BOX *a, const ND_BOX *b)
 {
