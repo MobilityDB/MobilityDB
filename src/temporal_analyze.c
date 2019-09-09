@@ -779,9 +779,6 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int			num_mcv = stats->attr->attstattarget;
 	Oid valuetypid;
 
-	// For the moment this is not necessary
-	// temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
-	
 	if (valuestats)
 	{
 		scalar_values = (ScalarItem *) palloc(samplerows * sizeof(ScalarItem));
