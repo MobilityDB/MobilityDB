@@ -919,7 +919,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 {
 	int null_cnt = 0,
 		analyzed_rows = 0,
-		slot_idx,
+		slot_idx = 0,
 		num_bins = stats->attr->attstattarget,
 		num_hist;
 	float8 *value_lengths, 
@@ -1007,8 +1007,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		analyzed_rows++;
 	}
-
-	slot_idx = 0;
 
 	/* We can only compute real stats if we found some non-null values. */
 	if (analyzed_rows > 0)
@@ -1169,8 +1167,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			stats->numnumbers[slot_idx] = 1;
 		}
 
-		slot_idx = 2;
-
 		Datum *bound_hist_time;
 		Datum *length_hist_time;
 
@@ -1222,7 +1218,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				}
 			}
 
-			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
 			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr; 
 			stats->stavalues[slot_idx] = bound_hist_time;
 			stats->numvalues[slot_idx] = num_hist;

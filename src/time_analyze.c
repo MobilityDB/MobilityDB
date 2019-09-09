@@ -79,7 +79,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	int			null_cnt = 0,
 				non_null_cnt = 0,
 				timetype_no,
-				slot_idx,
+				slot_idx = 0,
 				num_bins = stats->attr->attstattarget,
 				num_hist;
 	float8	   *lengths;
@@ -143,8 +143,6 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		lengths[non_null_cnt] = period_duration_secs(upper.val, lower.val);
 		non_null_cnt++;
 	}
-
-	slot_idx = 0;
 
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
@@ -218,7 +216,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 				}
 			}
 
-			stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
 			stats->staop[slot_idx] = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			stats->stavalues[slot_idx] = bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;

@@ -345,7 +345,7 @@ SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04], [
 				<title>Operators</title>
 				<para>In PostgreSQL, the range operators <varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&gt;</varname>, and <varname>-|-</varname> only accept a range as left or right argument. We extended these operators for numeric ranges so that one argument may be an integer or a float.</para>
 
-				<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on time types.</para>
+				<para>The comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right arguments be of the same type. Excepted equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on time types.</para>
 
 				<para>The operators available for the time types and range types are given next.</para>
 
@@ -2172,7 +2172,7 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 		<sect1 id="operators_temporal_types">
 			<title>Comparison Operators</title>
 
-			<para>The traditional comparison operators require that the left and right be of the same base type. Excepted the equality and inequality, the other comparison operators (<varname>&lt;=</varname> and so on) are not useful in the real world but allow B-tree indexes to be constructed on temporal types. For temporal instant values, they compare first the timestamps and only if those are equal, compare the value(s). For temporal values with sequence duration, they compare the first N instants, where N is the minimum of the number of composing instants of both values. For temporal set values, they compare the first N unit values, where N is the minimum of the number of composing unit values of both temporal set values.</para>
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the values and if those are equal, compare the timestamps. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both temporal sequence set.</para>
 
 			<para>The equality and inequality operators consider the normal forms of the temporal types and the equivalent representation for different durations as shown next.
 				<programlisting>

@@ -1642,8 +1642,15 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {
+	/* Compare bounding boxes */
+	void *box1 = temporali_bbox_ptr(ti1);
+	void *box2 = temporali_bbox_ptr(ti2);
+	int result = temporal_bbox_cmp(ti1->valuetypid, box1, box2);
+	if (result)
+		return result;
+
+	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
-	int result;
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);

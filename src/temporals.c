@@ -2276,8 +2276,15 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 int
 temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 {
+	/* Compare bounding boxes */
+	void *box1 = temporals_bbox_ptr(ts1);
+	void *box2 = temporals_bbox_ptr(ts2);
+	int result = temporal_bbox_cmp(ts1->valuetypid, box1, box2);
+	if (result)
+		return result;
+
+	/* Compare composing instants */
 	int count = Min(ts1->count, ts2->count);
-	int result;
 	for (int i = 0; i < count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);

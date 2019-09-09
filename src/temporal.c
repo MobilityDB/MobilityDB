@@ -2763,9 +2763,9 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	memset(&box2, 0, sizeof(bboxunion));
 	temporal_bbox(&box1, t1);
 	temporal_bbox(&box2, t2);
-	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
-	if (cmp != 0)
-		return cmp;
+	int result = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	if (result)
+		return result;
 
 	/* If both are of the same duration use the specific comparison */
 	if (t1->duration == t2->duration)
