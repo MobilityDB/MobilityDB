@@ -168,13 +168,13 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
 		/*
-		 * Generate a bounds histogram and a a length histogram slot entries 
+		 * Generate a bounds histogram and a length histogram slot entries 
 		 * if there are at least two values.
 		 */
 		if (non_null_cnt >= 2)
 		{
 			/*
-			 * Generate a length histogram slot entry.
+			 * Generate a bound histogram slot entry.
 			 * Sort bound values 
 			 */
 			qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
@@ -216,7 +216,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 				}
 			}
 
-			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
 			stats->staop[slot_idx] = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			stats->stavalues[slot_idx] = bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;
