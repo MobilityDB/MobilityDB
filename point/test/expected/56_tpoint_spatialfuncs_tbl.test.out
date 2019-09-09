@@ -1,3 +1,5 @@
+set force_parallel_mode=regress;
+SET
 SELECT DISTINCT SRID(temp) FROM tbl_tgeompoint;
  srid 
 ------
@@ -942,3 +944,5 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@2001-10-10 18:35:00+00
 (10 rows)
 
+set force_parallel_mode=off;
+SET

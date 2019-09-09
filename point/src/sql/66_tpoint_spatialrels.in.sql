@@ -3,7 +3,7 @@
  * tpoint_spatialrels.sql
  *	  Spatial relationships for temporal points.
  *
- * These relationships are generalized to the temporal dimension with the 
+ * These relationships are generalized to the time dimension with the 
  * "at any instant" semantics, that is, the traditional operator is applied to
  * the union of all values taken by the temporal point and returns a Boolean.
  * The following relationships are supported for temporal geometry points:

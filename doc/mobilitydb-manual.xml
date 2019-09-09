@@ -2691,7 +2691,7 @@ SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;
 				</listitem>
 			</itemizedlist>
 
-			<para>The operators for the temporal dimension of all the temporal types are as follows.</para>
+			<para>The operators for the time dimension of all the temporal types are as follows.</para>
 			<itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;#</varname>: Is the bounding box always before?</para>
@@ -2859,7 +2859,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ~=
 
 			<para>On the other hand, the temporal distance operator computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
 		
-			<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the temporal dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
+			<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
 
 			<itemizedlist>
 				<listitem>
@@ -3469,127 +3469,114 @@ WHERE intersects(T.Trip, R.Geom);
 	</chapter>
 		
 	<chapter id="statistics_temporal_types">
-		<title>Statistics for Temporal Types</title>
-		<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
+		<title>Statistics and Selectivity for Temporal Types</title>
+		<sect1>
+			<title>Statistics Collection for Temporal Types</title>
+			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
 
-		<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types, array types, and range types. For scalar types, like <varname>float</varname>, the following statistics are collected:
-			<orderedlist>
-				<listitem>
-					<para>fraction of null values,</para>
-				</listitem>
-				<listitem>
-					<para>average width, in bytes, of non-null values,</para>
-				</listitem>
-				<listitem>
-					<para>number of distinct non-null values,</para>
-				</listitem>
-				<listitem>
-					<para>array of most common values and array of their frequencies,</para>
-				</listitem>
-				<listitem>
-					<para>histogram of values, where the most common values are excluded,</para>
-				</listitem>
-				<listitem>
-					<para>correlation between physical and logical row ordering.</para>
-				</listitem>
-			</orderedlist>
-		</para>
-
-		<para>For array types, like <varname>float[]</varname>, in addition to the above, the following statistics are collected:
-			<orderedlist>
-				<listitem>
-					<para>array of most common elements and array of their frequencies,</para>
-				</listitem>
-				<listitem>
-				<para>histogram of distinct element counts.</para>
-					</listitem>
-			</orderedlist>
-		</para>
-
-		<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
-			<orderedlist>
-				<listitem>
-					<para>length histogram of non-empty ranges,</para>
-				</listitem>
-				<listitem>
-					<para>histograms of lower and upper bounds.</para>
-				</listitem>
-			</orderedlist>
-		</para>
-
-		<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
-				<orderedlist>
+			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, like <varname>float</varname>, the following statistics are collected:
+				<orderedlist numeration="arabic">
 					<listitem>
-						<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
+						<para>fraction of null values,</para>
 					</listitem>
 					<listitem>
-						<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
+						<para>average width, in bytes, of non-null values,</para>
+					</listitem>
+					<listitem>
+						<para>number of distinct non-null values,</para>
+					</listitem>
+					<listitem>
+						<para>array of most common values and array of their frequencies,</para>
+					</listitem>
+					<listitem>
+						<para>histogram of values, where the most common values are excluded,</para>
+					</listitem>
+					<listitem>
+						<para>correlation between physical and logical row ordering.</para>
 					</listitem>
 				</orderedlist>
-		</para>
+			</para>
 
-		<para>The statistics collected for the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the <varname>period</varname> statistics are collected.</para>
+			<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
+				<orderedlist continuation="continues" numeration="arabic">
+					<listitem id="range_stat1">
+						<para>length histogram of non-empty ranges,</para>
+					</listitem>
+					<listitem id="range_stat2">
+						<para>histograms of lower and upper bounds.</para>
+					</listitem>
+				</orderedlist>
+			</para>
 
-		<para>The statistics collected for temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, we collect statistics for the value dimension and the time dimension independently. More precisely, the following statistics are collected for the time dimension:
-			<itemizedlist>
-				<listitem>
-					<para>For temporal instant values, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
-				</listitem>
+			<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
+					<orderedlist continuation="continues" numeration="arabic">
+						<listitem id="geom_stat1">
+							<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
+						</listitem>
+						<listitem id="geom_stat2">
+							<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
+						</listitem>
+					</orderedlist>
+			</para>
 
-				<listitem>
-					<para>For temporal instant set values, the statistics (7) and (8) are collected for the timestamps.</para>
-				</listitem>
+			<para>The statistics collected for the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the <varname>period</varname> statistics are collected.</para>
 
-				<listitem>
-					<para>For temporal sequence (set) values, the statistics (9) and (10) are collected for the (bounding box) periods.</para>
-				</listitem>
-			</itemizedlist>
-		</para>
+			<para>The statistics collected for temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the value dimension and the time dimension independently. More precisely, the following statistics are collected for the time dimension:
+				<itemizedlist>
+					<listitem>
+						<para>For temporal instant values, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+					</listitem>
 
-		<para>The following statistics are collected for the value dimension:
-			<itemizedlist>
-				<listitem>
-					<para>For temporal discrete types (that is, <varname>tbool</varname>, <varname>ttext</varname>, and <varname>tint</varname>):
-						<itemizedlist>
-							<listitem>
-								<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
-							</listitem>
-		
-							<listitem>
-								<para>For all other durations, the statistics (7) and (8) are collected for the values.</para>
-							</listitem>
-						</itemizedlist>
-					</para>
-				</listitem>
+					<listitem>
+						<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
 
-				<listitem>
-					<para>For temporal float types (that is, <varname>tfloat</varname>):
-						<itemizedlist>
-							<listitem>
-								<para>For instant values, the statistics (4)&#x2013;(6) are collected for the values.</para>
-							</listitem>
-							<listitem>
-								<para>For instant set values, the statistics (7) and (8) are collected for the values.</para>
-							</listitem>
-							<listitem>
-								<para>For the sequence (set) values, the statistics (9) and (10) are collected for the (bounding) value ranges.</para>
-							</listitem>
-						</itemizedlist>
-					</para>
-				</listitem>
+			<para>The following statistics are collected for the value dimension:
+				<itemizedlist>
+					<listitem>
+						<para>For temporal discrete types (that is, <varname>tbool</varname>, <varname>ttext</varname>, and <varname>tint</varname>):
+							<itemizedlist>
+								<listitem>
+									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
+								</listitem>
+			
+								<listitem>
+									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the values.</para>
+								</listitem>
+							</itemizedlist>
+						</para>
+					</listitem>
 
-				<listitem>
-					<para>For temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (11)&#x2013;(12) are collected for the points.</para>
-				</listitem>
-			</itemizedlist>
-		</para>
-	</chapter>
+					<listitem>
+						<para>For temporal float types (that is, <varname>tfloat</varname>):
+							<itemizedlist>
+								<listitem>
+									<para>For instant values, the statistics (4)&#x2013;(6) are collected for the values.</para>
+								</listitem>
+								<listitem>
+									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
+								</listitem>
+							</itemizedlist>
+						</para>
+					</listitem>
 
-	<chapter id="selectivity_operators">
-		<title>Selectivity of Operators</title>
-		<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+					<listitem>
+						<para>For temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+		</sect1>
 
-		<para>The temporal extension defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type defined in the temporal extension (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>    
+		<sect1>
+			<title>Selectivity Estimation of Operators</title>
+			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+
+			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type defined in the temporal extension (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+
+			<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
+		</sect1>
 	</chapter>
 
 	<chapter id="representative_queries">

@@ -19,7 +19,7 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
-#include "PostGIS.h"
+#include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 

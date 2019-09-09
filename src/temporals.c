@@ -239,7 +239,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	}
 	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
 	offsets[ts->count - 1] = pos;
-	pos += double_pad(VARSIZE(seq));
+	pos += double_pad(VARSIZE(newseq));
 	/*
 	 * Precompute the bounding box 
 	 * Only external types have precomputed bounding box, internal types such
@@ -1225,9 +1225,11 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, ts->valuetypid);
+		number_to_box(&box2, value, ts->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -1246,7 +1248,8 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporals_bbox(&box, ts);
 		if (ts->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&
@@ -1348,9 +1351,11 @@ temporals_at_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
@@ -1390,9 +1395,11 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporals_copy(ts);
 	}
@@ -1505,7 +1512,9 @@ TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1543,7 +1552,9 @@ TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -2275,7 +2286,7 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		if (result) 
 			return result;
 	}
-	/* The first count sequences of both temporals are equal */
+	/* The first count sequences of ts1 and ts2 are equal */
 	if (ts1->count < ts2->count) /* ts1 has less sequences than ts2 */
 		return -1;
 	else if (ts2->count < ts1->count) /* ts2 has less sequences than ts1 */

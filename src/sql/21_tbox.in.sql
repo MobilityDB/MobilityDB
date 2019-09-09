@@ -35,6 +35,11 @@ CREATE FUNCTION tbox_send(tbox)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 */
 
+CREATE FUNCTION temporal_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE tbox (
 	internallength = 40,
 	input = tbox_in,
@@ -43,7 +48,6 @@ CREATE TYPE tbox (
 --	send = tbox_send,
 	storage = plain,
 	alignment = double
---    , analyze = tbox_analyze
 );
 
 /******************************************************************************

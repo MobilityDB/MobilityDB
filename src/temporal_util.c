@@ -39,8 +39,8 @@ PG_MODULE_MAGIC;
 
 /* Initialization of the extension */
 
-void 
-_PG_init(void) 
+void
+_PG_init(void)
 {
 	/* elog(WARNING, "This is MobilityDB."); */
 #ifdef WITH_POSTGIS
@@ -69,23 +69,24 @@ double_pad(size_t size)
 
 /* 
  * Is the type passed by value?
- * This function is called only for the base types of the temporal types. 
- * To avoid a call of the slow function get_typbyval (which makes a 
- * lookup call), the known base types are explicitly enumerated.
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval 
+ * (which makes a lookup call), the known base types are explicitly enumerated.
  */
 
-bool 
-type_byval_fast(Oid type) 
+bool
+get_typbyval_fast(Oid type)
 {
 	base_type_all_oid(type);
 	bool result = false;
-	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
+	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID || 
+		type == TIMESTAMPTZOID)
 		result = true;
 	else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
 		result = false;
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
-		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+			 type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
 		result = false;
 #endif
 	return result;
@@ -93,13 +94,13 @@ type_byval_fast(Oid type)
 
 /* 
  * Get length of type
- * This function is called only for the base types of the temporal types. 
- * To avoid a call of the slow function get_typlen (which makes a 
- * lookup call), the known base types are explicitly enumerated.
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typlen 
+ * (which makes a lookup call), the known base types are explicitly enumerated.
  */
- 
-int 
-get_typlen_fast(Oid type) 
+
+int
+get_typlen_fast(Oid type)
 {
 	base_type_all_oid(type);
 	int result = 0;
@@ -107,7 +108,7 @@ get_typlen_fast(Oid type)
 		result = 1;
 	else if (type == INT4OID)
 		result = 4;
-	else if (type == FLOAT8OID)
+	else if (type == FLOAT8OID || type == TIMESTAMPTZOID)
 		result = 8;
 	else if (type == type_oid(T_DOUBLE2))
 		result = 16;
@@ -130,7 +131,7 @@ Datum
 datum_copy(Datum value, Oid type)
 {
 	/* For types passed by value */
-	if (type_byval_fast(type))
+	if (get_typbyval_fast(type))
 		return value;
 	/* For types passed by reference */
 	int typlen = get_typlen_fast(type);
@@ -348,8 +349,8 @@ datumarr_to_array(Datum *values, int count, Oid type)
 {
 	int16 elmlen;
 	bool elmbyval;
-	char elmalign;	
-	get_typlenbyvalalign(type, &elmlen, &elmbyval, &elmalign);	
+	char elmalign;
+	get_typlenbyvalalign(type, &elmlen, &elmbyval, &elmalign);
 	ArrayType *result = construct_array(values, count, type, elmlen, elmbyval, elmalign);
 	return result;
 }
@@ -364,8 +365,8 @@ timestamparr_to_array(TimestampTz *times, int count)
 ArrayType *
 periodarr_to_array(Period **periods, int count)
 {
-	ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD), 
-		sizeof(Period), false, 'd');
+	ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
+										sizeof(Period), false, 'd');
 	return result;
 }
 
@@ -397,9 +398,9 @@ temporalarr_to_array(Temporal **temporalarr, int count)
  *****************************************************************************/
 
 /* Comparator functions */
- 
+
 static int
-datum_sort_cmp(Datum *l, Datum *r, Oid *type) 
+datum_sort_cmp(Datum *l, Datum *r, Oid *type)
 {
 	Datum x = *l;
 	Datum y = *r;
@@ -420,27 +421,27 @@ timestamp_sort_cmp(TimestampTz *l, TimestampTz *r)
 	return timestamp_cmp_internal(x, y);
 }
 
-static int 
-period_sort_cmp(Period **l, Period **r) 
+static int
+period_sort_cmp(Period **l, Period **r)
 {
 	return period_cmp_internal(*l, *r);
 }
 
-static int 
-range_sort_cmp(RangeType **l, RangeType **r) 
+static int
+range_sort_cmp(RangeType **l, RangeType **r)
 {
-	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l), 
-		RangeTypePGetDatum(*r)));
+	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
+										RangeTypePGetDatum(*r)));
 }
 
 static int
-temporalinstarr_sort_cmp(TemporalInst **l, TemporalInst **r) 
+temporalinstarr_sort_cmp(TemporalInst **l, TemporalInst **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
 }
 
 static int
-temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r) 
+temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 {
 	TimestampTz lt = (*l)->period.lower;
 	TimestampTz rt = (*r)->period.lower;
@@ -454,13 +455,15 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 void
 datum_sort(Datum *values, int count, Oid type)
 {
-	qsort_arg(values, count, sizeof(Datum), 
-		(qsort_arg_comparator) &datum_sort_cmp, &type);
+	qsort_arg(values, count, sizeof(Datum),
+			  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
 timestamp_sort(TimestampTz *times, int count)
 {
+	qsort(times, count, sizeof(Timestamp),
+		  (qsort_comparator) &timestamp_sort_cmp);
 	qsort(times, count, sizeof(TimestampTz), 
 		(qsort_comparator) &timestamp_sort_cmp);
 }
@@ -468,29 +471,29 @@ timestamp_sort(TimestampTz *times, int count)
 void
 periodarr_sort(Period **periods, int count)
 {
-	qsort(periods, count, sizeof(Period *), 
-		(qsort_comparator) &period_sort_cmp);
+	qsort(periods, count, sizeof(Period *),
+		  (qsort_comparator) &period_sort_cmp);
 }
 
 void
 rangearr_sort(RangeType **ranges, int count)
 {
-	qsort(ranges, count, sizeof(RangeType *), 
-		(qsort_comparator) &range_sort_cmp);
+	qsort(ranges, count, sizeof(RangeType *),
+		  (qsort_comparator) &range_sort_cmp);
 }
 
 void
 temporalinstarr_sort(TemporalInst **instants, int count)
 {
-	qsort(instants, count, sizeof(TemporalInst *), 
-		(qsort_comparator) &temporalinstarr_sort_cmp);
+	qsort(instants, count, sizeof(TemporalInst *),
+		  (qsort_comparator) &temporalinstarr_sort_cmp);
 }
 
 void
 temporalseqarr_sort(TemporalSeq **sequences, int count)
 {
-	qsort(sequences, count, sizeof(TemporalSeq *), 
-		(qsort_comparator) &temporalseqarr_sort_cmp);
+	qsort(sequences, count, sizeof(TemporalSeq *),
+		  (qsort_comparator) &temporalseqarr_sort_cmp);
 }
 
 /*****************************************************************************
@@ -505,7 +508,7 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 {
 	assert (count > 0);
 	int newcount = 0;
-	for (int i = 1; i < count; i++) 
+	for (int i = 1; i < count; i++)
 		if (datum_ne(values[newcount], values[i], type))
 			values[++ newcount] = values[i];
 	return newcount + 1;
@@ -518,7 +521,7 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 {
 	assert (count > 0);
 	int newcount = 0;
-	for (int i = 1; i < count; i++) 
+	for (int i = 1; i < count; i++)
 		if (values[newcount] != values[i])
 			values[++ newcount] = values[i];
 	return newcount + 1;
@@ -533,9 +536,9 @@ int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
 	char		*a1p,
-				*a2p;
+			*a2p;
 	int			len1,
-				len2;
+			len2;
 
 	a1p = VARDATA_ANY(arg1);
 	a2p = VARDATA_ANY(arg2);
@@ -561,20 +564,20 @@ datum_eq(Datum l, Datum r, Oid type)
 	bool result = false;
 	if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
 		result = l == r;
-	else if (type == TEXTOID) 
+	else if (type == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-	else if (type == type_oid(T_DOUBLE2)) 
+	else if (type == type_oid(T_DOUBLE2))
 		result = double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
-	else if (type == type_oid(T_DOUBLE3)) 
+	else if (type == type_oid(T_DOUBLE3))
 		result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
-	else if (type == type_oid(T_DOUBLE4)) 
+	else if (type == type_oid(T_DOUBLE4))
 		result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
-	//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
+		//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
 		result = datum_point_eq(l, r);
-	else if (type == type_oid(T_GEOGRAPHY)) 
-	//	result = DatumGetBool(call_function2(geography_eq, l, r));
+	else if (type == type_oid(T_GEOGRAPHY))
+		//	result = DatumGetBool(call_function2(geography_eq, l, r));
 		result = datum_point_eq(l, r);
 #endif
 	return result;
@@ -597,7 +600,7 @@ datum_lt(Datum l, Datum r, Oid type)
 		result = DatumGetInt32(l) < DatumGetInt32(r);
 	else if (type == FLOAT8OID)
 		result = DatumGetFloat8(l) < DatumGetFloat8(r);
-	else if (type == TEXTOID) 
+	else if (type == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
 #ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
@@ -637,7 +640,7 @@ bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
 	base_type_all_oid(typel);
-	base_type_all_oid(typer);	
+	base_type_all_oid(typer);
 	bool result = false;
 	if ((typel == BOOLOID && typer == BOOLOID) ||
 		(typel == INT4OID && typer == INT4OID) ||
@@ -647,15 +650,15 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 		result = DatumGetInt32(l) == DatumGetFloat8(r);
 	else if (typel == FLOAT8OID && typer == INT4OID)
 		result = DatumGetFloat8(l) == DatumGetInt32(r);
-	else if (typel == TEXTOID && typer == TEXTOID) 
+	else if (typel == TEXTOID && typer == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-	/* This function is never called with doubleN */
+		/* This function is never called with doubleN */
 #ifdef WITH_POSTGIS
 	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-	//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));	
+		//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
 		result = datum_point_eq(l, r);
-	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY)) 
-	//	result = DatumGetBool(call_function2(geography_eq, l, r));
+	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
+		//	result = DatumGetBool(call_function2(geography_eq, l, r));
 		result = datum_point_eq(l, r);
 #endif
 	return result;
@@ -681,14 +684,14 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 		result = DatumGetFloat8(l) < DatumGetInt32(r);
 	else if (typel == FLOAT8OID && typer == FLOAT8OID)
 		result = DatumGetFloat8(l) < DatumGetFloat8(r);
-	else if (typel == TEXTOID && typer == TEXTOID) 
+	else if (typel == TEXTOID && typer == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
 	return result;
 }
 
 bool
 datum_le2(Datum l, Datum r, Oid typel, Oid typer)
-{	
+{
 	return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
 }
 

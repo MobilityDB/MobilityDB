@@ -3,7 +3,7 @@
  * temporal_selfuncs.h
  * 	Selectivity functions for the temporal types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, Anas Al Bassit
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -16,57 +16,48 @@
 #include <postgres.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
+#include <utils/lsyscache.h>
+#include <utils/rangetypes.h>
 #include <utils/selfuncs.h>
+#include <utils/typcache.h>
+
 #include "temporal.h"
+#include "oidcache.h"
 
-typedef enum 
-{
- 	VALUE_STATISTICS,
- 	TEMPORAL_STATISTICS,
- 	DEFAULT_STATISTICS
-} StatisticsStrategy;
+#define BTREE_AM_OID   403
 
-typedef enum 
-{
- 	SNCONST, /* Single Numeric Constant */
- 	DNCONST, /* Double Numeric Constant */
- 	STCONST, /* Single Temporal Constant */
- 	DTCONST, /* Double Temporal Constant */
- 	SNCONST_STCONST, /* Single Numeric Constant and Single Temporal Constant*/
- 	SNCONST_DTCONST, /* Single Numeric Constant and Double Temporal Constant*/
- 	DNCONST_STCONST, /* Double Numeric Constant and Single Temporal Constant*/
- 	DNCONST_DTCONST, /* Double Numeric Constant and Double Temporal Constant*/
-} BBoxBounds;
-
-/* Temporal Unit Instant */
-typedef struct
-{
- 	BBoxBounds bBoxBounds;
- 	double lower, upper;
- 	Period *period;
-	Oid oid;
-} ConstantData;
+#define DEFAULT_TEMP_SELECTIVITY 0.001
 
 /*****************************************************************************
- * Internal selectivity functions for the operators.
+ * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern double bbox_overlaps_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contains_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_contained_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
-extern double bbox_same_sel_internal(PlannerInfo *root, VariableStatData vardata, ConstantData constantData);
+extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
+	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
+	Oid consttype);
+extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, bool isgt, bool iseq, CachedOp operator);
+
+extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,
+	Period *period, CachedOp cachedOp);
+
 
 /*****************************************************************************
  * Some other helper functions.
  *****************************************************************************/
 
-extern void get_const_bounds(Node *other, BBoxBounds *bBoxBounds, bool *numeric,
-	double *lower, double *upper, bool *temporal, Period **period);
-extern double ineq_histogram_selectivity(PlannerInfo *root, VariableStatData *vardata,
-	FmgrInfo *opproc, bool isgt, bool iseq, Datum constval, Oid consttype,
-	StatisticsStrategy strategy);
+extern double var_eq_const(VariableStatData *vardata, Oid operator,
+	Datum constval, bool constisnull, bool varonleft, bool negate);
 
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_FIRST_DIM  500;
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_SECOND_DIM 501;
-#define STATISTIC_KIND_BOUNDS_HISTOGRAM_THIRD_DIM  502;
+/*****************************************************************************/
+
+extern Datum temporal_sel(PG_FUNCTION_ARGS);
+extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
+
+/*****************************************************************************/
+
 #endif

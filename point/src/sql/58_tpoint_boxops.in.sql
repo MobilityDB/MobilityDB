@@ -76,34 +76,14 @@ CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
  * Selectively functions for operators
  *****************************************************************************/
 
-CREATE FUNCTION tpoint_overlaps_sel(internal, oid, internal, integer)
+CREATE FUNCTION tpoint_sel(internal, oid, internal, integer)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_overlaps_sel'
+	AS 'MODULE_PATHNAME', 'tpoint_sel'
 	LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION tpoint_overlaps_joinsel(internal, oid, internal, smallint, internal)
+CREATE FUNCTION tpoint_joinsel(internal, oid, internal, smallint, internal)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_overlaps_joinsel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION tpoint_contains_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_contains_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION tpoint_contains_joinsel(internal, oid, internal, smallint, internal)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_contains_joinsel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION tpoint_same_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_same_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION tpoint_same_joinsel(internal, oid, internal, smallint, internal)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tpoint_same_joinsel'
+	AS 'MODULE_PATHNAME', 'tpoint_joinsel'
 	LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
@@ -131,25 +111,25 @@ CREATE OPERATOR @> (
 	PROCEDURE = stbox_contains,
 	LEFTARG = stbox, RIGHTARG = stbox,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = stbox_contained,
 	LEFTARG = stbox, RIGHTARG = stbox,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = stbox_overlaps,
 	LEFTARG = stbox, RIGHTARG = stbox,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = stbox_same,
 	LEFTARG = stbox, RIGHTARG = stbox,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -209,31 +189,31 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = geometry, RIGHTARG = tgeompoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeompoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = geometry,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = stbox,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -263,31 +243,31 @@ CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = geography, RIGHTARG = tgeogpoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeogpoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = geography,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = stbox,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR @> (
 	PROCEDURE = contains_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	COMMUTATOR = <@,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -319,31 +299,31 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = geometry, RIGHTARG = tgeompoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeompoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = geometry,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = stbox,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -373,31 +353,31 @@ CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = geography, RIGHTARG = tgeogpoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeogpoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = geography,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = stbox,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <@ (
 	PROCEDURE = contained_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	COMMUTATOR = @>,
-	RESTRICT = tpoint_contains_sel, JOIN = tpoint_contains_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -429,31 +409,31 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = geometry, RIGHTARG = tgeompoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeompoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = geometry,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = stbox,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -483,31 +463,31 @@ CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = geography, RIGHTARG = tgeogpoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeogpoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = geography,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = stbox,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR && (
 	PROCEDURE = overlaps_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	COMMUTATOR = &&,
-	RESTRICT = tpoint_overlaps_sel, JOIN = tpoint_overlaps_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -539,31 +519,31 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = geometry, RIGHTARG = tgeompoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeompoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = geometry,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = stbox,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -593,31 +573,31 @@ CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = geography, RIGHTARG = tgeogpoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = stbox, RIGHTARG = tgeogpoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = geography,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = stbox,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR ~= (
 	PROCEDURE = same_bbox,
 	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
 	COMMUTATOR = ~=,
-	RESTRICT = tpoint_same_sel, JOIN = tpoint_same_joinsel
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/

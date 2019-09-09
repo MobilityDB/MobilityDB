@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * tnumber_selfuncs.c
+ * tnumber_selfuncs.h
  *	  Functions for selectivity estimation of operators on temporal numeric types
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, Anas Al Bassit
@@ -15,17 +15,12 @@
 
 #include <postgres.h>
 #include <catalog/pg_operator.h>
+#include "temporal.h"
 
 /*****************************************************************************/
 
-extern Datum tnumber_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_contains_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_same_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnumber_position_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_position_joinsel(PG_FUNCTION_ARGS);
+extern Datum tnumber_sel(PG_FUNCTION_ARGS);
+extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

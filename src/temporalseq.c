@@ -773,7 +773,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	for (int i = 0; i < newcount; i++)
+	for (int i = 0; i < newcount - 1; i++)
 		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq, i)));
 	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
@@ -1785,9 +1785,11 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, seq->valuetypid);
+		number_to_box(&box2, value, seq->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -1826,7 +1828,8 @@ temporalseq_always_equals(TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		if (seq->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&
@@ -2073,9 +2076,11 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return 0;			
 	}
@@ -2211,9 +2216,11 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporalseq_bbox(&box1, seq);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 		{
 			result[0] = temporalseq_copy(seq);
@@ -2531,7 +2538,9 @@ int
 tnumberseq_at_range2(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporalseq_bbox(&box1, seq);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -2585,7 +2594,9 @@ int
 tnumberseq_minus_range1(TemporalSeq **result, TemporalSeq *seq, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporalseq_bbox(&box1, seq);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -3633,13 +3644,25 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		if (result) 
 			return result;
 	}
-	/* The first count instants of both TemporalSeq values are equal */
+	/* The first count instants of seq1 and seq2 are equal */
 	if (seq1->count < seq2->count) /* seq1 has less instants than seq2 */
 		return -1;
 	else if (seq2->count < seq1->count) /* seq2 has less instants than seq1 */
 		return 1;
-	else /* compare the time spans of seq1 and seq2 */
-		return period_cmp_internal(&seq1->period, &seq2->period);
+	else  
+	{
+		/* All instants of seq1 and seq2 are equal, compare the period bounds */
+		if (!seq1->period.lower_inc && seq2->period.lower_inc)
+			return -1;
+		else if (seq1->period.lower_inc && !seq2->period.lower_inc)
+			return 1;
+		else if (!seq1->period.upper_inc && seq2->period.upper_inc)
+			return -1;
+		else if (seq1->period.upper_inc && !seq2->period.upper_inc)
+			return 1;
+		else
+			return 0;
+	}
 }
 
 /*****************************************************************************

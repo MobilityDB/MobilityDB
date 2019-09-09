@@ -388,7 +388,9 @@ left_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	range_to_tbox_internal(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = left_tbox_tbox_internal(&box1, &box2);
@@ -404,7 +406,9 @@ overleft_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	range_to_tbox_internal(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = overleft_tbox_tbox_internal(&box1, &box2);
@@ -420,7 +424,9 @@ right_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	range_to_tbox_internal(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = right_tbox_tbox_internal(&box1, &box2);
@@ -436,7 +442,9 @@ overright_range_tnumber(PG_FUNCTION_ARGS)
 {
 	RangeType *range = PG_GETARG_RANGE_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	range_to_tbox_internal(&box1, range);
 	temporal_bbox(&box2, temp);
 	bool result = overright_tbox_tbox_internal(&box1, &box2);
@@ -455,7 +463,9 @@ left_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	range_to_tbox_internal(&box2, range);
 	bool result = left_tbox_tbox_internal(&box1, &box2);
@@ -471,7 +481,9 @@ overleft_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	range_to_tbox_internal(&box2, range);
 	bool result = overleft_tbox_tbox_internal(&box1, &box2);
@@ -487,7 +499,9 @@ right_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	range_to_tbox_internal(&box2, range);
 	bool result = right_tbox_tbox_internal(&box1, &box2);
@@ -503,7 +517,9 @@ overright_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	range_to_tbox_internal(&box2, range);
 	bool result = overright_tbox_tbox_internal(&box1, &box2);
@@ -522,7 +538,8 @@ left_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = left_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -536,7 +553,8 @@ overleft_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overleft_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -550,7 +568,8 @@ right_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = right_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -564,7 +583,8 @@ overright_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overright_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -578,7 +598,8 @@ before_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = before_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -592,7 +613,8 @@ overbefore_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overbefore_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -606,7 +628,8 @@ after_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = after_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -620,7 +643,8 @@ overafter_tbox_tnumber(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overafter_tbox_tbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -637,7 +661,8 @@ left_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = left_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -651,7 +676,8 @@ overleft_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overleft_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -665,7 +691,8 @@ right_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = right_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -679,7 +706,8 @@ overright_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overright_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -693,7 +721,8 @@ before_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = before_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -707,7 +736,8 @@ overbefore_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overbefore_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -721,7 +751,8 @@ after_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = after_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -735,7 +766,8 @@ overafter_tnumber_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *box = PG_GETARG_TBOX_P(1);
-	TBOX box1 = {0,0,0,0,0};;
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overafter_tbox_tbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -752,7 +784,9 @@ left_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = left_tbox_tbox_internal(&box1, &box2);
@@ -768,7 +802,9 @@ overleft_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overleft_tbox_tbox_internal(&box1, &box2);
@@ -784,7 +820,9 @@ right_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = right_tbox_tbox_internal(&box1, &box2);
@@ -800,7 +838,9 @@ overright_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overright_tbox_tbox_internal(&box1, &box2);
@@ -816,7 +856,9 @@ before_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = before_tbox_tbox_internal(&box1, &box2);
@@ -832,7 +874,9 @@ overbefore_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overbefore_tbox_tbox_internal(&box1, &box2);
@@ -848,7 +892,9 @@ after_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = after_tbox_tbox_internal(&box1, &box2);
@@ -864,7 +910,9 @@ overafter_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overafter_tbox_tbox_internal(&box1, &box2);

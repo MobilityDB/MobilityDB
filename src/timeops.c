@@ -4098,7 +4098,7 @@ minus_periodset_periodset(PG_FUNCTION_ARGS)
 	PeriodSet *result = minus_periodset_periodset_internal(ps1, ps2);
 	PG_FREE_IF_COPY(ps1, 0);
 	PG_FREE_IF_COPY(ps2, 1);
-	if(! result)
+	if (! result)
 		PG_RETURN_NULL() ;
 	PG_RETURN_POINTER(result);
 }

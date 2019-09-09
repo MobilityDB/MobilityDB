@@ -35,6 +35,11 @@ CREATE FUNCTION stbox_send(stbox)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 */
 
+CREATE FUNCTION tpoint_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE stbox (
 	internallength = 72,
 	input = stbox_in,
@@ -43,7 +48,6 @@ CREATE TYPE stbox (
 --	send = stbox_send,
 	storage = plain,
 	alignment = double
---    , analyze = stbox_analyze
 );
 
 /******************************************************************************

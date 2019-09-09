@@ -1,7 +1,7 @@
 /*****************************************************************************
  *
  * temporal.c
- *	Basic functions for temporal types of any duration.
+ *	Basic functionss of any duration.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -116,7 +116,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 	if (typmod < 0)
 		return temp;
 	int32 typmod_duration = TYPMOD_GET_DURATION(typmod);
-	/* Typmod has a preference for temporal type */
+	/* Typmod has a preference */
 	if (typmod_duration > 0 && typmod_duration != temp->duration)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Temporal type (%s) does not match column type (%s)",
@@ -348,6 +348,21 @@ temporal_typinfo(Oid temptypid, Oid* valuetypid)
  * Oid functions
  *****************************************************************************/
 
+/* 
+ * Obtain the Oid of the range type from the Oid of the base type 
+ */
+Oid
+range_oid_from_base(Oid valuetypid)
+{
+	Oid result = 0;
+	numeric_base_type_oid(valuetypid);
+	if (valuetypid == INT4OID)
+		result = type_oid(T_INTRANGE);
+	else if (valuetypid == FLOAT8OID)
+		result = type_oid(T_FLOATRANGE);
+	return result;
+}
+
 Oid
 temporal_oid_from_base(Oid valuetypid)
 {
@@ -434,82 +449,115 @@ type_has_precomputed_trajectory(Oid valuetypid)
  * Assertion tests
  *****************************************************************************/
 
+/* Used for the dispatch functions */
 void 
 temporal_duration_is_valid(int16 duration)
 {
-	assert(duration == TEMPORALINST || duration == TEMPORALI || 
-		duration == TEMPORALSEQ || duration == TEMPORALS);
+	if (duration != TEMPORALINST && duration != TEMPORALI && 
+		duration != TEMPORALSEQ && duration != TEMPORALS)
+		elog(ERROR, "unknown duration for temporal type: %d", duration);
+	return;
+}
+
+/* Used for the analyze and selectivity functions */
+void 
+temporal_duration_all_is_valid(int16 duration)
+{
+	if (duration != TEMPORAL && 
+		duration != TEMPORALINST && duration != TEMPORALI && 
+		duration != TEMPORALSEQ && duration != TEMPORALS)
+		elog(ERROR, "unknown duration for temporal type: %d", duration);
+	return;
 }
 
 void 
-numrange_type_oid(Oid type)
+numrange_type_oid(Oid typid)
 {
-	assert(type == type_oid(T_INTRANGE) || type == type_oid(T_FLOATRANGE));
+	if (typid != type_oid(T_INTRANGE) && typid != type_oid(T_FLOATRANGE))
+		elog(ERROR, "unknown numeric range type: %d", typid);
+	return;
 }
 
 void
 base_type_oid(Oid valuetypid)
 {
-	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
-		valuetypid == FLOAT8OID || valuetypid == TEXTOID
+	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
 #endif
-		);
+		)
+		elog(ERROR, "unknown base type: %d", valuetypid);
+	return;
 }
 
 void
 base_type_all_oid(Oid valuetypid)
 {
-	assert(valuetypid == BOOLOID || valuetypid == INT4OID || 
-		valuetypid == FLOAT8OID || valuetypid == TEXTOID ||
-		valuetypid ==  type_oid(T_DOUBLE2)
+	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
+		/* The next line is needed since the base type for tint must be 
+		 * changed to INT8OID in function scalar_compute_stats for 
+		 * collecting statistics */
+		// Is this still needed ???
+		// valuetypid != INT8OID && 
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
+		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
-		|| valuetypid == type_oid(T_DOUBLE3)
-		|| valuetypid == type_oid(T_DOUBLE4)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_DOUBLE3)
+		&& valuetypid != type_oid(T_DOUBLE4)
 #endif
-		);
+		)
+		elog(ERROR, "unknown base type: %d", valuetypid);
+	return;
 }
 
 void
 continuous_base_type_oid(Oid valuetypid)
 {
-	assert(valuetypid == FLOAT8OID
+	if (valuetypid != FLOAT8OID
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
 #endif
-		);
+		)
+		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+	return;
 }
 
 void
 continuous_base_type_all_oid(Oid valuetypid)
 {
-	assert(valuetypid == FLOAT8OID ||
-		valuetypid ==  type_oid(T_DOUBLE2)
+	if (valuetypid != FLOAT8OID &&
+		valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
-		|| valuetypid == type_oid(T_GEOMETRY)
-		|| valuetypid == type_oid(T_GEOGRAPHY)
-		|| valuetypid == type_oid(T_DOUBLE3)
-		|| valuetypid == type_oid(T_DOUBLE4)
+		&& valuetypid != type_oid(T_GEOMETRY)
+		&& valuetypid != type_oid(T_GEOGRAPHY)
+		&& valuetypid != type_oid(T_DOUBLE3)
+		&& valuetypid != type_oid(T_DOUBLE4)
 #endif
-		);
+		)
+		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+	return;
 }
 
 void 
-numeric_base_type_oid(Oid type)
+numeric_base_type_oid(Oid valuetypid)
 {
-	assert(type == INT4OID || type == FLOAT8OID);
+	if (valuetypid != INT4OID && valuetypid != FLOAT8OID)
+		elog(ERROR, "unknown numeric base type: %d", valuetypid);
+	return;
 }
 
 #ifdef WITH_POSTGIS
 void 
-point_base_type_oid(Oid type)
+point_base_type_oid(Oid valuetypid)
 {
-	assert(type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY));
+	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
+		elog(ERROR, "unknown point base type: %d", valuetypid);
+	return;
 }
 #endif
 
@@ -1053,12 +1101,9 @@ tempdisc_get_values(PG_FUNCTION_ARGS)
 
 /* Ranges of a temporal float */
 
-PG_FUNCTION_INFO_V1(tfloat_ranges);
-
-PGDLLEXPORT Datum
-tfloat_ranges(PG_FUNCTION_ARGS)
+Datum
+tfloat_ranges_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ArrayType *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1069,8 +1114,18 @@ tfloat_ranges(PG_FUNCTION_ARGS)
 		result = tfloatseq_ranges((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = tfloats_ranges((TemporalS *)temp);
+	return PointerGetDatum(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_ranges);
+
+PGDLLEXPORT Datum
+tfloat_ranges(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum result = tfloat_ranges_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_ARRAYTYPE_P(result);
+	PG_RETURN_POINTER(result);
 }
 
 /* Value of a temporal instant */
@@ -1172,12 +1227,9 @@ tnumber_tbox(PG_FUNCTION_ARGS)
 
 /* Value range of a temporal integer */
 
-PG_FUNCTION_INFO_V1(tnumber_value_range);
-
-PGDLLEXPORT Datum
-tnumber_value_range(PG_FUNCTION_ARGS)
+RangeType *
+tnumber_value_range_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1188,6 +1240,16 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 		result = tnumberseq_value_range((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = tnumbers_value_range((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tnumber_value_range);
+
+PGDLLEXPORT Datum
+tnumber_value_range(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	RangeType *result = tnumber_value_range_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_RANGE_P(result);
 }
@@ -2695,6 +2757,16 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
 	assert(t1->valuetypid == t2->valuetypid);
 
+	/* Compare bounding box */
+	union bboxunion box1, box2;
+	memset(&box1, 0, sizeof(bboxunion));
+	memset(&box2, 0, sizeof(bboxunion));
+	temporal_bbox(&box1, t1);
+	temporal_bbox(&box2, t2);
+	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	if (cmp != 0)
+		return cmp;
+
 	/* If both are of the same duration use the specific comparison */
 	if (t1->duration == t2->duration)
 	{
@@ -2709,14 +2781,6 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 			return temporals_cmp((TemporalS *)t1, (TemporalS *)t2);
 	}
 	
-	/* Compare bounding box */
-	union bboxunion box1 = {{0}}, box2 = {{0}};
-	temporal_bbox(&box1, t1);
-	temporal_bbox(&box2, t2);
-	int cmp = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
-	if (cmp != 0)
-		return cmp;
-
 	/* Use the hash comparison */
 	uint32 hash1 = temporal_hash_internal(t1);
 	uint32 hash2 = temporal_hash_internal(t2);

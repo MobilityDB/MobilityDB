@@ -70,19 +70,19 @@ upper_inc(RangeType *range)
 /* Construct a range from given arguments */
 
 RangeType *
-range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid subtypid)
+range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 {
-	Oid range_oid = 0;
-	assert (subtypid == INT4OID || subtypid == FLOAT8OID || 
-		subtypid == TIMESTAMPTZOID);
-	if (subtypid == INT4OID)
-		range_oid = type_oid(T_INTRANGE);
-	else if (subtypid == FLOAT8OID)
-		range_oid = type_oid(T_FLOATRANGE);
-	else if (subtypid == TIMESTAMPTZOID)
-		range_oid = TSTZRANGEOID;
+	Oid rangetypid = 0;
+	assert (basetypid == INT4OID || basetypid == FLOAT8OID || 
+		basetypid == TIMESTAMPTZOID);
+	if (basetypid == INT4OID)
+		rangetypid = type_oid(T_INTRANGE);
+	else if (basetypid == FLOAT8OID)
+		rangetypid = type_oid(T_FLOATRANGE);
+	else if (basetypid == TIMESTAMPTZOID)
+		rangetypid = TSTZRANGEOID;
 	
-	TypeCacheEntry* typcache = lookup_type_cache(range_oid, TYPECACHE_RANGE_INFO);
+	TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 
 	RangeBound lower;
 	RangeBound upper;

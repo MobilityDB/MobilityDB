@@ -17,6 +17,14 @@
 #include <catalog/pg_type.h>
 #include "temporal.h"
 
+typedef struct AggregateState
+{
+	int 		size;
+	void		*extra;
+	size_t		extrasize;
+	Temporal 	*values[];
+} AggregateState;
+
 /*****************************************************************************/
 
 /* SkipList - Internal type for computing aggregates */

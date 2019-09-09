@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <utils/timestamp.h>
 
+#include "period.h"
 #include "temporal.h"
 #include "temporal_parser.h"
 #include "temporal_util.h"
@@ -171,6 +172,10 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	result->tmax = tmax;
 	PG_RETURN_POINTER(result);
 }
+
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
 
 /*
  * Compare two boxes

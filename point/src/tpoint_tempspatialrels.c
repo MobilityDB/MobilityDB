@@ -1029,7 +1029,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 	{
 		/* Apply a mixture of quadratic formula and Viète formula to improve precision */
 		long double t5, t6;
-		if(b >= 0)
+		if (b >= 0)
 		{
 			t5 = (-1 * b - sqrt(discriminant)) / (2 * a);
 			t6 = (2 * c ) / (-1 * b - sqrt(discriminant));

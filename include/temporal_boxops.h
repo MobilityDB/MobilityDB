@@ -20,7 +20,7 @@
 
 /*****************************************************************************/
 
-extern void base_to_tbox(TBOX *box, Datum value, Oid valuetypid);
+extern void number_to_box(TBOX *box, Datum value, Oid valuetypid);
 extern void range_to_tbox_internal(TBOX *box, RangeType *r);
 extern void int_to_tbox_internal(TBOX *box, int i);
 extern void float_to_tbox_internal(TBOX *box, double d);
