@@ -754,7 +754,7 @@ temporali_end_timestamp(TemporalI *ti)
 ArrayType *
 temporali_timestamps(TemporalI *ti)
 {
-	TimestampTz *times = palloc(sizeof(Timestamp) * ti->count);
+	TimestampTz *times = palloc(sizeof(TimestampTz) * ti->count);
 	for (int i = 0; i < ti->count; i++) 
 		times[i] = (temporali_inst_n(ti, i))->t;
 	ArrayType *result = timestamparr_to_array(times, ti->count);

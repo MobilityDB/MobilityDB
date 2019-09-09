@@ -73,6 +73,7 @@
 #include "tpoint_spgist.h"
 
 #include <access/spgist.h>
+#include <utils/timestamp.h>
 #include <utils/builtins.h>
 
 #include "temporaltypes.h"
@@ -158,29 +159,17 @@ initCubeSTbox(void)
 	CubeSTbox *cube_stbox = (CubeSTbox *) palloc(sizeof(CubeSTbox));
 	double infinity = get_float8_infinity();
 
-	cube_stbox->left.xmin = -infinity;
-	cube_stbox->left.xmax = infinity;
+	cube_stbox->left.xmin = cube_stbox->right.xmin = -infinity;
+	cube_stbox->left.xmax = cube_stbox->right.xmax = infinity;
 
-	cube_stbox->left.ymin = -infinity;
-	cube_stbox->left.ymax = infinity;
+	cube_stbox->left.ymin = cube_stbox->right.ymin = -infinity;
+	cube_stbox->left.ymax = cube_stbox->right.ymax = infinity;
 
-	cube_stbox->left.zmin = -infinity;
-	cube_stbox->left.zmax = infinity;
+	cube_stbox->left.zmin = cube_stbox->right.zmin = -infinity;
+	cube_stbox->left.zmax = cube_stbox->right.zmax = infinity;
 
-	cube_stbox->left.tmin = -infinity;
-	cube_stbox->left.tmax = infinity;
-
-	cube_stbox->right.xmin = -infinity;
-	cube_stbox->right.xmax = infinity;
-
-	cube_stbox->right.ymin = -infinity;
-	cube_stbox->right.ymax = infinity;
-
-	cube_stbox->right.zmin = -infinity;
-	cube_stbox->right.zmax = infinity;
-
-	cube_stbox->right.tmin = -infinity;
-	cube_stbox->right.tmax = infinity;
+	cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
+	cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
 
 	return cube_stbox;
 }
@@ -461,8 +450,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	double *highYs = palloc(sizeof(double) * in->nTuples);
 	double *lowZs = palloc(sizeof(double) * in->nTuples);
 	double *highZs = palloc(sizeof(double) * in->nTuples);
-	double *lowMs = palloc(sizeof(double) * in->nTuples);
-	double *highMs = palloc(sizeof(double) * in->nTuples);
+	double *lowTs = palloc(sizeof(double) * in->nTuples);
+	double *highTs = palloc(sizeof(double) * in->nTuples);
 	
 	/* Calculate median of all 8D coordinates */
 	for (i = 0; i < in->nTuples; i++)
@@ -475,8 +464,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		highYs[i] = box->ymax;
 		lowZs[i] = box->zmin;
 		highZs[i] = box->zmax;
-		lowMs[i] = box->tmin;
-		highMs[i] = box->tmax;
+		lowTs[i] = (double) box->tmin;
+		highTs[i] = (double) box->tmax;
 	}
 
 	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
@@ -485,8 +474,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	qsort(highYs, in->nTuples, sizeof(double), compareDoubles);
 	qsort(lowZs, in->nTuples, sizeof(double), compareDoubles);
 	qsort(highZs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowMs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highMs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
@@ -498,8 +487,8 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	centroid->ymax = highYs[median];
 	centroid->zmin = lowZs[median];
 	centroid->zmax = highZs[median];
-	centroid->tmin = lowMs[median];
-	centroid->tmax = highMs[median];
+	centroid->tmin = (TimestampTz) lowTs[median];
+	centroid->tmax = (TimestampTz) highTs[median];
 
 	/* Fill the output */
 	out->hasPrefix = true;
@@ -526,7 +515,7 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	pfree(lowXs); pfree(highXs);
 	pfree(lowYs); pfree(highYs);
 	pfree(lowZs); pfree(highZs);
-	pfree(lowMs); pfree(highMs);
+	pfree(lowTs); pfree(highTs);
 	
 	PG_RETURN_VOID();
 }

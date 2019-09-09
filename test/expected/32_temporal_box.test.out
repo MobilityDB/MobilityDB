@@ -55,19 +55,19 @@ SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >= t2.b;
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
  count 
 -------
-   215
+    99
 (1 row)
 
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
  count 
 -------
-   107
+    99
 (1 row)
 
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
  count 
 -------
-   107
+    99
 (1 row)
 
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;

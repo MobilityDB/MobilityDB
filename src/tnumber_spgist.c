@@ -75,6 +75,7 @@
 #include "tnumber_spgist.h"
 
 #include <access/spgist.h>
+#include <utils/timestamp.h>
 #include <utils/builtins.h>
 
 #include "temporal.h"
@@ -147,11 +148,11 @@ initRectBox(void)
 	RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
 	double infinity = get_float8_infinity();
 
-	rect_box->left.xmin = rect_box->left.tmin = -infinity;
-	rect_box->left.xmax = rect_box->left.tmax = infinity;
+	rect_box->left.xmin = rect_box->right.xmin = -infinity;
+	rect_box->left.xmax = rect_box->right.xmax = infinity;
 
-	rect_box->right.xmin = rect_box->right.tmin = -infinity;
-	rect_box->right.xmax = rect_box->right.tmax = infinity;
+	rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
+	rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
 
 	return rect_box;
 }
@@ -341,8 +342,8 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 	int median, i;
 	double *lowXs = palloc(sizeof(double) * in->nTuples);
 	double *highXs = palloc(sizeof(double) * in->nTuples);
-	double *lowYs = palloc(sizeof(double) * in->nTuples);
-	double *highYs = palloc(sizeof(double) * in->nTuples);
+	double *lowTs = palloc(sizeof(double) * in->nTuples);
+	double *highTs = palloc(sizeof(double) * in->nTuples);
 
 	/* Calculate median of all 4D coordinates */
 	for (i = 0; i < in->nTuples; i++)
@@ -351,14 +352,14 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 
 		lowXs[i] = box->xmin;
 		highXs[i] = box->xmax;
-		lowYs[i] = box->tmin;
-		highYs[i] = box->tmax;
+		lowTs[i] = (double) box->tmin;
+		highTs[i] = (double) box->tmax;
 	}
 
 	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
 	qsort(highXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowYs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highYs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
@@ -366,8 +367,8 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 
 	centroid->xmin = lowXs[median];
 	centroid->xmax = highXs[median];
-	centroid->tmin = lowYs[median];
-	centroid->tmax = highYs[median];
+	centroid->tmin = (TimestampTz) lowTs[median];
+	centroid->tmax = (TimestampTz) highTs[median];
 
 	/* Fill the output */
 	out->hasPrefix = true;
@@ -393,7 +394,7 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 	}
 
 	pfree(lowXs); pfree(highXs);
-	pfree(lowYs); pfree(highYs);
+	pfree(lowTs); pfree(highTs);
 	
 	PG_RETURN_VOID();
 }

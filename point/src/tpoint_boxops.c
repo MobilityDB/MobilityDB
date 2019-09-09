@@ -90,7 +90,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
 void
 timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
 {
-	box->tmin = box->tmax = (double)t;
+	box->tmin = box->tmax = t;
 	MOBDB_FLAGS_SET_X(box->flags, false);
 	MOBDB_FLAGS_SET_Z(box->flags, false);
 	MOBDB_FLAGS_SET_T(box->flags, true);
@@ -114,8 +114,8 @@ void
 timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
 {
 	Period *p = timestampset_bbox(ts);
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
+	box->tmin = p->lower;
+	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 	return;
 }
@@ -137,8 +137,8 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 void
 period_to_stbox_internal(STBOX *box, Period *p)
 {
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
+	box->tmin = p->lower;
+	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 	return;
 }
@@ -160,8 +160,8 @@ void
 periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
 {
 	Period *p = periodset_bbox(ps);
-	box->tmin = (double)(p->lower);
-	box->tmax = (double)(p->upper);
+	box->tmin = p->lower;
+	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 	return;
 }
@@ -215,8 +215,8 @@ geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
 {
 	if (!geo_to_stbox_internal(box, gs))
 		return false;
-	box->tmin = (double)p->lower;
-	box->tmax = (double)p->upper;
+	box->tmin = p->lower;
+	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 	return true;
 }
@@ -387,7 +387,7 @@ tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
 	assert(geo_to_stbox_internal(box, gs));
-	box->tmin = box->tmax = (double)t;
+	box->tmin = box->tmax = t;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 	return;
 }
@@ -495,11 +495,11 @@ static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
 	STBOX *result = stbox_copy(box);
-	Datum tmin = TimestampGetDatum((Timestamp)box->tmin);
-	Datum tmax = TimestampGetDatum((Timestamp)box->tmax);
-	result->tmin = DatumGetTimestamp(call_function2(timestamp_mi_interval, 
+	Datum tmin = TimestampTzGetDatum(box->tmin);
+	Datum tmax = TimestampTzGetDatum(box->tmax);
+	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
 		tmin, interval));
-	result->tmax = DatumGetTimestamp(call_function2(timestamp_pl_interval, 
+	result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval, 
 		tmax, interval));
 	return result;
 }

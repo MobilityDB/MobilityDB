@@ -640,11 +640,11 @@ CREATE TABLE Fligth(FlightNo integer, Route tgeogpoint(Sequence,PointZ,4326));
 				</listitem>
 
 				<listitem>
-					<para>A <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value extent is defined in the X dimension and the temporal extent in the T dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
+					<para>A <varname>tbox</varname> (temporal box) type for the <varname>tint</varname> and <varname>tfloat</varname> types, where the value extent is defined in the X dimension and the temporal extent in the T dimension.</para>
 				</listitem>
 
 				<listitem>
-					<para>A <varname>stbox</varname> (saptiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the temporal extent in the T dimension. In this case the timestamps are encoded as <varname>float</varname> numbers.</para>
+					<para>A <varname>stbox</varname> (spatiotemporal box) type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, where the spatial extent is defined in the X, Y, and Z dimensions, and the temporal extent in the T dimension.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
@@ -869,7 +869,7 @@ SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
 				</programlisting>
 			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point
-					<programlisting>
+				<programlisting>
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
 ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
@@ -877,6 +877,37 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 				</programlisting>
 			</para>
+
+			<para>A <varname>tbox</varname> is composed of value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
+				<programlisting>
+-- Both value and time dimensions
+SELECT tbox 'TBOX((1.0, 2000-01-01), (1.0, 2000-01-02))'; 
+-- Only value dimension
+SELECT tbox 'TBOX((1.0,), (1.0,))'; 
+-- Only time dimension
+SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'; 
+				</programlisting>
+			</para>
+
+			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). Examples of input of <varname>stbox</varname> values are as follows:
+				<programlisting>
+-- Only coordinate (X and Y) dimension
+SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
+-- Only coordinate (X, Y and Z) dimension
+SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+-- Both coordinate (X, Y) and time dimensions
+SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+-- Both coordinate (X, Y, and Z) and time dimensions
+SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
+-- Only geodetic coordinate (X, Y and Z) dimension
+SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+--  Both geodetic coordinate (X, Y, and Z) and time dimensions
+SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
+-- Only time dimension
+SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+				</programlisting>
+			</para>
+
 		</sect1>
 
 		<sect1 id="validity_temporal_types">
@@ -1730,8 +1761,7 @@ SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
 					<programlisting>
 SELECT speed(tgeompoints(ARRAY[tgeompoint
 	'[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]',
-	'[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]']))
-	* 3600 * 24;
+	'[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]'])) * 3600 * 24;
 -- "{[1.4142135623731@2000-01-01, 1.4142135623731@2000-01-02),
 	[1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
 					</programlisting>
@@ -1742,11 +1772,11 @@ SELECT speed(tgeompoints(ARRAY[tgeompoint
 					<para>Signature: <varname>stbox(geo, {timestamp, period}): stbox</varname></para>
 					<programlisting>
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
--- "STBOX ZT((1,1,1,3.78864e+14),(2,2,2,3.790368e+14))"
+-- "STBOX ZT((1,1,1,2012-01-03),(2,2,2,2012-01-05))"
 SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
--- "GEODSTBOX((0.99878198,0.017449748,0.017452406,3.78864e+14),
-	(0.99969542,0.034878239,0.034899499,3.790368e+14))"
-					</programlisting>
+-- "GEODSTBOX T((0.99878198,0.017449748,0.017452406,2012-01-03),
+  (0.99969542,0.034878239,0.034899499,2012-01-05))"
+  					</programlisting>
 				</listitem>
 
 				<listitem>
@@ -1755,7 +1785,7 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-0
 					<programlisting>
 SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
 	[Point(1 1 1)@2012-01-03, Point(3 3 3)@2012-01-05)}', 1);
--- "STBOX((0,0,0,3.786912e+14),(4,4,4,3.790368e+14))"
+-- "STBOX ZT((0,0,0,2012-01-01),(4,4,4,2012-01-05))"
 					</programlisting>
 				</listitem>
 
@@ -1765,7 +1795,7 @@ SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01
 					<programlisting>
 SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
 	[Point(1 1 1)@2012-01-03, Point(3 3 3)@2012-01-05)}', interval '1 day');
--- "STBOX((1,1,1,3.786048e+14),(3,3,3,3.791232e+14))"
+-- "STBOX ZT((1,1,1,2011-12-31),(3,3,3,2012-01-06))"
 					</programlisting>
 				</listitem>
 
@@ -2485,7 +2515,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 		<sect1>
 			<title>Bounding Box Operators</title>
-			<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
+			<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
 
 			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types. The operators for the value dimension of the <varname>tint</varname> and <varname>tfloat</varname> types are given next.</para>
 
@@ -2725,8 +2755,8 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 			<itemizedlist>
 				<listitem>
 					<para><varname>&amp;&amp;</varname>: Does the bounding boxes overlap?</para>
-					<para>Signature: <varname>{base, numrange, time, box, ttype} &amp;&amp;</varname></para>
-					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
+					<para>Signature: <varname>{base, numrange, time, tbox, ttype} &amp;&amp;</varname></para>
+					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;&amp; 3;
 -- true
@@ -2739,8 +2769,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&amp; tint '[2@2012-01-03, 2@201
 
 				<listitem>
 					<para><varname>@&gt;</varname>: Does the first bounding box contains the second one?</para>
-					<para>Signature: <varname>{base, numrange, time, box, ttype} @&gt;</varname></para>
-					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
+					<para>Signature: <varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
+					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' @&gt; timestamptz '2012-01-03';
 -- true
@@ -2753,8 +2783,8 @@ SELECT ttext '[A@2012-01-01, B@2012-01-06]' @&gt; ttext '[C@2012-01-03, D@2012-0
 
 				<listitem>
 					<para><varname>&lt;@</varname>: Is the first bounding box contained in the second one?</para>
-					<para>Signature: <varname>{base, numrange, time, box, ttype} &lt;@</varname></para>
-					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
+					<para>Signature: <varname>{base, numrange, time, tbox, ttype} &lt;@</varname></para>
+					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@
 	box(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
@@ -2768,8 +2798,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-0
 
 				<listitem>
 					<para><varname>~=</varname>: Are the bounding boxes equal?</para>
-					<para>Signature: <varname>{base, numrange, time, box, ttype} ~=</varname></para>
-					<para><varname>    {base, numrange, time, box, ttype}: boolean</varname></para>
+					<para>Signature: <varname>{base, numrange, time, tbox, ttype} ~=</varname></para>
+					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  
 	tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
@@ -3361,7 +3391,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para>the <varname>box</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types,</para>
+					<para>the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types,</para>
 				</listitem>
 
 				<listitem>
@@ -3385,21 +3415,21 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, and <varname>~=</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, either periods or 2D/3D boxes), not the entire values.</para>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, and <varname>~=</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>period</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
 
 		<para>In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
 			
-		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a 2D/3D box can be constructed from a value/range and a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
+		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/range and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
 			<programlisting>
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1,5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; period '[2012-04-01, 2012-05-01)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
-	box(intrange '[1,5)', period '[2012-04-01, 2012-05-01)');
+	tbox(intrange '[1,5)', period '[2012-04-01, 2012-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
 	tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
 			</programlisting>
@@ -3559,7 +3589,7 @@ WHERE intersects(T.Trip, R.Geom);
 		<title>Selectivity of Operators</title>
 		<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
 
-		<para>The temporal extension defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, <varname>box</varname>, etc.) or a new type defined in the temporal extension (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>    
+		<para>The temporal extension defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type defined in the temporal extension (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>    
 	</chapter>
 
 	<chapter id="representative_queries">

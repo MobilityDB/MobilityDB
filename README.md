@@ -70,7 +70,7 @@ EPUB: https://docs.mobilitydb.com/nightly/mobilitydb.epub
 
 Publications
 ------------
-* Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, MobilityDB: A Mainstream Moving Object Database System. In Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019.
+* Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, [MobilityDB: A Mainstream Moving Object Database System](https://dl.acm.org/citation.cfm?id=3340991). In Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019, p. 206-209. ACM. [Best Demo Paper Award](https://docs.mobilitydb.com/pub/MobilityDB_SSTD_Poster_BDPA.pdf). [Poster](https://docs.mobilitydb.com/pub/MobilityDB_SSTD_Poster.pdf)
 
 * Alejandro A. Vaisman, Esteban Zimányi:
 [Mobility Data Warehouses](https://www.mdpi.com/2220-9964/8/4/170). ISPRS International Journal of Geo-Information, 8(4): 170, 2019.

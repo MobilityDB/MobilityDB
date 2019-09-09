@@ -15,7 +15,7 @@
 
 #include <postgres.h>
 #include <catalog/pg_statistic.h>
-#include <datatype/timestamp.h>
+#include <utils/timestamp.h>
 
 /**
 * The maximum number of dimensions our code can handle.

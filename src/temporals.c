@@ -957,9 +957,7 @@ temporals_duration_time(TemporalS *ts)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		double lower = (double)(seq->period.lower);
-		double upper = (double)(seq->period.upper);
-		result += (upper - lower);
+		result += (double) (seq->period.upper - seq->period.lower);
 	}
 	return result;
 }

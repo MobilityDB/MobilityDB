@@ -17,31 +17,31 @@ create TABLE test_georelativeposops(
 /*****************************************************************************/
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g << temp;
+SELECT '<<', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g << temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g >> temp;
+SELECT '>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g >> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &< temp;
+SELECT '&<', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &< temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &> temp;
-INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-
-SELECT '<<|', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <<| temp;
-INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |>> temp;
-INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<|', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &<| temp;
-INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |&> temp;
+SELECT '&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 
-SELECT '<</', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <</ temp;
+SELECT '<<|', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <<| temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '/>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g />> temp;
+SELECT '|>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |>> temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&</', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &</ temp;
+SELECT '&<|', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &<| temp;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '/&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g /&> temp;
+SELECT '|&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |&> temp;
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
+
+SELECT '<</', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <</ temp;
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
+SELECT '/>>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g />> temp;
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
+SELECT '&</', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &</ temp;
+INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
+SELECT '/&>', 'geomcollection3D', 'tgeompoint3D', count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g /&> temp;
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'timestamptz', 'tgeompoint3D', count(*) FROM tbl_timestamptz, tbl_tgeompoint3D WHERE t <<# temp;
@@ -120,29 +120,29 @@ SELECT '#&>', 'periodset', 'tgeogpoint3D', count(*) FROM tbl_periodset, tbl_tgeo
 /*****************************************************************************/
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp << g;
+SELECT '<<', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp << g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp >> g;
+SELECT '>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp >> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &< g;
+SELECT '&<', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &< g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &> g;
+SELECT '&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<<|', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <<| g;
+SELECT '<<|', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <<| g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |>> g;
+SELECT '|>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |>> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&<|', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &<| g;
+SELECT '&<|', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &<| g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '|&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |&> g;
+SELECT '|&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |&> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '<</', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <</ g;
+SELECT '<</', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <</ g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '/>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp />> g;
+SELECT '/>>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp />> g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '&</', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &</ g;
+SELECT '&</', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &</ g;
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
-SELECT '/&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp /&> g;
+SELECT '/&>', 'tgeompoint3D', 'geomcollection3D', count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp /&> g;
 
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'tgeompoint3D', 'timestamptz', count(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp <<# t;
@@ -261,42 +261,42 @@ CREATE INDEX tbl_tgeompoint3D_gist_idx ON tbl_tgeompoint3D USING GIST(temp);
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g << temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g >> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g >> temp )
 WHERE op = '>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &< temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &< temp )
 WHERE op = '&<' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &> temp )
 WHERE op = '&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <<| temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |>> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &<| temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &<| temp )
 WHERE op = '&<|' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |&> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |&> temp )
 WHERE op = '|&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <</ temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <</ temp )
 WHERE op = '<</' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g />> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g />> temp )
 WHERE op = '/>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &</ temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &</ temp )
 WHERE op = '&</' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g /&> temp )
+SET gistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g /&> temp )
 WHERE op = '/&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
@@ -408,42 +408,42 @@ WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint3D';
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp << g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp >> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp >> g )
 WHERE op = '>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &< g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &< g )
 WHERE op = '&<' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &> g )
 WHERE op = '&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <<| g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <<| g )
 WHERE op = '<<|' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |>> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |>> g )
 WHERE op = '|>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &<| g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &<| g )
 WHERE op = '&<|' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |&> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |&> g )
 WHERE op = '|&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <</ g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <</ g )
 WHERE op = '<</' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp />> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp />> g )
 WHERE op = '/>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &</ g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &</ g )
 WHERE op = '&</' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp /&> g )
+SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp /&> g )
 WHERE op = '/&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops
@@ -613,42 +613,42 @@ CREATE INDEX tbl_tgeompoint3D_spgist_idx ON tbl_tgeompoint3D USING SPGIST(temp);
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g << temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g >> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g >> temp )
 WHERE op = '>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &< temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &< temp )
 WHERE op = '&<' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &> temp )
 WHERE op = '&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <<| temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <<| temp )
 WHERE op = '<<|' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |>> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |>> temp )
 WHERE op = '|>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &<| temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &<| temp )
 WHERE op = '&<|' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g |&> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g |&> temp )
 WHERE op = '|&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g <</ temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g <</ temp )
 WHERE op = '<</' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g />> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g />> temp )
 WHERE op = '/>>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g &</ temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g &</ temp )
 WHERE op = '&</' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_geomcollection3D, tbl_tgeompoint3D WHERE g /&> temp )
+SET spgistidx = ( SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE g /&> temp )
 WHERE op = '/&>' and leftarg = 'geomcollection3D' and rightarg = 'tgeompoint3D';
 
 UPDATE test_georelativeposops
@@ -760,42 +760,42 @@ WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint3D';
 /*****************************************************************************/
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp << g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp >> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp >> g )
 WHERE op = '>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &< g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &< g )
 WHERE op = '&<' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &> g )
 WHERE op = '&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <<| g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <<| g )
 WHERE op = '<<|' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |>> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |>> g )
 WHERE op = '|>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &<| g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &<| g )
 WHERE op = '&<|' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp |&> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp |&> g )
 WHERE op = '|&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp <</ g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp <</ g )
 WHERE op = '<</' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp />> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp />> g )
 WHERE op = '/>>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp &</ g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp &</ g )
 WHERE op = '&</' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 UPDATE test_georelativeposops
-SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geomcollection3D WHERE temp /&> g )
+SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE temp /&> g )
 WHERE op = '/&>' and leftarg = 'tgeompoint3D' and rightarg = 'geomcollection3D';
 
 UPDATE test_georelativeposops

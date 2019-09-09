@@ -1011,7 +1011,7 @@ tpointseq_speed1(TemporalSeq *seq)
 			else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 				length = DatumGetFloat8(call_function2(geography_length, traj, BoolGetDatum(true)));
 			pfree(DatumGetPointer(traj)); 
-			speed = length / (((double)(inst2->t) - (double)(inst1->t))/ 1000000);
+			speed = length / ((double)(inst2->t - inst1->t) / 1000000);
 		}
 		instants[0] = temporalinst_make(Float8GetDatum(speed),
 			inst1->t, FLOAT8OID);
@@ -1584,7 +1584,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 		LWGEOM_numgeometries_collection, intersections));
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
-	double duration = (double)(inst2->t) - (double)(inst1->t);
+	double duration = (double)(inst2->t - inst1->t);
 	int k = 0;
 	for (int i = 1; i <= countinter; i++)
 	{
@@ -2108,7 +2108,7 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
 	TimestampTz tmin = 0; /* keep compiler quiet */
-	bool tminofree =  false; /* keep compiler quiet */
+	bool mintofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count-1; i++)
 	{
@@ -2122,14 +2122,14 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 			mindist = dist;
 			minpoint = point;
 			tmin = t;
-			tminofree = tofree;
+			mintofree = tofree;
 		}
 		else if (tofree)
 			pfree(DatumGetPointer(point)); 			
 		inst1 = inst2;
 	}
 	TemporalInst *result = temporalinst_make(minpoint, tmin, seq->valuetypid);
-	if (tminofree)
+	if (mintofree)
 		pfree(DatumGetPointer(minpoint)); 
 	return result;
 }
