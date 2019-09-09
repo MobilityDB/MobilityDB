@@ -528,25 +528,34 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
 
 	if (consttype == type_oid(T_GEOMETRY) || consttype == type_oid(T_GEOGRAPHY))
 		geo_to_stbox_internal(box,
-							  (GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
+			(GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
 	else if (consttype == TIMESTAMPTZOID)
-		timestamp_to_stbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
+		timestamp_to_stbox_internal(box, 
+			DatumGetTimestampTz(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_TIMESTAMPSET))
-		timestampset_to_stbox_internal(box, DatumGetTimestampSet(((Const *) other)->constvalue));
+		timestampset_to_stbox_internal(box, 
+			DatumGetTimestampSet(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_PERIOD))
-		period_to_stbox_internal(box, DatumGetPeriod(((Const *) other)->constvalue));
+		period_to_stbox_internal(box, 
+			DatumGetPeriod(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_PERIODSET))
-		periodset_to_stbox_internal(box, DatumGetPeriodSet(((Const *) other)->constvalue));
+		periodset_to_stbox_internal(box, 
+			DatumGetPeriodSet(((Const *) other)->constvalue));
 	else if (consttype == type_oid(T_STBOX))
 		memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-	else if (consttype == type_oid(T_TGEOMPOINT) || consttype == type_oid(T_TGEOGPOINT))
+	else if (consttype == type_oid(T_TGEOMPOINT) || 
+		consttype == type_oid(T_TGEOGPOINT))
 		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
 	else
 		return false;
 	return true;
 }
 
-/* Set the values of an ND_BOX from an STBOX */
+/* 
+ * Set the values of an ND_BOX from an STBOX 
+ * The function only takes into account the x, y, and z dimensions of the box?
+ * and assumes that they exist. This is to be ensured by the calling function.
+ */
 static void
 nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 {
@@ -564,12 +573,6 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 	{
 		nd_box->min[d] = box->zmin;
 		nd_box->max[d] = box->zmax;
-	}
-	d++;
-	if (MOBDB_FLAGS_GET_T(box->flags))
-	{
-		nd_box->min[d] = box->tmin;
-		nd_box->max[d] = box->tmax;
 	}
 	return;
 }

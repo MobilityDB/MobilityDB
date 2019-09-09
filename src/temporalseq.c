@@ -3608,7 +3608,7 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 {
 	/* If number of sequences or the periods are not equal */
 	if (seq1->count != seq2->count || 
-			!period_eq_internal(&seq1->period, &seq2->period)) 
+			! period_eq_internal(&seq1->period, &seq2->period)) 
 		return false;
 
 	/* If bounding boxes are not equal */
@@ -3634,8 +3634,15 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 int
 temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 {
+	/* Compare bounding boxes */
+	void *box1 = temporalseq_bbox_ptr(seq1);
+	void *box2 = temporalseq_bbox_ptr(seq2);
+	int result = temporal_bbox_cmp(seq1->valuetypid, box1, box2);
+	if (result)
+		return result;
+
+	/* Compare composing instants */
 	int count = Min(seq1->count, seq2->count);
-	int result;
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst1 = temporalseq_inst_n(seq1, i);
@@ -3649,20 +3656,7 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		return -1;
 	else if (seq2->count < seq1->count) /* seq2 has less instants than seq1 */
 		return 1;
-	else  
-	{
-		/* All instants of seq1 and seq2 are equal, compare the period bounds */
-		if (!seq1->period.lower_inc && seq2->period.lower_inc)
-			return -1;
-		else if (seq1->period.lower_inc && !seq2->period.lower_inc)
-			return 1;
-		else if (!seq1->period.upper_inc && seq2->period.upper_inc)
-			return -1;
-		else if (seq1->period.upper_inc && !seq2->period.upper_inc)
-			return 1;
-		else
-			return 0;
-	}
+	return 0;
 }
 
 /*****************************************************************************

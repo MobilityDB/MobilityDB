@@ -184,23 +184,35 @@ int
 tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
 {
 	/* Compare the box minima */
-	if (box1->xmin < box2->xmin)
-		return -1;
-	if (box1->xmin > box2->xmin)
-		return 1;
-	if (box1->tmin < box2->tmin)
-		return -1;
-	if (box1->tmin > box2->tmin)
-		return 1;
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+	{
+		if (box1->xmin < box2->xmin)
+			return -1;
+		if (box1->xmin > box2->xmin)
+			return 1;
+	}
+	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
+	{
+		if (box1->tmin < box2->tmin)
+			return -1;
+		if (box1->tmin > box2->tmin)
+			return 1;
+	}
 	/* Compare the box maxima */
-	if (box1->xmax < box2->xmax)
-		return -1;
-	if (box1->xmax > box2->xmax)
-		return 1;
-	if (box1->tmax < box2->tmax)
-		return -1;
-	if (box1->tmax > box2->tmax)
-		return 1;
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
+	{
+		if (box1->xmax < box2->xmax)
+			return -1;
+		if (box1->xmax > box2->xmax)
+			return 1;
+	}
+	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
+	{
+		if (box1->tmax < box2->tmax)
+			return -1;
+		if (box1->tmax > box2->tmax)
+			return 1;
+	}
 	/* The two boxes are equal */
 	return 0;
 }
