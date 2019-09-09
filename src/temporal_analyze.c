@@ -1455,14 +1455,15 @@ temporal_analyze(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 
 	/* 
-	 * Collect extra information about the temporal type and its value
-	 * and time types
+	 * Ensure duration is valid and collect extra information about the 
+	 * temporal type and its base and time types.
 	 */
-	temporal_extra_info(stats);
-
-	/* Ensure duration is valid */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	temporal_duration_all_is_valid(duration);
+	if (duration != TEMPORALINST)
+		temporal_extra_info(stats);
+
+	/* Set the callback function to compute statistics. */
 	if (duration == TEMPORALINST)
 		stats->compute_stats = temporalinst_compute_stats;
 	else
@@ -1489,17 +1490,15 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 
 	/* 
-	 * Collect extra information about the temporal type and its value
-	 * and time types
-	 */
-	temporal_extra_info(stats);
-
-	/*
-	 * Ensure duration is valid and call the corresponding function to 
-	 * compute statistics.
+	 * Ensure duration is valid and collect extra information about the 
+	 * temporal type and its base and time types.
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	temporal_duration_all_is_valid(duration);
+	if (duration != TEMPORALINST)
+		temporal_extra_info(stats);
+
+	/* Set the callback function to compute statistics. */
 	if (duration == TEMPORALINST)
 		stats->compute_stats = tnumberinst_compute_stats;
 	else

@@ -115,6 +115,7 @@ PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
+	int duration;
 
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
@@ -124,12 +125,15 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 
 	/* 
-	 * Collect extra information about the temporal type and its value
-	 * and time types
+	 * Ensure duration is valid and collect extra information about the 
+	 * temporal type and its base and time types.
 	 */
-	temporal_extra_info(stats);
+	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
+	temporal_duration_all_is_valid(duration);
+	if (duration != TEMPORALINST)
+		temporal_extra_info(stats);
 
-	/* Compute statistics */
+	/* Set the callback function to compute statistics. */
 	stats->compute_stats = tpoint_compute_stats;
 	PG_RETURN_BOOL(true);
 }
