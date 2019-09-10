@@ -281,7 +281,7 @@ static int
 period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 					  int hist_length, bool equal)
 {
-	int			lower = -1,
+	int		lower = -1,
 			upper = hist_length - 1,
 			cmp,
 			middle;
@@ -312,12 +312,11 @@ get_period_position(PeriodBound *value, PeriodBound *hist1,
 	float8		bin_width;
 
 	/* Calculate relative position using subdiff function. */
-	bin_width = period_duration_secs(hist2->val, hist1->val);
+	bin_width = get_period_distance(hist2->val, hist1->val);
 	if (bin_width <= 0.0)
 		return 0.5;			/* zero width bin */
 
-	position = period_duration_secs(value->val, hist1->val)
-			   / bin_width;
+	position = get_period_distance(value->val, hist1->val) / bin_width;
 
 	/* Relative position must be in [0,1] period */
 	position = Max(position, 0.0);
@@ -363,7 +362,7 @@ int
 length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
 					double value, bool equal)
 {
-	int	lower = -1,
+	int		lower = -1,
 			upper = length_hist_nvalues - 1,
 			middle;
 
@@ -722,14 +721,14 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
  */
 double
 calc_period_hist_selectivity_contains(PeriodBound *lower, PeriodBound *upper,
-									  PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
-									  int length_hist_nvalues)
+	PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
+	int length_hist_nvalues)
 {
 	int			i,
-			lower_index;
+				lower_index;
 	double		bin_width,
-			lower_bin_width;
-	double		sum_frac;
+				lower_bin_width,
+				sum_frac;
 	float8		prev_dist;
 
 	/* Find the bin containing the lower bound of query period. */
