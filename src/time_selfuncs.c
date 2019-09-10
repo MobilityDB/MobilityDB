@@ -302,6 +302,15 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 }
 
 /*
+ * Measure distance between two period bounds.
+ */
+static float8
+get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
+{
+	return period_duration_secs(bound2->val, bound1->val);
+}
+
+/*
  * Get relative position of value in histogram bin in [0,1] period.
  */
 static float8
@@ -311,12 +320,12 @@ get_period_position(PeriodBound *value, PeriodBound *hist1,
 	float8		position;
 	float8		bin_width;
 
-	/* Calculate relative position using subdiff function. */
-	bin_width = get_period_distance(hist2->val, hist1->val);
+	/* Calculate relative position using distance function. */
+	bin_width = get_period_distance(hist2, hist1);
 	if (bin_width <= 0.0)
 		return 0.5;			/* zero width bin */
 
-	position = get_period_distance(value->val, hist1->val) / bin_width;
+	position = get_period_distance(value, hist1) / bin_width;
 
 	/* Relative position must be in [0,1] period */
 	position = Max(position, 0.0);
@@ -427,15 +436,6 @@ get_len_position(double value, double hist1, double hist2)
 		 */
 		return 0.5;
 	}
-}
-
-/*
- * Measure distance between two period bounds.
- */
-static float8
-get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
-{
-	return period_duration_secs(bound2->val, bound1->val);
 }
 
 /*
@@ -635,7 +635,7 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
 	/*
 	 * Calculate upper_bin_width, ie. the fraction of the (upper_index,
 	 * upper_index + 1) bin which is greater than upper bound of query period
-	 * using linear interpolation of subdiff function.
+	 * using linear interpolation of distance function.
 	 */
 	if (upper_index >= 0 && upper_index < hist_nvalues - 1)
 		upper_bin_width = get_period_position(upper,
@@ -737,7 +737,7 @@ calc_period_hist_selectivity_contains(PeriodBound *lower, PeriodBound *upper,
 	/*
 	 * Calculate lower_bin_width, ie. the fraction of the of (lower_index,
 	 * lower_index + 1) bin which is greater than lower bound of query period
-	 * using linear interpolation of subdiff function.
+	 * using linear interpolation of distance function.
 	 */
 	if (lower_index >= 0 && lower_index < hist_nvalues - 1)
 		lower_bin_width = get_period_position(lower, &hist_lower[lower_index],
