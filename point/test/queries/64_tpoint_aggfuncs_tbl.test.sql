@@ -2,6 +2,33 @@
 set parallel_tuple_cost=0;
 set parallel_setup_cost=0;
 set force_parallel_mode=regress;
+
+-------------------------------------------------------------------------------
+-- Extent aggregate function
+-------------------------------------------------------------------------------
+
+select extent(inst) from tbl_tgeompointinst;
+select extent(inst) from tbl_tgeogpointinst;
+select extent(ti) from tbl_tgeompointi;
+select extent(ti) from tbl_tgeogpointi;
+select extent(seq) from tbl_tgeompointseq;
+select extent(seq) from tbl_tgeogpointseq;
+select extent(ts) from tbl_tgeompoints;
+select extent(ts) from tbl_tgeogpoints;
+select extent(temp) from tbl_tgeompoint;
+select extent(temp) from tbl_tgeogpoint;
+
+select extent(inst) from tbl_tgeompoint3Dinst;
+select extent(inst) from tbl_tgeogpoint3Dinst;
+select extent(ti) from tbl_tgeompoint3Di;
+select extent(ti) from tbl_tgeogpoint3Di;
+select extent(seq) from tbl_tgeompoint3Dseq;
+select extent(seq) from tbl_tgeogpoint3Dseq;
+select extent(ts) from tbl_tgeompoint3Ds;
+select extent(ts) from tbl_tgeogpoint3Ds;
+select extent(temp) from tbl_tgeompoint3D;
+select extent(temp) from tbl_tgeogpoint3D;
+
 -------------------------------------------------------------------------------
 
 SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompointinst;

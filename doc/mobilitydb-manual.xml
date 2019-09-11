@@ -675,7 +675,7 @@ FROM Department;
 -- 20; NULL
 -- Restriction to a period
 SELECT DeptNo, atPeriod(NoEmps, '[2012-01-01, 2012-04-01]')
-FROM Department;8028r28">
+FROM Department;
 -- 10;"[10@2012-01-01 00:00:00+00, 12@2012-04-01 00:00:00+00]"
 -- 20;"[4@2012-02-01 00:00:00+00, 4@2012-04-01 00:00:00+00]"
 -- Temporal comparison
@@ -686,7 +686,7 @@ FROM Department;
 -- Temporal aggregation
 SELECT tsum(NoEmps)
 FROM Department;
-"{[10@2012-01-01 00:00:00+00, 14@2012-02-01 00:00:00+00, 16@2012-04-01 00:00:00+00,
+-- "{[10@2012-01-01 00:00:00+00, 14@2012-02-01 00:00:00+00, 16@2012-04-01 00:00:00+00,
  18@2012-06-01 00:00:00+00, 6@2012-08-01 00:00:00+00, 6@2012-10-01 00:00:00+00)}"
 			</programlisting>
 			<para>Examples of usage of temporal point types are given next.</para>
@@ -714,7 +714,7 @@ FROM Trips;
 -- 20;"{[POINT(0 0)@2012-01-01 08:05:00+00, POINT(1 1)@2012-01-01 08:10:00+00]}"
 -- Temporal distance
 SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip
-FROM Trips T1, Trips T
+FROM Trips T1, Trips T2
 WHERE T1.CarId &lt; T2.CarId;
 -- 10;20;"{[1@2012-01-01 08:05:00+00, 1.4142135623731@2012-01-01 08:10:00+00,
 	1@2012-01-01 08:15:00+00)}"
@@ -3237,10 +3237,13 @@ SELECT trelate(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
 
 		<sect1>
 			<title>Aggregate Functions for Temporal Types</title>
+
 			<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant t in the union of the temporal extents of the values to aggregate.</para>
 
 			<para>For all temporal types, the function <varname>tcount</varname> generalize the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available or reporting objects (for example, number of cars in an area). For Boolean types, the functions <varname>tand</varname> and <varname>tor</varname> generalize the traditional functions <varname>and</varname> and <varname>or</varname>. For numeric types, two types of temporal aggregate functions are available. The functions <varname>tmin</varname>, <varname>tmax</varname>, <varname>tsum</varname>, and <varname>tavg</varname> generalize the traditional functions <varname>min</varname>, <varname>max</varname>, <varname>sum</varname>, and <varname>avg</varname>. Furthermore, the functions <varname>wmin</varname>, <varname>wmax</varname>, <varname>wcount</varname>, <varname>wsum</varname>, and <varname>wavg</varname> are window (or cumulative) versions of the traditional functions that, given a time interval w, compute the value of the function at an instant t by considering the values during the interval [t-w, t]. All window aggregate functions are available for temporal integers, while for temporal floats only window minimum and maximum are meaningful. For temporal text, the functions Finally, for temporal points the function <varname>tcentroid</varname>, generalizes the corresponding function <varname>ST_Centroid</varname> provided by PostGIS. For example, given set of objects that move together (that is, a convoy or a flock) the temporal centroid will produce a temporal point that represents at each instant the geometric center (or the center of mass) of all the moving objects.</para>
 		
+			<para>In addition to the above, function <varname>extent</varname> returns a bounding box that encloses a set of temporal values. Depending on the base type, the result of this function can be a <varname>period</varname>, a <varname>tbox</varname> or an <varname>stbox</varname>. This function is an &ldquo;aggregate&rdquo; function in SQL terminology since it operates on lists of data, in the same way the SUM() and AVG() functions do.</para>
+
 			<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="examples_temporal_types" />.</para>
 			<itemizedlist>
 				<listitem>
@@ -3371,6 +3374,18 @@ SELECT tcentroid(Trip) FROM Trips;
 	[POINT(2 2)@2012-01-01 08:15:00+00, POINT(3 3)@2012-01-01 08:20:00+00)}"
 					</programlisting>
 				</listitem>
+
+				<listitem>
+					<para><varname>extent</varname>: Bounding box extent</para>
+					<para>Signature: <varname>extent(temp): {period, tbox, stbox}</varname></para>
+					<programlisting>
+SELECT extent(noEmps) FROM Department;
+-- "TBOX((4,2012-01-01 00:00:00+01),(12,2012-10-01 00:00:00+02))"
+SELECT extent(Trip) FROM Trips;
+-- "STBOX T((0,0,2012-01-01 08:00:00+01),(3,3,2012-01-01 08:20:00+01))"
+					</programlisting>
+				</listitem>
+
 			</itemizedlist>
 		</sect1>
 	</chapter>

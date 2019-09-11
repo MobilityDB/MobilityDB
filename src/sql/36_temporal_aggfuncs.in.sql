@@ -10,6 +10,60 @@
  *
  *****************************************************************************/
 
+CREATE OR REPLACE FUNCTION temporal_extent_transfn(period, tbool)
+	RETURNS period
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION temporal_extent_transfn(period, ttext)
+	RETURNS period
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION temporal_extent_combinefn(period, period)
+	RETURNS period
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(tbool) (
+	SFUNC = temporal_extent_transfn,
+	STYPE = period,
+	COMBINEFUNC = temporal_extent_combinefn,
+	PARALLEL = safe
+);
+CREATE AGGREGATE extent(ttext) (
+	SFUNC = temporal_extent_transfn,
+	STYPE = period,
+	COMBINEFUNC = temporal_extent_combinefn,
+	PARALLEL = safe
+);
+
+CREATE OR REPLACE FUNCTION tnumber_extent_transfn(tbox, tint)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION tnumber_extent_transfn(tbox, tfloat)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION tnumber_extent_combinefn(tbox, tbox)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(tint) (
+	SFUNC = tnumber_extent_transfn,
+	STYPE = tbox,
+	COMBINEFUNC = tnumber_extent_combinefn,
+	PARALLEL = safe
+);
+CREATE AGGREGATE extent(tfloat) (
+	SFUNC = tnumber_extent_transfn,
+	STYPE = tbox,
+	COMBINEFUNC = tnumber_extent_combinefn,
+	PARALLEL = safe
+);
+
+/*****************************************************************************/
+
 CREATE FUNCTION tagg_serialize(internal)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME', 'temporal_tagg_serialize'

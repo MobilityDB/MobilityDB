@@ -5,6 +5,35 @@ set parallel_setup_cost=0;
 set force_parallel_mode=regress;
 
 -------------------------------------------------------------------------------
+-- Extent aggregate function
+-------------------------------------------------------------------------------
+
+select extent(inst) from tbl_tboolinst;
+select extent(inst) from tbl_ttextinst;
+select extent(inst) from tbl_tintinst;
+select extent(inst) from tbl_tfloatinst;
+
+select extent(ti) from tbl_tbooli;
+select extent(ti) from tbl_ttexti;
+select extent(ti) from tbl_tinti;
+select extent(ti) from tbl_tfloati;
+
+select extent(seq) from tbl_tboolseq;
+select extent(seq) from tbl_ttextseq;
+select extent(seq) from tbl_tintseq;
+select extent(seq) from tbl_tfloatseq;
+
+select extent(ts) from tbl_tbools;
+select extent(ts) from tbl_ttexts;
+select extent(ts) from tbl_tints;
+select extent(ts) from tbl_tfloats;
+
+select extent(temp) from tbl_tbool;
+select extent(temp) from tbl_ttext;
+select extent(temp) from tbl_tint;
+select extent(temp) from tbl_tfloat;
+
+-------------------------------------------------------------------------------
 -- TemporalInst aggregate functions
 -------------------------------------------------------------------------------
 

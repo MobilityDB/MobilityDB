@@ -298,6 +298,55 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 	return result;
 }
 
+/*
+ * Return the smallest period that contains p1 and p2
+ *
+ * This differs from regular period union in a critical ways:
+ * It won't throw an error for non-adjacent p1 and p2, but just absorb
+ * the intervening values into the result period.
+ */
+Period *
+period_super_union(Period *p1, Period *p2)
+{
+	TimestampTz result_lower;
+	TimestampTz result_upper;
+	bool result_lower_inc;
+	bool result_upper_inc;
+
+	if (period_cmp_bounds(p1->lower, p2->lower, true, true, 
+		p1->lower_inc, p2->lower_inc) <= 0)
+	{
+		result_lower = p1->lower;
+		result_lower_inc = p1->lower_inc;
+	}
+	else
+	{
+		result_lower = p2->lower;
+		result_lower_inc = p2->lower_inc;
+	}
+
+	if (period_cmp_bounds(p1->upper, p2->upper, false, false, 
+		p1->upper_inc, p2->upper_inc) >= 0)
+	{
+		result_upper = p1->upper;
+		result_upper_inc = p1->upper_inc;
+	}
+	else
+	{
+		result_upper = p2->upper;
+		result_upper_inc = p2->upper_inc;
+	}
+
+	/* optimization to avoid constructing a new range */
+	if (result_lower == p1->lower && result_upper == p1->upper)
+		return p1;
+	if (result_lower == p2->lower && result_upper == p2->upper)
+		return p2;
+		
+	return period_make(result_lower, result_upper, 
+		result_lower_inc, result_upper_inc);
+}
+ 
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

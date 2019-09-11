@@ -110,14 +110,15 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
 #ifdef WITH_POSTGIS
-	bool isgeo = false, hasz = false;
+	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY));
+	bool hasz = false, isgeodetic = false;
 	int srid;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	if (isgeo)
 	{
-		isgeo = true;
 		hasz = MOBDB_FLAGS_GET_Z(sequences[0]->flags);
-		srid = tpoint_srid_internal((Temporal *)sequences[0]);
+		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags);
+		srid = tpoint_srid_internal((Temporal *) sequences[0]);
 	}
 #endif
 	for (int i = 1; i < count; i++)
@@ -166,7 +167,10 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
 #ifdef WITH_POSTGIS
 	if (isgeo)
+	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+	}
 #endif
 	/* Initialization of the variable-length part */
 	size_t *offsets = temporals_offsets_ptr(result);

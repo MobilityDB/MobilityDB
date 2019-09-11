@@ -1268,6 +1268,142 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 }
 
 /*****************************************************************************
+ * Extent
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_extent_transfn);
+
+PGDLLEXPORT Datum 
+temporal_extent_transfn(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	Period p1, *result = NULL;
+
+	/* Can't do anything with null inputs */
+	if (!p && !temp)
+		PG_RETURN_NULL();
+	/* Null period and non-null temporal, return the bbox of the temporal */
+	if (!p)
+	{
+		result = palloc(sizeof(Period));
+		temporal_bbox(result, temp);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null period and null temporal, return the period */
+	if (!temp)
+	{
+		result = palloc(sizeof(Period));
+		memcpy(result, p, sizeof(Period));
+		PG_RETURN_POINTER(result);
+	}
+
+	temporal_bbox(&p1, temp);
+	result = period_super_union(p, &p1);
+
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_extent_combinefn);
+
+PGDLLEXPORT Datum 
+temporal_extent_combinefn(PG_FUNCTION_ARGS)
+{
+	Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
+	Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD(1);
+	Period *result;
+
+	if (!p2 && !p1)
+		PG_RETURN_NULL();
+	if (p1 && !p2)
+		PG_RETURN_POINTER(p1);
+	if (p2 && !p1)
+		PG_RETURN_POINTER(p2);
+
+	result = period_super_union(p1, p2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tnumber_extent_transfn);
+
+PGDLLEXPORT Datum 
+tnumber_extent_transfn(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	TBOX box1, *result = NULL;
+
+	/* Can't do anything with null inputs */
+	if (!box && !temp)
+		PG_RETURN_NULL();
+	/* Null box and non-null temporal, return the bbox of the temporal */
+	if (!box)
+	{
+		result = palloc(sizeof(TBOX));
+		temporal_bbox(result, temp);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null box and null temporal, return the box */
+	if (!temp)
+	{
+		result = palloc(sizeof(TBOX));
+		memcpy(result, box, sizeof(TBOX));
+		PG_RETURN_POINTER(result);
+	}
+
+	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Argument TBOX must have both X and T dimensions")));
+
+	temporal_bbox(&box1, temp);
+	result = palloc(sizeof(TBOX));
+	result->xmax = Max(box->xmax, box1.xmax);
+	result->tmax = Max(box->tmax, box1.tmax);
+	result->xmin = Min(box->xmin, box1.xmin);
+	result->tmin = Min(box->tmin, box1.tmin);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_extent_combinefn);
+
+PGDLLEXPORT Datum 
+tnumber_extent_combinefn(PG_FUNCTION_ARGS)
+{
+	TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+	TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+	TBOX *result;
+
+	if (!box2 && !box1)
+		PG_RETURN_NULL();
+	if (box1 && !box2)
+		PG_RETURN_POINTER(box1);
+	if (box2 && !box1)
+		PG_RETURN_POINTER(box2);
+
+	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
+		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Argument TBOX must have both X and T dimensions")));
+
+	result = palloc(sizeof(TBOX));
+	result->xmax = Max(box1->xmax, box2->xmax);
+	result->tmax = Max(box1->tmax, box2->tmax);
+	result->xmin = Min(box1->xmin, box2->xmin);
+	result->tmin = Min(box1->tmin, box2->tmin);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Temporal aggregate functions
  *****************************************************************************/
 

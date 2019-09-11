@@ -107,14 +107,15 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	/* Test the validity of the instants */
 	assert(count > 0);
 #ifdef WITH_POSTGIS
-	bool isgeo = false, hasz;
+	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY));
+	bool hasz = false, isgeodetic = false;
 	int srid;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	if (isgeo)
 	{
-		isgeo = true;
 		hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
-		srid = tpoint_srid_internal((Temporal *)instants[0]);
+		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
+		srid = tpoint_srid_internal((Temporal *) instants[0]);
 	}
 #endif
 	for (int i = 1; i < count; i++)
@@ -153,7 +154,10 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
 #ifdef WITH_POSTGIS
 	if (isgeo)
+	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+	}
 #endif
 	/* Initialization of the variable-length part */
 	size_t *offsets = temporali_offsets_ptr(result);

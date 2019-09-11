@@ -3,7 +3,7 @@
  * tpoint_aggfuncs.c
  *	Aggregate functions for temporal points.
  *
- * The only function currently provided is temporal centroid.
+ * The only functions currently provided are extent and temporal centroid.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
  *	  Universite Libre de Bruxelles
@@ -167,7 +167,117 @@ tpoint_transform_tcentroid(Temporal *temp, int *count)
 }
 
 /*****************************************************************************
- * Aggregate functions
+ * Extent
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tpoint_extent_transfn);
+
+PGDLLEXPORT Datum 
+tpoint_extent_transfn(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	STBOX box1, *result = NULL;
+
+	/* Can't do anything with null inputs */
+	if (!box && !temp)
+		PG_RETURN_NULL();
+	/* Null box and non-null temporal, return the bbox of the temporal */
+	if (!box)
+	{
+		result = palloc(sizeof(STBOX));
+		temporal_bbox(result, temp);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null box and null temporal, return the box */
+	if (!temp)
+	{
+		result = palloc(sizeof(STBOX));
+		memcpy(result, box, sizeof(STBOX));
+		PG_RETURN_POINTER(result);
+	}
+
+	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Argument STBOX must have both X and T dimensions")));
+	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("One argument has Z dimension but the other does not")));
+	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("One argument has geodetic coordinates but the other does not")));
+
+	temporal_bbox(&box1, temp);
+	result = palloc(sizeof(STBOX));
+	result->xmax = Max(box->xmax, box1.xmax);
+	result->ymax = Max(box->ymax, box1.ymax);
+	result->tmax = Max(box->tmax, box1.tmax);
+	result->xmin = Min(box->xmin, box1.xmin);
+	result->ymin = Min(box->ymin, box1.ymin);
+	result->tmin = Min(box->tmin, box1.tmin);
+	if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
+	{
+		result->zmax = Max(box->zmax, box1.zmax);
+		result->zmin = Min(box->zmin, box1.zmin);
+	}
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(box->flags));
+
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_extent_combinefn);
+
+PGDLLEXPORT Datum 
+tpoint_extent_combinefn(PG_FUNCTION_ARGS)
+{
+	STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+	STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+	STBOX *result;
+
+	if (!box2 && !box1)
+		PG_RETURN_NULL();
+	if (box1 && !box2)
+		PG_RETURN_POINTER(box1);
+	if (box2 && !box1)
+		PG_RETURN_POINTER(box2);
+
+	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
+		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Arguments must have both X and T dimensions")));
+	if (MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("One argument has Z dimension but the other does not")));
+	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("One argument has geodetic coordinates but the other does not")));
+
+	result = palloc(sizeof(STBOX));
+	result->xmax = Max(box1->xmax, box2->xmax);
+	result->ymax = Max(box1->ymax, box2->ymax);
+	result->tmax = Max(box1->tmax, box2->tmax);
+	result->xmin = Min(box1->xmin, box2->xmin);
+	result->ymin = Min(box1->ymin, box2->ymin);
+	result->tmin = Min(box1->tmin, box2->tmin);
+	if (MOBDB_FLAGS_GET_Z(box1->flags) || MOBDB_FLAGS_GET_GEODETIC(box1->flags))
+	{
+		result->zmax = Max(box1->zmax, box2->zmax);
+		result->zmin = Min(box1->zmin, box2->zmin);
+	}
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box1->flags));
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(box1->flags));
+
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Centroid
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_tcentroid_transfn);

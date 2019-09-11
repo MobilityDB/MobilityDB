@@ -18,6 +18,9 @@
 
 /*****************************************************************************/
 
+extern Datum tpoint_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum tpoint_extent_combinefn(PG_FUNCTION_ARGS);
+
 extern Datum tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 extern Datum tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 extern Datum tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);

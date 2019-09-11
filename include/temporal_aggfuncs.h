@@ -83,6 +83,13 @@ extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *sta
 extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings);
 
+/*****************************************************************************/
+
+extern Datum temporal_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum temporal_extent_combinefn(PG_FUNCTION_ARGS);
+extern Datum tnumber_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_extent_combinefn(PG_FUNCTION_ARGS);
+
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
 extern Datum tbool_tor_transfn(PG_FUNCTION_ARGS);

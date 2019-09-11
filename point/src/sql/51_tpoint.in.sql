@@ -50,6 +50,11 @@ CREATE OR REPLACE FUNCTION tpoint_typmod_out(integer)
 	AS 'MODULE_PATHNAME','tpoint_typmod_out'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tpoint_analyze(internal)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE TYPE tgeompoint (
 	internallength = variable,
 	input = tgeompoint_in,
