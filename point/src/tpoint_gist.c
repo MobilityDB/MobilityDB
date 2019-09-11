@@ -403,6 +403,7 @@ stbox_penalty(const STBOX *original, const STBOX *new)
 {
 	STBOX			unionbox;
 	
+	memset(&unionbox, 0, sizeof(STBOX));
 	rt_stbox_union(&unionbox, original, new);
 	return size_stbox(&unionbox) - size_stbox(original);
 }
