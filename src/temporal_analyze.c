@@ -1401,7 +1401,7 @@ temporal_extra_info(VacAttrStats *stats)
 		extra_data->time_type_id = TIMESTAMPTZOID;
 		extra_data->time_eq_opr = typentry->eq_opr;
 		extra_data->time_lt_opr = typentry->lt_opr;
-		extra_data->time_typbyval = false;
+		extra_data->time_typbyval = true;
 		extra_data->time_typlen = sizeof(TimestampTz);
 		extra_data->time_typalign = 'd';
 		extra_data->time_cmp = &typentry->cmp_proc_finfo;
