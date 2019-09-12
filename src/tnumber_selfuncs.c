@@ -802,29 +802,31 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 
 		/* Enable the addition of the selectivity of the value and time 
 		 * dimensions since either may be missing */
-		selec = 0.0; 
+		int selec_value = 1.0, selec_time = 1.0; 
 
 		/* Selectivity for the value dimension */
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			operator = oper_oid(LT_OP, valuetypid, valuetypid);
-			selec += scalarineqsel(root, operator, false, false, vardata, 
+			selec_value = scalarineqsel(root, operator, false, false, vardata, 
 				Float8GetDatum(box->xmin), valuetypid);
 			operator = oper_oid(GT_OP, valuetypid, valuetypid);
-			selec += scalarineqsel(root, operator, true, false, vardata, 
+			selec_value += scalarineqsel(root, operator, true, false, vardata, 
 				Float8GetDatum(box->xmax), valuetypid);
+			selec_value = 1 - selec_value;
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
 			operator = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec += scalarineqsel(root, operator, false, false, vardata, 
+			selec_time = scalarineqsel(root, operator, false, false, vardata, 
 				TimestampTzGetDatum(box->tmin), TIMESTAMPTZOID);
 			operator = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			selec += scalarineqsel(root, operator, true, false, vardata, 
+			selec_time += scalarineqsel(root, operator, true, false, vardata, 
 				TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID);
+			selec_time = 1 - selec_time;
 		}
-		selec = 1 - selec;
+		selec = selec_value * selec_time;
 	}
 	else if (cachedOp == LEFT_OP)
 	{
