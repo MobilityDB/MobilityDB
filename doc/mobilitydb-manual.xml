@@ -3594,77 +3594,155 @@ WHERE intersects(T.Trip, R.Geom);
 		</sect1>
 	</chapter>
 
-	<chapter id="use_case">
-		<title>Use Case</title>
-		<para>In order to show the expressiveness of MobilityDB we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases.</para>
+	<chapter id="tutorial">
+		<title>MobilityDB Tutorial</title>
+		<para>In order to illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a ZIP file <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">here</ulink>.</para>
 		
 		<sect1>
 			<title>Loading the Data</title>
-			<para>Suppose that we have loaded the CSV files into the following tables.
+
+			<para>The ZIP file contains a set of CSV files as follows:
+				<itemizedlist>
+					<listitem>
+						<para><varname>datamcar.csv</varname> with fields <varname>Moid</varname>, <varname>Licence</varname>, <varname>Type</varname>, and <varname>Model</varname> contains the vehicle descriptions (without position history).</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>trips.csv</varname> with fields <varname>Moid</varname>, <varname>Tripid</varname>, <varname>Pos_x</varname>, <varname>Pos_y</varname>, and <varname>Instant</varname> contains vehicles movements and pauses.</para>
+					</listitem>
+
+					<listitem>
+						<para><varname>queryinstants.csv</varname> with fields <varname>Id</varname> and <varname>Instant</varname> contains timestamps used for queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>queryperiods.csv</varname> with fields <varname>Id</varname>, <varname>Begin</varname>, and <varname>End</varname> contains periods used for the queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>querypoints.csv</varname> with fields <varname>Id</varname>, <varname>Pos_x</varname>, and <varname>Pos_y</varname> contains points used for queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>queryregions.csv</varname> with fields <varname>Id</varname>, <varname>SegNo</varname>, <varname>Xstart</varname>, <varname>Ystart</varname>, <varname>Xend</varname>, and <varname>Yend</varname> contains the polygons used for queries.</para>
+					</listitem>
+					
+				</itemizedlist>
+			</para>
+
+			<para>
+			We decompress the file with the data into a directory. This can be done using the command. 
+				<programlisting>
+user@host:/home/mobilitydb/data/$ unzip berlinmod_data.zip
+				</programlisting>
+			We suppose in the following that the directory used is as follows <varname>/home/mobilitydb/data/</varname>.
+			</para>
+
+			<para>
+			Then, we create the database and load MobilityDB by using the following command.
+				<programlisting>
+CREATE EXTENSION MobilityDB CASCADE;
+				</programlisting>
+			By using <varname>CASCADE</varname> we load the required PostGIS extension prior to loading MobilityDB.
+			</para>
+
+			<para>We create the tables to be loaded with the data in the CSV files as follows.
 				<programlisting>
 CREATE TABLE Cars (
-		CarId integer PRIMARY KEY,
-		Licence varchar(32),
-		Type varchar(32),
-		Model varchar(32)
+	CarId integer PRIMARY KEY,
+	Licence varchar(32),
+	Type varchar(32),
+	Model varchar(32)
 );
-CREATE TABLE TripPoints (
-		CarId integer REFERENCES Cars,
-		TripId integer,
-		Lon float,
-		Lat float,
-		T timestamptz,
-		PRIMARY KEY (CarId, TripId, T)
-);
-CREATE TABLE Points (
-		PointId integer PRIMARY KEY,
-		Geom Geometry(Point)
+CREATE TABLE TripsInput (
+	CarId integer REFERENCES Cars,
+	TripId integer,
+	Lon float,
+	Lat float,
+	T timestamptz,
+	PRIMARY KEY (CarId, TripId, T)
 );
 CREATE TABLE Instants (
-		InstantId integer PRIMARY KEY,
-		Instant timestamptz
-);
-CREATE TABLE Regions (
-		RegionId integer PRIMARY KEY,
-		Geom Geometry(Polygon)
+	InstantId integer PRIMARY KEY,
+	Instant timestamptz
 );
 CREATE TABLE Periods (
-		PeriodId integer PRIMARY KEY,
-		Period period
+	PeriodId integer PRIMARY KEY,
+	Tstart TimestampTz,
+	Tend TimestampTz,
+	Period period
 );
-
-CREATE UNIQUE INDEX Cars_CarId_Idx ON Cars USING btree (CarId);
-CREATE INDEX Points_Geom_Idx ON Points USING gist (Geom);
-CREATE INDEX Regions_Geom_Idx ON Regions USING gist (Geom);
-CREATE INDEX Instants_Instant_Idx ON Instants USING btree (Instant);
-CREATE INDEX Periods_Period_Idx ON Periods USING gist (Period);
-
-CREATE VIEW Points1 AS SELECT * FROM Points LIMIT 10;
-CREATE VIEW Regions1 AS SELECT * FROM Regions LIMIT 10;
-CREATE VIEW Instants1 AS SELECT * FROM Instants LIMIT 10;
-CREATE VIEW Periods1 AS SELECT * FROM Periods LIMIT 10;
-			</programlisting>
-
-		Table <varname>Cars</varname> stores static information about the cars while the information about the points composing their trips is stored in table <varname>TripPoints</varname>. Tables <varname>Points</varname>, <varname>Regions</varname>, <varname>Instants</varname>, and <varname>Periods</varname> define locations and times used for expressing query conditions with respect to the trips. The tables have indexes on traditional, spatial, or temporal attributes. The views defined select a subset of the rows from the corresponding tables.</para>
-
-		<para>The data in table <varname>TripPoints</varname> should be assembled so that all points composing a trip are locaded into a single value of type <varname>tgeompoint</varname>. For this we issue the following commands for creating a table <varname>Trips</varname>
-			<programlisting>
-CREATE TABLE Trips (
-		CarId integer REFERENCES Cars,
-		TripId integer,
-		Trip tgeompoint,
-		PRIMARY KEY (CarId, TripId)
+CREATE TABLE Points (
+	PointId integer PRIMARY KEY,
+	PosX double precision,
+	PosY double precision,
+	Geom Geometry(Point)
 );
-
-CREATE INDEX Trips_CarId_Idx ON Trips USING btree (CarId);
-CREATE UNIQUE INDEX Trips_CarId_TripId_Idx ON Trips USING btree (CarId, TripId);
-CREATE INDEX Trips_Trip_Idx ON Trips USING gist (Trip);
-
-CREATE VIEW Trips1 AS SELECT * FROM Trips LIMIT 100;
+CREATE TABLE RegionsInput
+(
+	RegionId integer,
+	SegNo integer,
+	XStart double precision,
+	YStart double precision,
+	XEnd double precision,
+	YEnd double precision,
+	PRIMARY KEY (RegionId, SegNo)
+);
+CREATE TABLE Regions (
+	RegionId integer PRIMARY KEY,
+	Geom Geometry(Polygon)
+);
+CREATE TABLE Trips
+(
+	CarId integer NOT NULL,
+	TripId integer NOT NULL,
+	Trip tgeompoint,
+	PRIMARY KEY (CarId, TripId),
+	FOREIGN KEY (CarId) REFERENCES Cars (CarId) 
+);
 				</programlisting>
-			Table <varname>Trips</varname> will contain all information of a trip in a single row. We also created two traditional indexes and a spatiotemporal index on attribute <varname>Trip</varname> and a view that selects a subset of the trips.</para>
+			We created one table for each CSV file renaming attributes for better readability. In addition, we created a table <varname>Regions</varname> in order to assemble all segments composing a region into a single geometry and a table <varname>Trips</varname> in order to assemble all points composing a trip into a single temporal point.
+			</para>
 
-			<para>The following query is used to load table  <varname>Trips</varname> from the data in table <varname>TripPoints</varname>.
+			<para>
+			We can load the CSV files into the corresponding tables as follows.
+				<programlisting>
+COPY Cars(CarId, Licence, Type, Model) FROM '/home/mobilitydb/data/datamcar.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY TripsInput(CarId, TripId, Lon, Lat, T) FROM '/home/mobilitydb/data/trippoints.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY Instants(InstantId, Instant) FROM '/home/mobilitydb/data/queryinstants.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY Periods(PeriodId, Tstart, Tend) FROM '/home/mobilitydb/data/queryperiods.csv' 
+	DELIMITER  ',' CSV HEADER;
+UPDATE Periods
+SET Period = period(Tstart, Tend);
+COPY Points(PointId, PosX, PosY) FROM '/home/mobilitydb/data/querypoints.csv' 
+	DELIMITER  ',' CSV HEADER;
+UPDATE Points
+SET geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY),4326),5676);
+COPY RegionsInput(RegionId, SegNo, XStart, YStart, XEnd, YEnd) FROM 
+	'/home/mobilitydb/data/queryregions.csv' DELIMITER  ',' CSV HEADER;
+				</programlisting>
+			</para>
+
+			<para>The following query is used to load table <varname>Regions</varname> from the data in table <varname>RegionsInput</varname>.
+				<programlisting>
+INSERT INTO Regions (RegionId, geom)
+WITH RegionsSegs AS
+(
+	SELECT RegionId, SegNo,
+		ST_Transform(ST_SetSRID(St_MakeLine(ST_MakePoint(XStart, YStart), 
+		ST_MakePoint(XEnd, YEnd)),4326),5676) AS geom
+	FROM RegionsInput
+)
+SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(geom order by SegNo)),5676) AS geom
+FROM RegionsSegs
+GROUP BY RegionId;
+				</programlisting>
+			</para>
+
+			<para>The following query is used to load table <varname>Trips</varname> from the data in table <varname>TripsInput</varname>.
 				<programlisting>
 INSERT INTO Trips
 SELECT CarId, TripId, tgeompointseq(array_agg(tgeompointinst(
@@ -3696,22 +3774,41 @@ GROUP BY CarId, TripId;
 					</listitem>
 
 					<listitem>
-						<para>Finally, function <varname>tgeompointseq</varname> gets the array of temporal points and construct a temporal point of sequence duration.</para>
+						<para>Function <varname>tgeompointseq</varname> gets the array of temporal points and construct a temporal point of sequence duration.</para>
 					</listitem>
 
 				</itemizedlist>
+			</para>
+
+			<para>Finally, we create indexes on traditional, spatial, temporal or spatiotemporal attributes as well as views to select a subset of the rows from the corresponding tables. This can be done as follows.
+				<programlisting>
+CREATE UNIQUE INDEX Cars_CarId_Idx ON Cars USING btree (CarId);
+CREATE INDEX Instants_Instant_Idx ON Instants USING btree (Instant);
+CREATE INDEX Periods_Period_Idx ON Periods USING gist (Period);
+CREATE INDEX Points_Geom_Idx ON Points USING gist (Geom);
+CREATE INDEX Regions_Geom_Idx ON Regions USING gist (Geom);
+CREATE INDEX Trips_CarId_idx ON Trips USING btree (CarId);
+CREATE UNIQUE INDEX Trips_pkey_idx ON Trips USING btree (CarId, TripId);
+CREATE INDEX Trips_gist_idx ON Trips USING gist (trip);
+
+CREATE VIEW Instants1 AS SELECT * FROM Instants LIMIT 10;
+CREATE VIEW Periods1 AS SELECT * FROM Periods LIMIT 10;
+CREATE VIEW Points1 AS SELECT * FROM Points LIMIT 10;
+CREATE VIEW Regions1 AS SELECT * FROM Regions LIMIT 10;
+CREATE VIEW Trips1 AS SELECT * FROM Trips LIMIT 100;
+				</programlisting>
 			</para>
 		</sect1>
 
 		<sect1>
 			<title>Exploring the Data</title>
-			<para>In order to visualize the data  with traditional tools such as <ulink url="https://qgis.org/">QGIS</ulink> we would add to table <varname>Trip</varname> a column <varname>Traj</varname> of type <varname>geometry</varname> containing the trajectory of the trips.
+			<para>In order to visualize the data with traditional tools such as <ulink url="https://qgis.org/">QGIS</ulink> we add to table <varname>Trip</varname> a column <varname>Traj</varname> of type <varname>geometry</varname> containing the trajectory of the trips.
 				<programlisting>
 ALTER TABLE Trips ADD COLUMN traj geometry;
 UPDATE Trips
 SET Traj = trajectory(Trip);
 				</programlisting>
-			The visualisation of the trajectories in QGIS is given in <xref linkend="berlinmod_trips" />. In the figure red lines correspond to the trajectories of moving cars, while yellow points correspond to the position of stationary cars. In order to know the total number of trips as well as the number of moving and stationary trips we can issue the following query.
+			The visualisation of the trajectories in QGIS is given in <xref linkend="berlinmod_trips" />. In the figure red lines correspond to the trajectories of moving cars, while yellow points correspond to the position of stationary cars. In order to know the total number of trips as well as the number of moving and stationary trips we can issue the following queries.
 				<programlisting>
 SELECT count(*) FROM Trips;
 -- 1797
@@ -3719,6 +3816,11 @@ SELECT count(*) FROM Trips WHERE GeometryType(Traj) = 'POINT';
 -- 969
 SELECT count(*) FROM Trips WHERE GeometryType(Traj) = 'LINESTRING';
 -- 828
+				</programlisting>
+			We can also determine the spatiotemporal extent of the data using the following query.
+				<programlisting>
+select extent(trip) from trips
+-- "STBOX T((2983189.5,5831006.5,2007-05-27 00:00:00+02),(3021179.8,5860883,2007-05-31 00:00:00+02))"
 				</programlisting>
 			</para>
 
