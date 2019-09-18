@@ -4124,7 +4124,7 @@ SELECT T.CarId, P1.PointId, P1.Distance
 FROM TripsTraj T CROSS JOIN LATERAL (
 SELECT P.PointId, T.Trajectory &lt;-&gt; P.Geom AS Distance
 FROM Points P
-ORDER BY Distance LIMIT 3 ) AS P
+ORDER BY Distance LIMIT 3 ) AS P1
 ORDER BY T.TripId, T.CarId, P1.Distance;
 						</programlisting>
 						<para>This is a nearest-neighbor query with moving reference objects and static candidate objects. The query above uses PostgreSQL's lateral join, which intuitively iterates over each row in a result set and evaluates a subquery using that row as a parameter. The query starts by computing the trajectory of the trips in the temporary table <varname>TripsTraj</varname>. Then, given a trip <varname>T</varname> in the outer query, the subquery computes the traditional distance between the trajectory of <varname>T</varname> and each point <varname>P</varname>. The <varname>ORDER BY</varname> and <varname>LIMIT</varname> clauses in the inner query select the three closest points. PostGIS will use the spatial index on the <varname>Points</varname> table for selecting the three closest points.</para>
@@ -4138,7 +4138,7 @@ FROM Trips T1 CROSS JOIN LATERAL (
 SELECT T2.CarId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 FROM Trips T2
 WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
-ORDER BY Distance LIMIT 3 ) AS C
+ORDER BY Distance LIMIT 3 ) AS C2
 ORDER BY T1.CarId, C2.CarId;
 						</programlisting>
 						<para>This is a nearest-neighbor query where both the reference and the candidate objects are moving. Therefore, it is not possible to proceed as in the previous query to first project the moving points to the spatial dimension and then compute the traditional distance. Given a trip <varname>T1</varname> in the outer query, the subquery computes the temporal distance between <varname>T1</varname> and a trip <varname>T2</varname> of another car distinct from the car from <varname>T1</varname> and then computes the minimum value in the temporal distance. Finally, the <varname>ORDER BY</varname> and <varname>LIMIT</varname> clauses in the inner query select the three closest cars.</para>
