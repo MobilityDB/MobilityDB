@@ -168,7 +168,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
 	Period 		period;			/* time span (24 bytes) */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* begining of variable-length data */
 } TemporalSeq;
 
 /* Temporal Sequence Set */

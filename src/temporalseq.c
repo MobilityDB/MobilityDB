@@ -57,30 +57,14 @@
  * duration.
  */
 
-/* Pointer to the offset array of a TemporalSeq */
-
-size_t *
-temporalseq_offsets_ptr(TemporalSeq *seq)
-{
-	return (size_t *) (((char *)seq) + sizeof(TemporalSeq));
-}
-
-/* Pointer to the first TemporalInst */
-
-char * 
-temporalseq_data_ptr(TemporalSeq *seq)
-{
-	return (char *)seq + double_pad(sizeof(TemporalSeq) + 
-		sizeof(size_t) * (seq->count+2));
-}
-
 /* N-th TemporalInst of a TemporalSeq */
 
 TemporalInst *
 temporalseq_inst_n(TemporalSeq *seq, int index)
 {
-	size_t *offsets = temporalseq_offsets_ptr(seq);
-	return (TemporalInst *) (temporalseq_data_ptr(seq) + offsets[index]);
+	return (TemporalInst *)(
+		(char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalSeq */
@@ -88,8 +72,9 @@ temporalseq_inst_n(TemporalSeq *seq, int index)
 void * 
 temporalseq_bbox_ptr(TemporalSeq *seq) 
 {
-	size_t *offsets = temporalseq_offsets_ptr(seq);
-	return temporalseq_data_ptr(seq) + offsets[seq->count];
+	return (char *)(&seq->offsets[seq->count + 2]) +  	/* start of data */
+		seq->offsets[seq->count];						/* offset */
+
 }
 
 /* Copy the bounding box of a TemporalSeq in the first argument */
@@ -648,7 +633,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	}
 #endif
 	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 1) * sizeof(size_t));
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
@@ -666,7 +651,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporalseq_offsets_ptr(result);
+	size_t *offsets = &result->offsets[0];
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
@@ -796,7 +781,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	}
 #endif
 	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 1) * sizeof(size_t));
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
@@ -811,7 +796,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporalseq_offsets_ptr(result);
+	size_t *offsets = &result->offsets[0];
 	size_t pos = 0;
 	for (int i = 0; i < newcount - 1; i++)
 	{

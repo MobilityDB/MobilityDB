@@ -20,8 +20,6 @@
 
 /*****************************************************************************/
 
-size_t *temporalseq_offsets_ptr(TemporalSeq *seq);
-extern char *temporalseq_data_ptr(TemporalSeq *seq);
 extern TemporalInst *temporalseq_inst_n(TemporalSeq *seq, int index);
 extern TemporalSeq *temporalseq_from_temporalinstarr(TemporalInst **instants, 
 	int count, bool lower_inc, bool upper_inc, bool normalize);
