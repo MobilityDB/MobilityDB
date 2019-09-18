@@ -3858,7 +3858,7 @@ SELECT AVG(duration(Trip)) FROM Trips;
 				<programlisting>
 SELECT length(Trip) / 1e3, duration(Trip) FROM Trips ORDER BY duration;
 				</programlisting>
-			The query shows very many trips with zero length and a duration of more than one day. That would imply that the car stayed on the parking overnight and some of them over the weekend.
+			The query shows very many trips with zero length and a duration of more than one day. That would imply that there are stationary trips, representing parking overnight and even over the weekend. The previous query can hence be refined as follows:
 				<programlisting>
 SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
 -- "00:00:01.861784"
@@ -3866,30 +3866,7 @@ SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
 			</para>
 
 			<para>
-			The following query determines the number stationary trips.
-				<programlisting>
-SELECT COUNT(*) FROM Trips WHERE length(Trip) > 0;
--- 828
-				</programlisting>
-			while the following query determine the number of short trips.
-				<programlisting>
-SELECT count(*)
-FROM Trips
-WHERE length(Trip) &lt; 500 OR
-    numInstants(Trip) &lt; 10 OR
-    duration(Trip) &lt; '5min'::interval;
--- 1190
-				</programlisting>
-			</para>
-
-			<para>
-				<programlisting>
-SELECT length(Trip) / 1e3 as TotalLengthKm FROM Trips WHERE length(Trip) > 0;
-				</programlisting>
-			</para>
-
-			<para>
-			We build now a histogram of trip lengths to understand more how the data is distributed. This is done as follows.
+			The following query produces a histogram of trip length.
 				<programlisting>
 WITH buckets (bucketNo, bucketRange) AS (
 	SELECT 1, floatrange '[0,0]' UNION
