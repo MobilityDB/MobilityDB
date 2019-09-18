@@ -3984,7 +3984,7 @@ GROUP BY T.CarId, P.PointId;
 						<para>Compute how many cars were active at each period in <varname>Periods</varname>.</para>
 						<programlisting>
 SELECT P.PeriodID, COUNT(*), TCOUNT(atPeriod(T.Trip, P.Period))
-FROM Trips T, Periods 
+FROM Trips T, Periods P
 WHERE T.Trip &amp;&amp; P.Period
 GROUP BY P.PeriodID
 ORDER BY P.PeriodID;
