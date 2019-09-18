@@ -3830,6 +3830,99 @@ select extent(trip) from trips
 				</mediaobject>
 			</figure>
 
+			<para>
+			We continue investigating the data set by computing the maximum number of concurrent trips over the whole period
+				<programlisting>
+SELECT maxValue(tcount(Trip)) FROM Trips;
+-- 141
+				</programlisting>
+			the average sampling rate
+				<programlisting>
+SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips;
+-- "03:43:01.695539"
+				</programlisting>
+				and the total travelled distance in kilometers of all trips:
+				<programlisting>
+SELECT SUM(length(Trip)) / 1e3 as TotalLengthKm FROM Trips;
+-- 10074.8123345527
+				</programlisting>
+			</para>
+
+			<para>
+			Now we want to know the average duration of a trip.
+				<programlisting>
+SELECT AVG(duration(Trip)) FROM Trips;
+--"07:31:57.195325"
+				</programlisting>
+			This average duration is too long. To investigate more we use the following query
+				<programlisting>
+SELECT length(Trip) / 1e3, duration(Trip) FROM Trips ORDER BY duration;
+				</programlisting>
+			The query shows very many trips with zero length and a duration of more than one day. That would imply that the car stayed on the parking overnight and some of them over the weekend.
+				<programlisting>
+SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
+-- "00:00:01.861784"
+				</programlisting>
+			</para>
+
+			<para>
+			The following query determines the number stationary trips.
+				<programlisting>
+SELECT COUNT(*) FROM Trips WHERE length(Trip) > 0;
+-- 828
+				</programlisting>
+			while the following query determine the number of short trips.
+				<programlisting>
+SELECT count(*)
+FROM Trips
+WHERE length(Trip) &lt; 500 OR
+    numInstants(Trip) &lt; 10 OR
+    duration(Trip) &lt; '5min'::interval;
+-- 1190
+				</programlisting>
+			</para>
+
+			<para>
+				<programlisting>
+SELECT length(Trip) / 1e3 as TotalLengthKm FROM Trips WHERE length(Trip) > 0;
+				</programlisting>
+			</para>
+
+			<para>
+			We build now a histogram of trip lengths to understand more how the data is distributed. This is done as follows.
+				<programlisting>
+WITH buckets (bucketNo, bucketRange) AS (
+	SELECT 1, floatrange '[0,0]' UNION
+	SELECT 2, floatrange '(0,100)' UNION
+	SELECT 3, floatrange '[100,1000)' UNION
+	SELECT 4, floatrange '[1000,5000)' UNION
+	SELECT 5, floatrange '[5000,10000)' UNION
+	SELECT 6, floatrange '[10000,50000)' UNION
+	SELECT 7, floatrange '[50000,100000)' ),
+histogram AS (
+	SELECT bucketNo, bucketRange, count(TripId) as freq
+	FROM buckets left outer join trips on length(trip) &lt;@ bucketRange
+	GROUP BY bucketNo, bucketRange
+	ORDER BY bucketNo, bucketRange
+)
+SELECT bucketNo, bucketRange, freq,
+	repeat('■',
+               (   freq::float
+                 / max(freq) over()
+                 * 30
+               )::int
+        ) AS bar
+FROM histogram;
+				</programlisting>
+				The result of the above query is given in <xref linkend="histogram_length" />. 
+			</para>
+
+			<figure id="histogram_length"><title>Result of the query building an histogram of trip lengths.</title>
+				<mediaobject>
+					<imageobject><imagedata fileref='images/histogram_length.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
 		</sect1>
 
 		<sect1>
