@@ -651,13 +651,12 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = &result->offsets[0];
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
 		memcpy(((char *)result) + pdata + pos, newinstants[i], 
 			VARSIZE(newinstants[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(newinstants[i]));
 	}
 	/*
@@ -682,13 +681,13 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 #endif
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
 				lower_inc, upper_inc);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
 #ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
-		offsets[newcount + 1] = pos;
+		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
@@ -796,30 +795,29 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = &result->offsets[0];
 	size_t pos = 0;
 	for (int i = 0; i < newcount - 1; i++)
 	{
 		inst1 = temporalseq_inst_n(seq, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(inst1));
 	}
 	/* Append the instant */
 	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	offsets[newcount - 1] = pos;
+	result->offsets[newcount - 1] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporalseq_expand_bbox(bbox, seq, inst);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 	}
 #ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
-		offsets[newcount + 1] = pos;
+		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
