@@ -181,7 +181,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalSeq elements */
 	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* begining of variable-length data */
 } TemporalS;
 
 /* bboxunion - Union type for all types of bounding boxes */

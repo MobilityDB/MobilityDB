@@ -40,7 +40,7 @@
  * The memory structure of a TemporalS with, e.g., 2 sequences is as follows
  *
  *	--------------------------------------------------------
- *	( TemporalS | offset_0 | offset_1 | offset_2 )_ X | ...
+ *	( TemporalS )_ X | offset_0 | offset_1 | offset_2 | ...
  *	--------------------------------------------------------
  *	--------------------------------------------------------
  *	( TemporalSeq_0 )_X | ( TemporalSeq_1 )_X | ( bbox )_X | 
@@ -51,30 +51,14 @@
  * bounding box. There is no precomputed trajectory for TemporalS.
  */
 
-/* Pointer to the offset array of the TemporalS */
-
-static size_t *
-temporals_offsets_ptr(TemporalS *ts)
-{
-	return (size_t *) (((char *)ts) + sizeof(TemporalS));
-}
-
-/* Pointer to the first TemporalSeq */
-
-static char * 
-temporals_data_ptr(TemporalS *ts)
-{
-	return (char *)ts + double_pad(sizeof(TemporalS) + 
-		sizeof(size_t) * (ts->count + 1));
-}
-
 /* N-th TemporalSeq of a TemporalS */
 
 TemporalSeq *
 temporals_seq_n(TemporalS *ts, int index)
 {
-	size_t *offsets = temporals_offsets_ptr(ts);
-	return (TemporalSeq *) (temporals_data_ptr(ts) + offsets[index]);
+	return (TemporalSeq *)(
+		(char *)(&ts->offsets[ts->count + 1]) + 	/* start of data */
+			ts->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalS */
@@ -82,8 +66,8 @@ temporals_seq_n(TemporalS *ts, int index)
 void *
 temporals_bbox_ptr(TemporalS *ts) 
 {
-	size_t *offsets = temporals_offsets_ptr(ts);
-	return temporals_data_ptr(ts) + offsets[ts->count];
+	return (char *)(&ts->offsets[ts->count + 1]) +  /* start of data */
+		ts->offsets[ts->count];						/* offset */
 }
 
 /* Copy the bounding box of a TemporalS in the first argument */
@@ -146,7 +130,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	if (normalize && count > 1)
 		newsequences = temporalseqarr_normalize(sequences, count, &newcount);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (newcount + 1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS)) + (newcount + 1) * sizeof(size_t);
 	size_t memsize = 0;
 	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
@@ -173,12 +157,11 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporals_offsets_ptr(result);
 	size_t pos = 0;	
 	for (int i = 0; i < newcount; i++)
 	{
 		memcpy(((char *) result) + pdata + pos, newsequences[i], VARSIZE(newsequences[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(newsequences[i]));
 	}
 	/*
@@ -190,7 +173,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporals_make_bbox(bbox, newsequences, newcount);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 	}
 	if (normalize && count > 1)
 	{
@@ -210,7 +193,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count + 1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS)) + (ts->count + 1) * sizeof(size_t);
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
@@ -232,17 +215,16 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporals_offsets_ptr(result);
 	size_t pos = 0;	
 	for (int i = 0; i < ts->count - 1; i++)
 	{
 		seq = temporals_seq_n(ts,i);
 		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(seq));
 	}
 	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
-	offsets[ts->count - 1] = pos;
+	result->offsets[ts->count - 1] = pos;
 	pos += double_pad(VARSIZE(newseq));
 	/*
 	 * Precompute the bounding box 
@@ -254,7 +236,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, temporals_bbox_ptr(ts), bboxsize);
 		temporals_expand_bbox(bbox, ts, inst);
-		offsets[ts->count] = pos;
+		result->offsets[ts->count] = pos;
 	}
 	pfree(newseq);
 	return result;

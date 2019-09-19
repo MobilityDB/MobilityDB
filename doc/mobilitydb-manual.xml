@@ -3594,69 +3594,325 @@ WHERE intersects(T.Trip, R.Geom);
 		</sect1>
 	</chapter>
 
-	<chapter id="representative_queries">
-		<title>Representative Queries</title>
-		<para>In order to show the expressiveness of the extension we give in this section a set of representative queries based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases. For this we use the following tables.
-			<programlisting>
+	<chapter id="tutorial">
+		<title>MobilityDB Tutorial</title>
+		<para>In order to illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a ZIP file <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">here</ulink>.</para>
+		
+		<sect1>
+			<title>Loading the Data</title>
+
+			<para>The ZIP file contains a set of CSV files as follows:
+				<itemizedlist>
+					<listitem>
+						<para><varname>datamcar.csv</varname> with fields <varname>Moid</varname>, <varname>Licence</varname>, <varname>Type</varname>, and <varname>Model</varname> contains the vehicle descriptions (without position history).</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>trips.csv</varname> with fields <varname>Moid</varname>, <varname>Tripid</varname>, <varname>Pos_x</varname>, <varname>Pos_y</varname>, and <varname>Instant</varname> contains vehicles movements and pauses.</para>
+					</listitem>
+
+					<listitem>
+						<para><varname>queryinstants.csv</varname> with fields <varname>Id</varname> and <varname>Instant</varname> contains timestamps used for queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>queryperiods.csv</varname> with fields <varname>Id</varname>, <varname>Begin</varname>, and <varname>End</varname> contains periods used for the queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>querypoints.csv</varname> with fields <varname>Id</varname>, <varname>Pos_x</varname>, and <varname>Pos_y</varname> contains points used for queries.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>queryregions.csv</varname> with fields <varname>Id</varname>, <varname>SegNo</varname>, <varname>Xstart</varname>, <varname>Ystart</varname>, <varname>Xend</varname>, and <varname>Yend</varname> contains the polygons used for queries.</para>
+					</listitem>
+					
+				</itemizedlist>
+			</para>
+
+			<para>
+			We decompress the file with the data into a directory. This can be done using the command. 
+				<programlisting>
+user@host:/home/mobilitydb/data/$ unzip berlinmod_data.zip
+				</programlisting>
+			We suppose in the following that the directory used is as follows <varname>/home/mobilitydb/data/</varname>.
+			</para>
+
+			<para>
+			Then, we create the database and load MobilityDB by using the following command.
+				<programlisting>
+CREATE EXTENSION MobilityDB CASCADE;
+				</programlisting>
+			By using <varname>CASCADE</varname> we load the required PostGIS extension prior to loading MobilityDB.
+			</para>
+
+			<para>We create the tables to be loaded with the data in the CSV files as follows.
+				<programlisting>
 CREATE TABLE Cars (
-		CarId integer PRIMARY KEY,
-		Licence varchar(32),
-		Type varchar(32),
-		Model varchar(32)
+	CarId integer PRIMARY KEY,
+	Licence varchar(32),
+	Type varchar(32),
+	Model varchar(32)
 );
-CREATE TABLE Trips (
-		CarId integer REFERENCES Cars,
-		TripId integer,
-		Trip tgeompoint,
-		PRIMARY KEY (CarId, TripId)
-);
-CREATE TABLE Points (
-		PointId integer PRIMARY KEY,
-		Geom Geometry(Point)
+CREATE TABLE TripsInput (
+	CarId integer REFERENCES Cars,
+	TripId integer,
+	Lon float,
+	Lat float,
+	T timestamptz,
+	PRIMARY KEY (CarId, TripId, T)
 );
 CREATE TABLE Instants (
-		InstantId integer PRIMARY KEY,
-		Instant timestamptz
-);
-CREATE TABLE Regions (
-		RegionId integer PRIMARY KEY,
-		Geom Geometry(Polygon)
+	InstantId integer PRIMARY KEY,
+	Instant timestamptz
 );
 CREATE TABLE Periods (
-		PeriodId integer PRIMARY KEY,
-		Period period
+	PeriodId integer PRIMARY KEY,
+	Tstart TimestampTz,
+	Tend TimestampTz,
+	Period period
 );
+CREATE TABLE Points (
+	PointId integer PRIMARY KEY,
+	PosX double precision,
+	PosY double precision,
+	Geom Geometry(Point)
+);
+CREATE TABLE RegionsInput
+(
+	RegionId integer,
+	SegNo integer,
+	XStart double precision,
+	YStart double precision,
+	XEnd double precision,
+	YEnd double precision,
+	PRIMARY KEY (RegionId, SegNo)
+);
+CREATE TABLE Regions (
+	RegionId integer PRIMARY KEY,
+	Geom Geometry(Polygon)
+);
+CREATE TABLE Trips
+(
+	CarId integer NOT NULL,
+	TripId integer NOT NULL,
+	Trip tgeompoint,
+	PRIMARY KEY (CarId, TripId),
+	FOREIGN KEY (CarId) REFERENCES Cars (CarId) 
+);
+				</programlisting>
+			We created one table for each CSV file renaming attributes for better readability. In addition, we created a table <varname>Regions</varname> in order to assemble all segments composing a region into a single geometry and a table <varname>Trips</varname> in order to assemble all points composing a trip into a single temporal point.
+			</para>
 
+			<para>
+			We can load the CSV files into the corresponding tables as follows.
+				<programlisting>
+COPY Cars(CarId, Licence, Type, Model) FROM '/home/mobilitydb/data/datamcar.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY TripsInput(CarId, TripId, Lon, Lat, T) FROM '/home/mobilitydb/data/trippoints.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY Instants(InstantId, Instant) FROM '/home/mobilitydb/data/queryinstants.csv' 
+	DELIMITER  ',' CSV HEADER;
+COPY Periods(PeriodId, Tstart, Tend) FROM '/home/mobilitydb/data/queryperiods.csv' 
+	DELIMITER  ',' CSV HEADER;
+UPDATE Periods
+SET Period = period(Tstart, Tend);
+COPY Points(PointId, PosX, PosY) FROM '/home/mobilitydb/data/querypoints.csv' 
+	DELIMITER  ',' CSV HEADER;
+UPDATE Points
+SET geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY),4326),5676);
+COPY RegionsInput(RegionId, SegNo, XStart, YStart, XEnd, YEnd) FROM 
+	'/home/mobilitydb/data/queryregions.csv' DELIMITER  ',' CSV HEADER;
+				</programlisting>
+			</para>
+
+			<para>The following query is used to load table <varname>Regions</varname> from the data in table <varname>RegionsInput</varname>.
+				<programlisting>
+INSERT INTO Regions (RegionId, geom)
+WITH RegionsSegs AS
+(
+	SELECT RegionId, SegNo,
+		ST_Transform(ST_SetSRID(St_MakeLine(ST_MakePoint(XStart, YStart), 
+		ST_MakePoint(XEnd, YEnd)),4326),5676) AS geom
+	FROM RegionsInput
+)
+SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(geom order by SegNo)),5676) AS geom
+FROM RegionsSegs
+GROUP BY RegionId;
+				</programlisting>
+			</para>
+
+			<para>The following query is used to load table <varname>Trips</varname> from the data in table <varname>TripsInput</varname>.
+				<programlisting>
+INSERT INTO Trips
+SELECT CarId, TripId, tgeompointseq(array_agg(tgeompointinst(
+	ST_Transform(ST_SetSRID(ST_MakePoint(Lon,Lat),4326),5676), T)
+	ORDER BY t))
+FROM TripPoints
+GROUP BY CarId, TripId;
+				</programlisting>
+			There are a lot of nested functions, so reading from the innermost:
+				<itemizedlist>
+					<listitem>
+						<para>Function <varname>ST_MakePoint</varname> construct a point from the <varname>Lon</varname> and <varname>Lat</varname> values.</para>
+					</listitem>
+
+					<listitem>
+						<para>Function <varname>ST_SetSRID</varname> sets the SRID of the point to 4326, that is, to the standard WGS 84 GPS coordinates.</para>
+					</listitem>
+
+					<listitem>
+						<para>Function <varname>ST_Transform</varname> transforms the spherical GPS coordinates to plannar coordinates fitted for Germany.</para>
+					</listitem>
+
+					<listitem>
+						<para>Function <varname>tgeompointinst</varname> gets the point and the time values to create a temporal point of instant duration.</para>
+					</listitem>
+
+					<listitem>
+						<para>Function <varname>array_agg</varname> collects in an array all temporal points of a given car and a given trip (as specified by the <varname>GROUP BY</varname> clause) and sort them by time (as specified by the <varname>ORDER BY</varname> clause)</para>
+					</listitem>
+
+					<listitem>
+						<para>Function <varname>tgeompointseq</varname> gets the array of temporal points and construct a temporal point of sequence duration.</para>
+					</listitem>
+
+				</itemizedlist>
+			</para>
+
+			<para>Finally, we create indexes on traditional, spatial, temporal or spatiotemporal attributes as well as views to select a subset of the rows from the corresponding tables. This can be done as follows.
+				<programlisting>
 CREATE UNIQUE INDEX Cars_CarId_Idx ON Cars USING btree (CarId);
-CREATE INDEX Trips_CarId_Idx ON Trips USING btree (CarId);
-CREATE UNIQUE INDEX Trips_CarId_TripId_Idx ON Trips USING btree (CarId, TripId);
-CREATE INDEX Trips_Trip_Idx ON Trips USING gist (Trip);
-CREATE INDEX Points_Geom_Idx ON Points USING gist (Geom);
-CREATE INDEX Regions_Geom_Idx ON Regions USING gist (Geom);
 CREATE INDEX Instants_Instant_Idx ON Instants USING btree (Instant);
 CREATE INDEX Periods_Period_Idx ON Periods USING gist (Period);
+CREATE INDEX Points_Geom_Idx ON Points USING gist (Geom);
+CREATE INDEX Regions_Geom_Idx ON Regions USING gist (Geom);
+CREATE INDEX Trips_CarId_idx ON Trips USING btree (CarId);
+CREATE UNIQUE INDEX Trips_pkey_idx ON Trips USING btree (CarId, TripId);
+CREATE INDEX Trips_gist_idx ON Trips USING gist (trip);
 
-CREATE VIEW Trips1 AS SELECT * FROM Trips LIMIT 100;
-CREATE VIEW Points1 AS SELECT * FROM Points LIMIT 10;
-CREATE VIEW Regions1 AS SELECT * FROM Regions LIMIT 10;
 CREATE VIEW Instants1 AS SELECT * FROM Instants LIMIT 10;
 CREATE VIEW Periods1 AS SELECT * FROM Periods LIMIT 10;
-			</programlisting>
-		Table <varname>Cars</varname> stores static information about the cars while the information about their trips is stored in table <varname>Trips</varname>. Tables <varname>Points</varname>, <varname>Regions</varname>, <varname>Instants</varname>, and <varname>Periods</varname> define locations and times used for expressing query conditions with respect to the trips. The tables have indexes on traditional, spatial, temporal, or spatio-temporal attributes. The five views defined select a subset of the rows from the corresponding tables.</para>
-
-		<para>We discuss next four categories of queries: range queries, distance queries, temporal aggregate queries, and nearest-neighbor queries<footnote><para>A web interface to explore the temporal types on a database containing the BerlinMOD benchmark data generated at scale 0.005 is available at the address <ulink url="http://demo.mobilitydb.eu/">here</ulink>.</para></footnote>.</para>
+CREATE VIEW Points1 AS SELECT * FROM Points LIMIT 10;
+CREATE VIEW Regions1 AS SELECT * FROM Regions LIMIT 10;
+CREATE VIEW Trips1 AS SELECT * FROM Trips LIMIT 100;
+				</programlisting>
+			</para>
+		</sect1>
 
 		<sect1>
-			<title>Range Queries</title>
-			<para>The queries in this category restrict Trips with respect to a spatial, temporal, or spatio-temporal point or range. In the examples, the spatial points and ranges are given, respectively, in tables <varname>Points</varname> and <varname>Regions</varname>, while temporal points and ranges are given, respectively, in tables <varname>Instants</varname> and <varname>Periods</varname>.</para>
+			<title>Exploring the Data</title>
+			<para>In order to visualize the data with traditional tools such as <ulink url="https://qgis.org/">QGIS</ulink> we add to table <varname>Trip</varname> a column <varname>Traj</varname> of type <varname>geometry</varname> containing the trajectory of the trips.
+				<programlisting>
+ALTER TABLE Trips ADD COLUMN traj geometry;
+UPDATE Trips
+SET Traj = trajectory(Trip);
+				</programlisting>
+			The visualisation of the trajectories in QGIS is given in <xref linkend="berlinmod_trips" />. In the figure red lines correspond to the trajectories of moving cars, while yellow points correspond to the position of stationary cars. In order to know the total number of trips as well as the number of moving and stationary trips we can issue the following queries.
+				<programlisting>
+SELECT count(*) FROM Trips;
+-- 1797
+SELECT count(*) FROM Trips WHERE GeometryType(Traj) = 'POINT';
+-- 969
+SELECT count(*) FROM Trips WHERE GeometryType(Traj) = 'LINESTRING';
+-- 828
+				</programlisting>
+			We can also determine the spatiotemporal extent of the data using the following query.
+				<programlisting>
+select extent(trip) from trips
+-- "STBOX T((2983189.5,5831006.5,2007-05-27 00:00:00+02),(3021179.8,5860883,2007-05-31 00:00:00+02))"
+				</programlisting>
+			</para>
 
-			<qandaset>
-				<qandaentry id="qa_range_spatial">
-					<question>
+			<figure id="berlinmod_trips"><title>Visualisation of the trajectories of the trips in QGIS.</title>
+				<mediaobject>
+					<imageobject><imagedata scalefit="1" fileref='images/berlinmod_trips.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+			<para>
+			We continue investigating the data set by computing the maximum number of concurrent trips over the whole period
+				<programlisting>
+SELECT maxValue(tcount(Trip)) FROM Trips;
+-- 141
+				</programlisting>
+			the average sampling rate
+				<programlisting>
+SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips;
+-- "03:43:01.695539"
+				</programlisting>
+				and the total travelled distance in kilometers of all trips:
+				<programlisting>
+SELECT SUM(length(Trip)) / 1e3 as TotalLengthKm FROM Trips;
+-- 10074.8123345527
+				</programlisting>
+			</para>
+
+			<para>
+			Now we want to know the average duration of a trip.
+				<programlisting>
+SELECT AVG(duration(Trip)) FROM Trips;
+--"07:31:57.195325"
+				</programlisting>
+			This average duration is too long. To investigate more we use the following query
+				<programlisting>
+SELECT length(Trip) / 1e3, duration(Trip) FROM Trips ORDER BY duration;
+				</programlisting>
+			The query shows very many trips with zero length and a duration of more than one day. That would imply that there are stationary trips, representing parking overnight and even over the weekend. The previous query can hence be refined as follows:
+				<programlisting>
+SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
+-- "00:00:01.861784"
+				</programlisting>
+			</para>
+
+			<para>
+			The following query produces a histogram of trip length.
+				<programlisting>
+WITH buckets (bucketNo, bucketRange) AS (
+	SELECT 1, floatrange '[0,0]' UNION
+	SELECT 2, floatrange '(0,100)' UNION
+	SELECT 3, floatrange '[100,1000)' UNION
+	SELECT 4, floatrange '[1000,5000)' UNION
+	SELECT 5, floatrange '[5000,10000)' UNION
+	SELECT 6, floatrange '[10000,50000)' UNION
+	SELECT 7, floatrange '[50000,100000)' ),
+histogram AS (
+	SELECT bucketNo, bucketRange, count(TripId) as freq
+	FROM buckets left outer join trips on length(trip) &lt;@ bucketRange
+	GROUP BY bucketNo, bucketRange
+	ORDER BY bucketNo, bucketRange
+)
+SELECT bucketNo, bucketRange, freq,
+	repeat('■',
+               (   freq::float
+                 / max(freq) over()
+                 * 30
+               )::int
+        ) AS bar
+FROM histogram;
+				</programlisting>
+				The result of the above query is given in <xref linkend="histogram_length" />. 
+			</para>
+
+			<figure id="histogram_length"><title>Result of the query building an histogram of trip lengths.</title>
+				<mediaobject>
+					<imageobject><imagedata scale='80' fileref='images/histogram_length.png' /></imageobject>
+				</mediaobject>
+			</figure>
+
+		</sect1>
+
+		<sect1>
+			<title>Querying the Data</title>
+			<para>We discuss next four categories of queries: range queries, distance queries, temporal aggregate queries, and nearest-neighbor queries<footnote><para>A web interface to explore the temporal types on a database containing the BerlinMOD benchmark data generated at scale 0.005 is available at the address <ulink url="http://demo.mobilitydb.eu/">here</ulink>.</para></footnote>.</para>
+
+			<sect2>
+				<title>Range Queries</title>
+				<para>The queries in this category restrict Trips with respect to a spatial, temporal, or spatio-temporal point or range. In the examples, the spatial points and ranges are given, respectively, in tables <varname>Points</varname> and <varname>Regions</varname>, while temporal points and ranges are given, respectively, in tables <varname>Instants</varname> and <varname>Periods</varname>.</para>
+
+				<orderedlist>
+					<listitem id="qa_range_spatial">
 						<para>List the cars that have passed at a region from <varname>Regions</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT DISTINCT R.RegionId, T.CarId
 FROM Trips T, Regions R
@@ -3664,15 +3920,10 @@ WHERE ST_Intersects(trajectory(T.Trip), R.Geom)
 ORDER BY R.RegionId, T.CarId;
 						</programlisting>
 						<para>This is a spatial range query. The query verifies that the trajectory of the car intersects the region. PostGIS performs an implicit bounding box comparison <varname>trajectory(T.Trip) &amp;&amp; R.Geom</varname> using the spatial index on table <varname>Regions</varname> when executing the predicate <varname>ST_Intersects</varname>.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_range_spatiotemporal">
-					<question>
+					<listitem id="qa_range_spatiotemporal">
 						<para>List the cars that were within a region from <varname>Regions</varname> during a period from <varname>Periods</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT R.RegionId, P.PeriodId, T.CarId
 FROM Trips T, Regions R, Periods P
@@ -3681,15 +3932,10 @@ WHERE T.Trip &amp;&amp; stbox(R.Geom, P.Period) AND
 ORDER BY R.RegionId, P.PeriodId, T.CarId;
 						</programlisting>
 						<para>This is a spatio-temporal range query. The query performs a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on table <varname>Trips</varname>. After that, the query verifies that the location of the car during the period intersects the region. Notice that the predicate <varname>_intersects</varname> is used instead of <varname>intersects</varname> to avoid an implicit index test with the bounding box comparison <varname>atPeriod(Trip, P.Period) &amp;&amp; R.Geom</varname> is performed using the spatio-temporal index.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_range_spatiotemporal_join">
-					<question>
+					<listitem id="qa_range_spatiotemporal_join">
 						<para>List the pairs of cars that were both located within a region from <varname>Regions</varname> during a period from <varname>Periods</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT DISTINCT T1.CarId AS CarId1, T2.CarId AS CarId2, R.RegionId, P.PeriodId
 FROM Trips T1, Trips T2, Regions R, Periods P
@@ -3700,15 +3946,10 @@ WHERE T1.CarId &lt; T2.CarId AND T1.Trip &amp;&amp; stbox(R.Geom, P.Period) AND
 ORDER BY T1.CarId, T2.CarId, R.RegionId, P.PeriodId;
 						</programlisting>
 						<para>This is a spatio-temporal range join query. The query selects two trips of different cars and performs bounding box comparisons of each trip with a region and a period using the spatio-temporal index of the <varname>Trips</varname> table. The query then verifies that both cars were located within the region during the period.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_range_entering">
-					<question>
+					<listitem id="qa_range_entering">
 						<para>List the first time at which a car visited a point in <varname>Points</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T.CarId, P.PointId, MIN(startTimestamp(atValue(T.Trip,P.Geom))) AS Instant
 FROM Trips T, Points P
@@ -3716,53 +3957,43 @@ WHERE ST_Contains(trajectory(T.Trip), P.Geom)
 GROUP BY T.CarId, P.PointId;
 						</programlisting>
 						<para>The query selects a trip and a point and verifies that the car passed by the point by testing that the trajectory of the trip contains the point. Notice that PostGIS will perform the bounding box containment <varname>trajectory(T.Trip) ~ P.Geom</varname> using the spatial index on table <varname>Points</varname> before executing <varname>ST_Contains</varname>. Then, the query projects the trip to the point with the <varname>atValue</varname> function, get the first timestamp of the projected trip with the <varname>startTimestamp</varname> function, and applies the traditional <varname>MIN</varname> aggregate function for all trips of the car and the point.</para>
-					</answer>
-				</qandaentry>
-			</qandaset>
-		</sect1>
-
-		<sect1>
-			<title>Temporal Aggregate Queries</title>
-			<para>There are three common types of temporal aggregate queries.
-				<itemizedlist>
-					<listitem>
-						<para>Instant temporal aggregate queries in which, from a conceptual perspective, the traditional aggregate function is applied at each instant.</para>
 					</listitem>
+				</orderedlist>
+			</sect2>
 
-					<listitem>
-						<para>Window temporal aggregate queries (also known as cumulative queries), which, given a time interval w, compute the value of the aggregate at a time instant t from the values during the time period [t-w, t].</para>
-					</listitem>
+			<sect2>
+				<title>Temporal Aggregate Queries</title>
+				<para>There are three common types of temporal aggregate queries.
+					<itemizedlist>
+						<listitem>
+							<para>Instant temporal aggregate queries in which, from a conceptual perspective, the traditional aggregate function is applied at each instant.</para>
+						</listitem>
 
-					<listitem>
-						<para>Span temporal aggregate queries, which, first, split the time line into predefined intervals independently of the target data, and then, for each of these intervals, aggregate the data that overlap the interval.</para>
-					</listitem>
-				</itemizedlist>
-			</para>
+						<listitem>
+							<para>Window temporal aggregate queries (also known as cumulative queries), which, given a time interval w, compute the value of the aggregate at a time instant t from the values during the time period [t-w, t].</para>
+						</listitem>
 
-			<qandaset>
-				<qandaentry id="qa_aggregate_instant">
-					<question>
+						<listitem>
+							<para>Span temporal aggregate queries, which, first, split the time line into predefined intervals independently of the target data, and then, for each of these intervals, aggregate the data that overlap the interval.</para>
+						</listitem>
+					</itemizedlist>
+				</para>
+
+				<orderedlist continuation="continues">
+					<listitem id="qa_aggregate_instant">
 						<para>Compute how many cars were active at each period in <varname>Periods</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT P.PeriodID, COUNT(*), TCOUNT(atPeriod(T.Trip, P.Period))
-FROM Trips T, Periods 
+FROM Trips T, Periods P
 WHERE T.Trip &amp;&amp; P.Period
 GROUP BY P.PeriodID
 ORDER BY P.PeriodID;
 						</programlisting>
 						<para>This an instant temporal aggregate query. For each period, the query projects the trips to the given period and applies the temporal count to the projected trips. The condition in the <varname>WHERE</varname> clause is used for filtering the trips with the spatio-temporal index on table <varname>Trips</varname>.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_aggregate_window">
-					<question>
+					<listitem id="qa_aggregate_window">
 						<para>For each region in <varname>Regions</varname>, give the window temporal count of trips with a 10-minute interval.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT R.RegionID, WCOUNT(atGeometry(T.Trip, R.Geom), interval '10 min')
 FROM Trips T, Regions R
@@ -3772,15 +4003,10 @@ HAVING WCOUNT(atGeometry(T.Trip, R.Geom), interval '10 min') IS NOT NULL
 ORDER BY R.RegionID;
 						</programlisting>
 						<para>This is a window temporal aggregate query. Suppose that we are computing pollution levels by region. Since the effect of a car passing at a location lasts some time interval, this is a typical case for window aggregates. For each region, the query computes the spatial projection of the trips to the given region and apply the window temporal count to the projected trips. The condition in the <varname>WHERE</varname> clause is used for filtering the trips with the spatio-temporal index. The condition in the <varname>HAVING</varname> clause is used for removing regions that do not intersect with any trip.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_aggregate_span">
-					<question>
+					<listitem id="qa_aggregate_span">
 						<para>Count the number of trips that were active during each hour in May 29, 2007.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 WITH TimeSplit(Period) AS (
 	SELECT period(H, H + interval '1 hour')
@@ -3793,22 +4019,17 @@ GROUP BY S.Period
 ORDER BY S.Period;
 						</programlisting>
 						<para>This is a span temporal aggregate query. The query defines the intervals to consider in the <varname>TimeSplit</varname> temporary table. For each of these intervals, the main query applies the traditional count function for counting the trips that overlap the interval.</para>
-					</answer>
-				</qandaentry>
-			</qandaset>
-		</sect1>
+					</listitem>
+				</orderedlist>
+			</sect2>
 
-		<sect1>
-			<title>Distance queries</title>
-			<para>The queries in this category deal with either the distance travelled by a single object or the distance between two objects. The complexity of the latter queries depend, on the one hand, on whether the reference objects are static or moving, and on the other, on whether the operation required is either the minimum distance ever or the temporal distance computed at each instant.</para>
+			<sect2>
+				<title>Distance queries</title>
+				<para>The queries in this category deal with either the distance travelled by a single object or the distance between two objects. The complexity of the latter queries depend, on the one hand, on whether the reference objects are static or moving, and on the other, on whether the operation required is either the minimum distance ever or the temporal distance computed at each instant.</para>
 
-			<qandaset>
-				<qandaentry id="qa_distance_overall">
-					<question>
+				<orderedlist continuation="continues">
+					<listitem id="qa_distance_overall">
 						<para>List the overall traveled distances of the cars during the periods from <varname>Periods</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T.CarId, P.PeriodId, P.Period, 
 	SUM(length(atPeriod(T.Trip, P.Period))) AS Distance
@@ -3818,15 +4039,10 @@ GROUP BY T.CarId, P.PeriodId, P.Period
 ORDER BY T.CarId, P.PeriodId;
 						</programlisting>
 						<para>The query performs a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table. It then projects the trip to the period, computes the length of the projected trip, and sum the lengths of all the trips of the same car during the period.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_distance_static">
-					<question>
+					<listitem id="qa_distance_static">
 						<para>List the minimum distance ever between each car and each point from <varname>Points</varname>.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T.CarId, P.PointId, MIN(trajectory(T.Trip) &lt;-&gt; P.Geom) AS MinDistance
 FROM Trips T, Points P
@@ -3834,15 +4050,10 @@ GROUP BY T.CarId, P.PointId
 ORDER BY T.CarId, P.PointId;
 						</programlisting>
 						<para>The query projects the trip to the spatial dimension with the <varname>trajectory</varname> function and computes the traditional distance between the trajectory of the trip and the point. The traditional minimum function is then applied for computing the minimum distance between all trips of the car and the point.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_distance_moving">
-					<question>
+					<listitem id="qa_distance_moving">
 						<para>List the minimum temporal distance between each pair of cars.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T1.CarId AS Car1Id, T2.CarId AS Car2Id, MIN(T1.Trip &lt;-&gt; T2.Trip) AS MinDistance
 FROM Trips T1, Trips T
@@ -3851,15 +4062,10 @@ GROUP BY T1.CarId, T2.CarId
 ORDER BY T1.CarId, T2.CarId;
 						</programlisting>
 						<para>The query selects two trips <varname>T1</varname> and <varname>T2</varname> from distinct cars that were both traveling during a common period of time, computes the temporal distance between the trips, and then computes the temporal minimum distance between all trips of the two cars. The query uses the spatio-temporal index to filter the pairs of trips that were both traveling during a common period of time.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_nearest_approach">
-					<question>
+					<listitem id="qa_nearest_approach">
 						<para>List the nearest approach time, distance, and shortest line between each pair of trips.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T1.CarId AS Car1Id, T1.TripId AS Trip1Id, T2.CarId AS Car2Id, 
 	T2.TripId AS Trip2Id, timespan(NearestApproachInstant(T1.Trip, T2.Trip)) AS Time,
@@ -3870,15 +4076,10 @@ WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
 ORDER BY T1.CarId, T1.TripId, T2.CarId, T2.TripId;
 						</programlisting>
 						<para>This query shows similar functionality as that provided by the PostGIS functions <varname>ST_ClosestPointOfApproach</varname> and <varname>ST_DistanceCPA</varname>. The query selects two trips <varname>T1</varname> and <varname>T2</varname> from distinct cars that were both traveling during a common period of time and computes the required results.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_distance_tdwithin">
-					<question>
+					<listitem id="qa_distance_tdwithin">
 						<para>List when and where a pairs of cars have been at 10 m or less from each other.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T1.CarId AS CarId1, T2.CarId AS CarId2, atPeriodSet(T1.Trip,
 	timespan(atValue(tdwithin(T1.Trip, T2.Trip, 10.0), TRUE))) AS Position
@@ -3889,37 +4090,33 @@ WHERE T1.CarId &lt; T2.CarId AND T1.Trip &amp;&amp; expandSpatial(T2.Trip, 10) A
 ORDER BY T1.CarId, T2.CarId, Position;
 						</programlisting>
 						<para>The query performs for each pair of trips <varname>T1</varname> and <varname>T2</varname> of distinct cars a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table, where the bounding box of <varname>T2</varname> is expanded by 10 m. Then, the <varname>timespan</varname> expression computes the periods during which the cars were within 10 m. from each other and the <varname>atPeriodSet</varname> function projects the trips to those periods. Notice that the expression <varname>tdwithin(T1.Trip, T2.Trip, 10.0)</varname> is conceptually equivalent to <varname>dwithin(T1.Trip, T2.Trip) #&lt;= 10.0</varname>. However, in this case the spatio-temporal index cannot be used for filtering values.</para>
-					</answer>
-				</qandaentry>
-			</qandaset>            
-		</sect1>
-
-		<sect1>
-			<title>Nearest-Neighbor Queries</title>
-			<para>There are three common types of nearest-neighbor queries in spatial databases.
-				<itemizedlist>
-					<listitem>
-						<para>k-nearest-neighbor (kNN) queries find the k nearest points to a given point.</para>
 					</listitem>
+				</orderedlist>            
+			</sect2>
 
-					<listitem>
-						<para>Reverse k-nearest-neighbor (RkNN) queries find the points that have a given point among their k nearest-neighbors.</para>
-					</listitem>
+			<sect2>
+				<title>Nearest-Neighbor Queries</title>
+				<para>There are three common types of nearest-neighbor queries in spatial databases.
+					<itemizedlist>
+						<listitem>
+							<para>k-nearest-neighbor (kNN) queries find the k nearest points to a given point.</para>
+						</listitem>
 
-					<listitem>
-						<para>Given two sets of points P and Q, aggregate nearest-neighbor (ANN) queries find the points from P that have minimum aggregated distance to all points from Q.</para>
-					</listitem>
-				</itemizedlist>
-			</para>
-			<para>The above types of queries are generalized to temporal points. However, the complexity of these queries depend on whether the reference object and the candidate objects are static or moving. In the examples that follow we only consider the nontemporal version of the nearest-neighbor queries, that is, the one in which the calculation is performed on the projection of temporal points on the spatial dimension. The temporal version of the nearest-neighbor queries remains to be done.</para>
+						<listitem>
+							<para>Reverse k-nearest-neighbor (RkNN) queries find the points that have a given point among their k nearest-neighbors.</para>
+						</listitem>
 
-			<qandaset>
-				<qandaentry id="qa_knn_static">
-					<question>
+						<listitem>
+							<para>Given two sets of points P and Q, aggregate nearest-neighbor (ANN) queries find the points from P that have minimum aggregated distance to all points from Q.</para>
+						</listitem>
+					</itemizedlist>
+				</para>
+
+				<para>The above types of queries are generalized to temporal points. However, the complexity of these queries depend on whether the reference object and the candidate objects are static or moving. In the examples that follow we only consider the nontemporal version of the nearest-neighbor queries, that is, the one in which the calculation is performed on the projection of temporal points on the spatial dimension. The temporal version of the nearest-neighbor queries remains to be done.</para>
+
+				<orderedlist continuation="continues">
+					<listitem id="qa_knn_static">
 						<para>For each trip from <varname>Trips</varname>, list the three points from <varname>Points</varname> that have been closest to that car.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 WITH TripsTraj AS (
 	SELECT *, trajectory(Trip) AS Trajectory FROM Trips )
@@ -3927,38 +4124,28 @@ SELECT T.CarId, P1.PointId, P1.Distance
 FROM TripsTraj T CROSS JOIN LATERAL (
 SELECT P.PointId, T.Trajectory &lt;-&gt; P.Geom AS Distance
 FROM Points P
-ORDER BY Distance LIMIT 3 ) AS P
+ORDER BY Distance LIMIT 3 ) AS P1
 ORDER BY T.TripId, T.CarId, P1.Distance;
 						</programlisting>
 						<para>This is a nearest-neighbor query with moving reference objects and static candidate objects. The query above uses PostgreSQL's lateral join, which intuitively iterates over each row in a result set and evaluates a subquery using that row as a parameter. The query starts by computing the trajectory of the trips in the temporary table <varname>TripsTraj</varname>. Then, given a trip <varname>T</varname> in the outer query, the subquery computes the traditional distance between the trajectory of <varname>T</varname> and each point <varname>P</varname>. The <varname>ORDER BY</varname> and <varname>LIMIT</varname> clauses in the inner query select the three closest points. PostGIS will use the spatial index on the <varname>Points</varname> table for selecting the three closest points.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_knn_moving">
-					<question>
+					<listitem id="qa_knn_moving">
 						<para>For each trip from <varname>Trips</varname>, list the three cars that are closest to that car</para>
-					</question>
-
-					<answer>
 						<programlisting>
 SELECT T1.CarId AS CarId1, C2.CarId AS CarId2, C2.Distance
 FROM Trips T1 CROSS JOIN LATERAL (
 SELECT T2.CarId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 FROM Trips T2
 WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
-ORDER BY Distance LIMIT 3 ) AS C
+ORDER BY Distance LIMIT 3 ) AS C2
 ORDER BY T1.CarId, C2.CarId;
 						</programlisting>
 						<para>This is a nearest-neighbor query where both the reference and the candidate objects are moving. Therefore, it is not possible to proceed as in the previous query to first project the moving points to the spatial dimension and then compute the traditional distance. Given a trip <varname>T1</varname> in the outer query, the subquery computes the temporal distance between <varname>T1</varname> and a trip <varname>T2</varname> of another car distinct from the car from <varname>T1</varname> and then computes the minimum value in the temporal distance. Finally, the <varname>ORDER BY</varname> and <varname>LIMIT</varname> clauses in the inner query select the three closest cars.</para>
-					</answer>
-				</qandaentry>
+					</listitem>
 
-				<qandaentry id="qa_rknn_static">
-					<question>
+					<listitem id="qa_rknn_static">
 						<para>For each trip from <varname>Trips</varname>, list the points from <varname>Points</varname> that have that car among their three nearest neighbors.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 WITH TripsTraj AS (
 	SELECT *, trajectory(Trip) AS Trajectory FROM Trips ),
@@ -3973,16 +4160,11 @@ FROM Trips T CROSS JOIN Points P JOIN PointTrips PT
 ON T.CarId = PT.CarId AND T.TripId = PT.TripId AND P.PointId = PT.PointId
 ORDER BY T.CarId, T.TripId, P.PointId;
 						</programlisting>
-						<para>This is a reverse nearest-neighbor query with moving reference objects and static candidate objects. The query starts by computing the corresponding nearest-neighbor query in the temporary table <varname>PointTrips</varname> as it is done in Query <xref linkend="qa_knn_static" />. Then, in the main query it verifies for each trip <varname>T</varname> and point <varname>P</varname> that both belong to the <varname>PointTrips</varname> table.</para>
-					</answer>
-				</qandaentry>
+						<para>This is a reverse nearest-neighbor query with moving reference objects and static candidate objects. The query starts by computing the corresponding nearest-neighbor query in the temporary table <varname>PointTrips</varname> as it is done in Query 13. Then, in the main query it verifies for each trip <varname>T</varname> and point <varname>P</varname> that both belong to the <varname>PointTrips</varname> table.</para>
+					</listitem>
 
-				<qandaentry id="qa_rknn_moving">
-					<question>
+					<listitem id="qa_rknn_moving">
 						<para>For each trip from <varname>Trips</varname>, list the cars having the car of the trip among the three nearest neighbors.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 WITH TripDistances AS (
 	SELECT T1.CarId AS CarId1, T1.TripId AS TripId1, T3.CarId AS CarId2, 
@@ -3998,16 +4180,11 @@ FROM Trips T1 JOIN Trips T2 ON T1.CarId &lt; T2.CarId
 	T2.CarId = TD.CarId2 AND T2.TripId = TD.TripId
 ORDER BY T1.CarId, T1.TripId, T2.CarId, T2.TripId;
 						</programlisting>
-						<para>This is a reverse nearest-neighbor query where both the reference and the candidate objects are moving. The query starts by computing the corresponding nearest-neighbor query in the temporary table <varname>TripDistances</varname> as it is done in Query <xref linkend="qa_knn_moving" />. Then, in the main query it verifies for each pair of trips <varname>T1</varname> and <varname>T2</varname> that both belong to the <varname>TripDistances</varname> table.</para>
-					</answer>
-				</qandaentry>
+						<para>This is a reverse nearest-neighbor query where both the reference and the candidate objects are moving. The query starts by computing the corresponding nearest-neighbor query in the temporary table <varname>TripDistances</varname> as it is done in Query 14. Then, in the main query it verifies for each pair of trips <varname>T1</varname> and <varname>T2</varname> that both belong to the <varname>TripDistances</varname> table.</para>
+					</listitem>
 
-				<qandaentry id="qa_ann">
-					<question>
+					<listitem id="qa_ann">
 						<para>For each group of ten disjoint cars, list the point(s) from <varname>Points</varname>, having the minimum aggregated distance from the given group of ten cars during the given period.</para>
-					</question>
-
-					<answer>
 						<programlisting>
 WITH Groups AS (
 	SELECT ((ROW_NUMBER() OVER (ORDER BY C.CarId))-1)/10 + 1 AS GroupId, C.CarId
@@ -4027,12 +4204,9 @@ WHERE S1.SumDist &lt;= ALL (
 	ORDER BY S1.GroupId, S1.PointId;
 						</programlisting>
 						<para>This is an aggregate nearest-neighbor query. The temporary table <varname>Groups</varname> splits the cars in groups where the <varname>GroupId</varname> column takes the values from 1 to total number of groups. The temporary table <varname>SumDistances</varname> computes for each group <varname>G</varname> and point <varname>P</varname> the sum of the distances between a trip of a car in the group and the point. The main query then selects for each group in table <varname>SumDistances</varname> the points(s) that have the minimum aggregated distance.</para>
-					</answer>
-				</qandaentry>
-
-				</qandaset>
-				
+					</listitem>
+				</orderedlist>
+			</sect2>
 		</sect1>
 	</chapter>
-
 </book>

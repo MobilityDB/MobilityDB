@@ -1065,9 +1065,9 @@ PGDLLEXPORT Datum
 temporal_mem_size(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(temp)));
+	size_t result = VARSIZE(temp);
 	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_DATUM(result);
+	PG_RETURN_INT32(result);
 }
 
 /* Values of a discrete temporal */ 
