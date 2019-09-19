@@ -614,7 +614,8 @@ tpointseq_make_trajectory(TemporalInst **instants, int count)
 Datum 
 tpointseq_trajectory(TemporalSeq *seq)
 {
-	void *traj = &seq->offsets[(seq->count) + 2] + seq->offsets[(seq->count) + 1];
+	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[seq->count + 1];					/* offset */
 	return PointerGetDatum(traj);
 }
 
@@ -650,7 +651,8 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 Datum 
 tpointseq_trajectory_copy(TemporalSeq *seq)
 {
-	void *traj = &seq->offsets[(seq->count) + 2] + seq->offsets[(seq->count) + 1];
+	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[seq->count + 1];					/* offset */
 	return PointerGetDatum(gserialized_copy(traj));
 }
 

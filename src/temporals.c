@@ -129,8 +129,9 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	int newcount = count;
 	if (normalize && count > 1)
 		newsequences = temporalseqarr_normalize(sequences, count, &newcount);
-	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS)) + (newcount + 1) * sizeof(size_t);
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalS)) + newcount * sizeof(size_t);
 	size_t memsize = 0;
 	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
@@ -192,8 +193,9 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	/* Add the instant to the last sequence */
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
-	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS)) + (ts->count + 1) * sizeof(size_t);
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalS)) + ts->count * sizeof(size_t);
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
