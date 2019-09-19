@@ -44,7 +44,7 @@
  * a precomputed trajectory is as follows
  *
  *	-------------------------------------------------------------------
- *	( TemporalSeq | offset_0 | offset_1 | offset_2 | offset_3 )_X | ...
+ *	( TemporalSeq )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
  *	-------------------------------------------------------------------
  *	------------------------------------------------------------------------
  *	( TemporalInst_0 )_X | ( TemporalInst_1 )_X | ( bbox )_X | ( Traj )_X  |
@@ -70,8 +70,8 @@ temporalseq_offsets_ptr(TemporalSeq *seq)
 char * 
 temporalseq_data_ptr(TemporalSeq *seq)
 {
-	return (char *)seq + double_pad(sizeof(TemporalSeq) + 
-		sizeof(size_t) * (seq->count+2));
+	return (char *)seq + double_pad(sizeof(TemporalSeq)) + 
+		sizeof(size_t) * (seq->count + 2);
 }
 
 /* N-th TemporalInst of a TemporalSeq */
@@ -648,7 +648,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	}
 #endif
 	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 2) * sizeof(size_t);
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
@@ -796,7 +796,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	}
 #endif
 	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 2) * sizeof(size_t);
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);

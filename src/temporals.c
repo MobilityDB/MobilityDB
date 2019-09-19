@@ -40,7 +40,7 @@
  * The memory structure of a TemporalS with, e.g., 2 sequences is as follows
  *
  *	--------------------------------------------------------
- *	( TemporalS | offset_0 | offset_1 | offset_2 )_ X | ...
+ *	( TemporalS )_ X | offset_0 | offset_1 | offset_2 | ...
  *	--------------------------------------------------------
  *	--------------------------------------------------------
  *	( TemporalSeq_0 )_X | ( TemporalSeq_1 )_X | ( bbox )_X | 
@@ -64,8 +64,8 @@ temporals_offsets_ptr(TemporalS *ts)
 static char * 
 temporals_data_ptr(TemporalS *ts)
 {
-	return (char *)ts + double_pad(sizeof(TemporalS) + 
-		sizeof(size_t) * (ts->count + 1));
+	return (char *)ts + double_pad(sizeof(TemporalS)) + 
+		sizeof(size_t) * (ts->count + 1);
 }
 
 /* N-th TemporalSeq of a TemporalS */
@@ -146,7 +146,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	if (normalize && count > 1)
 		newsequences = temporalseqarr_normalize(sequences, count, &newcount);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (newcount + 1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS)) + (newcount + 1) * sizeof(size_t);
 	size_t memsize = 0;
 	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
@@ -210,7 +210,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
 	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count + 1) * sizeof(size_t));
+	size_t pdata = double_pad(sizeof(TemporalS)) + (ts->count + 1) * sizeof(size_t);
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
