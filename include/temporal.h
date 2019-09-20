@@ -155,7 +155,7 @@ typedef struct
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* begining of variable-length data */
 } TemporalI;
 
 /* Temporal Sequence */

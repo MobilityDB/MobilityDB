@@ -52,30 +52,14 @@
  * the bounding box.
  */
 
-/* Pointer to the offset array of a TemporalI */
-
-static size_t *
-temporali_offsets_ptr(TemporalI *ti)
-{
-	return (size_t *) (((char *)ti) + sizeof(TemporalI));
-}
-
-/* Pointer to the first TemporalInst */
-
-static char * 
-temporali_data_ptr(TemporalI *ti) 
-{
-	return (char *)ti + double_pad(sizeof(TemporalI) + 
-		sizeof(size_t) * (ti->count + 1));
-}
-
 /* N-th TemporalInst of a TemporalI */
 
 TemporalInst *
 temporali_inst_n(TemporalI *ti, int index)
 {
-	size_t *offsets = temporali_offsets_ptr(ti);
-	return (TemporalInst *) (temporali_data_ptr(ti) + offsets[index]);
+	return (TemporalInst *) (
+		(char *)(&ti->offsets[ti->count + 1]) + 	/* start of data */
+			ti->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalI */
@@ -83,8 +67,8 @@ temporali_inst_n(TemporalI *ti, int index)
 void * 
 temporali_bbox_ptr(TemporalI *ti) 
 {
-	size_t *offsets = temporali_offsets_ptr(ti);
-	return temporali_data_ptr(ti) + offsets[ti->count];
+	return (char *)(&ti->offsets[ti->count + 1]) +  /* start of data */
+		ti->offsets[ti->count];						/* offset */
 }
 
 /* Copy the bounding box of a TemporalI in the first argument */
@@ -142,16 +126,17 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	/* Add the size of composing instants */
 	for (int i = 0; i < count; i++)
 		memsize += double_pad(VARSIZE(instants[i]));
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalI) + (count + 1) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalI) + count * sizeof(size_t));
 	/* Create the TemporalI */
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
+		MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 	{
@@ -160,12 +145,11 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporali_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < count; i++)
 	{
 		memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(instants[i]));
 	}
 	/*
@@ -177,7 +161,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_make_bbox(bbox, instants, count);
-		offsets[count] = pos;
+		result->offsets[count] = pos;
 	}
 	return result;
 }
@@ -217,39 +201,39 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	for (int i = 0; i < ti->count; i++)
 		memsize += double_pad(VARSIZE(temporali_inst_n(ti, i)));
 	memsize += double_pad(VARSIZE(inst));
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 2) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 1) * sizeof(size_t));
 	/* Create the TemporalI */
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(inst->flags);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
+		MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporali_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst1 = temporali_inst_n(ti, i);
+		inst1 = temporali_inst_n(ti, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(inst1));
 	}
 	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	offsets[ti->count] = pos;
+	result->offsets[ti->count] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_expand_bbox(bbox, ti, inst);
-		offsets[ti->count + 1] = pos;
+		result->offsets[ti->count + 1] = pos;
 	}
 	return result;
 }
