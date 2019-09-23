@@ -32,6 +32,14 @@ Requirements
  - PostgreSQL == 11
  - CMake >= 3.1
  - PostGIS == 2.5
+ - JSON-C
+ - Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
+
+Example for Debian-based systems:
+```
+# install all MobilityDB build dependencies
+apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
+```
 
 Building & installation
 -----------------------
