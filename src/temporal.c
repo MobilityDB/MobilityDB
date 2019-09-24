@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
+#include <access/tuptoaster.h>
 #include <catalog/namespace.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
@@ -1056,6 +1057,7 @@ Datum temporal_type(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_mem_size);
 
+/*
 PGDLLEXPORT Datum
 temporal_mem_size(PG_FUNCTION_ARGS)
 {
@@ -1063,6 +1065,14 @@ temporal_mem_size(PG_FUNCTION_ARGS)
 	size_t result = VARSIZE(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_INT32(result);
+}
+*/
+
+PGDLLEXPORT Datum
+temporal_mem_size(PG_FUNCTION_ARGS)
+{
+	Datum result = toast_datum_size(PG_GETARG_DATUM(0));
+	PG_RETURN_DATUM(result);
 }
 
 /* Values of a discrete temporal */ 

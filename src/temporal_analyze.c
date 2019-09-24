@@ -43,7 +43,7 @@
  * For all other durations
  * - Slot 1
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_BOUNDS_HISTOGRAM.
- * 		- staop contains the "=" operator of the value dimension.
+ * 		- staop contains the "<" operator of the value dimension.
  * 		- stavalues stores the histogram of ranges for the value dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 2
@@ -53,7 +53,7 @@
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 3
  * 		- stakind contains the type of statistics which is STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM.
- * 		- staop contains the "=" operator of the time dimension.
+ * 		- staop contains the "<" operator of the time dimension.
  * 		- stavalues stores the histogram of periods for the time dimension.
  * 		- numvalues contains the number of buckets in the histogram.
  * - Slot 4
@@ -915,7 +915,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					int samplerows, double totalrows, bool valuestats)
 {
 	int null_cnt = 0,
-		analyzed_rows = 0,
+		non_null_cnt = 0,
 		slot_idx = 0,
 		num_bins = stats->attr->attstattarget,
 		num_hist;
@@ -926,7 +926,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	PeriodBound *time_lowers,
 			*time_uppers;
 	double total_width = 0;
-	Oid rangetypid;
+	Oid rangetypid = 0; /* make compiler quiet */
+	TypeCacheEntry *typcache;
 
 	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
@@ -938,6 +939,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			rangetypid = type_oid(T_INTRANGE);
 		else if (temporal_extra_data->value_type_id == FLOAT8OID)
 			rangetypid = type_oid(T_FLOATRANGE);
+		typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 		value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 		value_uppers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
 		value_lengths = (float8 *) palloc(sizeof(float8) * samplerows);
@@ -952,7 +954,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum value;
 		bool isnull, isempty;
 		RangeType *range;
-		TypeCacheEntry *typcache;
 		RangeBound range_lower,
 				range_upper;
 		Period period;
@@ -983,30 +984,29 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		if (valuestats)
 		{
 			range = tnumber_value_range_internal(temp);
-			typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 			range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
-			value_lowers[analyzed_rows] = range_lower;
-			value_uppers[analyzed_rows] = range_upper;
+			value_lowers[non_null_cnt] = range_lower;
+			value_uppers[non_null_cnt] = range_upper;
 
 			if (temporal_extra_data->value_type_id == INT4OID)
-				value_lengths[analyzed_rows] = DatumGetInt32(range_upper.val) -
-					DatumGetInt32(range_lower.val);
+				value_lengths[non_null_cnt] = (float8) (DatumGetInt32(range_upper.val) -
+					DatumGetInt32(range_lower.val));
 			else if (temporal_extra_data->value_type_id == FLOAT8OID)
-				value_lengths[analyzed_rows] = (float8) (DatumGetFloat8(range_upper.val) -
-					DatumGetFloat8(range_lower.val));
+				value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
+					DatumGetFloat8(range_lower.val);
 		}
 		temporal_timespan_internal(&period, temp);
 		period_deserialize(&period, &period_lower, &period_upper);
-		time_lowers[analyzed_rows] = period_lower;
-		time_uppers[analyzed_rows] = period_upper;
-		time_lengths[analyzed_rows] = period_duration_secs(period_upper.val, 
+		time_lowers[non_null_cnt] = period_lower;
+		time_uppers[non_null_cnt] = period_upper;
+		time_lengths[non_null_cnt] = period_duration_secs(period_upper.val, 
 			period_lower.val);
 
-		analyzed_rows++;
+		non_null_cnt++;
 	}
 
 	/* We can only compute real stats if we found some non-null values. */
-	if (analyzed_rows > 0)
+	if (non_null_cnt > 0)
 	{
 		int pos,
 			posfrac,
@@ -1017,10 +1017,9 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		float4	   *emptyfrac;
 
 		stats->stats_valid = true;
-
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
-		stats->stawidth = (int) (total_width / analyzed_rows);
+		stats->stawidth = (int) (total_width / non_null_cnt);
 
 		/* Estimate that non-null values are unique */
 		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
@@ -1036,15 +1035,15 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			/*
 			* Generate value histograms if there are at least two values.
 			*/
-			if (analyzed_rows >= 2)
+			if (non_null_cnt >= 2)
 			{
 				/* Generate a bounds histogram slot entry */
 
 				/* Sort bound values */
-				qsort(value_lowers, analyzed_rows, sizeof(RangeBound), range_bound_qsort_cmp);
-				qsort(value_uppers, analyzed_rows, sizeof(RangeBound), range_bound_qsort_cmp);
+				qsort(value_lowers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+				qsort(value_uppers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
 
-				num_hist = analyzed_rows;
+				num_hist = non_null_cnt;
 				if (num_hist > num_bins)
 					num_hist = num_bins + 1;
 
@@ -1061,15 +1060,15 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* at each step, tracking the integral and fractional parts of the
 				* sum separately.
 				*/
-				delta = (analyzed_rows - 1) / (num_hist - 1);
-				deltafrac = (analyzed_rows - 1) % (num_hist - 1);
+				delta = (non_null_cnt - 1) / (num_hist - 1);
+				deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 				pos = posfrac = 0;
 
 				for (i = 0; i < num_hist; i++)
 				{
 					value_bound_hist_values[i] = PointerGetDatum(
-							range_make(value_lowers[pos].val, value_uppers[pos].val,
-									true, true, temporal_extra_data->value_type_id));
+						range_serialize(typcache, &value_lowers[pos], 
+							&value_uppers[pos], false));
 
 					pos += delta;
 					posfrac += deltafrac;
@@ -1087,7 +1086,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 																	TYPECACHE_HASH_PROC_FINFO);
 
 				stats->stakind[slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-				stats->staop[slot_idx] = temporal_extra_data->value_eq_opr;
+				stats->staop[slot_idx] = temporal_extra_data->value_lt_opr;
 				stats->stavalues[slot_idx] = value_bound_hist_values;
 				stats->numvalues[slot_idx] = num_hist;
 				stats->statypid[slot_idx] = range_typeentry->type_id;
@@ -1103,9 +1102,9 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* Ascending sort of range lengths for further filling of
 				* histogram
 				*/
-				qsort(value_lengths, analyzed_rows, sizeof(float8), float8_qsort_cmp);
+				qsort(value_lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
-				num_hist = analyzed_rows;
+				num_hist = non_null_cnt;
 				if (num_hist > num_bins)
 					num_hist = num_bins + 1;
 
@@ -1120,8 +1119,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				* add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
 				* the integral and fractional parts of the sum separately.
 				*/
-				delta = (analyzed_rows - 1) / (num_hist - 1);
-				deltafrac = (analyzed_rows - 1) % (num_hist - 1);
+				delta = (non_null_cnt - 1) / (num_hist - 1);
+				deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 				pos = posfrac = 0;
 
 				for (i = 0; i < num_hist; i++)
@@ -1162,6 +1161,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			*emptyfrac = 0.0;
 			stats->stanumbers[slot_idx] = emptyfrac;
 			stats->numnumbers[slot_idx] = 1;
+
+			slot_idx++;
 		}
 
 		Datum *bound_hist_time;
@@ -1170,15 +1171,15 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/*
 		 * Generate temporal histograms if there are at least two values.
 		 */
-		if (analyzed_rows >= 2)
+		if (non_null_cnt >= 2)
 		{
 			/* Generate a bounds histogram slot entry */
 
 			/* Sort bound values */
-			qsort(time_lowers, analyzed_rows, sizeof(PeriodBound), period_bound_qsort_cmp);
-			qsort(time_uppers, analyzed_rows, sizeof(PeriodBound), period_bound_qsort_cmp);
+			qsort(time_lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+			qsort(time_uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
 
-			num_hist = analyzed_rows;
+			num_hist = non_null_cnt;
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
@@ -1195,8 +1196,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * at each step, tracking the integral and fractional parts of the
 			 * sum separately.
 			 */
-			delta = (analyzed_rows - 1) / (num_hist - 1);
-			deltafrac = (analyzed_rows - 1) % (num_hist - 1);
+			delta = (non_null_cnt - 1) / (num_hist - 1);
+			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
 			for (i = 0; i < num_hist; i++)
@@ -1216,7 +1217,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			}
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
-			stats->staop[slot_idx] = temporal_extra_data->time_eq_opr; 
+			stats->staop[slot_idx] = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			stats->stavalues[slot_idx] = bound_hist_time;
 			stats->numvalues[slot_idx] = num_hist;
 			stats->statypid[slot_idx] = temporal_extra_data->time_type_id;
@@ -1231,9 +1232,9 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * Ascending sort of period lengths for further filling of
 			 * histogram
 			 */
-			qsort(time_lengths, analyzed_rows, sizeof(float8), float8_qsort_cmp);
+			qsort(time_lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
-			num_hist = analyzed_rows;
+			num_hist = non_null_cnt;
 			if (num_hist > num_bins)
 				num_hist = num_bins + 1;
 
@@ -1248,8 +1249,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
 			 * the integral and fractional parts of the sum separately.
 			 */
-			delta = (analyzed_rows - 1) / (num_hist - 1);
-			deltafrac = (analyzed_rows - 1) % (num_hist - 1);
+			delta = (non_null_cnt - 1) / (num_hist - 1);
+			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
 			pos = posfrac = 0;
 
 			for (i = 0; i < num_hist; i++)
