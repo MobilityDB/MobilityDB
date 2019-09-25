@@ -17,7 +17,7 @@
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
 #include "temporal.h"
-#include "PostGIS.h"
+#include "postgis.h"
 
 /*****************************************************************************/
  

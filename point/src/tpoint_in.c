@@ -19,7 +19,7 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
-#include "PostGIS.h"
+#include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
@@ -36,7 +36,7 @@ static char*
 text2cstring(const text *textptr)
 {
 	size_t size = VARSIZE_ANY_EXHDR(textptr);
-	char *str = lwalloc(size+1);
+	char *str = lwalloc(size + 1);
 	memcpy(str, VARDATA(textptr), size);
 	str[size]='\0';
 	return str;

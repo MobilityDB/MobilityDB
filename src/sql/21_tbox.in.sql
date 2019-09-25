@@ -43,7 +43,6 @@ CREATE TYPE tbox (
 --	send = tbox_send,
 	storage = plain,
 	alignment = double
---    , analyze = tbox_analyze
 );
 
 /******************************************************************************

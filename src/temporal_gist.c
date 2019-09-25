@@ -39,7 +39,7 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 			   *period;
 	
 	/* Determine whether the operator is exact */
-	*recheck = index_time_bbox_recheck(strategy);
+	*recheck = index_period_bbox_recheck(strategy);
 	
 	if (subtype == type_oid(T_PERIOD))
 	{
@@ -63,7 +63,7 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 	if (GIST_LEAF(entry))
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
-		result = index_internal_consistent_time(key, period, strategy);
+		result = index_internal_consistent_period(key, period, strategy);
 	
 	if (periodfree)
 		pfree(period);

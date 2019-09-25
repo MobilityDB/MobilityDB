@@ -109,7 +109,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	TemporalInst *result;
 	size_t value_size;
 	/* Copy value */
-	bool byval = type_byval_fast(valuetypid);
+	bool byval = get_typbyval_fast(valuetypid);
 	if (byval)
 	{
 		/* For base types passed by value */
@@ -144,6 +144,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
 		MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
 	}
 #endif
@@ -682,16 +683,15 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
-	if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
-		return -1;
-	if (timestamp_cmp_internal(inst1->t, inst2->t) > 0)
-		return 1;
-	/* Both timestamps are equal */
 	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
 		return -1;
 	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
+		return 1;
+	if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
+		return -1;
+	if (timestamp_cmp_internal(inst1->t, inst2->t) > 0)
 		return 1;
 	return 0;
 }

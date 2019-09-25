@@ -91,8 +91,9 @@ extern Period *period_copy(Period *p);
 extern float8 period_duration_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_duration_internal(Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
-	
-/* Used in for GiST and SP-GiST */
+extern Period *period_super_union(Period *p1, Period *p2);
+
+/* Used for GiST and SP-GiST */
 
 int	period_cmp_lower(const void **a, const void **b);
 int	period_cmp_upper(const void **a, const void **b);

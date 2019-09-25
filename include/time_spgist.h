@@ -28,7 +28,7 @@ extern Datum spgist_periodset_choose(PG_FUNCTION_ARGS);
 extern Datum spgist_timestampset_picksplit(PG_FUNCTION_ARGS);
 extern Datum spgist_period_picksplit(PG_FUNCTION_ARGS);
 extern Datum spgist_periodset_picksplit(PG_FUNCTION_ARGS);
-extern Datum spgist_time_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum spgist_period_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_period_leaf_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_periodset_leaf_consistent(PG_FUNCTION_ARGS);
 

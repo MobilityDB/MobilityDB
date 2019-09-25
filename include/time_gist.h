@@ -19,21 +19,18 @@
 
 /*****************************************************************************/
 
-extern Datum gist_time_consistent_exact(PG_FUNCTION_ARGS);
-extern Datum gist_time_consistent_recheck(PG_FUNCTION_ARGS);
-extern Datum gist_time_union(PG_FUNCTION_ARGS);
+extern Datum gist_period_union(PG_FUNCTION_ARGS);
 extern Datum gist_timestampset_compress(PG_FUNCTION_ARGS);
 extern Datum gist_period_compress(PG_FUNCTION_ARGS);
 extern Datum gist_periodset_compress(PG_FUNCTION_ARGS);
-extern Datum gist_time_decompress(PG_FUNCTION_ARGS);
-extern Datum gist_time_penalty(PG_FUNCTION_ARGS);
-extern Datum gist_time_picksplit(PG_FUNCTION_ARGS);
-extern Datum gist_time_same(PG_FUNCTION_ARGS);
-extern Datum gist_time_fetch(PG_FUNCTION_ARGS);
+extern Datum gist_period_penalty(PG_FUNCTION_ARGS);
+extern Datum gist_period_picksplit(PG_FUNCTION_ARGS);
+extern Datum gist_period_same(PG_FUNCTION_ARGS);
+extern Datum gist_period_fetch(PG_FUNCTION_ARGS);
 
 extern bool index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy);
-extern bool index_internal_consistent_time(Period *key, Period *query, StrategyNumber strategy);
-extern bool index_time_bbox_recheck(StrategyNumber strategy);
+extern bool index_internal_consistent_period(Period *key, Period *query, StrategyNumber strategy);
+extern bool index_period_bbox_recheck(StrategyNumber strategy);
 
 #endif
 

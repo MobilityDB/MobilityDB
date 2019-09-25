@@ -15,6 +15,8 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include <utils/rangetypes.h>
+
 #include "timetypes.h"
 
 #ifndef USE_FLOAT4_BYVAL
@@ -153,7 +155,7 @@ typedef struct
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalI;
 
 /* Temporal Sequence */
@@ -166,7 +168,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
 	Period 		period;			/* time span (24 bytes) */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalSeq;
 
 /* Temporal Sequence Set */
@@ -179,7 +181,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalSeq elements */
 	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalS;
 
 /* bboxunion - Union type for all types of bounding boxes */
@@ -226,8 +228,8 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* TBOX */
 
-#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)    PointerGetDatum(X)
+#define DatumGetTboxP(X)	((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)	PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
@@ -294,6 +296,7 @@ extern void temporal_typinfo(Oid temptypid, Oid* valuetypid);
 
 /* Oid functions */
 
+extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
 extern bool temporal_type_oid(Oid temptypid);
@@ -305,6 +308,7 @@ extern bool type_has_precomputed_trajectory(Oid valuetypid);
 /* Assertion tests */
 
 extern void temporal_duration_is_valid(int16 type);
+extern void temporal_duration_all_is_valid(int16 type);
 extern void numrange_type_oid(Oid type);
 extern void base_type_oid(Oid valuetypid);
 extern void base_type_all_oid(Oid valuetypid);
@@ -365,8 +369,10 @@ extern Datum temporal_always_equals(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
 extern Datum tempdisc_get_values_internal(Temporal *temp);
+extern Datum tfloat_ranges_internal(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
+extern RangeType *tnumber_value_range_internal(Temporal *temp);
 
 /* Restriction functions */
 

@@ -6,7 +6,7 @@
  * This projection does not correspond to any standard projection in
  * http://www.epsg.org/
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2019, Esteban Zimanyi, Mohamed Bakli,
  *		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -18,7 +18,7 @@
 #include <liblwgeom.h>
 #include "temporaltypes.h"
 #include "oidcache.h"
-#include "PostGIS.h"
+#include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
@@ -102,7 +102,7 @@ BLRauenberg (double x, double y, double z)
 		f1 = newF(f, x, y, p);
 		f2 = f;
 		f = f1;
-	} while ((fabs(f2-f1) >= (10E-10)));
+	} while ((fabs(f2 - f1) >= (10E-10)));
 
 	result.x = f;
 	result.y = atan(y / x);
@@ -163,7 +163,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 {
 	GSERIALIZED *result = NULL; /* keep compiler quiet */
 	int geometryType = gserialized_get_type(gs);
-	if(geometryType == POINTTYPE)
+	if (geometryType == POINTTYPE)
 	{
 		LWPOINT *lwpoint;
 		if (gserialized_is_empty(gs))
@@ -178,7 +178,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 		result = geometry_serialize((LWGEOM *)lwpoint);
 		lwpoint_free(lwpoint);
 	}
-	else if(geometryType == LINETYPE)
+	else if (geometryType == LINETYPE)
 	{
 		LWLINE *line;
 		if (gserialized_is_empty(gs))

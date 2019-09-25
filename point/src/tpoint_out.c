@@ -644,8 +644,8 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	}
 
 	/* Get bounding box if needed */
-	STBOX *bbox = NULL;
-	STBOX tmp = {0,0,0,0,0,0,0,0,0};
+	STBOX *bbox = NULL, tmp;
+	memset(&tmp, 0, sizeof(STBOX));
 	if (has_bbox)
 	{
 		temporal_bbox(&tmp, temp);
@@ -750,7 +750,7 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 			/* Top four bits to 0-F */
 			buf[2*i] = hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i+1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_INT_SIZE);
 	}
@@ -798,7 +798,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 			/* Top four bits to 0-F */
 			buf[2*i] = hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i+1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_DOUBLE_SIZE);
 	}
@@ -846,7 +846,7 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 			/* Top four bits to 0-F */
 			buf[2*i] = hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i+1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_DOUBLE_SIZE);
 	}

@@ -40,7 +40,7 @@
  * The memory structure of a TemporalS with, e.g., 2 sequences is as follows
  *
  *	--------------------------------------------------------
- *	( TemporalS | offset_0 | offset_1 | offset_2 )_ X | ...
+ *	( TemporalS )_ X | offset_0 | offset_1 | offset_2 | ...
  *	--------------------------------------------------------
  *	--------------------------------------------------------
  *	( TemporalSeq_0 )_X | ( TemporalSeq_1 )_X | ( bbox )_X | 
@@ -51,30 +51,14 @@
  * bounding box. There is no precomputed trajectory for TemporalS.
  */
 
-/* Pointer to the offset array of the TemporalS */
-
-static size_t *
-temporals_offsets_ptr(TemporalS *ts)
-{
-	return (size_t *) (((char *)ts) + sizeof(TemporalS));
-}
-
-/* Pointer to the first TemporalSeq */
-
-static char * 
-temporals_data_ptr(TemporalS *ts)
-{
-	return (char *)ts + double_pad(sizeof(TemporalS) + 
-		sizeof(size_t) * (ts->count+1));
-}
-
 /* N-th TemporalSeq of a TemporalS */
 
 TemporalSeq *
 temporals_seq_n(TemporalS *ts, int index)
 {
-	size_t *offsets = temporals_offsets_ptr(ts);
-	return (TemporalSeq *) (temporals_data_ptr(ts) + offsets[index]);
+	return (TemporalSeq *)(
+		(char *)(&ts->offsets[ts->count + 1]) + 	/* start of data */
+			ts->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalS */
@@ -82,8 +66,8 @@ temporals_seq_n(TemporalS *ts, int index)
 void *
 temporals_bbox_ptr(TemporalS *ts) 
 {
-	size_t *offsets = temporals_offsets_ptr(ts);
-	return temporals_data_ptr(ts) + offsets[ts->count];
+	return (char *)(&ts->offsets[ts->count + 1]) +  /* start of data */
+		ts->offsets[ts->count];						/* offset */
 }
 
 /* Copy the bounding box of a TemporalS in the first argument */
@@ -110,21 +94,22 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
 #ifdef WITH_POSTGIS
-	bool isgeo = false, hasz = false;
+	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY));
+	bool hasz = false, isgeodetic = false;
 	int srid;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	if (isgeo)
 	{
-		isgeo = true;
 		hasz = MOBDB_FLAGS_GET_Z(sequences[0]->flags);
-		srid = tpoint_srid_internal((Temporal *)sequences[0]);
+		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags);
+		srid = tpoint_srid_internal((Temporal *) sequences[0]);
 	}
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(sequences[i-1]->period.upper, sequences[i]->period.lower) > 0 ||
-		   (timestamp_cmp_internal(sequences[i-1]->period.upper, sequences[i]->period.lower) == 0 &&
-		   sequences[i-1]->period.upper_inc && sequences[i]->period.lower_inc))
+		if (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) > 0 ||
+		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
+		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid sequence for temporal sequence set")));
 #ifdef WITH_POSTGIS
@@ -144,8 +129,9 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	int newcount = count;
 	if (normalize && count > 1)
 		newsequences = temporalseqarr_normalize(sequences, count, &newcount);
-	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (newcount+1) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalS)) + newcount * sizeof(size_t);
 	size_t memsize = 0;
 	int totalcount = 0;
 	for (int i = 0; i < newcount; i++)
@@ -166,15 +152,17 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
 #ifdef WITH_POSTGIS
 	if (isgeo)
+	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporals_offsets_ptr(result);
 	size_t pos = 0;	
 	for (int i = 0; i < newcount; i++)
 	{
 		memcpy(((char *) result) + pdata + pos, newsequences[i], VARSIZE(newsequences[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(newsequences[i]));
 	}
 	/*
@@ -186,7 +174,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporals_make_bbox(bbox, newsequences, newcount);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 	}
 	if (normalize && count > 1)
 	{
@@ -205,13 +193,14 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	/* Add the instant to the last sequence */
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
-	/* Compute the size of the TemporalS */
-	size_t pdata = double_pad(sizeof(TemporalS) + (ts->count+1) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalS)) + ts->count * sizeof(size_t);
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
-	for (int i = 0; i < ts->count-1; i++)
+	for (int i = 0; i < ts->count - 1; i++)
 		memsize += double_pad(VARSIZE(temporals_seq_n(ts, i)));
 	memsize += double_pad(VARSIZE(newseq));
 	/* Create the TemporalS */
@@ -228,18 +217,17 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporals_offsets_ptr(result);
 	size_t pos = 0;	
-	for (int i = 0; i < ts->count-1; i++)
+	for (int i = 0; i < ts->count - 1; i++)
 	{
 		seq = temporals_seq_n(ts,i);
 		memcpy(((char *) result) + pdata + pos, seq, VARSIZE(seq));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(seq));
 	}
 	memcpy(((char *) result) + pdata + pos, newseq, VARSIZE(newseq));
-	offsets[ts->count-1] = pos;
-	pos += double_pad(VARSIZE(seq));
+	result->offsets[ts->count - 1] = pos;
+	pos += double_pad(VARSIZE(newseq));
 	/*
 	 * Precompute the bounding box 
 	 * Only external types have precomputed bounding box, internal types such
@@ -250,7 +238,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, temporals_bbox_ptr(ts), bboxsize);
 		temporals_expand_bbox(bbox, ts, inst);
-		offsets[ts->count] = pos;
+		result->offsets[ts->count] = pos;
 	}
 	pfree(newseq);
 	return result;
@@ -1010,7 +998,7 @@ temporals_num_instants(TemporalS *ts)
 			if (temporalinst_eq(lastinst, temporalseq_inst_n(seq, 0)))
 				result --;
 		}
-		lastinst = temporalseq_inst_n(seq, seq->count-1);
+		lastinst = temporalseq_inst_n(seq, seq->count - 1);
 		first = false;
 	}
 	return result;
@@ -1049,7 +1037,7 @@ temporals_instant_n(TemporalS *ts, int n)
 			break;
 		}
 		prevcount = count;
-		prev = temporalseq_inst_n(seq, seq->count-1);
+		prev = temporalseq_inst_n(seq, seq->count - 1);
 		first = false;
 		i++;
 	}
@@ -1068,7 +1056,7 @@ temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
 	for (int i = 1; i < count; i++) 
 		if (! temporalinst_eq(instants[newcount], instants[i]))
 			instants[++ newcount] = instants[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 ArrayType *
@@ -1123,7 +1111,7 @@ temporals_num_timestamps(TemporalS *ts)
 			if (lasttime == temporalseq_inst_n(seq, 0)->t)
 				result --;
 		}
-		lasttime = temporalseq_inst_n(seq, seq->count-1)->t;
+		lasttime = temporalseq_inst_n(seq, seq->count - 1)->t;
 		first = false;
 	}
 	return result;
@@ -1165,7 +1153,7 @@ temporals_timestamp_n(TemporalS *ts, int n, TimestampTz *result)
 			break;
 		}
 		prevcount = count;
-		prev = temporalseq_inst_n(seq, seq->count-1)->t;
+		prev = temporalseq_inst_n(seq, seq->count - 1)->t;
 		first = false;
 		i++;
 	}
@@ -1225,9 +1213,11 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, ts->valuetypid);
+		number_to_box(&box2, value, ts->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -1246,7 +1236,8 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporals_bbox(&box, ts);
 		if (ts->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&
@@ -1348,9 +1339,11 @@ temporals_at_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
@@ -1390,9 +1383,11 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporals_bbox(&box1, ts);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporals_copy(ts);
 	}
@@ -1505,7 +1500,9 @@ TemporalS *
 tnumbers_at_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1543,7 +1540,9 @@ TemporalS *
 tnumbers_minus_range(TemporalS *ts, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporals_bbox(&box1, ts);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1658,7 +1657,7 @@ temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 	for (int i = 1; i < count; i++) 
 		if (! temporalseq_eq(sequences[newcount], sequences[i]))
 			sequences[++ newcount] = sequences[i];
-	return newcount+1;
+	return newcount + 1;
 }
 
 static TemporalS *
@@ -2265,8 +2264,15 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 int
 temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 {
+	/* Compare bounding boxes */
+	void *box1 = temporals_bbox_ptr(ts1);
+	void *box2 = temporals_bbox_ptr(ts2);
+	int result = temporal_bbox_cmp(ts1->valuetypid, box1, box2);
+	if (result)
+		return result;
+
+	/* Compare composing instants */
 	int count = Min(ts1->count, ts2->count);
-	int result;
 	for (int i = 0; i < count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
@@ -2275,7 +2281,7 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		if (result) 
 			return result;
 	}
-	/* The first count sequences of both temporals are equal */
+	/* The first count sequences of ts1 and ts2 are equal */
 	if (ts1->count < ts2->count) /* ts1 has less sequences than ts2 */
 		return -1;
 	else if (ts2->count < ts1->count) /* ts2 has less sequences than ts1 */

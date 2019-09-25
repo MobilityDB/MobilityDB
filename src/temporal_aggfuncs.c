@@ -214,7 +214,7 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 		capacity <<= 1;
 	SkipList *result = palloc0(sizeof(SkipList));
 	result->elems = palloc0(sizeof(Elem) * capacity);
-	int height = (int) ceil(log2(count-1));
+	int height = (int) ceil(log2(count - 1));
 	result->capacity = capacity;
 	result->next = count;
 	result->length = count - 2;
@@ -223,10 +223,10 @@ skiplist_make(FunctionCallInfo fcinfo, Temporal **values, int count)
 
 	/* Fill values first */
 	result->elems[0].value = NULL;
-	for (int i = 0; i < count-2; i ++)
-		result->elems[i+1].value = temporal_copy(values[i]);
-	result->elems[count-1].value = NULL;
-	result->tail = count-1;
+	for (int i = 0; i < count - 2; i ++)
+		result->elems[i + 1].value = temporal_copy(values[i]);
+	result->elems[count - 1].value = NULL;
+	result->tail = count - 1;
 
 	/* Link the list in a balanced fashion */
 	for (int level = 0; level < height; level ++)
@@ -265,8 +265,8 @@ skiplist_tailval(SkipList *list)
 	int cur = 0;
 	Elem *e = &list->elems[cur];
 	int height = e->height;
-	while (e->next[height-1] != list->tail)
-		e = &list->elems[e->next[height-1]];
+	while (e->next[height - 1] != list->tail)
+		e = &list->elems[e->next[height - 1]];
 	return e->value;
 }
 */
@@ -297,18 +297,18 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	int16 duration = skiplist_headval(list)->duration;
 	Period period;
 	if (duration == TEMPORALINST)
-		period_set(&period, ((TemporalInst *)values[0])->t, ((TemporalInst *)values[count-1])->t,
+		period_set(&period, ((TemporalInst *)values[0])->t, ((TemporalInst *)values[count - 1])->t,
 			true, true);
 	else
-		period_set(&period, ((TemporalSeq *)values[0])->period.lower, ((TemporalSeq *)values[count-1])->period.upper,
-			((TemporalSeq *)values[0])->period.lower_inc, ((TemporalSeq *)values[count-1])->period.upper_inc);
+		period_set(&period, ((TemporalSeq *)values[0])->period.lower, ((TemporalSeq *)values[count - 1])->period.upper,
+			((TemporalSeq *)values[0])->period.lower_inc, ((TemporalSeq *)values[count - 1])->period.upper_inc);
 
 	int update[SKIPLIST_MAXLEVEL];
 	memset(update, 0, sizeof(update));
 	int cur = 0;
 	int height = list->elems[cur].height;
 	Elem *e = &list->elems[cur];
-	for (int level = height-1; level >= 0; level --)
+	for (int level = height - 1; level >= 0; level --)
 	{
 		while (e->next[level] != -1 && 
 			skiplist_elmpos(list, e->next[level], period.lower) == AFTER)
@@ -359,7 +359,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, Temporal **values,
 	/* Level down head & tail if necessary */
 	Elem *head = &list->elems[0];
 	Elem *tail = &list->elems[list->tail];
-	while (head->height > 1 && head->next[head->height-1] == list->tail)
+	while (head->height > 1 && head->next[head->height - 1] == list->tail)
 	{
 		head->height --;
 		tail->height --;
@@ -755,15 +755,15 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2;
 	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count-1; i++)
+	for (int i = 0; i < seq->count - 1; i++)
 	{
-		inst2 = temporalseq_inst_n(seq, i+1);
+		inst2 = temporalseq_inst_n(seq, i + 1);
 		value2 = temporalinst_value(inst2);
 		instants[0] = tnumberinst_transform_tavg(inst1);
 		TemporalInst *inst = temporalinst_make(value1, inst2->t,
 			inst1->valuetypid);
 		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = ( (i == seq->count-2) ? seq->period.upper_inc : false ) &&
+		bool upper_inc = ( (i == seq->count - 2) ? seq->period.upper_inc : false ) &&
 			datum_eq(value1, value2, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false);
@@ -773,10 +773,10 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		lower_inc = true;
 	}
 	if (seq->period.upper_inc && seq->count > 1 &&
-		! result[seq->count-2]->period.upper_inc)
+		! result[seq->count - 2]->period.upper_inc)
 	{
 		instants[0] = tnumberinst_transform_tavg(inst2);
-		result[seq->count-1] = temporalseq_from_temporalinstarr(instants, 1,
+		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
 			true, true, false);
 		count = seq->count;
 		pfree(instants[0]);
@@ -1265,6 +1265,142 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
 	pfree(values2);
 	return state1;
+}
+
+/*****************************************************************************
+ * Extent
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_extent_transfn);
+
+PGDLLEXPORT Datum 
+temporal_extent_transfn(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	Period p1, *result = NULL;
+
+	/* Can't do anything with null inputs */
+	if (!p && !temp)
+		PG_RETURN_NULL();
+	/* Null period and non-null temporal, return the bbox of the temporal */
+	if (!p)
+	{
+		result = palloc(sizeof(Period));
+		temporal_bbox(result, temp);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null period and null temporal, return the period */
+	if (!temp)
+	{
+		result = palloc(sizeof(Period));
+		memcpy(result, p, sizeof(Period));
+		PG_RETURN_POINTER(result);
+	}
+
+	temporal_bbox(&p1, temp);
+	result = period_super_union(p, &p1);
+
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporal_extent_combinefn);
+
+PGDLLEXPORT Datum 
+temporal_extent_combinefn(PG_FUNCTION_ARGS)
+{
+	Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
+	Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD(1);
+	Period *result;
+
+	if (!p2 && !p1)
+		PG_RETURN_NULL();
+	if (p1 && !p2)
+		PG_RETURN_POINTER(p1);
+	if (p2 && !p1)
+		PG_RETURN_POINTER(p2);
+
+	result = period_super_union(p1, p2);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tnumber_extent_transfn);
+
+PGDLLEXPORT Datum 
+tnumber_extent_transfn(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	TBOX box1, *result = NULL;
+
+	/* Can't do anything with null inputs */
+	if (!box && !temp)
+		PG_RETURN_NULL();
+	/* Null box and non-null temporal, return the bbox of the temporal */
+	if (!box)
+	{
+		result = palloc(sizeof(TBOX));
+		temporal_bbox(result, temp);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null box and null temporal, return the box */
+	if (!temp)
+	{
+		result = palloc(sizeof(TBOX));
+		memcpy(result, box, sizeof(TBOX));
+		PG_RETURN_POINTER(result);
+	}
+
+	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Argument TBOX must have both X and T dimensions")));
+
+	temporal_bbox(&box1, temp);
+	result = palloc(sizeof(TBOX));
+	result->xmax = Max(box->xmax, box1.xmax);
+	result->tmax = Max(box->tmax, box1.tmax);
+	result->xmin = Min(box->xmin, box1.xmin);
+	result->tmin = Min(box->tmin, box1.tmin);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_extent_combinefn);
+
+PGDLLEXPORT Datum 
+tnumber_extent_combinefn(PG_FUNCTION_ARGS)
+{
+	TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
+	TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
+	TBOX *result;
+
+	if (!box2 && !box1)
+		PG_RETURN_NULL();
+	if (box1 && !box2)
+		PG_RETURN_POINTER(box1);
+	if (box2 && !box1)
+		PG_RETURN_POINTER(box2);
+
+	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
+		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Argument TBOX must have both X and T dimensions")));
+
+	result = palloc(sizeof(TBOX));
+	result->xmax = Max(box1->xmax, box2->xmax);
+	result->tmax = Max(box1->tmax, box2->tmax);
+	result->xmin = Min(box1->xmin, box2->xmin);
+	result->tmin = Min(box1->tmin, box2->tmin);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

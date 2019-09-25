@@ -102,55 +102,6 @@ typedef struct
  *****************************************************************************/
 
 /*
- * Return the smallest period that contains p1 and p2
- *
- * This differs from regular period_union in a critical ways:
- * It won't throw an error for non-adjacent p1 and p2, but just absorb
- * the intervening values into the result period.
- */
-static Period *
-period_super_union(Period *p1, Period *p2)
-{
-	TimestampTz result_lower;
-	TimestampTz result_upper;
-	bool result_lower_inc;
-	bool result_upper_inc;
-
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true, 
-		p1->lower_inc, p2->lower_inc) <= 0)
-	{
-		result_lower = p1->lower;
-		result_lower_inc = p1->lower_inc;
-	}
-	else
-	{
-		result_lower = p2->lower;
-		result_lower_inc = p2->lower_inc;
-	}
-
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false, 
-		p1->upper_inc, p2->upper_inc) >= 0)
-	{
-		result_upper = p1->upper;
-		result_upper_inc = p1->upper_inc;
-	}
-	else
-	{
-		result_upper = p2->upper;
-		result_upper_inc = p2->upper_inc;
-	}
-
-	/* optimization to avoid constructing a new range */
-	if (result_lower == p1->lower && result_upper == p1->upper)
-		return p1;
-	if (result_lower == p2->lower && result_upper == p2->upper)
-		return p2;
-		
-	return period_make(result_lower, result_upper, 
-		result_lower_inc, result_upper_inc);
-}
- 
-/*
  * Trivial split: half of entries will be placed on one page
  * and the other half on the other page.
  */
@@ -623,7 +574,7 @@ index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
  * Internal-page consistency
  */
 bool
-index_internal_consistent_time(Period *key, Period *query, StrategyNumber strategy)
+index_internal_consistent_period(Period *key, Period *query, StrategyNumber strategy)
 {
 	switch (strategy)
 	{
@@ -652,7 +603,7 @@ index_internal_consistent_time(Period *key, Period *query, StrategyNumber strate
  */
 
 bool
-index_time_bbox_recheck(StrategyNumber strategy)
+index_period_bbox_recheck(StrategyNumber strategy)
 {
 	/* These operators are based on bounding boxes */
 	if (strategy == RTBeforeStrategyNumber ||
@@ -667,10 +618,10 @@ index_time_bbox_recheck(StrategyNumber strategy)
 /* 
  * Consistent method for time types 
  */
-PG_FUNCTION_INFO_V1(gist_time_consistent);
+PG_FUNCTION_INFO_V1(gist_period_consistent);
 
 PGDLLEXPORT Datum
-gist_time_consistent(PG_FUNCTION_ARGS)
+gist_period_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -682,11 +633,11 @@ gist_time_consistent(PG_FUNCTION_ARGS)
 			   *period;
 	
 	/* Determine whether the operator is exact */
-	*recheck = index_time_bbox_recheck(strategy);
+	*recheck = index_period_bbox_recheck(strategy);
 	
 	if (subtype == TIMESTAMPTZOID)
 	{
-		/* Since function gist_time_consistent is strict, query is not NULL */
+		/* Since function gist_period_consistent is strict, query is not NULL */
 		TimestampTz query;
 		query = PG_GETARG_TIMESTAMPTZ(1);
 		period = period_make(query, query, true, true);
@@ -720,7 +671,7 @@ gist_time_consistent(PG_FUNCTION_ARGS)
 	if (GIST_LEAF(entry))
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
-		result = index_internal_consistent_time(key, period, strategy);
+		result = index_internal_consistent_period(key, period, strategy);
 	
 	if (periodfree)
 		pfree(period);
@@ -733,10 +684,10 @@ gist_time_consistent(PG_FUNCTION_ARGS)
  * Union methods for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_time_union);
+PG_FUNCTION_INFO_V1(gist_period_union);
 
 PGDLLEXPORT Datum
-gist_time_union(PG_FUNCTION_ARGS)
+gist_period_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GISTENTRY  *ent = entryvec->vector;
@@ -839,10 +790,10 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
  * - Favor adding periods to narrower original predicates
  */
 
-PG_FUNCTION_INFO_V1(gist_time_penalty);
+PG_FUNCTION_INFO_V1(gist_period_penalty);
  
 PGDLLEXPORT Datum
-gist_time_penalty(PG_FUNCTION_ARGS)
+gist_period_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -870,10 +821,10 @@ gist_time_penalty(PG_FUNCTION_ARGS)
  * Picksplit method for time types
  *****************************************************************************/
  
-PG_FUNCTION_INFO_V1(gist_time_picksplit);
+PG_FUNCTION_INFO_V1(gist_period_picksplit);
 
 PGDLLEXPORT Datum
-gist_time_picksplit(PG_FUNCTION_ARGS)
+gist_period_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -896,10 +847,10 @@ gist_time_picksplit(PG_FUNCTION_ARGS)
 
 /* equality comparator for GiST */
 
-PG_FUNCTION_INFO_V1(gist_time_same);
+PG_FUNCTION_INFO_V1(gist_period_same);
 
 PGDLLEXPORT Datum
-gist_time_same(PG_FUNCTION_ARGS)
+gist_period_same(PG_FUNCTION_ARGS)
 {
 	Period  *p1 = PG_GETARG_PERIOD(0);
 	Period  *p2 = PG_GETARG_PERIOD(1);
@@ -912,10 +863,10 @@ gist_time_same(PG_FUNCTION_ARGS)
  * Fetch method for time types (result in a period)
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_time_fetch);
+PG_FUNCTION_INFO_V1(gist_period_fetch);
 
 PGDLLEXPORT Datum
-gist_time_fetch(PG_FUNCTION_ARGS)
+gist_period_fetch(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	PG_RETURN_POINTER(entry);

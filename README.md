@@ -32,6 +32,14 @@ Requirements
  - PostgreSQL == 11
  - CMake >= 3.1
  - PostGIS == 2.5
+ - JSON-C
+ - Development files for PostgreSQL, PostGIS/liblwgeom, PROJ & JSON-C
+
+Example for Debian-based systems:
+```
+# install all MobilityDB build dependencies
+apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
+```
 
 Building & installation
 -----------------------
@@ -51,6 +59,17 @@ You should also set the following in postgresql.conf:
 shared_preload_libraries = 'postgis-2.5'
 max_locks_per_transaction = 128
 ```
+
+Docker container
+-----------------
+
+A docker container with MobilityDB and all its dependencies is available. If you have docker installed in your system you can run:
+```
+docker run -p 5432 codewit/mobilitydb
+```
+
+This command downloads and executes a binary image of PostgreSQL, PostGIS, and MobilityDB with postgres on port 5432 (user = pw = docker, db = gis). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
+
 Issues
 ------
 

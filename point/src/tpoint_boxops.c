@@ -400,7 +400,8 @@ tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 	tpointinst_make_stbox(box, value, instants[0]->t);
 	for (int i = 1; i < count; i++)
 	{
-		STBOX box1 = {0,0,0,0,0,0,0,0,0};
+		STBOX box1;
+		memset(&box1, 0, sizeof(STBOX));
 		value = temporalinst_value(instants[i]);
 		tpointinst_make_stbox(&box1, value, instants[i]->t);
 		stbox_expand(box, &box1);
@@ -429,7 +430,8 @@ void
 tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
 {
 	temporal_bbox(box, temp);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporalinst_bbox(&box1, inst);
 	stbox_expand(box, &box1);
 	return;
@@ -479,7 +481,8 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double d = PG_GETARG_FLOAT8(1);
-	STBOX box = {0,0,0,0,0,0,0,0,0};
+	STBOX box;
+	memset(&box, 0, sizeof(STBOX));
 	temporal_bbox(&box, temp);
 	STBOX *result = stbox_expand_spatial_internal(&box, d);
 	PG_FREE_IF_COPY(temp, 0);	
@@ -489,7 +492,7 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /*
- * Expand the box on the temporal dimension
+ * Expand the box on the time dimension
  */
 static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
@@ -519,7 +522,7 @@ stbox_expand_temporal(PG_FUNCTION_ARGS)
 }
 
 /*
- * Expand the temporal point on the temporal dimension
+ * Expand the temporal point on the time dimension
  */
 
 PG_FUNCTION_INFO_V1(tpoint_expand_temporal);
@@ -529,7 +532,8 @@ tpoint_expand_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum interval = PG_GETARG_DATUM(1);
-	STBOX box = {0,0,0,0,0,0,0,0,0};
+	STBOX box;
+	memset(&box, 0, sizeof(STBOX));
 	temporal_bbox(&box, temp);
 	STBOX *result = stbox_expand_temporal_internal(&box, interval);
 	PG_FREE_IF_COPY(temp, 0);	
@@ -549,7 +553,9 @@ overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -570,7 +576,8 @@ overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overlaps_stbox_stbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -588,7 +595,9 @@ overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
@@ -609,7 +618,8 @@ overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = overlaps_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -625,7 +635,9 @@ overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = overlaps_stbox_stbox_internal(&box1, &box2);
@@ -647,7 +659,9 @@ contains_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -668,7 +682,8 @@ contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = contains_stbox_stbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -686,7 +701,9 @@ contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -707,7 +724,8 @@ contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = contains_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -723,7 +741,9 @@ contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = contains_stbox_stbox_internal(&box1, &box2);
@@ -745,7 +765,9 @@ contained_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -766,7 +788,8 @@ contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = contained_stbox_stbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -784,7 +807,9 @@ contained_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -805,7 +830,8 @@ contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = contained_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -821,7 +847,9 @@ contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = contained_stbox_stbox_internal(&box1, &box2);
@@ -843,7 +871,9 @@ same_bbox_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box1, gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -864,7 +894,8 @@ same_bbox_stbox_tpoint(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = same_stbox_stbox_internal(box, &box1);
 	PG_FREE_IF_COPY(temp, 1);
@@ -882,7 +913,9 @@ same_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -903,7 +936,8 @@ same_bbox_tpoint_stbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	STBOX *box = PG_GETARG_STBOX_P(1);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp);
 	bool result = same_stbox_stbox_internal(&box1, box);
 	PG_FREE_IF_COPY(temp, 0);
@@ -919,7 +953,9 @@ same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	STBOX box1 = {0,0,0,0,0,0,0,0,0}, box2 = {0,0,0,0,0,0,0,0,0};
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
 	temporal_bbox(&box1, temp1);
 	temporal_bbox(&box2, temp2);
 	bool result = same_stbox_stbox_internal(&box1, &box2);

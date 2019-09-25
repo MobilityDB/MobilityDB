@@ -43,7 +43,6 @@ CREATE TYPE stbox (
 --	send = stbox_send,
 	storage = plain,
 	alignment = double
---    , analyze = stbox_analyze
 );
 
 /******************************************************************************

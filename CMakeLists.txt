@@ -71,13 +71,13 @@ enable_testing()
 set(PG_REQUIRED_VERSION "PostgreSQL 11")
 
 find_program(PGCONFIG pg_config)
-if(NOT PGCONFIG)
+if (NOT PGCONFIG)
 	message(FATAL_ERROR "Could not find pg_config")
-endif()
+endif ()
 execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PGVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT "${PGVERSION}" MATCHES "${PG_REQUIRED_VERSION}")
+if (NOT "${PGVERSION}" MATCHES "${PG_REQUIRED_VERSION}")
 	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PGVERSION}, required ${PG_REQUIRED_VERSION}")
-endif()
+endif ()
 
 execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARIABLE PostgreSQL_ACTUAL_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -85,13 +85,13 @@ include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
 include_directories("include")
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
-if(CMAKE_COMPILER_IS_GNUCC)
+if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wno-misleading-indentation)
-	if(WITH_COVERAGE)
+	if (WITH_COVERAGE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
-	endif()
-endif()
+	endif ()
+endif ()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
@@ -109,28 +109,28 @@ add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/${CONTROLOUT})
 
 add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS})
 
-if(APPLE)
+if (APPLE)
 	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
-endif()
+endif ()
 
 
 find_library(HAS_LWGEOM lwgeom)
 
 option(WITH_POSTGIS "Include PostGIS support" ON)
-if(WITH_POSTGIS)
-	if(HAS_LWGEOM)
+if (WITH_POSTGIS)
+	if (HAS_LWGEOM)
 		MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
 	else()
 		MESSAGE(STATUS "LWGEOM not found - compiling without PostGIS support")
 		set(WITH_POSTGIS OFF)
-	endif()
-endif()
+	endif ()
+endif ()
 
 include("test/scripts/test.cmake")
 
-if(WITH_POSTGIS)
+if (WITH_POSTGIS)
 		include("point/point.cmake")
-endif()
+endif ()
 
 add_custom_command(
 	OUTPUT ${SQLOUT}

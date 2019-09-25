@@ -17,6 +17,14 @@
 #include <catalog/pg_type.h>
 #include "temporal.h"
 
+typedef struct AggregateState
+{
+	int 		size;
+	void		*extra;
+	size_t		extrasize;
+	Temporal 	*values[];
+} AggregateState;
+
 /*****************************************************************************/
 
 /* SkipList - Internal type for computing aggregates */
@@ -74,6 +82,13 @@ extern SkipList *temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *sta
 	TemporalSeq *seq, Datum (*func)(Datum, Datum), bool interpoint);
 extern SkipList *temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	SkipList *state2, Datum (*func)(Datum, Datum), bool crossings);
+
+/*****************************************************************************/
+
+extern Datum temporal_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum temporal_extent_combinefn(PG_FUNCTION_ARGS);
+extern Datum tnumber_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_extent_combinefn(PG_FUNCTION_ARGS);
 
 extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
 extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);

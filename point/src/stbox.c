@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <utils/timestamp.h>
 
+#include "period.h"
 #include "temporal_util.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"
@@ -44,6 +45,15 @@ stbox_copy(const STBOX *box)
 	memcpy(result, box, sizeof(STBOX));
 	return result;
 }
+
+void
+stbox_to_period(Period *period, const STBOX *box)
+{
+	assert(MOBDB_FLAGS_GET_T(box->flags));
+	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
+	return;
+}
+
 
 /*****************************************************************************
  * Input/ functions
@@ -316,7 +326,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	}
 
 	STBOX *result = stbox_new(true, true, hast, true);
-	
+
 	/* Process X min/max */
 	if (xmin > xmax)
 	{

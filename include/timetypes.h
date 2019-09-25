@@ -5,7 +5,7 @@
  *		timestampset, period, periodset
  *
  * The Period type is a specialized version of the RangeType in PostgreSQL. 
- * It is considerably more efficient, in particular because it is a  
+ * It is considerably more efficient, in particular because it is a
  * fix-length type, it has finite bounds, and do not allow empty periods. 
  * The TimestampSet type represents a set of disjoint timestamptz.
  * The PeriodSet type represents a set of disjoint periods. 

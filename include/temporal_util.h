@@ -18,7 +18,7 @@
 #include <utils/rangetypes.h>
 #include "timetypes.h"
 #include "temporal.h"
-#include "PostGIS.h"
+#include "postgis.h"
 
 /*****************************************************************************/
 
@@ -27,7 +27,7 @@
 extern void _PG_init(void);
 extern void debugstr(char *msg);
 extern size_t double_pad(size_t size);
-extern bool type_byval_fast(Oid type);
+extern bool get_typbyval_fast(Oid type);
 extern int get_typlen_fast(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);

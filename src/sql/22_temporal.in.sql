@@ -105,6 +105,7 @@ CREATE FUNCTION temporal_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
 CREATE FUNCTION tnumber_analyze(internal)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME'

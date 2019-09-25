@@ -52,30 +52,14 @@
  * the bounding box.
  */
 
-/* Pointer to the offset array of a TemporalI */
-
-static size_t *
-temporali_offsets_ptr(TemporalI *ti)
-{
-	return (size_t *) (((char *)ti) + sizeof(TemporalI));
-}
-
-/* Pointer to the first TemporalInst */
-
-static char * 
-temporali_data_ptr(TemporalI *ti) 
-{
-	return (char *)ti + double_pad(sizeof(TemporalI) + 
-		sizeof(size_t) * (ti->count+1));
-}
-
 /* N-th TemporalInst of a TemporalI */
 
 TemporalInst *
 temporali_inst_n(TemporalI *ti, int index)
 {
-	size_t *offsets = temporali_offsets_ptr(ti);
-	return (TemporalInst *) (temporali_data_ptr(ti) + offsets[index]);
+	return (TemporalInst *) (
+		(char *)(&ti->offsets[ti->count + 1]) + 	/* start of data */
+			ti->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalI */
@@ -83,8 +67,8 @@ temporali_inst_n(TemporalI *ti, int index)
 void * 
 temporali_bbox_ptr(TemporalI *ti) 
 {
-	size_t *offsets = temporali_offsets_ptr(ti);
-	return temporali_data_ptr(ti) + offsets[ti->count];
+	return (char *)(&ti->offsets[ti->count + 1]) +  /* start of data */
+		ti->offsets[ti->count];						/* offset */
 }
 
 /* Copy the bounding box of a TemporalI in the first argument */
@@ -107,19 +91,20 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	/* Test the validity of the instants */
 	assert(count > 0);
 #ifdef WITH_POSTGIS
-	bool isgeo = false, hasz;
+	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY));
+	bool hasz = false, isgeodetic = false;
 	int srid;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	if (isgeo)
 	{
-		isgeo = true;
 		hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
-		srid = tpoint_srid_internal((Temporal *)instants[0]);
+		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
+		srid = tpoint_srid_internal((Temporal *) instants[0]);
 	}
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(instants[i-1]->t, instants[i]->t) >= 0)
+		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Invalid timestamps for temporal value")));
 #ifdef WITH_POSTGIS
@@ -141,27 +126,30 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	/* Add the size of composing instants */
 	for (int i = 0; i < count; i++)
 		memsize += double_pad(VARSIZE(instants[i]));
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalI) + (count + 1) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalI) + count * sizeof(size_t));
 	/* Create the TemporalI */
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
+		MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
+	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporali_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < count; i++)
 	{
 		memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(instants[i]));
 	}
 	/*
@@ -173,7 +161,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_make_bbox(bbox, instants, count);
-		offsets[count] = pos;
+		result->offsets[count] = pos;
 	}
 	return result;
 }
@@ -185,7 +173,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 {
 	Oid valuetypid = ti->valuetypid;
 	/* Test the validity of the instant */
-	TemporalInst *inst1 = temporali_inst_n(ti, ti->count-1);
+	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Invalid timestamps for temporal value")));
@@ -213,39 +201,39 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	for (int i = 0; i < ti->count; i++)
 		memsize += double_pad(VARSIZE(temporali_inst_n(ti, i)));
 	memsize += double_pad(VARSIZE(inst));
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 2) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalI) + (ti->count + 1) * sizeof(size_t));
 	/* Create the TemporalI */
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(inst->flags);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
+		MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporali_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)
 	{
-		TemporalInst *inst1 = temporali_inst_n(ti, i);
+		inst1 = temporali_inst_n(ti, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(inst1));
 	}
 	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	offsets[ti->count] = pos;
+	result->offsets[ti->count] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporali_expand_bbox(bbox, ti, inst);
-		offsets[ti->count+1] = pos;
+		result->offsets[ti->count + 1] = pos;
 	}
 	return result;
 }
@@ -770,9 +758,11 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, ti->valuetypid);
+		number_to_box(&box2, value, ti->valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return false;
 	}
@@ -847,9 +837,11 @@ temporali_at_value(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return NULL;
 	}
@@ -887,9 +879,11 @@ temporali_minus_value(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 	{
-		TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+		TBOX box1, box2;
+		memset(&box1, 0, sizeof(TBOX));
+		memset(&box2, 0, sizeof(TBOX));
 		temporali_bbox(&box1, ti);
-		base_to_tbox(&box2, value, valuetypid);
+		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
 			return temporali_copy(ti);
 	}
@@ -1007,7 +1001,9 @@ TemporalI *
 tnumberi_at_range(TemporalI *ti, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporali_bbox(&box1, ti);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1046,7 +1042,9 @@ TemporalI *
 tnumberi_minus_range(TemporalI *ti, RangeType *range)
 {
 	/* Bounding box test */
-	TBOX box1 = {0,0,0,0,0}, box2 = {0,0,0,0,0};
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
 	temporali_bbox(&box1, ti);
 	range_to_tbox_internal(&box2, range);
 	if (!overlaps_tbox_tbox_internal(&box1, &box2))
@@ -1632,8 +1630,15 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {
+	/* Compare bounding boxes */
+	void *box1 = temporali_bbox_ptr(ti1);
+	void *box2 = temporali_bbox_ptr(ti2);
+	int result = temporal_bbox_cmp(ti1->valuetypid, box1, box2);
+	if (result)
+		return result;
+
+	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
-	int result;
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);
@@ -1642,7 +1647,7 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		if (result) 
 			return result;
 	}
-	/* The first count instants of both TemporalI values are equal */
+	/* The first count instants of ti1 and ti2 are equal */
 	if (ti1->count < ti2->count) /* ti1 has less instants than ti2 */
 		return -1;
 	else if (ti2->count < ti1->count) /* ti2 has less instants than ti1 */

@@ -3,12 +3,13 @@
  * tpoint_spatialrels.c
  *	  Spatial relationships for temporal points.
  *
- * These relationships project the temporal dimension and return a Boolean.
+ * These relationships project the time dimension and return a Boolean.
  * They are thus defined with the "at any instant" semantics, that is, the
  * traditional spatial function is applied to the union of all values taken 
  * by the temporal point. The following relationships are supported for 
  * geometries:
  *		contains, containsproperly, covers, coveredby, crosses, disjoint, 
+ *		contains, containsproperly, covers, coveredby, crosses, disjoint,
  *		equals, intersects, overlaps, touches, within, dwithin, and
  *		relate (with 2 and 3 arguments)
  * The following relationships are supported for geographies

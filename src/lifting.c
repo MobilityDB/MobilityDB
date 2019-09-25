@@ -1099,9 +1099,9 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	   must be equal */
 	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
 	{
-		tofree[l++] = instants[k-1];
-		value = temporalinst_value(instants[k-2]);
-		instants[k-1] = temporalinst_make(value, instants[k-1]->t, valuetypid); 		
+		tofree[l++] = instants[k - 1];
+		value = temporalinst_value(instants[k - 2]);
+		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, valuetypid); 		
 	}
 
    TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
@@ -1657,9 +1657,9 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	   must be equal * /
 	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
 	{
-		tofree[l++] = instants[k-1];
-		value = temporalinst_value(instants[k-2]);
-		instants[k-1] = temporalinst_make(value, instants[k-1]->t, valuetypid); 		
+		tofree[l++] = instants[k - 1];
+		value = temporalinst_value(instants[k - 2]);
+		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, valuetypid); 		
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
 		inter->lower_inc, inter->upper_inc, true);
@@ -2215,9 +2215,9 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	   must be equal */
 	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
 	{
-		tofree[l++] = instants[k-1];
-		value = temporalinst_value(instants[k-2]);
-		instants[k-1] = temporalinst_make(value, instants[k-1]->t, valuetypid); 		
+		tofree[l++] = instants[k - 1];
+		value = temporalinst_value(instants[k - 2]);
+		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, valuetypid); 		
 	}
 
    TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 

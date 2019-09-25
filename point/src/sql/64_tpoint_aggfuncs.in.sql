@@ -10,6 +10,34 @@
  *
  *****************************************************************************/
 
+CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION tpoint_extent_combinefn(stbox, stbox)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME'
+	LANGUAGE 'c' IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(tgeompoint) (
+	SFUNC = tpoint_extent_transfn,
+	STYPE = stbox,
+	COMBINEFUNC = tpoint_extent_combinefn,
+	PARALLEL = safe
+);
+CREATE AGGREGATE extent(tgeogpoint) (
+	SFUNC = tpoint_extent_transfn,
+	STYPE = stbox,
+	COMBINEFUNC = tpoint_extent_combinefn,
+	PARALLEL = safe
+);
+
+/*****************************************************************************/
+
 CREATE FUNCTION tcount_transfn(internal, tgeompoint)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'

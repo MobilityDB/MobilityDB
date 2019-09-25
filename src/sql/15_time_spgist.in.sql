@@ -10,23 +10,23 @@
  *
  *****************************************************************************/
 
-CREATE FUNCTION spgist_time_config(internal, internal)
+CREATE FUNCTION spgist_period_config(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_time_choose(internal, internal)
+CREATE FUNCTION spgist_period_choose(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_time_picksplit(internal, internal)
+CREATE FUNCTION spgist_period_picksplit(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_time_inner_consistent(internal, internal)
+CREATE FUNCTION spgist_period_inner_consistent(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_time_leaf_consistent(internal, internal)
+CREATE FUNCTION spgist_period_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -76,11 +76,11 @@ CREATE OPERATOR CLASS spgist_timestampset_ops
 	OPERATOR	31		#&> (timestampset, period),
 	OPERATOR	31		#&> (timestampset, periodset),
 	-- functions
-	FUNCTION	1	spgist_time_config(internal, internal),
-	FUNCTION	2	spgist_time_choose(internal, internal),
-	FUNCTION	3	spgist_time_picksplit(internal, internal),
-	FUNCTION	4	spgist_time_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_time_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_period_config(internal, internal),
+	FUNCTION	2	spgist_period_choose(internal, internal),
+	FUNCTION	3	spgist_period_picksplit(internal, internal),
+	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_timestampset_compress(internal);
 	
 /******************************************************************************/
@@ -120,11 +120,11 @@ CREATE OPERATOR CLASS spgist_period_ops
 	OPERATOR	31		#&> (period, period),
 	OPERATOR	31		#&> (period, periodset),
 	-- functions
-	FUNCTION	1	spgist_time_config(internal, internal),
-	FUNCTION	2	spgist_time_choose(internal, internal),
-	FUNCTION	3	spgist_time_picksplit(internal, internal),
-	FUNCTION	4	spgist_time_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_time_leaf_consistent(internal, internal);
+	FUNCTION	1	spgist_period_config(internal, internal),
+	FUNCTION	2	spgist_period_choose(internal, internal),
+	FUNCTION	3	spgist_period_picksplit(internal, internal),
+	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_period_leaf_consistent(internal, internal);
 	
 /******************************************************************************/
 
@@ -164,11 +164,11 @@ CREATE OPERATOR CLASS spgist_periodset_ops
 	OPERATOR	31		#&> (periodset, period),
 	OPERATOR	31		#&> (periodset, periodset),
 	-- functions
-	FUNCTION	1	spgist_time_config(internal, internal),
-	FUNCTION	2	spgist_time_choose(internal, internal),
-	FUNCTION	3	spgist_time_picksplit(internal, internal),
-	FUNCTION	4	spgist_time_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_time_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_period_config(internal, internal),
+	FUNCTION	2	spgist_period_choose(internal, internal),
+	FUNCTION	3	spgist_period_picksplit(internal, internal),
+	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_periodset_compress(internal);
 
 /******************************************************************************/

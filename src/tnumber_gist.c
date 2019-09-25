@@ -85,8 +85,9 @@ size_tbox(const TBOX *box)
 static double
 box_penalty(const TBOX *original, const TBOX *new)
 {
-	TBOX unionbox = {0};
+	TBOX unionbox;
 
+	memset(&unionbox, 0, sizeof(TBOX));
 	rt_tbox_union(&unionbox, original, new);
 	return size_tbox(&unionbox) - size_tbox(original);
 }

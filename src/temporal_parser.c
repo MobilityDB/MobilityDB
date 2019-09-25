@@ -124,7 +124,7 @@ basetype_parse(char **str, Oid basetype)
 		isttext = true;
 		/* Consume the double quote */
 		*str += 1;
-		while ( ( (*str)[delim] != '"' || (*str)[delim-1] == '\\' )  && 
+		while ( ( (*str)[delim] != '"' || (*str)[delim - 1] == '\\' )  && 
 			(*str)[delim] != '\0' )
 			delim++;
 	}
