@@ -155,7 +155,7 @@ typedef struct
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalI;
 
 /* Temporal Sequence */
@@ -168,7 +168,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalInst elements */
 	Period 		period;			/* time span (24 bytes) */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalSeq;
 
 /* Temporal Sequence Set */
@@ -181,7 +181,7 @@ typedef struct
 	Oid 		valuetypid;		/* base type's OID (4 bytes) */
 	int32 		count;			/* number of TemporalSeq elements */
 	int32 		totalcount;		/* total number of TemporalInst elements in all TemporalSeq elements */
-	/* variable-length data follows */
+	size_t		offsets[1];		/* beginning of variable-length data */
 } TemporalS;
 
 /* bboxunion - Union type for all types of bounding boxes */

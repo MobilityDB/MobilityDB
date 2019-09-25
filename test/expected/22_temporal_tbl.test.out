@@ -549,25 +549,25 @@ SELECT DISTINCT temporalType(temp) FROM tbl_ttext ORDER BY 1;
 SELECT MAX(memSize(temp)) FROM tbl_tbool;
  max  
 ------
- 2928
+ 1904
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tint;
  max  
 ------
- 2808
+ 1976
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tfloat;
  max  
 ------
- 3008
+ 1936
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_ttext;
  max  
 ------
- 3480
+ 1752
 (1 row)
 
 /*

@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
+#include <access/tuptoaster.h>
 #include <catalog/namespace.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
@@ -496,11 +497,6 @@ void
 base_type_all_oid(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
-		/* The next line is needed since the base type for tint must be 
-		 * changed to INT8OID in function scalar_compute_stats for 
-		 * collecting statistics */
-		// Is this still needed ???
-		// valuetypid != INT8OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
 		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
 #ifdef WITH_POSTGIS
@@ -1061,12 +1057,21 @@ Datum temporal_type(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(temporal_mem_size);
 
+/*
 PGDLLEXPORT Datum
 temporal_mem_size(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(temp)));
+	size_t result = VARSIZE(temp);
 	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_INT32(result);
+}
+*/
+
+PGDLLEXPORT Datum
+temporal_mem_size(PG_FUNCTION_ARGS)
+{
+	Datum result = toast_datum_size(PG_GETARG_DATUM(0));
 	PG_RETURN_DATUM(result);
 }
 

@@ -44,7 +44,7 @@
  * a precomputed trajectory is as follows
  *
  *	-------------------------------------------------------------------
- *	( TemporalSeq | offset_0 | offset_1 | offset_2 | offset_3 )_X | ...
+ *	( TemporalSeq )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
  *	-------------------------------------------------------------------
  *	------------------------------------------------------------------------
  *	( TemporalInst_0 )_X | ( TemporalInst_1 )_X | ( bbox )_X | ( Traj )_X  |
@@ -57,30 +57,14 @@
  * duration.
  */
 
-/* Pointer to the offset array of a TemporalSeq */
-
-size_t *
-temporalseq_offsets_ptr(TemporalSeq *seq)
-{
-	return (size_t *) (((char *)seq) + sizeof(TemporalSeq));
-}
-
-/* Pointer to the first TemporalInst */
-
-char * 
-temporalseq_data_ptr(TemporalSeq *seq)
-{
-	return (char *)seq + double_pad(sizeof(TemporalSeq) + 
-		sizeof(size_t) * (seq->count+2));
-}
-
 /* N-th TemporalInst of a TemporalSeq */
 
 TemporalInst *
 temporalseq_inst_n(TemporalSeq *seq, int index)
 {
-	size_t *offsets = temporalseq_offsets_ptr(seq);
-	return (TemporalInst *) (temporalseq_data_ptr(seq) + offsets[index]);
+	return (TemporalInst *)(
+		(char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[index]);					/* offset */
 }
 
 /* Pointer to the bounding box of a TemporalSeq */
@@ -88,8 +72,8 @@ temporalseq_inst_n(TemporalSeq *seq, int index)
 void * 
 temporalseq_bbox_ptr(TemporalSeq *seq) 
 {
-	size_t *offsets = temporalseq_offsets_ptr(seq);
-	return temporalseq_data_ptr(seq) + offsets[seq->count];
+	return (char *)(&seq->offsets[seq->count + 2]) +  	/* start of data */
+		seq->offsets[seq->count];						/* offset */
 }
 
 /* Copy the bounding box of a TemporalSeq in the first argument */
@@ -647,8 +631,9 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		}
 	}
 #endif
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 1) * sizeof(size_t);
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
@@ -666,13 +651,12 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	}
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporalseq_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
 	{
 		memcpy(((char *)result) + pdata + pos, newinstants[i], 
 			VARSIZE(newinstants[i]));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(newinstants[i]));
 	}
 	/*
@@ -697,13 +681,13 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 #endif
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
 				lower_inc, upper_inc);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
 #ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
-		offsets[newcount + 1] = pos;
+		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
@@ -795,8 +779,9 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		}
 	}
 #endif
-	/* Add the size of the struct and the offset array */
-	size_t pdata = double_pad(sizeof(TemporalSeq) + (newcount + 2) * sizeof(size_t));
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 1) * sizeof(size_t);
 	/* Create the TemporalSeq */
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
@@ -811,30 +796,29 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
 #endif
 	/* Initialization of the variable-length part */
-	size_t *offsets = temporalseq_offsets_ptr(result);
 	size_t pos = 0;
 	for (int i = 0; i < newcount - 1; i++)
 	{
 		inst1 = temporalseq_inst_n(seq, i);
 		memcpy(((char *)result) + pdata + pos, inst1, VARSIZE(inst1));
-		offsets[i] = pos;
+		result->offsets[i] = pos;
 		pos += double_pad(VARSIZE(inst1));
 	}
 	/* Append the instant */
 	memcpy(((char *)result) + pdata + pos, inst, VARSIZE(inst));
-	offsets[newcount - 1] = pos;
+	result->offsets[newcount - 1] = pos;
 	pos += double_pad(VARSIZE(inst));
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
 		temporalseq_expand_bbox(bbox, seq, inst);
-		offsets[newcount] = pos;
+		result->offsets[newcount] = pos;
 	}
 #ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
-		offsets[newcount + 1] = pos;
+		result->offsets[newcount + 1] = pos;
 		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));

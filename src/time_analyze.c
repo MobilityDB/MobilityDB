@@ -217,7 +217,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			}
 
 			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
-			stats->staop[slot_idx] = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			stats->staop[slot_idx] = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			stats->stavalues[slot_idx] = bound_hist_values;
 			stats->numvalues[slot_idx] = num_hist;
 			stats->statypid[slot_idx] = type_oid(T_PERIOD);

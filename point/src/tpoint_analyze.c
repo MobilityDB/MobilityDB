@@ -50,35 +50,39 @@
  * spatial statistics in the same stats variable.
  */
 static HeapTuple
-tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int attrNum,
-				   Oid attrtypid, Datum value)
+tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
+	int natts, Datum value)
 {
-	Datum *values = (Datum *) palloc(attrNum * sizeof(Datum));
-	bool *null_v = (bool *) palloc(attrNum * sizeof(bool));
-	bool *rep_v = (bool *) palloc(attrNum * sizeof(bool));
+	Datum *replValues = (Datum *) palloc(natts * sizeof(Datum));
+	bool *replIsnull = (bool *) palloc(natts * sizeof(bool));
+	bool *doReplace = (bool *) palloc(natts * sizeof(bool));
 
-	for (int j = 0; j < attrNum; j++)
+	for (int i = 0; i < natts; i++)
 	{
-		if (attrtypid == tupDesc->attrs[j].atttypid)
+		/* tupattnum is 1-based */
+		if (i == tupattnum - 1)
 		{
-			values[j] = tpoint_values_internal(DatumGetTemporal(value));
-			rep_v[j] = true;
-			null_v[j] = false;
+			replValues[i] = tpoint_values_internal(DatumGetTemporal(value));
+			replIsnull[i] = false;
+			doReplace[i] = true;
 		}
 		else
 		{
-			values[j] = 0;
-			rep_v[j] = false;
-			null_v[j] = false;
+			replValues[i] = 0;
+			replIsnull[i] = false;
+			doReplace[i] = false;
 		}
 	}
-	return heap_modify_tuple(tuple, tupDesc, values, null_v, rep_v);
+	HeapTuple result = heap_modify_tuple(tuple, tupDesc, replValues, replIsnull, doReplace);
+	pfree(replValues); pfree(replIsnull); pfree(doReplace);
+	return result;
 }
 
 static void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 					 int samplerows, double totalrows)
 {
+	MemoryContext old_context;
 	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
 	int stawidth;
 
@@ -90,6 +94,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	stawidth = stats->stawidth;
 
+	/* Must copy the target values into anl_context */
+	old_context = MemoryContextSwitchTo(stats->anl_context);
+
 	/* Remove time component for the tuples */
 	for (int i = 0; i < samplerows; i++)
 	{
@@ -97,16 +104,21 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 			continue;
-		stats->rows[i] = tpoint_remove_timedim(stats->rows[i],
-			stats->tupDesc, stats->tupDesc->natts,
-			stats->attrtypid, value);
-	}	
+		stats->rows[i] = tpoint_remove_timedim(stats->rows[i], 	
+			stats->tupDesc, stats->tupattnum, stats->tupDesc->natts, value);
+	}
+
 	/* Compute statistics for the geometry component */
 	call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
 	stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
 
 	/* Put the total width of the column, variable size */
 	stats->stawidth = stawidth;
+	
+	/* Switch back to the previous context */
+	MemoryContextSwitchTo(old_context);
+
+	return;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
