@@ -17,6 +17,10 @@
 #include <access/gist.h>
 #include <utils/builtins.h>
 
+#if MOBDB_PGSQL_VERSION >= 120
+#include <utils/float.h>
+#endif
+
 #include "temporal.h"
 #include "oidcache.h"
 #include "temporal_boxops.h"

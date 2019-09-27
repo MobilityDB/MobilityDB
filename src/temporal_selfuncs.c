@@ -25,6 +25,9 @@
 #include "temporal_selfuncs.h"
 
 #include <assert.h>
+
+#include <access/amapi.h>
+
 #include <access/heapam.h>
 #include <access/htup_details.h>
 #include <access/itup.h>
@@ -41,7 +44,7 @@
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
-#include <utils/tqual.h>
+// #include <utils/tqual.h>
 #include <temporal_boxops.h>
 #include <timetypes.h>
 
@@ -457,7 +460,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 }
 
 /*
- *	ineq_histogram_selectivity	- Examine the histogram for scalarineqsel
+ *	ineq_histogram_selectivity_mobdb	- Examine the histogram for scalarineqsel
  *
  * Determine the fraction of the variable's histogram population that
  * satisfies the inequality condition, ie, VAR < (or <=, >, >=) CONST.
@@ -471,7 +474,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
  */
 // EZ We needed to add the operator as additional argument of the function
 static double
-ineq_histogram_selectivity(PlannerInfo *root,
+ineq_histogram_selectivity_mobdb(PlannerInfo *root,
 						   VariableStatData *vardata, Oid operator,
 						   FmgrInfo *opproc, bool isgt, bool iseq,
 						   Datum constval, Oid consttype)
@@ -883,7 +886,7 @@ scalarineqsel(PlannerInfo *root, Oid operator, bool isgt, bool iseq,
 	 * compute the resulting contribution to selectivity.
 	 */
 	// EZ added the operator parameter
-	hist_selec = ineq_histogram_selectivity(root, vardata, operator,
+	hist_selec = ineq_histogram_selectivity_mobdb(root, vardata, operator,
 											&opproc, isgt, iseq,
 											constval, consttype);
 

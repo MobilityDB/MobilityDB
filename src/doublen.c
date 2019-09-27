@@ -25,6 +25,10 @@
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
+#if MOBDB_PGSQL_VERSION >= 120
+#include <utils/float.h>
+#endif
+
 /*****************************************************************************
  * Input/Output functions
  * Although doubleN are internal types, the doubleN_out function are 
