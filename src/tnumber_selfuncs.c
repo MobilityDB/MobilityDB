@@ -14,7 +14,6 @@
 
 #include <assert.h>
 #include <access/htup_details.h>
-#include <nodes/relation.h>
 #include <utils/builtins.h>
 #include <utils/selfuncs.h>
 #include <temporal_boxops.h>

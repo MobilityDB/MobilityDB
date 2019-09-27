@@ -41,7 +41,6 @@
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
-#include <utils/tqual.h>
 #include <temporal_boxops.h>
 #include <timetypes.h>
 
