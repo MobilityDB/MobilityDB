@@ -76,6 +76,10 @@
 #include <utils/timestamp.h>
 #include <utils/builtins.h>
 
+#if MOBDB_PGSQL_VERSION >= 120
+#include <utils/float.h>
+#endif
+
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "tpoint.h"
