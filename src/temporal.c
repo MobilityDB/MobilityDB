@@ -334,7 +334,11 @@ temporal_typinfo(Oid temptypid, Oid* valuetypid)
 	ScanKeyData scandata;
 	ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ, 
 		ObjectIdGetDatum(temptypid));
-	HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
+#if MOBDB_PGSQL_VERSION >= 120
+		TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
+#else
+		HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
+#endif
 	HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
 	bool isnull = false;
 	if (HeapTupleIsValid(tuple)) 

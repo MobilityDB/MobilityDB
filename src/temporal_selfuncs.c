@@ -186,6 +186,9 @@ get_actual_variable_endpoint(Relation heapRel,
 							 ScanKey scankeys,
 							 int16 typLen,
 							 bool typByVal,
+#if MOBDB_PGSQL_VERSION >= 120
+							 TupleTableSlot *tableslot,
+#endif
 							 MemoryContext outercontext,
 							 Datum *endpointDatum)
 {
@@ -252,8 +255,17 @@ get_actual_variable_endpoint(Relation heapRel,
 							&vmbuffer))
 		{
 			/* Rats, we have to visit the heap to check visibility */
+#if MOBDB_PGSQL_VERSION >= 120
+			if (!index_fetch_heap(index_scan, tableslot))
+#else
 			if (index_fetch_heap(index_scan) == NULL)
+#endif
 				continue;		/* no visible tuple, try next index entry */
+
+#if MOBDB_PGSQL_VERSION >= 120
+			/* We don't actually need the heap tuple for anything */
+			ExecClearTuple(tableslot);
+#endif
 
 			/*
 			 * We don't care whether there's more than one visible tuple in
@@ -381,6 +393,9 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			MemoryContext oldcontext;
 			Relation	heapRel;
 			Relation	indexRel;
+#if MOBDB_PGSQL_VERSION >= 120
+			TupleTableSlot *slot;
+#endif
 			int16		typLen;
 			bool		typByVal;
 			ScanKeyData scankeys[1];
@@ -400,6 +415,9 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			indexRel = index_open(index->indexoid, AccessShareLock);
 
 			/* build some stuff needed for indexscan execution */
+#if MOBDB_PGSQL_VERSION >= 120
+			slot = table_slot_create(heapRel, NULL);
+#endif
 			get_typlenbyval(vardata->atttype, &typLen, &typByVal);
 
 			/* set up an IS NOT NULL scan key so that we ignore nulls */
@@ -421,6 +439,9 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
+#if MOBDB_PGSQL_VERSION >= 120
+														 slot,
+#endif
 														 oldcontext,
 														 min);
 			}
@@ -440,11 +461,17 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
+#if MOBDB_PGSQL_VERSION >= 120
+														 slot,
+#endif
 														 oldcontext,
 														 max);
 			}
 
 			/* Clean everything up */
+#if MOBDB_PGSQL_VERSION >= 120
+			ExecDropSingleTupleTableSlot(slot);
+#endif
 			index_close(indexRel, AccessShareLock);
 			heap_close(heapRel, NoLock);
 

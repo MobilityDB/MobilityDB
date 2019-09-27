@@ -14,8 +14,11 @@
 
 #include <assert.h>
 #include <access/htup_details.h>
-#include <nodes/relation.h>
+// #include <nodes/relation.h>
 #include <utils/builtins.h>
+#if MOBDB_PGSQL_VERSION >= 120
+#include <utils/float.h>
+#endif
 #include <utils/selfuncs.h>
 #include <temporal_boxops.h>
 
