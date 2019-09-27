@@ -21,7 +21,6 @@
 #include <utils/float.h>
 #endif
 
-#include "temporal.h"
 #include "oidcache.h"
 #include "temporal_boxops.h"
 #include "temporal_posops.h"

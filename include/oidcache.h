@@ -19,6 +19,7 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include "temporal.h"
 
 /*
  * The list of built-in and temporal types that must be cached. 
