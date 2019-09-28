@@ -558,6 +558,20 @@ point_base_type_oid(Oid valuetypid)
 #endif
 
 /*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(mobdb_lib_version);
+
+PGDLLEXPORT Datum
+mobdb_lib_version(PG_FUNCTION_ARGS)
+{
+	char *ver = MOBDB_LIB_VERSION;
+	text *result = cstring_to_text(ver);
+	PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
