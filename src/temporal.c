@@ -571,6 +571,21 @@ mobdb_lib_version(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(result);
 }
 
+PG_FUNCTION_INFO_V1(mobdb_full_version);
+
+PGDLLEXPORT Datum
+mobdb_full_version(PG_FUNCTION_ARGS)
+{
+	char ver[64];
+	text *result;
+
+	snprintf(ver, 64, "%s %s %s", MOBDB_LIB_VERSION, MOBDB_POSTGRESQL_VERSION, MOBDB_POSTGIS_VERSION);
+	ver[63] = '\0';
+
+	result = cstring_to_text(ver);
+	PG_RETURN_TEXT_P(result);
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

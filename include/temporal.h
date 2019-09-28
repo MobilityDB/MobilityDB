@@ -30,6 +30,8 @@
 #define EPSILON					1.0E-06
 
 #define MOBDB_LIB_VERSION 'MobilityDB 1.0alpha1'
+#define MOBDB_POSTGRESQL_VERSION 'PostgreSQL 11.5'
+#define MOBDB_POSTGIS_VERSION 'PostGIS 2.5'
 
 /*****************************************************************************
  * Duration of temporal types
