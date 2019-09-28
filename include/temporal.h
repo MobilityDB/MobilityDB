@@ -30,6 +30,7 @@
 #define EPSILON					1.0E-06
 
 #define MOBDB_PGSQL_VERSION 120
+#define MOBDB_LIB_VERSION 'MobilityDB 1.0alpha1'
 
 /*****************************************************************************
  * Duration of temporal types
