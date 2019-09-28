@@ -3397,7 +3397,16 @@ SELECT extent(Trip) FROM Trips;
 					<para>Signature: <varname>mobdb_lib_version(): text</varname></para>
 					<programlisting>
 SELECT mobdb_lib_version();
--- MobilityDB 1.0
+-- "MobilityDB 1.0"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>mobdb_full_version</varname>: Versions of the MobilityDB extension and its dependencies</para>
+					<para>Signature: <varname>mobdb_full_version(): text</varname></para>
+					<programlisting>
+SELECT mobdb_full_version();
+-- "MobilityDB 1.0 PostgreSQL 11.5 PostGIS 2.5"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
