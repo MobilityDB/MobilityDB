@@ -3388,6 +3388,20 @@ SELECT extent(Trip) FROM Trips;
 
 			</itemizedlist>
 		</sect1>
+
+		<sect1>
+			<title>Utility Functions</title>
+			<itemizedlist>
+				<listitem>
+					<para><varname>mobdb_lib_version</varname>: Version of the MobilityDB extension</para>
+					<para>Signature: <varname>mobdb_lib_version(): text</varname></para>
+					<programlisting>
+SELECT mobdb_lib_version();
+-- MobilityDB 1.0
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
 	</chapter>
 
 	<chapter id="indexing_temporal_types">
@@ -3883,7 +3897,7 @@ histogram AS (
 	ORDER BY bucketNo, bucketRange
 )
 SELECT bucketNo, bucketRange, freq,
-	repeat('■',
+	repeat('&#9632;',
                (   freq::float
                  / max(freq) over()
                  * 30
