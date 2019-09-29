@@ -211,114 +211,27 @@ call_recv(Oid type, StringInfo buf)
 
 /* Call PostgreSQL function with 1 to 4 arguments */
 
-#if MOBDB_PGSQL_VERSION >= 120
 Datum
 call_function1(PGFunction func, Datum arg1)
 {
+#if MOBDB_PGSQL_VERSION >= 120
 	FunctionCallInfoBaseData fcinfo;
+#else
+	FunctionCallInfoData fcinfo;
+#endif
 	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo));
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
-	NullableDatum nd_arg1;
-	nd_arg1.value = arg1;
-	nd_arg1.isnull = false;
-	InitFunctionCallInfoData(fcinfo, NULL, 1, InvalidOid, NULL, NULL);
 	InitFunctionCallInfoData(fcinfo, NULL, 1, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
-	fcinfo.args[0] = nd_arg1;
-	result = (*func) (&fcinfo);
-	if (fcinfo.isnull)
-		elog(ERROR, "Function %p returned NULL", (void *) func);
-	return result;
-}
-
-Datum
-call_function2(PGFunction func, Datum arg1, Datum arg2)
-{
-	FunctionCallInfoBaseData fcinfo;
-	FmgrInfo flinfo;
-	memset(&flinfo, 0, sizeof(flinfo)) ;
-	flinfo.fn_mcxt = CurrentMemoryContext;
-	Datum result;
-	NullableDatum nd_arg1, nd_arg2;
-	nd_arg1.value = arg1;
-	nd_arg2.value = arg2;
-	nd_arg1.isnull = nd_arg2.isnull = false;
-	InitFunctionCallInfoData(fcinfo, NULL, 2, DEFAULT_COLLATION_OID, NULL, NULL);
-	fcinfo.flinfo = &flinfo;
-	fcinfo.args[0] = nd_arg1;
-	fcinfo.args[1] = nd_arg2;
-	result = (*func) (&fcinfo);
-	if (fcinfo.isnull)
-		elog(ERROR, "function %p returned NULL", (void *) func);
-	return result;
-}
-
-Datum
-call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
-{
-	FunctionCallInfoBaseData fcinfo;
-	FmgrInfo flinfo;
-	memset(&flinfo, 0, sizeof(flinfo)) ;
-	flinfo.fn_mcxt = CurrentMemoryContext;
-	Datum result;
-	NullableDatum nd_arg1, nd_arg2, nd_arg3;
-	nd_arg1.value = arg1;
-	nd_arg2.value = arg2;
-	nd_arg3.value = arg3;
-	nd_arg1.isnull = nd_arg2.isnull = nd_arg3.isnull = false;
-	InitFunctionCallInfoData(fcinfo, NULL, 3, DEFAULT_COLLATION_OID, NULL, NULL);
-	fcinfo.flinfo = &flinfo;
-	fcinfo.args[0] = nd_arg1;
-	fcinfo.args[1] = nd_arg2;
-	fcinfo.args[2] = nd_arg3;
-	result = (*func) (&fcinfo);
-	if (fcinfo.isnull)
-		elog(ERROR, "function %p returned NULL", (void *) func);
-	return result;
-}
-
-Datum
-call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
-{
-	FunctionCallInfoBaseData fcinfo;
-	FmgrInfo flinfo;
-	memset(&flinfo, 0, sizeof(flinfo)) ;
-	flinfo.fn_mcxt = CurrentMemoryContext;
-	Datum result;
-	NullableDatum nd_arg1, nd_arg2, nd_arg3, nd_arg4;
-	nd_arg1.value = arg1;
-	nd_arg2.value = arg2;
-	nd_arg3.value = arg3;
-	nd_arg4.value = arg4;
-	nd_arg1.isnull = nd_arg2.isnull = nd_arg3.isnull = nd_arg4.isnull = false;
-	InitFunctionCallInfoData(fcinfo, NULL, 4, DEFAULT_COLLATION_OID, NULL, NULL);
-	fcinfo.flinfo = &flinfo;
-	fcinfo.args[0] = nd_arg1;
-	fcinfo.args[1] = nd_arg2;
-	fcinfo.args[2] = nd_arg3;
-	fcinfo.args[3] = nd_arg4;
-	result = (*func) (&fcinfo);
-	if (fcinfo.isnull)
-		elog(ERROR, "function %p returned NULL", (void *) func);
-	return result;
-}
-
+#if MOBDB_PGSQL_VERSION >= 120
+	fcinfo.args[0].value = arg1;
+	fcinfo.args[0].isnull = false;
 #else
-Datum
-call_function1(PGFunction func, Datum arg1)
-{
-	FunctionCallInfoData fcinfo;
-	FmgrInfo flinfo;
-	memset(&flinfo, 0, sizeof(flinfo)) ;
-	flinfo.fn_mcxt = CurrentMemoryContext;
-	Datum result;
-	InitFunctionCallInfoData(fcinfo, NULL, 1, InvalidOid, NULL, NULL);
-	InitFunctionCallInfoData(fcinfo, NULL, 1, DEFAULT_COLLATION_OID, NULL, NULL);
-	fcinfo.flinfo = &flinfo;
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
+#endif
 	result = (*func) (&fcinfo);
 	if (fcinfo.isnull)
 		elog(ERROR, "Function %p returned NULL", (void *) func);
@@ -328,17 +241,28 @@ call_function1(PGFunction func, Datum arg1)
 Datum
 call_function2(PGFunction func, Datum arg1, Datum arg2)
 {
+#if MOBDB_PGSQL_VERSION >= 120
+	FunctionCallInfoBaseData fcinfo;
+#else
 	FunctionCallInfoData fcinfo;
+#endif
 	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo)) ;
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
 	InitFunctionCallInfoData(fcinfo, NULL, 2, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
+#if MOBDB_PGSQL_VERSION >= 120
+	fcinfo.args[0].value = arg1;
+	fcinfo.args[0].isnull = false;
+	fcinfo.args[1].value = arg2;
+	fcinfo.args[1].isnull = false;
+#else
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
 	fcinfo.arg[1] = arg2;
 	fcinfo.argnull[1] = false;
+#endif
 	result = (*func) (&fcinfo);
 	if (fcinfo.isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -348,19 +272,32 @@ call_function2(PGFunction func, Datum arg1, Datum arg2)
 Datum
 call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 {
+#if MOBDB_PGSQL_VERSION >= 120
+	FunctionCallInfoBaseData fcinfo;
+#else
 	FunctionCallInfoData fcinfo;
+#endif
 	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo)) ;
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
-	InitFunctionCallInfoData(fcinfo, NULL, 3, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, NULL, 3, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
+#if MOBDB_PGSQL_VERSION >= 120
+	fcinfo.args[0].value = arg1;
+	fcinfo.args[0].isnull = false;
+	fcinfo.args[1].value = arg2;
+	fcinfo.args[1].isnull = false;
+	fcinfo.args[2].value = arg3;
+	fcinfo.args[2].isnull = false;
+#else
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
 	fcinfo.arg[1] = arg2;
 	fcinfo.argnull[1] = false;
 	fcinfo.arg[2] = arg3;
 	fcinfo.argnull[2] = false;
+#endif
 	result = (*func) (&fcinfo);
 	if (fcinfo.isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
@@ -370,13 +307,27 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 Datum
 call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 {
+#if MOBDB_PGSQL_VERSION >= 120
+	FunctionCallInfoBaseData fcinfo;
+#else
 	FunctionCallInfoData fcinfo;
+#endif
 	FmgrInfo flinfo;
 	memset(&flinfo, 0, sizeof(flinfo)) ;
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
-	InitFunctionCallInfoData(fcinfo, NULL, 4, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, NULL, 4, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.flinfo = &flinfo;
+#if MOBDB_PGSQL_VERSION >= 120
+	fcinfo.args[0].value = arg1;
+	fcinfo.args[0].isnull = false;
+	fcinfo.args[1].value = arg2;
+	fcinfo.args[1].isnull = false;
+	fcinfo.args[2].value = arg3;
+	fcinfo.args[2].isnull = false;
+	fcinfo.args[3].value = arg4;
+	fcinfo.args[3].isnull = false;
+#else
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
 	fcinfo.arg[1] = arg2;
@@ -385,13 +336,12 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	fcinfo.argnull[2] = false;
 	fcinfo.arg[3] = arg4;
 	fcinfo.argnull[3] = false;
+#endif
 	result = (*func) (&fcinfo);
 	if (fcinfo.isnull)
 		elog(ERROR, "function %p returned NULL", (void *) func);
 	return result;
 }
-#endif
-
 
 /*****************************************************************************
  * Array functions
