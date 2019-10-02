@@ -86,7 +86,9 @@ SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoints;
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoints GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------
+
 set parallel_tuple_cost=100;
 set parallel_setup_cost=100;
 set force_parallel_mode=off;
+
 -------------------------------------------------------------------------------

@@ -1,4 +1,3 @@
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 NOTICE:  index "tbl_timestampset_gist_idx" does not exist, skipping
 DROP INDEX
@@ -17,7 +16,6 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
 NOTICE:  index "tbl_periodset_spgist_idx" does not exist, skipping
 DROP INDEX
-/*****************************************************************************/
 DROP table if exists test_timeops;
 NOTICE:  table "test_timeops" does not exist, skipping
 DROP TABLE
@@ -287,14 +285,12 @@ INSERT 0 1
 INSERT INTO test_timeops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'periodset', 'periodset', count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps;
 INSERT 0 1
-/*****************************************************************************/
 CREATE INDEX tbl_timestampset_gist_idx ON tbl_timestampset USING GIST(ts);
 CREATE INDEX
 CREATE INDEX tbl_period_gist_idx ON tbl_period USING GIST(p);
 CREATE INDEX
 CREATE INDEX tbl_periodset_gist_idx ON tbl_periodset USING GIST(ps);
 CREATE INDEX
-/*****************************************************************************/
 UPDATE test_timeops 
 SET gistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )
 WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';
@@ -639,7 +635,6 @@ UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 UPDATE 1
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_period_gist_idx;
@@ -652,7 +647,6 @@ CREATE INDEX tbl_period_spgist_idx ON tbl_period USING SPGIST(p);
 CREATE INDEX
 CREATE INDEX tbl_periodset_spgist_idx ON tbl_periodset USING SPGIST(ps);
 CREATE INDEX
-/*****************************************************************************/
 UPDATE test_timeops 
 SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )
 WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'timestamptz';

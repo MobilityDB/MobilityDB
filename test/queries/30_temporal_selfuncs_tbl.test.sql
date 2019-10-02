@@ -1034,7 +1034,6 @@ FOR i IN 1..10 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR @>-------------------------------
 -----------------------------------------------
@@ -1998,7 +1997,6 @@ FOR i IN 1..10 LOOP
 	Query:= 'Q' || k;
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 -----------------------------------------------
 ---- OPERATOR <@-------------------------------
@@ -3989,7 +3987,6 @@ FOR i IN 1..10 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR @>-------------------------------
 -----------------------------------------------
@@ -4056,6 +4053,7 @@ END LOOP;
 -----------------------------------------------
 ---- OPERATOR <@-------------------------------
 -----------------------------------------------
+
 --Q199
 k:= k+1;
 FOR i IN 1..10 LOOP
@@ -4119,6 +4117,7 @@ END LOOP;
 -----------------------------------------------
 ---- OPERATOR ~=-------------------------------
 -----------------------------------------------
+
 --Q202
 k:= k+1;
 FOR i IN 1..10 LOOP
@@ -4182,6 +4181,7 @@ END LOOP;
 -----------------------------------------------
 ---- OPERATOR &&-------------------------------
 -----------------------------------------------
+
 --Q205
 k:= k+1;
 FOR i IN 1..10 LOOP
@@ -4242,10 +4242,10 @@ FOR i IN 1..10 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR @>-------------------------------
 -----------------------------------------------
+
 --Q208
 k:= k+1;
 FOR i IN 1..10 LOOP
@@ -4427,7 +4427,6 @@ FOR i IN 1..10 LOOP
 	Query:= 'Q' || k;
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 -----------------------------------------------
 ---- OPERATOR &&-------------------------------
@@ -4674,7 +4673,6 @@ FOR i IN 1..10 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR &&-------------------------------
 -----------------------------------------------
@@ -4735,7 +4733,6 @@ FOR i IN 1..10 LOOP
 	Query:= 'Q' || k;
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 -----------------------------------------------
 ---- OPERATOR @>-------------------------------
@@ -4981,7 +4978,6 @@ FOR i IN 1..10 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR @>-------------------------------
 -----------------------------------------------
@@ -5169,3 +5165,4 @@ RETURN 'THE END';
 END;
 $$ LANGUAGE 'plpgsql';
 
+-------------------------------------------------------------------------------
