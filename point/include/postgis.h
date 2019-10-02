@@ -44,7 +44,6 @@ extern Datum transform(PG_FUNCTION_ARGS);
 extern Datum buffer(PG_FUNCTION_ARGS);
 extern Datum centroid(PG_FUNCTION_ARGS);
 extern Datum geography_centroid(PG_FUNCTION_ARGS);
-extern Datum ST_GeometricMedian(PG_FUNCTION_ARGS);
 
 extern Datum geography_from_geometry(PG_FUNCTION_ARGS);
 extern Datum geometry_from_geography(PG_FUNCTION_ARGS);
@@ -56,22 +55,33 @@ extern Datum coveredby(PG_FUNCTION_ARGS);
 extern Datum crosses(PG_FUNCTION_ARGS);
 extern Datum disjoint(PG_FUNCTION_ARGS);
 extern Datum ST_Equals(PG_FUNCTION_ARGS);
+#if MOBDB_POSTGIS_VERSION >= 30
+extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum ST_3DIntersects(PG_FUNCTION_ARGS); /* For 3D */
+#else
 extern Datum intersects(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum intersects3d(PG_FUNCTION_ARGS); /* For 3D */
+#endif
 extern Datum overlaps(PG_FUNCTION_ARGS);
 extern Datum touches(PG_FUNCTION_ARGS);
 extern Datum within(PG_FUNCTION_ARGS);
 extern Datum relate_full(PG_FUNCTION_ARGS);
 extern Datum relate_pattern(PG_FUNCTION_ARGS);
 extern Datum geomunion(PG_FUNCTION_ARGS);
-extern Datum ST_Scale(PG_FUNCTION_ARGS);
-extern Datum ST_Snap(PG_FUNCTION_ARGS);
-extern Datum ST_UnaryUnion(PG_FUNCTION_ARGS);
 
+#if MOBDB_POSTGIS_VERSION >= 30
+extern Datum ST_Intersection(PG_FUNCTION_ARGS);
+#else
 extern Datum intersection(PG_FUNCTION_ARGS);
+#endif
 extern Datum difference(PG_FUNCTION_ARGS);
+#if MOBDB_POSTGIS_VERSION >= 30
+extern Datum ST_Distance(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum ST_3DDistance(PG_FUNCTION_ARGS); /* For 3D */
+#else
 extern Datum distance(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum distance3d(PG_FUNCTION_ARGS); /* For 3D */
+#endif
 extern Datum issimple(PG_FUNCTION_ARGS);
 
 extern Datum pgis_union_geometry_array(PG_FUNCTION_ARGS);

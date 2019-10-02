@@ -1515,7 +1515,11 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 static TemporalInst *
 tpointinst_at_geometry(TemporalInst *inst, Datum geom)
 {
+#if MOBDB_POSTGIS_VERSION >= 30
+	if (!DatumGetBool(call_function2(ST_Intersects, temporalinst_value(inst), geom)))
+#else	
 	if (!DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
+#endif
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -1529,7 +1533,11 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		Datum value = temporalinst_value(inst);
+#if MOBDB_POSTGIS_VERSION >= 30
+		if (DatumGetBool(call_function2(ST_Intersects, value, geom)))
+#else	
 		if (DatumGetBool(call_function2(intersects, value, geom)))
+#endif
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;
@@ -1553,7 +1561,11 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 	/* Constant sequence */
 	if (datum_point_eq(value1, value2))
 	{
+#if MOBDB_POSTGIS_VERSION >= 30
+		if (!DatumGetBool(call_function2(ST_Intersects, value1, geom)))
+#else	
 		if (!DatumGetBool(call_function2(intersects, value1, geom)))
+#endif
 		{
 			*count = 0;
 			return NULL;
@@ -1571,7 +1583,11 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 
 	/* Look for intersections */
 	Datum line = geompoint_trajectory(value1, value2);
+#if MOBDB_POSTGIS_VERSION >= 30
+	Datum intersections = call_function2(ST_Intersection, line, geom);
+#else	
 	Datum intersections = call_function2(intersection, line, geom);
+#endif
 	if (DatumGetBool(call_function1(LWGEOM_isempty, intersections)))
 	{
 		pfree(DatumGetPointer(line));
@@ -1825,7 +1841,11 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 static TemporalInst *
 tpointinst_minus_geometry(TemporalInst *inst, Datum geom)
 {
+#if MOBDB_POSTGIS_VERSION >= 30
+	if (DatumGetBool(call_function2(ST_Intersects, temporalinst_value(inst), geom)))
+#else	
 	if (DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
+#endif
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -1839,7 +1859,11 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		Datum value = temporalinst_value(inst);
+#if MOBDB_POSTGIS_VERSION >= 30
+		if (!DatumGetBool(call_function2(ST_Intersects, value, geom)))
+#else	
 		if (!DatumGetBool(call_function2(intersects, value, geom)))
+#endif
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;
