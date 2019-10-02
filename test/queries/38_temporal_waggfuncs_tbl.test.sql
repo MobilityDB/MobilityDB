@@ -1,6 +1,6 @@
-﻿/*****************************************************************************
- * TemporalInst
- *****************************************************************************/
+﻿-------------------------------------------------------------------------------
+-- TemporalInst
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tintinst;
@@ -17,7 +17,7 @@ from tbl_tintinst;
 select numSequences(wavg(inst, interval '5 minutes'))
 from tbl_tintinst;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(inst, interval '5 minutes'))
 from tbl_tfloatinst;
@@ -34,9 +34,9 @@ from tbl_tfloatinst;
 select numSequences(wavg(inst, interval '5 minutes'))
 from tbl_tfloatinst;
 
-/*****************************************************************************
- * TemporalI
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalI
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tinti;
@@ -53,7 +53,7 @@ from tbl_tinti;
 select numSequences(wavg(ti, interval '5 minutes'))
 from tbl_tinti;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(ti, interval '5 minutes'))
 from tbl_tfloati;
@@ -70,9 +70,9 @@ from tbl_tfloati;
 select numSequences(wavg(ti, interval '5 minutes'))
 from tbl_tfloati;
 
-/*****************************************************************************
- * TemporalSeq
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalSeq
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tintseq;
@@ -89,7 +89,7 @@ from tbl_tintseq;
 select numSequences(wavg(seq, interval '5 minutes'))
 from tbl_tintseq;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(seq, interval '5 minutes'))
 from tbl_tfloatseq;
@@ -100,9 +100,9 @@ from tbl_tfloatseq;
 select numSequences(wcount(seq, interval '5 minutes'))
 from tbl_tfloatseq;
 
-/*****************************************************************************
- * TemporalS
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- TemporalS
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tints;
@@ -119,7 +119,7 @@ from tbl_tints;
 select numSequences(wavg(ts, interval '5 minutes'))
 from tbl_tints;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 select numSequences(wmin(ts, interval '5 minutes'))
 from tbl_tfloats;
@@ -130,4 +130,4 @@ from tbl_tfloats;
 select numSequences(wcount(ts, interval '5 minutes'))
 from tbl_tfloats;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------

@@ -98,14 +98,15 @@ float_collinear(double x1, double x2, double x3,
 {
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3 = x2 + (x3 - x2) * ratio;
 	}
 	else if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1 = x1 + (x2 - x1) * ratio;
 	}
 	double d1 = x2 - x1;
@@ -120,9 +121,10 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double2 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double2_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio);
@@ -131,7 +133,7 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double2_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b = x1->b + (x2->b - x1->b) * ratio);
@@ -158,10 +160,12 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	void *tofree = NULL;
+	double ratio;
+	Datum line;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
-		Datum line = geompoint_trajectory(value2, value3);
+		ratio = duration1 / duration2;
+		line = geompoint_trajectory(value2, value3);
 		value3 = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line));
@@ -169,8 +173,8 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 	}
 	else if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
-		Datum line = geompoint_trajectory(value1, value2);
+		ratio = duration2 / duration1;
+		line = geompoint_trajectory(value1, value2);
 		value1 = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line)); 
@@ -214,9 +218,10 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double3 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double3_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio,
@@ -226,7 +231,7 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double3_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b + (x2->b - x1->b) * ratio,
@@ -256,9 +261,10 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double4 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double4_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio,
@@ -269,7 +275,7 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double4_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b + (x2->b - x1->b) * ratio,

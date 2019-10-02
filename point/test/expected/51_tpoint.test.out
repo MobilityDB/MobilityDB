@@ -339,9 +339,9 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
 (1 row)
 
 /* Errors */
-select tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
+SELECT tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
 ERROR:  typmod array must not contain nulls
-select tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
+SELECT tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
 ERROR:  typmod array must be one-dimensional
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1)@2000-01-01');
               asewkt               
@@ -535,77 +535,78 @@ SELECT asewkt(tgeompoint(SequenceSet, PointZ, 4326) 'SRID=4326;{[Point(0 1 0)@20
  SRID=4326;{[POINT Z (0 1 0)@2000-01-01 00:00:00+00, POINT Z (1 1 1)@2000-01-02 00:00:00+00], [POINT Z (0 1 0)@2000-01-03 00:00:00+00, POINT Z (1 1 1)@2000-01-04 00:00:00+00]}
 (1 row)
 
-select asewkt(tgeogpoint(Instant,PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
+SELECT asewkt(tgeogpoint(Instant,PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
                       asewkt                      
 --------------------------------------------------
  SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
 (1 row)
 
-select asewkt(tgeogpoint(PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
+SELECT asewkt(tgeogpoint(PointZ,4326) 'SRID=4326;Point(0 0 0)@2000-01-01');
                       asewkt                      
 --------------------------------------------------
  SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
 (1 row)
 
-select asewkt(tgeompoint(Point) 'Point(0 0)@2000-01-01');
+SELECT asewkt(tgeompoint(Point) 'Point(0 0)@2000-01-01');
               asewkt               
 -----------------------------------
  POINT(0 0)@2000-01-01 00:00:00+00
 (1 row)
 
-select asewkt(tgeogpoint(PointZ) 'Point(0 0 0)@2000-01-01');
+SELECT asewkt(tgeogpoint(PointZ) 'Point(0 0 0)@2000-01-01');
                       asewkt                      
 --------------------------------------------------
  SRID=4326;POINT Z (0 0 0)@2000-01-01 00:00:00+00
 (1 row)
 
 /* Errors */
-select tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid temporal point type modifier:
-LINE 2: select tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
+LINE 2: SELECT tgeompoint(Instant,PointZ,5676,1234) 'SRID=5676;Point...
                ^
-select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid duration type modifier: instan
-LINE 1: select tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
+LINE 1: SELECT tgeompoint(Instan,PointZ,5676) 'SRID=5676;Point(0 0 0...
                ^
-select tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid geometry type modifier: pointzz
-LINE 1: select tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0...
+LINE 1: SELECT tgeompoint(Instant,PointZZ,5676) 'SRID=5676;Point(0 0...
                ^
-select tgeompoint(Instant,Point,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,Point,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Temporal type has Z dimension but column does not
-select tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Only point geometries without M dimension accepted
-LINE 1: select tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0...
+LINE 1: SELECT tgeompoint(Instant,Polygon,5676) 'SRID=5676;Point(0 0...
                ^
-select tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid temporal point type modifier: pointzz
-LINE 1: select tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000...
+LINE 1: SELECT tgeompoint(PointZZ,5676) 'SRID=5676;Point(0 0 0)@2000...
                ^
-select tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Only point geometries without M dimension accepted
-LINE 1: select tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000...
+LINE 1: SELECT tgeompoint(Polygon,5676) 'SRID=5676;Point(0 0 0)@2000...
                ^
-select tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid geometry type modifier: pointzz
-LINE 1: select tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2...
+LINE 1: SELECT tgeompoint(Instant,PointZZ) 'SRID=5676;Point(0 0 0)@2...
                ^
-select tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Only point geometries without M dimension accepted
-LINE 1: select tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2...
+LINE 1: SELECT tgeompoint(Instant,Polygon) 'SRID=5676;Point(0 0 0)@2...
                ^
-select tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Invalid temporal point type modifier: pointzz
-LINE 1: select tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-0...
+LINE 1: SELECT tgeompoint(PointZZ) 'SRID=5676;Point(0 0 0)@2000-01-0...
                ^
-select tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
+SELECT tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-01';
 ERROR:  Only point geometries accepted
-LINE 1: select tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-0...
+LINE 1: SELECT tgeompoint(Polygon) 'SRID=5676;Point(0 0 0)@2000-01-0...
                ^
 SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}';
 ERROR:  Invalid temporal point type modifier: 1
 LINE 1: SELECT tgeompoint(1, 2) '{Point(1 1)@2000-01-01, Point(1 1)@...
                ^
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Column has Z dimension but temporal point does not
 SELECT asewkt(tgeompoint(Instant, Point, 4326) 'Point(0 1)@2000-01-01');
@@ -624,6 +625,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type has Z dimension but column does not
 SELECT asewkt(tgeompoint(Instant, PointZ, 4326) 'Point(0 1 0)@2000-01-01');
@@ -642,6 +644,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
@@ -660,6 +663,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) '{Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
@@ -678,6 +682,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) '{Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
@@ -696,6 +701,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) '[Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asewkt(tgeompoint(Instant, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
@@ -714,6 +720,7 @@ SELECT asewkt(tgeompoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
 	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -741,6 +748,7 @@ ERROR:  Temporal point SRID (5434) does not match column SRID (4326)
 SELECT asewkt(tgeompoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
 	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
+/* Errors */
 SELECT asewkt(tgeompoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
 	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -833,6 +841,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) 'Point(0 1)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type has Z dimension but column does not
 SELECT asewkt(tgeogpoint(InstantSet, Point) 'Point(0 1 0)@2000-01-01');
@@ -847,6 +856,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) 'Point(0 1 0)@2000-01-01');
 ERROR:  Temporal type (Instant) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
@@ -861,6 +871,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '{Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{Point(0 1)@2000-01-01, Point(1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
@@ -875,6 +886,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '{Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02}');
 ERROR:  Temporal type (InstantSet) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
@@ -889,6 +901,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '[Point(0 1)@2000-01-01, Point(1 1)
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (Instant)
 SELECT asewkt(tgeogpoint(Instant, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
@@ -903,6 +916,7 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '[Point(0 1 0)@2000-01-01, Point(1 
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 ERROR:  Temporal type (Sequence) does not match column type (SequenceSet)
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
 	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -924,6 +938,7 @@ ERROR:  Temporal type (SequenceSet) does not match column type (Sequence)
 SELECT asewkt(tgeogpoint(SequenceSet, PointZ) '{[Point(0 1)@2000-01-01, Point(1 1)@2000-01-02],
 	[Point(0 1)@2000-01-03, Point(1 1)@2000-01-04]}');
 ERROR:  Column has Z dimension but temporal point does not
+/* Errors */
 SELECT asewkt(tgeogpoint(Instant, Point) '{[Point(0 1 0)@2000-01-01, Point(1 1 1)@2000-01-02],
 	[Point(0 1 0)@2000-01-03, Point(1 1 1)@2000-01-04]}');
 ERROR:  Temporal type (SequenceSet) does not match column type (Instant)
@@ -1319,24 +1334,24 @@ SELECT astext(appendInstant(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2
  {[POINT Z (1.5 1.5 1.5)@2000-01-01 00:00:00+00, POINT Z (2.5 2.5 2.5)@2000-01-02 00:00:00+00, POINT Z (1.5 1.5 1.5)@2000-01-03 00:00:00+00], [POINT Z (3.5 3.5 3.5)@2000-01-04 00:00:00+00, POINT Z (3.5 3.5 3.5)@2000-01-05 00:00:00+00, POINT Z (1.5 1.5 1.5)@2000-01-06 00:00:00+00]}
 (1 row)
 
-select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-03'));
+SELECT astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-03'));
                                  astext                                 
 ------------------------------------------------------------------------
  [POINT(1 1)@2000-01-01 00:00:00+00, POINT(3 3)@2000-01-03 00:00:00+00]
 (1 row)
 
 /* Errors */
-select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
+SELECT astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  Invalid timestamps for temporal value
-select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
+SELECT astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-select astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+SELECT astext(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  All geometries composing a temporal point must be of the same SRID
-select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
+SELECT astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  Invalid timestamps for temporal value
-select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
+SELECT astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
 ERROR:  All geometries composing a temporal point must be of the same dimensionality
-select astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
+SELECT astext(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  All geometries composing a temporal point must be of the same SRID
 SELECT temporalType(tgeompoint 'Point(1 1)@2000-01-01');
  temporaltype 

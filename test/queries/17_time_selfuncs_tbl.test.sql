@@ -1,6 +1,6 @@
-﻿
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
 -- Test all operators without having collected statistics
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestampset '{2001-06-01, 2001-07-07}';
@@ -119,6 +119,7 @@ analyze tbl_timestampset;
 
 -------------------------------------------------------------------------------
 -- Test all operators after having collected statistics
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestamptz '2001-06-01';
 SELECT count(*) FROM tbl_timestampset WHERE ts @> timestampset '{2001-06-01, 2001-07-07}';
@@ -350,8 +351,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
@@ -370,7 +369,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -490,7 +488,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
@@ -549,11 +546,9 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR <@-------------------------------
 -----------------------------------------------
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -573,7 +568,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -651,8 +645,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
@@ -671,7 +663,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -692,7 +683,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
@@ -711,7 +701,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -735,7 +724,6 @@ END LOOP;
 -----------------------------------------------
 ---- OPERATOR &&-------------------------------
 -----------------------------------------------
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -832,7 +820,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriodset:= random_periodset('2000-10-01', '2002-1-31', 10, 10);
@@ -908,7 +895,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
 
 -----------------------------------------------
 ---- OPERATOR <<#------------------------------
@@ -1199,8 +1185,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
-
 -----------------------------------------------
 ---- OPERATOR #>>------------------------------
 -----------------------------------------------
@@ -1432,9 +1416,6 @@ FOR i IN 1..100 LOOP
 	Query:= 'Q' || k;		
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
-
-
-
 
 -----------------------------------------------
 ---- OPERATOR &<#------------------------------
@@ -1668,11 +1649,9 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR #&>------------------------------
 -----------------------------------------------
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -1826,7 +1805,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandTimestamp:= random_timestamptz('2000-10-01', '2002-1-31');
@@ -1903,11 +1881,9 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 -----------------------------------------------
 ---- OPERATOR -|-  ----------------------------
 -----------------------------------------------
-
 
 k:= k+1;
 FOR i IN 1..100 LOOP
@@ -2061,7 +2037,6 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 k:= k+1;
 FOR i IN 1..100 LOOP
 	RandPeriod:= random_period('2000-10-01', '2002-1-31', 10);
@@ -2100,8 +2075,8 @@ FOR i IN 1..100 LOOP
 	INSERT INTO execution_stats VALUES (Query, StartTime, QFilter, PlanRows, ActualRows, RowsRemovedByFilter, J);
 END LOOP;
 
-
 RETURN 'THE END'; 
 END;
 $$ LANGUAGE 'plpgsql';
 
+-------------------------------------------------------------------------------

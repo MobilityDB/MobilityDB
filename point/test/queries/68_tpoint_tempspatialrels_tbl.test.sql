@@ -150,9 +150,10 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE trelate(t1.temp, t2.temp, 'T*****FF*') IS NOT NULL;
 	
 -------------------------------------------------------------------------------
--- END IS NOT NULL;
+-- END;
 -- $$ LANGUAGE 'plpgsql';
 
--- select count(*)pg_afterend_pid()
+-- select pg_backend_pid()
 
--- select count(*)testTopologicalOps() 
+-- select testTopologicalOps() 
+-------------------------------------------------------------------------------
