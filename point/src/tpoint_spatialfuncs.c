@@ -638,7 +638,7 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 	{
 		if (replace)
 		{
-			int numpoints = DatumGetInt4(call_function1(LWGEOM_numpoints_linestring, traj));
+			int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring, traj));
 			return call_function3(LWGEOM_setpoint_linestring, traj, 
 				Int32GetDatum(numpoints - 1), point);
 		}
