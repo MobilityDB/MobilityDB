@@ -242,8 +242,8 @@ period_duration_secs(TimestampTz v1, TimestampTz v2)
 Interval *
 period_duration_internal(Period *p)
 {
-	return DatumGetIntervalP(call_function2(timestamp_mi, p->upper, 
-		p->lower));
+	return DatumGetIntervalP(call_function2(timestamp_mi, 
+		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
 }
 
 /*
@@ -637,7 +637,8 @@ PGDLLEXPORT Datum
 period_duration(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
-	Datum result = call_function2(timestamp_mi, p->upper, p->lower);
+	Datum result = call_function2(timestamp_mi, 
+		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
 	PG_RETURN_DATUM(result);
 }
 
@@ -834,9 +835,9 @@ period_hash_extended(PG_FUNCTION_ARGS)
 
 	/* Apply the hash function to each bound */
 	lower_hash = DatumGetUInt64(call_function2(hashint8extended, 
-		p->lower, seed));
+		TimestampTzGetDatum(p->lower), seed));
 	upper_hash = DatumGetUInt64(call_function2(hashint8extended, 
-		p->upper, seed));
+		TimestampTzGetDatum(p->upper), seed));
 
 	/* Merge hashes of flags and bounds */
 	result = DatumGetUInt64(hash_uint32_extended((uint32) flags,
