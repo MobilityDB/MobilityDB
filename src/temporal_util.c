@@ -255,7 +255,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 	memset(&flinfo, 0, sizeof(flinfo)) ;
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
-	InitFunctionCallInfoData(fcinfo, &flinfo, 3, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
 	fcinfo.arg[1] = arg2;
@@ -276,7 +276,7 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 	memset(&flinfo, 0, sizeof(flinfo)) ;
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
-	InitFunctionCallInfoData(fcinfo, &flinfo, 4, InvalidOid, NULL, NULL);
+	InitFunctionCallInfoData(fcinfo, &flinfo, 4, DEFAULT_COLLATION_OID, NULL, NULL);
 	fcinfo.arg[0] = arg1;
 	fcinfo.argnull[0] = false;
 	fcinfo.arg[1] = arg2;
