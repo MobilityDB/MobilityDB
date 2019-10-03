@@ -638,8 +638,9 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 	{
 		if (replace)
 		{
-			int numpoints = call_function1(LWGEOM_numpoints_linestring, traj);
-			return call_function3(LWGEOM_setpoint_linestring, traj, numpoints - 1, point);
+			int numpoints = DatumGetInt4(call_function1(LWGEOM_numpoints_linestring, traj));
+			return call_function3(LWGEOM_setpoint_linestring, traj, 
+				Int32GetDatum(numpoints - 1), point);
 		}
 		else
 			return call_function2(LWGEOM_addpoint, traj, point);
@@ -836,7 +837,8 @@ tpointseq_length(TemporalSeq *seq)
 		/* The next function call works for 2D and 3D */
 		result = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
 	else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
-		result = DatumGetFloat8(call_function2(geography_length, traj, BoolGetDatum(true)));
+		result = DatumGetFloat8(call_function2(geography_length, traj, 
+			BoolGetDatum(true)));
 	return result;
 }
 
@@ -1009,7 +1011,8 @@ tpointseq_speed1(TemporalSeq *seq)
 				/* The next function works for 2D and 3D */
 				length = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
 			else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
-				length = DatumGetFloat8(call_function2(geography_length, traj, BoolGetDatum(true)));
+				length = DatumGetFloat8(call_function2(geography_length, traj, 
+					BoolGetDatum(true)));
 			pfree(DatumGetPointer(traj)); 
 			speed = length / ((double)(inst2->t - inst1->t) / 1000000);
 		}
@@ -1528,8 +1531,7 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		Datum value = temporalinst_value(inst);
-		if (DatumGetBool(call_function2(intersects, value, geom)))
+		if (DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;
@@ -1838,8 +1840,7 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		Datum value = temporalinst_value(inst);
-		if (!DatumGetBool(call_function2(intersects, value, geom)))
+		if (!DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;
