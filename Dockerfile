@@ -1,4 +1,6 @@
 FROM kartoza/postgis:11.0-2.5
+ENV POSTGRES_DBNAME=mobilitydb
+ENV POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,mobilitydb
 WORKDIR /usr/local/src
 ADD . MobilityDB
 RUN apt-get update
