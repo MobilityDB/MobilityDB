@@ -4246,6 +4246,7 @@ WHERE S1.SumDist &lt;= ALL (
 -------------------------------------------------------------------------------
 -- Loads the BerlinMOD data in projected (2D) coordinates with SRID 5676
 -- https://epsg.io/5676
+-------------------------------------------------------------------------------
 
 DROP FUNCTION IF EXISTS berlinmod_load();
 CREATE OR REPLACE FUNCTION berlinmod_load(scale_factor text DEFAULT '0.005',
@@ -4479,6 +4480,7 @@ BEGIN
 	RETURN 'The End';
 END;
 $$ LANGUAGE 'plpgsql';
+-------------------------------------------------------------------------------
 				</programlisting>
 				The script above creates a procedure to load pregenerated BerlinMOD data (in CSV format and WGS84 coordinates) at various scale factors. The procedure has two parameters: the scale factor and the directory where the CSV files are located. It supposes by default that the scale factor is <varname>0.005</varname> and that the CSV files are located in the directory <varname>/usr/local/BerlinMOD/&lt;scale factor&gt;/</varname>. Notice that the procedure creates GiST indexes for the tables. Alternatively, SP-GiST indexes could be used. The procedure can be called, for example, as follows.
 				<programlisting>
