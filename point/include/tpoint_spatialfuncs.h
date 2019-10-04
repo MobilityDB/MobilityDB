@@ -14,9 +14,13 @@
 #define __TPOINT_SPATIALFUNCS_H__
 
 #include <postgres.h>
-#include <liblwgeom.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
+#if MOBDB_POSTGIS_VERSION < 30
+#include <liblwgeom.h>
+#else
+#include "postgis.h"
+#endif
 
 /*****************************************************************************/
 
