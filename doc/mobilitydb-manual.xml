@@ -574,7 +574,7 @@ SELECT periodset '{[2011-01-01, 2011-01-06], [2011-01-07, 2011-01-10]}' -
 					<programlisting>
 CREATE TABLE reservation (ReservationID integer PRIMARY KEY, RoomID integer, 
 	During period);
-CREATE INDEX reservation_during_idx ON reservation USING GIST (during);
+CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
 					</programlisting>
 			</para>
 			<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>.</para>
@@ -3619,12 +3619,62 @@ WHERE intersects(T.Trip, R.Geom);
 
 	<chapter id="tutorial">
 		<title>MobilityDB Tutorial</title>
-		<para>In order to illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a ZIP file <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">here</ulink>.</para>
+		<para>To illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a ZIP file <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">here</ulink>.</para>
 		
+		<sect1>
+			<title>Installation</title>
+
+			<para>For this tutorial we will use a Docker image containing MobilityDB and all its dependencies (including PostgreSQL and PostGIS). The container has a default database called <varname>mobilitydb</varname> with the MobilityDB extension installed where <varname>user = pw = docker</varname>. This presupposes that you have installed Docker into your computer. In that case, you can run the following command.
+				<programlisting>
+$ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
+				</programlisting>
+				In the above command
+				<itemizedlist>
+					<listitem><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</listitem>
+
+					<listitem><varname>-d</varname> runs the container in the background (detached mode)</listitem>
+
+					<listitem><varname>-p 25432:5432</varname> maps TCP port 5432 in the container to port 25432 on the Docker host (to prevent potential conflicts with any local database instance you may have). This is required because the database server listens for connections on port 5432 by default.
+					</listitem>
+
+					<listitem><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.
+					</listitem>
+				</itemizedlist>
+			</para>
+
+			<para>
+			Now we can launch any PostgreSQL administrative front-end to start using MobilityDB. Two traditional ones are the command-line tool <varname>psql</varname> and the graphical tool <varname>pgAdmin</varname>. We can launch <varname>psql</varname> as follows.
+				<programlisting>
+$ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
+				</programlisting>
+				In the above command
+				<itemizedlist>
+					<listitem><varname>docker exec -t -i mobilitydb psql</varname> tells Docker to allocate a pseudo-TTY, to keep STDIN open, and to execute in the container <varname>mobilitydb</varname> the command <varname>psql</varname>.</listitem>
+
+					<listitem><varname>-h localhost -p 5432 -d mobilitydb -U docker</varname> tells <varname>psql</varname>, respectively, the database server host, the server port, the database name, and the user name.</listitem>
+				</itemizedlist>
+				Note that you will be prompted to provide the password, which is also <varname>docker</varname>.
+			</para>
+
+			<para>
+			In order to launch <varname>pgAdmin</varname>, we need to know the IP address used by Docker with the following command.
+				<programlisting>
+$ docker-machine ip
+192.168.99.101
+				</programlisting>
+				Notice that the address obtained in your computer may be different from the one above. Now we can lauch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />.
+			</para>
+			<figure id="pgAdmin" float="1"><title>Configuration of a connexion to the docker image in pgAdmin.</title>
+				<mediaobject>
+					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
+				</mediaobject>
+			</figure>
+		</sect1>
+
 		<sect1>
 			<title>Loading the Data</title>
 
-			<para>The ZIP file contains a set of CSV files as follows:
+			<para>The ZIP file with the data for this tutorial contains a set of CSV files as follows:
 				<itemizedlist>
 					<listitem>
 						<para><varname>datamcar.csv</varname> with fields <varname>Moid</varname>, <varname>Licence</varname>, <varname>Type</varname>, and <varname>Model</varname> contains the vehicle descriptions (without position history).</para>
@@ -3662,7 +3712,7 @@ user@host:/home/mobilitydb/data/$ unzip berlinmod_data.zip
 			</para>
 
 			<para>
-			Then, we create the database and load MobilityDB by using the following command.
+			In the following, we can use the <varname>mobilitydb</varname> database provided in the container. This database has already installed the MobilityDB extension. Alternatively, you may use another database. In that case, you can install the MobilityDB extension in your database by using the following command.
 				<programlisting>
 CREATE EXTENSION MobilityDB CASCADE;
 				</programlisting>
@@ -3743,7 +3793,7 @@ SET Period = period(Tstart, Tend);
 COPY Points(PointId, PosX, PosY) FROM '/home/mobilitydb/data/querypoints.csv' 
 	DELIMITER  ',' CSV HEADER;
 UPDATE Points
-SET geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY), 4326), 5676);
+SET Geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY), 4326), 5676);
 COPY RegionsInput(RegionId, SegNo, XStart, YStart, XEnd, YEnd) FROM 
 	'/home/mobilitydb/data/queryregions.csv' DELIMITER  ',' CSV HEADER;
 				</programlisting>
@@ -3751,15 +3801,15 @@ COPY RegionsInput(RegionId, SegNo, XStart, YStart, XEnd, YEnd) FROM
 
 			<para>The following query is used to load table <varname>Regions</varname> from the data in table <varname>RegionsInput</varname>.
 				<programlisting>
-INSERT INTO Regions (RegionId, geom)
+INSERT INTO Regions (RegionId, Geom)
 WITH RegionsSegs AS
 (
 	SELECT RegionId, SegNo,
 		ST_Transform(ST_SetSRID(St_MakeLine(ST_MakePoint(XStart, YStart), 
-		ST_MakePoint(XEnd, YEnd)), 4326), 5676) AS geom
+		ST_MakePoint(XEnd, YEnd)), 4326), 5676) AS Geom
 	FROM RegionsInput
 )
-SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(geom ORDER BY SegNo)), 5676) AS geom
+SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(Geom ORDER BY SegNo)), 5676) AS Geom
 FROM RegionsSegs
 GROUP BY RegionId;
 				</programlisting>
@@ -3769,9 +3819,8 @@ GROUP BY RegionId;
 				<programlisting>
 INSERT INTO Trips
 SELECT CarId, TripId, tgeompointseq(array_agg(tgeompointinst(
-	ST_Transform(ST_SetSRID(ST_MakePoint(Lon,Lat), 4326), 5676), T)
-	ORDER BY t))
-FROM TripPoints
+	ST_Transform(ST_SetSRID(ST_MakePoint(Lon,Lat), 4326), 5676), T) ORDER BY T))
+FROM TripsInput
 GROUP BY CarId, TripId;
 				</programlisting>
 			There are a lot of nested functions, so reading from the innermost:
@@ -3824,6 +3873,131 @@ CREATE VIEW Trips1 AS SELECT * FROM Trips LIMIT 100;
 		</sect1>
 
 		<sect1>
+			<title>Loading the Data in Partitioned Tables</title>
+			<para>
+			PostgreSQL provides partitioning mechanisms so that large tables can be split in smaller physical tables. This may result in increased performance when querying and manipulating large tables. We will split the <varname>Trips</varname> table given in the previous section using list partitioning, where each partitition will contain all the trips that start at a particular date. For doing this, we use the procedure given next for automatically creating the partitions according to a date range.
+			</para>
+			<programlisting>
+CREATE OR REPLACE FUNCTION create_partitions_by_date(TableName TEXT, StartDate DATE,
+	EndDate DATE)
+RETURNS void AS $$
+DECLARE
+	d DATE;
+	PartitionName TEXT;
+BEGIN
+	IF NOT EXISTS
+		(SELECT 1
+		 FROM   information_schema.tables 
+		 WHERE  table_name = lower(TableName)) 
+	THEN
+		RAISE EXCEPTION 'Table % does not exist', TableName;
+	END IF;
+	IF StartDate &gt;= EndDate THEN
+		RAISE EXCEPTION 'The start date % must be before the end date %', StartDate, EndDate;
+	END IF;
+	d = StartDate;
+	WHILE d &lt;= EndDate 
+	LOOP
+		PartitionName = TableName || '_' || to_char(d, 'YYYY_MM_DD');
+		IF NOT EXISTS
+			(SELECT 1
+			 FROM   information_schema.tables 
+			 WHERE  table_name = lower(PartitionName))
+		THEN
+			EXECUTE format('CREATE TABLE %s PARTITION OF %s FOR VALUES IN (''%s'');', 
+				PartitionName, TableName, to_char(d, 'YYYY-MM-DD'));
+			RAISE NOTICE 'Partition % has been created', PartitionName;
+		END IF;
+		d = d + '1 day'::interval;
+	END LOOP;
+	RETURN;
+END
+$$ LANGUAGE plpgsql;
+			</programlisting>
+
+			<para>In order to partition table <varname>Trips</varname> by date we need to add an addition column <varname>TripDate</varname> to table <varname>TripsInput</varname>.
+				<programlisting>
+ALTER TABLE TripsInput ADD COLUMN TripDate DATE;
+UPDATE TripsInput T1 
+SET TripDate = T2.TripDate
+FROM (SELECT DISTINCT TripId, date_trunc('day', MIN(T) OVER (PARTITION BY TripId))
+	AS TripDate FROM TripsInput) T2
+WHERE T1.TripId = T2.TripId;
+				</programlisting>
+			Notice that the <varname>UPDATE</varname> statement above takes into account the fact that a trip may finish at a day later than the starting day.
+			</para>
+
+			<para>
+			The following statements create table <varname>Trips</varname> partitioned by date and the associated partitions.
+				<programlisting>
+CREATE TABLE Trips
+(
+	CarId integer NOT NULL,
+	TripId integer NOT NULL,
+	TripDate date,
+	Trip tgeompoint,
+	Traj geometry,
+	PRIMARY KEY (CarId, TripId, TripDate),
+	FOREIGN KEY (CarId) REFERENCES Cars (CarId) 
+) PARTITION BY LIST(TripDate);
+
+SELECT create_partitions_by_date('Trips', (SELECT MIN(TripDate) FROM TripsInput), 
+	(SELECT MAX(TripDate) FROM TripsInput));
+				</programlisting>
+			</para>
+
+			<para>
+			To see the partitions that have been created automatically we can use the following statement.
+				<programlisting>
+SELECT I.inhrelid::regclass AS child
+FROM   pg_inherits I
+WHERE  i.inhparent = 'trips'::regclass;
+				</programlisting>
+			In our case this would result in the following output.
+				<programlisting>
+"trips_2007_05_27"
+"trips_2007_05_28"
+"trips_2007_05_29"
+"trips_2007_05_30"
+				</programlisting>
+			</para>
+
+			<para>We modify the query that loads table <varname>Trips</varname> from the data in table <varname>TripsInput</varname> as follows.
+				<programlisting>
+INSERT INTO Trips
+SELECT CarId, TripId, TripDate, tgeompointseq(array_agg(tgeompointinst(
+	ST_Transform(ST_SetSRID(ST_MakePoint(Lon,Lat), 4326), 5676), T) ORDER BY T))
+FROM TripsInput
+GROUP BY CarId, TripId, TripDate;
+				</programlisting>
+			Then, we can define the indexes and the views on the table <varname>Trips</varname> as shown in the previous section.
+			</para>
+
+			<para>
+			An important advantange of the partitioning mechanism in PostgreSQL is that the constraints and the indexes defined on the <varname>Trips</varname> table are propagated to the partitions as shown next.
+			</para>
+			<programlisting>
+INSERT INTO Trips VALUES (1, 10, '2007-05-30', NULL);
+
+ERROR:  duplicate key value violates unique constraint "trips_2007_05_30_pkey"
+DETAIL:  Key (carid, TripId, tripdate)=(1, 10, 2007-05-30) already exists.
+
+EXPLAIN SELECT COUNT(*) from Trips where Trip &amp;&amp; period '[2007-05-28, 2007-05-29]';
+
+"Aggregate  (cost=59.95..59.96 rows=1 width=8)"
+"  ->  Append  (cost=0.14..59.93 rows=8 width=0)"
+"        ->  Index Scan using trips_2007_05_27_trip_idx on trips_2007_05_27  (cost=0.14..8.16 rows=1 width=0)"
+"              Index Cond: (trip &amp;&amp; 'STBOX T((,,2007-05-28 00:00:00+00),(,,2007-05-29 00:00:00+00))'::stbox)"
+"        ->  Index Scan using trips_2007_05_28_trip_idx on trips_2007_05_28  (cost=0.27..8.29 rows=1 width=0)"
+"              Index Cond: (trip &amp;&amp; 'STBOX T((,,2007-05-28 00:00:00+00),(,,2007-05-29 00:00:00+00))'::stbox)"
+"        ->  Index Scan using trips_2007_05_29_trip_idx on trips_2007_05_29  (cost=0.27..8.29 rows=1 width=0)"
+"              Index Cond: (trip &amp;&amp; 'STBOX T((,,2007-05-28 00:00:00+00),(,,2007-05-29 00:00:00+00))'::stbox)"
+[...]
+			</programlisting>
+
+		</sect1>
+
+		<sect1>
 			<title>Exploring the Data</title>
 			<para>In order to visualize the data with traditional tools such as <ulink url="https://qgis.org/">QGIS</ulink> we add to table <varname>Trip</varname> a column <varname>Traj</varname> of type <varname>geometry</varname> containing the trajectory of the trips.
 				<programlisting>
@@ -3842,12 +4016,13 @@ SELECT count(*) FROM Trips WHERE GeometryType(Traj) = 'LINESTRING';
 				</programlisting>
 			We can also determine the spatiotemporal extent of the data using the following query.
 				<programlisting>
-select extent(trip) from trips
--- "STBOX T((2983189.5, 5831006.5,2007-05-27 00:00:00+02),(3021179.8, 5860883,2007-05-31 00:00:00+02))"
+SELECT extent(Trip) from Trips
+-- "STBOX T((2983189.5, 5831006.5,2007-05-27 00:00:00+02),
+	(3021179.8, 5860883,2007-05-31 00:00:00+02))"
 				</programlisting>
 			</para>
 
-			<figure id="berlinmod_trips"><title>Visualisation of the trajectories of the trips in QGIS.</title>
+			<figure id="berlinmod_trips" float="1"><title>Visualisation of the trajectories of the trips in QGIS.</title>
 				<mediaobject>
 					<imageobject><imagedata scalefit="1" fileref='images/berlinmod_trips.png' /></imageobject>
 				</mediaobject>
@@ -3917,7 +4092,7 @@ FROM histogram;
 				The result of the above query is given in <xref linkend="histogram_length" />. 
 			</para>
 
-			<figure id="histogram_length"><title>Result of the query building an histogram of trip lengths.</title>
+			<figure id="histogram_length" float="1"><title>Result of the query building an histogram of trip lengths.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='80' fileref='images/histogram_length.png' /></imageobject>
 				</mediaobject>
@@ -4239,7 +4414,7 @@ WHERE S1.SumDist &lt;= ALL (
 		<para><ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> is a standard benchmark for moving object DBMSs. It provides a data generator, pregenerated benchmark data for different scale factors, and set of queries of two types: 17 range-style queries (called BerlinMOD/R), and 9 nearest-neighbours queries (called BerlinMOD/NN). The MobilityDB tutorial presented in <xref linkend="tutorial" /> and its associated data were based on BerlinMOD. However, its purpose was to show the capabilities of MobilityDB. In this appendix, we show how to load pregenerated BerlinMOD data on MobilityDB and how to express the 17 queries in BerlinMOD/R. Some of these queries were already presented in <xref linkend="tutorial" />.</para>
 
 		<sect1>
-			<title>Loading the data</title>
+			<title>Loading the Data</title>
 			The script for loading pregenerated data is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_load.sql">here</ulink>.
 			<para>
 				<programlisting>
@@ -4255,7 +4430,7 @@ RETURNS text AS $$
 DECLARE
 	fullpath text;
 BEGIN
-	fullpath := path || scale_factor || '/';
+	fullpath = path || scale_factor || '/';
 	DROP TABLE IF EXISTS streets;
 	CREATE TABLE streets
 	(
@@ -4265,12 +4440,12 @@ BEGIN
 		y1 double precision,
 		x2 double precision,
 		y2 double precision,
-		geom geometry(LineString, 5676)
+		Geom geometry(LineString, 5676)
 	);
 	EXECUTE format('COPY streets(StreetId, vmax, x1, y1, x2, y2) FROM ''%sstreets.csv'' 
 		DELIMITER '','' CSV HEADER', fullpath);
 	UPDATE streets
-	SET geom = ST_Transform(ST_SetSRID(ST_MakeLine(ARRAY[ST_MakePoint(x1, y1),
+	SET Geom = ST_Transform(ST_SetSRID(ST_MakeLine(ARRAY[ST_MakePoint(x1, y1),
 		ST_MakePoint(x2, y2)]), 4326), 5676);
 
 	DROP TABLE IF EXISTS Points CASCADE;
@@ -4279,18 +4454,17 @@ BEGIN
 		PointId integer,
 		PosX double precision,
 		PosY double precision,
-		geom geometry(Point, 5676)
+		Geom geometry(Point, 5676)
 	);
 	EXECUTE format('COPY Points(PointId, PosX, PosY) FROM ''%squerypoints.csv'' 
 		DELIMITER  '','' CSV HEADER', fullpath);
 	UPDATE Points
-	SET geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY), 4326), 5676);
+	SET Geom = ST_Transform(ST_SetSRID(ST_MakePoint(PosX, PosY), 4326), 5676);
 
-	DROP INDEX IF EXISTS Points_geom_idx;
-	CREATE INDEX Points_geom_idx ON Points USING gist(geom);
+	CREATE INDEX Points_geom_idx ON Points USING gist(Geom);
 		
-	CREATE VIEW Points1(PointId, PosX, PosY, geom) AS
-	SELECT PointId, PosX, PosY, geom
+	CREATE VIEW Points1(PointId, PosX, PosY, Geom) AS
+	SELECT PointId, PosX, PosY, Geom
 	FROM Points
 	LIMIT 10;
 
@@ -4311,24 +4485,23 @@ BEGIN
 	CREATE TABLE Regions
 	(
 		RegionId integer,
-		geom Geometry(Polygon, 5676)
+		Geom Geometry(Polygon, 5676)
 	);
-	INSERT INTO Regions (RegionId, geom)
+	INSERT INTO Regions (RegionId, Geom)
 	WITH RegionsSegs AS
 	(
 		SELECT RegionId, SegNo, ST_Transform(ST_SetSRID(St_MakeLine(
-			ST_MakePoint(XStart, YStart), ST_MakePoint(XEnd, YEnd)), 4326), 5676) AS geom
+			ST_MakePoint(XStart, YStart), ST_MakePoint(XEnd, YEnd)), 4326), 5676) AS Geom
 		FROM RegionsInput
 	)
-	SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(geom ORDER BY SegNo)), 5676) AS geom
+	SELECT RegionId, ST_Polygon(ST_LineMerge(ST_Union(Geom ORDER BY SegNo)), 5676) AS Geom
 	FROM RegionsSegs
 	GROUP BY RegionId;	
 
-	DROP INDEX IF EXISTS Regions_geom_idx;
-	CREATE INDEX Regions_geom_idx ON Regions USING gist(geom);
+	CREATE INDEX Regions_geom_idx ON Regions USING gist(Geom);
 
-	CREATE VIEW Regions1(RegionId, geom) AS
-	SELECT RegionId, geom
+	CREATE VIEW Regions1(RegionId, Geom) AS
+	SELECT RegionId, Geom
 	FROM Regions
 	LIMIT 10;
 	
@@ -4341,7 +4514,6 @@ BEGIN
 	EXECUTE format('COPY Instants(InstantId, Instant) FROM ''%squeryinstants.csv''
 		DELIMITER  '','' CSV HEADER', fullpath);
 
-	DROP INDEX IF EXISTS Instants_instant_btree_idx;
 	CREATE INDEX Instants_instant_btree_idx ON Instants USING btree(instant);
   
 	CREATE VIEW Instants1(InstantId, Instant) AS
@@ -4362,7 +4534,6 @@ BEGIN
 	UPDATE Periods
 	SET Period = period(BeginP,EndP);
 
-	DROP INDEX IF EXISTS Periods_Period_gist_idx;
 	CREATE INDEX Periods_Period_gist_idx ON Periods USING gist(Period);
 	
 	CREATE VIEW Periods1(PeriodId, BeginP, EndP, Period) AS
@@ -4395,7 +4566,6 @@ BEGIN
 	UPDATE Licences Q
 	SET CarId = ( SELECT C.CarId FROM Cars C WHERE C.Licence = Q.Licence );
 
-	DROP INDEX IF EXISTS Licences_CarId_idx;
 	CREATE INDEX Licences_CarId_idx ON Licences USING btree(CarId);
   
 	CREATE VIEW Licences1(LicenceId, Licence, CarId) AS
@@ -4411,38 +4581,38 @@ BEGIN
 	DROP TABLE IF EXISTS TripsInput CASCADE;
 	CREATE TABLE TripsInput
 	(
-		moid integer,
-		tripid integer,
-		tstart timestamp without time zone,
-		tend timestamp without time zone,
-		xstart double precision,
-		ystart double precision,
-		xend double precision,
-		yend double precision,
-		geom geometry(LineString)
+		CarId integer,
+		TripId integer,
+		TStart timestamp without time zone,
+		TEnd timestamp without time zone,
+		XStart double precision,
+		YStart double precision,
+		XEnd double precision,
+		YEnd double precision,
+		Geom geometry(LineString)
 	);
-	EXECUTE format('COPY TripsInput(moid, tripid, tstart, tend, xstart, ystart, xend, yend) 
+	EXECUTE format('COPY TripsInput(CarId, TripId, TStart, TEnd, XStart, YStart, XEnd, YEnd) 
 		FROM ''%strips.csv'' DELIMITER  '','' CSV HEADER', fullpath);
 	UPDATE TripsInput
-	SET geom = ST_Transform(ST_SetSRID(ST_MakeLine(ARRAY[ST_MakePoint(xstart, ystart),
-		ST_MakePoint(xend, yend)]), 4326), 5676);
+	SET Geom = ST_Transform(ST_SetSRID(ST_MakeLine(ARRAY[ST_MakePoint(XStart, YStart),
+		ST_MakePoint(XEnd, YEnd)]), 4326), 5676);
 
 	DROP TABLE IF EXISTS TripsInputInstants;
 	CREATE TABLE TripsInputInstants AS (
-	SELECT moid, tripid, tstart, xstart, ystart, 
-		ST_Transform(ST_SetSRID(ST_MakePoint(xstart, ystart), 4326), 5676) as geom
+	SELECT CarId, TripId, TStart, XStart, YStart, 
+		ST_Transform(ST_SetSRID(ST_MakePoint(XStart, YStart), 4326), 5676) as Geom
 	FROM TripsInput
 	UNION ALL
-	SELECT T1.moid, T1.tripid, T1.tend, T1.xend, T1.yend, 
-		ST_Transform(ST_SetSRID(ST_MakePoint(T1.xend, T1.yend), 4326), 5676) as geom
+	SELECT T1.CarId, T1.TripId, T1.TEnd, T1.XEnd, T1.YEnd, 
+		ST_Transform(ST_SetSRID(ST_MakePoint(T1.XEnd, T1.YEnd), 4326), 5676) as Geom
 	FROM TripsInput T1 INNER JOIN (
-		SELECT moid, tripid, max(tend) as MaxTend
+		SELECT CarId, TripId, max(TEnd) as MaxTend
 		FROM TripsInput 
-		GROUP BY moid, tripid
-	) T2 ON T1.moid = T2.moid AND T1.tripid = T2.tripid AND T1.tend = T2.MaxTend );
+		GROUP BY CarId, TripId
+	) T2 ON T1.CarId = T2.CarId AND T1.TripId = T2.TripId AND T1.TEnd = T2.MaxTend );
 	ALTER TABLE TripsInputInstants ADD COLUMN inst tgeompoint;
 	UPDATE TripsInputInstants
-	SET inst = tgeompointinst(geom, tstart);
+	SET inst = tgeompointinst(Geom, TStart);
 
 	DROP TABLE IF EXISTS Trips CASCADE;
 	CREATE TABLE Trips
@@ -4455,15 +4625,12 @@ BEGIN
 		FOREIGN KEY (CarId) REFERENCES Cars (CarId) 
 	);
 	INSERT INTO Trips
-		SELECT moid, tripid, tgeompointseq(array_agg(inst ORDER BY tstart))
+		SELECT CarId, TripId, tgeompointseq(array_agg(inst ORDER BY TStart))
 		FROM TripsInputInstants
-		GROUP BY moid, tripid;
+		GROUP BY CarId, TripId;
 	UPDATE Trips
 	SET Traj = trajectory(Trip);
 
-	DROP INDEX IF EXISTS Trips_CarId_idx;
-	DROP INDEX IF EXISTS Trips_pkey_idx;
-	DROP INDEX IF EXISTS Trips_gist_idx;
 	CREATE INDEX Trips_CarId_idx ON Trips USING btree(CarId);
 	CREATE UNIQUE INDEX Trips_pkey_idx ON Trips USING btree(CarId, TripId);
 	CREATE INDEX Trips_gist_idx ON Trips USING gist(trip);
@@ -4490,7 +4657,72 @@ SELECT berlinmod_load('0.05');
 		</sect1>
 
 		<sect1>
-			<title>Queries</title>
+			<title>Loading the Data in Partitioned Tables</title>
+			<para>As we discussed in <xref linkend="tutorial" />, partioning allows one to split a large table into smaller physical pieces. We show next how to modify the scripts given in the previous section to take advantage of partioning. We will partition the <varname>Trips</varname> table by date using list partitioning, where each partitition will contain all the trips that start at a particular date. We will use the procedure <varname>create_partitions_by_date</varname> shown in <xref linkend="tutorial" /> for automatically creating the partitions according to the date range of the corresponding scale factor.
+			</para>
+			<programlisting>
+[...]				
+DROP TABLE IF EXISTS TripsInput CASCADE;
+CREATE TABLE TripsInput
+(
+	CarId integer,
+	TripId integer,
+	TripDate date,
+	TStart timestamp without time zone,
+	TEnd timestamp without time zone,
+	XStart double precision,
+	YStart double precision,
+	XEnd double precision,
+	YEnd double precision,
+	Geom geometry(LineString)
+);
+EXECUTE format('COPY TripsInput(CarId, TripId, TStart, TEnd, XStart, YStart, XEnd, YEnd) 
+	FROM ''%strips.csv'' DELIMITER  '','' CSV HEADER', fullpath);
+UPDATE TripsInput
+SET Geom = ST_Transform(ST_SetSRID(ST_MakeLine(ARRAY[ST_MakePoint(XStart, YStart),
+		ST_MakePoint(XEnd, YEnd)]), 4326), 5676);
+UPDATE TripsInput T1 
+SET TripDate = T2.TripDate
+FROM (SELECT DISTINCT TripId, date_trunc('day', MIN(TStart) OVER 
+	(PARTITION BY TripId)) AS TripDate FROM TripsInput) T2
+WHERE T1.TripId = T2.TripId;
+[...]				
+DROP TABLE IF EXISTS Trips CASCADE;
+CREATE TABLE Trips
+(
+	CarId integer NOT NULL,
+	TripId integer NOT NULL,
+	TripDate date,
+	Trip tgeompoint,
+	Traj geometry,
+	PRIMARY KEY (CarId, TripId, TripDate),
+	FOREIGN KEY (CarId) REFERENCES Cars (CarId) 
+) PARTITION BY LIST(TripDate);
+
+-- Create the partitions 
+SELECT MIN(TripDate), MAX(TripDate) INTO mindate, maxdate FROM TripsInputInstants;
+PERFORM create_partitions_by_date('Trips', mindate, maxdate);
+
+INSERT INTO Trips(CarId, TripId, TripDate, Trip)
+SELECT CarId, TripId, TripDate, tgeompointseq(array_agg(inst ORDER BY TStart))
+FROM TripsInputInstants
+GROUP BY CarId, TripId, TripDate;
+UPDATE Trips
+SET Traj = trajectory(Trip);
+
+CREATE INDEX Trips_CarId_idx ON Trips USING btree(CarId);
+CREATE UNIQUE INDEX Trips_pkey_idx ON Trips USING btree(CarId, TripId, TripDate);
+CREATE INDEX Trips_gist_idx ON Trips USING gist(trip);
+[...]				
+			</programlisting>
+
+			<para>With respect to the script given in the previous section, we need to add an additional column <varname>TripDate</varname> to the tables <varname>TripsInput</varname>, <varname>TripsInputInstants</varname> (not shown), and <varname>Trips</varname> that will be used for partitioning.
+			</para>
+
+		</sect1>
+
+		<sect1>
+			<title>BerlinMOD/R Queries</title>
 			The script for querying BerlinMOD data loaded in MobilityDB with the BerlinMOD/R queries is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_queries.sql">here</ulink>.
 			<orderedlist>
 				<listitem>
@@ -4525,10 +4757,10 @@ ORDER BY L.Licence, I.InstantId;
 				<listitem>
 					<para>Which vehicles have passed the points from <varname>Points</varname>?</para>
 					<programlisting>
-SELECT DISTINCT P.PointId, P.geom, C.Licence
+SELECT DISTINCT P.PointId, P.Geom, C.Licence
 FROM Trips T, Cars C, Points P
-WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; P.geom
-AND ST_Intersects(trajectory(T.Trip), P.geom) 
+WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; P.Geom
+AND ST_Intersects(trajectory(T.Trip), P.Geom) 
 ORDER BY P.PointId, C.Licence;
 					</programlisting>
 				</listitem>
@@ -4562,14 +4794,14 @@ ORDER BY C1.Licence, C2.Licence;
 					<para>What are the licence plate numbers of the passenger cars that have reached the points from <varname>Points</varname> first of all passenger cars during the complete observation period?</para>
 					<programlisting>
 WITH Timestamps AS (
-	SELECT DISTINCT C.Licence, P.PointId, P.geom, 
-		MIN(startTimestamp(atValue(T.Trip,P.geom))) AS Instant
+	SELECT DISTINCT C.Licence, P.PointId, P.Geom, 
+		MIN(startTimestamp(atValue(T.Trip,P.Geom))) AS Instant
 	FROM Trips T, Cars C, Points1 P
 	WHERE T.CarId = C.CarId AND C.Type = 'passenger'
-	AND T.Trip &amp;&amp; P.geom AND ST_Intersects(trajectory(T.Trip), P.geom)
-	GROUP BY C.Licence, P.PointId, P.geom
+	AND T.Trip &amp;&amp; P.Geom AND ST_Intersects(trajectory(T.Trip), P.Geom)
+	GROUP BY C.Licence, P.PointId, P.Geom
 )
-SELECT T1.Licence, T1.PointId, T1.geom, T1.Instant
+SELECT T1.Licence, T1.PointId, T1.Geom, T1.Instant
 FROM Timestamps T1
 WHERE T1.Instant &lt;= ALL (
 	SELECT T2.Instant
@@ -4628,10 +4860,10 @@ ORDER BY QueryLicence, OtherLicence;
 				<listitem>
 					<para>Which vehicles passed a point from <varname>Points1</varname> at one of the instants from <varname>Instants1</varname>?</para>
 					<programlisting>
-SELECT P.PointId, P.geom, I.InstantId, I.Instant, C.Licence
+SELECT P.PointId, P.Geom, I.InstantId, I.Instant, C.Licence
 FROM Trips T, Cars C, Points1 P, Instants1 I
-WHERE T.CarId = C.CarId AND T.Trip @&gt; STBOX(P.geom, I.Instant)
-AND valueAtTimestamp(T.Trip, I.Instant) = P.geom
+WHERE T.CarId = C.CarId AND T.Trip @&gt; STBOX(P.Geom, I.Instant)
+AND valueAtTimestamp(T.Trip, I.Instant) = P.Geom
 ORDER BY P.PointId, I.InstantId, C.Licence;
 					</programlisting>
 				</listitem>
@@ -4639,13 +4871,13 @@ ORDER BY P.PointId, I.InstantId, C.Licence;
 				<listitem>
 					<para>Which vehicles met at a point from <varname>Points1</varname> at an instant from <varname>Instants1</varname>?</para>
 					<programlisting>
-SELECT DISTINCT P.PointId, P.geom, I.InstantId, I.Instant,
+SELECT DISTINCT P.PointId, P.Geom, I.InstantId, I.Instant,
 	C1.Licence AS Licence1, C2.Licence AS Licence2
 FROM Trips T1, Cars C1, Trips T2, Cars C2, Points1 P, Instants1 I
 WHERE T1.CarId = C1.CarId AND T2.CarId = C2.CarId AND T1.CarId &lt; T2.CarId 
-AND T1.Trip @&gt; STBOX(P.geom, I.Instant) AND T2.Trip @&gt; STBOX(P.geom, I.Instant)
-AND valueAtTimestamp(T1.Trip, I.Instant) = P.geom
-AND valueAtTimestamp(T2.Trip, I.Instant) = P.geom
+AND T1.Trip @&gt; STBOX(P.Geom, I.Instant) AND T2.Trip @&gt; STBOX(P.Geom, I.Instant)
+AND valueAtTimestamp(T1.Trip, I.Instant) = P.Geom
+AND valueAtTimestamp(T2.Trip, I.Instant) = P.Geom
 ORDER BY P.PointId, I.InstantId, C1.Licence, C2.Licence;
 					</programlisting>
 				</listitem>
@@ -4655,8 +4887,8 @@ ORDER BY P.PointId, I.InstantId, C1.Licence, C2.Licence;
 					<programlisting>
 SELECT DISTINCT R.RegionId, P.PeriodId, P.Period, C.Licence
 FROM Trips T, Cars C, Regions1 R, Periods1 P
-WHERE T.CarId = C.CarId AND T.trip &amp;&amp; STBOX(R.geom, P.Period)
-AND ST_Intersects(trajectory(atPeriod(T.Trip, P.Period)), R.geom)
+WHERE T.CarId = C.CarId AND T.trip &amp;&amp; STBOX(R.Geom, P.Period)
+AND ST_Intersects(trajectory(atPeriod(T.Trip, P.Period)), R.Geom)
 ORDER BY R.RegionId, P.PeriodId, C.Licence;
 					</programlisting>
 				</listitem>
@@ -4666,8 +4898,8 @@ ORDER BY R.RegionId, P.PeriodId, C.Licence;
 					<programlisting>
 SELECT DISTINCT R.RegionId, I.InstantId, I.Instant, C.Licence
 FROM Trips T, Cars C, Regions1 R, Instants1 I
-WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; STBOX(R.geom, I.Instant)
-AND ST_Contains(R.geom, valueAtTimestamp(T.Trip, I.Instant))
+WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; STBOX(R.Geom, I.Instant)
+AND ST_Contains(R.Geom, valueAtTimestamp(T.Trip, I.Instant))
 ORDER BY R.RegionId, I.InstantId, C.Licence;
 					</programlisting>
 				</listitem>
@@ -4675,10 +4907,10 @@ ORDER BY R.RegionId, I.InstantId, C.Licence;
 				<listitem>
 					<para>Which vehicles passed a point from <varname>Points1</varname> during a period from <varname>Periods1</varname>?</para>
 					<programlisting>
-SELECT DISTINCT PO.PointId, PO.geom, PR.PeriodId, PR.Period, C.Licence
+SELECT DISTINCT PO.PointId, PO.Geom, PR.PeriodId, PR.Period, C.Licence
 FROM Trips T, Cars C, Points1 PO, Periods1 PR
-WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; STBOX(PO.geom, PR.Period)
-AND ST_Intersects(trajectory(atPeriod(T.Trip, PR.Period)),PO.geom)
+WHERE T.CarId = C.CarId AND T.Trip &amp;&amp; STBOX(PO.Geom, PR.Period)
+AND ST_Intersects(trajectory(atPeriod(T.Trip, PR.Period)),PO.Geom)
 ORDER BY PO.PointId, PR.PeriodId, C.Licence;
 					</programlisting>
 				</listitem>
@@ -4689,9 +4921,9 @@ ORDER BY PO.PointId, PR.PeriodId, C.Licence;
 SELECT P.PeriodId, P.Period, R.RegionId, L1.Licence AS Licence1, L2.Licence AS Licence2
 FROM Trips T1, Licences1 L1, Trips T2, Licences2 L2, Periods1 P, Regions1 R
 WHERE T1.CarId = L1.CarId AND T2.CarId = L2.CarId AND L1.Licence &lt; L2.Licence
-AND T1.Trip &amp;&amp; STBOX(R.geom, P.Period) AND T2.Trip &amp;&amp; STBOX(R.geom, P.Period)
-AND ST_Intersects(trajectory(atPeriod(T1.Trip, P.Period)), R.geom)
-AND ST_Intersects(trajectory(atPeriod(T2.Trip, P.Period)), R.geom)
+AND T1.Trip &amp;&amp; STBOX(R.Geom, P.Period) AND T2.Trip &amp;&amp; STBOX(R.Geom, P.Period)
+AND ST_Intersects(trajectory(atPeriod(T1.Trip, P.Period)), R.Geom)
+AND ST_Intersects(trajectory(atPeriod(T2.Trip, P.Period)), R.Geom)
 AND tintersects(atPeriod(T1.Trip, P.Period), atPeriod(T2.Trip, P.Period)) @= FALSE
 ORDER BY PeriodId, RegionId, Licence1, Licence2;
 					</programlisting>
@@ -4703,7 +4935,7 @@ ORDER BY PeriodId, RegionId, Licence1, Licence2;
 WITH PointCount AS (
 	SELECT P.PointId, COUNT(DISTINCT T.CarId) AS Hits
 	FROM Trips T, Points P
-	WHERE ST_Intersects(trajectory(T.Trip), P.geom)
+	WHERE ST_Intersects(trajectory(T.Trip), P.Geom)
 	GROUP BY P.PointId 
 )
 SELECT PointId, Hits

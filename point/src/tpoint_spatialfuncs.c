@@ -2315,40 +2315,34 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Nearest approach distance
  *****************************************************************************/
 
-static double
-NAD_tpointinst_geo(TemporalInst *inst, Datum geo, 
-	Datum (*func)(Datum, Datum))
+static Datum
+NAD_tpointinst_geo(TemporalInst *inst, Datum geo, Datum (*func)(Datum, Datum))
 {
 	Datum traj = temporalinst_value(inst);
-	Datum result = DatumGetFloat8(func(traj, geo));
-	return result;
+	return func(traj, geo);
 }
 
-static double
-NAD_tpointi_geo(TemporalI *ti, Datum geo, 
-	Datum (*func)(Datum, Datum))
+static Datum
+NAD_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 {
 	Datum traj = tpointi_values(ti);
-	double result = DatumGetFloat8(func(traj, geo));
+	Datum result = func(traj, geo);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
 
-static double
-NAD_tpointseq_geo(TemporalSeq *seq, Datum geo, 
-	Datum (*func)(Datum, Datum))
+static Datum
+NAD_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 {
 	Datum traj = tpointseq_trajectory(seq);
-	double result = DatumGetFloat8(func(traj, geo));
-	return result;
+	return func(traj, geo);
 }
 
-static double
-NAD_tpoints_geo(TemporalS *ts, Datum geo, 
-	Datum (*func)(Datum, Datum))
+static Datum
+NAD_tpoints_geo(TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 {
 	Datum traj = tpoints_trajectory(ts);
-	double result = DatumGetFloat8(func(traj, geo));
+	Datum result = func(traj, geo);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
@@ -2444,7 +2438,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_FLOAT8(result);
+	PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************/
@@ -2466,11 +2460,11 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	double result = DatumGetFloat8(temporal_min_value_internal(dist));
+	Datum result = temporal_min_value_internal(dist);
 	pfree(dist);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_FLOAT8(result);
+	PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************
