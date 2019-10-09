@@ -168,6 +168,12 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
  * exported
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION < 110
+#define InitNonVacuumableSnapshot(snapshotdata, xmin_horizon)  \
+	((snapshotdata).satisfies = HeapTupleSatisfiesNonVacuumable, \
+	 (snapshotdata).xmin = (xmin_horizon))
+#endif
+
 /*
  * Get one endpoint datum (min or max depending on indexscandir) from the
  * specified index.  Return true if successful, false if index is empty.
