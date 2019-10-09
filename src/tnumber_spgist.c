@@ -447,10 +447,18 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 		
 		if (subtype == type_oid(T_INTRANGE))
 			intrange_to_tbox_internal(&queries[i],
+#if MOBDB_PGSQL_VERSION < 110
+				DatumGetRangeType(in->scankeys[i].sk_argument));
+#else
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+#endif
 		else if (subtype == type_oid(T_FLOATRANGE))
 			floatrange_to_tbox_internal(&queries[i],
+#if MOBDB_PGSQL_VERSION < 110
+				DatumGetRangeType(in->scankeys[i].sk_argument));
+#else
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
+#endif
 		else if (subtype == type_oid(T_TBOX))
 			memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument), sizeof(TBOX));
 		else if (temporal_type_oid(subtype))
@@ -576,13 +584,21 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		
 		if (subtype == type_oid(T_INTRANGE))
 		{
+#if MOBDB_PGSQL_VERSION < 110
+			RangeType *range = DatumGetRangeType(in->scankeys[i].sk_argument);
+#else
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+#endif
 			intrange_to_tbox_internal(&query, range);									  
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_FLOATRANGE))
 		{
+#if MOBDB_PGSQL_VERSION < 110
+			RangeType *range = DatumGetRangeType(in->scankeys[i].sk_argument);
+#else
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
+#endif
 			floatrange_to_tbox_internal(&query, range);									  
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}

@@ -2459,8 +2459,13 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	RangeType *valuerange = (DatumGetFloat8(value1) < DatumGetFloat8(value2)) ?
 		range_make(value1, value2, lower_incl, upper_incl, FLOAT8OID) :
 		range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);	
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType *intersect = DatumGetRangeType(call_function2(range_intersect, 
+		PointerGetDatum(valuerange), PointerGetDatum(range)));
+#else
 	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect, 
 		PointerGetDatum(valuerange), PointerGetDatum(range)));
+#endif
 	if (RangeIsEmpty(intersect))
 	{
 		pfree(valuerange);

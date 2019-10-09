@@ -442,8 +442,13 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 	hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
 	for (i = 0; i < nhist; i++)
 	{
+#if MOBDB_PGSQL_VERSION < 110
+		range_deserialize(typcache, DatumGetRangeType(hslot.values[i]),
+						  &hist_lower[i], &hist_upper[i], &empty);
+#else
 		range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
 						  &hist_lower[i], &hist_upper[i], &empty);
+#endif
 		/* The histogram should not contain any empty ranges */
 		if (empty)
 			elog(ERROR, "bounds histogram contains an empty range");
@@ -624,31 +629,39 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 static bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
-    Oid consttype = ((Const *) other)->consttype;
+	Oid consttype = ((Const *) other)->consttype;
 
-    if (consttype == INT4OID)
-        int_to_tbox_internal(box, ((Const *) other)->constvalue);
-    else if (consttype == FLOAT8OID)
-        float_to_tbox_internal(box, ((Const *) other)->constvalue);
-    else if (consttype == type_oid(T_INTRANGE))
-        intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_FLOATRANGE))
-        floatrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
-    else if (consttype == TIMESTAMPTZOID)
-        timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_TIMESTAMPSET))
-        timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_PERIOD))
-        period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
-    else if (consttype == type_oid(T_PERIODSET))
-        periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
-    else if (consttype == type_oid(T_TBOX))
-        memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
-    else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
-        temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
-    else
-        return false;
-    return true;
+	if (consttype == INT4OID)
+		int_to_tbox_internal(box, ((Const *) other)->constvalue);
+	else if (consttype == FLOAT8OID)
+		float_to_tbox_internal(box, ((Const *) other)->constvalue);
+	else if (consttype == type_oid(T_INTRANGE))
+ #if MOBDB_PGSQL_VERSION < 110
+	   intrange_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+#else
+	   intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+#endif
+	else if (consttype == type_oid(T_FLOATRANGE))
+#if MOBDB_PGSQL_VERSION < 110
+		floatrange_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+#else
+		floatrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+#endif
+	else if (consttype == TIMESTAMPTZOID)
+		timestamp_to_tbox_internal(box, DatumGetTimestampTz(((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_TIMESTAMPSET))
+		timestampset_to_tbox_internal(box, ((TimestampSet *)((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_PERIOD))
+		period_to_tbox_internal(box, (Period *) ((Const *) other)->constvalue);
+	else if (consttype == type_oid(T_PERIODSET))
+		periodset_to_tbox_internal(box, ((PeriodSet *)((Const *) other)->constvalue));
+	else if (consttype == type_oid(T_TBOX))
+		memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
+	else if (consttype == type_oid(T_TINT) || consttype == type_oid(T_TFLOAT))
+		temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+	else
+		return false;
+	return true;
 }
 
 /* Get the enum value associated to the operator */
@@ -669,10 +682,10 @@ tnumber_cachedop(Oid operator, CachedOp *cachedOp)
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
 			operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
-            {
-                *cachedOp = (CachedOp) i;
-                return true;
-            }
+			{
+				*cachedOp = (CachedOp) i;
+				return true;
+			}
 	}
 	return false;
 }
@@ -1092,9 +1105,9 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	}
 
 	/*
-     * If var is on the right, commute the operator, so that we can assume the
-     * var is on the left in what follows.
-     */
+	 * If var is on the right, commute the operator, so that we can assume the
+	 * var is on the left in what follows.
+	 */
 	if (!varonleft)
 	{
 		/* we have other Op var, commute to make var Op other */
@@ -1107,13 +1120,13 @@ tnumber_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-    /* 
+	/* 
 	 * Transform the constant into a TBOX 
 	 */
-    memset(&constBox, 0, sizeof(TBOX));
-    found = tnumber_const_to_tbox(other, &constBox);
-    /* In the case of unknown constant */
-    if (!found)
+	memset(&constBox, 0, sizeof(TBOX));
+	found = tnumber_const_to_tbox(other, &constBox);
+	/* In the case of unknown constant */
+	if (!found)
 		PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
 
 	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
