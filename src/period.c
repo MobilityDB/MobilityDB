@@ -824,6 +824,9 @@ PG_FUNCTION_INFO_V1(period_hash_extended);
 PGDLLEXPORT Datum
 period_hash_extended(PG_FUNCTION_ARGS)
 {
+#if MOBDB_PGSQL_VERSION < 110
+		elog(ERROR, "This function is only available for PostgreSQL versions > 11.0");
+#else
 	Period	   *p = PG_GETARG_PERIOD(0);
 	Datum		seed = PG_GETARG_DATUM(1);
 	uint64		result;
@@ -851,6 +854,7 @@ period_hash_extended(PG_FUNCTION_ARGS)
 	result ^= upper_hash;
 
 	PG_RETURN_UINT64(result);
+#endif
 }
  
 /*****************************************************************************/
