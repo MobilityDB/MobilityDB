@@ -18,6 +18,7 @@
 #define TEMPORAL_OIDCACHE_H
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type.h>
 
 /*
