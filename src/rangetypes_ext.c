@@ -80,7 +80,7 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 	else if (basetypid == FLOAT8OID)
 		rangetypid = type_oid(T_FLOATRANGE);
 	else if (basetypid == TIMESTAMPTZOID)
-		rangetypid = TSTZRANGEOID;
+		rangetypid = type_oid(T_TSTZRANGE);
 	
 	TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
 
