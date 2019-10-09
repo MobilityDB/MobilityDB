@@ -14,7 +14,9 @@
 #define __PERIOD_H__
 
 #include <postgres.h>
+#include <lib/stringinfo.h>
 #include <catalog/pg_type.h>
+
 #include "timetypes.h"
 
 /*****************************************************************************/

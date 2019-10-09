@@ -15,6 +15,8 @@
 
 /*****************************************************************************/
 
+#include <utils/array.h>
+
 #include "temporal.h"
 #include "temporalinst.h"
 #include "temporali.h"
