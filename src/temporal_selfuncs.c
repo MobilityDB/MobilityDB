@@ -31,7 +31,11 @@
 #include <access/relscan.h>
 #include <access/visibilitymap.h>
 #include <access/skey.h>
+#if MOBDB_PGSQL_VERSION < 110
+#include <catalog/pg_collation.h>
+#else
 #include <catalog/pg_collation_d.h>
+#endif
 #include <executor/tuptable.h>
 #include <optimizer/paths.h>
 #include <storage/bufmgr.h>
