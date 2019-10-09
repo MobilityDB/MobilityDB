@@ -14,6 +14,7 @@
 #define __TIME_ANALYZE_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type.h>
 
 /* 

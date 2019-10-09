@@ -15,6 +15,7 @@
 #define __TEMPORAL_MATHFUNCS_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type.h>
 
 /*****************************************************************************/

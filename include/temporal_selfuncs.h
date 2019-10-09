@@ -14,6 +14,7 @@
 #define __TEMPORAL_SELFUNCS_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
 #include <utils/lsyscache.h>
