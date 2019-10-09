@@ -2460,7 +2460,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 		range_make(value1, value2, lower_incl, upper_incl, FLOAT8OID) :
 		range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);	
 	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect, 
-		RangeTypePGetDatum(valuerange), RangeTypePGetDatum(range)));
+		PointerGetDatum(valuerange), PointerGetDatum(range)));
 	if (RangeIsEmpty(intersect))
 	{
 		pfree(valuerange);

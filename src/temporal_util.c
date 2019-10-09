@@ -425,8 +425,8 @@ period_sort_cmp(Period **l, Period **r)
 static int
 range_sort_cmp(RangeType **l, RangeType **r)
 {
-	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
-										RangeTypePGetDatum(*r)));
+	return DatumGetInt32(call_function2(range_cmp, PointerGetDatum(*l),
+										PointerGetDatum(*r)));
 }
 
 static int

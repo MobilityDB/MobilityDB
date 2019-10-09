@@ -984,7 +984,7 @@ tnumbers_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		if (MOBDB_FLAGS_GET_X(box->flags))
 		{
 			value_oprid = oper_oid(EQ_OP, valuetypid, valuetypid);
-			selec *= var_eq_const(vardata, value_oprid, RangeTypePGetDatum(range),
+			selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(range),
 				false, false, false);
 		}
 		/* Selectivity for the time dimension */
