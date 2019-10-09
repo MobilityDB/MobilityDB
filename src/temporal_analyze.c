@@ -84,10 +84,11 @@
 #include <access/tuptoaster.h>
 #if MOBDB_PGSQL_VERSION < 110
 #include <catalog/pg_collation.h>
+#include <catalog/pg_operator.h>
 #else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <catalog/pg_operator_d.h>
+#endif
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
