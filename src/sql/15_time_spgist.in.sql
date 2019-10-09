@@ -30,6 +30,7 @@ CREATE FUNCTION spgist_period_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#if MOBDB_PGSQL_VERSION >= 110
 CREATE FUNCTION spgist_timestampset_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
@@ -38,7 +39,8 @@ CREATE FUNCTION spgist_periodset_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-	
+#endif
+
 /******************************************************************************/
 
 CREATE OPERATOR CLASS spgist_timestampset_ops
@@ -81,8 +83,10 @@ CREATE OPERATOR CLASS spgist_timestampset_ops
 	FUNCTION	3	spgist_period_picksplit(internal, internal),
 	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
 	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
+#if MOBDB_PGSQL_VERSION >= 110
 	FUNCTION	6	spgist_timestampset_compress(internal);
-	
+#endif
+
 /******************************************************************************/
 
 CREATE OPERATOR CLASS spgist_period_ops
@@ -169,6 +173,8 @@ CREATE OPERATOR CLASS spgist_periodset_ops
 	FUNCTION	3	spgist_period_picksplit(internal, internal),
 	FUNCTION	4	spgist_period_inner_consistent(internal, internal),
 	FUNCTION	5	spgist_period_leaf_consistent(internal, internal),
+#if MOBDB_PGSQL_VERSION >= 110
 	FUNCTION	6	spgist_periodset_compress(internal);
+#endif
 
 /******************************************************************************/

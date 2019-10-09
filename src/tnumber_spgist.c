@@ -294,7 +294,9 @@ spgist_tnumber_config(PG_FUNCTION_ARGS)
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 	cfg->prefixType = type_oid(T_TBOX);	/* A type represented by its bounding box */
 	cfg->labelType = VOIDOID;	/* We don't need node labels. */
+#if MOBDB_PGSQL_VERSION >= 110
 	cfg->leafType = type_oid(T_TBOX);
+#endif
 	cfg->canReturnData = false;
 	cfg->longValuesOK = false;
 	PG_RETURN_VOID();
@@ -628,6 +630,7 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110
 PG_FUNCTION_INFO_V1(spgist_tnumber_compress);
 
 PGDLLEXPORT Datum
@@ -639,5 +642,6 @@ spgist_tnumber_compress(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TBOX_P(box);
 }
+#endif
 
 /*****************************************************************************/

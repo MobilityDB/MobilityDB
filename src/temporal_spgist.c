@@ -324,6 +324,7 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110
 PG_FUNCTION_INFO_V1(spgist_temporal_compress);
 
 PGDLLEXPORT Datum
@@ -337,5 +338,6 @@ spgist_temporal_compress(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_PERIOD(period);
 }
+#endif
 
 /*****************************************************************************/
