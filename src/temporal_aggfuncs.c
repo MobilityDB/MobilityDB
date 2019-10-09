@@ -529,18 +529,30 @@ static void
 aggstate_write(SkipList *state, StringInfo buf)
 {
 	Temporal **values = skiplist_values(state);
+#if MOBDB_PGSQL_VERSION < 110
+	pq_sendint(buf, (uint32) state->length, 4);
+#else
 	pq_sendint32(buf, (uint32) state->length);
+#endif
 	Oid valuetypid = InvalidOid;
 	if (state->length > 0)
 		valuetypid = values[0]->valuetypid;
+#if MOBDB_PGSQL_VERSION < 110
+	pq_sendint(buf, valuetypid, 4);
+#else
 	pq_sendint32(buf, valuetypid);
+#endif
     for (int i = 0; i < state->length; i ++)
 	{
         SPI_connect();
         temporal_write(values[i], buf);
         SPI_finish();
     }
+#if MOBDB_PGSQL_VERSION < 110
+	pq_sendint(buf, state->extrasize, 8);
+#else
 	pq_sendint64(buf, state->extrasize);
+#endif
 	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);
 	pfree(values);

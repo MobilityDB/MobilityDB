@@ -40,10 +40,6 @@
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
-#if MOBDB_PGSQL_VERSION < 110
-#define pq_sendint32 pq_sendint
-#endif
-
 /*****************************************************************************
  * Duration of temporal types
  *****************************************************************************/

@@ -434,7 +434,11 @@ temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum))
 void
 temporali_write(TemporalI *ti, StringInfo buf)
 {
+#if MOBDB_PGSQL_VERSION < 110
 	pq_sendint(buf, ti->count, 4);
+#else
+	pq_sendint32(buf, ti->count);
+#endif
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);

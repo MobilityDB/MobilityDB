@@ -208,7 +208,11 @@ temporalinst_write(TemporalInst *inst, StringInfo buf)
 	bytea *bt = call_send(TIMESTAMPTZOID, inst->t);
 	bytea *bv = call_send(inst->valuetypid, temporalinst_value(inst));
 	pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
+#if MOBDB_PGSQL_VERSION < 110
+	pq_sendint(buf, VARSIZE(bv) - VARHDRSZ, 4) ;
+#else
 	pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
+#endif
 	pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
 }
 

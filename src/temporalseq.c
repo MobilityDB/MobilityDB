@@ -1381,7 +1381,11 @@ temporalseq_to_string(TemporalSeq *seq, char *(*value_out)(Oid, Datum))
 void
 temporalseq_write(TemporalSeq *seq, StringInfo buf)
 {
+#if MOBDB_PGSQL_VERSION < 110
 	pq_sendint(buf, seq->count, 4);
+#else
+	pq_sendint32(buf, seq->count);
+#endif
 	pq_sendbyte(buf, seq->period.lower_inc);
 	pq_sendbyte(buf, seq->period.upper_inc);
 	for (int i = 0; i < seq->count; i++)

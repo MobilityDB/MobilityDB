@@ -650,7 +650,11 @@ temporal_out(PG_FUNCTION_ARGS)
 
 void temporal_write(Temporal *temp, StringInfo buf) 
 {
+#if MOBDB_PGSQL_VERSION < 110
 	pq_sendint(buf, temp->duration, 2);
+#else
+	pq_sendint16(buf, temp->duration);
+#endif
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		temporalinst_write((TemporalInst *) temp, buf);
