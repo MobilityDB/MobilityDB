@@ -167,10 +167,10 @@ rangearr_normalize(RangeType **ranges, int *count)
 		if (range_overlaps_internal(typcache, current, range) ||
 			range_adjacent_internal(typcache, current, range)) 
 		{
-			RangeType *r = range_union_internal(typcache, current, range, true);
+			RangeType *range1 = range_union_internal(typcache, current, range, true);
 			if (!copy)
 				pfree(current);
-			current = r;
+			current = range1;
 			copy = false;
 		} 
 		else 
@@ -206,15 +206,19 @@ PG_FUNCTION_INFO_V1(intrange_canonical);
 Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TypeCacheEntry *typcache;
 	RangeBound	lower;
 	RangeBound	upper;
 	bool		empty;
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 	if (empty)
-		PG_RETURN_RANGE_P(r);
+		PG_RETURN_RANGE_P(range);
 	if (!lower.infinite && !lower.inclusive)
 	{
 		lower.val = DirectFunctionCall2(int4pl, lower.val, Int32GetDatum(1));
@@ -232,14 +236,14 @@ intrange_canonical(PG_FUNCTION_ARGS)
 
 /* strictly left of element? (internal version) */
 bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_left_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 	int32		cmp;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any other range */
 	if (empty)
@@ -264,24 +268,28 @@ PG_FUNCTION_INFO_V1(range_left_elem);
 PGDLLEXPORT Datum
 range_left_elem(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Datum		val = PG_GETARG_DATUM(1);
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
 }
 
 /* does not extend to right of element? (internal version) */
 bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_overleft_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any element */
 	if (empty)
@@ -304,25 +312,29 @@ PG_FUNCTION_INFO_V1(range_overleft_elem);
 PGDLLEXPORT Datum
 range_overleft_elem(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Datum		val = PG_GETARG_DATUM(1);
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_overleft_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_overleft_elem_internal(typcache, range, val));
 }
 
 /* strictly right of element? (internal version) */
 bool
-range_right_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_right_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 	int32		cmp;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any other range */
 	if (empty)
@@ -347,24 +359,28 @@ PG_FUNCTION_INFO_V1(range_right_elem);
 PGDLLEXPORT Datum
 range_right_elem(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Datum		val = PG_GETARG_DATUM(1);
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
 }
 
 /* does not extend to left of element? (internal version) */
 bool
-range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_overright_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any element */
 	if (empty)
@@ -387,18 +403,22 @@ PG_FUNCTION_INFO_V1(range_overright_elem);
 Datum
 range_overright_elem(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Datum		val = PG_GETARG_DATUM(1);
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_overright_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_overright_elem_internal(typcache, range, val));
 }
 
 /* adjacent to element (but not overlapping)? (internal version) */
 bool
-range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
+range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *range, Datum val)
 {
 	RangeBound	lower,
 				upper;
@@ -406,7 +426,7 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
 	RangeBound 	elembound;
 	bool		isadj;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is not adjacent to any element */
 	if (empty)
@@ -431,13 +451,17 @@ PG_FUNCTION_INFO_V1(range_adjacent_elem);
 PGDLLEXPORT Datum
 range_adjacent_elem(PG_FUNCTION_ARGS)
 {
-	RangeType  *r = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Datum		val = PG_GETARG_DATUM(1);
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, range, val));
 }
 
 /******************************************************************************/
@@ -449,23 +473,27 @@ PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_right_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_right_elem_internal(typcache, range, val));
 }
 
 /* element does not extend to right of? (internal version) */
 bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *r)
+elem_overleft_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any element */
 	if (empty)
@@ -489,12 +517,16 @@ PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(elem_overleft_range_internal(typcache, val, r));
+	PG_RETURN_BOOL(elem_overleft_range_internal(typcache, val, range));
 }
 
 /* element strictly right of? */
@@ -504,23 +536,27 @@ PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_left_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_left_elem_internal(typcache, range, val));
 }
 
 /* element does not extend to left of? (internal version) */
 bool
-elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *r)
+elem_overright_range_internal(TypeCacheEntry *typcache, Datum val, RangeType *range)
 {
 	RangeBound	lower,
 				upper;
 	bool		empty;
 
-	range_deserialize(typcache, r, &lower, &upper, &empty);
+	range_deserialize(typcache, range, &lower, &upper, &empty);
 
 	/* An empty range is neither left nor right any element */
 	if (empty)
@@ -544,12 +580,16 @@ Datum
 elem_overright_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(elem_overright_range_internal(typcache, val, r));
+	PG_RETURN_BOOL(elem_overright_range_internal(typcache, val, range));
 }
 
 /* element adjacent to? */
@@ -559,12 +599,16 @@ PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-	RangeType  *r = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TypeCacheEntry *typcache;
 
-	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 
-	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, r, val));
+	PG_RETURN_BOOL(range_adjacent_elem_internal(typcache, range, val));
 }
 
 /******************************************************************************/

@@ -2083,7 +2083,11 @@ PGDLLEXPORT Datum
 tnumber_at_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -2113,7 +2117,11 @@ PGDLLEXPORT Datum
 tnumber_minus_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 

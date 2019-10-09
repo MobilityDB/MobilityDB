@@ -524,7 +524,11 @@ PG_FUNCTION_INFO_V1(tstzrange_as_period);
 PGDLLEXPORT Datum
 tstzrange_as_period(PG_FUNCTION_ARGS)
 {
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TypeCacheEntry *typcache;
 	char		flags = range_get_flags(range);
 	RangeBound	lower;

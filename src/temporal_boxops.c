@@ -600,7 +600,11 @@ PG_FUNCTION_INFO_V1(intrange_to_tbox);
 PGDLLEXPORT Datum
 intrange_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TBOX *result = palloc0(sizeof(TBOX));
 	intrange_to_tbox_internal(result, range);
 	PG_RETURN_POINTER(result);
@@ -623,7 +627,11 @@ PG_FUNCTION_INFO_V1(floatrange_to_tbox);
 PGDLLEXPORT Datum
 floatrange_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TBOX *result = palloc0(sizeof(TBOX));
 	floatrange_to_tbox_internal(result, range);
 	PG_RETURN_POINTER(result);
@@ -803,7 +811,11 @@ PG_FUNCTION_INFO_V1(intrange_timestamp_to_tbox);
 PGDLLEXPORT Datum 
 intrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	TBOX *result = palloc0(sizeof(TBOX));
 	result->xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -822,7 +834,11 @@ PG_FUNCTION_INFO_V1(floatrange_timestamp_to_tbox);
 PGDLLEXPORT Datum 
 floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	TBOX *result = palloc0(sizeof(TBOX));
 	result->xmin = DatumGetFloat8(lower_datum(range));
@@ -841,7 +857,11 @@ PG_FUNCTION_INFO_V1(intrange_period_to_tbox);
 PGDLLEXPORT Datum 
 intrange_period_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Period *p = PG_GETARG_PERIOD(1);
 	TBOX *result = palloc0(sizeof(TBOX));
 	result->xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -861,7 +881,11 @@ PG_FUNCTION_INFO_V1(floatrange_period_to_tbox);
 PGDLLEXPORT Datum 
 floatrange_period_to_tbox(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Period *p = PG_GETARG_PERIOD(1);
 	TBOX *result = palloc0(sizeof(TBOX));
 	result->xmin = DatumGetFloat8(lower_datum(range));
@@ -1070,7 +1094,11 @@ PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
@@ -1089,7 +1117,11 @@ PGDLLEXPORT Datum
 contains_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -1156,7 +1188,11 @@ PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
@@ -1175,7 +1211,11 @@ PGDLLEXPORT Datum
 contained_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -1242,7 +1282,11 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
@@ -1261,7 +1305,11 @@ PGDLLEXPORT Datum
 overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -1329,7 +1377,11 @@ PGDLLEXPORT Datum
 same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -1346,7 +1398,11 @@ PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
 PGDLLEXPORT Datum
 same_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));

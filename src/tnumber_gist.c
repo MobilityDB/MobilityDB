@@ -948,7 +948,11 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	 */
 	if (subtype == type_oid(T_INTRANGE))
 	{
-		RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
 		intrange_to_tbox_internal(&query, range);
@@ -956,7 +960,11 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	}
 	else if (subtype == type_oid(T_FLOATRANGE))
 	{
-		RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 		if (range == NULL)
 			PG_RETURN_BOOL(false);
 		floatrange_to_tbox_internal(&query, range);
