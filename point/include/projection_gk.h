@@ -14,6 +14,7 @@
 #define __PROJECTION_GK_H__
 
 #include <postgres.h>
+#include <fmgr.h>
 #include <catalog/pg_type.h>
 
 /*****************************************************************************/
