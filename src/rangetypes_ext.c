@@ -218,7 +218,11 @@ intrange_canonical(PG_FUNCTION_ARGS)
 	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 	range_deserialize(typcache, range, &lower, &upper, &empty);
 	if (empty)
+#if MOBDB_PGSQL_VERSION < 110
+		PG_RETURN_RANGE(range);
+#else
 		PG_RETURN_RANGE_P(range);
+#endif
 	if (!lower.infinite && !lower.inclusive)
 	{
 		lower.val = DirectFunctionCall2(int4pl, lower.val, Int32GetDatum(1));
@@ -229,7 +233,11 @@ intrange_canonical(PG_FUNCTION_ARGS)
 		upper.val = DirectFunctionCall2(int4pl, upper.val, Int32GetDatum(1));
 		upper.inclusive = false;
 	}
+#if MOBDB_PGSQL_VERSION < 110
+	PG_RETURN_RANGE(range_serialize(typcache, &lower, &upper, false));
+#else
 	PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
+#endif
 }
 
 /*****************************************************************************/

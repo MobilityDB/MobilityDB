@@ -1286,7 +1286,11 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *result = tnumber_value_range_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
+#if MOBDB_PGSQL_VERSION < 110
+	PG_RETURN_RANGE(result);
+#else
 	PG_RETURN_RANGE_P(result);
+#endif
 }
 
 /* Start value */
