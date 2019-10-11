@@ -85,7 +85,8 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 	for (int i = 1; i <= countinter; i++) 
 	{
 		/* Find the i-th intersection */
-		Datum inter = call_function2(LWGEOM_geometryn_collection, intersections, i);
+		Datum inter = call_function2(LWGEOM_geometryn_collection, intersections, 
+			Int32GetDatum(i));
 		GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
 		if (gserialized_get_type(gsinter) == POINTTYPE)
 		{

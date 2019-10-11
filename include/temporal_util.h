@@ -38,10 +38,10 @@ extern Datum call_input(Oid type, char *str);
 extern char *call_output(Oid type, Datum value);
 extern bytea *call_send(Oid type, Datum value);
 extern Datum call_recv(Oid type, StringInfo buf);
-extern Datum call_function1(PGFunction func, Datum op);
-extern Datum call_function2(PGFunction func, Datum lop, Datum rop);
-extern Datum call_function3(PGFunction func, Datum lop, Datum rop, Datum param);
-extern Datum call_function4(PGFunction func, Datum lop, Datum rop, Datum param1, Datum param2);
+extern Datum call_function1(PGFunction func, Datum arg1);
+extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
+extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3);
+extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
 /* Array functions */
 

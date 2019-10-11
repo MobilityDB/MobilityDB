@@ -1,4 +1,4 @@
-﻿/*****************************************************************************/
+﻿-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
@@ -6,7 +6,7 @@ DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 DROP TABLE if exists test_geoboundboxops;
 CREATE TABLE test_geoboundboxops(
@@ -17,7 +17,7 @@ CREATE TABLE test_geoboundboxops(
 	gistidx bigint,
 	spgistidx bigint );
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeompoint
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
@@ -74,7 +74,7 @@ SELECT '<@', 'stbox', 'tgeompoint', count(*) FROM tbl_stbox, tbl_tgeompoint WHER
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'stbox', 'tgeompoint', count(*) FROM tbl_stbox, tbl_tgeompoint WHERE b ~= temp;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeogpoint
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
@@ -131,7 +131,7 @@ SELECT '<@', 'stbox', 'tgeogpoint', count(*) FROM tbl_stbox, tbl_tgeogpoint WHER
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'stbox', 'tgeogpoint', count(*) FROM tbl_stbox, tbl_tgeogpoint WHERE b ~= temp;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 --  tgeompoint op <type>
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
@@ -197,7 +197,7 @@ SELECT '<@', 'tgeompoint', 'tgeompoint', count(*) FROM tbl_tgeompoint t1, tbl_tg
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tgeompoint', 'tgeompoint', count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 --  tgeogpoint op <type>
 
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
@@ -263,12 +263,12 @@ SELECT '<@', 'tgeogpoint', 'tgeogpoint', count(*) FROM tbl_tgeogpoint t1, tbl_tg
 INSERT INTO test_geoboundboxops(op, leftarg, rightarg, noidx)
 SELECT '~=', 'tgeogpoint', 'tgeogpoint', count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp ~= t2.temp;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 CREATE INDEX tbl_tgeompoint_gist_idx ON tbl_tgeompoint USING GIST(temp);
 CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING GIST(temp);
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeompoint
 
 UPDATE test_geoboundboxops
@@ -349,7 +349,7 @@ UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_stbox, tbl_tgeompoint WHERE b ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeompoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeogpoint
 
 UPDATE test_geoboundboxops
@@ -430,7 +430,7 @@ UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_stbox, tbl_tgeogpoint WHERE b ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeogpoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- tgeompoint op <type>
 
 UPDATE test_geoboundboxops
@@ -524,7 +524,7 @@ UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- tgeogpoint op <type>
 
 UPDATE test_geoboundboxops
@@ -618,7 +618,7 @@ UPDATE test_geoboundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' and leftarg = 'tgeogpoint' and rightarg = 'tgeogpoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
@@ -626,7 +626,7 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
 CREATE INDEX tbl_tgeogpoint_spgist_idx ON tbl_tgeogpoint USING SPGIST(temp);
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeompoint
 
 UPDATE test_geoboundboxops
@@ -707,7 +707,7 @@ UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_stbox, tbl_tgeompoint WHERE b ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeompoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- <type> op tgeogpoint
 
 UPDATE test_geoboundboxops
@@ -788,7 +788,7 @@ UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_stbox, tbl_tgeogpoint WHERE b ~= temp )
 WHERE op = '~=' and leftarg = 'stbox' and rightarg = 'tgeogpoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- tgeompoint op <type>
 
 UPDATE test_geoboundboxops
@@ -882,7 +882,7 @@ UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 -- tgeogpoint op <type>
 
 UPDATE test_geoboundboxops
@@ -976,7 +976,7 @@ UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' and leftarg = 'tgeogpoint' and rightarg = 'tgeogpoint';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 SELECT * FROM test_geoboundboxops
 WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx; 
@@ -986,4 +986,4 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 
 DROP TABLE test_geoboundboxops;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------

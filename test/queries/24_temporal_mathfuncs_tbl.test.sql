@@ -1,6 +1,6 @@
-﻿/*****************************************************************************
- * Temporal addition
- *****************************************************************************/
+﻿-------------------------------------------------------------------------------
+-- Temporal addition
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i + temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat, tbl_int WHERE i + temp IS NOT NULL;
@@ -20,9 +20,9 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp + f IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp + t2.temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp + t2.temp IS NOT NULL;
 
-/*****************************************************************************
- * Temporal subtraction
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- Temporal subtraction
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i - temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat, tbl_int WHERE i - temp IS NOT NULL;
@@ -42,9 +42,9 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp - f IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp - t2.temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp - t2.temp IS NOT NULL;
 
-/*****************************************************************************
- * Temporal multiplication
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- Temporal multiplication
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i * temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat, tbl_int WHERE i * temp IS NOT NULL;
@@ -64,9 +64,9 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp * f IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp * t2.temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp * t2.temp IS NOT NULL;
 
-/*****************************************************************************
- * Temporal division
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- Temporal division
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tint, tbl_int WHERE i / temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat, tbl_int WHERE i / temp IS NOT NULL;
@@ -86,12 +86,12 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp / f IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp / t2.temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp / t2.temp IS NOT NULL;
 
-/*****************************************************************************
- * Temporal round and degrees
- *****************************************************************************/
+-------------------------------------------------------------------------------
+-- Temporal round and degrees
+-------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_tfloat WHERE round(temp, 1) IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat WHERE degrees(temp) IS NOT NULL;
 
- /*****************************************************************************/
+-------------------------------------------------------------------------------
 

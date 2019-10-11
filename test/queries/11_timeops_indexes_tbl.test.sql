@@ -3,8 +3,6 @@
 -- File TimeOps.c
 -------------------------------------------------------------------------------
 
-/*****************************************************************************/
-
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
 
@@ -14,7 +12,7 @@ DROP INDEX IF EXISTS tbl_period_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 DROP table if exists test_timeops;
 CREATE table test_timeops(
@@ -236,13 +234,13 @@ SELECT '#&>', 'periodset', 'period', count(*) FROM tbl_periodset, tbl_period WHE
 INSERT INTO test_timeops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'periodset', 'periodset', count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 CREATE INDEX tbl_timestampset_gist_idx ON tbl_timestampset USING GIST(ts);
 CREATE INDEX tbl_period_gist_idx ON tbl_period USING GIST(p);
 CREATE INDEX tbl_periodset_gist_idx ON tbl_periodset USING GIST(ps);
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 UPDATE test_timeops 
 SET gistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )
@@ -539,7 +537,7 @@ UPDATE test_timeops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps )
 WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX IF EXISTS tbl_period_gist_idx;
@@ -549,7 +547,7 @@ CREATE INDEX tbl_timestampset_spgist_idx ON tbl_timestampset USING SPGIST(ts);
 CREATE INDEX tbl_period_spgist_idx ON tbl_period USING SPGIST(p);
 CREATE INDEX tbl_periodset_spgist_idx ON tbl_periodset USING SPGIST(ps);
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------
 
 UPDATE test_timeops 
 SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_timestamptz WHERE ts @> t )

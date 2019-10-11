@@ -923,12 +923,12 @@ temporals_duration(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	Datum result = call_function2(timestamp_mi, 
-		seq->period.upper, seq->period.lower);
+		TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
 	for (int i = 1; i < ts->count; i++)
 	{
 		seq = temporals_seq_n(ts, i);
 		Datum interval1 = call_function2(timestamp_mi, 
-			seq->period.upper, seq->period.lower);
+			TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
 		Datum interval2 = call_function2(interval_pl, result, interval1);
 		pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
 		result = interval2;

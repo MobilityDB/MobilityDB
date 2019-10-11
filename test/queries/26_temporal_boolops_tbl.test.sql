@@ -17,4 +17,4 @@ SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp | t2.temp IS NOT N
 
 SELECT count(*) FROM tbl_tbool WHERE ~ temp IS NOT NULL;
 
-/*****************************************************************************/
+-------------------------------------------------------------------------------

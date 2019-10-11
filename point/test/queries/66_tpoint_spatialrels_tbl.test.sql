@@ -207,6 +207,7 @@ set force_parallel_mode=off;
 -- END;
 -- $$ LANGUAGE 'plpgsql';
 
--- SELECT count(*)pg_afterend_pid()
+-- SELECT pg_backend_pid()
 
--- SELECT count(*)testTopologicalOps() 
+-- SELECT testTopologicalOps() 
+-------------------------------------------------------------------------------

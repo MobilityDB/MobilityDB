@@ -1,4 +1,3 @@
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 NOTICE:  index "tbl_tgeompoint_gist_idx" does not exist, skipping
 DROP INDEX
@@ -11,7 +10,6 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
 DROP INDEX
-/*****************************************************************************/
 DROP TABLE IF EXISTS test_georelativeposops;
 NOTICE:  table "test_georelativeposops" does not exist, skipping
 DROP TABLE
@@ -23,7 +21,6 @@ CREATE TABLE test_georelativeposops(
 	gistidx bigint,
 	spgistidx bigint );
 CREATE TABLE
-/*****************************************************************************/
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<', 'geomcollection', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp;
 INSERT 0 1
@@ -96,7 +93,6 @@ INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'tgeompoint', count(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp;
 INSERT 0 1
-/*****************************************************************************/
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'timestamptz', 'tgeogpoint', count(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp;
 INSERT 0 1
@@ -145,7 +141,6 @@ INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'tgeogpoint', count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp;
 INSERT 0 1
-/*****************************************************************************/
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<', 'tgeompoint', 'geomcollection', count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g;
 INSERT 0 1
@@ -254,7 +249,6 @@ INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'tgeompoint', 'tgeompoint', count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp;
 INSERT 0 1
-/*****************************************************************************/
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<#', 'tgeogpoint', 'timestamptz', count(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t;
 INSERT 0 1
@@ -303,12 +297,10 @@ INSERT 0 1
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'tgeogpoint', 'periodset', count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps;
 INSERT 0 1
-/*****************************************************************************/
 CREATE INDEX tbl_tgeompoint_gist_idx ON tbl_tgeompoint USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING GIST(temp);
 CREATE INDEX
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
@@ -405,7 +397,6 @@ UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp )
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeompoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
 WHERE op = '<<#' and leftarg = 'timestamptz' and rightarg = 'tgeogpoint';
@@ -470,7 +461,6 @@ UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp )
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
@@ -615,7 +605,6 @@ UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' and leftarg = 'tgeogpoint' and rightarg = 'timestamptz';
@@ -680,7 +669,6 @@ UPDATE test_georelativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tgeogpoint' and rightarg = 'periodset';
 UPDATE 1
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
@@ -689,7 +677,6 @@ CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tgeogpoint_spgist_idx ON tbl_tgeogpoint USING SPGIST(temp);
 CREATE INDEX
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp )
 WHERE op = '<<' and leftarg = 'geomcollection' and rightarg = 'tgeompoint';
@@ -786,7 +773,6 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeompoint WHERE ps #&> temp )
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeompoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tgeogpoint WHERE t <<# temp )
 WHERE op = '<<#' and leftarg = 'timestamptz' and rightarg = 'tgeogpoint';
@@ -851,7 +837,6 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tgeogpoint WHERE ps #&> temp )
 WHERE op = '#&>' and leftarg = 'periodset' and rightarg = 'tgeogpoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE temp << g )
 WHERE op = '<<' and leftarg = 'tgeompoint' and rightarg = 'geomcollection';
@@ -996,7 +981,6 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'tgeompoint' and rightarg = 'tgeompoint';
 UPDATE 1
-/*****************************************************************************/
 UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp <<# t )
 WHERE op = '<<#' and leftarg = 'tgeogpoint' and rightarg = 'timestamptz';
@@ -1061,7 +1045,6 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tgeogpoint' and rightarg = 'periodset';
 UPDATE 1
-/*****************************************************************************/
 SELECT * FROM test_georelativeposops
 WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
  op | leftarg | rightarg | noidx | gistidx | spgistidx 
@@ -1074,4 +1057,3 @@ DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 DROP INDEX
 DROP TABLE test_georelativeposops;
 DROP TABLE
-/*****************************************************************************/

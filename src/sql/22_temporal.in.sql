@@ -20,6 +20,18 @@ SELECT register_temporal('tint', 'int4') ;
 SELECT register_temporal('tfloat', 'float8') ;
 SELECT register_temporal('ttext', 'text') ;
 
+/*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+CREATE FUNCTION mobdb_lib_version() RETURNS text
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION mobdb_full_version() RETURNS text
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE;
+
 /******************************************************************************
  * Input/Output
  ******************************************************************************/

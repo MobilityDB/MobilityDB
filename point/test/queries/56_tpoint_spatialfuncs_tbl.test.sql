@@ -65,8 +65,10 @@ SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
 SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
 SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
 -- Tests intended to avoid floating point precision errors
-SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
-SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 and startTimestamp(temp) = startTimestamp(speed(temp)) and abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
+SELECT count(*) FROM tbl_tgeogpoint3D where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
+AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
 SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint3D LIMIT 10;
