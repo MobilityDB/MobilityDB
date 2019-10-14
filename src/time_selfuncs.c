@@ -20,6 +20,7 @@
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
+#include <math.h>
 
 #include "timestampset.h"
 #include "period.h"

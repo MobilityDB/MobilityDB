@@ -35,8 +35,12 @@
  *****************************************************************************/
 
 #define MOBDB_LIB_VERSION_STR "MobilityDB 1.0alpha1"
-#define MOBDB_PGSQL_VERSION 100
-#define MOBDB_PGSQL_VERSION_STR "PostgreSQL 10.0"
+#ifndef MOBDB_PGSQL_VERSION
+#error Unconfigured source code -- please run cmake
+#endif
+#ifndef MOBDB_PGSQL_VERSION_STR
+#error Unconfigured source code -- please run cmake
+#endif
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 

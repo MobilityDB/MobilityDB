@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.1) 
 project(MobilityDB VERSION 1.0)
+set(MOBILITYDB_VERSION 1.0-alpha1)
 
 set(SRCS
 src/doublen.c
@@ -68,16 +69,26 @@ src/sql/99_oidcache.in.sql
 include(CTest)
 enable_testing()
 
-set(PG_REQUIRED_VERSION "PostgreSQL 10")
+set(PG_MIN_MAJOR_VERSION "10")
+set(PG_MAX_MAJOR_VERISON "11")
 
 find_program(PGCONFIG pg_config)
 if (NOT PGCONFIG)
 	message(FATAL_ERROR "Could not find pg_config")
 endif ()
-execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PGVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-if (NOT "${PGVERSION}" MATCHES "${PG_REQUIRED_VERSION}")
-	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PGVERSION}, required ${PG_REQUIRED_VERSION}")
-endif ()
+execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\.//g" OUTPUT_VARIABLE PG_FULL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\..*//" OUTPUT_VARIABLE PG_MAJOR_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})
+	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, minimum required is ${PG_MIN_MAJOR_VERSION}")
+elseif(${PG_MAX_MAJOR_VERISON} LESS ${PG_MAJOR_VERSION})
+	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERISON}")
+endif()
+message("Found compatible ${PG_VERSION_STRING}")
+
+set(MOBDB_DEFS -DMOBDB_PGSQL_VERSION=${PG_FULL_VERSION} -DMOBDB_PGSQL_VERSION_STR="${PG_VERSION_STRING}")
+add_definitions(${MOBDB_DEFS})
 
 execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARIABLE PostgreSQL_ACTUAL_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -99,7 +110,8 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} LCNAME)
 
 set(CONTROLIN "control.in")
 set(CONTROLOUT "${LCNAME}.control")
-set(SQLOUT "${LCNAME}--${PROJECT_VERSION}.sql")
+set(SQLPP "${LCNAME}--${MOBILITYDB_VERSION}.sql.c")
+set(SQLOUT "${LCNAME}--${MOBILITYDB_VERSION}.sql")
 
 execute_process(COMMAND ${PGCONFIG} --sharedir OUTPUT_VARIABLE PostgreSQL_SHARE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 execute_process(COMMAND ${PGCONFIG} --pkglibdir OUTPUT_VARIABLE PostgreSQL_EXTLIB_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
@@ -120,6 +132,9 @@ option(WITH_POSTGIS "Include PostGIS support" ON)
 if (WITH_POSTGIS)
 	if (HAS_LWGEOM)
 		MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
+		if(NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.so")
+			message(FATAL_ERROR "Could not find postgis-2.5.so; only PostGIS 2.5 is currently supported")
+		endif()
 	else()
 		MESSAGE(STATUS "LWGEOM not found - compiling without PostGIS support")
 		set(WITH_POSTGIS OFF)
@@ -133,16 +148,22 @@ if (WITH_POSTGIS)
 endif ()
 
 add_custom_command(
-	OUTPUT ${SQLOUT}
+	OUTPUT ${SQLPP}
 	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/sqlin
 	COMMAND cp ${SQL} ${CMAKE_BINARY_DIR}/sqlin/
-	COMMAND cd ${CMAKE_BINARY_DIR}/sqlin/ && find -type f | sort | xargs cat > ${CMAKE_BINARY_DIR}/${SQLOUT}
+	COMMAND cd ${CMAKE_BINARY_DIR}/sqlin/ && find -type f | sort | xargs cat > ${CMAKE_BINARY_DIR}/${SQLPP}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	DEPENDS ${SQL})
 
 add_custom_command(
+	OUTPUT ${SQLOUT}
+	COMMAND "${CMAKE_C_COMPILER}" ${MOBDB_DEFS} -E ${SQLPP} | grep -v '^\#' > ${SQLOUT}
+	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+	DEPENDS ${SQLPP})
+
+add_custom_command(
 	OUTPUT ${CONTROLOUT}
-	COMMAND cat ${CONTROLIN} | sed -e's/LIBNAME/${CMAKE_PROJECT_NAME}/'  > ${CMAKE_BINARY_DIR}/${CONTROLOUT}
+	COMMAND cat ${CONTROLIN} | sed -e's/LIBNAME/${CMAKE_PROJECT_NAME}/' -e's/VERSION/${MOBILITYDB_VERSION}/'  > ${CMAKE_BINARY_DIR}/${CONTROLOUT}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	DEPENDS ${CONTROLIN})
 
