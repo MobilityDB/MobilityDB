@@ -600,7 +600,7 @@ PG_FUNCTION_INFO_V1(intrange_to_tbox);
 PGDLLEXPORT Datum
 intrange_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -627,7 +627,7 @@ PG_FUNCTION_INFO_V1(floatrange_to_tbox);
 PGDLLEXPORT Datum
 floatrange_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -811,7 +811,7 @@ PG_FUNCTION_INFO_V1(intrange_timestamp_to_tbox);
 PGDLLEXPORT Datum 
 intrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -834,7 +834,7 @@ PG_FUNCTION_INFO_V1(floatrange_timestamp_to_tbox);
 PGDLLEXPORT Datum 
 floatrange_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -857,7 +857,7 @@ PG_FUNCTION_INFO_V1(intrange_period_to_tbox);
 PGDLLEXPORT Datum 
 intrange_period_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -881,7 +881,7 @@ PG_FUNCTION_INFO_V1(floatrange_period_to_tbox);
 PGDLLEXPORT Datum 
 floatrange_period_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -1094,7 +1094,7 @@ PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -1117,7 +1117,7 @@ PGDLLEXPORT Datum
 contains_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -1188,7 +1188,7 @@ PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
 PGDLLEXPORT Datum
 contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -1211,7 +1211,7 @@ PGDLLEXPORT Datum
 contained_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -1282,7 +1282,7 @@ PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
 PGDLLEXPORT Datum
 overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -1305,7 +1305,7 @@ PGDLLEXPORT Datum
 overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -1377,7 +1377,7 @@ PGDLLEXPORT Datum
 same_bbox_tnumber_range(PG_FUNCTION_ARGS) 
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -1398,7 +1398,7 @@ PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
 PGDLLEXPORT Datum
 same_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);

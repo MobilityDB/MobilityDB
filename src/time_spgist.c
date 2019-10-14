@@ -38,7 +38,7 @@ spgist_period_config(PG_FUNCTION_ARGS)
 
 	cfg->prefixType = type_oid(T_PERIOD);
 	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-#if MOBDB_PGSQL_VERSION >= 110
+#if MOBDB_PGSQL_VERSION >= 110000
 	cfg->leafType = type_oid(T_PERIOD);
 #endif
 	cfg->canReturnData = false;
@@ -512,7 +512,7 @@ spgist_period_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION >= 110
+#if MOBDB_PGSQL_VERSION >= 110000
 PG_FUNCTION_INFO_V1(spgist_timestampset_compress);
 
 PGDLLEXPORT Datum

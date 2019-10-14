@@ -948,7 +948,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	 */
 	if (subtype == type_oid(T_INTRANGE))
 	{
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -960,7 +960,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 	}
 	else if (subtype == type_oid(T_FLOATRANGE))
 	{
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);

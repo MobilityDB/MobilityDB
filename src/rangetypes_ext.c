@@ -206,7 +206,7 @@ PG_FUNCTION_INFO_V1(intrange_canonical);
 Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -218,7 +218,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
 	typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
 	range_deserialize(typcache, range, &lower, &upper, &empty);
 	if (empty)
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 		PG_RETURN_RANGE(range);
 #else
 		PG_RETURN_RANGE_P(range);
@@ -233,7 +233,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
 		upper.val = DirectFunctionCall2(int4pl, upper.val, Int32GetDatum(1));
 		upper.inclusive = false;
 	}
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	PG_RETURN_RANGE(range_serialize(typcache, &lower, &upper, false));
 #else
 	PG_RETURN_RANGE_P(range_serialize(typcache, &lower, &upper, false));
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(range_left_elem);
 PGDLLEXPORT Datum
 range_left_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(range_overleft_elem);
 PGDLLEXPORT Datum
 range_overleft_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -367,7 +367,7 @@ PG_FUNCTION_INFO_V1(range_right_elem);
 PGDLLEXPORT Datum
 range_right_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -411,7 +411,7 @@ PG_FUNCTION_INFO_V1(range_overright_elem);
 Datum
 range_overright_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -459,7 +459,7 @@ PG_FUNCTION_INFO_V1(range_adjacent_elem);
 PGDLLEXPORT Datum
 range_adjacent_elem(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -481,7 +481,7 @@ PGDLLEXPORT Datum
 elem_left_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -525,7 +525,7 @@ PGDLLEXPORT Datum
 elem_overleft_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -544,7 +544,7 @@ PGDLLEXPORT Datum
 elem_right_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -588,7 +588,7 @@ Datum
 elem_overright_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -607,7 +607,7 @@ PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
 	Datum		val = PG_GETARG_DATUM(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);

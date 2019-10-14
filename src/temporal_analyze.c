@@ -82,7 +82,7 @@
 #include <assert.h>
 #include <math.h>
 #include <access/tuptoaster.h>
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 #include <catalog/pg_collation.h>
 #include <catalog/pg_operator.h>
 #else

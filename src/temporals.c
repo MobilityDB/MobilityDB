@@ -675,7 +675,7 @@ temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 void
 temporals_write(TemporalS *ts, StringInfo buf)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	pq_sendint(buf, ts->count, 4);
 #else
 	pq_sendint32(buf, ts->count);

@@ -31,7 +31,7 @@
 #include <access/relscan.h>
 #include <access/visibilitymap.h>
 #include <access/skey.h>
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 #include <catalog/pg_collation.h>
 #else
 #include <catalog/pg_collation_d.h>
@@ -235,7 +235,7 @@ get_actual_variable_endpoint(Relation heapRel,
 	 * or could even be NULL.  We avoid this hazard because we take the data
 	 * from the index entry not the heap.
 	 */
-#if MOBDB_PGSQL_VERSION >= 110
+#if MOBDB_PGSQL_VERSION >= 110000
 	InitNonVacuumableSnapshot(SnapshotNonVacuumable, RecentGlobalXmin);
 #endif
 

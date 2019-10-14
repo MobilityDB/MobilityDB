@@ -77,7 +77,13 @@ if (NOT PGCONFIG)
 	message(FATAL_ERROR "Could not find pg_config")
 endif ()
 execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\.//g" OUTPUT_VARIABLE PG_FULL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+		COMMAND ${PGCONFIG} --version
+		COMMAND sed "-es/.* //"
+		COMMAND sed "s/[A-Za-z].*$//"
+		COMMAND tr "." " "
+		COMMAND awk "{printf \"%d%04d\", $1, $2}"
+		OUTPUT_VARIABLE PG_FULL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\..*//" OUTPUT_VARIABLE PG_MAJOR_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})

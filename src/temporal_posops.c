@@ -386,7 +386,7 @@ PG_FUNCTION_INFO_V1(left_range_tnumber);
 PGDLLEXPORT Datum
 left_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(overleft_range_tnumber);
 PGDLLEXPORT Datum
 overleft_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -430,7 +430,7 @@ PG_FUNCTION_INFO_V1(right_range_tnumber);
 PGDLLEXPORT Datum
 right_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -452,7 +452,7 @@ PG_FUNCTION_INFO_V1(overright_range_tnumber);
 PGDLLEXPORT Datum
 overright_range_tnumber(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -478,7 +478,7 @@ PGDLLEXPORT Datum
 left_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -500,7 +500,7 @@ PGDLLEXPORT Datum
 overleft_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -522,7 +522,7 @@ PGDLLEXPORT Datum
 right_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -544,7 +544,7 @@ PGDLLEXPORT Datum
 overright_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);

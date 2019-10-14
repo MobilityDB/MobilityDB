@@ -434,7 +434,7 @@ temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum))
 void
 temporali_write(TemporalI *ti, StringInfo buf)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	pq_sendint(buf, ti->count, 4);
 #else
 	pq_sendint32(buf, ti->count);

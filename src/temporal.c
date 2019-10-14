@@ -650,7 +650,7 @@ temporal_out(PG_FUNCTION_ARGS)
 
 void temporal_write(Temporal *temp, StringInfo buf) 
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	pq_sendint(buf, temp->duration, 2);
 #else
 	pq_sendint16(buf, temp->duration);
@@ -1290,7 +1290,7 @@ tnumber_value_range(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *result = tnumber_value_range_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	PG_RETURN_RANGE(result);
 #else
 	PG_RETURN_RANGE_P(result);
@@ -2091,7 +2091,7 @@ PGDLLEXPORT Datum
 tnumber_at_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);
@@ -2125,7 +2125,7 @@ PGDLLEXPORT Datum
 tnumber_minus_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(1);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(1);

@@ -524,7 +524,7 @@ PG_FUNCTION_INFO_V1(tstzrange_as_period);
 PGDLLEXPORT Datum
 tstzrange_as_period(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 	RangeType  *range = PG_GETARG_RANGE(0);
 #else
 	RangeType  *range = PG_GETARG_RANGE_P(0);
@@ -824,7 +824,7 @@ PG_FUNCTION_INFO_V1(period_hash_extended);
 PGDLLEXPORT Datum
 period_hash_extended(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110
+#if MOBDB_PGSQL_VERSION < 110000
 		elog(ERROR, "This function is only available for PostgreSQL versions > 11.0");
 #else
 	Period	   *p = PG_GETARG_PERIOD(0);
