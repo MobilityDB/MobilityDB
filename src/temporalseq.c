@@ -593,7 +593,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
 			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value: %s, %s", t1, t2)));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
@@ -723,7 +723,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
 			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value: %s, %s", t1, t2)));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
 #ifdef WITH_POSTGIS
 	bool isgeo = false;
