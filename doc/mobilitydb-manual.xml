@@ -3619,7 +3619,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 	<chapter id="tutorial">
 		<title>MobilityDB Tutorial</title>
-		<para>To illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a ZIP file <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">here</ulink>.</para>
+		<para>To illustrate the capabilities of MobilityDB, we give in this section an example use case that loads, explores, and query mobility data. The data used is based on the <ulink url="http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html">BerlinMOD</ulink> benchmark for moving object databases and is available as a <ulink url="https://docs.mobilitydb.com/data/berlinmod_data.zip">ZIP</ulink> file.</para>
 		
 		<sect1>
 			<title>Installation</title>
@@ -3782,7 +3782,7 @@ CREATE TABLE Trips
 				<programlisting>
 COPY Cars(CarId, Licence, Type, Model) FROM '/home/mobilitydb/data/datamcar.csv' 
 	DELIMITER  ',' CSV HEADER;
-COPY TripsInput(CarId, TripId, Lon, Lat, T) FROM '/home/mobilitydb/data/trippoints.csv' 
+COPY TripsInput(CarId, TripId, Lon, Lat, T) FROM '/home/mobilitydb/data/trips.csv' 
 	DELIMITER  ',' CSV HEADER;
 COPY Instants(InstantId, Instant) FROM '/home/mobilitydb/data/queryinstants.csv' 
 	DELIMITER  ',' CSV HEADER;

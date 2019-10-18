@@ -105,8 +105,12 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	for (int i = 1; i < count; i++)
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
+			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
@@ -175,8 +179,12 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
+			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz;
 	int srid;
