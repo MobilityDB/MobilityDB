@@ -1215,7 +1215,7 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		selec += scalarineqsel(root, operator, true, period->upper_inc, 
 			vardata, TimestampTzGetDatum(period->upper), TIMESTAMPTZOID);
-		selec = 1 - selec;
+		selec = fabs(1 - selec);
 	}
 	/* For b-tree comparisons, temporal values are first compared wrt 
 	 * their bounding boxes, and if these are equal, other criteria apply.

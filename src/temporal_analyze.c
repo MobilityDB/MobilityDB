@@ -976,11 +976,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		}
 
-		/* Skip too-large values. */
-		if (toast_raw_datum_size(value) > TEMPORAL_WIDTH_THRESHOLD)
-			continue;
-
-		total_width += VARSIZE_ANY(DatumGetPointer(value));
+		total_width += toast_datum_size(value);
 
 		/* Get Temporal value */
 		temp = DatumGetTemporal(value);
