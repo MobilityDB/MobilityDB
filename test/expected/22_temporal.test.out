@@ -267,19 +267,19 @@ SELECT ttext '{[AAA@2001-01-01 08:00:00,BBB@2001-01-01 08:05:00,CCC@2001-01-01 0
 
 /* Errors */
 SELECT tbools(tbool '{[true@2000-01-01, true@2000-01-03], [false@2000-01-02, false@2000-01-04]}');
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 LINE 2: SELECT tbools(tbool '{[true@2000-01-01, true@2000-01-03], [f...
                             ^
 SELECT tints(tint '{[1@2000-01-01, 1@2000-01-03], [2@2000-01-02, 2@2000-01-04]}');
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 LINE 1: SELECT tints(tint '{[1@2000-01-01, 1@2000-01-03], [2@2000-01...
                           ^
 SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]}');
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 LINE 1: SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@200...
                               ^
 SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@2000-01-02, AA@2000-01-04]}');
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 LINE 1: SELECT ttexts(ttext '{[AA@2000-01-01, AA@2000-01-03], [AA@20...
                             ^
 SELECT tfloats(tfloat '{[1@2000-01-01, 2@2000-01-03], [2@2000-01-02, 1@2000-01-04]');
@@ -862,13 +862,13 @@ ERROR:  A temporal sequence set value must at least one sequence
 SELECT ttexts('{}'::ttext[]);
 ERROR:  A temporal sequence set value must at least one sequence
 SELECT tbools(ARRAY[tbool '[true@2000-01-01, true@2000-01-03]', '[false@2000-01-02, false@2000-01-04]']);
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT tints(ARRAY[tint '[1@2000-01-01, 1@2000-01-03]', '[2@2000-01-02, 2@2000-01-04]']);
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT tfloats(ARRAY[tfloat '[1@2000-01-01, 2@2000-01-03]', '[2@2000-01-02, 1@2000-01-04]']);
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT ttexts(ARRAY[ttext '[AA@2000-01-01, AA@2000-01-03]', '[AA@2000-01-02, AA@2000-01-04]']);
-ERROR:  Invalid sequence for temporal sequence set
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-03 00:00:00+00, 2000-01-02 00:00:00+00
 select tbools(ARRAY[tbool '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
 ERROR:  Input values must be of type temporal sequence
 select tints(ARRAY[tint '1@2000-01-01', '[1@2000-01-02,1@2000-01-03]']);
