@@ -110,8 +110,12 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 		if (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) > 0 ||
 		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
 		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-				errmsg("Invalid sequence for temporal sequence set")));
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, sequences[i - 1]->period.upper);
+			char *t2 = call_output(TIMESTAMPTZOID, sequences[i]->period.lower);
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
