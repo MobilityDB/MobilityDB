@@ -4408,6 +4408,460 @@ WHERE S1.SumDist &lt;= ALL (
 		</sect1>
 	</chapter>
 
+	<chapter id ="gtfs">
+		<title>Loading GTFS Data in MobilityDB</title>
+			<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
+
+			<para>In this section, we illustrate how to load GTFS data in MobilityDB. For this, we first need to import the GTFS data into PostgreSQL and then transform this data so that it can be loaded into MobilityDB. The data used in this tutorial is obtained from <ulink url="https://www.stib-mivb.be">STIB-MIVB</ulink>, the Brussels public transportation company and is available as a <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file. You must be aware that GTFS data is typically of big size. In order to reduce the size of the dataset, this file only contains schedules for one week and five transportation lines, whereas typical GTFS data published by STIB-MIVB contains schedules for one month and 99 transportation lines. In the reduced dataset used in this tutorial the final table containing the GTFS data in MobilityDB format has almost 10,000 trips and its size is 241 MB. Furtheremore, we need several temporary tables to transform GTFS format into MobilityDB and these tables are also big, the largest one has almost 6 million rows and its size is 621 MB.</para>
+
+			<para>Several tools can be used to import GTFS data into PostgreSQL. For example, one publicly available in Github can be found <ulink url="https://github.com/fitnr/gtfs-sql-importer">here</ulink>. These tools load GTFS data into PostgreSQL tables, allowing one to perform multiple imports of data provided by the same agency covering different time frames, perform various complex tasks including data validation, and take into account variations of the format provided by different agencies, updates of route information among multiple imports, etc. For the purpose of this tutorial we do a simple import and transformation using only SQL. This is enough for loading the data set we are using but a much more robust solution should be used in an operational environment, if only for coping with the considerable size of typical GTFS data, which would require parallelization of this task.</para>
+
+		<sect1>
+			<title>Loading GTFS Data in PostgreSQL</title>
+
+			<para>The <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file with the data for this tutorial contains a set of CSV files (with extension <varname>.txt</varname>) as follows:
+				<itemizedlist>
+					<listitem>
+						<para><varname>agency.txt</varname> contains the description of the transportation agencies provinding the services (a single one in our case).</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>calendar.txt</varname> contains service patterns that operate recurrently such as, for example, every weekday.</para>
+					</listitem>
+
+					<listitem>
+						<para><varname>calendar_dates.txt</varname> define exceptions to the default service patterns defined in <varname>calendar.txt</varname>. There are two types of exceptions: 1 means that the service has been added for the specified date, and 2 means that the service has been removed for the specified date.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>route_types.txt</varname> contains transportation types used on routes, such as bus, metro, tramway, etc.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>routes.txt</varname> contains transit routes. A route is a group of trips that are displayed to riders as a single service.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>shapes.txt</varname> contains the vehicle travel paths, which are used to generate the corresponding geometry.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>stop_times.txt</varname> contains times at which a vehicle arrives at and departs from stops for each trip.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>translations.txt</varname> contains the translation of the route information in French and Dutch. This file is not used in this tutorial.</para>
+					</listitem>
+					
+					<listitem>
+						<para><varname>trips.txt</varname> contains trips for each route. A trip is a sequence of two or more stops that occur during a specific time period.</para>
+					</listitem>
+					
+				</itemizedlist>
+			</para>
+
+			<para>
+			We decompress the file with the data into a directory. This can be done using the command. 
+				<programlisting>
+$ unzip gtfs_data.zip
+				</programlisting>
+			We suppose in the following that the directory used is as follows <varname>/home/gtfs_tutorial/</varname>.
+			</para>
+
+			<para>We create the tables to be loaded with the data in the CSV files as follows.
+				<programlisting>
+CREATE TABLE agency (
+  agency_id text DEFAULT '',
+  agency_name text DEFAULT NULL,
+  agency_url text DEFAULT NULL,
+  agency_timezone text DEFAULT NULL,
+  agency_lang text DEFAULT NULL,
+  agency_phone text DEFAULT NULL,
+  CONSTRAINT agency_pkey PRIMARY KEY (agency_id)
+);
+
+CREATE TABLE calendar (
+  service_id text,
+  monday int NOT NULL,
+  tuesday int NOT NULL,
+  wednesday int NOT NULL,
+  thursday int NOT NULL,
+  friday int NOT NULL,
+  saturday int NOT NULL,
+  sunday int NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  CONSTRAINT calendar_pkey PRIMARY KEY (service_id)
+);
+CREATE INDEX calendar_service_id ON calendar (service_id);
+
+CREATE TABLE exception_types (
+  exception_type int PRIMARY KEY,
+  description text
+);
+
+CREATE TABLE calendar_dates (
+  service_id text,
+  date date NOT NULL,
+  exception_type int REFERENCES exception_types(exception_type)
+);
+CREATE INDEX calendar_dates_dateidx ON calendar_dates (date);
+
+CREATE TABLE route_types (
+  route_type int PRIMARY KEY,
+  description text
+);
+
+CREATE TABLE routes (
+  route_id text,
+  route_short_name text DEFAULT '',
+  route_long_name text DEFAULT '',
+  route_desc text DEFAULT '',
+  route_type int REFERENCES route_types(route_type),
+  route_url text,
+  route_color text,
+  route_text_color text,
+  CONSTRAINT routes_pkey PRIMARY KEY (route_id)
+);
+
+CREATE TABLE shapes (
+  shape_id text NOT NULL,
+  shape_pt_lat double precision NOT NULL,
+  shape_pt_lon double precision NOT NULL,
+  shape_pt_sequence int NOT NULL
+);
+CREATE INDEX shapes_shape_key ON shapes (shape_id);
+
+-- Create a table to store the shape geometries
+CREATE TABLE shape_geoms (
+  shape_id text NOT NULL,
+  shape_geom geometry('LINESTRING', 4326),
+  CONSTRAINT shape_geom_pkey PRIMARY KEY (shape_id)
+);
+CREATE INDEX shape_geoms_key ON shapes (shape_id);
+
+CREATE TABLE location_types (
+  location_type int PRIMARY KEY,
+  description text
+);
+
+CREATE TABLE stops (
+  stop_id text,
+  stop_code text,
+  stop_name text DEFAULT NULL,
+  stop_desc text DEFAULT NULL,
+  stop_lat double precision,
+  stop_lon double precision,
+  zone_id text,
+  stop_url text,
+  location_type integer  REFERENCES location_types(location_type),
+  parent_station integer,
+  stop_geom geometry('POINT', 4326),
+  platform_code text DEFAULT NULL,
+  CONSTRAINT stops_pkey PRIMARY KEY (stop_id)
+);
+
+CREATE TABLE pickup_dropoff_types (
+  type_id int PRIMARY KEY,
+  description text
+);
+
+CREATE TABLE stop_times (
+  trip_id text NOT NULL,
+  -- Check that casting to time interval works.
+  arrival_time interval CHECK (arrival_time::interval = arrival_time::interval),
+  departure_time interval CHECK (departure_time::interval = departure_time::interval),
+  stop_id text,
+  stop_sequence int NOT NULL,
+  pickup_type int REFERENCES pickup_dropoff_types(type_id),
+  drop_off_type int REFERENCES pickup_dropoff_types(type_id),
+  CONSTRAINT stop_times_pkey PRIMARY KEY (trip_id, stop_sequence)
+);
+CREATE INDEX stop_times_key ON stop_times (trip_id, stop_id);
+CREATE INDEX arr_time_index ON stop_times (arrival_time);
+CREATE INDEX dep_time_index ON stop_times (departure_time);
+
+CREATE TABLE trips (
+  route_id text NOT NULL,
+  service_id text NOT NULL,
+  trip_id text NOT NULL,
+  trip_headsign text,
+  direction_id int,
+  block_id text,
+  shape_id text,
+  CONSTRAINT trips_pkey PRIMARY KEY (trip_id)
+);
+CREATE INDEX trips_trip_id ON trips (trip_id);
+
+INSERT INTO exception_types (exception_type, description) VALUES 
+  (1, 'service has been added'),
+  (2, 'service has been removed');
+
+INSERT INTO location_types(location_type, description) VALUES 
+  (0,'stop'),
+  (1,'station'),
+  (2,'station entrance');
+
+INSERT INTO pickup_dropoff_types (type_id, description) VALUES
+  (0,'Regularly Scheduled'),
+  (1,'Not available'),
+  (2,'Phone arrangement only'),
+  (3,'Driver arrangement only');
+				</programlisting>
+			We created one table for each CSV file. In addition, we created a table <varname>shape_geoms</varname> in order to assemble all segments composing a route into a single geometry and auxiliary tables <varname>exception_types</varname>, <varname>location_types</varname>, and <varname>pickup_dropoff_types</varname> containing acceptable values for some columns in the CSV files.
+			</para>
+
+			<para>
+			We can load the CSV files into the corresponding tables as follows.
+				<programlisting>
+COPY calendar(service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,
+	start_date,end_date) FROM '/home/gtfs_tutorial/calendar.txt' DELIMITER ',' CSV HEADER;
+COPY calendar_dates(service_id,date,exception_type) 
+	FROM '/home/gtfs_tutorial/calendar_dates.txt' DELIMITER ',' CSV HEADER;
+COPY stop_times(trip_id,arrival_time,departure_time,stop_id,stop_sequence,
+	pickup_type,drop_off_type) FROM '/home/gtfs_tutorial/stop_times.txt' DELIMITER ',' 
+	CSV HEADER;
+COPY trips(route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id) 
+	FROM '/home/gtfs_tutorial/trips.txt' DELIMITER ',' CSV HEADER;
+COPY agency(agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone)
+	FROM '/home/gtfs_tutorial/agency.txt' DELIMITER ',' CSV HEADER;
+COPY route_types(route_type,description)
+	FROM '/home/gtfs_tutorial/route_types.txt' DELIMITER ',' CSV HEADER;
+COPY routes(route_id,route_short_name,route_long_name,route_desc,route_type,route_url,
+	route_color,route_text_color) FROM '/home/gtfs_tutorial/routes.txt' DELIMITER ',' 
+	CSV HEADER;
+COPY shapes(shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence)
+	FROM '/home/gtfs_tutorial/shapes.txt' DELIMITER ',' CSV HEADER;
+COPY stops(stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,
+	location_type,parent_station) FROM '/home/gtfs_tutorial/stops.txt' DELIMITER ',' 
+	CSV HEADER;
+				</programlisting>
+			Finally, we create the geometries for routes and stops as follows.
+				<programlisting>
+INSERT INTO shape_geoms 
+SELECT shape_id, ST_MakeLine(array_agg(
+	ST_SetSRID(ST_MakePoint(shape_pt_lon, shape_pt_lat),4326) ORDER BY shape_pt_sequence))
+FROM shapes
+GROUP BY shape_id;
+
+UPDATE stops
+SET stop_geom = ST_SetSRID(ST_MakePoint(stop_lon, stop_lat),4326);
+				</programlisting>
+				The visualisation of the routes and stops in QGIS is given in <xref linkend="stib" />. In the figure, red lines correspond to the trajectories of vehicles, while orange points correspond to the location of stops.
+			</para>
+
+			<figure id="stib" float="1"><title>Visualisation of the routes and stops for the GTFS data from Brussels.</title>
+				<mediaobject>
+					<imageobject><imagedata scale='35' fileref='images/stib.png' /></imageobject>
+				</mediaobject>
+			</figure>
+		</sect1>
+
+		<sect1>
+			<title>Transforming GTFS Data for MobilityDB</title>
+			<para>
+			We start by creating a view that contains couples of <varname>service_id</varname> and <varname>date</varname> defining the dates at which a  service is provided.
+				<programlisting>
+DROP VIEW IF EXISTS service_dates;
+CREATE VIEW service_dates AS (
+	SELECT service_id, date_trunc('day', d)::date AS date 
+	FROM calendar c, generate_series(start_date, end_date, '1 day'::interval) AS d
+	WHERE (
+		(monday = 1 AND extract(isodow FROM d) = 1) OR
+		(tuesday = 1 AND extract(isodow FROM d) = 2) OR
+		(wednesday = 1 AND extract(isodow FROM d) = 3) OR
+		(thursday = 1 AND extract(isodow FROM d) = 4) OR
+		(friday = 1 AND extract(isodow FROM d) = 5) OR
+		(saturday = 1 AND extract(isodow FROM d) = 6) OR
+		(sunday = 1 AND extract(isodow FROM d) = 7) 
+	)
+	EXCEPT
+	SELECT service_id, date 
+	FROM calendar_dates WHERE exception_type = 2
+	UNION
+	SELECT c.service_id, date
+	FROM calendar c JOIN calendar_dates d ON c.service_id = d.service_id 
+	WHERE exception_type = 1 AND start_date &lt;= date AND date &lt;= end_date
+);
+				</programlisting>
+			This table transforms the service patterns in the <varname>calendar</varname> table valid between a <varname>start_date</varname> and an <varname>end_date</varname> taking into account the week days, and then remove the exceptions of type 2 and add the exceptions of type 1 that are specified in table <varname>calendar_dates</varname>.
+			</para>
+
+			<para>
+			We now create a table <varname>trip_stops</varname> that determines the stops for each trip.
+				<programlisting>
+DROP TABLE IF EXISTS trip_stops;
+CREATE TABLE trip_stops
+(
+  trip_id text,
+  stop_sequence integer,
+  no_stops integer,
+  route_id text,
+  service_id text,
+  shape_id text,
+  stop_id text,
+  arrival_time interval,
+  perc float
+);
+
+INSERT INTO trip_stops (trip_id, stop_sequence, no_stops, route_id, service_id,
+	shape_id, stop_id, arrival_time) (
+SELECT t.trip_id, stop_sequence, MAX(stop_sequence) over (PARTITION BY t.trip_id),
+	route_id, service_id, t.shape_id, st.stop_id, arrival_time
+FROM trips t JOIN stop_times st ON t.trip_id = st.trip_id 
+);
+
+UPDATE trip_stops t
+SET perc = CASE 
+	WHEN stop_sequence =  1 then 0::float 
+	WHEN stop_sequence =  no_stops then 1.0::float
+	ELSE ST_LineLocatePoint(shape_geom, stop_geom)
+END
+FROM shape_geoms g, stops s
+WHERE t.shape_id = g.shape_id
+AND t.stop_id = s.stop_id;
+				</programlisting>
+			We perform a join between  <varname>trips</varname> and <varname>stop_times</varname> and determines the number of stops in a trip. Then, we compute the relative location of a stop within a trip using the function <varname>ST_LineLocatePoint</varname>.
+			</para>
+
+			<para>
+			We now create a table <varname>trip_segs</varname> that defines the segments between two stops of a trip.
+				<programlisting>
+DROP TABLE IF EXISTS trip_segs;
+CREATE TABLE trip_segs (
+	trip_id text,
+	route_id text, 
+	service_id text, 
+	stop1_sequence integer, 
+	stop2_sequence integer,
+	no_stops integer,
+	shape_id text, 
+	stop1_arrival_time interval,
+	stop2_arrival_time interval,
+	perc1 float,
+	perc2 float,
+	seg_geom geometry,
+	seg_length float,
+	no_points integer,
+	PRIMARY KEY (trip_id, stop1_sequence)
+);
+
+INSERT INTO trip_segs (trip_id, route_id, service_id, stop1_sequence, stop2_sequence,	
+	no_stops, shape_id, stop1_arrival_time, stop2_arrival_time, perc1, perc2)
+WITH temp AS (
+	SELECT t.trip_id, t.route_id, t.service_id, t.stop_sequence, 
+		LEAD(stop_sequence) OVER w AS stop_sequence2,
+		MAX(stop_sequence) OVER (PARTITION BY trip_id),
+		t.shape_id, t.arrival_time, lead(arrival_time) OVER w, t.perc, LEAD(perc) OVER w
+	FROM trip_stops t WINDOW w AS (PARTITION BY trip_id ORDER BY stop_sequence)
+)
+SELECT * FROM temp WHERE stop_sequence2 IS NOT null;
+
+UPDATE trip_segs t
+SET seg_geom = ST_LineSubstring(shape_geom, perc1, perc2)
+FROM shape_geoms g
+WHERE t.shape_id = g.shape_id;
+
+UPDATE trip_segs t
+SET seg_length = ST_Length(seg_geom), no_points = ST_NumPoints(seg_geom);
+				</programlisting>
+			We use twice the <varname>LEAD</varname> window function for obtaning the next stop and the next percentage of a given stop and the <varname>MAX</varname> window function for obtaining the total number of stops in a trip. Then, we generate the geometry of the segment betwen two stops using the function <varname>ST_LineSubstring</varname> and compute the length and the number of points in the segment with functions <varname>ST_Length</varname> and <varname>ST_NumPoints</varname>.
+			</para>
+
+			<para>
+			The geometry of a segment is a linestring containing multiple points. From the previous table we know at which time the trip arrived at the first point and at the last point of the segment. However, we need to determine at which time the trip arrived at the intermediate points of the segments. For this we create a table <varname>trip_points</varname> that contains all the points composing the geometry of a segment.
+				<programlisting>
+DROP TABLE IF EXISTS trip_points;
+CREATE TABLE trip_points (
+	trip_id text, 
+	route_id text,
+	service_id text, 
+	stop1_sequence integer, 
+	point_sequence integer,
+	point_geom geometry,
+	point_arrival_time interval,
+	PRIMARY KEY (trip_id, stop1_sequence, point_sequence)
+);
+
+INSERT INTO trip_points (trip_id, route_id, service_id, stop1_sequence, 
+	point_sequence, point_geom, point_arrival_time)
+WITH temp1 AS (	
+	SELECT trip_id, route_id, service_id, stop1_sequence, 
+		stop2_sequence, no_stops, stop1_arrival_time, stop2_arrival_time, seg_length, 
+		(dp).path[1] AS point_sequence, no_points, (dp).geom as point_geom
+	FROM trip_segs, ST_DumpPoints(seg_geom) AS dp
+),
+temp2 AS (
+	SELECT trip_id, route_id, service_id, stop1_sequence, 
+		stop1_arrival_time, stop2_arrival_time, seg_length,  point_sequence, 
+		no_points, point_geom
+	FROM temp1 
+	WHERE point_sequence &lt;&gt; no_points OR stop2_sequence = no_stops
+),
+temp3 AS (
+	SELECT trip_id, route_id, service_id, stop1_sequence,   
+		stop1_arrival_time, stop2_arrival_time, point_sequence, no_points, point_geom, 
+		ST_Length(ST_MakeLine(array_agg(point_geom) OVER w)) / seg_length AS perc
+	FROM temp2 WINDOW w AS (PARTITION BY trip_id, service_id, stop1_sequence 
+		ORDER BY point_sequence)
+)
+SELECT trip_id, route_id, service_id, stop1_sequence, 
+	point_sequence, point_geom, 
+	CASE
+	WHEN point_sequence = 1 then stop1_arrival_time
+	WHEN point_sequence = no_points then stop2_arrival_time
+	ELSE stop1_arrival_time + ((stop2_arrival_time - stop1_arrival_time) * perc)
+	END AS point_arrival_time
+FROM temp3;
+				</programlisting>
+			In the temporary table <varname>temp1</varname> we use the function <varname>ST_DumpPoints</varname> to obtain the points composing the geometry of a segment. Nevertheless, this table contains duplicate points, that is, the last point of a segment is equal to the first point of the next one. In the temporary table <varname>temp2</varname> we filter out the last point of a segment unless it is the last segment of the trip. In the temporary table <varname>temp3</varname> we compute in the attribute <varname>perc</varname> the relative position of a point within a trip segment with window functions. For this we use the function <varname>ST_MakeLine</varname> to construct the subsegment from the first point of the segment to the current one, determine the length of the subsegment with function <varname>ST_Length</varname> and divide this length by the overall segment length. Finally, in the outer query we use the computed percentage to determine the arrival time to that point.
+			</para>
+
+			<para>
+			Our last temporary table <varname>trips_input</varname> contains the data in the format that can be used for creating the MobilityDB trips.
+				<programlisting>
+DROP TABLE IF EXISTS trips_input;
+CREATE TABLE trips_input (
+	trip_id text, 
+	route_id text,
+	service_id text,
+	date date,
+	point_geom geometry,
+	t timestamptz
+);
+
+INSERT INTO trips_input
+SELECT trip_id, route_id, t.service_id, date, point_geom, date + point_arrival_time AS t
+FROM trip_points t JOIN service_dates s ON t.service_id = s.service_id;
+				</programlisting>
+			For this, we join the <varname>trip_points</varname> and the <varname>service_dates</varname> tables to obtain all the dates at which a trip is performed and then compute the arrival time at each point composing the trip. 
+			</para>
+
+
+			<para>
+			Finally, table <varname>trips_mdb</varname> contains the MobilityDB trips.
+				<programlisting>
+DROP TABLE IF EXISTS trips_mdb;
+CREATE TABLE trips_mdb (
+	trip_id text NOT NULL,
+	route_id text NOT NULL,
+	date date NOT NULL,
+	trip tgeompoint,
+	PRIMARY KEY (trip_id, date)
+);
+
+INSERT INTO trips_mdb(trip_id, route_id, date, trip)
+SELECT trip_id, route_id, date, tgeompointseq(array_agg(tgeompointinst(point_geom, t) 
+	ORDER BY T))
+FROM trips_input
+GROUP BY trip_id, route_id, date;
+				</programlisting>
+			For this, we group the rows in the <varname>trips_input</varname> table by <varname>trip_id</varname> and <varname>date</varname> while keeping the <varname>route_id</varname> atribute, use the <varname>array_agg</varname> function to construct an array containing the temporal points composing the trip ordered by time, and compute the trip from this array using the function <varname>tgeompointseq</varname>. As mentioned before, this table contains almost 10,000 trips in MobilityDB format obtained from the original GTFS files. 
+			</para>
+
+		</sect1>
+	</chapter>
+
 	<appendix id ="berlinmod">
 		<title>BerlinMOD Benchmark on MobilityDB</title>
 
