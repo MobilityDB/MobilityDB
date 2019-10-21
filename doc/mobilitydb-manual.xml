@@ -270,9 +270,9 @@ SELECT endTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-0
 					</listitem>
 
 					<listitem>
-						<para><varname>timetampN</varname>: N-th distinct timestamp</para>
+						<para><varname>timestampN</varname>: N-th distinct timestamp</para>
 						<para>The function does not take into account whether the bounds are inclusive or not.</para>
-						<para>Signature: <varname>timetampN({timestampset, periodset}, int): timestamptz</varname></para>
+						<para>Signature: <varname>timestampN({timestampset, periodset}, int): timestamptz</varname></para>
 						<programlisting>
 SELECT timestampN(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}', 3);
 -- "2012-01-04"
@@ -889,6 +889,14 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
 				</programlisting>
 			</para>
 
+			<para>Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. Examples of <varname>tbox</varname> values defined with the constructor functions are as follows:
+				<programlisting>
+SELECT tbox(1.0, 2.0)
+SELECT tboxt('2001-01-01 08:00:00', '2001-01-01 08:10:00')
+SELECT tbox(1.0, '2001-01-01 08:00:00', 2.0, '2001-01-01 08:10:00')
+				</programlisting>
+			</para>
+
 			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). Examples of input of <varname>stbox</varname> values are as follows:
 				<programlisting>
 -- Only coordinate (X and Y) dimension
@@ -905,6 +913,25 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
 -- Only time dimension
 SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+				</programlisting>
+			</para>
+
+			<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. Examples of <varname>stbox</varname> values defined with the constructor functions are as follows:
+				<programlisting>
+-- Only coordinate (X and Y) dimension
+SELECT stbox(1.0, 2.0, 1.0, 2.0);
+-- Only coordinate (X, Y and Z) dimension
+SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
+-- Both coordinate (X, Y) and time dimensions
+SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');
+-- Both coordinate (X, Y, and Z) and time dimensions
+SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');
+-- Only geodetic coordinate (X, Y and Z) dimension
+SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
+--  Both geodetic coordinate (X, Y, and Z) and time dimensions
+SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');
+-- Only time dimension
+SELECT stbox('2001-01-03', '2001-01-03');
 				</programlisting>
 			</para>
 
@@ -1224,7 +1251,7 @@ SELECT tfloats(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 
 				<listitem>
 				<para>Append a temporal instant to a temporal value</para>
-				<para>Signature: <varname>{appendInstant(ttype, ttypeinst)} : ttype</varname></para>
+				<para>Signature: <varname>appendInstant(ttype, ttypeinst) : ttype</varname></para>
 				<programlisting>
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- "{1@2000-01-01, 1@2000-01-02}"
@@ -1466,8 +1493,8 @@ SELECT endTimestamp(tfloat '{[1@2012-01-01, 2@2012-01-03),
 				</listitem>
 
 				<listitem>
-					<para><varname>timetampN</varname>: N-th distinct timestamp</para>
-					<para>Signature: <varname>timetampN(ttype, int): timestamptz</varname></para>
+					<para><varname>timestampN</varname>: N-th distinct timestamp</para>
+					<para>Signature: <varname>timestampN(ttype, int): timestamptz</varname></para>
 					<programlisting>
 SELECT timestampN(tfloat '{[1@2012-01-01, 2@2012-01-03), 
 	[3@2012-01-03, 5@2012-01-05)}', 3);
@@ -1686,7 +1713,8 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name","prope
 					<para><varname>fromEWKB</varname>: Input temporal point from Extended Well-Known Binary (WKB) representation. &Z_support; &geography_support;</para>
 					<para>Signature: <varname>fromEWKB(bytea): tpoint</varname></para>
 					<programlisting>
-SELECT asEWKT(fromEWKB(bytea '\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000'));
+SELECT asEWKT(fromEWKB(bytea 
+'\0011\346\020\000\000\000\000\000\000\000\000\360?\000\000\000\000\000\000\000@\000\000\000\000\000\000\010@\000\374\340\023jX\001\000'));
 -- "SRID=4326;POINT Z (1 2 3)@2012-01-01 00:00:00+01"
 					</programlisting>
 				</listitem>

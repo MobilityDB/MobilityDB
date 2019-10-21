@@ -154,18 +154,26 @@ PG_FUNCTION_INFO_V1(stbox_constructor);
 PGDLLEXPORT Datum
 stbox_constructor(PG_FUNCTION_ARGS)
 {
-	assert(PG_NARGS() == 4 || PG_NARGS() == 6 || PG_NARGS() == 8);
+	assert(PG_NARGS() == 2 || PG_NARGS() == 4 || 
+		PG_NARGS() == 6 || PG_NARGS() == 8);
 	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, /* keep compiler quiet */
 		zmin, zmax, tmp;
 	TimestampTz tmin, tmax, ttmp;
-	bool hasz = false, hast = false;
+	bool hasx = false, hasz = false, hast = false;
 
+	if (PG_NARGS() == 2)
+	{
+		tmin = PG_GETARG_TIMESTAMPTZ(0);
+		tmax = PG_GETARG_TIMESTAMPTZ(1);
+		hast = true;
+	}
 	if (PG_NARGS() == 4)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
 		xmax = PG_GETARG_FLOAT8(2);
 		ymax = PG_GETARG_FLOAT8(3);
+		hasx = true;
 	}
 	else if (PG_NARGS() == 6)
 	{
@@ -175,7 +183,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		xmax = PG_GETARG_FLOAT8(3);
 		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
-		hasz = true;
+		hasx = hasz = true;
 	}
 	else if (PG_NARGS() == 8)
 	{
@@ -187,42 +195,45 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		ymax = PG_GETARG_FLOAT8(5);
 		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_TIMESTAMPTZ(7);
-		hasz = hast = true;
+		hasx = hasz = hast = true;
 	}
 
-	STBOX *result = stbox_new(true, hasz, hast, false);
+	STBOX *result = stbox_new(hasx, hasz, hast, false);
 	
 	/* Process X min/max */
-	if (xmin > xmax)
+	if (hasx)
 	{
-		tmp = xmin;
-		xmin = xmax;
-		xmax = tmp;
-	}
-	result->xmin = xmin;
-	result->xmax = xmax;
-
-	/* Process Y min/max */
-	if (ymin > ymax)
-	{
-		tmp = ymin;
-		ymin = ymax;
-		ymax = tmp;
-	}
-	result->ymin = ymin;
-	result->ymax = ymax;
-
-	/* Process Z min/max */
-	if (hasz)
-	{
-		if (zmin > zmax)
+		if (xmin > xmax)
 		{
-			tmp = zmin;
-			zmin = zmax;
-			zmax = tmp;
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
 		}
-		result->zmin = zmin;
-		result->zmax = zmax;
+		result->xmin = xmin;
+		result->xmax = xmax;
+
+		/* Process Y min/max */
+		if (ymin > ymax)
+		{
+			tmp = ymin;
+			ymin = ymax;
+			ymax = tmp;
+		}
+		result->ymin = ymin;
+		result->ymax = ymax;
+
+		/* Process Z min/max */
+		if (hasz)
+		{
+			if (zmin > zmax)
+			{
+				tmp = zmin;
+				zmin = zmax;
+				zmax = tmp;
+			}
+			result->zmin = zmin;
+			result->zmax = zmax;
+		}
 	}
 
 	/* Process T min/max */
