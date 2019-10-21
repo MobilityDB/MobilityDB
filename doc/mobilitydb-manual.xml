@@ -877,7 +877,10 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 				</programlisting>
 			</para>
+		</sect1>
 
+		<sect1 id ="input_output_box_tyes">
+			<title>Input/Output of Box Types</title>
 			<para>A <varname>tbox</varname> is composed of value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
 				<programlisting>
 -- Both value and time dimensions
