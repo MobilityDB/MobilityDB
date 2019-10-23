@@ -10,7 +10,7 @@
  
 <!ENTITY Z_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.png' /></imageobject>
+	<imageobject><imagedata scale='75' fileref='images/cube.png' /></imageobject>
  </inlinemediaobject>
 ">
 ]>
@@ -333,7 +333,8 @@ SELECT periodN(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 						<para><varname>periods</varname>: Periods</para>
 						<para>Signature: <varname>periods(periodset): period[]</varname></para>
 						<programlisting>
-SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04], [2012-01-05, 2012-01-06)}');
+SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04], 
+	[2012-01-05, 2012-01-06)}');
 -- "{"[2012-01-01,2012-01-03)","[2012-01-04,2012-01-04]","[2012-01-05,2012-01-06)"}"
 						</programlisting>
 					</listitem>
@@ -1079,7 +1080,8 @@ POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))"
 					<para>Trajectory to temporal point</para>
 					<para>Casts: <varname>geometry::tgeompoint</varname>, <varname>geography::tgeogpoint</varname></para>
 					<programlisting>
-SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,1 1 978480000)'::tgeompoint);
+SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
+	1 1 978480000)'::tgeompoint);
 -- "[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]";
 SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
 	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoints);
@@ -1260,8 +1262,9 @@ SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- "{1@2000-01-01, 1@2000-01-02}"
 SELECT appendInstant(tintseq(tint '1@2000-01-01'), tint '1@2000-01-02');
 -- "[1@2000-01-01, 1@2000-01-02]"
-SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02],
-    [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-06'));
+SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, 
+	Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 
+	tgeompoint 'Point(1 1 1)@2000-01-06'));
 -- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
     [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
 				</programlisting>
@@ -1653,7 +1656,8 @@ SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 					<para>Signature: <varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
 					<programlisting>
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
--- "SRID=4326;[POINT Z (0 0 0)@2012-01-01 00:00:00+00, POINT Z (1 1 1)@2012-01-02 00:00:00+00)"
+-- "SRID=4326;[POINT Z (0 0 0)@2012-01-01 00:00:00+00, 
+	POINT Z (1 1 1)@2012-01-02 00:00:00+00)"
 SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 -- "{"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}"
 					</programlisting>
@@ -1671,9 +1675,14 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 					</itemizedlist>
 					<programlisting>
 SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
--- "{"type":"MovingPoint","coordinates":[1,2],"datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}"
-SELECT asMFJSON(tgeompoint 'SRID=4326;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 3)
--- "{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],"period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01 (...)"
+-- "{"type":"MovingPoint","coordinates":[1,2],"datetimes":"2019-01-01T17:00:00.15+01",
+"interpolations":["Discrete"]}"
+SELECT asMFJSON(tgeompoint 'SRID=4326;
+	Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 3);
+-- "{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
+"stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],"period":{"begin":
+"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
+"coordinates":[50.81,4.38],"datetimes":"2019-01-01 (...)"
 					</programlisting>
 				</listitem>
 
@@ -1707,7 +1716,9 @@ SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 					<para><varname>fromMFJSON</varname>: Input temporal point from OGC's Moving Features JSON representation. &Z_support; &geography_support;</para>
 					<para>Signature: <varname>fromMFJSON(text): tpoint</varname></para>
 					<programlisting>
-SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],"datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
+SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
+"properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],
+"datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
 -- "SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01"
 					</programlisting>
 				</listitem>
@@ -1860,8 +1871,9 @@ SELECT asText(nearestApproachInstant(
 	geometry 'Linestring(2 2,2 1,3 1)'));
 -- "POINT(1 1)@2012-01-04"
 SELECT asText(nearestApproachInstant(
-	tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)',
-	tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
+	tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, 
+	Point(0 0 0)@2012-01-05)', tgeompoint '[Point(2 0 0)@2012-01-02, 
+	Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
 -- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
 					</programlisting>
 					<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
@@ -1977,7 +1989,8 @@ SELECT atRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[1,3]');
 					<para><varname>atRanges</varname>: Restrict to ranges</para>
 					<para>Signature: <varname>atRanges(tnumber, numrange[]): ttype</varname></para>
 					<programlisting>
-SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)', ARRAY[floatrange '[1,2]', '[3,4]']);
+SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)', 
+	ARRAY[floatrange '[1,2]', '[3,4]']);
 -- "{[1@2012-01-01, 2@2012-01-02],[3@2012-01-03, 4@2012-01-04]}"
 					</programlisting>
 				</listitem>
@@ -2299,7 +2312,8 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;= 2;
 -- true
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;= 3;
 -- true
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;= geometry 'Point(1 1)';
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;= 
+	geometry 'Point(1 1)';
 -- true
 					</programlisting>
 				</listitem>
@@ -3156,7 +3170,8 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 						<programlisting>
 SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01,f@2012-01-02], (t@2012-01-02,t@2012-01-03), [f@2012-01-03,f@2012-01-04)}"
+-- "{[f@2012-01-01,f@2012-01-02], (t@2012-01-02,t@2012-01-03), 
+[f@2012-01-03,f@2012-01-04)}"
 						</programlisting>
 					</listitem>
 
