@@ -4456,6 +4456,8 @@ WHERE S1.SumDist &lt;= ALL (
 
 	<chapter id ="importing">
 		<title>Importing Data in MobilityDB</title>
+		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS) and Google Location History data.</para>
+
 		<sect1 id ="gtfs">
 			<title>Loading GTFS Data in MobilityDB</title>
 				<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
@@ -4999,15 +5001,11 @@ UPDATE locations_mdb
 SET trajectory = trajectory(trip);
 					</programlisting>
 				We convert the longitude and latitude values into standard coordinates values by dividing them by 10<superscript>7</superscript>. These can be converted into PostGIS points in the WGS84 coordinate system with the functions <varname>ST_Point</varname> and <varname>ST_SetSRID</varname>. Also, we convert the timestamp values in miliseconds to <varname>timestamptz</varname> values. We can now apply the function
-				<varname>tgeompointinst</varname> to create a <varname>tgeompoint</varname> of instant duration from the point and the timestamp, collect all temporal points of a day into an array with the function <varname>array_agg</varname>, and finally, create a temporal point containing all the locations of a day using function <varname>tgeompointseq</varname>.
-				</para>
-				
-				<para>
-				The visualization of the location history in QGIS is given in <xref linkend="location_history_fig" />.
+				<varname>tgeompointinst</varname> to create a <varname>tgeompoint</varname> of instant duration from the point and the timestamp, collect all temporal points of a day into an array with the function <varname>array_agg</varname>, and finally, create a temporal point containing all the locations of a day using function <varname>tgeompointseq</varname>. We added to the table a <varname>trajectory</varname> attribute to visualize the location history in QGIS is given in <xref linkend="location_history_fig" />.
 				</para>
 
 
-				<figure id="location_history_fig" float="1"><title>Visualization of the Google location history loaded into MobilityDB using QGIS.</title>
+				<figure id="location_history_fig" float="1"><title>Visualization in QGIS of the Google location history loaded into MobilityDB.</title>
 					<mediaobject>
 						<imageobject><imagedata fileref='images/location_history.png' /></imageobject>
 					</mediaobject>
