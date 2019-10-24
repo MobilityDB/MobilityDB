@@ -49,6 +49,11 @@ CREATE TYPE stbox (
  * Constructors
  ******************************************************************************/
 
+ CREATE FUNCTION stboxt(timestamptz, timestamptz)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_constructor'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
  CREATE FUNCTION stbox(float8, float8, float8, float8)
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'stbox_constructor'
