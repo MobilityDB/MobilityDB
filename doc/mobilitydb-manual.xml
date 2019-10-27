@@ -13,6 +13,12 @@
 	<imageobject><imagedata scale='75' fileref='images/cube.png' /></imageobject>
  </inlinemediaobject>
 ">
+ 
+<!ENTITY M_support
+"<inlinemediaobject>
+	<imageobject><imagedata scale='75' fileref='images/M.png' /></imageobject>
+ </inlinemediaobject>
+">
 ]>
 <book lang="en">
 	<bookinfo>
@@ -3676,14 +3682,14 @@ $ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
 				</programlisting>
 				In the above command
 				<itemizedlist>
-					<listitem><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</listitem>
+					<listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
-					<listitem><varname>-d</varname> runs the container in the background (detached mode)</listitem>
+					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
 
-					<listitem><varname>-p 25432:5432</varname> maps TCP port 5432 in the container to port 25432 on the Docker host (to prevent potential conflicts with any local database instance you may have). This is required because the database server listens for connections on port 5432 by default.
+					<listitem><para><varname>-p 25432:5432</varname> maps TCP port 5432 in the container to port 25432 on the Docker host (to prevent potential conflicts with any local database instance you may have). This is required because the database server listens for connections on port 5432 by default.</para>
 					</listitem>
 
-					<listitem><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.
+					<listitem><para><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -3695,9 +3701,9 @@ $ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 				</programlisting>
 				In the above command
 				<itemizedlist>
-					<listitem><varname>docker exec -t -i mobilitydb psql</varname> tells Docker to allocate a pseudo-TTY, to keep STDIN open, and to execute in the container <varname>mobilitydb</varname> the command <varname>psql</varname>.</listitem>
+					<listitem><para><varname>docker exec -t -i mobilitydb psql</varname> tells Docker to allocate a pseudo-TTY, to keep STDIN open, and to execute in the container <varname>mobilitydb</varname> the command <varname>psql</varname>.</para></listitem>
 
-					<listitem><varname>-h localhost -p 5432 -d mobilitydb -U docker</varname> tells <varname>psql</varname>, respectively, the database server host, the server port, the database name, and the user name.</listitem>
+					<listitem><para><varname>-h localhost -p 5432 -d mobilitydb -U docker</varname> tells <varname>psql</varname>, respectively, the database server host, the server port, the database name, and the user name.</para></listitem>
 				</itemizedlist>
 				Note that you will be prompted to provide the password, which is also <varname>docker</varname>.
 			</para>
@@ -5021,8 +5027,8 @@ SET trajectory = trajectory(trip);
 
 		<sect1>
 			<title>Loading the Data</title>
-			The script for loading pregenerated data is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_load.sql">here</ulink>.
 			<para>
+			The script for loading pregenerated data is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_load.sql">here</ulink>.
 				<programlisting>
 -------------------------------------------------------------------------------
 -- Loads the BerlinMOD data in projected (2D) coordinates with SRID 5676
@@ -5329,7 +5335,7 @@ CREATE INDEX Trips_gist_idx ON Trips USING gist(trip);
 
 		<sect1>
 			<title>BerlinMOD/R Queries</title>
-			The script for querying BerlinMOD data loaded in MobilityDB with the BerlinMOD/R queries is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_queries.sql">here</ulink>.
+			<para>The script for querying BerlinMOD data loaded in MobilityDB with the BerlinMOD/R queries is available <ulink url="https://docs.mobilitydb.com/data/berlinmod_queries.sql">here</ulink>.</para>
 			<orderedlist>
 				<listitem>
 					<para>What are the models of the vehicles with licence plate numbers from <varname>Licences</varname>?</para>
