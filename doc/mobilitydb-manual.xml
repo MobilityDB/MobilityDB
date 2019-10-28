@@ -3678,11 +3678,13 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>For this tutorial we will use a Docker image containing MobilityDB and all its dependencies (including PostgreSQL and PostGIS). The container has a default database called <varname>mobilitydb</varname> with the MobilityDB extension installed where <varname>user = pw = docker</varname>. This presupposes that you have installed Docker into your computer. In that case, you can run the following command.
 				<programlisting>
+$ docker pull codewit/mobilitydb
 $ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
 				</programlisting>
-				In the above command
+				In the above commands
 				<itemizedlist>
-					<listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
+                                        <listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this command ensures that you have the most up-to-date version of this image.</para></listitem>
+                                        <listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
 					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
 
@@ -3709,18 +3711,19 @@ $ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			</para>
 
 			<para>
-			In order to launch <varname>pgAdmin</varname>, we need to know the IP address used by Docker with the following command.
+			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first is to know the IP address used by Docker with the following command.
 				<programlisting>
 $ docker-machine ip
 192.168.99.101
 				</programlisting>
-				Notice that the address obtained in your computer may be different from the one above. Now we can lauch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />.
+				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />.
 			</para>
-			<figure id="pgAdmin" float="1"><title>Configuration of a connexion to the docker image in pgAdmin.</title>
+			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
+                        The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432. 
 		</sect1>
 
 		<sect1>
