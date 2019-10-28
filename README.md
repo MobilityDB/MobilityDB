@@ -69,7 +69,7 @@ docker pull codewit/mobilitydb
 docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
 ```
 
-The first command to is to download the image in the first time, and to make sure you have the most up-to-date version of that image in following times. The second command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
+The first command is to download the image, if it is the first time, else to make sure you have the most up-to-date version of that image. The second command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
 
 Issues
 ------
