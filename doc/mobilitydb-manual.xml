@@ -4468,7 +4468,7 @@ WHERE S1.SumDist &lt;= ALL (
 		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS), Google Location History, and GPX data.</para>
 
 		<sect1 id ="loading_gtfs">
-			<title>Loading GTFS Data in MobilityDB</title>
+			<title>Loading GTFS Data</title>
 				<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
 
 				<para>In this section, we illustrate how to load GTFS data in MobilityDB. For this, we first need to import the GTFS data into PostgreSQL and then transform this data so that it can be loaded into MobilityDB. The data used in this tutorial is obtained from <ulink url="https://www.stib-mivb.be">STIB-MIVB</ulink>, the Brussels public transportation company and is available as a <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file. You must be aware that GTFS data is typically of big size. In order to reduce the size of the dataset, this file only contains schedules for one week and five transportation lines, whereas typical GTFS data published by STIB-MIVB contains schedules for one month and 99 transportation lines. In the reduced dataset used in this tutorial the final table containing the GTFS data in MobilityDB format has almost 10,000 trips and its size is 241 MB. Furtheremore, we need several temporary tables to transform GTFS format into MobilityDB and these tables are also big, the largest one has almost 6 million rows and its size is 621 MB.</para>
@@ -4920,7 +4920,7 @@ GROUP BY trip_id, route_id, date;
 		</sect1>
 
 		<sect1 id ="location_history">
-			<title>Loading Google Location History Data in MobilityDB</title>
+			<title>Loading Google Location History Data</title>
 				<para>By activating the Location History in your Google account, you let Google track where you go with every mobile device. You can view and manage your Location History information through Google Maps Timeline. The data is provided in JSON format. An example of such a file is as follows.
 					<programlisting>
 {
@@ -5023,7 +5023,7 @@ SET trajectory = trajectory(trip);
 		</sect1>
 
 		<sect1 id ="loading_gpx">
-			<title>Loading GPX data on MobilityDB</title>
+			<title>Loading GPX Data</title>
 
 			<para>
 			GPX, or GPS Exchange Format, is an XML data format for GPS data. Location data (and optionally elevation, time, and other information) is stored in tags and can be interchanged between GPS devices and software. Conceptually, a GPX file contains tracks, which are a record of where a moving object has been, and routes, which are suggestions about where it might go in the future. Furthermore, both tracks and routes and composed by points. The following is a truncated (for brevity) example GPX file.
