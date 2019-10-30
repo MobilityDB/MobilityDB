@@ -4465,9 +4465,9 @@ WHERE S1.SumDist &lt;= ALL (
 
 	<chapter id ="importing">
 		<title>Importing Data in MobilityDB</title>
-		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS) and Google Location History data.</para>
+		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS), Google Location History, and GPX data.</para>
 
-		<sect1 id ="gtfs">
+		<sect1 id ="loading_gtfs">
 			<title>Loading GTFS Data in MobilityDB</title>
 				<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
 
@@ -4920,7 +4920,7 @@ GROUP BY trip_id, route_id, date;
 		</sect1>
 
 		<sect1 id ="location_history">
-			<title>Loading Google Location History in MobilityDB</title>
+			<title>Loading Google Location History Data in MobilityDB</title>
 				<para>By activating the Location History in your Google account, you let Google track where you go with every mobile device. You can view and manage your Location History information through Google Maps Timeline. The data is provided in JSON format. An example of such a file is as follows.
 					<programlisting>
 {
@@ -5019,6 +5019,138 @@ SET trajectory = trajectory(trip);
 						<imageobject><imagedata fileref='images/location_history.png' /></imageobject>
 					</mediaobject>
 				</figure>
+
+		</sect1>
+
+		<sect1 id ="loading_gpx">
+			<title>Loading GPX data on MobilityDB</title>
+
+			<para>
+			GPX, or GPS Exchange Format, is an XML data format for GPS data. Location data (and optionally elevation, time, and other information) is stored in tags and can be interchanged between GPS devices and software. Conceptually, a GPX file contains tracks, which are a record of where a moving object has been, and routes, which are suggestions about where it might go in the future. Furthermore, both tracks and routes and composed by points. The following is a truncated (for brevity) example GPX file.
+				<programlisting>
+&lt;?xml version='1.0' encoding='UTF-8' standalone='yes' ?&gt;
+&lt;gpx version="1.1" 
+	xmlns="http://www.topografix.com/GPX/1/1" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
+	http://www.topografix.com/GPX/1/1/gpx.xsd" 
+	creator="Example creator"&gt;
+ 	&lt;metadata&gt;
+		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
+		&lt;author&gt;Example creator&lt;/author&gt;
+		&lt;link href="https://..." /&gt;
+		&lt;time&gt;2014-12-14T14:32:04.650Z&lt;/time&gt;
+	&lt;/metadata&gt;
+	&lt;trk&gt;
+		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
+		&lt;trkseg&gt;
+			&lt;trkpt lat="30.16398" lon="31.467701"&gt;
+				&lt;ele&gt;76&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:10.339Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			&lt;trkpt lat="30.16394" lon="31.467333"&gt;
+				&lt;ele&gt;73&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:16.00Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			&lt;trkpt lat="30.16408" lon="31.467218"&gt;
+				&lt;ele&gt;74&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:19.00Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			[...]
+		&lt;/trkseg&gt;
+		&lt;trkseg&gt;
+			[...]
+		&lt;/trkseg&gt;
+		[...]
+	&lt;/trk&gt;
+	&lt;trk&gt;
+		[...]
+	&lt;/trk&gt;
+	[...]
+&lt;gpx&gt;
+				</programlisting>
+			</para>
+
+			<para>
+			The following Python program called <varname>gpx_to_csv.py</varname> uses <varname>expat</varname>, a stream-oriented XML parser library, to convert the above GPX file in CSV format.
+				<programlisting>
+import sys
+import xml.parsers.expat
+
+stack = []
+def start_element(name, attrs):
+	stack.append(name)
+	if name == 'gpx' :
+		print("lon,lat,time")
+	if name == 'trkpt' :
+		print("{},{},".format(attrs['lon'], attrs['lat']), end="")
+
+def end_element(name):
+	stack.pop()
+
+def char_data(data):
+	if stack[-1] == "time" and stack[-2] == "trkpt" :
+		print(data)
+
+p = xml.parsers.expat.ParserCreate()
+
+p.StartElementHandler = start_element
+p.EndElementHandler = end_element
+p.CharacterDataHandler = char_data
+
+p.ParseFile(sys.stdin.buffer)
+				</programlisting>
+			</para>
+
+			<para>
+			This Python program can be executed as follows.
+				<programlisting>
+python3 gpx_to_csv.py &lt; example.gpx &gt; example.csv
+				</programlisting>
+			The resulting CSV file is given next.
+				<programlisting>
+lon,lat,time
+31.46032,30.037502,2015-02-09T08:10:16.00Z
+31.460901,30.039026,2015-02-09T08:10:31.00Z
+31.461981,30.039816,2015-02-09T08:10:57.00Z
+31.461996,30.039801,2015-02-09T08:10:58.00Z
+...
+				</programlisting>
+			The above CSV file can be loaded into MobilityDB as follows.
+				<programlisting>
+DROP TABLE IF EXISTS trips_input;
+CREATE TABLE trips_input (
+	date date,
+	lon float, 
+	lat float, 
+	time timestamptz
+);
+
+COPY trips_input(lon, lat, time) FROM 
+	'/home/gpx_data/example.csv' DELIMITER ',' CSV HEADER;
+
+UPDATE trips_input
+SET date = date(time);
+
+DROP TABLE IF EXISTS trips_mdb;
+CREATE TABLE trips_mdb (
+	date date NOT NULL,
+	trip tgeompoint,
+	trajectory geometry,
+	PRIMARY KEY (date)
+);
+
+INSERT INTO trips_mdb(date, trip)
+SELECT date, tgeompointseq(array_agg(tgeompointinst(
+	ST_SetSRID(ST_Point(lon, lat),4326), time) 
+	ORDER BY time))
+FROM trips_input
+GROUP BY date;
+
+UPDATE trips_mdb
+SET trajectory = trajectory(trip);
+				</programlisting>
+			</para>
 
 		</sect1>
 	</chapter>
