@@ -77,9 +77,8 @@ struct temporaltype_struct
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
-/* Only for TemporalInst */
+/* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
-/* Only for TemporalS */
 #define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
 #define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
 #define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
@@ -87,7 +86,7 @@ struct temporaltype_struct
 
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
-/* Only for TemporalInst */
+/* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 #define MOBDB_FLAGS_SET_X(flags, value) \
