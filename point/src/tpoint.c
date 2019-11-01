@@ -101,7 +101,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	/* Mismatched Z dimensionality (other way).  */
 	if (typmod > 0 && tpoint_z && ! typmod_z)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Temporal type has Z dimension but column does not" )));
+				errmsg("Temporal point has Z dimension but column does not" )));
 
 	return temp;
 }
