@@ -3678,11 +3678,13 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>For this tutorial we will use a Docker image containing MobilityDB and all its dependencies (including PostgreSQL and PostGIS). The container has a default database called <varname>mobilitydb</varname> with the MobilityDB extension installed where <varname>user = pw = docker</varname>. This presupposes that you have installed Docker into your computer. In that case, you can run the following command.
 				<programlisting>
+$ docker pull codewit/mobilitydb
 $ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
 				</programlisting>
-				In the above command
+				In the above commands
 				<itemizedlist>
-					<listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
+                                        <listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this command ensures that you have the most up-to-date version of this image.</para></listitem>
+                                        <listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
 					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
 
@@ -3709,18 +3711,19 @@ $ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			</para>
 
 			<para>
-			In order to launch <varname>pgAdmin</varname>, we need to know the IP address used by Docker with the following command.
+			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first is to know the IP address used by Docker with the following command.
 				<programlisting>
 $ docker-machine ip
 192.168.99.101
 				</programlisting>
-				Notice that the address obtained in your computer may be different from the one above. Now we can lauch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />.
+				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />.
 			</para>
-			<figure id="pgAdmin" float="1"><title>Configuration of a connexion to the docker image in pgAdmin.</title>
+			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
+                        The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432. 
 		</sect1>
 
 		<sect1>
@@ -4133,12 +4136,7 @@ histogram AS (
 	ORDER BY bucketNo, bucketRange
 )
 SELECT bucketNo, bucketRange, freq,
-	repeat('&#9632;',
-               (   freq::float
-                 / max(freq) over()
-                 * 30
-               )::int
-        ) AS bar
+	repeat('&#9632;', ( freq::float / max(freq) OVER () * 30 )::int ) AS bar
 FROM histogram;
 				</programlisting>
 				The result of the above query is given in <xref linkend="histogram_length" />. 
@@ -4462,10 +4460,10 @@ WHERE S1.SumDist &lt;= ALL (
 
 	<chapter id ="importing">
 		<title>Importing Data in MobilityDB</title>
-		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS) and Google Location History data.</para>
+		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS), Google Location History, and GPX data.</para>
 
-		<sect1 id ="gtfs">
-			<title>Loading GTFS Data in MobilityDB</title>
+		<sect1 id ="loading_gtfs">
+			<title>Loading GTFS Data</title>
 				<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
 
 				<para>In this section, we illustrate how to load GTFS data in MobilityDB. For this, we first need to import the GTFS data into PostgreSQL and then transform this data so that it can be loaded into MobilityDB. The data used in this tutorial is obtained from <ulink url="https://www.stib-mivb.be">STIB-MIVB</ulink>, the Brussels public transportation company and is available as a <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file. You must be aware that GTFS data is typically of big size. In order to reduce the size of the dataset, this file only contains schedules for one week and five transportation lines, whereas typical GTFS data published by STIB-MIVB contains schedules for one month and 99 transportation lines. In the reduced dataset used in this tutorial the final table containing the GTFS data in MobilityDB format has almost 10,000 trips and its size is 241 MB. Furtheremore, we need several temporary tables to transform GTFS format into MobilityDB and these tables are also big, the largest one has almost 6 million rows and its size is 621 MB.</para>
@@ -4716,10 +4714,10 @@ SET stop_geom = ST_SetSRID(ST_MakePoint(stop_lon, stop_lat),4326);
 			<sect2>
 				<title>Transforming GTFS Data for MobilityDB</title>
 				<para>
-				We start by creating a view that contains couples of <varname>service_id</varname> and <varname>date</varname> defining the dates at which a  service is provided.
+				We start by creating a table that contains couples of <varname>service_id</varname> and <varname>date</varname> defining the dates at which a  service is provided.
 					<programlisting>
-DROP VIEW IF EXISTS service_dates;
-CREATE VIEW service_dates AS (
+DROP TABLE IF EXISTS service_dates;
+CREATE TABLE service_dates AS (
 	SELECT service_id, date_trunc('day', d)::date AS date 
 	FROM calendar c, generate_series(start_date, end_date, '1 day'::interval) AS d
 	WHERE (
@@ -4761,27 +4759,25 @@ CREATE TABLE trip_stops
 );
 
 INSERT INTO trip_stops (trip_id, stop_sequence, no_stops, route_id, service_id,
-	shape_id, stop_id, arrival_time) (
-SELECT t.trip_id, stop_sequence, MAX(stop_sequence) over (PARTITION BY t.trip_id),
-	route_id, service_id, t.shape_id, st.stop_id, arrival_time
-FROM trips t JOIN stop_times st ON t.trip_id = st.trip_id 
-);
+	shape_id, stop_id, arrival_time)
+SELECT t.trip_id, stop_sequence, MAX(stop_sequence) OVER (PARTITION BY t.trip_id),
+	route_id, service_id, shape_id, stop_id, arrival_time
+FROM trips t JOIN stop_times s ON t.trip_id = s.trip_id;
 
 UPDATE trip_stops t
 SET perc = CASE 
-	WHEN stop_sequence =  1 then 0::float 
-	WHEN stop_sequence =  no_stops then 1.0::float
-	ELSE ST_LineLocatePoint(shape_geom, stop_geom)
+	WHEN stop_sequence =  1 then 0.0 
+	WHEN stop_sequence =  no_stops then 1.0
+	ELSE ST_LineLocatePoint(g.the_geom, s.the_geom)
 END
 FROM shape_geoms g, stops s
-WHERE t.shape_id = g.shape_id
-AND t.stop_id = s.stop_id;
+WHERE t.shape_id = g.shape_id AND t.stop_id = s.stop_id;
 					</programlisting>
-				We perform a join between  <varname>trips</varname> and <varname>stop_times</varname> and determines the number of stops in a trip. Then, we compute the relative location of a stop within a trip using the function <varname>ST_LineLocatePoint</varname>.
+				We perform a join between <varname>trips</varname> and <varname>stop_times</varname> and determines the number of stops in a trip. Then, we compute the relative location of a stop within a trip using the function <varname>ST_LineLocatePoint</varname>.
 				</para>
 
 				<para>
-				We now create a table <varname>trip_segs</varname> that defines the segments between two stops of a trip.
+				We now create a table <varname>trip_segs</varname> that defines the segments between two consecutive stops of a trip.
 					<programlisting>
 DROP TABLE IF EXISTS trip_segs;
 CREATE TABLE trip_segs (
@@ -4805,27 +4801,27 @@ CREATE TABLE trip_segs (
 INSERT INTO trip_segs (trip_id, route_id, service_id, stop1_sequence, stop2_sequence,	
 	no_stops, shape_id, stop1_arrival_time, stop2_arrival_time, perc1, perc2)
 WITH temp AS (
-	SELECT t.trip_id, t.route_id, t.service_id, t.stop_sequence, 
+	SELECT trip_id, route_id, service_id, stop_sequence, 
 		LEAD(stop_sequence) OVER w AS stop_sequence2,
 		MAX(stop_sequence) OVER (PARTITION BY trip_id),
-		t.shape_id, t.arrival_time, lead(arrival_time) OVER w, t.perc, LEAD(perc) OVER w
-	FROM trip_stops t WINDOW w AS (PARTITION BY trip_id ORDER BY stop_sequence)
+		shape_id, arrival_time, LEAD(arrival_time) OVER w, perc, LEAD(perc) OVER w
+	FROM trip_stops WINDOW w AS (PARTITION BY trip_id ORDER BY stop_sequence)
 )
 SELECT * FROM temp WHERE stop_sequence2 IS NOT null;
 
 UPDATE trip_segs t
-SET seg_geom = ST_LineSubstring(shape_geom, perc1, perc2)
+SET seg_geom = ST_LineSubstring(g.the_geom, perc1, perc2)
 FROM shape_geoms g
 WHERE t.shape_id = g.shape_id;
 
-UPDATE trip_segs t
+UPDATE trip_segs
 SET seg_length = ST_Length(seg_geom), no_points = ST_NumPoints(seg_geom);
 					</programlisting>
 				We use twice the <varname>LEAD</varname> window function for obtaning the next stop and the next percentage of a given stop and the <varname>MAX</varname> window function for obtaining the total number of stops in a trip. Then, we generate the geometry of the segment betwen two stops using the function <varname>ST_LineSubstring</varname> and compute the length and the number of points in the segment with functions <varname>ST_Length</varname> and <varname>ST_NumPoints</varname>.
 				</para>
 
 				<para>
-				The geometry of a segment is a linestring containing multiple points. From the previous table we know at which time the trip arrived at the first point and at the last point of the segment. However, we need to determine at which time the trip arrived at the intermediate points of the segments. For this we create a table <varname>trip_points</varname> that contains all the points composing the geometry of a segment.
+				The geometry of a segment is a linestring containing multiple points. From the previous table we know at which time the trip arrived at the first point and at the last point of the segment. To determine at which time the trip arrived at the intermediate points of the segments, we create a table <varname>trip_points</varname> that contains all the points composing the geometry of a segment.
 					<programlisting>
 DROP TABLE IF EXISTS trip_points;
 CREATE TABLE trip_points (
@@ -4842,27 +4838,25 @@ CREATE TABLE trip_points (
 INSERT INTO trip_points (trip_id, route_id, service_id, stop1_sequence, 
 	point_sequence, point_geom, point_arrival_time)
 WITH temp1 AS (	
-	SELECT trip_id, route_id, service_id, stop1_sequence, 
-		stop2_sequence, no_stops, stop1_arrival_time, stop2_arrival_time, seg_length, 
+	SELECT trip_id, route_id, service_id, stop1_sequence, stop2_sequence, 
+		no_stops, stop1_arrival_time, stop2_arrival_time, seg_length, 
 		(dp).path[1] AS point_sequence, no_points, (dp).geom as point_geom
 	FROM trip_segs, ST_DumpPoints(seg_geom) AS dp
 ),
 temp2 AS (
-	SELECT trip_id, route_id, service_id, stop1_sequence, 
-		stop1_arrival_time, stop2_arrival_time, seg_length,  point_sequence, 
-		no_points, point_geom
+	SELECT trip_id, route_id, service_id, stop1_sequence, stop1_arrival_time, 
+		stop2_arrival_time, seg_length, point_sequence, no_points, point_geom
 	FROM temp1 
 	WHERE point_sequence &lt;&gt; no_points OR stop2_sequence = no_stops
 ),
 temp3 AS (
-	SELECT trip_id, route_id, service_id, stop1_sequence,   
-		stop1_arrival_time, stop2_arrival_time, point_sequence, no_points, point_geom, 
+	SELECT trip_id, route_id, service_id, stop1_sequence, stop1_arrival_time,
+		stop2_arrival_time, point_sequence, no_points, point_geom, 
 		ST_Length(ST_MakeLine(array_agg(point_geom) OVER w)) / seg_length AS perc
 	FROM temp2 WINDOW w AS (PARTITION BY trip_id, service_id, stop1_sequence 
 		ORDER BY point_sequence)
 )
-SELECT trip_id, route_id, service_id, stop1_sequence, 
-	point_sequence, point_geom, 
+SELECT trip_id, route_id, service_id, stop1_sequence, point_sequence, point_geom, 
 	CASE
 	WHEN point_sequence = 1 then stop1_arrival_time
 	WHEN point_sequence = no_points then stop2_arrival_time
@@ -4888,9 +4882,11 @@ CREATE TABLE trips_input (
 
 INSERT INTO trips_input
 SELECT trip_id, route_id, t.service_id, date, point_geom, date + point_arrival_time AS t
-FROM trip_points t JOIN service_dates s ON t.service_id = s.service_id;
+FROM trip_points t JOIN 
+	( SELECT service_id, MIN(date) AS date FROM service_dates GROUP BY service_id) s 
+	ON t.service_id = s.service_id;
 					</programlisting>
-				For this, we join the <varname>trip_points</varname> and the <varname>service_dates</varname> tables to obtain all the dates at which a trip is performed and then compute the arrival time at each point composing the trip. 
+				In the inner query of the <varname>INSERT</varname> statement, we select the first date of a service in the <varname>service_dates</varname> table and then we join the resulting table with the <varname>trip_points</varname> table to compute the arrival time at each point composing the trips. Notice that we filter the first date of each trip for optimization purposes because in the next step below we use the <varname>shift</varname> function to compute the trips to all other dates. Alternatively, we could join the two tables but this will be considerably slower for big GTFS files. 
 				</para>
 
 				<para>
@@ -4910,14 +4906,19 @@ SELECT trip_id, route_id, date, tgeompointseq(array_agg(tgeompointinst(point_geo
 	ORDER BY T))
 FROM trips_input
 GROUP BY trip_id, route_id, date;
+
+INSERT INTO trips_mdb(trip_id, service_id, route_id, date, trip)
+SELECT trip_id, route_id, t.service_id, d.date, 
+	shift(trip, make_interval(days => d.date - t.date))
+FROM trips_mdb t JOIN service_dates d ON t.service_id = d.service_id AND t.date &lt;&gt; d.date;
 					</programlisting>
-				For this, we group the rows in the <varname>trips_input</varname> table by <varname>trip_id</varname> and <varname>date</varname> while keeping the <varname>route_id</varname> atribute, use the <varname>array_agg</varname> function to construct an array containing the temporal points composing the trip ordered by time, and compute the trip from this array using the function <varname>tgeompointseq</varname>. As mentioned before, this table contains almost 10,000 trips in MobilityDB format obtained from the original GTFS files. 
+				In the first <varname>INSERT</varname> statement we group the rows in the <varname>trips_input</varname> table by <varname>trip_id</varname> and <varname>date</varname> while keeping the <varname>route_id</varname> atribute, use the <varname>array_agg</varname> function to construct an array containing the temporal points composing the trip ordered by time, and compute the trip from this array using the function <varname>tgeompointseq</varname>. As explained above, table <varname>trips_input</varname> only contains the first date of a trip. In the second <varname>INSERT</varname> statement we add the trips for all the other dates with the function <varname>shift</varname>. 
 				</para>
 			</sect2>
 		</sect1>
 
 		<sect1 id ="location_history">
-			<title>Loading Google Location History in MobilityDB</title>
+			<title>Loading Google Location History Data</title>
 				<para>By activating the Location History in your Google account, you let Google track where you go with every mobile device. You can view and manage your Location History information through Google Maps Timeline. The data is provided in JSON format. An example of such a file is as follows.
 					<programlisting>
 {
@@ -5016,6 +5017,138 @@ SET trajectory = trajectory(trip);
 						<imageobject><imagedata fileref='images/location_history.png' /></imageobject>
 					</mediaobject>
 				</figure>
+
+		</sect1>
+
+		<sect1 id ="loading_gpx">
+			<title>Loading GPX Data</title>
+
+			<para>
+			GPX, or GPS Exchange Format, is an XML data format for GPS data. Location data (and optionally elevation, time, and other information) is stored in tags and can be interchanged between GPS devices and software. Conceptually, a GPX file contains tracks, which are a record of where a moving object has been, and routes, which are suggestions about where it might go in the future. Furthermore, both tracks and routes and composed by points. The following is a truncated (for brevity) example GPX file.
+				<programlisting>
+&lt;?xml version='1.0' encoding='UTF-8' standalone='yes' ?&gt;
+&lt;gpx version="1.1" 
+	xmlns="http://www.topografix.com/GPX/1/1" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
+	http://www.topografix.com/GPX/1/1/gpx.xsd" 
+	creator="Example creator"&gt;
+ 	&lt;metadata&gt;
+		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
+		&lt;author&gt;Example creator&lt;/author&gt;
+		&lt;link href="https://..." /&gt;
+		&lt;time&gt;2014-12-14T14:32:04.650Z&lt;/time&gt;
+	&lt;/metadata&gt;
+	&lt;trk&gt;
+		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
+		&lt;trkseg&gt;
+			&lt;trkpt lat="30.16398" lon="31.467701"&gt;
+				&lt;ele&gt;76&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:10.339Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			&lt;trkpt lat="30.16394" lon="31.467333"&gt;
+				&lt;ele&gt;73&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:16.00Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			&lt;trkpt lat="30.16408" lon="31.467218"&gt;
+				&lt;ele&gt;74&lt;/ele&gt;
+				&lt;time&gt;2014-12-14T14:32:19.00Z&lt;/time&gt;
+			&lt;/trkpt&gt;
+			[...]
+		&lt;/trkseg&gt;
+		&lt;trkseg&gt;
+			[...]
+		&lt;/trkseg&gt;
+		[...]
+	&lt;/trk&gt;
+	&lt;trk&gt;
+		[...]
+	&lt;/trk&gt;
+	[...]
+&lt;gpx&gt;
+				</programlisting>
+			</para>
+
+			<para>
+			The following Python program called <varname>gpx_to_csv.py</varname> uses <varname>expat</varname>, a stream-oriented XML parser library, to convert the above GPX file in CSV format.
+				<programlisting>
+import sys
+import xml.parsers.expat
+
+stack = []
+def start_element(name, attrs):
+	stack.append(name)
+	if name == 'gpx' :
+		print("lon,lat,time")
+	if name == 'trkpt' :
+		print("{},{},".format(attrs['lon'], attrs['lat']), end="")
+
+def end_element(name):
+	stack.pop()
+
+def char_data(data):
+	if stack[-1] == "time" and stack[-2] == "trkpt" :
+		print(data)
+
+p = xml.parsers.expat.ParserCreate()
+
+p.StartElementHandler = start_element
+p.EndElementHandler = end_element
+p.CharacterDataHandler = char_data
+
+p.ParseFile(sys.stdin.buffer)
+				</programlisting>
+			</para>
+
+			<para>
+			This Python program can be executed as follows.
+				<programlisting>
+python3 gpx_to_csv.py &lt; example.gpx &gt; example.csv
+				</programlisting>
+			The resulting CSV file is given next.
+				<programlisting>
+lon,lat,time
+31.46032,30.037502,2015-02-09T08:10:16.00Z
+31.460901,30.039026,2015-02-09T08:10:31.00Z
+31.461981,30.039816,2015-02-09T08:10:57.00Z
+31.461996,30.039801,2015-02-09T08:10:58.00Z
+...
+				</programlisting>
+			The above CSV file can be loaded into MobilityDB as follows.
+				<programlisting>
+DROP TABLE IF EXISTS trips_input;
+CREATE TABLE trips_input (
+	date date,
+	lon float, 
+	lat float, 
+	time timestamptz
+);
+
+COPY trips_input(lon, lat, time) FROM 
+	'/home/gpx_data/example.csv' DELIMITER ',' CSV HEADER;
+
+UPDATE trips_input
+SET date = date(time);
+
+DROP TABLE IF EXISTS trips_mdb;
+CREATE TABLE trips_mdb (
+	date date NOT NULL,
+	trip tgeompoint,
+	trajectory geometry,
+	PRIMARY KEY (date)
+);
+
+INSERT INTO trips_mdb(date, trip)
+SELECT date, tgeompointseq(array_agg(tgeompointinst(
+	ST_SetSRID(ST_Point(lon, lat),4326), time) 
+	ORDER BY time))
+FROM trips_input
+GROUP BY date;
+
+UPDATE trips_mdb
+SET trajectory = trajectory(trip);
+				</programlisting>
+			</para>
 
 		</sect1>
 	</chapter>
@@ -5191,8 +5324,7 @@ BEGIN
 	LIMIT 10 OFFSET 10;
 
 	DROP TABLE IF EXISTS TripsInput CASCADE;
-	CREATE TABLE TripsInput
-	(
+	CREATE TABLE TripsInput	(
 		CarId integer,
 		TripId integer,
 		TStart timestamp without time zone,
@@ -5227,8 +5359,7 @@ BEGIN
 	SET inst = tgeompointinst(Geom, TStart);
 
 	DROP TABLE IF EXISTS Trips CASCADE;
-	CREATE TABLE Trips
-	(
+	CREATE TABLE Trips (
 		CarId integer NOT NULL,
 		TripId integer NOT NULL,
 		Trip tgeompoint,
@@ -5275,8 +5406,7 @@ SELECT berlinmod_load('0.05');
 			<programlisting>
 [...]				
 DROP TABLE IF EXISTS TripsInput CASCADE;
-CREATE TABLE TripsInput
-(
+CREATE TABLE TripsInput (
 	CarId integer,
 	TripId integer,
 	TripDate date,
@@ -5300,8 +5430,7 @@ FROM (SELECT DISTINCT TripId, date_trunc('day', MIN(TStart) OVER
 WHERE T1.TripId = T2.TripId;
 [...]				
 DROP TABLE IF EXISTS Trips CASCADE;
-CREATE TABLE Trips
-(
+CREATE TABLE Trips (
 	CarId integer NOT NULL,
 	TripId integer NOT NULL,
 	TripDate date,
