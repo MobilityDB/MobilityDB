@@ -50,10 +50,10 @@ stbox_parse(char **str)
 		}
 		p_whitespace(str);
 	}
-	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0) 
+	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
 	{
 		*str += 9;
-		hasz = geodetic = 1;
+		hasz = geodetic = true;
 		p_whitespace(str);
 		if (strncasecmp(*str, "T", 1) == 0)
 		{

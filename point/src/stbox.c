@@ -86,6 +86,8 @@ stbox_to_string(const STBOX *box)
 	static int size = MAXSTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *)palloc(size);
+	char *boxtype = MOBDB_FLAGS_GET_GEODETIC(box->flags) ? "GEODSTBOX" : "STBOX";
+
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -122,8 +124,7 @@ stbox_to_string(const STBOX *box)
 	}
 	else
 		/* Missing spatial dimension */
-		snprintf(str, size, "STBOX T((,,%s),(,,%s))", 
-			strtmin, strtmax);
+		snprintf(str, size, "%s T((,,%s),(,,%s))", boxtype, strtmin, strtmax);
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
 		pfree(strtmin);
@@ -309,7 +310,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
 	TimestampTz tmin, tmax, ttmp;
-	bool hasx = false, hasz = false, hasm = false, hast = false;
+	bool hasx = false, hasz = false, hast = false;
 
 	assert(PG_NARGS() == 2 || PG_NARGS() == 6 || PG_NARGS() == 8);
 	if (PG_NARGS() == 2)
