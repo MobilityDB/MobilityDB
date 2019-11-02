@@ -290,7 +290,7 @@ stboxt_constructor(PG_FUNCTION_ARGS)
 	result->ymin = ymin;
 	result->ymax = ymax;
 
-	/* Process M min/max */
+	/* Process T min/max */
 	if (tmin > tmax)
 	{
 		ttmp = tmin;
@@ -379,8 +379,8 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 
 	if (hast)
 	{
-		/* Process M min/max */
-		if ( tmin > tmax )
+		/* Process T min/max */
+		if (tmin > tmax)
 		{
 			ttmp = tmin;
 			tmin = tmax;

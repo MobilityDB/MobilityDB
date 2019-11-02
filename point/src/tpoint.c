@@ -85,7 +85,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 	if (typmod < 0 && duration_type == 0)
 		return temp;
 	/* Typmod has a preference for SRID? Geometry SRID had better match.  */
-	if ( typmod_srid > 0 && typmod_srid != tpoint_srid )
+	if (typmod_srid > 0 && typmod_srid != tpoint_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
 					tpoint_srid, typmod_srid) ));
