@@ -11,11 +11,7 @@ select extent(inst) from tbl_tgeompointinst;
 (1 row)
 
 select extent(inst) from tbl_tgeogpointinst;
-                                                              extent                                                              
-----------------------------------------------------------------------------------------------------------------------------------
- GEODSTBOX T((0.30129021,-0.12238938,0.5739544,2001-01-04 09:31:00+00),(0.81489998,0.37733009,0.94804142,2001-12-30 22:05:00+00))
-(1 row)
-
+ERROR:  One argument has Z dimension but the other does not
 select extent(ti) from tbl_tgeompointi;
                                                 extent                                                
 ------------------------------------------------------------------------------------------------------
@@ -23,11 +19,7 @@ select extent(ti) from tbl_tgeompointi;
 (1 row)
 
 select extent(ti) from tbl_tgeogpointi;
-                                                              extent                                                              
-----------------------------------------------------------------------------------------------------------------------------------
- GEODSTBOX T((0.26595744,-0.13913035,0.57390403,2001-01-10 21:37:00+00),(0.81890941,0.41401273,0.9504269,2001-12-29 00:22:00+00))
-(1 row)
-
+ERROR:  One argument has Z dimension but the other does not
 select extent(seq) from tbl_tgeompointseq;
                                                 extent                                                
 ------------------------------------------------------------------------------------------------------
@@ -35,11 +27,7 @@ select extent(seq) from tbl_tgeompointseq;
 (1 row)
 
 select extent(seq) from tbl_tgeogpointseq;
-                                                              extent                                                               
------------------------------------------------------------------------------------------------------------------------------------
- GEODSTBOX T((0.26864859,-0.12480921,0.57369322,2001-01-02 19:00:00+00),(0.81903058,0.41619259,0.95074242,2001-12-19 18:07:00+00))
-(1 row)
-
+ERROR:  One argument has Z dimension but the other does not
 select extent(ts) from tbl_tgeompoints;
                                                 extent                                                
 ------------------------------------------------------------------------------------------------------
@@ -47,11 +35,7 @@ select extent(ts) from tbl_tgeompoints;
 (1 row)
 
 select extent(ts) from tbl_tgeogpoints;
-                                                             extent                                                             
---------------------------------------------------------------------------------------------------------------------------------
- GEODSTBOX T((0.2699886,-0.13447556,0.5735808,2001-01-01 20:01:00+00),(0.81845045,0.4233391,0.95098066,2001-12-22 20:33:00+00))
-(1 row)
-
+ERROR:  One argument has Z dimension but the other does not
 select extent(temp) from tbl_tgeompoint;
                                               extent                                               
 ---------------------------------------------------------------------------------------------------
@@ -59,11 +43,7 @@ select extent(temp) from tbl_tgeompoint;
 (1 row)
 
 select extent(temp) from tbl_tgeogpoint;
-                                                              extent                                                              
-----------------------------------------------------------------------------------------------------------------------------------
- GEODSTBOX T((0.27862182,-0.13447556,0.57363325,2001-01-04 09:31:00+00),(0.81903058,0.40801156,0.9502285,2001-12-17 18:56:00+00))
-(1 row)
-
+ERROR:  One argument has Z dimension but the other does not
 select extent(inst) from tbl_tgeompoint3Dinst;
                                                            extent                                                           
 ----------------------------------------------------------------------------------------------------------------------------
