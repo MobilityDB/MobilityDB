@@ -48,9 +48,9 @@ tbox_in(PG_FUNCTION_ARGS)
 char *
 tbox_to_string(const TBOX *box)
 {
-	static int sz = MAXTBOXLEN + 1;
+	static int size = MAXTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
-	str = (char *)palloc(sz);
+	str = (char *)palloc(size);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -60,15 +60,15 @@ tbox_to_string(const TBOX *box)
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, sz, "TBOX((%.8g,%s),(%.8g,%s))", 
+			snprintf(str, size, "TBOX((%.8g,%s),(%.8g,%s))", 
 				box->xmin, strtmin, box->xmax, strtmax);
 		else 
-			snprintf(str, sz, "TBOX((%.8g,),(%.8g,))", 
+			snprintf(str, size, "TBOX((%.8g,),(%.8g,))", 
 				box->xmin,box->xmax);
 	}
 	else
 		/* Missing X dimension */
-		snprintf(str, sz, "TBOX((,%s),(,%s))", 
+		snprintf(str, size, "TBOX((,%s),(,%s))", 
 			strtmin, strtmax);
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{

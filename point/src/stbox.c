@@ -83,9 +83,9 @@ stbox_in(PG_FUNCTION_ARGS)
 static char *
 stbox_to_string(const STBOX *box)
 {
-	static int sz = MAXSTBOXLEN + 1;
+	static int size = MAXSTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
-	str = (char *)palloc(sz);
+	str = (char *)palloc(size);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -97,32 +97,32 @@ stbox_to_string(const STBOX *box)
 		if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
 		{
 			if (MOBDB_FLAGS_GET_T(box->flags))
-				snprintf(str, sz, "GEODSTBOX T((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
+				snprintf(str, size, "GEODSTBOX T((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
 					box->xmin, box->ymin, box->zmin, strtmin, 
 					box->xmax, box->ymax, box->zmax, strtmax);
 			else
-				snprintf(str, sz, "GEODSTBOX((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
+				snprintf(str, size, "GEODSTBOX((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
 					box->xmin, box->ymin, box->zmin, 
 					box->xmax, box->ymax, box->zmax);
 		}
 		else if (MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, sz, "STBOX ZT((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
+			snprintf(str, size, "STBOX ZT((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
 				box->xmin, box->ymin, box->zmin, strtmin, 
 				box->xmax, box->ymax, box->zmax, strtmax);
 		else if (MOBDB_FLAGS_GET_Z(box->flags))
-			snprintf(str, sz, "STBOX Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
+			snprintf(str, size, "STBOX Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
 				box->xmin, box->ymin, box->zmin, 
 				box->xmax, box->ymax, box->zmax);
 		else if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, sz, "STBOX T((%.8g,%.8g,%s),(%.8g,%.8g,%s))", 
+			snprintf(str, size, "STBOX T((%.8g,%.8g,%s),(%.8g,%.8g,%s))", 
 				box->xmin, box->ymin, strtmin, box->xmax, box->ymax, strtmax);
 		else 
-			snprintf(str, sz, "STBOX((%.8g,%.8g),(%.8g,%.8g))", 
+			snprintf(str, size, "STBOX((%.8g,%.8g),(%.8g,%.8g))", 
 				box->xmin, box->ymin, box->xmax, box->ymax);
 	}
 	else
 		/* Missing spatial dimension */
-		snprintf(str, sz, "STBOX T((,,%s),(,,%s))", 
+		snprintf(str, size, "STBOX T((,,%s),(,,%s))", 
 			strtmin, strtmax);
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -298,7 +298,6 @@ stboxt_constructor(PG_FUNCTION_ARGS)
 	}
 	result->tmin = tmin;
 	result->tmax = tmax;
-	MOBDB_FLAGS_SET_T(result->flags, true);
 
 	PG_RETURN_POINTER(result);
 }
@@ -308,13 +307,18 @@ PG_FUNCTION_INFO_V1(geodstbox_constructor);
 PGDLLEXPORT Datum
 geodstbox_constructor(PG_FUNCTION_ARGS)
 {
-	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, 
-		zmin = 0, zmax = 0, tmp; /* keep compiler quiet */
+	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
 	TimestampTz tmin, tmax, ttmp;
-	bool hast = false;
+	bool hasx = false, hasz = false, hasm = false, hast = false;
 
-	assert(PG_NARGS() == 6 || PG_NARGS() == 8);
-	if (PG_NARGS() == 6)
+	assert(PG_NARGS() == 2 || PG_NARGS() == 6 || PG_NARGS() == 8);
+	if (PG_NARGS() == 2)
+	{
+		tmin = PG_GETARG_TIMESTAMPTZ(0);
+		tmax = PG_GETARG_TIMESTAMPTZ(1);
+		hast = true;
+	}
+	else if (PG_NARGS() == 6)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -322,6 +326,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		xmax = PG_GETARG_FLOAT8(3);
 		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
+		hasx = hasz = true;
 	}
 	else if (PG_NARGS() == 8)
 	{
@@ -333,41 +338,43 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		ymax = PG_GETARG_FLOAT8(5);
 		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_TIMESTAMPTZ(7);
-		hast = true;
+		hasx = hasz = hast = true;
 	}
 
-	STBOX *result = stbox_new(true, true, hast, true);
+	STBOX *result = stbox_new(hasx, hasz, hast, true);
 
 	/* Process X min/max */
-	if (xmin > xmax)
+	if (hasx)
 	{
-		tmp = xmin;
-		xmin = xmax;
-		xmax = tmp;
-	}
-	result->xmin = xmin;
-	result->xmax = xmax;
+		if (xmin > xmax)
+		{
+			tmp = xmin;
+			xmin = xmax;
+			xmax = tmp;
+		}
+		result->xmin = xmin;
+		result->xmax = xmax;
 
-	/* Process Y min/max */
-	if (ymin > ymax)
-	{
-		tmp = ymin;
-		ymin = ymax;
-		ymax = tmp;
-	}
-	result->ymin = ymin;
-	result->ymax = ymax;
+		/* Process Y min/max */
+		if (ymin > ymax)
+		{
+			tmp = ymin;
+			ymin = ymax;
+			ymax = tmp;
+		}
+		result->ymin = ymin;
+		result->ymax = ymax;
 
-	/* Process Z min/max */
-	if (zmin > zmax)
-	{
-		tmp = zmin;
-		zmin = zmax;
-		zmax = tmp;
+		/* Process Z min/max */
+		if (zmin > zmax)
+		{
+			tmp = zmin;
+			zmin = zmax;
+			zmax = tmp;
+		}
+		result->zmin = zmin;
+		result->zmax = zmax;
 	}
-	result->zmin = zmin;
-	result->zmax = zmax;
-	MOBDB_FLAGS_SET_Z(result->flags, true);
 
 	if (hast)
 	{
@@ -380,12 +387,14 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		}
 		result->tmin = tmin;
 		result->tmax = tmax;
-		MOBDB_FLAGS_SET_T(result->flags, true);
 	}
-
 
 	PG_RETURN_POINTER(result);
 }
+
+/*****************************************************************************
+ * Comparison functions
+ *****************************************************************************/
 
 /*
  * Compare two boxes
