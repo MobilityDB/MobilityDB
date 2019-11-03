@@ -48,9 +48,12 @@
  * This function is used to remove the time part from the sample rows after
  * getting the statistics from the time dimension, to be able to collect
  * spatial statistics in the same stats variable.
+ * The function is derived from PostgreSQL function heap_modify_tuple
  */
+
+/* OLD VERSION
 static HeapTuple
-tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
+tpoint_remove_timedim_old(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
 	int natts, Datum value)
 {
 	Datum *replValues = (Datum *) palloc(natts * sizeof(Datum));
@@ -59,7 +62,7 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 
 	for (int i = 0; i < natts; i++)
 	{
-		/* tupattnum is 1-based */
+		/ * tupattnum is 1-based * /
 		if (i == tupattnum - 1)
 		{
 			replValues[i] = tpoint_values_internal(DatumGetTemporal(value));
@@ -75,6 +78,33 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 	}
 	HeapTuple result = heap_modify_tuple(tuple, tupDesc, replValues, replIsnull, doReplace);
 	pfree(replValues); pfree(replIsnull); pfree(doReplace);
+	return result;
+}
+*/
+
+static HeapTuple
+tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
+	int natts, Datum value, Datum *values, bool *isnull)
+{
+	heap_deform_tuple(tuple, tupDesc, values, isnull);
+
+	Datum replValue = tpoint_values_internal(DatumGetTemporal(value));
+	/* tupattnum is 1-based */
+	// pfree(DatumGetPointer(values[tupattnum - 1]));
+	values[tupattnum - 1] = replValue;
+
+	HeapTuple result = heap_form_tuple(tupDesc, values, isnull);
+
+	/*
+	 * copy the identification info of the old tuple: t_ctid, t_self, and OID
+	 * (if any)
+	 */
+	result->t_data->t_ctid = tuple->t_data->t_ctid;
+	result->t_self = tuple->t_self;
+	result->t_tableOid = tuple->t_tableOid;
+	if (tupDesc->tdhasoid)
+		HeapTupleSetOid(result, HeapTupleGetOid(tuple));
+
 	return result;
 }
 
@@ -97,15 +127,19 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* Must copy the target values into anl_context */
 	old_context = MemoryContextSwitchTo(stats->anl_context);
 
+	Datum *values = (Datum *) palloc(stats->tupDesc->natts * sizeof(Datum));
+	bool *isnull = (bool *) palloc(stats->tupDesc->natts * sizeof(bool));
+
 	/* Remove time component for the tuples */
 	for (int i = 0; i < samplerows; i++)
 	{
-		bool isnull;
-		Datum value = fetchfunc(stats, i, &isnull);
-		if (isnull)
+		bool valueisnull;
+		Datum value = fetchfunc(stats, i, &valueisnull);
+		if (valueisnull)
 			continue;
 		stats->rows[i] = tpoint_remove_timedim(stats->rows[i], 	
-			stats->tupDesc, stats->tupattnum, stats->tupDesc->natts, value);
+			stats->tupDesc, stats->tupattnum, stats->tupDesc->natts, value,
+			values, isnull);
 	}
 
 	/* Compute statistics for the geometry component */
@@ -117,6 +151,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	
 	/* Switch back to the previous context */
 	MemoryContextSwitchTo(old_context);
+
+	pfree(values); pfree(isnull);
 
 	return;
 }
