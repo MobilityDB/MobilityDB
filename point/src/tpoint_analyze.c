@@ -148,11 +148,11 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 	/* Put the total width of the column, variable size */
 	stats->stawidth = stawidth;
-	
-	/* Switch back to the previous context */
-	MemoryContextSwitchTo(old_context);
 
 	pfree(values); pfree(isnull);
+
+	/* Switch back to the previous context */
+	MemoryContextSwitchTo(old_context);
 
 	return;
 }
