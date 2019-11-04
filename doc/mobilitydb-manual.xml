@@ -2306,8 +2306,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 		</sect1>
 
 		<sect1>
-			<title>Ever and Always Equals Operators</title>
-			<para>These operators test whether a temporal value is ever or always equal to a value of the base type. As explained in <xref linkend="manipulating_temporal_types" />, these are typically used to test whether a condition is ever or always satisfied.</para>
+			<title>Ever and Always Comparison Operators</title>
+			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>&amp;</varname> (ever) and <varname>@</varname> (always). Some examples are <varname>&amp;=</varname>, <varname>@&lt;&gt;</varname>, or <varname>&amp;&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. Notice that ever and always comparisons are inverse operators: for example, <varname>&amp;=</varname> is the inverse of <varname>@&lt;&gt;</varname>, and <varname>&amp;&gt;</varname> is the inverse of <varname>@&lt;=</varname>.</para>
 			<itemizedlist>
 				<listitem>
 					<para><varname>&amp;=</varname>: Is ever equal to the value?</para>
@@ -2326,15 +2326,122 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;=
 
 				<listitem>
 					<para><varname>@=</varname>: Is always equal to the value?</para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 					<para>Signature: <varname>ttype @= base: bool</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @= 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @= 2;
 -- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @= 
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' @= 
 	geometry 'Point(1 1)';
 -- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&lt;&gt;</varname>: Is ever different from the value?</para>
+					<para>Signature: <varname>ttype &amp;&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' &amp;&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' &amp;&lt;&gt; 
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>@=</varname>: Is always different to the value?</para>
+					<para>Signature: <varname>ttype @&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @&lt;&gt;
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&lt;</varname>: Ever less than</para>
+					<para>Signature: <varname>tnumber &amp;&lt; number: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' &amp;&lt; 2;
+-- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
+SELECT tint '[2@2012-01-01, 2@2012-01-05)' &amp;&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
+-- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&gt;</varname>: Ever greater than</para>
+					<para>Signature: <varname>tnumber &amp;&gt; number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-03, 1@2012-01-05)' &amp;&gt; 1;
+-- "[f@2012-01-03, f@2012-01-05)"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&lt;=</varname>: Ever less than or equal to</para>
+					<para>Signature: <varname>tnumber &amp;&lt;= number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-01, 1@2012-01-05)' &amp;&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
+-- "{t@2012-01-03, t@2012-01-04}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>&amp;&gt;=</varname>: Ever greater than or equal to</para>
+					<para>Signature: <varname>tnumber &amp;&gt;= number: bool</varname></para>
+					<programlisting>
+SELECT 'AAA'::text &amp;&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
+	[BBB@2012-01-04, BBB@2012-01-05)}';
+-- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>@&lt;</varname>: Always less than</para>
+					<para>Signature: <varname>tnumber @&lt; number: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' @&lt; 2;
+-- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
+SELECT tint '[2@2012-01-01, 2@2012-01-05)' @&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
+-- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>@&gt;</varname>: Always greater than</para>
+					<para>Signature: <varname>tnumber @&gt; number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-03, 1@2012-01-05)' @&gt; 1;
+-- "[f@2012-01-03, f@2012-01-05)"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>@&lt;=</varname>: Always less than or equal to</para>
+					<para>Signature: <varname>tnumber @&lt;= number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-01, 1@2012-01-05)' @&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
+-- "{t@2012-01-03, t@2012-01-04}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>@&gt;=</varname>: Always greater than or equal to</para>
+					<para>Signature: <varname>tnumber @&gt;= number: bool</varname></para>
+					<programlisting>
+SELECT 'AAA'::text @&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
+	[BBB@2012-01-04, BBB@2012-01-05)}';
+-- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2342,6 +2449,7 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @=
 
 		<sect1>
 			<title>Temporal Comparison Operators</title>
+			<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
 
 			<itemizedlist>
 				<listitem>
@@ -2376,7 +2484,7 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; tint '[2@2012-01-02, 2@20
 
 				<listitem>
 					<para><varname>#&lt;</varname>: Temporal less than</para>
-					<para>Signature: <varname>{base, ttype} #&lt; {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&lt; {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
@@ -2387,7 +2495,7 @@ SELECT tint '[2@2012-01-01, 2@2012-01-05)' #&lt; tfloat '[1@2012-01-03, 3@2012-0
 
 				<listitem>
 					<para><varname>#&gt;</varname>: Temporal greater than</para>
-					<para>Signature: <varname>{base, ttype} #&gt; {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&gt; {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
@@ -2396,7 +2504,7 @@ SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 
 				<listitem>
 					<para><varname>#&lt;=</varname>: Temporal less than or equal to</para>
-					<para>Signature: <varname>{base, ttype} #&lt;= {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&lt;= {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
@@ -2405,7 +2513,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-
 
 				<listitem>
 					<para><varname>#&gt;=</varname>: Temporal greater than or equal to</para>
-					<para>Signature: <varname>{base, ttype} #&gt;= {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&gt;= {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';

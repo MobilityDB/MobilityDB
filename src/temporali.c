@@ -758,6 +758,31 @@ temporali_timestamps(TemporalI *ti)
 	return result;
 }
 
+/* Shift the time span of a temporal value by an interval */
+
+TemporalI *
+temporali_shift(TemporalI *ti, Interval *interval)
+{
+   	TemporalI *result = temporali_copy(ti);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
+		inst->t = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+	}
+	/* Recompute the bounding box */
+	void *bbox = temporali_bbox_ptr(result); 
+	temporali_make_bbox(bbox, instants, ti->count);
+	pfree(instants);
+	return result;
+}
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions 
+ *****************************************************************************/
+
 /* Is the temporal value ever equal to the value? */
 
 bool
@@ -811,25 +836,154 @@ temporali_always_eq(TemporalI *ti, Datum value)
 	return true;
 }
 
-/* Shift the time span of a temporal value by an interval */
+/* Is the temporal value ever not equal to the value? */
 
-TemporalI *
-temporali_shift(TemporalI *ti, Interval *interval)
+bool
+temporali_ever_ne(TemporalI *ti, Datum value)
 {
-   	TemporalI *result = temporali_copy(ti);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
+	return ! temporali_always_eq(ti, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporali_always_ne(TemporalI *ti, Datum value)
+{
+	return ! temporali_ever_eq(ti, value);
+}
+
+/*****************************************************************************/
+
+/* Is the temporal value ever less than to the value? */
+
+bool
+temporali_ever_lt(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
-		inst->t = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d >= box.xmax)
+			return false;
 	}
-	/* Recompute the bounding box */
-    void *bbox = temporali_bbox_ptr(result); 
-    temporali_make_bbox(bbox, instants, ti->count);
-    pfree(instants);
-	return result;
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (datum_lt(valueinst, value, ti->valuetypid))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporali_ever_le(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d > box.xmax)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (datum_le(valueinst, value, ti->valuetypid))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporali_always_lt(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d >= box.xmin)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (! datum_lt(valueinst, value, ti->valuetypid))
+			return false;
+	}
+	return true;
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporali_always_le(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d > box.xmin)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (! datum_le(valueinst, value, ti->valuetypid))
+			return false;
+	}
+	return true;
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+bool
+temporali_ever_gt(TemporalI *ti, Datum value)
+{
+	return ! temporali_always_le(ti, value);
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+bool
+temporali_ever_ge(TemporalI *ti, Datum value)
+{
+	return ! temporali_always_lt(ti, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporali_always_gt(TemporalI *ti, Datum value)
+{
+	return ! temporali_ever_le(ti, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporali_always_ge(TemporalI *ti, Datum value)
+{
+	return ! temporali_ever_lt(ti, value);
 }
 
 /*****************************************************************************

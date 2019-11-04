@@ -1209,53 +1209,6 @@ temporals_timestamps(TemporalS *ts)
 	return result;
 }
 
-/* Is the temporal value ever equal to the value? */
-
-bool
-temporals_ever_eq(TemporalS *ts, Datum value)
-{
-	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporals_bbox(&box, ts);
-		double d = datum_double(value, ts->valuetypid);
-		if (d < box.xmin || box.xmax < d)
-			return false;
-	}
-
-	for (int i = 0; i < ts->count; i++) 
-		if (temporalseq_ever_eq(temporals_seq_n(ts, i), value))
-			return true;
-	return false;
-}
-
-/* Is the temporal value always equal to the value? */
-
-bool
-temporals_always_eq(TemporalS *ts, Datum value)
-{
-	/* Bounding box test */
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		TBOX box;
-		memset(&box, 0, sizeof(TBOX));
-		temporals_bbox(&box, ts);
-		if (ts->valuetypid == INT4OID)
-			return box.xmin == box.xmax &&
-				(int)(box.xmax) == DatumGetInt32(value);
-		else
-			return box.xmin == box.xmax &&
-				box.xmax == DatumGetFloat8(value);
-	}
-
-	for (int i = 0; i < ts->count; i++) 
-		if (!temporalseq_always_eq(temporals_seq_n(ts, i), value))
-			return false;
-	return true;
-}
-
 /* Shift the time span of a temporal value by an interval */
 
 TemporalS *
@@ -1327,6 +1280,209 @@ temporals_continuous_time_internal(TemporalS *ts)
 		seq1 = seq2;
 	}
 	return true;
+}
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions 
+ *****************************************************************************/
+
+/* Is the temporal value ever equal to the value? */
+
+bool
+temporals_ever_eq(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		if (d < box.xmin || box.xmax < d)
+			return false;
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+		if (temporalseq_ever_eq(temporals_seq_n(ts, i), value))
+			return true;
+	return false;
+}
+
+/* Is the temporal value always equal to the value? */
+
+bool
+temporals_always_eq(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		if (ts->valuetypid == INT4OID)
+			return box.xmin == box.xmax &&
+				(int)(box.xmax) == DatumGetInt32(value);
+		else
+			return box.xmin == box.xmax &&
+				box.xmax == DatumGetFloat8(value);
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+		if (!temporalseq_always_eq(temporals_seq_n(ts, i), value))
+			return false;
+	return true;
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+bool
+temporals_ever_ne(TemporalS *ts, Datum value)
+{
+	return ! temporals_always_eq(ts, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporals_always_ne(TemporalS *ts, Datum value)
+{
+	return ! temporals_ever_eq(ts, value);
+}
+
+/*****************************************************************************/
+
+/* Is the temporal value ever less than to the value? */
+
+bool
+temporals_ever_lt(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		/* Maximum value may be non inclusive */ 
+		if (d > box.xmax)
+			return false;
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		if (temporalseq_ever_lt(seq, value))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporals_ever_le(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		if (d > box.xmax)
+			return false;
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		if (temporalseq_ever_le(seq, value))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporals_always_lt(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		/* Minimum value may be non inclusive */ 
+		if (d > box.xmin)
+			return false;
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		if (! temporalseq_always_lt(seq, value))
+			return false;
+	}
+	return true;
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporals_always_le(TemporalS *ts, Datum value)
+{
+	/* Bounding box test */
+	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		if (d > box.xmin)
+			return false;
+	}
+
+	for (int i = 0; i < ts->count; i++) 
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		if (! temporalseq_always_le(seq, value))
+			return false;
+	}
+	return true;
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+bool
+temporals_ever_gt(TemporalS *ts, Datum value)
+{
+	return ! temporals_always_le(ts, value);
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+bool
+temporals_ever_ge(TemporalS *ts, Datum value)
+{
+	return ! temporals_always_lt(ts, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporals_always_gt(TemporalS *ts, Datum value)
+{
+	return ! temporals_ever_le(ts, value);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporals_always_ge(TemporalS *ts, Datum value)
+{
+	return ! temporals_ever_lt(ts, value);
 }
 
 /*****************************************************************************
