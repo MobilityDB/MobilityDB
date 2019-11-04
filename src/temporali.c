@@ -792,7 +792,8 @@ temporali_always_equals(TemporalI *ti, Datum value)
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		if (ti->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&

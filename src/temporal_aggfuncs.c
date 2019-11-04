@@ -1335,6 +1335,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 	TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 	TBOX box1, *result = NULL;
+	memset(&box1, 0, sizeof(TBOX));
 
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
