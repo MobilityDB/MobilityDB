@@ -377,7 +377,7 @@ temporalinst_instants_array(TemporalInst *inst)
 /* Is the temporal value ever equal to the value? */
 
 bool
-temporalinst_ever_equals(TemporalInst *inst, Datum value)
+temporalinst_ever_eq(TemporalInst *inst, Datum value)
 {
 	return datum_eq(temporalinst_value(inst), value, inst->valuetypid);
 }
@@ -385,7 +385,7 @@ temporalinst_ever_equals(TemporalInst *inst, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporalinst_always_equals(TemporalInst *inst, Datum value)
+temporalinst_always_eq(TemporalInst *inst, Datum value)
 {
 	return datum_eq(temporalinst_value(inst), value, inst->valuetypid);
 }

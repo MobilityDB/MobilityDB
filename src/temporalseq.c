@@ -1762,7 +1762,7 @@ temporalseq_timestamps(TemporalSeq *seq)
  * same valuetypid.
  */
 static bool
-tempcontseq_ever_equals1(TemporalInst *inst1, TemporalInst *inst2, 
+tempcontseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2, 
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -1786,17 +1786,16 @@ tempcontseq_ever_equals1(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 bool
-temporalseq_ever_equals(TemporalSeq *seq, Datum value)
+temporalseq_ever_eq(TemporalSeq *seq, Datum value)
 {
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		temporalseq_bbox(&box1, seq);
-		number_to_box(&box2, value, seq->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
 
@@ -1818,7 +1817,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (tempcontseq_ever_equals1(inst1, inst2, lower_inc, upper_inc, value))
+		if (tempcontseq_ever_eq1(inst1, inst2, lower_inc, upper_inc, value))
 			return true;
 		inst1 = inst2;
 		lower_inc = true;
@@ -1829,7 +1828,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporalseq_always_equals(TemporalSeq *seq, Datum value)
+temporalseq_always_eq(TemporalSeq *seq, Datum value)
 {
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)

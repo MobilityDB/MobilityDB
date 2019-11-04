@@ -542,12 +542,12 @@ aggstate_write(SkipList *state, StringInfo buf)
 #else
 	pq_sendint32(buf, valuetypid);
 #endif
-    for (int i = 0; i < state->length; i ++)
+	for (int i = 0; i < state->length; i ++)
 	{
-        SPI_connect();
-        temporal_write(values[i], buf);
-        SPI_finish();
-    }
+		SPI_connect();
+		temporal_write(values[i], buf);
+		SPI_finish();
+	}
 #if MOBDB_PGSQL_VERSION < 110000
 	pq_sendint(buf, state->extrasize, 8);
 #else
@@ -1347,6 +1347,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 	TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 	TBOX box1, *result = NULL;
+	memset(&box1, 0, sizeof(TBOX));
 
 	/* Can't do anything with null inputs */
 	if (!box && !temp)

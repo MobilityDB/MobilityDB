@@ -1094,7 +1094,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				stats->statyplen[slot_idx] = range_typeentry->typlen;
 				stats->statypbyval[slot_idx] =range_typeentry->typbyval;
 				stats->statypalign[slot_idx] = range_typeentry->typalign;
-
 				slot_idx++;
 
 				/* Generate a length histogram slot entry */
@@ -1302,6 +1301,12 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 * We don't need to bother cleaning up any of our temporary palloc's. The
 	 * hashtable should also go away, as it used a child memory context.
 	 */
+
+	if (valuestats)
+	{
+		pfree(value_lowers); pfree(value_uppers); pfree(value_lengths);
+	}
+	pfree(time_lowers); pfree(time_uppers); pfree(time_lengths);
 }
 
 /*****************************************************************************

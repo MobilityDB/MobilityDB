@@ -178,6 +178,7 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 	STBOX box1, *result = NULL;
+	memset(&box1, 0, sizeof(STBOX));
 
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
@@ -185,30 +186,30 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	/* Null box and non-null temporal, return the bbox of the temporal */
 	if (!box)
 	{
-		result = palloc(sizeof(STBOX));
+		result = palloc0(sizeof(STBOX));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null box and null temporal, return the box */
 	if (!temp)
 	{
-		result = palloc(sizeof(STBOX));
+		result = palloc0(sizeof(STBOX));
 		memcpy(result, box, sizeof(STBOX));
 		PG_RETURN_POINTER(result);
 	}
 
+	temporal_bbox(&box1, temp);
 	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Argument STBOX must have both X and T dimensions")));
-	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
+	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(box1.flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has Z dimension but the other does not")));
-	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(box1.flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has geodetic coordinates but the other does not")));
 
-	temporal_bbox(&box1, temp);
-	result = palloc(sizeof(STBOX));
+	result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box->xmax, box1.xmax);
 	result->ymax = Max(box->ymax, box1.ymax);
 	result->tmax = Max(box->tmax, box1.tmax);
@@ -256,7 +257,7 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has geodetic coordinates but the other does not")));
 
-	result = palloc(sizeof(STBOX));
+	result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box1->xmax, box2->xmax);
 	result->ymax = Max(box1->ymax, box2->ymax);
 	result->tmax = Max(box1->tmax, box2->tmax);

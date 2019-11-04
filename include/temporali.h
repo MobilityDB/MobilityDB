@@ -78,8 +78,8 @@ extern ArrayType *temporali_instants_array(TemporalI *ti);
 extern TimestampTz temporali_start_timestamp(TemporalI *ti);
 extern TimestampTz temporali_end_timestamp(TemporalI *ti);
 extern ArrayType *temporali_timestamps(TemporalI *ti);
-extern bool temporali_ever_equals(TemporalI *ti, Datum value);
-extern bool temporali_always_equals(TemporalI *ti, Datum value);
+extern bool temporali_ever_eq(TemporalI *ti, Datum value);
+extern bool temporali_always_eq(TemporalI *ti, Datum value);
 extern TemporalI *temporali_shift(TemporalI *ti, Interval *interval);
 
 /* Restriction Functions */

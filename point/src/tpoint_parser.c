@@ -24,7 +24,7 @@ STBOX *
 stbox_parse(char **str) 
 {
 	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
-	TimestampTz tmin = 0, tmax = 0, ttmp; /* make compiler quiet */
+	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	char *nextstr;
 
@@ -50,10 +50,10 @@ stbox_parse(char **str)
 		}
 		p_whitespace(str);
 	}
-	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0) 
+	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
 	{
 		*str += 9;
-		hasz = geodetic = 1;
+		hasz = geodetic = true;
 		p_whitespace(str);
 		if (strncasecmp(*str, "T", 1) == 0)
 		{
@@ -76,7 +76,7 @@ stbox_parse(char **str)
 	if (((*str)[0]) != ',')
 		hasx = true;
 
-	if (! hasx && ! hast)
+	if (!hasx && !hast)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse TBOX")));
 
@@ -158,7 +158,7 @@ stbox_parse(char **str)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
-		if (hasz != 0)
+		if (hasz)
 		{	
 			p_whitespace(str);
 			p_comma(str);
@@ -167,7 +167,7 @@ stbox_parse(char **str)
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+			*str = nextstr; 
 		}
 	}
 	else
@@ -178,7 +178,7 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 	}
-	if (hast != 0)
+	if (hast)
 	{	
 		p_whitespace(str);
 		p_comma(str);
@@ -213,17 +213,17 @@ stbox_parse(char **str)
 		result->xmax = xmax;
 		result->ymin = ymin;
 		result->ymax = ymax;
-	}
-	if (hasz)
-	{
-		if (zmin > zmax)
+		if (hasz)
 		{
-			tmp = zmin;
-			zmin = zmax;
-			zmax = tmp;
+			if (zmin > zmax)
+			{
+				tmp = zmin;
+				zmin = zmax;
+				zmax = tmp;
+			}
+			result->zmin = zmin;
+			result->zmax = zmax;
 		}
-		result->zmin = zmin;
-		result->zmax = zmax;
 	}
 	if (hast)
 	{

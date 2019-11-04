@@ -9,6 +9,7 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
 SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 
 SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
 

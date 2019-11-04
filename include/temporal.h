@@ -86,9 +86,8 @@ struct temporaltype_struct
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
-/* Only for TemporalInst */
+/* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
-/* Only for TemporalS */
 #define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
 #define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
 #define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
@@ -96,7 +95,7 @@ struct temporaltype_struct
 
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
-/* Only for TemporalInst */
+/* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
 	((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
 #define MOBDB_FLAGS_SET_X(flags, value) \
@@ -379,8 +378,8 @@ extern Datum temporal_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum temporal_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_equals(PG_FUNCTION_ARGS);
-extern Datum temporal_always_equals(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
 extern Datum tempdisc_get_values_internal(Temporal *temp);
