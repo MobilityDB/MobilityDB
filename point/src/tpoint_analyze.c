@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <access/htup_details.h>
+#include <executor/spi.h>
 
 #include "temporal.h"
 #include "oidcache.h"
