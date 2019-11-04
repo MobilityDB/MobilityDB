@@ -112,11 +112,23 @@ extern int temporals_num_timestamps(TemporalS *ts);
 extern bool temporals_timestamp_n(TemporalS *ts, int n, TimestampTz *result);
 extern TimestampTz *temporals_timestamps1(TemporalS *ts, int *count);
 extern ArrayType *temporals_timestamps(TemporalS *ts);
-extern bool temporals_ever_eq(TemporalS *ts, Datum value);
-extern bool temporals_always_eq(TemporalS *ts, Datum value);
 extern TemporalS *temporals_shift(TemporalS *ts, Interval *interval);
 extern bool temporals_continuous_value_internal(TemporalS *ts);
 extern bool temporals_continuous_time_internal(TemporalS *ts);
+
+extern bool temporals_ever_eq(TemporalS *ts, Datum value);
+extern bool temporals_ever_ne(TemporalS *ts, Datum value);
+extern bool temporals_ever_lt(TemporalS *ts, Datum value);
+extern bool temporals_ever_le(TemporalS *ts, Datum value);
+extern bool temporals_ever_gt(TemporalS *ts, Datum value);
+extern bool temporals_ever_ge(TemporalS *ts, Datum value);
+
+extern bool temporals_always_eq(TemporalS *ts, Datum value);
+extern bool temporals_always_ne(TemporalS *ts, Datum value);
+extern bool temporals_always_lt(TemporalS *ts, Datum value);
+extern bool temporals_always_le(TemporalS *ts, Datum value);
+extern bool temporals_always_gt(TemporalS *ts, Datum value);
+extern bool temporals_always_ge(TemporalS *ts, Datum value);
 
 /* Restriction Functions */
 

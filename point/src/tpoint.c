@@ -522,6 +522,26 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/* Is the temporal value ever not equal to the value? */
+
+PG_FUNCTION_INFO_V1(tpoint_ever_ne);
+
+PGDLLEXPORT Datum
+tpoint_ever_ne(PG_FUNCTION_ARGS)
+{
+	return ! tpoint_always_eq(fcinfo);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+PG_FUNCTION_INFO_V1(tpoint_always_ne);
+
+PGDLLEXPORT Datum
+tpoint_always_ne(PG_FUNCTION_ARGS)
+{
+	return ! tpoint_ever_eq(fcinfo);
+}
+
 /*****************************************************************************
  * Assemble the set of points of a temporal instant point as a single 
  * geometry/geography. Duplicate points are removed.

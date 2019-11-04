@@ -36,6 +36,17 @@
 #endif
 
 /*****************************************************************************
+ * Forward declaration of static functions
+ *****************************************************************************/
+
+static bool
+tempcontseq_always_gt1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value);
+static bool
+tempcontseq_always_ge1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value);
+
+/*****************************************************************************
  * General functions
  *****************************************************************************/
 
@@ -1752,11 +1763,45 @@ temporalseq_timestamps(TemporalSeq *seq)
 	return result;	
 }
 
-/*
- * Is the temporal value ever equal to the value?
- * The function assumes that temporal value and the datum value are of the 
- * same valuetypid.
- */
+/* Shift the time span of a temporal value by an interval */
+
+TemporalSeq *
+temporalseq_shift(TemporalSeq *seq, Interval *interval)
+{
+	TemporalSeq *result = temporalseq_copy(seq);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = instants[i] = temporalseq_inst_n(result, i);
+		inst->t = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+	}
+	/* Shift period */
+	result->period.lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+	result->period.upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+	/* Recompute the bounding box */
+	void *bbox = temporalseq_bbox_ptr(result); 
+	temporalseq_make_bbox(bbox, instants, seq->count, 
+		seq->period.lower_inc, seq->period.upper_inc);
+	pfree(instants);
+	return result;
+}
+
+/*****************************************************************************
+ * Ever/always comparison functions 
+ * The functions assume that the temporal value and the datum value are of
+ * the same valuetypid. Ever/always equal are valid for all temporal types 
+ * including temporal points. All the other comparisons are only valid for
+ * temporal alphanumeric types.
+ *****************************************************************************/
+
+/* Is the temporal value ever equal to the value? */
+
 static bool
 tempcontseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2, 
 	bool lower_inc, bool upper_inc, Datum value)
@@ -1764,8 +1809,8 @@ tempcontseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
-	
-	/* Constant segment equal to value */
+
+	/* Constant segment */
 	if (datum_eq(value1, value2, valuetypid) &&
 		datum_eq(value1, value, valuetypid))
 		return true;
@@ -1776,10 +1821,73 @@ tempcontseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2,
 	if (datum_eq(value2, value, valuetypid))
 		return upper_inc;
 
-	/* Continuous base type: Interpolation */
+	/* Interpolation for continuous base type */
 	TimestampTz t;
 	return tempcontseq_timestamp_at_value(inst1, inst2, value, valuetypid, &t);
 }
+
+static bool
+tempcontseq_ever_gt1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value)
+{
+	/* Constant segment */
+	if (datum_eq(value1, value2, valuetypid))
+		return datum_gt(value, value1, valuetypid);
+	/* Increasing segment */
+	if (datum_lt(value1, value2, valuetypid))
+		return datum_gt(value, value1, valuetypid);
+	/* Decreasing segment */
+	return datum_gt(value, value2, valuetypid);
+}
+
+static bool
+tempcontseq_ever_ge1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value)
+{
+	/* Constant segment */
+	if (datum_eq(value1, value2, valuetypid))
+		return datum_ge(value, value1, valuetypid);
+	if (datum_lt(value1, value2, valuetypid))
+		return datum_gt(value, value1, valuetypid) ||
+			(lower_inc && datum_eq(value, value1, valuetypid));
+	/* Decreasing segment */
+	return datum_gt(value, value1, valuetypid) ||
+		(upper_inc && datum_eq(value, value2, valuetypid));
+}
+
+/*****************************************************************************/
+
+static bool
+tempcontseq_always_gt1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value)
+{
+	/* Constant segment */
+	if (datum_eq(value1, value2, valuetypid))
+		return datum_gt(value, value1, valuetypid);
+	/* Increasing segment */
+	if (datum_lt(value1, value2, valuetypid))
+		return datum_gt(value, value2, valuetypid) ||
+			(! upper_inc && datum_eq(value, value2, valuetypid));
+	/* Decreasing segment */
+	return datum_gt(value, value1, valuetypid) ||
+		(! lower_inc && datum_eq(value, value1, valuetypid));
+}
+
+static bool
+tempcontseq_always_ge1(Datum value1, Datum value2, Oid valuetypid,
+	bool lower_inc, bool upper_inc, Datum value)
+{
+	/* Constant segment */
+	if (datum_eq(value1, value2, valuetypid))
+		return datum_gt(value, value1, valuetypid);
+	/* Increasing segment */
+	if (datum_lt(value1, value2, valuetypid))
+		return datum_ge(value, value2, valuetypid);
+	/* Decreasing segment */
+	return datum_gt(value, value1, valuetypid);
+}
+
+/*****************************************************************************/
 
 bool
 temporalseq_ever_eq(TemporalSeq *seq, Datum value)
@@ -1821,6 +1929,119 @@ temporalseq_ever_eq(TemporalSeq *seq, Datum value)
 	return false;
 }
 
+/*
+ * Is the temporal value ever greater than the value?
+ */
+
+bool
+temporalseq_ever_gt(TemporalSeq *seq, Datum value)
+{
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		/* Minimum value may be non inclusive */ 
+		if (d <= box.xmin)
+			return false;
+	}
+
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
+	{
+		for (int i = 0; i < seq->count; i++) 
+		{
+			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
+			if (datum_gt(valueinst, value, seq->valuetypid))
+				return true;
+		}
+		return false;
+	}
+	
+	/* Continuous base type */
+	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
+	bool lower_inc = seq->period.lower_inc;
+	for (int i = 1; i < seq->count; i++)
+	{
+		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+		if (tempcontseq_ever_gt1(value1, value2, seq->valuetypid,
+			lower_inc, upper_inc, value))
+			return true;
+		value1 = value2;
+		lower_inc = true;
+	}
+	return false;
+}
+
+/*
+ * Is the temporal value ever greater than or equal to the value?
+ */
+
+bool
+temporalseq_ever_ge(TemporalSeq *seq, Datum value)
+{
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		if (d <= box.xmin)
+			return false;
+	}
+
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
+	{
+		for (int i = 0; i < seq->count; i++) 
+		{
+			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
+			if (datum_ge(valueinst, value, seq->valuetypid))
+				return true;
+		}
+		return false;
+	}
+	
+	/* Continuous base type */
+	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
+	bool lower_inc = seq->period.lower_inc;
+	for (int i = 1; i < seq->count; i++)
+	{
+		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+		if (tempcontseq_ever_ge1(value1, value2, seq->valuetypid,
+			lower_inc, upper_inc, value))
+			return true;
+		value1 = value2;
+		lower_inc = true;
+	}
+	return false;
+}
+
+/*
+ * Is the temporal value ever less than the value?
+ */
+
+bool
+temporalseq_ever_lt(TemporalSeq *seq, Datum value)
+{
+	return ! temporalseq_always_ge(seq, value);
+}
+
+/*
+ * Is the temporal value ever less than or equal to the value?
+ */
+
+bool
+temporalseq_ever_le(TemporalSeq *seq, Datum value)
+{
+	return ! temporalseq_always_gt(seq, value);
+}
+
+/*****************************************************************************/
+
 /* Is the temporal value always equal to the value? */
 
 bool
@@ -1852,33 +2073,108 @@ temporalseq_always_eq(TemporalSeq *seq, Datum value)
 	return true;
 }
 
-/* Shift the time span of a temporal value by an interval */
+/* Is the temporal value always greater to the value? */
 
-TemporalSeq *
-temporalseq_shift(TemporalSeq *seq, Interval *interval)
+bool
+temporalseq_always_gt(TemporalSeq *seq, Datum value)
 {
-	TemporalSeq *result = temporalseq_copy(seq);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TemporalInst *inst = instants[i] = temporalseq_inst_n(result, i);
-		inst->t = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		/* Maximum bound may be non inclusive */
+		if (d < box.xmax)
+			return false;
 	}
-	/* Shift period */
-	result->period.lower = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
-	result->period.upper = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
-	/* Recompute the bounding box */
-	void *bbox = temporalseq_bbox_ptr(result); 
-	temporalseq_make_bbox(bbox, instants, seq->count, 
-		seq->period.lower_inc, seq->period.upper_inc);
-	pfree(instants);
-	return result;
+
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
+	{
+		for (int i = 0; i < seq->count; i++) 
+		{
+			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
+			if (! datum_gt(valueinst, value, seq->valuetypid))
+				return false;
+		}
+		return true;
+	}
+
+	/* Continuous base type */
+	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
+	bool lower_inc = seq->period.lower_inc;
+	for (int i = 1; i < seq->count; i++)
+	{
+		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+		if (! tempcontseq_always_gt1(value1, value2, seq->valuetypid,
+			lower_inc, upper_inc, value))
+			return false;
+		value1 = value2;
+		lower_inc = true;
+	}
+	return true;
+}
+
+/* Is the temporal value always greater or equal to the value? */
+
+bool
+temporalseq_always_ge(TemporalSeq *seq, Datum value)
+{
+	/* Bounding box test */
+	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		/* Maximum bound may be non inclusive */
+		if (d < box.xmax)
+			return false;
+	}
+
+	if (! MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) || seq->count == 1)
+	{
+		for (int i = 0; i < seq->count; i++) 
+		{
+			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
+			if (! datum_ge(valueinst, value, seq->valuetypid))
+				return false;
+		}
+		return true;
+	}
+
+	/* Continuous base type */
+	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
+	bool lower_inc = seq->period.lower_inc;
+	for (int i = 1; i < seq->count; i++)
+	{
+		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+		if (! tempcontseq_always_ge1(value1, value2, seq->valuetypid,
+			lower_inc, upper_inc, value))
+			return false;
+		value1 = value2;
+		lower_inc = true;
+	}
+	return true;
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporalseq_always_lt(TemporalSeq *seq, Datum value)
+{
+	return ! temporalseq_ever_ge(seq, value);
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporalseq_always_le(TemporalSeq *seq, Datum value)
+{
+	return ! temporalseq_ever_gt(seq, value);
 }
 
 /*****************************************************************************

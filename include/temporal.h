@@ -369,9 +369,21 @@ extern Datum temporal_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum temporal_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
+
+extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_le(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ge(PG_FUNCTION_ARGS);
+
+extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_always_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_le(PG_FUNCTION_ARGS);
+extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern Datum tempdisc_get_values_internal(Temporal *temp);
 extern Datum tfloat_ranges_internal(Temporal *temp);

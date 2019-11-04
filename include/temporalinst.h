@@ -60,12 +60,24 @@ extern ArrayType *tfloatinst_ranges(TemporalInst *inst);
 extern PeriodSet *temporalinst_get_time(TemporalInst *inst);
 extern void temporalinst_bbox(void *box, TemporalInst *inst);
 extern RangeType *tnumberinst_value_range(TemporalInst *inst);
-extern bool temporalinst_ever_eq(TemporalInst *inst, Datum value);
-extern bool temporalinst_always_eq(TemporalInst *inst, Datum value);
 extern void temporalinst_timespan(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
 extern ArrayType *temporalinst_instants_array(TemporalInst *inst);
 extern TemporalInst *temporalinst_shift(TemporalInst *inst, Interval *interval);
+
+extern bool temporalinst_ever_eq(TemporalInst *inst, Datum value);
+extern bool temporalinst_ever_ne(TemporalInst *inst, Datum value);
+extern bool temporalinst_ever_lt(TemporalInst *inst, Datum value);
+extern bool temporalinst_ever_le(TemporalInst *inst, Datum value);
+extern bool temporalinst_ever_gt(TemporalInst *inst, Datum value);
+extern bool temporalinst_ever_ge(TemporalInst *inst, Datum value);
+
+extern bool temporalinst_always_eq(TemporalInst *inst, Datum value);
+extern bool temporalinst_always_ne(TemporalInst *inst, Datum value);
+extern bool temporalinst_always_lt(TemporalInst *inst, Datum value);
+extern bool temporalinst_always_le(TemporalInst *inst, Datum value);
+extern bool temporalinst_always_gt(TemporalInst *inst, Datum value);
+extern bool temporalinst_always_ge(TemporalInst *inst, Datum value);
 
 /* Restriction Functions */
 
