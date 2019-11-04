@@ -143,8 +143,10 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	}
 
 	/* Compute statistics for the geometry component */
+	SPI_connect();
 	call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
 	stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
+	SPI_finish();
 
 	/* Put the total width of the column, variable size */
 	stats->stawidth = stawidth;

@@ -444,10 +444,10 @@ tpoint_stbox(PG_FUNCTION_ARGS)
 
 /* Is the temporal value ever equal to the value? */
 
-PG_FUNCTION_INFO_V1(tpoint_ever_equals);
+PG_FUNCTION_INFO_V1(tpoint_ever_eq);
 
 PGDLLEXPORT Datum
-tpoint_ever_equals(PG_FUNCTION_ARGS)
+tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -475,16 +475,16 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 	bool result = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_ever_equals((TemporalInst *)temp, 
+		result = temporalinst_ever_eq((TemporalInst *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALI) 
-		result = temporali_ever_equals((TemporalI *)temp, 
+		result = temporali_ever_eq((TemporalI *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_ever_equals((TemporalSeq *)temp, 
+		result = temporalseq_ever_eq((TemporalSeq *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALS) 
-		result = temporals_ever_equals((TemporalS *)temp, 
+		result = temporals_ever_eq((TemporalS *)temp, 
 			PointerGetDatum(gs));
 
 	PG_FREE_IF_COPY(temp, 0);
@@ -492,10 +492,10 @@ tpoint_ever_equals(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_always_equals);
+PG_FUNCTION_INFO_V1(tpoint_always_eq);
 
 PGDLLEXPORT Datum
-tpoint_always_equals(PG_FUNCTION_ARGS)
+tpoint_always_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -505,16 +505,16 @@ tpoint_always_equals(PG_FUNCTION_ARGS)
 	bool result = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_always_equals((TemporalInst *)temp, 
+		result = temporalinst_always_eq((TemporalInst *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALI) 
-		result = temporali_always_equals((TemporalI *)temp, 
+		result = temporali_always_eq((TemporalI *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_always_equals((TemporalSeq *)temp, 
+		result = temporalseq_always_eq((TemporalSeq *)temp, 
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALS) 
-		result = temporals_always_equals((TemporalS *)temp, 
+		result = temporals_always_eq((TemporalS *)temp, 
 			PointerGetDatum(gs));
 
 	PG_FREE_IF_COPY(temp, 0);

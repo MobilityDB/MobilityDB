@@ -761,17 +761,16 @@ temporali_timestamps(TemporalI *ti)
 /* Is the temporal value ever equal to the value? */
 
 bool
-temporali_ever_equals(TemporalI *ti, Datum value)
+temporali_ever_eq(TemporalI *ti, Datum value)
 {
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		temporali_bbox(&box1, ti);
-		number_to_box(&box2, value, ti->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
 
@@ -787,7 +786,7 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporali_always_equals(TemporalI *ti, Datum value)
+temporali_always_eq(TemporalI *ti, Datum value)
 {
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)

@@ -100,12 +100,12 @@ extern Datum tpoint_in(PG_FUNCTION_ARGS);
 extern Datum tpoint_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum tpoint_ever_equals(PG_FUNCTION_ARGS);
-extern Datum tpoint_always_equals(PG_FUNCTION_ARGS);
+extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_values_internal(Temporal *temp);
 
-extern bool tpointinst_ever_equals(TemporalInst *inst, GSERIALIZED *value);
+extern bool tpointinst_ever_eq(TemporalInst *inst, GSERIALIZED *value);
 
 extern Datum tgeompointi_values(TemporalI *ti);
 extern Datum tgeogpointi_values(TemporalI *ti);

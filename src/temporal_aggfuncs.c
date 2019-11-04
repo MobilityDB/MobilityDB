@@ -534,12 +534,12 @@ aggstate_write(SkipList *state, StringInfo buf)
 	if (state->length > 0)
 		valuetypid = values[0]->valuetypid;
 	pq_sendint32(buf, valuetypid);
-    for (int i = 0; i < state->length; i ++)
+	for (int i = 0; i < state->length; i ++)
 	{
-        SPI_connect();
-        temporal_write(values[i], buf);
-        SPI_finish();
-    }
+		SPI_connect();
+		temporal_write(values[i], buf);
+		SPI_finish();
+	}
 	pq_sendint64(buf, state->extrasize);
 	if (state->extra)
 		pq_sendbytes(buf, state->extra, state->extrasize);

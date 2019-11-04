@@ -263,43 +263,43 @@ CREATE FUNCTION getTimestamp(tgeogpoint)
 	AS 'MODULE_PATHNAME', 'temporalinst_timestamp'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION ever_equals(tgeompoint, geometry(Point))
+CREATE FUNCTION ever_eq(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_equals'
+	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_equals(tgeogpoint, geography(Point))
+CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_ever_equals'
+	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
-CREATE FUNCTION always_equals(tgeompoint, geometry(Point))
+CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_equals'
+	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_equals(tgeogpoint, geography(Point))
+CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'tpoint_always_equals'
+	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR @= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
