@@ -33,6 +33,7 @@
 
 #include <assert.h>
 #include <access/htup_details.h>
+#include <executor/spi.h>
 
 #include "temporal.h"
 #include "oidcache.h"
@@ -88,12 +89,17 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 {
 	heap_deform_tuple(tuple, tupDesc, values, isnull);
 
+	void* temp = palloc(VARSIZE(DatumGetPointer(value))) ;
+
+	SPI_connect() ;
 	Datum replValue = tpoint_values_internal(DatumGetTemporal(value));
+	memcpy(temp, DatumGetPointer(replValue), VARSIZE(DatumGetPointer(replValue))) ;
+	SPI_finish() ;
 	/* tupattnum is 1-based */
-	// pfree(DatumGetPointer(values[tupattnum - 1]));
-	values[tupattnum - 1] = replValue;
+	values[tupattnum - 1] = PointerGetDatum(temp);
 
 	HeapTuple result = heap_form_tuple(tupDesc, values, isnull);
+	pfree(temp) ;
 
 	/*
 	 * copy the identification info of the old tuple: t_ctid, t_self, and OID
@@ -105,6 +111,7 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 	if (tupDesc->tdhasoid)
 		HeapTupleSetOid(result, HeapTupleGetOid(tuple));
 
+    heap_freetuple(tuple) ;
 	return result;
 }
 
@@ -137,16 +144,15 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Datum value = fetchfunc(stats, i, &valueisnull);
 		if (valueisnull)
 			continue;
+
 		stats->rows[i] = tpoint_remove_timedim(stats->rows[i], 	
 			stats->tupDesc, stats->tupattnum, stats->tupDesc->natts, value,
 			values, isnull);
 	}
 
 	/* Compute statistics for the geometry component */
-	SPI_connect();
 	call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
 	stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
-	SPI_finish();
 
 	/* Put the total width of the column, variable size */
 	stats->stawidth = stawidth;
