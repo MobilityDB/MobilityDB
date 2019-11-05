@@ -247,15 +247,15 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeompoint3D;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp &= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp &= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp &= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp @= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp @= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp @= startValue(temp);
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp @= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp %= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp %= startValue(temp);
 
 SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint, tbl_interval;
 SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint, tbl_interval;

@@ -1090,28 +1090,28 @@ CREATE FUNCTION ever_eq(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1132,28 +1132,28 @@ CREATE FUNCTION always_eq(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_eq,
-	NEGATOR = &<>,
+	NEGATOR = ?<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1174,28 +1174,28 @@ CREATE FUNCTION ever_ne(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<> (
+CREATE OPERATOR ?<> (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1216,28 +1216,28 @@ CREATE FUNCTION always_ne(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1258,22 +1258,22 @@ CREATE FUNCTION ever_lt(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_lt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &< (
+CREATE OPERATOR ?< (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_lt,
-	NEGATOR = &>=,
+	NEGATOR = %>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &< (
+CREATE OPERATOR ?< (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_lt,
-	NEGATOR = &>=,
+	NEGATOR = %>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &< (
+CREATE OPERATOR ?< (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_lt,
-	NEGATOR = &>=,
+	NEGATOR = %>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1290,22 +1290,22 @@ CREATE FUNCTION ever_le(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_le'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &<= (
+CREATE OPERATOR ?<= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_le,
-	NEGATOR = &>,
+	NEGATOR = %>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<= (
+CREATE OPERATOR ?<= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_le,
-	NEGATOR = &>,
+	NEGATOR = %>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &<= (
+CREATE OPERATOR ?<= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_le,
-	NEGATOR = &>,
+	NEGATOR = %>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1322,22 +1322,22 @@ CREATE FUNCTION always_lt(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_lt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @< (
+CREATE OPERATOR %< (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_lt,
-	NEGATOR = &>=,
+	NEGATOR = ?>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @< (
+CREATE OPERATOR %< (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_lt,
-	NEGATOR = &>=,
+	NEGATOR = ?>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @< (
+CREATE OPERATOR %< (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_lt,
-	NEGATOR = &>=,
+	NEGATOR = ?>=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1354,22 +1354,22 @@ CREATE FUNCTION always_le(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_le'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @<= (
+CREATE OPERATOR %<= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_le,
-	NEGATOR = &>,
+	NEGATOR = ?>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<= (
+CREATE OPERATOR %<= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_le,
-	NEGATOR = &>,
+	NEGATOR = ?>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<= (
+CREATE OPERATOR %<= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_le,
-	NEGATOR = &>,
+	NEGATOR = ?>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1386,22 +1386,22 @@ CREATE FUNCTION ever_gt(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_gt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &> (
+CREATE OPERATOR ?> (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_gt,
-	NEGATOR = @<=,
+	NEGATOR = %<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &> (
+CREATE OPERATOR ?> (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_gt,
-	NEGATOR = @<=,
+	NEGATOR = %<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &> (
+CREATE OPERATOR ?> (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_gt,
-	NEGATOR = @<=,
+	NEGATOR = %<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1418,22 +1418,22 @@ CREATE FUNCTION ever_ge(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_ge'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &>= (
+CREATE OPERATOR ?>= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_ge,
-	NEGATOR = @<,
+	NEGATOR = %<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &>= (
+CREATE OPERATOR ?>= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_ge,
-	NEGATOR = @<,
+	NEGATOR = %<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &>= (
+CREATE OPERATOR ?>= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_ge,
-	NEGATOR = @<,
+	NEGATOR = %<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1450,22 +1450,22 @@ CREATE FUNCTION always_gt(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_gt'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @> (
+CREATE OPERATOR %> (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_gt,
-	NEGATOR = &<=,
+	NEGATOR = ?<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @> (
+CREATE OPERATOR %> (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_gt,
-	NEGATOR = &<=,
+	NEGATOR = ?<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @> (
+CREATE OPERATOR %> (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_gt,
-	NEGATOR = &<=,
+	NEGATOR = ?<=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -1482,22 +1482,22 @@ CREATE FUNCTION always_ge(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_ge'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @>= (
+CREATE OPERATOR %>= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_ge,
-	NEGATOR = &<,
+	NEGATOR = ?<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @>= (
+CREATE OPERATOR %>= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_ge,
-	NEGATOR = &<,
+	NEGATOR = ?<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @>= (
+CREATE OPERATOR %>= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_ge,
-	NEGATOR = &<,
+	NEGATOR = ?<,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 

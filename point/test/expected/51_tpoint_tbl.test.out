@@ -1053,49 +1053,49 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tgeogpoint3D;
   52
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------
     78
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
  count 
 -------
     85
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
  count 
 -------
     77
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
  count 
 -------
     80
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp @= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= startValue(temp);
  count 
 -------
     31
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp @= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp %= startValue(temp);
  count 
 -------
     31
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp @= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp %= startValue(temp);
  count 
 -------
     28
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp @= startValue(temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp %= startValue(temp);
  count 
 -------
     39

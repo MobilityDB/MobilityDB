@@ -456,16 +456,16 @@ CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_eq,
-	NEGATOR = @<>,
+	NEGATOR = %<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -478,13 +478,13 @@ CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_eq,
 	NEGATOR = &<>,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_eq,
 	NEGATOR = &<>,
@@ -503,13 +503,13 @@ CREATE FUNCTION ever_ne(tgeogpoint, geography(Point))
 CREATE OPERATOR &<> (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &<> (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_ne,
-	NEGATOR = @=,
+	NEGATOR = %=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
@@ -522,16 +522,16 @@ CREATE FUNCTION always_ne(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'tpoint_always_ne'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @<> (
+CREATE OPERATOR %<> (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_ne,
-	NEGATOR = &=,
+	NEGATOR = ?=,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
