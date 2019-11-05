@@ -1182,6 +1182,30 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
   59
 (1 row)
 
+SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------
@@ -1230,28 +1254,196 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
      1
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    62
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    64
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    72
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
+ count 
+-------
+  8862
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
+ count 
+-------
+  6094
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
+ count 
+-------
+  9489
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
+ count 
+-------
+    41
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
+ count 
+-------
+    35
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
+ count 
+-------
+    54
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
+ count 
+-------
+  1140
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
+ count 
+-------
+  1616
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
+ count 
+-------
+  2276
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
+ count 
+-------
+    91
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
+ count 
+-------
+  1164
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
+ count 
+-------
+  1185
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
+ count 
+-------
+  2278
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
+ count 
+-------
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
+ count 
+-------
+    57
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
+ count 
+-------
+  3757
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
+ count 
+-------
+  3466
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
+ count 
+-------
+  2968
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
+ count 
+-------
+    92
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
+ count 
+-------
+  2876
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
+ count 
+-------
+  4305
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
+ count 
+-------
+  2798
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool 
