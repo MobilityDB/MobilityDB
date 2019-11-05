@@ -89,17 +89,11 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 {
 	heap_deform_tuple(tuple, tupDesc, values, isnull);
 
-	void* temp = palloc(VARSIZE(DatumGetPointer(value))) ;
-
-	SPI_connect() ;
 	Datum replValue = tpoint_values_internal(DatumGetTemporal(value));
-	memcpy(temp, DatumGetPointer(replValue), VARSIZE(DatumGetPointer(replValue))) ;
-	SPI_finish() ;
 	/* tupattnum is 1-based */
-	values[tupattnum - 1] = PointerGetDatum(temp);
-
+	values[tupattnum - 1] = replValue;
 	HeapTuple result = heap_form_tuple(tupDesc, values, isnull);
-	pfree(temp) ;
+	pfree(DatumGetPointer(replValue));
 
 	/*
 	 * copy the identification info of the old tuple: t_ctid, t_self, and OID
@@ -111,7 +105,7 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 	if (tupDesc->tdhasoid)
 		HeapTupleSetOid(result, HeapTupleGetOid(tuple));
 
-    heap_freetuple(tuple) ;
+	heap_freetuple(tuple);
 	return result;
 }
 
