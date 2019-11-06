@@ -89,7 +89,9 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 {
 	heap_deform_tuple(tuple, tupDesc, values, isnull);
 
+	SPI_connect();
 	Datum replValue = tpoint_values_internal(DatumGetTemporal(value));
+	SPI_finish();
 	/* tupattnum is 1-based */
 	values[tupattnum - 1] = replValue;
 	HeapTuple result = heap_form_tuple(tupDesc, values, isnull);
