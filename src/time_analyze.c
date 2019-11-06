@@ -34,7 +34,7 @@
 #include "oidcache.h"
 
 static void timetype_compute_stats(CachedType type, VacAttrStats *stats, 
-	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
+	AnalyzeAttrFetchFunc fetchfunc, int samplerows);
 static void period_compute_stats(VacAttrStats *stats,
 	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void timestampset_compute_stats(VacAttrStats *stats, 
@@ -72,20 +72,158 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 		b1->inclusive, b2->inclusive);
 }
 
+/*
+ * Compute statistics for time dimension with periods.
+ * This function function is called for all temporal types whose duration
+ * is not TemporalInst
+ */
+void
+period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
+	PeriodBound *lowers, PeriodBound *uppers, float8 *lengths)
+{
+	int			num_hist,
+				num_bins = stats->attr->attstattarget,
+				pos,
+				posfrac,
+				delta,
+				deltafrac,
+				i;
+	Datum	   *bound_hist_values;
+	Datum	   *length_hist_values;
+
+	/*
+	 * Generate a bounds histogram and a length histogram slot entries 
+	 * if there are at least two values.
+	 */
+	if (non_null_cnt >= 2)
+	{
+		/* Generate a bounds histogram slot entry */
+
+		/* Sort bound values */
+		qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+
+		num_hist = non_null_cnt;
+		if (num_hist > num_bins)
+			num_hist = num_bins + 1;
+
+		bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+
+		/*
+		 * The object of this loop is to construct periods from first and
+		 * last entries in lowers[] and uppers[] along with evenly-spaced
+		 * values in between. So the i'th value is a period of lowers[(i *
+		 * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
+		 * (num_hist - 1)]. But computing that subscript directly risks
+		 * integer overflow when the stats target is more than a couple
+		 * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
+		 * at each step, tracking the integral and fractional parts of the
+		 * sum separately.
+		 */
+		delta = (non_null_cnt - 1) / (num_hist - 1);
+		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+		pos = posfrac = 0;
+
+		for (i = 0; i < num_hist; i++)
+		{
+			bound_hist_values[i] =
+				PointerGetDatum(period_make(lowers[pos].val, uppers[pos].val,
+				lowers[pos].inclusive, uppers[pos].inclusive));
+			pos += delta;
+			posfrac += deltafrac;
+			if (posfrac >= (num_hist - 1))
+			{
+				/* fractional part exceeds 1, carry to integer part */
+				pos++;
+				posfrac -= (num_hist - 1);
+			}
+		}
+
+		stats->stakind[*slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
+		stats->staop[*slot_idx] = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+		stats->stavalues[*slot_idx] = bound_hist_values;
+		stats->numvalues[*slot_idx] = num_hist;
+		stats->statypid[*slot_idx] = type_oid(T_PERIOD);
+		stats->statyplen[*slot_idx] = sizeof(Period);
+		stats->statypbyval[*slot_idx] = false;
+		stats->statypalign[*slot_idx] = 'd';
+		(*slot_idx)++;
+
+		/* Generate a length histogram slot entry. */
+
+		/*
+			* Ascending sort of period lengths for further filling of
+			* histogram
+			*/
+		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+
+		num_hist = non_null_cnt;
+		if (num_hist > num_bins)
+			num_hist = num_bins + 1;
+
+		length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+
+		/*
+		 * The object of this loop is to copy the first and last lengths[]
+		 * entries along with evenly-spaced values in between. So the i'th
+		 * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
+		 * computing that subscript directly risks integer overflow when
+		 * the stats target is more than a couple thousand.  Instead we
+		 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
+		 * the integral and fractional parts of the sum separately.
+		 */
+		delta = (non_null_cnt - 1) / (num_hist - 1);
+		deltafrac = (non_null_cnt - 1) % (num_hist - 1);
+		pos = posfrac = 0;
+
+		for (i = 0; i < num_hist; i++)
+		{
+			length_hist_values[i] = Float8GetDatum(lengths[pos]);
+			pos += delta;
+			posfrac += deltafrac;
+			if (posfrac >= (num_hist - 1))
+			{
+				/* fractional part exceeds 1, carry to integer part */
+				pos++;
+				posfrac -= (num_hist - 1);
+			}
+		}
+	}
+	else
+	{
+		/*
+		 * Even when we don't create the histogram, store an empty array
+		 * to mean "no histogram". We can't just leave stavalues NULL,
+		 * because get_attstatsslot() errors if you ask for stavalues, and
+		 * it's NULL.
+		 */
+		length_hist_values = palloc(0);
+		num_hist = 0;
+	}
+	stats->stakind[*slot_idx] = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+	stats->staop[*slot_idx] = Float8LessOperator;
+	stats->stavalues[*slot_idx] = length_hist_values;
+	stats->numvalues[*slot_idx] = num_hist;
+	stats->statypid[*slot_idx] = FLOAT8OID;
+	stats->statyplen[*slot_idx] = sizeof(float8);
+	stats->statypbyval[*slot_idx] = true;
+	stats->statypalign[*slot_idx] = 'd';
+	(*slot_idx)++;
+}
+
 static void
 timetype_compute_stats(CachedType timetype, VacAttrStats *stats, 
-	AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows)
+	AnalyzeAttrFetchFunc fetchfunc, int samplerows)
 {
 	int			null_cnt = 0,
 				non_null_cnt = 0,
 				timetype_no,
-				slot_idx = 0,
-				num_bins = stats->attr->attstattarget,
-				num_hist;
+				slot_idx = 0;
 	float8	   *lengths;
 	PeriodBound *lowers,
 			   *uppers;
 	double		total_width = 0;
+	MemoryContext old_cxt;
 
 	/* Allocate memory to hold period bounds and lengths of the sample periods. */
 	lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
@@ -144,148 +282,15 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		non_null_cnt++;
 	}
 
+
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		Datum	   *bound_hist_values;
-		Datum	   *length_hist_values;
-		int			pos,
-					posfrac,
-					delta,
-					deltafrac,
-					i;
-		MemoryContext old_cxt;
-
-		stats->stats_valid = true;
-		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
-		stats->stawidth = total_width / (double) non_null_cnt;
-
-		/* Estimate that non-null values are unique */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
-
 		/* Must copy the target values into anl_context */
 		old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
-		/*
-		 * Generate a bounds histogram and a length histogram slot entries 
-		 * if there are at least two values.
-		 */
-		if (non_null_cnt >= 2)
-		{
-			/*
-			 * Generate a bound histogram slot entry.
-			 * Sort bound values 
-			 */
-			qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-			qsort(uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-
-			num_hist = non_null_cnt;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
-
-			bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-			/*
-			 * The object of this loop is to construct periods from first and
-			 * last entries in lowers[] and uppers[] along with evenly-spaced
-			 * values in between. So the i'th value is a period of lowers[(i *
-			 * (nvals - 1)) / (num_hist - 1)] and uppers[(i * (nvals - 1)) /
-			 * (num_hist - 1)]. But computing that subscript directly risks
-			 * integer overflow when the stats target is more than a couple
-			 * thousand.  Instead we add (nvals - 1) / (num_hist - 1) to pos
-			 * at each step, tracking the integral and fractional parts of the
-			 * sum separately.
-			 */
-			delta = (non_null_cnt - 1) / (num_hist - 1);
-			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-			pos = posfrac = 0;
-
-			for (i = 0; i < num_hist; i++)
-			{
-				bound_hist_values[i] =
-					PointerGetDatum(period_make(lowers[pos].val, uppers[pos].val,
-					lowers[pos].inclusive, uppers[pos].inclusive));
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-
-			stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
-			stats->staop[slot_idx] = oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-			stats->stavalues[slot_idx] = bound_hist_values;
-			stats->numvalues[slot_idx] = num_hist;
-			stats->statypid[slot_idx] = type_oid(T_PERIOD);
-			stats->statyplen[slot_idx] = sizeof(Period);
-			stats->statypbyval[slot_idx] = false;
-			stats->statypalign[slot_idx] = 'd';
-			slot_idx++;
-
-			/*
-			 * Generate a length histogram slot entry.
-			 * Ascending sort of period lengths for further filling of
-			 * histogram
-			 */
-			qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
-
-			num_hist = non_null_cnt;
-			if (num_hist > num_bins)
-				num_hist = num_bins + 1;
-
-			length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
-
-			/*
-			 * The object of this loop is to copy the first and last lengths[]
-			 * entries along with evenly-spaced values in between. So the i'th
-			 * value is lengths[(i * (nvals - 1)) / (num_hist - 1)]. But
-			 * computing that subscript directly risks integer overflow when
-			 * the stats target is more than a couple thousand.  Instead we
-			 * add (nvals - 1) / (num_hist - 1) to pos at each step, tracking
-			 * the integral and fractional parts of the sum separately.
-			 */
-			delta = (non_null_cnt - 1) / (num_hist - 1);
-			deltafrac = (non_null_cnt - 1) % (num_hist - 1);
-			pos = posfrac = 0;
-
-			for (i = 0; i < num_hist; i++)
-			{
-				length_hist_values[i] = Float8GetDatum(lengths[pos]);
-				pos += delta;
-				posfrac += deltafrac;
-				if (posfrac >= (num_hist - 1))
-				{
-					/* fractional part exceeds 1, carry to integer part */
-					pos++;
-					posfrac -= (num_hist - 1);
-				}
-			}
-		}
-		else
-		{
-			/*
-			 * Even when we don't create the histogram, store an empty array
-			 * to mean "no histogram". We can't just leave stavalues NULL,
-			 * because get_attstatsslot() errors if you ask for stavalues, and
-			 * it's NULL.
-			 */
-			length_hist_values = palloc(0);
-			num_hist = 0;
-		}
-		stats->stakind[slot_idx] = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
-		stats->staop[slot_idx] = Float8LessOperator;
-		stats->stavalues[slot_idx] = length_hist_values;
-		stats->numvalues[slot_idx] = num_hist;
-		stats->statypid[slot_idx] = FLOAT8OID;
-		stats->statyplen[slot_idx] = sizeof(float8);
-		stats->statypbyval[slot_idx] = true;
-		stats->statypalign[slot_idx] = 'd';
-
-		slot_idx++;
+		period_compute_stats1(stats, non_null_cnt, &slot_idx,
+			lowers, uppers, lengths);
 
 		MemoryContextSwitchTo(old_cxt);
 	}
@@ -302,6 +307,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	 * We don't need to bother cleaning up any of our temporary palloc's. The
 	 * hashtable should also go away, as it used a child memory context.
 	 */
+	pfree(lowers); pfree(uppers); pfree(lengths);
 }
 
 /*****************************************************************************/
@@ -314,7 +320,7 @@ static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int samplerows, double totalrows)
 {
-	timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows);
 }
 
 PG_FUNCTION_INFO_V1(period_analyze);
@@ -341,9 +347,9 @@ period_analyze(PG_FUNCTION_ARGS)
 
 static void
 timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
-	timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows);
 }
 
 PG_FUNCTION_INFO_V1(timestampset_analyze);
@@ -370,9 +376,9 @@ timestampset_analyze(PG_FUNCTION_ARGS)
 
 static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
-	timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows, totalrows);
+	timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows);
 }
 
 PG_FUNCTION_INFO_V1(periodset_analyze);
