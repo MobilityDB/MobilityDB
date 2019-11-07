@@ -44,7 +44,9 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Functions copied from PostGIS file gserialized_estimate.c
+ *****************************************************************************/
 
 /*
 * Assign a number to the n-dimensional statistics kind
@@ -543,6 +545,8 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 	return true;
 }
 
+/*****************************************************************************/
+
 static HeapTuple
 tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
 	Datum value, Datum *values, bool *isnull)
@@ -558,7 +562,7 @@ tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum,
 	pfree(DatumGetPointer(replValue));
 
 	/*
-	 * copy the identification info of the old tuple: t_ctid, t_self, and OID
+	 * Copy the identification info of the old tuple: t_ctid, t_self, and OID
 	 * (if any)
 	 */
 	result->t_data->t_ctid = tuple->t_data->t_ctid;

@@ -152,9 +152,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a length histogram slot entry. */
 
 		/*
-			* Ascending sort of period lengths for further filling of
-			* histogram
-			*/
+		 * Ascending sort of period lengths for further filling of histogram
+		 */
 		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
 		num_hist = non_null_cnt;

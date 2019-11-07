@@ -975,9 +975,8 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		}
 
 		TypeCacheEntry *range_typeentry = lookup_type_cache(rangetypid,
-															TYPECACHE_EQ_OPR |
-															TYPECACHE_CMP_PROC_FINFO |
-															TYPECACHE_HASH_PROC_FINFO);
+			TYPECACHE_EQ_OPR | TYPECACHE_CMP_PROC_FINFO |
+			TYPECACHE_HASH_PROC_FINFO);
 
 		stats->stakind[*slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
 		stats->staop[*slot_idx] = temporal_extra_data->value_lt_opr;
@@ -1064,19 +1063,19 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
 static void
 temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					int samplerows, double totalrows, bool valuestats)
+	int samplerows, bool valuestats)
 {
 	int null_cnt = 0,
-		non_null_cnt = 0,
-		slot_idx = 0;
+			non_null_cnt = 0,
+			slot_idx = 0;
 	float8 *value_lengths, 
 		   *time_lengths;
 	RangeBound *value_lowers,
-			*value_uppers;
+		   *value_uppers;
 	PeriodBound *time_lowers,
-			*time_uppers;
+		   *time_uppers;
 	double total_width = 0;
-	Oid rangetypid = 0; /* make compiler quiet */
+	Oid 	rangetypid = 0; /* make compiler quiet */
 	TypeCacheEntry *typcache;
 
 	temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
@@ -1155,13 +1154,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		int pos,
-			posfrac,
-			delta,
-			deltafrac,
-			num_bins = stats->attr->attstattarget,
-			num_hist,
-			i;
 		MemoryContext old_cxt;
 
 		stats->stats_valid = true;
@@ -1213,16 +1205,16 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 void
 temporalinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						   int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
 	return tempinst_compute_stats(stats, fetchfunc, samplerows, totalrows, false);
 }
 
 void
 temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
-	return temps_compute_stats(stats, fetchfunc, samplerows, totalrows, false);
+	return temps_compute_stats(stats, fetchfunc, samplerows, false);
 }
 
 /*****************************************************************************
@@ -1240,7 +1232,7 @@ void
 tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 						int samplerows, double totalrows)
 {
-	return temps_compute_stats(stats, fetchfunc, samplerows, totalrows, true);
+	return temps_compute_stats(stats, fetchfunc, samplerows, true);
 }
 
 /*****************************************************************************
@@ -1270,9 +1262,8 @@ temporal_extra_info(VacAttrStats *stats)
 
 	/* Information about the temporal type */
 	typentry = lookup_type_cache(stats->attrtypid,
-								 TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
-								 TYPECACHE_CMP_PROC_FINFO |
-								 TYPECACHE_HASH_PROC_FINFO);
+		TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
+		TYPECACHE_HASH_PROC_FINFO);
 	extra_data->type_id = typentry->type_id;
 	extra_data->eq_opr = typentry->eq_opr;
 	extra_data->lt_opr = typentry->lt_opr;
@@ -1284,9 +1275,8 @@ temporal_extra_info(VacAttrStats *stats)
 
 	/* Information about the value type */
 	typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
-										TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
-										TYPECACHE_CMP_PROC_FINFO |
-										TYPECACHE_HASH_PROC_FINFO);
+		TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
+		TYPECACHE_HASH_PROC_FINFO);
 	extra_data->value_type_id = typentry->type_id;
 	extra_data->value_eq_opr = typentry->eq_opr;
 	extra_data->value_lt_opr = typentry->lt_opr;
@@ -1300,9 +1290,8 @@ temporal_extra_info(VacAttrStats *stats)
 	if (stats->attrtypmod == TEMPORALINST)
 	{
 		typentry = lookup_type_cache(TIMESTAMPTZOID,
-										  TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
-										  TYPECACHE_CMP_PROC_FINFO |
-										  TYPECACHE_HASH_PROC_FINFO);
+			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
+			TYPECACHE_HASH_PROC_FINFO);
 		extra_data->time_type_id = TIMESTAMPTZOID;
 		extra_data->time_eq_opr = typentry->eq_opr;
 		extra_data->time_lt_opr = typentry->lt_opr;
@@ -1316,9 +1305,8 @@ temporal_extra_info(VacAttrStats *stats)
 	{
 		Oid pertypoid = type_oid(T_PERIOD);
 		typentry = lookup_type_cache(pertypoid,
-										  TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR |
-										  TYPECACHE_CMP_PROC_FINFO |
-										  TYPECACHE_HASH_PROC_FINFO);
+			TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
+			TYPECACHE_HASH_PROC_FINFO);
 		extra_data->time_type_id = pertypoid;
 		extra_data->time_eq_opr = typentry->eq_opr;
 		extra_data->time_lt_opr = typentry->lt_opr;
