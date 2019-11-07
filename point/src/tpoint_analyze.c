@@ -190,10 +190,10 @@ nd_box_init(ND_BOX *a)
 * the mins to the largest.
 */
 static int
-nd_box_init_bounds(ND_BOX *a)
+nd_box_init_bounds(ND_BOX *a, int ndims)
 {
 	int d;
-	for (d = 0; d < ND_DIMS; d++)
+	for (d = 0; d < ndims; d++)
 	{
 		a->min[d] = FLT_MAX;
 		a->max[d] = -1 * FLT_MAX;
@@ -218,10 +218,10 @@ total_double(const double *vals, int nvals)
 
 /** Expand the bounds of target to include source */
 static int
-nd_box_merge(const ND_BOX *source, ND_BOX *target)
+nd_box_merge(const ND_BOX *source, ND_BOX *target, int ndims)
 {
 	int d;
-	for (d = 0; d < ND_DIMS; d++)
+	for (d = 0; d < ndims; d++)
 	{
 		target->min[d] = Min(target->min[d], source->min[d]);
 		target->max[d] = Max(target->max[d], source->max[d]);
@@ -549,8 +549,8 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 
 static void
 gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
-	double notnull_cnt, int ndims, const ND_BOX **sample_boxes, 
-	ND_BOX *sum, ND_BOX *sample_extent, int *slot_idx)
+	double notnull_cnt, const ND_BOX **sample_boxes, ND_BOX *sum, 
+	ND_BOX *sample_extent, int *slot_idx, int ndims)
 {
 	MemoryContext old_context;
 	int d, i;						/* Counters */
@@ -575,6 +575,8 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	int   histo_ndims = 0;			/* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
 	double total_distribution;		/* Total of sample_distribution */
+
+	int stats_slot;					/* What slot is this data going into? (2D vs ND) */
 	int stats_kind;					/* And this is what? (2D vs ND) */
 
 	/* Initialize boxes */
@@ -633,7 +635,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 *   o skip hard deviants
 	 *   o compute new histogram box
 	 */
-	nd_box_init_bounds(&histo_extent_new);
+	nd_box_init_bounds(&histo_extent_new, ndims);
 	for (i = 0; i < notnull_cnt; i++)
 	{
 		const ND_BOX *ndb = sample_boxes[i];
@@ -644,7 +646,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			continue;
 		}
 		/* Expand our new box to fit all the other features. */
-		nd_box_merge(ndb, &histo_extent_new);
+		nd_box_merge(ndb, &histo_extent_new, ndims);
 	}
 	/*
 	 * Expand the box slightly (1%) to avoid edge effects
@@ -789,7 +791,6 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 		nd_box_overlap(nd_stats, nd_box, &nd_ibox);
 		memset(at, 0, sizeof(int)*ND_DIMS);
 
-
 		for (d = 0; d < nd_stats->ndims; d++)
 		{
 			/* Initialize the starting values */
@@ -851,15 +852,21 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 
 	/* Put this histogram data into the right slot/kind */
 	if (ndims == 2)
+	{
+		stats_slot = STATISTIC_SLOT_2D;
 		stats_kind = STATISTIC_KIND_2D;
+	}
 	else
+	{
+		stats_slot = STATISTIC_SLOT_ND;
 		stats_kind = STATISTIC_KIND_ND;
+	}
 
 	/* Write the statistics data */
-	stats->stakind[*slot_idx] = stats_kind;
-	stats->staop[*slot_idx] = InvalidOid;
-	stats->stanumbers[*slot_idx] = (float4*) nd_stats;
-	stats->numnumbers[*slot_idx] = nd_stats_size/sizeof(float4);
+	stats->stakind[stats_slot] = stats_kind;
+	stats->staop[stats_slot] = InvalidOid;
+	stats->stanumbers[stats_slot] = (float4*) nd_stats;
+	stats->numnumbers[stats_slot] = nd_stats_size/sizeof(float4);
 
 	(*slot_idx)++;
 
@@ -967,15 +974,18 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		}
 
-		/* If we're in 2D mode, zero out the higher dimensions for "safety" 
-		 * Otherwise set ndims to 3 */
+		/* If we're in 2D/3D mode, zero out the higher dimensions for "safety" 
+		 * If we're in 3D mode set ndims to 3 */
 		if (! MOBDB_FLAGS_GET_Z(temp->flags))
 			gbox.zmin = gbox.zmax = gbox.mmin = gbox.mmax = 0.0;
-		else 
+		else
+		{
+			gbox.mmin = gbox.mmax = 0.0;
 			ndims = 3;
+		}
 
 		/* Convert gbox to n-d box */
-		nd_box = palloc(sizeof(ND_BOX));
+		nd_box = palloc0(sizeof(ND_BOX));
 		nd_box_from_gbox(&gbox, nd_box);
 
 		/* Cache n-d bounding box */
@@ -983,10 +993,10 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Initialize sample extent before merging first entry */
 		if (! notnull_cnt)
-			nd_box_init_bounds(&sample_extent);
+			nd_box_init_bounds(&sample_extent, ndims);
 
 		/* Add current sample to overall sample extent */
-		nd_box_merge(nd_box, &sample_extent);
+		nd_box_merge(nd_box, &sample_extent, ndims);
 
 		/* Add bounds coordinates to sums for stddev calculation */
 		for (d = 0; d < ndims; d++)
@@ -1019,8 +1029,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
 		/* Compute statistics for spatial dimension */
+		/* 2D Mode */
 		gserialized_compute_stats(stats, sample_rows, total_rows, notnull_cnt,
-			ndims, sample_boxes, &sum, &sample_extent, &slot_idx);
+			sample_boxes, &sum, &sample_extent, &slot_idx, 2);
+		/* ND Mode */
+		gserialized_compute_stats(stats, sample_rows, total_rows, notnull_cnt,
+			sample_boxes, &sum, &sample_extent, &slot_idx, ndims);
 
 		/* Compute statistics for time dimension */
 		period_compute_stats1(stats, notnull_cnt, &slot_idx,
