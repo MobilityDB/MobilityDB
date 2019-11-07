@@ -10,15 +10,10 @@
  
 <!ENTITY Z_support
 "<inlinemediaobject>
-	<imageobject><imagedata scale='75' fileref='images/cube.png' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' /></imageobject>
  </inlinemediaobject>
 ">
- 
-<!ENTITY M_support
-"<inlinemediaobject>
-	<imageobject><imagedata scale='75' fileref='images/M.png' /></imageobject>
- </inlinemediaobject>
-">
+
 ]>
 <book lang="en">
 	<bookinfo>
@@ -1214,23 +1209,23 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:
 				</programlisting>
 			</para>
 				
-			<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>&amp;=</varname> (ever equals) or <varname>@=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
+			<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
 				<programlisting>
 -- Is the left operand ever less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[3@2001-01-01, 1@2001-01-03)') &amp;= true;
+	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
 -- true
 -- Does the operands ever intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-	geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') &amp;= true;
+	geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
 -- true
 -- Is the left operand always less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[2@2001-01-01, 4@2001-01-03)') @= true;
+	tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 -- Does the operands always intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
-	geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') @= true;
+	geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
 				</programlisting>
 			For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.</para>
@@ -2306,35 +2301,142 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 		</sect1>
 
 		<sect1>
-			<title>Ever and Always Equals Operators</title>
-			<para>These operators test whether a temporal value is ever or always equal to a value of the base type. As explained in <xref linkend="manipulating_temporal_types" />, these are typically used to test whether a condition is ever or always satisfied.</para>
+			<title>Ever and Always Comparison Operators</title>
+			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. Notice that ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 			<itemizedlist>
 				<listitem>
-					<para><varname>&amp;=</varname>: Is ever equal to the value?</para>
+					<para><varname>?=</varname>: Is ever equal to the value?</para>
 					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<para>Signature: <varname>ttype &amp;= base: bool</varname></para>
+					<para>Signature: <varname>ttype ?= base: bool</varname></para>
 					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;= 2;
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 2;
 -- true
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;= 3;
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 3;
 -- true
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;= 
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ?= 
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
 				</listitem>
 
 				<listitem>
-					<para><varname>@=</varname>: Is always equal to the value?</para>
-					<para>Signature: <varname>ttype @= base: bool</varname></para>
+					<para><varname>%=</varname>: Is always equal to the value?</para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+					<para>Signature: <varname>ttype %= base: bool</varname></para>
 					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @= 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @= 2;
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
 -- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @= 
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
 	geometry 'Point(1 1)';
 -- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>?&lt;&gt;</varname>: Is ever different from the value?</para>
+					<para>Signature: <varname>ttype ?&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' ?&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' ?&lt;&gt; 
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>%=</varname>: Is always different to the value?</para>
+					<para>Signature: <varname>ttype @&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @&lt;&gt;
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>?&lt;</varname>: Ever less than</para>
+					<para>Signature: <varname>tnumber ?&lt; number: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ?&lt; 2;
+-- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
+SELECT tint '[2@2012-01-01, 2@2012-01-05)' ?&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
+-- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>?&gt;</varname>: Ever greater than</para>
+					<para>Signature: <varname>tnumber ?&gt; number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-03, 1@2012-01-05)' ?&gt; 1;
+-- "[f@2012-01-03, f@2012-01-05)"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>?&lt;=</varname>: Ever less than or equal to</para>
+					<para>Signature: <varname>tnumber ?&lt;= number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-01, 1@2012-01-05)' ?&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
+-- "{t@2012-01-03, t@2012-01-04}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>?&gt;=</varname>: Ever greater than or equal to</para>
+					<para>Signature: <varname>tnumber ?&gt;= number: bool</varname></para>
+					<programlisting>
+SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
+	[BBB@2012-01-04, BBB@2012-01-05)}';
+-- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>%&lt;</varname>: Always less than</para>
+					<para>Signature: <varname>tnumber %&lt; number: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' %&lt; 2;
+-- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
+SELECT tint '[2@2012-01-01, 2@2012-01-05)' %&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
+-- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>%&gt;</varname>: Always greater than</para>
+					<para>Signature: <varname>tnumber %&gt; number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-03, 1@2012-01-05)' %&gt; 1;
+-- "[f@2012-01-03, f@2012-01-05)"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>%&lt;=</varname>: Always less than or equal to</para>
+					<para>Signature: <varname>tnumber %&lt;= number: bool</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-01, 1@2012-01-05)' %&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
+-- "{t@2012-01-03, t@2012-01-04}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para><varname>%&gt;=</varname>: Always greater than or equal to</para>
+					<para>Signature: <varname>tnumber %&gt;= number: bool</varname></para>
+					<programlisting>
+SELECT 'AAA'::text %&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
+	[BBB@2012-01-04, BBB@2012-01-05)}';
+-- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2342,6 +2444,7 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @=
 
 		<sect1>
 			<title>Temporal Comparison Operators</title>
+			<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
 
 			<itemizedlist>
 				<listitem>
@@ -2376,7 +2479,7 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; tint '[2@2012-01-02, 2@20
 
 				<listitem>
 					<para><varname>#&lt;</varname>: Temporal less than</para>
-					<para>Signature: <varname>{base, ttype} #&lt; {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&lt; {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
@@ -2387,7 +2490,7 @@ SELECT tint '[2@2012-01-01, 2@2012-01-05)' #&lt; tfloat '[1@2012-01-03, 3@2012-0
 
 				<listitem>
 					<para><varname>#&gt;</varname>: Temporal greater than</para>
-					<para>Signature: <varname>{base, ttype} #&gt; {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&gt; {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
@@ -2396,7 +2499,7 @@ SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 
 				<listitem>
 					<para><varname>#&lt;=</varname>: Temporal less than or equal to</para>
-					<para>Signature: <varname>{base, ttype} #&lt;= {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&lt;= {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
@@ -2405,7 +2508,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-
 
 				<listitem>
 					<para><varname>#&gt;=</varname>: Temporal greater than or equal to</para>
-					<para>Signature: <varname>{base, ttype} #&gt;= {base, ttype}: tbool</varname></para>
+					<para>Signature: <varname>{base, torder} #&gt;= {base, torder}: tbool</varname></para>
 					<programlisting>
 SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';
@@ -2819,7 +2922,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&amp; tint '[2@2012-01-03, 2@201
 				</listitem>
 
 				<listitem>
-					<para><varname>@&gt;</varname>: Does the first bounding box contains the second one?</para>
+					<para><varname>%&gt;</varname>: Does the first bounding box contains the second one?</para>
 					<para>Signature: <varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
 					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
@@ -2873,7 +2976,7 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 				</listitem>
 
 				<listitem>
-					<para><varname>@&gt;</varname>: Does the first bounding box contains the second one?</para>
+					<para><varname>%&gt;</varname>: Does the first bounding box contains the second one?</para>
 					<para>Signature: <varname>{geo, time, stbox, tpoint} @&gt; {geo, time, stbox, tpoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
@@ -3678,19 +3781,27 @@ WHERE intersects(T.Trip, R.Geom);
 
 			<para>For this tutorial we will use a Docker image containing MobilityDB and all its dependencies (including PostgreSQL and PostGIS). The container has a default database called <varname>mobilitydb</varname> with the MobilityDB extension installed where <varname>user = pw = docker</varname>. This presupposes that you have installed Docker into your computer. In that case, you can run the following command.
 				<programlisting>
-$ docker pull codewit/mobilitydb
-$ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
+docker pull codewit/mobilitydb
+docker volume create mobilitydb_data
+docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
 				</programlisting>
 				In the above commands
 				<itemizedlist>
-                                        <listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this command ensures that you have the most up-to-date version of this image.</para></listitem>
+                                        <listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this checks whether a more recent image has been published in the docker repository, and downloads it. It is better to call this command every time, to ensures that you have the latest most up-to-date version of this image.</para></listitem>
+                                        
+                                        <listitem><para><varname>docker volume create mobilitydb_data</varname> creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. You need to run this command only once, during the first use of the image</para>
+					</listitem>
+                                        
                                         <listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
 					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
 
-					<listitem><para><varname>-p 25432:5432</varname> maps TCP port 5432 in the container to port 25432 on the Docker host (to prevent potential conflicts with any local database instance you may have). This is required because the database server listens for connections on port 5432 by default.</para>
+					<listitem><para><varname>-p 25432:5432</varname> maps TCP port 5432 in the container to port 25432 on the Docker host (to prevent potential conflicts with any local database instance you may have). This is required because the PostgreSQL database server in the container listens for connections on port 5432 by default.</para>
 					</listitem>
 
+                                        <listitem><para><varname>-v mobilitydb_data:/var/lib/postgresql</varname> tells the container filesystem to mount the <varname>mobilitydb_data</varname> volume that we have just created to the path /var/lib/postgresql. This means that any database objects that the container saves or creates (by default in <varname>/var/lib/postgresql</varname>) will instead be persisted in the <varname>mobilitydb_data</varname> directory, which is stored in the host. This options ensures that your data will not be lost when the container is removed. </para>
+					</listitem>
+                                        
 					<listitem><para><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.</para>
 					</listitem>
 				</itemizedlist>
@@ -3699,7 +3810,7 @@ $ docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
 			<para>
 			Now we can launch any PostgreSQL administrative front-end to start using MobilityDB. Two traditional ones are the command-line tool <varname>psql</varname> and the graphical tool <varname>pgAdmin</varname>. We can launch <varname>psql</varname> as follows.
 				<programlisting>
-$ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
+docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 				</programlisting>
 				In the above command
 				<itemizedlist>
@@ -3711,19 +3822,36 @@ $ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			</para>
 
 			<para>
-			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first is to know the IP address used by Docker with the following command.
+			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to know the IP address used by docker container with the following command.
 				<programlisting>
-$ docker-machine ip
+docker-machine ip
 192.168.99.101
 				</programlisting>
-				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
+
+                        Notice that the address obtained in your computer may be different from the one above. Use this as the host address, and 5432 as the port in the pgAdmin connection configurations. the remaining configurations remain the same as in the first option.   
 			</para>
 			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
-                         
+                        <para>
+                        Now you can use pgAdmin to query the mobilitydb database, as will be further explained in the following sections. Here are few more docker commands that you will eventually need:
+                        <programlisting>
+docker stop "mobilitydb"
+docker start "mobilitydb"
+docker rm "mobilitydb"
+			</programlisting>
+                        The above commands
+				<itemizedlist>
+                                        <listitem><para><varname>docker stop</varname> shuts down the docker container. You need to issue this command, for example, if you need to re-start the host.  </para>
+                                        </listitem>
+                                        <listitem><para><varname>docker start</varname> launches back the docker container. You need to issue this command, for example, after re-starting the host.  </para>
+                                        </listitem>
+                                        <listitem><para><varname>docker rm</varname> removes/deletes docker container. You need to issue this command, for example, if you need to <varname>docker pull</varname> a more recent MobilityDB image. If the databases are stored in a <varname>docker volume</varname> as explained above, it will still be available after downloading and running the new image.</para>
+                                        </listitem>
+				</itemizedlist>
+                        </para>
 		</sect1>
 
 		<sect1>
@@ -3761,7 +3889,7 @@ $ docker-machine ip
 			<para>
 			We decompress the file with the data into a directory. This can be done using the command. 
 				<programlisting>
-user@host:/home/mobilitydb/data/$ unzip berlinmod_data.zip
+unzip berlinmod_data.zip
 				</programlisting>
 			We suppose in the following that the directory used is as follows <varname>/home/mobilitydb/data/</varname>.
 			</para>
@@ -4517,7 +4645,7 @@ WHERE S1.SumDist &lt;= ALL (
 				<para>
 				We decompress the file with the data into a directory. This can be done using the command. 
 					<programlisting>
-$ unzip gtfs_data.zip
+unzip gtfs_data.zip
 					</programlisting>
 				We suppose in the following that the directory used is as follows <varname>/home/gtfs_tutorial/</varname>.
 				</para>
@@ -5526,7 +5654,7 @@ FROM Trips T1, Cars C1, Trips T2, Cars C2
 WHERE T1.CarId = C1.CarId AND T2.CarId = C2.CarId
 AND T1.CarId &lt; T2.CarId AND C1.Type = 'truck' AND C2.Type = 'truck' 
 AND T1.Trip &amp;&amp; expandSpatial(T2.Trip, 10) 
-AND tdwithin(T1.Trip, T2.Trip, 10.0) &amp;= true
+AND tdwithin(T1.Trip, T2.Trip, 10.0) ?= true
 ORDER BY C1.Licence, C2.Licence;
 					</programlisting>
 				</listitem>
@@ -5665,7 +5793,7 @@ WHERE T1.CarId = L1.CarId AND T2.CarId = L2.CarId AND L1.Licence &lt; L2.Licence
 AND T1.Trip &amp;&amp; STBOX(R.Geom, P.Period) AND T2.Trip &amp;&amp; STBOX(R.Geom, P.Period)
 AND ST_Intersects(trajectory(atPeriod(T1.Trip, P.Period)), R.Geom)
 AND ST_Intersects(trajectory(atPeriod(T2.Trip, P.Period)), R.Geom)
-AND tintersects(atPeriod(T1.Trip, P.Period), atPeriod(T2.Trip, P.Period)) @= FALSE
+AND tintersects(atPeriod(T1.Trip, P.Period), atPeriod(T2.Trip, P.Period)) %= FALSE
 ORDER BY PeriodId, RegionId, Licence1, Licence2;
 					</programlisting>
 				</listitem>
