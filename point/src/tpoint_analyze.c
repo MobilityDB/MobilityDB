@@ -548,27 +548,23 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
  */
 
 static void
-gserialized_compute_stats(VacAttrStats *stats, int sample_rows, 
-	double total_rows, bool hasz, const ND_BOX **sample_boxes, int *slot_idx)
+gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
+	double notnull_cnt, int ndims, const ND_BOX **sample_boxes, 
+	ND_BOX *sum, ND_BOX *sample_extent, int *slot_idx)
 {
 	MemoryContext old_context;
 	int d, i;						/* Counters */
-	int notnull_cnt = 0;			/* # not null rows in the sample */
-	int null_cnt = 0;				/* # null rows in the sample */
 	int histogram_features = 0;		/* # rows that actually got counted in the histogram */
 
 	ND_STATS *nd_stats;				/* Our histogram */
 	size_t	nd_stats_size;		   /* Size to allocate */
 
-	double total_width = 0;			/* # of bytes used by sample */
 	double total_sample_volume = 0;	/* Area/volume coverage of the sample */
 	double total_cell_count = 0;	/* # of cells in histogram affected by sample */
 
-	ND_BOX sum;						/* Sum of extents of sample boxes */
 	ND_BOX avg;						/* Avg of extents of sample boxes */
 	ND_BOX stddev;					/* StdDev of extents of sample boxes */
 
-	ND_BOX sample_extent;			/* Extent of the raw sample */
 	int	histo_size[ND_DIMS];		/* histogram nrows, ncols, etc */
 	ND_BOX histo_extent;			/* Spatial extent of the histogram */
 	ND_BOX histo_extent_new;		/* Temporary variable */
@@ -576,11 +572,16 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 	int	histo_cells;				/* Number of cells in the histogram */
 	int	histo_cells_new = 1;		/* Temporary variable */
 
-	int   ndims = 2;				/* Dimensionality of the sample */
 	int   histo_ndims = 0;			/* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
 	double total_distribution;		/* Total of sample_distribution */
 	int stats_kind;					/* And this is what? (2D vs ND) */
+
+	/* Initialize boxes */
+	nd_box_init(&avg);
+	nd_box_init(&stddev);
+	nd_box_init(&histo_extent);
+	nd_box_init(&histo_extent_new);
 
 	/*
 	 * We'll build a histogram having stats->attr->attstattarget cells
@@ -609,8 +610,8 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 	for (d = 0; d < ndims; d++)
 	{
 		/* Calculate average bounds values */
-		avg.min[d] = sum.min[d] / notnull_cnt;
-		avg.max[d] = sum.max[d] / notnull_cnt;
+		avg.min[d] = sum->min[d] / notnull_cnt;
+		avg.max[d] = sum->max[d] / notnull_cnt;
 
 		/* Calculate standard deviation for this dimension bounds */
 		for (i = 0; i < notnull_cnt; i++)
@@ -623,8 +624,8 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 		stddev.max[d] = sqrt(stddev.max[d] / notnull_cnt);
 
 		/* Histogram bounds for this dimension bounds is avg +/- SDFACTOR * stdev */
-		histo_extent.min[d] = Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent.min[d]);
-		histo_extent.max[d] = Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent.max[d]);
+		histo_extent.min[d] = Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent->min[d]);
+		histo_extent.max[d] = Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent->max[d]);
 	}
 
 	/*
@@ -849,7 +850,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 	nd_stats->cells_covered = total_cell_count;
 
 	/* Put this histogram data into the right slot/kind */
-	if (! hasz)
+	if (ndims == 2)
 		stats_kind = STATISTIC_KIND_2D;
 	else
 		stats_kind = STATISTIC_KIND_ND;
@@ -859,10 +860,6 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 	stats->staop[*slot_idx] = InvalidOid;
 	stats->stanumbers[*slot_idx] = (float4*) nd_stats;
 	stats->numnumbers[*slot_idx] = nd_stats_size/sizeof(float4);
-	stats->stanullfrac = (float4)null_cnt/sample_rows;
-	stats->stawidth = total_width/notnull_cnt;
-	stats->stadistinct = -1.0;
-	stats->stats_valid = true;
 
 	(*slot_idx)++;
 
@@ -870,39 +867,24 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows,
 }
 
 static void
-tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int sample_rows, double total_rows)
 {
 	int d, i;						/* Counters */
 	int notnull_cnt = 0;			/* # not null rows in the sample */
 	int null_cnt = 0;				/* # null rows in the sample */
 	int	slot_idx = 0;				/* slot for storing the statistics */
-
 	double total_width = 0;			/* # of bytes used by sample */
-
 	ND_BOX sum;						/* Sum of extents of sample boxes */
-	ND_BOX avg;						/* Avg of extents of sample boxes */
-	ND_BOX stddev;					/* StdDev of extents of sample boxes */
-
 	const ND_BOX **sample_boxes;	/* ND_BOXes for each of the sample features */
 	ND_BOX sample_extent;			/* Extent of the raw sample */
-	ND_BOX histo_extent;			/* Spatial extent of the histogram */
-	ND_BOX histo_extent_new;		/* Temporary variable */
-
 	int   ndims = 2;				/* Dimensionality of the sample */
-
-	bool hasz = false;
-
 	float8 *time_lengths;
 	PeriodBound *time_lowers,
 		   *time_uppers;
 
-	/* Initialize sum and stddev */
+	/* Initialize sum */
 	nd_box_init(&sum);
-	nd_box_init(&stddev);
-	nd_box_init(&avg);
-	nd_box_init(&histo_extent);
-	nd_box_init(&histo_extent_new);
 
 	/*
 	 * This is where gserialized_analyze_nd
@@ -914,7 +896,7 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	 * We might need less space, but don't think
 	 * its worth saving...
 	 */
-	sample_boxes = palloc(sizeof(ND_BOX*) * sample_rows);
+	sample_boxes = palloc(sizeof(ND_BOX *) * sample_rows);
 
 	time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
 	time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
@@ -943,7 +925,6 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		bool is_null;
 		bool is_copy;
 
-
 		value = fetchfunc(stats, i, &is_null);
 
 		/* Skip all NULLs. */
@@ -953,10 +934,11 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		}
 
-		is_copy = VARATT_IS_EXTENDED(value);
-
 		/* Get temporal point */
 		temp = DatumGetTemporal(value);
+
+		/* TO VERIFY */
+		is_copy = VARATT_IS_EXTENDED(temp);
 
 		/* How many bytes does this sample use? */
 		total_width += VARSIZE(temp);
@@ -972,7 +954,7 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		time_lengths[notnull_cnt] = period_duration_secs(period_upper.val, 
 			period_lower.val);
 
-		/* Read the bounds from the gserialized. */
+		/* Read the bounds from the trajectory. */
 		if (LW_FAILURE == gserialized_get_gbox_p(traj, &gbox))
 		{
 			/* Skip empties too. */
@@ -990,10 +972,7 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		if (! MOBDB_FLAGS_GET_Z(temp->flags))
 			gbox.zmin = gbox.zmax = gbox.mmin = gbox.mmax = 0.0;
 		else 
-		{
 			ndims = 3;
-			hasz = true;
-		}
 
 		/* Convert gbox to n-d box */
 		nd_box = palloc(sizeof(ND_BOX));
@@ -1040,8 +1019,8 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
 		/* Compute statistics for spatial dimension */
-		gserialized_compute_stats(stats, sample_rows, total_rows, hasz, 
-			sample_boxes, &slot_idx);
+		gserialized_compute_stats(stats, sample_rows, total_rows, notnull_cnt,
+			ndims, sample_boxes, &sum, &sample_extent, &slot_idx);
 
 		/* Compute statistics for time dimension */
 		period_compute_stats1(stats, notnull_cnt, &slot_idx,
@@ -1060,83 +1039,6 @@ tpoint_compute_stats_new(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 }
 
 /*****************************************************************************/
-
-static HeapTuple
-tpoint_remove_timedim(HeapTuple tuple, TupleDesc tupDesc, int tupattnum, 
-	Datum value, Datum *values, bool *isnull)
-{
-	heap_deform_tuple(tuple, tupDesc, values, isnull);
-
-	SPI_connect();
-	Datum replValue = tpoint_values_internal(DatumGetTemporal(value));
-	SPI_finish();
-	/* tupattnum is 1-based */
-	values[tupattnum - 1] = replValue;
-	HeapTuple result = heap_form_tuple(tupDesc, values, isnull);
-	pfree(DatumGetPointer(replValue));
-
-	/*
-	 * Copy the identification info of the old tuple: t_ctid, t_self, and OID
-	 * (if any)
-	 */
-	result->t_data->t_ctid = tuple->t_data->t_ctid;
-	result->t_self = tuple->t_self;
-	result->t_tableOid = tuple->t_tableOid;
-	if (tupDesc->tdhasoid)
-		HeapTupleSetOid(result, HeapTupleGetOid(tuple));
-
-	heap_freetuple(tuple);
-	return result;
-}
-
-static void
-tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-					 int samplerows, double totalrows)
-{
-	MemoryContext old_context;
-	int duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	int stawidth;
-
-	/* Compute statistics for the time component */
-	if (duration == TEMPORALINST)
-		temporalinst_compute_stats(stats, fetchfunc, samplerows, totalrows);
-	else
-		temporals_compute_stats(stats, fetchfunc, samplerows, totalrows);
-
-	stawidth = stats->stawidth;
-
-	/* Must copy the target values into anl_context */
-	old_context = MemoryContextSwitchTo(stats->anl_context);
-
-	Datum *values = (Datum *) palloc(stats->tupDesc->natts * sizeof(Datum));
-	bool *isnull = (bool *) palloc(stats->tupDesc->natts * sizeof(bool));
-
-	/* Remove time component for the tuples */
-	for (int i = 0; i < samplerows; i++)
-	{
-		bool valueisnull;
-		Datum value = fetchfunc(stats, i, &valueisnull);
-		if (valueisnull)
-			continue;
-
-		stats->rows[i] = tpoint_remove_timedim(stats->rows[i], 	
-			stats->tupDesc, stats->tupDesc->natts, value, values, isnull);
-	}
-
-	/* Compute statistics for the geometry component */
-	call_function1(gserialized_analyze_nd, PointerGetDatum(stats));
-	stats->compute_stats(stats, fetchfunc, samplerows, totalrows);
-
-	/* Put the total width of the column, variable size */
-	stats->stawidth = stawidth;
-
-	pfree(values); pfree(isnull);
-
-	/* Switch back to the previous context */
-	MemoryContextSwitchTo(old_context);
-
-	return;
-}
 
 PG_FUNCTION_INFO_V1(tpoint_analyze);
 
@@ -1163,7 +1065,7 @@ tpoint_analyze(PG_FUNCTION_ARGS)
 		temporal_extra_info(stats);
 
 	/* Set the callback function to compute statistics. */
-	stats->compute_stats = tpoint_compute_stats_new;
+	stats->compute_stats = tpoint_compute_stats;
 	PG_RETURN_BOOL(true);
 }
 

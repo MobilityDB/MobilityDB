@@ -222,8 +222,8 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 {
 	int			null_cnt = 0,
 				non_null_cnt = 0,
-				timetype_no,
-				slot_idx = 0;
+				slot_idx = 0,
+				i;
 	float8	   *lengths;
 	PeriodBound *lowers,
 			   *uppers;
@@ -235,7 +235,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	lengths = (float8 *) palloc(sizeof(float8) * samplerows);
 
 	/* Loop over the sample timetype values. */
-	for (timetype_no = 0; timetype_no < samplerows; timetype_no++)
+	for (i = 0; i < samplerows; i++)
 	{
 		Datum		value;
 		bool		isnull;
@@ -245,7 +245,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 
 		vacuum_delay_point();
 
-		value = fetchfunc(stats, timetype_no, &isnull);
+		value = fetchfunc(stats, i, &isnull);
 		if (isnull)
 		{
 			/* timetype value is null, just count that */
@@ -286,10 +286,17 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		non_null_cnt++;
 	}
 
-
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
+		stats->stats_valid = true;
+		/* Do the simple null-frac and width stats */
+		stats->stanullfrac = (double) null_cnt / (double) samplerows;
+		stats->stawidth = total_width / (double) non_null_cnt;
+
+		/* Estimate that non-null values are unique */
+		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+
 		period_compute_stats1(stats, non_null_cnt, &slot_idx,
 			lowers, uppers, lengths);
 	}
