@@ -90,6 +90,10 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 				i;
 	Datum	   *bound_hist_values;
 	Datum	   *length_hist_values;
+	MemoryContext old_cxt;
+
+	/* Must copy the target values into anl_context */
+	old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
 	/*
 	 * Generate a bounds histogram and a length histogram slot entries 
@@ -208,6 +212,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	stats->statypbyval[*slot_idx] = true;
 	stats->statypalign[*slot_idx] = 'd';
 	(*slot_idx)++;
+
+	MemoryContextSwitchTo(old_cxt);
 }
 
 static void
@@ -222,7 +228,6 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	PeriodBound *lowers,
 			   *uppers;
 	double		total_width = 0;
-	MemoryContext old_cxt;
 
 	/* Allocate memory to hold period bounds and lengths of the sample periods. */
 	lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * samplerows);
@@ -285,13 +290,8 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		/* Must copy the target values into anl_context */
-		old_cxt = MemoryContextSwitchTo(stats->anl_context);
-
 		period_compute_stats1(stats, non_null_cnt, &slot_idx,
 			lowers, uppers, lengths);
-
-		MemoryContextSwitchTo(old_cxt);
 	}
 	else if (null_cnt > 0)
 	{

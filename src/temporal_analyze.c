@@ -913,7 +913,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 void
 range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx, 
-	RangeBound *value_lowers, RangeBound *value_uppers, float8 *value_lengths,
+	RangeBound *lowers, RangeBound *uppers, float8 *lengths,
 	TypeCacheEntry *typcache, Oid rangetypid)
 {
 	int num_hist,
@@ -923,25 +923,30 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		deltafrac,
 		i;	
 	float4	   *emptyfrac;
-	Datum *value_bound_hist_values;
-	Datum *value_length_hist_values;
+	Datum *bound_hist_values;
+	Datum *length_hist_values;
+	MemoryContext old_cxt;
+
+	/* Must copy the target values into anl_context */
+	old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
 	/*
-	 * Generate value histograms if there are at least two values.
+	 * Generate a bounds histogram and a length histogram slot entries 
+	 * if there are at least two values.
 	 */
 	if (non_null_cnt >= 2)
 	{
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(value_lowers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
-		qsort(value_uppers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+		qsort(lowers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+		qsort(uppers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
 			num_hist = num_bins + 1;
 
-		value_bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+		bound_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
 		/*
 		* The object of this loop is to construct ranges from first and
@@ -960,9 +965,9 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
 		for (i = 0; i < num_hist; i++)
 		{
-			value_bound_hist_values[i] = PointerGetDatum(
-				range_serialize(typcache, &value_lowers[pos], 
-					&value_uppers[pos], false));
+			bound_hist_values[i] = PointerGetDatum(
+				range_serialize(typcache, &lowers[pos], 
+					&uppers[pos], false));
 
 			pos += delta;
 			posfrac += deltafrac;
@@ -979,8 +984,8 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 			TYPECACHE_HASH_PROC_FINFO);
 
 		stats->stakind[*slot_idx] = STATISTIC_KIND_BOUNDS_HISTOGRAM;
-		stats->staop[*slot_idx] = temporal_extra_data->value_lt_opr;
-		stats->stavalues[*slot_idx] = value_bound_hist_values;
+		stats->staop[*slot_idx] = temporal_extra_data->lt_opr;
+		stats->stavalues[*slot_idx] = bound_hist_values;
 		stats->numvalues[*slot_idx] = num_hist;
 		stats->statypid[*slot_idx] = range_typeentry->type_id;
 		stats->statyplen[*slot_idx] = range_typeentry->typlen;
@@ -991,16 +996,15 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a length histogram slot entry */
 
 		/*
-		* Ascending sort of range lengths for further filling of
-		* histogram
+		* Ascending sort of range lengths for further filling of histogram
 		*/
-		qsort(value_lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
 			num_hist = num_bins + 1;
 
-		value_length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
+		length_hist_values = (Datum *) palloc(num_hist * sizeof(Datum));
 
 		/*
 		* The object of this loop is to copy the first and last lengths[]
@@ -1017,7 +1021,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 
 		for (i = 0; i < num_hist; i++)
 		{
-			value_length_hist_values[i] = Float8GetDatum(value_lengths[pos]);
+			length_hist_values[i] = Float8GetDatum(lengths[pos]);
 			pos += delta;
 			posfrac += deltafrac;
 			if (posfrac >= (num_hist - 1))
@@ -1036,12 +1040,12 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		* because get_attstatsslot() errors if you ask for stavalues, and
 		* it's NULL. We'll still store the empty fraction in stanumbers.
 		*/
-		value_length_hist_values = palloc(0);
+		length_hist_values = palloc(0);
 		num_hist = 0;
 	}
 	stats->stakind[*slot_idx] = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
 	stats->staop[*slot_idx] = Float8LessOperator;
-	stats->stavalues[*slot_idx] = value_length_hist_values;
+	stats->stavalues[*slot_idx] = length_hist_values;
 	stats->numvalues[*slot_idx] = num_hist;
 	stats->statypid[*slot_idx] = FLOAT8OID;
 	stats->statyplen[*slot_idx] = sizeof(float8);
@@ -1054,6 +1058,8 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 	stats->stanumbers[*slot_idx] = emptyfrac;
 	stats->numnumbers[*slot_idx] = 1;
 	(*slot_idx)++;
+
+	MemoryContextSwitchTo(old_cxt);
 }
 
 /* 
@@ -1154,8 +1160,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	/* We can only compute real stats if we found some non-null values. */
 	if (non_null_cnt > 0)
 	{
-		MemoryContext old_cxt;
-
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
 		stats->stanullfrac = (float4) null_cnt / (float4) samplerows;
@@ -1163,9 +1167,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Estimate that non-null values are unique */
 		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
-
-		/* Must copy the target values into anl_context */
-		old_cxt = MemoryContextSwitchTo(stats->anl_context);
 
 		if (valuestats)
 		{
@@ -1175,8 +1176,6 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		period_compute_stats1(stats, non_null_cnt, &slot_idx,
 			time_lowers, time_uppers, time_lengths);
-
-		MemoryContextSwitchTo(old_cxt);
 	}
 	else if (null_cnt > 0)
 	{
