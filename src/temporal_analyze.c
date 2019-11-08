@@ -1127,7 +1127,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		}
 
-		total_width += toast_datum_size(value);
+		total_width += VARSIZE(value);
 
 		/* Get Temporal value */
 		temp = DatumGetTemporal(value);
