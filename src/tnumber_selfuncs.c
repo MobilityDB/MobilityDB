@@ -13,6 +13,7 @@
 #include "tnumber_selfuncs.h"
 
 #include <assert.h>
+#include <math.h>
 #include <access/htup_details.h>
 #include <utils/builtins.h>
 #include <utils/selfuncs.h>
