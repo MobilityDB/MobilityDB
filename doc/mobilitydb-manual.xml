@@ -144,16 +144,20 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 			<para>We present next the functions and operators for time types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
 				<itemizedlist>
 					<listitem>
-					<para>A set of types such as <varname>{period, timestampset, periodset}</varname> represents any of the types listed,</para>
+						<para>A set of types such as <varname>{period, timestampset, periodset}</varname> represents any of the types listed,</para>
 					</listitem>
 					<listitem>
-					<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
+						<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
 					</listitem>
 					<listitem>
-					<para><varname>number</varname> represents any numeric type, that is, <varname>int</varname> or <varname>float</varname>,</para>
+						<para><varname>number</varname> represents any numeric type, that is, <varname>int</varname> or <varname>float</varname>,</para>
 					</listitem>
 					<listitem>
-					<para><varname>range</varname> represents any numeric range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+						<para><varname>range</varname> represents any numeric range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>type[]</varname> represents an array of <varname>type</varname>.
+						</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -5845,20 +5849,66 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 			<para>We present next the functions and operators for time types. For this, we use the following notation:
 				<itemizedlist>
 					<listitem>
-					<para>A set of types such as <varname>{period, timestampset, periodset}</varname> represents any of the types listed,</para>
+						<para>A set of types such as <varname>{period, timestampset, periodset}</varname> represents any of the types listed,</para>
 					</listitem>
 					<listitem>
-					<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
+						<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
 					</listitem>
 					<listitem>
-					<para><varname>number</varname> represents any numeric type, that is, <varname>int</varname> or <varname>float</varname>,</para>
+						<para><varname>number</varname> represents any numeric type, that is, <varname>int</varname> or <varname>float</varname>,</para>
 					</listitem>
 					<listitem>
-					<para><varname>range</varname> represents any numeric range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+						<para><varname>range</varname> represents any numeric range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+					</listitem>
+					<listitem>
+						<para><varname>type[]</varname> represents an array of <varname>type</varname>.
+						</para>
 					</listitem>
 				</itemizedlist>
 			</para>
-				
+
+			<sect2>
+				<title>Constructor Functions</title>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for periods</para>
+						<para><varname>period(timestamptz, timestamptz, boolean = true, boolean = false): period</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for timestampsets</para>
+						<para><varname>timestampset(timestamptz[]}): timestampset</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for periodsets</para>
+						<para><varname>periodset(period[]): periodset</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Casting for Time Types</title>
+		
+				<itemizedlist>
+					<listitem>
+						<para>Converts a <varname>timestamptz</varname> to another time type</para>
+						<para><varname>timestamptz::period</varname></para>
+						<para><varname>timestamptz::timestampset</varname></para>
+						<para><varname>timestamptz::periodset</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Converts a <varname>period</varname> to a <varname>periodset</varname></para>
+						<para><varname>period::periodset</varname></para>
+						<para>Converts a <varname>period</varname> to a <varname>tstzrange</varname></para>
+						<para><varname>period::tstzrange</varname></para>
+						<para>Converts a <varname>tstzrange</varname> to a <varname>period</varname></para>
+						<para><varname>tstzrange::period</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
 			<sect2>
 				<title>Accessor Functions</title>
 
@@ -6066,7 +6116,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 		<sect1>
 			<title>Functions and Operators for Temporal Types</title>
 			
-			<para>We present next the functions and operators for the temporal types. For all temporal types, whether alphanumeric or spatial, we use the following notation:
+			<para>We present next the functions and operators for the temporal types. For all temporal types we use the following notation:
 				<itemizedlist>
 					<listitem>
 						<para><varname>ttype</varname> represents any temporal type,
@@ -6127,11 +6177,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 						<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,
 						</para>
 					</listitem>
-
-					<listitem>
-						<para><varname>type[]</varname> represents an array of <varname>type</varname>.
-						</para>
-					</listitem>
 				</itemizedlist>
 			</para>				
 			
@@ -6179,6 +6224,85 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				</itemizedlist>
 			</para>
 						
+			<sect2>
+				<title>Constructor Functions</title>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for temporal types of instant duration</para>
+						<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for temporal types of instant set duration</para>
+						<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for temporal types of period duration</para>
+						<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for temporal types of period set duration</para>
+						<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructors for <varname>tbox</varname></para>
+						<para><varname>tbox(float, float): tbox</varname></para>
+						<para><varname>tboxt(timestamptz, timestamptz): tbox</varname></para>
+						<para><varname>tbox(float, timestamptz, float, timestamptz): tbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructors for <varname>stbox</varname></para>
+						<para><varname>stbox(float, float, float, float): stbox</varname></para>
+						<para><varname>stbox(float, float, float, float, float, float): stbox</varname></para>
+						<para><varname>stboxt(float, float, timestamptz, float, float, timestamptz): stbox</varname></para>
+						<para><varname>stbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
+						<para><varname>geodstbox(float, float, float, float, float, float): stbox</varname></para>
+						<para><varname>geodstbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
+						<para><varname>stbox(timestamptz, timestamptz): stbox</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Casting for Temporal Types</title>
+
+				<itemizedlist>
+					<listitem>
+						<para>Temporal integer to temporal float</para>
+						<para><varname>tint::tfloat</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Temporal float to temporal integer</para>
+						<para><varname>tfloat::tint</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Temporal geography point to temporal geometry point</para>
+						<para><varname>tgeogpoint::tgeompoint</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Temporal geometry point to temporal geography point</para>
+						<para><varname>tgeompoint::tgeogpoint</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Temporal point to trajectory</para>
+						<para><varname>tgeompoint::geometry</varname>, <varname>tgeogpoint::geography</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Trajectory to temporal point</para>
+						<para><varname>geometry::tgeompoint</varname>, <varname>geography::tgeogpoint</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
 			<sect2>
 				<title>Transformation Functions</title>
 
@@ -6975,7 +7099,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Distance</para>
+						<para>Temporal distance</para>
 						<para><varname>{point, tpoint} &lt;-&gt; {point, tpoint}: tfloat</varname></para>
 					</listitem>
 				</itemizedlist>
