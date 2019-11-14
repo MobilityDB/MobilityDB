@@ -5288,20 +5288,32 @@ SET trajectory = trajectory(trip);
 
 	<chapter id ="python">
 		<title>Accessing MobilityDB in Python</title>
-		<para>We demonstrate next how to develop Python database applications with MobilityDB. For this, we use the MobilityDB Python package. This package is open source and is available on the Python Package Index (<ulink url="https://pypi.org/">PyPI</ulink>) repository while its source code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB-Python">Github</ulink>. 
+		<para>We demonstrate next how to develop Python database applications with MobilityDB. For this, we use <varname>mobilitydb</varname>, the MobilityDB Python package. This package is open source and is available on the Python Package Index (<ulink url="https://pypi.org/">PyPI</ulink>) repository while its source code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB-Python">Github</ulink>. 
 		</para>
 		<sect1>
 			<title>Installation</title>
-			<para>The MobilityDB Python package requires the <ulink url="https://pypi.org/project/psycopg2/">psycopg2</ulink> and the <ulink url="https://pypi.org/project/postgis/">postgis</ulink> packages. Psycopg2 is the most popular PostgreSQL database adapter for the Python programming language. It implements the Python DB API 2.0 specification. In this way PostgreSQL types can be manipulated in Python. Information about accessing PostgresSQL using Psycopg2 can be found in this <ulink url="https://pynative.com/python-postgresql-tutorial/">tutorial</ulink>. Furthermore, the Python package postgis enables to access PostGIS geometry types in Python.
+			<para>The <varname>mobilitydb</varname> package requires the <ulink url="https://pypi.org/project/psycopg2/"><varname>psycopg2</varname></ulink> and the <ulink url="https://pypi.org/project/postgis/"><varname>postgis</varname></ulink> packages. <varname>Psycopg2</varname> is the most popular PostgreSQL database adapter for the Python programming language. It implements the Python DB API 2.0 specification. It allows PostgreSQL types to be manipulated in Python. Information about accessing PostgresSQL using <varname>psycopg2</varname> can be found in this <ulink url="https://pynative.com/python-postgresql-tutorial/">tutorial</ulink>. Furthermore, the Python package <varname>postgis</varname> enables PostGIS geometry types to be manipulated in Python.
 			</para>
+
+			<para>
+			The <varname>mobilitydb</varname> package can be installed as follows.
+				<programlisting>
+pip install mobilitydb
+				</programlisting>
+			</para>
+		</sect1>
+
+		<sect1>
+			<title>Basic usage</title>
 
 			<para>
 			The MobilityDB Python package can be installed as follows.
 				<programlisting>
-pip install MobilityDB
+pip install mobilitydb
 				</programlisting>
 			</para>
 		</sect1>
+
 	</chapter>
 
 	<appendix id ="berlinmod">
