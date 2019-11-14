@@ -5900,7 +5900,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 			</sect2>
 
 			<sect2>
-				<title>Casting for Time Types</title>
+				<title>Casting</title>
 		
 				<itemizedlist>
 					<listitem>
@@ -6280,7 +6280,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 			</sect2>
 
 			<sect2>
-				<title>Casting for Temporal Types</title>
+				<title>Casting</title>
 
 				<itemizedlist>
 					<listitem>
