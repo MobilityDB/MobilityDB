@@ -4,17 +4,23 @@
 
 <!ENTITY geography_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/internet.png' /></imageobject>
- </inlinemediaobject>
-">
- 
-<!ENTITY Z_support
-"<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.png' /></imageobject>
+	<imageobject><imagedata fileref='images/internet.png' width='16pt'/></imageobject>
  </inlinemediaobject>
 ">
 
-]>
+		<!ENTITY Z_support
+				"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='16pt'/></imageobject>
+ </inlinemediaobject>
+">
+
+		<!ENTITY python_support
+				"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.svg' width='16pt'/></imageobject>
+ </inlinemediaobject>
+">
+
+		]>
 <book lang="en">
 	<bookinfo>
 		<title>MobilityDB Manual</title>
@@ -6346,7 +6352,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Value</para>
+						<para>Value &python_support; &Z_support; &geography_support; </para>
 						<para><varname>getValue(ttypeinst): base</varname></para>
 					</listitem>
 
