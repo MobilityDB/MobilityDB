@@ -97,21 +97,38 @@ CREATE FUNCTION geodstbox(float8, float8, float8, timestamptz, float8, float8, f
  * Accessor functions
  *****************************************************************************/
 
-CREATE FUNCTION minPoint(stbox)
-	RETURNS geometry
-	AS 'MODULE_PATHNAME', 'stbox_min_point'
+CREATE FUNCTION Xmin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_xmin'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION maxPoint(stbox)
-	RETURNS geometry
-	AS 'MODULE_PATHNAME', 'stbox_max_point'
+CREATE FUNCTION Ymin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_ymin'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION minTimestamp(stbox)
+CREATE FUNCTION Zmin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_zmin'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Tmin(stbox)
 	RETURNS timestamptz
-	AS 'MODULE_PATHNAME', 'stbox_min_timestamp'
+	AS 'MODULE_PATHNAME', 'stbox_tmin'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION maxTimestamp(stbox)
+
+CREATE FUNCTION Xmax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_xmax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Ymax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_ymax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Zmax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_zmax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Tmax(stbox)
 	RETURNS timestamptz
-	AS 'MODULE_PATHNAME', 'stbox_max_timestamp'
+	AS 'MODULE_PATHNAME', 'stbox_tmax'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 /*****************************************************************************

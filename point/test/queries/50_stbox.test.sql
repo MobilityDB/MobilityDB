@@ -47,30 +47,50 @@ SELECT geodstbox(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT st_astext(minPoint(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'));
-SELECT st_astext(maxPoint(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'));
-SELECT minTimestamp(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
-SELECT maxTimestamp(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT zmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT tmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT xmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT ymax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT zmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+SELECT tmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 
-SELECT st_astext(minPoint(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'));
-SELECT st_astext(maxPoint(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'));
-SELECT minTimestamp(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
-SELECT maxTimestamp(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT xmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT ymin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT zmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT tmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT xmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT ymax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+SELECT tmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
 
-SELECT st_astext(minPoint(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'));
-SELECT st_astext(maxPoint(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'));
-SELECT minTimestamp(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
-SELECT maxTimestamp(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT xmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT ymin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT zmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT tmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT xmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT ymax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT zmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+SELECT tmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
 
-SELECT st_astext(minPoint(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'));
-SELECT st_astext(maxPoint(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'));
-SELECT minTimestamp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
-SELECT maxTimestamp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT xmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT ymin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT zmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT tmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT xmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT ymax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT zmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT tmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
 
-SELECT minPoint(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-SELECT maxPoint(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-SELECT minTimestamp(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-SELECT maxTimestamp(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT xmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT ymin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT zmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT tmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT xmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT ymax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT zmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT tmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 
 -------------------------------------------------------------------------------
 -- Casting

@@ -66,21 +66,21 @@ CREATE TYPE tbox (
  * Accessor functions
  *****************************************************************************/
 
-CREATE FUNCTION minValue(tbox)
+CREATE FUNCTION Xmin(tbox)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tbox_min_value'
+	AS 'MODULE_PATHNAME', 'tbox_xmin'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION maxValue(tbox)
+CREATE FUNCTION Xmax(tbox)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tbox_max_value'
+	AS 'MODULE_PATHNAME', 'tbox_xmax'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION minTimestamp(tbox)
+CREATE FUNCTION Tmin(tbox)
 	RETURNS timestamptz
-	AS 'MODULE_PATHNAME', 'tbox_min_timestamp'
+	AS 'MODULE_PATHNAME', 'tbox_tmin'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION maxTimestamp(tbox)
+CREATE FUNCTION Tmax(tbox)
 	RETURNS timestamptz
-	AS 'MODULE_PATHNAME', 'tbox_max_timestamp'
+	AS 'MODULE_PATHNAME', 'tbox_tmax'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 /*****************************************************************************

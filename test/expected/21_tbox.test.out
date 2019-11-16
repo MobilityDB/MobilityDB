@@ -95,74 +95,74 @@ SELECT tboxt('2000-01-02','2000-01-01');
  TBOX((,2000-01-01 00:00:00+00),(,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT minValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
- minvalue 
-----------
-        1
+SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT maxValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
- maxvalue 
-----------
-        2
+SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ xmax 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
-      mintimestamp      
+SELECT Tmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+          tmin          
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT maxTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
-      maxtimestamp      
+SELECT Tmax(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+          tmax          
 ------------------------
  2000-01-02 00:00:00+00
 (1 row)
 
-SELECT minValue(tbox 'TBOX((1.0,), (2.0, ))');
- minvalue 
-----------
-        1
+SELECT Xmin(tbox 'TBOX((1.0,), (2.0, ))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT maxValue(tbox 'TBOX((1.0,), (2.0, ))');
- maxvalue 
-----------
-        2
+SELECT Xmax(tbox 'TBOX((1.0,), (2.0, ))');
+ xmax 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
- mintimestamp 
---------------
+SELECT Tmin(tbox 'TBOX((1.0,), (2.0, ))');
+ tmin 
+------
  
 (1 row)
 
-SELECT maxTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
- maxtimestamp 
---------------
+SELECT Tmax(tbox 'TBOX((1.0,), (2.0, ))');
+ tmax 
+------
  
 (1 row)
 
-SELECT minValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
- minvalue 
-----------
-         
+SELECT Xmin(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ xmin 
+------
+     
 (1 row)
 
-SELECT maxValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
- maxvalue 
-----------
-         
+SELECT Xmax(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ xmax 
+------
+     
 (1 row)
 
-SELECT minTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
-      mintimestamp      
+SELECT Tmin(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+          tmin          
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT maxTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
-      maxtimestamp      
+SELECT Tmax(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+          tmax          
 ------------------------
  2000-01-02 00:00:00+00
 (1 row)

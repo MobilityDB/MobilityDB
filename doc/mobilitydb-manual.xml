@@ -5305,36 +5305,6 @@ SET trajectory = trajectory(trip);
 		</sect1>
 	</chapter>
 
-	<chapter id ="python">
-		<title>Accessing MobilityDB in Python</title>
-		<para>We demonstrate next how to develop Python database applications with MobilityDB. For this, we use <varname>mobilitydb</varname>, the MobilityDB Python package. This package is open source and is available on the Python Package Index (<ulink url="https://pypi.org/">PyPI</ulink>) repository while its source code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB-Python">Github</ulink>. 
-		</para>
-		<sect1>
-			<title>Installation</title>
-			<para>The <varname>mobilitydb</varname> package requires the <ulink url="https://pypi.org/project/psycopg2/"><varname>psycopg2</varname></ulink> and the <ulink url="https://pypi.org/project/postgis/"><varname>postgis</varname></ulink> packages. <varname>Psycopg2</varname> is the most popular PostgreSQL database adapter for the Python programming language. It implements the Python DB API 2.0 specification. It allows PostgreSQL types to be manipulated in Python. Information about accessing PostgresSQL using <varname>psycopg2</varname> can be found in this <ulink url="https://pynative.com/python-postgresql-tutorial/">tutorial</ulink>. Furthermore, the Python package <varname>postgis</varname> enables PostGIS geometry types to be manipulated in Python.
-			</para>
-
-			<para>
-			The <varname>mobilitydb</varname> package can be installed as follows.
-				<programlisting>
-pip install mobilitydb
-				</programlisting>
-			</para>
-		</sect1>
-
-		<sect1>
-			<title>Basic usage</title>
-
-			<para>
-			The MobilityDB Python package can be installed as follows.
-				<programlisting>
-pip install mobilitydb
-				</programlisting>
-			</para>
-		</sect1>
-
-	</chapter>
-
 	<appendix id ="berlinmod">
 		<title>BerlinMOD Benchmark on MobilityDB</title>
 
@@ -6194,45 +6164,50 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 				<itemizedlist>
 					<listitem>
-						<para>Minimum value</para>
-						<para><varname>minValue(tbox): float</varname></para>
+						<para>Minimum X value</para>
+						<para><varname>Xmin(tbox): float</varname></para>
+						<para><varname>Xmin(stbox): float</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Maximum value</para>
-						<para><varname>maxValue(tbox): float</varname></para>
+						<para>Maximum X value</para>
+						<para><varname>Xmax(tbox): float</varname></para>
+						<para><varname>Xmax(stbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum Y value</para>
+						<para><varname>Ymin(stbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum Y value</para>
+
+						<para><varname>Ymax(stbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum Z value</para>
+						<para><varname>Zmin(stbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum Z value</para>
+
+						<para><varname>Zmax(stbox): float</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Minimum timestamp</para>
-						<para><varname>minTimestamp(tbox): timestamptz</varname></para>
+						<para><varname>Tmin(tbox): timestamptz</varname></para>
+						<para><varname>Tmin(stbox): timestamptz</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Maximum timestamp</para>
-						<para><varname>maxTimestamp(tbox): timestamptz</varname></para>
+						<para><varname>Tmax(tbox): timestamptz</varname></para>
+						<para><varname>Tmax(stbox): timestamptz</varname></para>
 					</listitem>
-
-					<listitem>
-						<para>Minimum point</para>
-						<para><varname>minPoint(stbox): geometry</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Maximum point</para>
-						<para><varname>maxPoint(stbox): geometry</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Minimum timestamp</para>
-						<para><varname>minTimestamp(stbox): timestamptz</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Maximum timestamp</para>
-						<para><varname>maxTimestamp(stbox): timestamptz</varname></para>
-					</listitem>
-
 				</itemizedlist>
 			</sect2>
 			

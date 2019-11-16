@@ -180,10 +180,10 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 
 /* Get the minimum value of a TBOX value */
 
-PG_FUNCTION_INFO_V1(tbox_min_value);
+PG_FUNCTION_INFO_V1(tbox_xmin);
 
 PGDLLEXPORT Datum
-tbox_min_value(PG_FUNCTION_ARGS)
+tbox_xmin(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
@@ -193,10 +193,10 @@ tbox_min_value(PG_FUNCTION_ARGS)
 
 /* Get the maximum value of a TBOX value */
 
-PG_FUNCTION_INFO_V1(tbox_max_value);
+PG_FUNCTION_INFO_V1(tbox_xmax);
 
 PGDLLEXPORT Datum
-tbox_max_value(PG_FUNCTION_ARGS)
+tbox_xmax(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
@@ -206,10 +206,10 @@ tbox_max_value(PG_FUNCTION_ARGS)
 
 /* Get the minimum timestamp of a TBOX value */
 
-PG_FUNCTION_INFO_V1(tbox_min_timestamp);
+PG_FUNCTION_INFO_V1(tbox_tmin);
 
 PGDLLEXPORT Datum
-tbox_min_timestamp(PG_FUNCTION_ARGS)
+tbox_tmin(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
@@ -219,10 +219,10 @@ tbox_min_timestamp(PG_FUNCTION_ARGS)
 
 /* Get the maximum timestamp of a TBOX value */
 
-PG_FUNCTION_INFO_V1(tbox_max_timestamp);
+PG_FUNCTION_INFO_V1(tbox_tmax);
 
 PGDLLEXPORT Datum
-tbox_max_timestamp(PG_FUNCTION_ARGS)
+tbox_tmax(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))

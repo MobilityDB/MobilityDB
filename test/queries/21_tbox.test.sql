@@ -34,20 +34,20 @@ SELECT tboxt('2000-01-02','2000-01-01');
 -- Accessor functions
 -------------------------------------------------------------------------------
 
-SELECT minValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
-SELECT maxValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
-SELECT minTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
-SELECT maxTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT Tmin(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+SELECT Tmax(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
 
-SELECT minValue(tbox 'TBOX((1.0,), (2.0, ))');
-SELECT maxValue(tbox 'TBOX((1.0,), (2.0, ))');
-SELECT minTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
-SELECT maxTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT Xmin(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT Xmax(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT Tmin(tbox 'TBOX((1.0,), (2.0, ))');
+SELECT Tmax(tbox 'TBOX((1.0,), (2.0, ))');
 
-SELECT minValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
-SELECT maxValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
-SELECT minTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
-SELECT maxTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+SELECT Xmin(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+SELECT Xmax(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+SELECT Tmin(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+SELECT Tmax(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
 
 -------------------------------------------------------------------------------
 -- Casting

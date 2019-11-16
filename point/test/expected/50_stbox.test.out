@@ -159,122 +159,242 @@ SELECT geodstbox(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
  GEODSTBOX T((4,3,2,2001-01-01 00:00:00+00),(8,7,6,2001-01-05 00:00:00+00))
 (1 row)
 
-SELECT st_astext(minPoint(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'));
- st_astext  
-------------
- POINT(1 2)
+SELECT xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT st_astext(maxPoint(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'));
- st_astext  
-------------
- POINT(3 4)
+SELECT ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ ymin 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
- mintimestamp 
---------------
+SELECT zmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ zmin 
+------
+     
+(1 row)
+
+SELECT tmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ tmin 
+------
  
 (1 row)
 
-SELECT maxTimestamp(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
- maxtimestamp 
---------------
+SELECT xmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ xmax 
+------
+    3
+(1 row)
+
+SELECT ymax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ ymax 
+------
+    4
+(1 row)
+
+SELECT zmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ zmax 
+------
+     
+(1 row)
+
+SELECT tmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+ tmax 
+------
  
 (1 row)
 
-SELECT st_astext(minPoint(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'));
-    st_astext    
------------------
- POINT Z (1 2 3)
+SELECT xmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT st_astext(maxPoint(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'));
-    st_astext    
------------------
- POINT Z (4 5 6)
+SELECT ymin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ ymin 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
- mintimestamp 
---------------
+SELECT zmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ zmin 
+------
+    3
+(1 row)
+
+SELECT tmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ tmin 
+------
  
 (1 row)
 
-SELECT maxTimestamp(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
- maxtimestamp 
---------------
+SELECT xmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ xmax 
+------
+    4
+(1 row)
+
+SELECT ymax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ ymax 
+------
+    5
+(1 row)
+
+SELECT zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ zmax 
+------
+    6
+(1 row)
+
+SELECT tmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+ tmax 
+------
  
 (1 row)
 
-SELECT st_astext(minPoint(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'));
- st_astext  
-------------
- POINT(1 2)
+SELECT xmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT st_astext(maxPoint(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'));
- st_astext  
-------------
- POINT(3 4)
+SELECT ymin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ ymin 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
-      mintimestamp      
+SELECT zmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ zmin 
+------
+     
+(1 row)
+
+SELECT tmin(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+          tmin          
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT maxTimestamp(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
-      maxtimestamp      
+SELECT xmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ xmax 
+------
+    3
+(1 row)
+
+SELECT ymax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ ymax 
+------
+    4
+(1 row)
+
+SELECT zmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+ zmax 
+------
+     
+(1 row)
+
+SELECT tmax(stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))');
+          tmax          
 ------------------------
  2000-01-02 00:00:00+00
 (1 row)
 
-SELECT st_astext(minPoint(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'));
-    st_astext    
------------------
- POINT Z (1 2 3)
+SELECT xmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ xmin 
+------
+    1
 (1 row)
 
-SELECT st_astext(maxPoint(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'));
-    st_astext    
------------------
- POINT Z (4 5 6)
+SELECT ymin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ ymin 
+------
+    2
 (1 row)
 
-SELECT minTimestamp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
-      mintimestamp      
+SELECT zmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ zmin 
+------
+    3
+(1 row)
+
+SELECT tmin(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+          tmin          
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT maxTimestamp(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
-      maxtimestamp      
+SELECT xmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ xmax 
+------
+    4
+(1 row)
+
+SELECT ymax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ ymax 
+------
+    5
+(1 row)
+
+SELECT zmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+ zmax 
+------
+    6
+(1 row)
+
+SELECT tmax(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+          tmax          
 ------------------------
  2000-01-02 00:00:00+00
 (1 row)
 
-SELECT minPoint(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
- minpoint 
-----------
- 
+SELECT xmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ xmin 
+------
+     
 (1 row)
 
-SELECT maxPoint(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
- maxpoint 
-----------
- 
+SELECT ymin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ ymin 
+------
+     
 (1 row)
 
-SELECT minTimestamp(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-      mintimestamp      
+SELECT zmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ zmin 
+------
+     
+(1 row)
+
+SELECT tmin(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+          tmin          
 ------------------------
  2000-01-01 00:00:00+00
 (1 row)
 
-SELECT maxTimestamp(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
-      maxtimestamp      
+SELECT xmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ xmax 
+------
+     
+(1 row)
+
+SELECT ymax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ ymax 
+------
+     
+(1 row)
+
+SELECT zmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+ zmax 
+------
+     
+(1 row)
+
+SELECT tmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+          tmax          
 ------------------------
  2000-01-02 00:00:00+00
 (1 row)

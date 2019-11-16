@@ -398,52 +398,90 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/* Get the minimum point of an STBOX value */
+/* Get the minimum X of an STBOX value */
 
-PG_FUNCTION_INFO_V1(stbox_min_point);
+PG_FUNCTION_INFO_V1(stbox_xmin);
 
 PGDLLEXPORT Datum
-stbox_min_point(PG_FUNCTION_ARGS)
+stbox_xmin(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
-	Datum result;
-	if (MOBDB_FLAGS_GET_Z(box->flags))
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(box->xmin),
-			Float8GetDatum(box->ymin), Float8GetDatum(box->zmin));
-	else
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(box->xmin),
-			Float8GetDatum(box->ymin));
-	PG_RETURN_DATUM(result);
+	PG_RETURN_FLOAT8(box->xmin);
 }
 
-/* Get the maximum point of an STBOX value */
+/* Get the maximum X of an STBOX value */
 
-PG_FUNCTION_INFO_V1(stbox_max_point);
+PG_FUNCTION_INFO_V1(stbox_xmax);
 
 PGDLLEXPORT Datum
-stbox_max_point(PG_FUNCTION_ARGS)
+stbox_xmax(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
 		PG_RETURN_NULL();
-	Datum result;
-	if (MOBDB_FLAGS_GET_Z(box->flags))
-		result = call_function3(LWGEOM_makepoint, Float8GetDatum(box->xmax),
-				Float8GetDatum(box->ymax), Float8GetDatum(box->zmax));
-	else
-		result = call_function2(LWGEOM_makepoint, Float8GetDatum(box->xmax),
-			Float8GetDatum(box->ymax));
-	PG_RETURN_DATUM(result);
+	PG_RETURN_FLOAT8(box->xmax);
+}
+
+/* Get the minimum Y of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_ymin);
+
+PGDLLEXPORT Datum
+stbox_ymin(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->ymin);
+}
+
+/* Get the maximum Y of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_ymax);
+
+PGDLLEXPORT Datum
+stbox_ymax(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->ymax);
+}
+
+/* Get the minimum Z of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_zmin);
+
+PGDLLEXPORT Datum
+stbox_zmin(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_Z(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->zmin);
+}
+
+/* Get the maximum Z of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_zmax);
+
+PGDLLEXPORT Datum
+stbox_zmax(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_Z(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->zmax);
 }
 
 /* Get the minimum timestamp of an STBOX value */
 
-PG_FUNCTION_INFO_V1(stbox_min_timestamp);
+PG_FUNCTION_INFO_V1(stbox_tmin);
 
 PGDLLEXPORT Datum
-stbox_min_timestamp(PG_FUNCTION_ARGS)
+stbox_tmin(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
@@ -453,10 +491,10 @@ stbox_min_timestamp(PG_FUNCTION_ARGS)
 
 /* Get the maximum timestamp of an STBOX value */
 
-PG_FUNCTION_INFO_V1(stbox_max_timestamp);
+PG_FUNCTION_INFO_V1(stbox_tmax);
 
 PGDLLEXPORT Datum
-stbox_max_timestamp(PG_FUNCTION_ARGS)
+stbox_tmax(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
