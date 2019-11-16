@@ -6158,7 +6158,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Constructor for <varname>stbox</varname> &Z_support;</para>
+						<para>Constructor for <varname>stbox</varname></para>
 						<para><varname>stbox(float, float, float, float): stbox</varname></para>
 						<para><varname>stbox(float, float, float, float, float, float): stbox</varname></para>
 						<para><varname>stbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
@@ -6224,7 +6224,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Minimum timestamp&python_support;</para>
+						<para>Minimum timestamp</para>
 						<para><varname>minTimestamp(stbox): timestamptz</varname></para>
 					</listitem>
 
