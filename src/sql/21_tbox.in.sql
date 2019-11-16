@@ -63,6 +63,43 @@ CREATE TYPE tbox (
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+CREATE FUNCTION minValue(tbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tbox_min_value'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION maxValue(tbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'tbox_max_value'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION minTimestamp(tbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'tbox_min_timestamp'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION maxTimestamp(tbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'tbox_max_timestamp'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+CREATE FUNCTION floatrange(tbox)
+	RETURNS floatrange
+	AS 'MODULE_PATHNAME', 'tbox_as_floatrange'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION period(tbox)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'tbox_as_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
+CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
+
+/*****************************************************************************
  * Comparison
  *****************************************************************************/
 

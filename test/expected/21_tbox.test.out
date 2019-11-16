@@ -95,6 +95,114 @@ SELECT tboxt('2000-01-02','2000-01-01');
  TBOX((,2000-01-01 00:00:00+00),(,2000-01-02 00:00:00+00))
 (1 row)
 
+SELECT minValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ minvalue 
+----------
+        1
+(1 row)
+
+SELECT maxValue(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+ maxvalue 
+----------
+        2
+(1 row)
+
+SELECT minTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+      mintimestamp      
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+SELECT maxTimestamp(tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))');
+      maxtimestamp      
+------------------------
+ 2000-01-02 00:00:00+00
+(1 row)
+
+SELECT minValue(tbox 'TBOX((1.0,), (2.0, ))');
+ minvalue 
+----------
+        1
+(1 row)
+
+SELECT maxValue(tbox 'TBOX((1.0,), (2.0, ))');
+ maxvalue 
+----------
+        2
+(1 row)
+
+SELECT minTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
+ mintimestamp 
+--------------
+ 
+(1 row)
+
+SELECT maxTimestamp(tbox 'TBOX((1.0,), (2.0, ))');
+ maxtimestamp 
+--------------
+ 
+(1 row)
+
+SELECT minValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ minvalue 
+----------
+         
+(1 row)
+
+SELECT maxValue(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+ maxvalue 
+----------
+         
+(1 row)
+
+SELECT minTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+      mintimestamp      
+------------------------
+ 2000-01-01 00:00:00+00
+(1 row)
+
+SELECT maxTimestamp(tbox 'TBOX((, 2000-01-01), (, 2000-01-02))');
+      maxtimestamp      
+------------------------
+ 2000-01-02 00:00:00+00
+(1 row)
+
+SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'::floatrange;
+ floatrange 
+------------
+ [1,2]
+(1 row)
+
+SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'::period;
+                      period                      
+--------------------------------------------------
+ [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
+(1 row)
+
+SELECT tbox 'TBOX((1.0,), (2.0, ))'::floatrange;
+ floatrange 
+------------
+ [1,2]
+(1 row)
+
+SELECT tbox 'TBOX((1.0,), (2.0, ))'::period;
+ period 
+--------
+ 
+(1 row)
+
+SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::floatrange;
+ floatrange 
+------------
+ 
+(1 row)
+
+SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
+                      period                      
+--------------------------------------------------
+ [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
+(1 row)
+
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((2.0, 2000-01-02), (1.0, 2000-01-02))');
  tbox_cmp 
 ----------
@@ -201,29 +309,5 @@ SELECT count(*) FROM tbl_tfloat WHERE temp::tbox IS NOT NULL;
  count 
 -------
     96
-(1 row)
-
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
- count 
--------
-    99
-(1 row)
-
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
- count 
--------
-    99
-(1 row)
-
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
- count 
--------
-    99
-(1 row)
-
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
- count 
--------
-    99
 (1 row)
 

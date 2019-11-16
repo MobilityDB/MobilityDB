@@ -9467,3 +9467,99 @@ SELECT geometry 'Point(1 1)'::stbox #&> tgeompoint '[Point(1 1)@20000-01-01, Poi
  
 (1 row)
 
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
+ count 
+-------
+  4434
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
+ count 
+-------
+  4434
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
+ count 
+-------
+  4420
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
+ count 
+-------
+  4420
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
+ count 
+-------
+  4365
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
+ count 
+-------
+  4365
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
+ count 
+-------
+  5050
+(1 row)
+

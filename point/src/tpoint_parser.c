@@ -78,7 +78,7 @@ stbox_parse(char **str)
 
 	if (!hasx && !hast)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse STBOX")));
 
 	if (hasx)
 	{
@@ -87,7 +87,7 @@ stbox_parse(char **str)
 		xmin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		/* ymin */
 		p_whitespace(str);
@@ -96,7 +96,7 @@ stbox_parse(char **str)
 		ymin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		if (hasz)
 		{	
@@ -106,7 +106,7 @@ stbox_parse(char **str)
 			zmin = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 			*str = nextstr; 
 		}
 	}
@@ -148,7 +148,7 @@ stbox_parse(char **str)
 		xmax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		p_whitespace(str);
 		p_comma(str);
@@ -156,7 +156,7 @@ stbox_parse(char **str)
 		ymax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		if (hasz)
 		{	
@@ -166,7 +166,7 @@ stbox_parse(char **str)
 			zmax = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 			*str = nextstr; 
 		}
 	}

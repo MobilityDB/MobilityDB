@@ -54,20 +54,21 @@ stbox_to_period(Period *period, const STBOX *box)
 	return;
 }
 
-
 /*****************************************************************************
- * Input/ functions
+ * Input/Ouput functions
  *****************************************************************************/
 
 /* 
  * Input function. 
  * Examples of input:
- * 		STBOX((1.0, 2.0), (1.0, 2.0)) -> only spatial
- * 		STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)) -> only spatial
- * 		STBOX T((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)) -> spatiotemporal
- * 		STBOX ZT((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0)) -> spatiotemporal
- * 		GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0)) -> only spatial
- * 		GEODSTBOX T((1.0, 2.0, 3.0, 4.0), (1.0, 2.0, 3.0, 4.0)) -> spatiotemporal
+ * 		STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
+ * 		STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * 		STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
+ * 		STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
+ * 		STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * 		GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
+ * 		GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
+ * 		GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
  * where the commas are optional
  */
 PG_FUNCTION_INFO_V1(stbox_in);
@@ -390,6 +391,94 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		result->tmax = tmax;
 	}
 
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/* Get the minimum point of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_min_point);
+
+PGDLLEXPORT Datum
+stbox_min_point(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	Datum result;
+	if (MOBDB_FLAGS_GET_Z(box->flags))
+		result = call_function3(LWGEOM_makepoint, Float8GetDatum(box->xmin),
+			Float8GetDatum(box->ymin), Float8GetDatum(box->zmin));
+	else
+		result = call_function2(LWGEOM_makepoint, Float8GetDatum(box->xmin),
+			Float8GetDatum(box->ymin));
+	PG_RETURN_DATUM(result);
+}
+
+/* Get the maximum point of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_max_point);
+
+PGDLLEXPORT Datum
+stbox_max_point(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	Datum result;
+	if (MOBDB_FLAGS_GET_Z(box->flags))
+		result = call_function3(LWGEOM_makepoint, Float8GetDatum(box->xmax),
+				Float8GetDatum(box->ymax), Float8GetDatum(box->zmax));
+	else
+		result = call_function2(LWGEOM_makepoint, Float8GetDatum(box->xmax),
+			Float8GetDatum(box->ymax));
+	PG_RETURN_DATUM(result);
+}
+
+/* Get the minimum timestamp of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_min_timestamp);
+
+PGDLLEXPORT Datum
+stbox_min_timestamp(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmin);
+}
+
+/* Get the maximum timestamp of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_max_timestamp);
+
+PGDLLEXPORT Datum
+stbox_max_timestamp(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmax);
+}
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+/* Cast an STBOX value as a Period value */
+
+PG_FUNCTION_INFO_V1(stbox_as_period);
+
+PGDLLEXPORT Datum
+stbox_as_period(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
 }
 

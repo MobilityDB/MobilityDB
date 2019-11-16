@@ -94,6 +94,38 @@ CREATE FUNCTION geodstbox(float8, float8, float8, timestamptz, float8, float8, f
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+CREATE FUNCTION minPoint(stbox)
+	RETURNS geometry
+	AS 'MODULE_PATHNAME', 'stbox_min_point'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION maxPoint(stbox)
+	RETURNS geometry
+	AS 'MODULE_PATHNAME', 'stbox_max_point'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION minTimestamp(stbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'stbox_min_timestamp'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION maxTimestamp(stbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'stbox_max_timestamp'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+CREATE FUNCTION period(stbox)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'stbox_as_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
+
+/*****************************************************************************
  * Comparison
  *****************************************************************************/
 

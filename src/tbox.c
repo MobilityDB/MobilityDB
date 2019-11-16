@@ -16,6 +16,7 @@
 #include <utils/timestamp.h>
 
 #include "period.h"
+#include "rangetypes_ext.h"
 #include "temporal.h"
 #include "temporal_parser.h"
 #include "temporal_util.h"
@@ -170,6 +171,95 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	}
 	result->tmin = tmin;
 	result->tmax = tmax;
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/* Get the minimum value of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_min_value);
+
+PGDLLEXPORT Datum
+tbox_min_value(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->xmin);
+}
+
+/* Get the maximum value of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_max_value);
+
+PGDLLEXPORT Datum
+tbox_max_value(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->xmax);
+}
+
+/* Get the minimum timestamp of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_min_timestamp);
+
+PGDLLEXPORT Datum
+tbox_min_timestamp(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmin);
+}
+
+/* Get the maximum timestamp of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_max_timestamp);
+
+PGDLLEXPORT Datum
+tbox_max_timestamp(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmax);
+}
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+ /* Cast a TBOX value as a floatrange value */
+
+PG_FUNCTION_INFO_V1(tbox_as_floatrange);
+
+PGDLLEXPORT Datum
+tbox_as_floatrange(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	RangeType *result = range_make(Float8GetDatum(box->xmin), Float8GetDatum(box->xmax), 
+		true, true, FLOAT8OID);
+	PG_RETURN_POINTER(result);
+}
+
+/* Cast a TBOX value as a Period value */
+
+PG_FUNCTION_INFO_V1(tbox_as_period);
+
+PGDLLEXPORT Datum
+tbox_as_period(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
 }
 

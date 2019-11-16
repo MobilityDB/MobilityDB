@@ -4,19 +4,25 @@
 
 <!ENTITY geography_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/internet.png' width='16pt'/></imageobject>
+	<imageobject><imagedata fileref='images/world.pdf'/></imageobject>
+	<imageobject><imagedata fileref='images/world.svg'/></imageobject>
+	<imageobject><imagedata fileref='images/world.png'/></imageobject>
  </inlinemediaobject>
 ">
 
-		<!ENTITY Z_support
-				"<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.svg' width='16pt'/></imageobject>
+<!ENTITY Z_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.pdf'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.png'/></imageobject>
  </inlinemediaobject>
 ">
 
-		<!ENTITY python_support
-				"<inlinemediaobject>
-	<imageobject><imagedata fileref='images/python.svg' width='16pt'/></imageobject>
+<!ENTITY python_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.pdf'/></imageobject>
+	<imageobject><imagedata fileref='images/python.svg'/></imageobject>
+	<imageobject><imagedata fileref='images/python.png'/></imageobject>
  </inlinemediaobject>
 ">
 
@@ -39,7 +45,14 @@
 		<abstract>
 			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>.</para>
 
-			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' width='200px' /></imageobject></inlinemediaobject></para>
+			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' width='200pt' /></imageobject></inlinemediaobject></para>
+
+			<para>
+			MobilityDB is developed by the Computer &amp; Decision Engineering Department of the Universit&eacute; Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zim&aacute;nyi. ULB is an OGC Associate Member.
+			</para>
+
+			<para><inlinemediaobject><imageobject><imagedata fileref='images/OGC_Associate_Member_3DR.png' width='100pt' /></imageobject></inlinemediaobject></para>
+
 		</abstract>
 	</bookinfo>
 
@@ -5895,7 +5908,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Constructor for timestampsets</para>
-						<para><varname>timestampset(timestamptz[]}): timestampset</varname></para>
+						<para><varname>timestampset(timestamptz[]): timestampset</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6132,6 +6145,141 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 		</sect1>
 
 		<sect1>
+			<title>Functions and Operators for Box Types</title>
+
+			<sect2>
+				<title>Constructor Functions</title>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for <varname>tbox</varname></para>
+						<para><varname>tbox(float, float): tbox</varname></para>
+						<para><varname>tboxt(timestamptz, timestamptz): tbox</varname></para>
+						<para><varname>tbox(float, timestamptz, float, timestamptz): tbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Constructor for <varname>stbox</varname> &Z_support;</para>
+						<para><varname>stbox(float, float, float, float): stbox</varname></para>
+						<para><varname>stbox(float, float, float, float, float, float): stbox</varname></para>
+						<para><varname>stbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
+						<para><varname>stboxt(timestamptz, timestamptz): stbox</varname></para>
+						<para><varname>stbox(float, float, timestamptz, float, float, timestamptz): stbox</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Casting</title>
+		
+				<itemizedlist>
+					<listitem>
+						<para>Converts a <varname>tbox</varname> to a <varname>floatrange</varname></para>
+						<para><varname>tbox::floatrange</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Converts a <varname>tbox</varname> to a <varname>period</varname></para>
+						<para><varname>tbox::period</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
+						<para><varname>stbox::period</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+
+			<sect2>
+				<title>Accessor Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para>Minimum value</para>
+						<para><varname>minValue(tbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum value</para>
+						<para><varname>maxValue(tbox): float</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum timestamp</para>
+						<para><varname>minTimestamp(tbox): timestamptz</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum timestamp</para>
+						<para><varname>maxTimestamp(tbox): timestamptz</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum point</para>
+						<para><varname>minPoint(stbox): geometry</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum point</para>
+						<para><varname>maxPoint(stbox): geometry</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum timestamp&python_support;</para>
+						<para><varname>minTimestamp(stbox): timestamptz</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum timestamp</para>
+						<para><varname>maxTimestamp(stbox): timestamptz</varname></para>
+					</listitem>
+
+				</itemizedlist>
+			</sect2>
+			
+			<sect2>
+				<title>Operators</title>
+	
+				<itemizedlist>
+					<listitem>
+						<para>Equal</para>
+						<para><varname>tbox = tbox</varname></para>
+						<para><varname>stbox = stbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Not equal</para>
+						<para><varname>tbox &lt;&gt; tbox</varname></para>
+						<para><varname>stbox &lt;&gt; stbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Less than</para>
+						<para><varname>tbox &lt; tbox</varname></para>
+						<para><varname>stbox &lt; stbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Greater than</para>
+						<para><varname>tbox &gt; tbox</varname></para>
+						<para><varname>stbox &gt; stbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Less than or equal to</para>
+						<para><varname>tbox &lt;= tbox</varname></para>
+						<para><varname>stbox &lt;= stbox</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Greater than or equal to</para>
+						<para><varname>tbox &gt;= tbox</varname></para>
+						<para><varname>stbox &gt;= stbox</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect2>
+		</sect1>
+
+		<sect1>
 			<title>Functions and Operators for Temporal Types</title>
 			
 			<para>We present next the functions and operators for the temporal types. For all temporal types we use the following notation:
@@ -6352,7 +6500,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Value &python_support; &Z_support; &geography_support; </para>
+						<para>Value</para>
 						<para><varname>getValue(ttypeinst): base</varname></para>
 					</listitem>
 
@@ -6982,22 +7130,22 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 						<para>Is the bounding box always strictly less than?</para>
-						<para><varname>{base, numrange, ttype} &lt;&lt; {base, numrange, ttype}: boolean</varname></para>
+						<para><varname>{base, numrange, tbox, ttype} &lt;&lt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box always strictly greater than?</para>
-						<para><varname>{base, numrange, ttype} &gt;&gt; {base, numrange, ttype}: boolean</varname></para>
+						<para><varname>{base, numrange, tbox, ttype} &gt;&gt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box never greater than?</para>
-						<para><varname>{base, numrange, ttype} &amp;&lt; {base, numrange, ttype}: boolean</varname></para>
+						<para><varname>{base, numrange, tbox, ttype} &amp;&lt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box never less than?</para>
-						<para><varname>{base, numrange, ttype} &amp;&gt; {base, numrange, ttype}: boolean</varname></para>
+						<para><varname>{base, numrange, tbox, ttype} &amp;&gt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
@@ -7007,77 +7155,77 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Is the bouding box strictly to the right of?</para>
-						<para><varname>{geo, tgeompoint} &gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend to the right of?</para>
-						<para><varname>{geo, tgeompoint} &amp;&lt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &amp;&lt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend to the left of?</para>
-						<para><varname>{geo, tgeompoint} &amp;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bouding box strictly below?</para>
-						<para><varname>{geo, tgeompoint} &lt;&lt;| {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &lt;&lt;| {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bouding box strictly above?</para>
-						<para><varname>{geo, tgeompoint} |&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} |&gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend above?</para>
-						<para><varname>{geo, tgeompoint} &amp;&lt;| {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &amp;&lt;| {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend below?</para>
-						<para><varname>{geo, tgeompoint} |&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} |&amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bouding box strictly in front?</para>
-						<para><varname>{geo, tgeompoint} &lt;&lt;/ {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &lt;&lt;/ {geo, tgeompoint}: stbox, boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bouding box strictly back?</para>
-						<para><varname>{geo, tgeompoint} /&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} /&gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend in front?</para>
-						<para><varname>{geo, tgeompoint} &amp;&lt;/ {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} &amp;&lt;/ {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>The bouding box does not extend back?</para>
-						<para><varname>{geo, tgeompoint} /&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
+						<para><varname>{geo, stbox, tgeompoint} /&amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box always before?</para>
-						<para><varname>{time, ttype} &lt;&lt;# {time, ttype}: boolean</varname></para>
+						<para><varname>{time, tbox, stbox, ttype} &lt;&lt;# {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box always after?</para>
-						<para><varname>{time, ttype} #&gt;&gt; {time, ttype}: boolean</varname></para>
+						<para><varname>{time, tbox, stbox, ttype} #&gt;&gt; {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box never after?</para>
-						<para><varname>{time, ttype} &amp;&lt;# {time, ttype}: boolean</varname></para>
+						<para><varname>{time, tbox, stbox, ttype} &amp;&lt;# {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Is the bounding box never before?</para>
-						<para><varname>{time, ttype} #&amp;&gt; {time, ttype}: boolean</varname></para>
+						<para><varname>{time, tbox, stbox, ttype} #&amp;&gt; {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
