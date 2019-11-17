@@ -65,7 +65,7 @@ CREATE FUNCTION timestampset(timestamptz[])
 
 CREATE FUNCTION timestampset(timestamptz)
 	RETURNS timestampset
-	AS 'MODULE_PATHNAME', 'timestamp_as_timestampset'
+	AS 'MODULE_PATHNAME', 'timestamp_to_timestampset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestampset)
 	RETURNS period

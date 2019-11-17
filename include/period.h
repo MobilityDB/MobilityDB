@@ -36,7 +36,7 @@ extern Datum period_constructor2(PG_FUNCTION_ARGS);
 extern Datum period_constructor4(PG_FUNCTION_ARGS);
 
 /* Casting */
-extern Datum timestamp_as_period(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_period(PG_FUNCTION_ARGS);
 extern Datum period_to_range(PG_FUNCTION_ARGS);
 extern Datum range_to_period(PG_FUNCTION_ARGS);
 
@@ -55,7 +55,7 @@ Period *period_shift_internal(Period *p, Interval *interval);
 
 /* period -> interval */
 
-extern Datum period_duration(PG_FUNCTION_ARGS);
+extern Datum period_to_interval(PG_FUNCTION_ARGS);
 
 /* Functions for defining B-tree index */
 
@@ -88,7 +88,7 @@ extern Period *period_make(TimestampTz lower, TimestampTz upper,
 extern void period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc);
 extern Period *period_copy(Period *p);
-extern float8 period_duration_secs(TimestampTz t1, TimestampTz t2);
+extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_duration_internal(Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(Period *p1, Period *p2);

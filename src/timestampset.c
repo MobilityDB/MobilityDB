@@ -299,10 +299,10 @@ timestampset_from_timestamparr(PG_FUNCTION_ARGS)
 
 /* Cast a TimestampTz value as a TimestampSet value */
 
-PG_FUNCTION_INFO_V1(timestamp_as_timestampset);
+PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
 
 PGDLLEXPORT Datum
-timestamp_as_timestampset(PG_FUNCTION_ARGS)
+timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
 	TimestampSet *result = timestampset_from_timestamparr_internal(&t, 1);

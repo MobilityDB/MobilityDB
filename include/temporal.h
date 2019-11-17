@@ -340,7 +340,7 @@ extern Datum temporal_make_temporals(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 
-extern Datum tint_as_tfloat(PG_FUNCTION_ARGS);
+extern Datum tint_to_tfloat(PG_FUNCTION_ARGS);
 
 extern Temporal *tint_as_tfloat_internal(Temporal *temp);
 
@@ -352,7 +352,7 @@ extern Datum tempdisc_get_values(PG_FUNCTION_ARGS);
 extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
 extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
-extern Datum tnumber_tbox(PG_FUNCTION_ARGS);
+extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 extern Datum tnumber_value_range(PG_FUNCTION_ARGS);
 extern Datum temporal_start_value(PG_FUNCTION_ARGS);
 extern Datum temporal_end_value(PG_FUNCTION_ARGS);

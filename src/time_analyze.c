@@ -282,7 +282,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		/* Remember bounds and length for further usage in histograms */
 		lowers[non_null_cnt] = lower;
 		uppers[non_null_cnt] = upper;
-		lengths[non_null_cnt] = period_duration_secs(upper.val, lower.val);
+		lengths[non_null_cnt] = period_to_secs(upper.val, lower.val);
 		non_null_cnt++;
 	}
 

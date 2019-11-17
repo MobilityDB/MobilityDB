@@ -411,10 +411,10 @@ tpoint_transform(PG_FUNCTION_ARGS)
 
 /* Geometry to Geography */
  
-PG_FUNCTION_INFO_V1(tgeompoint_as_tgeogpoint);
+PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
 
 PGDLLEXPORT Datum
-tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS)
+tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geom_as_geog, 
@@ -448,10 +448,10 @@ tgeogpoints_as_tgeompoints(TemporalS *ts)
 		type_oid(T_GEOMETRY), true);
 }
 
-PG_FUNCTION_INFO_V1(tgeogpoint_as_tgeompoint);
+PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
 
 PGDLLEXPORT Datum
-tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS)
+tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geog_as_geom, 

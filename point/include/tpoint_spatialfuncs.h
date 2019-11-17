@@ -49,8 +49,8 @@ extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 
 /* Cast functions */
 
-extern Datum tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS);
-extern Datum tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS);
+extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
+extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
 extern TemporalInst *tgeogpointinst_as_tgeompointinst(TemporalInst *inst);
 extern TemporalI *tgeogpointi_as_tgeompointi(TemporalI *ti);

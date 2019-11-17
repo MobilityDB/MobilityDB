@@ -306,7 +306,7 @@ CREATE FUNCTION appendInstant(ttext, ttext)
 
 CREATE FUNCTION tfloat(tint)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'tint_as_tfloat'
+	AS 'MODULE_PATHNAME', 'tint_to_tfloat'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tint AS tfloat) WITH FUNCTION tfloat(tint);

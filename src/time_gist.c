@@ -179,7 +179,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 		 * values) and minimal ratio secondarily.  The subtype_diff is
 		 * used for overlap measure. 
 		 */
-		overlap = period_duration_secs(left_upper->val, right_lower->val);
+		overlap = period_to_secs(left_upper->val, right_lower->val);
 
 		/* If there is no previous selection, select this split */
 		if (context->first)
@@ -476,8 +476,8 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 				 * (context.left_upper - upper)
 				 */
 				common_entries[common_entries_count].delta =
-					period_duration_secs(period->lower, context.right_lower.val) -
-					period_duration_secs(context.left_upper.val, period->upper);
+					period_to_secs(period->lower, context.right_lower.val) -
+					period_to_secs(context.left_upper.val, period->upper);
 				common_entries_count++;
 			}
 			else
@@ -808,10 +808,10 @@ gist_period_penalty(PG_FUNCTION_ARGS)
 
 	if (period_cmp_bounds(new->lower, orig->lower, true, true, 
 			new->lower_inc, orig->lower_inc) < 0)
-		diff += period_duration_secs(orig->lower, new->lower);
+		diff += period_to_secs(orig->lower, new->lower);
 	if (period_cmp_bounds(new->upper, orig->upper, false, false, 
 			new->upper_inc, orig->upper_inc) > 0)
-		diff += period_duration_secs(new->upper, orig->upper);
+		diff += period_to_secs(new->upper, orig->upper);
 	*penalty = diff;
 
 	PG_RETURN_POINTER(penalty);

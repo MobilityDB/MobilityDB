@@ -955,10 +955,10 @@ tint_as_tfloat_internal(Temporal *temp)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tint_as_tfloat);
+PG_FUNCTION_INFO_V1(tint_to_tfloat);
 
 PGDLLEXPORT Datum
-tint_as_tfloat(PG_FUNCTION_ARGS)
+tint_to_tfloat(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tint_as_tfloat_internal(temp);
@@ -1236,10 +1236,10 @@ temporal_bbox(void *box, const Temporal *temp)
 	return;
 }
 
-PG_FUNCTION_INFO_V1(temporal_period);
+PG_FUNCTION_INFO_V1(temporal_to_period);
 
 PGDLLEXPORT Datum
-temporal_period(PG_FUNCTION_ARGS)
+temporal_to_period(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *result = palloc(sizeof(Period));
@@ -1248,10 +1248,10 @@ temporal_period(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_tbox);
+PG_FUNCTION_INFO_V1(tnumber_to_tbox);
 
 PGDLLEXPORT Datum
-tnumber_tbox(PG_FUNCTION_ARGS)
+tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	TBOX *result = palloc0(sizeof(TBOX));

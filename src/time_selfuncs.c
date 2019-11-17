@@ -307,7 +307,7 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 static float8
 get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
 {
-	return period_duration_secs(bound2->val, bound1->val);
+	return period_to_secs(bound2->val, bound1->val);
 }
 
 /*

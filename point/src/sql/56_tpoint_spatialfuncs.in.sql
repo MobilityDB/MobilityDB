@@ -47,11 +47,11 @@ CREATE FUNCTION transform_gk(geometry)
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tgeompoint_as_tgeogpoint'
+	AS 'MODULE_PATHNAME', 'tgeompoint_to_tgeogpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tgeogpoint)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tgeogpoint_as_tgeompoint'
+	AS 'MODULE_PATHNAME', 'tgeogpoint_to_tgeompoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);

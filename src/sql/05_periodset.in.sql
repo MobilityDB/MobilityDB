@@ -68,15 +68,15 @@ CREATE FUNCTION periodset(period[])
 
 CREATE FUNCTION periodset(timestamptz)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'timestamp_as_periodset'
+	AS 'MODULE_PATHNAME', 'timestamp_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestampset)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'timestampset_as_periodset'
+	AS 'MODULE_PATHNAME', 'timestampset_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(period)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'period_as_periodset'
+	AS 'MODULE_PATHNAME', 'period_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(periodset)
 	RETURNS period

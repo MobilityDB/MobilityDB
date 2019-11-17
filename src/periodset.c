@@ -316,10 +316,10 @@ periodset_from_periodarr(PG_FUNCTION_ARGS)
 
 /* Cast a TimestampTz value as a PeriodSet value */
 
-PG_FUNCTION_INFO_V1(timestamp_as_periodset);
+PG_FUNCTION_INFO_V1(timestamp_to_periodset);
 
 PGDLLEXPORT Datum
-timestamp_as_periodset(PG_FUNCTION_ARGS)
+timestamp_to_periodset(PG_FUNCTION_ARGS)
 {
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
 	Period *p = period_make(t, t, true, true);
@@ -346,10 +346,10 @@ timestampset_as_periodset_internal(TimestampSet *ts)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_as_periodset);
+PG_FUNCTION_INFO_V1(timestampset_to_periodset);
 
 PGDLLEXPORT Datum
-timestampset_as_periodset(PG_FUNCTION_ARGS)
+timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	PeriodSet *result = timestampset_as_periodset_internal(ts);
@@ -358,10 +358,10 @@ timestampset_as_periodset(PG_FUNCTION_ARGS)
 
 /* Cast a Period value as a PeriodSet value */
 
-PG_FUNCTION_INFO_V1(period_as_periodset);
+PG_FUNCTION_INFO_V1(period_to_periodset);
 
 PGDLLEXPORT Datum
-period_as_periodset(PG_FUNCTION_ARGS)
+period_to_periodset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);

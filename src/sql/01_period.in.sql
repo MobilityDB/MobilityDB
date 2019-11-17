@@ -64,15 +64,15 @@ CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
 
 CREATE FUNCTION period(timestamptz)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'timestamp_as_period'
+	AS 'MODULE_PATHNAME', 'timestamp_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION period(tstzrange)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'tstzrange_as_period'
+	AS 'MODULE_PATHNAME', 'tstzrange_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION tstzrange(period)
 	RETURNS tstzrange
-	AS 'MODULE_PATHNAME', 'period_as_tstzrange'
+	AS 'MODULE_PATHNAME', 'period_to_tstzrange'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz) AS IMPLICIT;
@@ -105,7 +105,7 @@ CREATE FUNCTION upper_inc(period)
 
 CREATE FUNCTION duration(period)
 	RETURNS interval
-	AS 'MODULE_PATHNAME', 'period_duration'
+	AS 'MODULE_PATHNAME', 'period_to_interval'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(period, interval)

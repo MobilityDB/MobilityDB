@@ -89,11 +89,11 @@ CREATE FUNCTION Tmax(tbox)
 
 CREATE FUNCTION floatrange(tbox)
 	RETURNS floatrange
-	AS 'MODULE_PATHNAME', 'tbox_as_floatrange'
+	AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION period(tbox)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'tbox_as_period'
+	AS 'MODULE_PATHNAME', 'tbox_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);

@@ -43,9 +43,9 @@ extern Datum periodset_from_periodarr(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 
-extern Datum timestamp_as_periodset(PG_FUNCTION_ARGS);
-extern Datum timestampset_as_periodset(PG_FUNCTION_ARGS);
-extern Datum period_as_periodset(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_periodset(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_periodset(PG_FUNCTION_ARGS);
+extern Datum period_to_periodset(PG_FUNCTION_ARGS);
 
 extern PeriodSet *timestampset_as_periodset_internal(TimestampSet *ts);
 

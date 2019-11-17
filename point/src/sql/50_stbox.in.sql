@@ -137,7 +137,7 @@ CREATE FUNCTION Tmax(stbox)
 
 CREATE FUNCTION period(stbox)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'stbox_as_period'
+	AS 'MODULE_PATHNAME', 'stbox_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);

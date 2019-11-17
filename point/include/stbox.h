@@ -27,7 +27,7 @@ extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic);
 extern STBOX *stbox_copy(const STBOX *box);
-extern void stbox_to_period(Period *period, const STBOX *box); 
+extern void stbox_to_period_internal(Period *period, const STBOX *box); 
 extern int stbox_cmp_internal(const STBOX *box1, const STBOX *box2);
 
 /*****************************************************************************/

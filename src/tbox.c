@@ -236,10 +236,10 @@ tbox_tmax(PG_FUNCTION_ARGS)
 
  /* Cast a TBOX value as a floatrange value */
 
-PG_FUNCTION_INFO_V1(tbox_as_floatrange);
+PG_FUNCTION_INFO_V1(tbox_to_floatrange);
 
 PGDLLEXPORT Datum
-tbox_as_floatrange(PG_FUNCTION_ARGS)
+tbox_to_floatrange(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
@@ -251,10 +251,10 @@ tbox_as_floatrange(PG_FUNCTION_ARGS)
 
 /* Cast a TBOX value as a Period value */
 
-PG_FUNCTION_INFO_V1(tbox_as_period);
+PG_FUNCTION_INFO_V1(tbox_to_period);
 
 PGDLLEXPORT Datum
-tbox_as_period(PG_FUNCTION_ARGS)
+tbox_to_period(PG_FUNCTION_ARGS)
 {
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))

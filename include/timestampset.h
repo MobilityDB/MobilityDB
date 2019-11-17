@@ -42,7 +42,7 @@ extern Datum timestampset_from_timestamparr(PG_FUNCTION_ARGS);
 
 /* Cast function */
 
-extern Datum timestamp_as_timestampset(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_timestampset(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
