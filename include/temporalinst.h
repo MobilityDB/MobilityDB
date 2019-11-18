@@ -44,14 +44,14 @@ extern TemporalI *temporalinst_append_instant(TemporalInst *inst1, TemporalInst 
 
 /* Cast functions */
 
-extern TemporalInst *tintinst_as_tfloatinst(TemporalInst *inst);
-extern TemporalInst *tfloatinst_as_tintinst(TemporalInst *inst);
+extern TemporalInst *tintinst_to_tfloatinst(TemporalInst *inst);
+extern TemporalInst *tfloatinst_to_tintinst(TemporalInst *inst);
 
 /* Transformation functions */
 
-extern TemporalInst *temporali_as_temporalinst(TemporalI *ti);
-extern TemporalInst *temporalseq_as_temporalinst(TemporalSeq *seq);
-extern TemporalInst *temporals_as_temporalinst(TemporalS *ts);
+extern TemporalInst *temporali_to_temporalinst(TemporalI *ti);
+extern TemporalInst *temporalseq_to_temporalinst(TemporalSeq *seq);
+extern TemporalInst *temporals_to_temporalinst(TemporalS *ts);
 
 /* Accessor functions */
 
@@ -62,7 +62,7 @@ extern void temporalinst_bbox(void *box, TemporalInst *inst);
 extern RangeType *tnumberinst_value_range(TemporalInst *inst);
 extern bool temporalinst_ever_eq(TemporalInst *inst, Datum value);
 extern bool temporalinst_always_eq(TemporalInst *inst, Datum value);
-extern void temporalinst_timespan(Period *p, TemporalInst *inst);
+extern void temporalinst_period(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
 extern ArrayType *temporalinst_instants_array(TemporalInst *inst);
 extern TemporalInst *temporalinst_shift(TemporalInst *inst, Interval *interval);

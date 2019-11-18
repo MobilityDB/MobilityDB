@@ -241,23 +241,23 @@ SELECT upper_inc(period '[2011-01-01, 2011-01-05)');
 					</listitem>
 
 					<listitem>
-						<para>Duration</para>
-						<para><varname>duration({period, periodset}): interval</varname></para>
+						<para>Timespan</para>
+						<para><varname>timespan({period, periodset}): interval</varname></para>
 						<programlisting>
-SELECT duration(period '[2012-01-01, 2012-01-03)');
+SELECT timespan(period '[2012-01-01, 2012-01-03)');
 -- "2 days"
-SELECT duration(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
+SELECT timespan(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
 -- "3 days"
 						</programlisting>
 					</listitem>
 
 					<listitem>
 						<para>Period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
-						<para><varname>timespan({timestampset, periodset}): period</varname></para>
+						<para><varname>period({timestampset, periodset}): period</varname></para>
 						<programlisting>
-SELECT timespan(timestampset '{2012-01-01, 2012-01-03, 2012-01-05}');
+SELECT period(timestampset '{2012-01-01, 2012-01-03, 2012-01-05}');
 -- "[2012-01-01, 2012-01-05]"
-SELECT timespan(periodset '{[2012-01-01, 2012-01-02), [2012-01-03, 2012-01-04)}');
+SELECT period(periodset '{[2012-01-01, 2012-01-02), [2012-01-03, 2012-01-04)}');
 -- "[2012-01-01, 2012-01-04)"
 						</programlisting>
 					</listitem>
@@ -904,67 +904,6 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 			</para>
 		</sect1>
 
-		<sect1 id ="input_output_box_tyes">
-			<title>Input/Output of Box Types</title>
-			<para>A <varname>tbox</varname> is composed of value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
-				<programlisting>
--- Both value and time dimensions
-SELECT tbox 'TBOX((1.0, 2000-01-01), (1.0, 2000-01-02))'; 
--- Only value dimension
-SELECT tbox 'TBOX((1.0,), (1.0,))'; 
--- Only time dimension
-SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'; 
-				</programlisting>
-			</para>
-
-			<para>Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. Examples of <varname>tbox</varname> values defined with the constructor functions are as follows:
-				<programlisting>
-SELECT tbox(1.0, 2.0)
-SELECT tboxt('2001-01-01 08:00:00', '2001-01-01 08:10:00')
-SELECT tbox(1.0, '2001-01-01 08:00:00', 2.0, '2001-01-01 08:10:00')
-				</programlisting>
-			</para>
-
-			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). Examples of input of <varname>stbox</varname> values are as follows:
-				<programlisting>
--- Only coordinate (X and Y) dimension
-SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
--- Only coordinate (X, Y and Z) dimension
-SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
--- Both coordinate (X, Y) and time dimensions
-SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
--- Both coordinate (X, Y, and Z) and time dimensions
-SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
--- Only geodetic coordinate (X, Y and Z) dimension
-SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
---  Both geodetic coordinate (X, Y, and Z) and time dimensions
-SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
--- Only time dimension
-SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-				</programlisting>
-			</para>
-
-			<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. Examples of <varname>stbox</varname> values defined with the constructor functions are as follows:
-				<programlisting>
--- Only coordinate (X and Y) dimension
-SELECT stbox(1.0, 2.0, 1.0, 2.0);
--- Only coordinate (X, Y and Z) dimension
-SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
--- Both coordinate (X, Y) and time dimensions
-SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');
--- Both coordinate (X, Y, and Z) and time dimensions
-SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');
--- Only geodetic coordinate (X, Y and Z) dimension
-SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
---  Both geodetic coordinate (X, Y, and Z) and time dimensions
-SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');
--- Only time dimension
-SELECT stbox('2001-01-03', '2001-01-03');
-				</programlisting>
-			</para>
-
-		</sect1>
-
 		<sect1 id="validity_temporal_types">
 			<title>Validity of Temporal Types</title>
 
@@ -1117,6 +1056,196 @@ SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		</sect1>
 	</chapter>
 
+	<chapter id="manipulating_box_types">
+		<title>Manipulating Box Types</title>
+
+		<sect1 id ="input_output_box_tyes">
+			<title>Input/Output of Box Types</title>
+			<para>A <varname>tbox</varname> is composed of value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
+				<programlisting>
+-- Both value and time dimensions
+SELECT tbox 'TBOX((1.0, 2000-01-01), (1.0, 2000-01-02))'; 
+-- Only value dimension
+SELECT tbox 'TBOX((1.0,), (1.0,))'; 
+-- Only time dimension
+SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'; 
+				</programlisting>
+			</para>
+
+			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). Examples of input of <varname>stbox</varname> values are as follows:
+				<programlisting>
+-- Only coordinate (X and Y) dimension
+SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
+-- Only coordinate (X, Y and Z) dimension
+SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+-- Both coordinate (X, Y) and time dimensions
+SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+-- Both coordinate (X, Y, and Z) and time dimensions
+SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
+-- Only geodetic coordinate (X, Y and Z) dimension
+SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+--  Both geodetic coordinate (X, Y, and Z) and time dimensions
+SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
+-- Only time dimension
+SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+				</programlisting>
+			</para>
+		</sect1>
+
+		<sect1>
+			<title>Constructor Functions</title>
+
+			<para>Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for <varname>tbox</varname></para>
+					<para><varname>tbox(float, float): tbox</varname></para>
+					<para><varname>tboxt(timestamptz, timestamptz): tbox</varname></para>
+					<para><varname>tbox(float, timestamptz, float, timestamptz): tbox</varname></para>
+					<programlisting>
+SELECT tbox(1.0, 2.0)
+SELECT tboxt('2001-01-01 08:00:00', '2001-01-01 08:10:00')
+SELECT tbox(1.0, '2001-01-01 08:00:00', 2.0, '2001-01-01 08:10:00')
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for <varname>stbox</varname></para>
+					<para><varname>stbox(float, float, float, float): stbox</varname></para>
+					<para><varname>stbox(float, float, float, float, float, float): stbox</varname></para>
+					<para><varname>stbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
+					<para><varname>stboxt(timestamptz, timestamptz): stbox</varname></para>
+					<para><varname>stbox(float, float, timestamptz, float, float, timestamptz): stbox</varname></para>
+					<programlisting>
+-- Only coordinate (X and Y) dimension
+SELECT stbox(1.0, 2.0, 1.0, 2.0);
+-- Only coordinate (X, Y and Z) dimension
+SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
+-- Both coordinate (X, Y) and time dimensions
+SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');
+-- Both coordinate (X, Y, and Z) and time dimensions
+SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');
+-- Only geodetic coordinate (X, Y and Z) dimension
+SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
+--  Both geodetic coordinate (X, Y, and Z) and time dimensions
+SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');
+-- Only time dimension
+SELECT stbox('2001-01-03', '2001-01-03');
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1>
+			<title>Casting</title>
+	
+			<itemizedlist>
+				<listitem>
+					<para>Converts a <varname>tbox</varname> to another type</para>
+					<para><varname>tbox::floatrange</varname>, <varname>tbox::period</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatrange;
+-- "[1,2]"
+SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;
+-- "[2000-01-01, 2000-01-02]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Converts another type to a <varname>tbox</varname></para>
+					<para><varname>int::tbox</varname>, <varname>float::tbox</varname>, <varname>numeric::tbox</varname>, <varname>timestamptz::tbox</varname>, <varname>timestampset::tbox</varname>,</para>
+					<para><varname>period::tbox</varname>, <varname>periodset::tbox</varname>, <varname>tint::tbox</varname>, <varname>tfloat::tbox</varname>, <varname>intrange::tbox</varname>, <varname>floatrange::tbox</varname></para>
+					<programlisting>
+SELECT floatrange '(1.0, 2.0)'::tbox;
+-- "TBOX((1,),(2,))"
+SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::tbox;
+-- "TBOX((,2001-01-01),(,2001-01-04))"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
+					<para><varname>stbox::period</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::period;
+-- "[2000-01-01, 2000-01-03]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Converts another type to an <varname>stbox</varname></para>
+					<para><varname>geometry::stbox</varname>, <varname>geography::stbox</varname>, <varname>timestamptz::stbox</varname>, <varname>timestampset::stbox</varname>, <varname>period::stbox</varname>,</para>
+					<para><varname>periodset::stbox</varname>, <varname>tgeompoint::stbox</varname>, <varname>tgeogpoint::stbox</varname></para>
+					<programlisting>
+select geometry 'Linestring(1 1,2 2)'::stbox;
+-- "STBOX((1,1),(2,2))"
+SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
+-- "STBOX T((,,2001-01-01),(,,2001-01-04))"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1>
+			<title>Accessor Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para>Minimum X value</para>
+					<para><varname>Xmin(tbox): float</varname></para>
+					<para><varname>Xmin(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Maximum X value</para>
+					<para><varname>Xmax(tbox): float</varname></para>
+					<para><varname>Xmax(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Minimum Y value</para>
+					<para><varname>Ymin(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Maximum Y value</para>
+
+					<para><varname>Ymax(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Minimum Z value</para>
+					<para><varname>Zmin(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Maximum Z value</para>
+
+					<para><varname>Zmax(stbox): float</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Minimum timestamp</para>
+					<para><varname>Tmin(tbox): timestamptz</varname></para>
+					<para><varname>Tmin(stbox): timestamptz</varname></para>
+				</listitem>
+
+				<listitem>
+					<para>Maximum timestamp</para>
+					<para><varname>Tmax(tbox): timestamptz</varname></para>
+					<para><varname>Tmax(stbox): timestamptz</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+	</chapter>
+
 	<chapter id="manipulating_temporal_types">
 		<title>Functions and Operators for Temporal Types</title>
 		<para>We present next the functions and operators for the temporal types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this, we use the following notation for all temporal types, whether alphanumeric or spatial:</para>
@@ -1261,7 +1390,8 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 			<itemizedlist>
 				<listitem>
 					<para>Transform a temporal value to another duration</para>
-					<para><varname>ttypeinst(ttype): ttypeinst</varname>, <varname>ttypei(ttype): ttypei</varname>, <varname>ttypeseq(ttype): ttypeseq</varname>, <varname>ttypes(ttype): ttypes</varname></para>
+					<para><varname>ttypeinst(ttype): ttypeinst</varname>, <varname>ttypei(ttype): ttypei</varname>,</para>
+					<para><varname>ttypeseq(ttype): ttypeseq</varname>, <varname>ttypes(ttype): ttypes</varname></para>
 					<programlisting>
 SELECT tboolinst(tbool '{[true@2001-01-01]}');
 -- "t@2001-01-01 00:00:00+00"
@@ -1301,10 +1431,10 @@ SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 			<title>Accessor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para>Type</para>
-					<para><varname>getType(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+					<para>Duration</para>
+					<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 					<programlisting>
-SELECT getType(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+SELECT duration(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 -- "Sequence"
 					</programlisting>
 				</listitem>
@@ -1375,21 +1505,21 @@ SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
 				</listitem>
 
 				<listitem>
-					<para>Duration</para>
-					<para><varname>duration(ttype): interval</varname></para>
+					<para>Timespan</para>
+					<para><varname>timespan(ttype): interval</varname></para>
 					<programlisting>
-SELECT duration(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
+SELECT timespan(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-05)}');
 -- "3 days"
 					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Period on which the temporal value is defined ignoring the potential time gaps</para>
-					<para><varname>timespan(ttype): period</varname></para>
+					<para><varname>period(ttype): period</varname></para>
 					<programlisting>
-SELECT timespan(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+SELECT period(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "[2012-01-01, 2012-01-05]"
-SELECT timespan(tfloat '{[1@2012-01-01, 1@2012-01-02), [2@2012-01-03, 3@2012-01-04)}');
+SELECT period(tfloat '{[1@2012-01-01, 1@2012-01-02), [2@2012-01-03, 3@2012-01-04)}');
 -- "[2012-01-01, 2012-01-04)"
 					</programlisting>
 				</listitem>
@@ -4248,7 +4378,7 @@ SELECT maxValue(tcount(Trip)) FROM Trips;
 				</programlisting>
 			the average sampling rate
 				<programlisting>
-SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips;
+SELECT AVG(timespan(Trip)/numInstants(Trip)) FROM Trips;
 -- "03:43:01.695539"
 				</programlisting>
 				and the total travelled distance in kilometers of all trips:
@@ -4261,16 +4391,16 @@ SELECT SUM(length(Trip)) / 1e3 as TotalLengthKm FROM Trips;
 			<para>
 			Now we want to know the average duration of a trip.
 				<programlisting>
-SELECT AVG(duration(Trip)) FROM Trips;
+SELECT AVG(timespan(Trip)) FROM Trips;
 --"07:31:57.195325"
 				</programlisting>
 			This average duration is too long. To investigate more we use the following query
 				<programlisting>
-SELECT length(Trip) / 1e3, duration(Trip) FROM Trips ORDER BY duration;
+SELECT length(Trip) / 1e3, timespan(Trip) FROM Trips ORDER BY duration;
 				</programlisting>
 			The query shows very many trips with zero length and a duration of more than one day. That would imply that there are stationary trips, representing parking overnight and even over the weekend. The previous query can hence be refined as follows:
 				<programlisting>
-SELECT AVG(duration(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
+SELECT AVG(timespan(Trip)/numInstants(Trip)) FROM Trips WHERE length(Trip) > 0;
 -- "00:00:01.861784"
 				</programlisting>
 			</para>
@@ -4462,7 +4592,7 @@ ORDER BY T.CarId, P.PointId;
 						<programlisting>
 SELECT T1.CarId AS Car1Id, T2.CarId AS Car2Id, MIN(T1.Trip &lt;-&gt; T2.Trip) AS MinDistance
 FROM Trips T1, Trips T
-WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
+WHERE T1.CarId &lt; T2.CarId AND period(T1.Trip) &amp;&amp; period(T2.Trip)
 GROUP BY T1.CarId, T2.CarId
 ORDER BY T1.CarId, T2.CarId;
 						</programlisting>
@@ -4473,11 +4603,11 @@ ORDER BY T1.CarId, T2.CarId;
 						<para>List the nearest approach time, distance, and shortest line between each pair of trips.</para>
 						<programlisting>
 SELECT T1.CarId AS Car1Id, T1.TripId AS Trip1Id, T2.CarId AS Car2Id, 
-	T2.TripId AS Trip2Id, timespan(NearestApproachInstant(T1.Trip, T2.Trip)) AS Time,
+	T2.TripId AS Trip2Id, period(NearestApproachInstant(T1.Trip, T2.Trip)) AS Time,
 	NearestApproachDistance(T1.Trip, T2.Trip) AS Distance, 
 	ShortestLine(T1.Trip, T2.Trip) AS Line
 FROM Trips1 T1, Trips1 T
-WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
+WHERE T1.CarId &lt; T2.CarId AND period(T1.Trip) &amp;&amp; period(T2.Trip)
 ORDER BY T1.CarId, T1.TripId, T2.CarId, T2.TripId;
 						</programlisting>
 						<para>This query shows similar functionality as that provided by the PostGIS functions <varname>ST_ClosestPointOfApproach</varname> and <varname>ST_DistanceCPA</varname>. The query selects two trips <varname>T1</varname> and <varname>T2</varname> from distinct cars that were both traveling during a common period of time and computes the required results.</para>
@@ -4487,14 +4617,14 @@ ORDER BY T1.CarId, T1.TripId, T2.CarId, T2.TripId;
 						<para>List when and where a pairs of cars have been at 10 m or less from each other.</para>
 						<programlisting>
 SELECT T1.CarId AS CarId1, T2.CarId AS CarId2, atPeriodSet(T1.Trip,
-	timespan(atValue(tdwithin(T1.Trip, T2.Trip, 10.0), TRUE))) AS Position
+	period(atValue(tdwithin(T1.Trip, T2.Trip, 10.0), TRUE))) AS Position
 FROM Trips T1, Trips T
 WHERE T1.CarId &lt; T2.CarId AND T1.Trip &amp;&amp; expandSpatial(T2.Trip, 10) AND
-	atPeriodSet(T1.Trip, timespan(atValue(tdwithin(T1.Trip, T2.Trip, 10.0), TRUE))) 
+	atPeriodSet(T1.Trip, period(atValue(tdwithin(T1.Trip, T2.Trip, 10.0), TRUE))) 
 	IS NOT NULL
 ORDER BY T1.CarId, T2.CarId, Position;
 						</programlisting>
-						<para>The query performs for each pair of trips <varname>T1</varname> and <varname>T2</varname> of distinct cars a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table, where the bounding box of <varname>T2</varname> is expanded by 10 m. Then, the <varname>timespan</varname> expression computes the periods during which the cars were within 10 m. from each other and the <varname>atPeriodSet</varname> function projects the trips to those periods. Notice that the expression <varname>tdwithin(T1.Trip, T2.Trip, 10.0)</varname> is conceptually equivalent to <varname>dwithin(T1.Trip, T2.Trip) #&lt;= 10.0</varname>. However, in this case the spatio-temporal index cannot be used for filtering values.</para>
+						<para>The query performs for each pair of trips <varname>T1</varname> and <varname>T2</varname> of distinct cars a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table, where the bounding box of <varname>T2</varname> is expanded by 10 m. Then, the <varname>period</varname> expression computes the periods during which the cars were within 10 m. from each other and the <varname>atPeriodSet</varname> function projects the trips to those periods. Notice that the expression <varname>tdwithin(T1.Trip, T2.Trip, 10.0)</varname> is conceptually equivalent to <varname>dwithin(T1.Trip, T2.Trip) #&lt;= 10.0</varname>. However, in this case the spatio-temporal index cannot be used for filtering values.</para>
 					</listitem>
 				</orderedlist>            
 			</sect2>
@@ -4542,7 +4672,7 @@ SELECT T1.CarId AS CarId1, C2.CarId AS CarId2, C2.Distance
 FROM Trips T1 CROSS JOIN LATERAL (
 SELECT T2.CarId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 FROM Trips T2
-WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
+WHERE T1.CarId &lt; T2.CarId AND period(T1.Trip) &amp;&amp; period(T2.Trip)
 ORDER BY Distance LIMIT 3 ) AS C2
 ORDER BY T1.CarId, C2.CarId;
 						</programlisting>
@@ -4577,7 +4707,7 @@ WITH TripDistances AS (
 	FROM Trips T1 CROSS JOIN LATERAL (
 	SELECT T2.CarId, T2.TripId, minValue(T1.Trip &lt;-&gt; T2.Trip) AS Distance
 	FROM Trips T
-	WHERE T1.CarId &lt; T2.CarId AND timespan(T1.Trip) &amp;&amp; timespan(T2.Trip)
+	WHERE T1.CarId &lt; T2.CarId AND period(T1.Trip) &amp;&amp; period(T2.Trip)
 	ORDER BY Distance LIMIT 3 ) AS T3 )
 SELECT T1.CarId, T1.TripId, T2.CarId, T2.TripId, TD.Distance
 FROM Trips T1 JOIN Trips T2 ON T1.CarId &lt; T2.CarId
@@ -5899,16 +6029,26 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 						<para>Converts a <varname>timestamptz</varname> to another time type</para>
-						<para><varname>timestamptz::period</varname></para>
 						<para><varname>timestamptz::timestampset</varname></para>
+						<para><varname>timestamptz::period</varname></para>
 						<para><varname>timestamptz::periodset</varname></para>
 					</listitem>
-
 					<listitem>
-						<para>Converts a <varname>period</varname> to a <varname>periodset</varname></para>
+						<para>Converts a <varname>timestampset</varname> to another time type</para>
+						<para><varname>timestampset::period</varname></para>
+						<para><varname>timestampset::periodset</varname></para>
+					</listitem>
+					<listitem>
+						<para>Converts a <varname>period</varname> to another time type</para>
 						<para><varname>period::periodset</varname></para>
-						<para>Converts a <varname>period</varname> to a <varname>tstzrange</varname></para>
 						<para><varname>period::tstzrange</varname></para>
+					</listitem>
+					<listitem>
+						<para>Converts a <varname>periodset</varname> to a <varname>period</varname></para>
+						<para><varname>periodset::period</varname></para>
+						<para><varname>period::tstzrange</varname></para>
+					</listitem>
+					<listitem>
 						<para>Converts a <varname>tstzrange</varname> to a <varname>period</varname></para>
 						<para><varname>tstzrange::period</varname></para>
 					</listitem>
@@ -5945,13 +6085,13 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Duration</para>
-						<para><varname>duration({period, periodset}): interval</varname></para>
+						<para>Interval</para>
+						<para><varname>timespan({period, periodset}): interval</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Period on which the timestamp set or period set is defined ignoring the potential time gaps</para>
-						<para><varname>timespan({timestampset, periodset}): period</varname></para>
+						<para><varname>period({timestampset, periodset}): period</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6148,18 +6288,25 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 		
 				<itemizedlist>
 					<listitem>
-						<para>Converts a <varname>tbox</varname> to a <varname>floatrange</varname></para>
-						<para><varname>tbox::floatrange</varname></para>
+						<para>Converts a <varname>tbox</varname> to another type</para>
+						<para><varname>tbox::floatrange</varname>, <varname>tbox::period</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Converts a <varname>tbox</varname> to a <varname>period</varname></para>
-						<para><varname>tbox::period</varname></para>
+						<para>Converts another type to a <varname>tbox</varname></para>
+						<para><varname>int::tbox</varname>, <varname>float::tbox</varname>, <varname>numeric::tbox</varname>, <varname>timestamptz::tbox</varname>, <varname>timestampset::tbox</varname>,</para>
+						<para><varname>period::tbox</varname>, <varname>periodset::tbox</varname>, <varname>tint::tbox</varname>, <varname>tfloat::tbox</varname>, <varname>intrange::tbox</varname>, <varname>floatrange::tbox</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
 						<para><varname>stbox::period</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Converts another type to an <varname>stbox</varname></para>
+						<para><varname>geometry::stbox</varname>, <varname>geography::stbox</varname>, <varname>timestamptz::stbox</varname>, <varname>timestampset::stbox</varname>, <varname>period::stbox</varname>,</para>
+						<para><varname>periodset::stbox</varname>, <varname>tgeompoint::stbox</varname>, <varname>tgeogpoint::stbox</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6455,7 +6602,8 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 					<para>Transform a temporal value to another duration</para>
-					<para><varname>{ttypeinst(ttype), ttypei(ttype), ttypeseq(ttype), ttypes(ttype)} : ttype</varname></para>
+					<para><varname>ttypeinst(ttype): ttypeinst</varname>, <varname>ttypei(ttype): ttypei</varname>,</para>
+					<para><varname>ttypeseq(ttype): ttypeseq</varname>, <varname>ttypes(ttype): ttypes</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6470,8 +6618,8 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<title>Accessor Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para>Type</para>
-						<para><varname>getType(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+						<para>Duration</para>
+						<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6500,13 +6648,13 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Duration</para>
-						<para><varname>duration(ttype): interval</varname></para>
+						<para>Timespan</para>
+						<para><varname>timespan(ttype): interval</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Period on which the temporal value is defined ignoring the potential time gaps</para>
-						<para><varname>timespan(ttype): period</varname></para>
+						<para><varname>period(ttype): period</varname></para>
 					</listitem>
 
 					<listitem>

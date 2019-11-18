@@ -114,8 +114,8 @@ select memSize(ps) from tbl_periodset;
      168
 (100 rows)
 
-select timespan(ps) from tbl_periodset;
-                     timespan                     
+select period(ps) from tbl_periodset;
+                      period                      
 --------------------------------------------------
  
  (2001-10-18 17:46:00+00, 2001-10-18 17:50:00+00)
@@ -219,8 +219,8 @@ select timespan(ps) from tbl_periodset;
  [2001-02-07 13:54:00+00, 2001-02-07 14:32:00+00]
 (100 rows)
 
-select duration(ps) from tbl_periodset;
- duration 
+select timespan(ps) from tbl_periodset;
+ timespan 
 ----------
  
  00:04:00

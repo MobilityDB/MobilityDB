@@ -98,13 +98,8 @@ CREATE FUNCTION memSize(periodset)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(periodset)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'periodset_timespan'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION duration(periodset)
 	RETURNS interval
-	AS 'MODULE_PATHNAME', 'periodset_duration'
+	AS 'MODULE_PATHNAME', 'periodset_timespan'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numPeriods(periodset)

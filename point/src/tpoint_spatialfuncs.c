@@ -215,13 +215,13 @@ datum_transform(Datum value, Datum srid)
 }
 
 static Datum
-geog_as_geom(Datum value)
+geog_to_geom(Datum value)
 {
 	return call_function1(geometry_from_geography, value);
 }
 
 static Datum
-geom_as_geog(Datum value)
+geom_to_geog(Datum value)
 {
 	return call_function1(geography_from_geometry, value);
 }
@@ -417,7 +417,7 @@ PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &geom_as_geog, 
+	Temporal *result = tfunc1_temporal(temp, &geom_to_geog, 
 		type_oid(T_GEOGRAPHY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -428,23 +428,23 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 /* Geography to Geometry */
 
 TemporalInst *
-tgeogpointinst_as_tgeompointinst(TemporalInst *inst)
+tgeogpointinst_to_tgeompointinst(TemporalInst *inst)
 {
-	return tfunc1_temporalinst(inst, &geog_as_geom,
+	return tfunc1_temporalinst(inst, &geog_to_geom,
 		type_oid(T_GEOMETRY), true);
 }
 
 TemporalSeq *
-tgeogpointseq_as_tgeompointseq(TemporalSeq *seq)
+tgeogpointseq_to_tgeompointseq(TemporalSeq *seq)
 {
-	return tfunc1_temporalseq(seq, &geog_as_geom,
+	return tfunc1_temporalseq(seq, &geog_to_geom,
 		type_oid(T_GEOMETRY), true);
 }
 
 TemporalS *
-tgeogpoints_as_tgeompoints(TemporalS *ts)
+tgeogpoints_to_tgeompoints(TemporalS *ts)
 {
-	return tfunc1_temporals(ts, &geog_as_geom,
+	return tfunc1_temporals(ts, &geog_to_geom,
 		type_oid(T_GEOMETRY), true);
 }
 
@@ -454,7 +454,7 @@ PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &geog_as_geom, 
+	Temporal *result = tfunc1_temporal(temp, &geog_to_geom, 
 		type_oid(T_GEOMETRY), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -587,7 +587,7 @@ tgeogpointseq_make_trajectory(TemporalInst **instants, int count)
 {
 	TemporalInst **geominstants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
-		geominstants[i] = tgeogpointinst_as_tgeompointinst(instants[i]);
+		geominstants[i] = tgeogpointinst_to_tgeompointinst(instants[i]);
 	Datum geomresult = tgeompointseq_make_trajectory(geominstants, count);
 	Datum result = call_function1(geography_from_geometry, geomresult);
 	for (int i = 0; i < count; i++)

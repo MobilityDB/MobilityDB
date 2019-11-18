@@ -84,11 +84,6 @@ CREATE FUNCTION memSize(timestampset)
 	AS 'MODULE_PATHNAME', 'timestampset_mem_size'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timespan(timestampset)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'timestampset_timespan'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION numTimestamps(timestampset)
 	RETURNS integer
 	AS 'MODULE_PATHNAME', 'timestampset_num_timestamps'

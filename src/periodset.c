@@ -331,7 +331,7 @@ timestamp_to_periodset(PG_FUNCTION_ARGS)
 /* Cast a TimestampSet value as a PeriodSet value */
 
 PeriodSet *
-timestampset_as_periodset_internal(TimestampSet *ts)
+timestampset_to_periodset_internal(TimestampSet *ts)
 {
 	Period **periods = palloc(sizeof(Period *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -352,7 +352,7 @@ PGDLLEXPORT Datum
 timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	PeriodSet *result = timestampset_as_periodset_internal(ts);
+	PeriodSet *result = timestampset_to_periodset_internal(ts);
 	PG_RETURN_POINTER(result);
 }
 
@@ -365,6 +365,29 @@ period_to_periodset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
+	PG_RETURN_POINTER(result);
+}
+
+/* Bounding period on which the temporal value is defined */
+
+void
+periodset_to_period_internal(Period *p, PeriodSet *ps)
+{
+	Period *start = periodset_per_n(ps, 0);
+	Period *end = periodset_per_n(ps, ps->count - 1);
+	period_set(p, start->lower, end->upper, 
+		start->lower_inc, end->upper_inc);
+}
+
+PG_FUNCTION_INFO_V1(periodset_to_period);
+
+PGDLLEXPORT Datum
+periodset_to_period(PG_FUNCTION_ARGS)
+{
+	PeriodSet *ps = PG_GETARG_PERIODSET(0);
+	Period *result = (Period *) palloc(sizeof(Period));
+	periodset_to_period_internal(result, ps);
+	PG_FREE_IF_COPY(ps, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -383,37 +406,12 @@ periodset_mem_size(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-/* Time of a PeriodSet */
-
-/* Bounding period on which the temporal value is defined */
-
-void
-periodset_timespan_internal(Period *p, PeriodSet *ps)
-{
-	Period *start = periodset_per_n(ps, 0);
-	Period *end = periodset_per_n(ps, ps->count - 1);
-	period_set(p, start->lower, end->upper, 
-		start->lower_inc, end->upper_inc);
-}
+/* Timespan */
 
 PG_FUNCTION_INFO_V1(periodset_timespan);
 
 PGDLLEXPORT Datum
 periodset_timespan(PG_FUNCTION_ARGS)
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Period *result = (Period *)palloc(sizeof(Period));
-	periodset_timespan_internal(result, ps);
-	PG_FREE_IF_COPY(ps, 0);
-	PG_RETURN_POINTER(result);
-}
-
-/* Duration */
-
-PG_FUNCTION_INFO_V1(periodset_duration);
-
-PGDLLEXPORT Datum
-periodset_duration(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Period *p = periodset_per_n(ps, 0);

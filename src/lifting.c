@@ -844,10 +844,10 @@ TemporalI *
 sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*func)(Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporali_timespan(&p1, ti1);
-	temporali_timespan(&p2, ti2);
+	temporali_period(&p1, ti1);
+	temporali_period(&p2, ti2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -891,9 +891,9 @@ TemporalI *
 sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum (*func)(Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporali_timespan(&p, ti);
+	temporali_period(&p, ti);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -939,10 +939,10 @@ TemporalI *
 sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum (*func)(Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts);
-	temporali_timespan(&p2, ti);
+	temporals_period(&p1, ts);
+	temporali_period(&p2, ti);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -999,7 +999,7 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -1126,9 +1126,9 @@ sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Datum valuetypid, 
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -1175,10 +1175,10 @@ sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 	Datum (*func)(Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -1395,10 +1395,10 @@ TemporalI *
 sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporali_timespan(&p1, ti1);
-	temporali_timespan(&p2, ti2);
+	temporali_period(&p1, ti1);
+	temporali_period(&p2, ti2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -1442,9 +1442,9 @@ TemporalI *
 sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporali_timespan(&p, ti);
+	temporali_period(&p, ti);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -1490,10 +1490,10 @@ TemporalI *
 sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts);
-	temporali_timespan(&p2, ti);
+	temporals_period(&p1, ts);
+	temporali_period(&p2, ti);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -1553,7 +1553,7 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/ * Test whether the bounding timespan of the two temporal values overlap * /
+	/ * Test whether the bounding period of the two temporal values overlap * /
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -1683,9 +1683,9 @@ sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/ * Test whether the bounding timespan of the two temporal values overlap * /
+	/ * Test whether the bounding period of the two temporal values overlap * /
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -1732,10 +1732,10 @@ sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/ * Test whether the bounding timespan of the two temporal values overlap * /
+	/ * Test whether the bounding period of the two temporal values overlap * /
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -1956,10 +1956,10 @@ TemporalI *
 sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporali_timespan(&p1, ti1);
-	temporali_timespan(&p2, ti2);
+	temporali_period(&p1, ti1);
+	temporali_period(&p2, ti2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -2003,9 +2003,9 @@ TemporalI *
 sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporali_timespan(&p, ti);
+	temporali_period(&p, ti);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -2052,10 +2052,10 @@ TemporalI *
 sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts);
-	temporali_timespan(&p2, ti);
+	temporals_period(&p1, ts);
+	temporali_period(&p2, ti);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -2113,7 +2113,7 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -2242,9 +2242,9 @@ sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return NULL;
 	
@@ -2291,10 +2291,10 @@ sync_tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -2554,7 +2554,7 @@ static int
 sync_tfunc2_temporalseq_temporalseq_crossdisc2(TemporalSeq **result, TemporalSeq *seq1, 
 	TemporalSeq *seq2, Datum (*func)(Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -2925,7 +2925,7 @@ sync_tfunc3_temporalseq_temporalseq_crossdisc2(TemporalSeq **result,
 	TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -3065,10 +3065,10 @@ TemporalS *
 sync_tfunc3_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	
@@ -3323,7 +3323,7 @@ sync_tfunc4_temporalseq_temporalseq_crossdisc2(TemporalSeq **result,
 	TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -3459,10 +3459,10 @@ TemporalS *
 sync_tfunc4_temporals_temporals_crossdisc(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return NULL;
 	

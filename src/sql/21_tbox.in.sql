@@ -84,22 +84,6 @@ CREATE FUNCTION Tmax(tbox)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 /*****************************************************************************
- * Casting
- *****************************************************************************/
-
-CREATE FUNCTION floatrange(tbox)
-	RETURNS floatrange
-	AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION period(tbox)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'tbox_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
-CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
-CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
-
-/*****************************************************************************
  * Comparison
  *****************************************************************************/
 

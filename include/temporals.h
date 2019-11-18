@@ -31,7 +31,7 @@ extern bool temporalseqarr_find_timestamp(TemporalSeq **array, int from,
 	int count, TimestampTz t, int *pos);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
-extern double temporals_duration_time(TemporalS *ts);
+extern double temporals_interval_double(TemporalS *ts);
 extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
 
 /* Intersection functions */
@@ -80,14 +80,14 @@ extern TemporalS *temporals_append_instant(TemporalS *ts, TemporalInst *inst);
 
 /* Cast functions */
 
-extern TemporalS *tints_as_tfloats(TemporalS *ts);
-extern TemporalS *tfloats_as_tints(TemporalS *ts);
+extern TemporalS *tints_to_tfloats(TemporalS *ts);
+extern TemporalS *tfloats_to_tints(TemporalS *ts);
 
 /* Transformation functions */
 
-extern TemporalS *temporalinst_as_temporals(TemporalInst *inst);
-extern TemporalS *temporali_as_temporals(TemporalI *ti);
-extern TemporalS *temporalseq_as_temporals(TemporalSeq *seq);
+extern TemporalS *temporalinst_to_temporals(TemporalInst *inst);
+extern TemporalS *temporali_to_temporals(TemporalI *ti);
+extern TemporalS *temporalseq_to_temporals(TemporalSeq *seq);
 
 /* Accessor functions */
 
@@ -99,8 +99,8 @@ extern RangeType *tnumbers_value_range(TemporalS *ts);
 extern Datum temporals_min_value(TemporalS *ts);
 extern Datum temporals_max_value(TemporalS *ts);
 extern PeriodSet *temporals_get_time(TemporalS *ts);
-extern Datum temporals_duration(TemporalS *ts);
-extern void temporals_timespan(Period *p, TemporalS *ts);
+extern Datum temporals_timespan(TemporalS *ts);
+extern void temporals_period(Period *p, TemporalS *ts);
 extern TemporalSeq **temporals_sequences(TemporalS *ts);
 extern ArrayType *temporals_sequences_array(TemporalS *ts);
 extern int temporals_num_instants(TemporalS *ts);

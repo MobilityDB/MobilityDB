@@ -255,7 +255,7 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 /* Cast temporal integer as temporal float */
 
 TemporalInst *
-tintinst_as_tfloatinst(TemporalInst *inst)
+tintinst_to_tfloatinst(TemporalInst *inst)
 {
 	TemporalInst *result = temporalinst_copy(inst);
 	result->valuetypid = FLOAT8OID;
@@ -270,7 +270,7 @@ tintinst_as_tfloatinst(TemporalInst *inst)
  *****************************************************************************/
 
 TemporalInst *
-temporali_as_temporalinst(TemporalI *ti)
+temporali_to_temporalinst(TemporalI *ti)
 {
 	if (ti->count != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -280,7 +280,7 @@ temporali_as_temporalinst(TemporalI *ti)
 }
 
 TemporalInst *
-temporalseq_as_temporalinst(TemporalSeq *seq)
+temporalseq_to_temporalinst(TemporalSeq *seq)
 {
 	if (seq->count != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -290,7 +290,7 @@ temporalseq_as_temporalinst(TemporalSeq *seq)
 }
 
 TemporalInst *
-temporals_as_temporalinst(TemporalS *ts)
+temporals_to_temporalinst(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	if (ts->count != 1 || seq->count != 1)
@@ -348,7 +348,7 @@ tnumberinst_value_range(TemporalInst *inst)
 /* Bounding period on which the temporal value is defined */
 
 void
-temporalinst_timespan(Period *p, TemporalInst *inst)
+temporalinst_period(Period *p, TemporalInst *inst)
 {
 	return period_set(p, inst->t, inst->t, true, true);
 }

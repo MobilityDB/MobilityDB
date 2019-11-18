@@ -237,15 +237,6 @@ period_to_secs(TimestampTz v1, TimestampTz v2)
 	return result;
 }
 
-/* Duration of the period as an interval */
-
-Interval *
-period_duration_internal(Period *p)
-{
-	return DatumGetIntervalP(call_function2(timestamp_mi, 
-		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
-}
-
 /*
  * Normalize an array of periods
  * The input periods may overlap and may be non contiguous.
@@ -628,13 +619,19 @@ period_shift(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Timespan */
 
-/* Duration of the period as an interval */
+Interval *
+period_timespan_internal(Period *p)
+{
+	return DatumGetIntervalP(call_function2(timestamp_mi, 
+		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
+}
 
-PG_FUNCTION_INFO_V1(period_to_interval);
+PG_FUNCTION_INFO_V1(period_timespan);
 
 PGDLLEXPORT Datum
-period_to_interval(PG_FUNCTION_ARGS)
+period_timespan(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	Datum result = call_function2(timestamp_mi, 

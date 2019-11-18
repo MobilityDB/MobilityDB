@@ -1288,99 +1288,99 @@ SELECT appendInstant(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
 /* Errors */
 SELECT appendInstant(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', tint '[1@2000-01-04, 1@2000-01-05]');
 ERROR:  The second argument must be of instant duration
-SELECT temporalType(tbool 't@2000-01-01');
- temporaltype 
---------------
+SELECT duration(tbool 't@2000-01-01');
+ duration 
+----------
  Instant
 (1 row)
 
-SELECT temporalType(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
- temporaltype 
---------------
+SELECT duration(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+  duration  
+------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
- temporaltype 
---------------
+SELECT duration(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ duration 
+----------
  Sequence
 (1 row)
 
-SELECT temporalType(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
- temporaltype 
---------------
+SELECT duration(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+  duration   
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tint '1@2000-01-01');
- temporaltype 
---------------
+SELECT duration(tint '1@2000-01-01');
+ duration 
+----------
  Instant
 (1 row)
 
-SELECT temporalType(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
- temporaltype 
---------------
+SELECT duration(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+  duration  
+------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
- temporaltype 
---------------
+SELECT duration(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ duration 
+----------
  Sequence
 (1 row)
 
-SELECT temporalType(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
- temporaltype 
---------------
+SELECT duration(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+  duration   
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(tfloat '1.5@2000-01-01');
- temporaltype 
---------------
+SELECT duration(tfloat '1.5@2000-01-01');
+ duration 
+----------
  Instant
 (1 row)
 
-SELECT temporalType(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
- temporaltype 
---------------
+SELECT duration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+  duration  
+------------
  InstantSet
 (1 row)
 
-SELECT temporalType(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
- temporaltype 
---------------
+SELECT duration(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ duration 
+----------
  Sequence
 (1 row)
 
-SELECT temporalType(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
- temporaltype 
---------------
+SELECT duration(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+  duration   
+-------------
  SequenceSet
 (1 row)
 
-SELECT temporalType(ttext 'AAA@2000-01-01');
- temporaltype 
---------------
+SELECT duration(ttext 'AAA@2000-01-01');
+ duration 
+----------
  Instant
 (1 row)
 
-SELECT temporalType(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
- temporaltype 
---------------
+SELECT duration(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+  duration  
+------------
  InstantSet
 (1 row)
 
-SELECT temporalType(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
- temporaltype 
---------------
+SELECT duration(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ duration 
+----------
  Sequence
 (1 row)
 
-SELECT temporalType(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
- temporaltype 
---------------
+SELECT duration(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+  duration   
+-------------
  SequenceSet
 (1 row)
 
@@ -2166,98 +2166,98 @@ SELECT getTime(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@200
  {[2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00], [2000-01-04 00:00:00+00, 2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT timespan(tbool 't@2000-01-01');
-                     timespan                     
+SELECT period(tbool 't@2000-01-01');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT timespan(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-                     timespan                     
+SELECT period(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-                     timespan                     
+SELECT period(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-                     timespan                     
+SELECT period(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-05 00:00:00+00]
 (1 row)
 
-SELECT timespan(tint '1@2000-01-01');
-                     timespan                     
+SELECT period(tint '1@2000-01-01');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT timespan(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-                     timespan                     
+SELECT period(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-                     timespan                     
+SELECT period(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-                     timespan                     
+SELECT period(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-05 00:00:00+00]
 (1 row)
 
-SELECT timespan(tfloat '1.5@2000-01-01');
-                     timespan                     
+SELECT period(tfloat '1.5@2000-01-01');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT timespan(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-                     timespan                     
+SELECT period(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-                     timespan                     
+SELECT period(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-                     timespan                     
+SELECT period(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-05 00:00:00+00]
 (1 row)
 
-SELECT timespan(ttext 'AAA@2000-01-01');
-                     timespan                     
+SELECT period(ttext 'AAA@2000-01-01');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT timespan(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-                     timespan                     
+SELECT period(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-                     timespan                     
+SELECT period(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT timespan(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
-                     timespan                     
+SELECT period(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-05 00:00:00+00]
 (1 row)
@@ -2268,10 +2268,22 @@ SELECT numSequences(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-0
             2
 (1 row)
 
+SELECT numSequences(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ numsequences 
+--------------
+            1
+(1 row)
+
 SELECT numSequences(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
  numsequences 
 --------------
             2
+(1 row)
+
+SELECT numSequences(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ numsequences 
+--------------
+            1
 (1 row)
 
 SELECT numSequences(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
@@ -2280,38 +2292,48 @@ SELECT numSequences(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3
             2
 (1 row)
 
+SELECT numSequences(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ numsequences 
+--------------
+            1
+(1 row)
+
 SELECT numSequences(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
  numsequences 
 --------------
             2
 (1 row)
 
+SELECT numSequences(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ numsequences 
+--------------
+            1
+(1 row)
+
 /* Errors */
 SELECT numSequences(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT numSequences(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(tint '1@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT numSequences(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT numSequences(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numSequences(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT numSequences(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+                                 startsequence                                  
+--------------------------------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT startSequence(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
                                  startsequence                                  
 --------------------------------------------------------------------------------
  [t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]
@@ -2323,7 +2345,19 @@ SELECT startSequence(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-0
  [1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]
 (1 row)
 
+SELECT startSequence(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+                                 startsequence                                  
+--------------------------------------------------------------------------------
+ [1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]
+(1 row)
+
 SELECT startSequence(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+                                    startsequence                                     
+--------------------------------------------------------------------------------------
+ [1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT startSequence(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
                                     startsequence                                     
 --------------------------------------------------------------------------------------
  [1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]
@@ -2335,35 +2369,45 @@ SELECT startSequence(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
  ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
 (1 row)
 
+SELECT startSequence(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+                                       startsequence                                        
+--------------------------------------------------------------------------------------------
+ ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
+(1 row)
+
 /* Errors */
 SELECT startSequence(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT startSequence(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tint '1@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT startSequence(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT startSequence(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT startSequence(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT startSequence(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
+SELECT endSequence(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+                                  endsequence                                   
+--------------------------------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
 SELECT endSequence(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
                      endsequence                      
 ------------------------------------------------------
  [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]
+(1 row)
+
+SELECT endSequence(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+                                  endsequence                                   
+--------------------------------------------------------------------------------
+ [1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT endSequence(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
@@ -2372,10 +2416,22 @@ SELECT endSequence(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-
  [3@2000-01-04 00:00:00+00, 3@2000-01-05 00:00:00+00]
 (1 row)
 
+SELECT endSequence(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+                                     endsequence                                      
+--------------------------------------------------------------------------------------
+ [1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]
+(1 row)
+
 SELECT endSequence(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
                        endsequence                        
 ----------------------------------------------------------
  [3.5@2000-01-04 00:00:00+00, 3.5@2000-01-05 00:00:00+00]
+(1 row)
+
+SELECT endSequence(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+                                        endsequence                                         
+--------------------------------------------------------------------------------------------
+ ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT endSequence(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
@@ -2386,29 +2442,21 @@ SELECT endSequence(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC
 
 /* Errors */
 SELECT endSequence(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT endSequence(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(tint '1@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT endSequence(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT endSequence(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT endSequence(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT endSequence(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 1);
                                    sequencen                                    
 --------------------------------------------------------------------------------
@@ -2433,10 +2481,22 @@ SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
  ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
 (1 row)
 
+SELECT sequenceN(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 1);
+                                   sequencen                                    
+--------------------------------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
 SELECT sequenceN(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', 3);
  sequencen 
 -----------
  
+(1 row)
+
+SELECT sequenceN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+                                   sequencen                                    
+--------------------------------------------------------------------------------
+ [1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT sequenceN(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 3);
@@ -2445,10 +2505,22 @@ SELECT sequenceN(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04
  
 (1 row)
 
+SELECT sequenceN(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1);
+                                      sequencen                                       
+--------------------------------------------------------------------------------------
+ [1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]
+(1 row)
+
 SELECT sequenceN(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 3);
  sequencen 
 -----------
  
+(1 row)
+
+SELECT sequenceN(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 1);
+                                         sequencen                                          
+--------------------------------------------------------------------------------------------
+ ["AAA"@2000-01-01 00:00:00+00, "BBB"@2000-01-02 00:00:00+00, "AAA"@2000-01-03 00:00:00+00]
 (1 row)
 
 SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 3);
@@ -2459,33 +2531,37 @@ SELECT sequenceN(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
 
 /* Errors */
 SELECT sequenceN(tbool 't@2000-01-01', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', 1);
-ERROR:  Input must be a temporal sequence set
-SELECT sequenceN(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tint '1@2000-01-01', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-ERROR:  Input must be a temporal sequence set
-SELECT sequenceN(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tfloat '1.5@2000-01-01', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1);
-ERROR:  Input must be a temporal sequence set
-SELECT sequenceN(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(ttext 'AAA@2000-01-01', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequenceN(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 1);
-ERROR:  Input must be a temporal sequence set
-SELECT sequenceN(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 1);
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
+SELECT sequences(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+                                     sequences                                      
+------------------------------------------------------------------------------------
+ {"[t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]"}
+(1 row)
+
 SELECT sequences(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
                                                                  sequences                                                                 
 -------------------------------------------------------------------------------------------------------------------------------------------
  {"[t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]","[t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]"}
+(1 row)
+
+SELECT sequences(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+                                     sequences                                      
+------------------------------------------------------------------------------------
+ {"[1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]"}
 (1 row)
 
 SELECT sequences(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
@@ -2494,10 +2570,22 @@ SELECT sequences(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04
  {"[1@2000-01-01 00:00:00+00, 2@2000-01-02 00:00:00+00, 1@2000-01-03 00:00:00+00]","[3@2000-01-04 00:00:00+00, 3@2000-01-05 00:00:00+00]"}
 (1 row)
 
+SELECT sequences(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+                                        sequences                                         
+------------------------------------------------------------------------------------------
+ {"[1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]"}
+(1 row)
+
 SELECT sequences(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
                                                                       sequences                                                                      
 -----------------------------------------------------------------------------------------------------------------------------------------------------
  {"[1.5@2000-01-01 00:00:00+00, 2.5@2000-01-02 00:00:00+00, 1.5@2000-01-03 00:00:00+00]","[3.5@2000-01-04 00:00:00+00, 3.5@2000-01-05 00:00:00+00]"}
+(1 row)
+
+SELECT sequences(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+                                              sequences                                               
+------------------------------------------------------------------------------------------------------
+ {"[\"AAA\"@2000-01-01 00:00:00+00, \"BBB\"@2000-01-02 00:00:00+00, \"AAA\"@2000-01-03 00:00:00+00]"}
 (1 row)
 
 SELECT sequences(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
@@ -2508,29 +2596,21 @@ SELECT sequences(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2
 
 /* Errors */
 SELECT sequences(tbool 't@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT sequences(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(tint '1@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT sequences(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(tfloat '1.5@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT sequences(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(ttext 'AAA@2000-01-01');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT sequences(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-ERROR:  Input must be a temporal sequence set
-SELECT sequences(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-ERROR:  Input must be a temporal sequence set
+ERROR:  Input must be a temporal sequence (set)
 SELECT numInstants(tbool 't@2000-01-01');
  numinstants 
 -------------

@@ -51,7 +51,7 @@ tbox_to_string(const TBOX *box)
 {
 	static int size = MAXTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
-	str = (char *)palloc(size);
+	str = (char *) palloc(size);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{

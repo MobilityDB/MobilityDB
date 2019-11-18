@@ -1468,7 +1468,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(seq1);
@@ -1483,7 +1483,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, true);
 			pfree(ts1);
@@ -1533,7 +1533,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(seq1);
@@ -1548,7 +1548,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), &geom_covers, BOOLOID, false);
 			pfree(ts1);
@@ -1628,7 +1628,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(seq1);
@@ -1643,7 +1643,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, true);
 			pfree(ts1);
@@ -1695,7 +1695,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), &geom_coveredby, BOOLOID, false);
 			pfree(seq1);
@@ -1711,7 +1711,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 				BOOLOID, false);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), &geom_coveredby, 
 				BOOLOID, false);
@@ -1930,7 +1930,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(seq1);
@@ -1945,7 +1945,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, true);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), func, BOOLOID, true);
 			pfree(ts1);
@@ -2001,7 +2001,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(seq1);
@@ -2016,7 +2016,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), func, BOOLOID, false);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
 				PointerGetDatum(gs), func, BOOLOID, false);
 			pfree(ts1);
@@ -2238,7 +2238,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tdwithin_tpointseq_geo(seq1,
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
@@ -2253,7 +2253,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tdwithin_tpoints_geo(ts1,
 				PointerGetDatum(gs), dist);
 			pfree(ts1);
@@ -2310,7 +2310,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalSeq *seq1 = tgeogpointseq_as_tgeompointseq(seq);
+			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			result = (Temporal *)tdwithin_tpointseq_geo(seq1,
 				PointerGetDatum(gs), dist);
 			pfree(seq1);
@@ -2325,7 +2325,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 				PointerGetDatum(gs), dist);
 		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
 		{
-			TemporalS *ts1 = tgeogpoints_as_tgeompoints(ts);
+			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			result = (Temporal *)tdwithin_tpoints_geo(ts1,
 				PointerGetDatum(gs), dist);
 			pfree(ts1);

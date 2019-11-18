@@ -123,7 +123,7 @@ tpoint_as_ewkt_internal(Temporal *temp)
 		str2 = temporalseq_to_string((TemporalSeq *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALS) 
 		str2 = temporals_to_string((TemporalS *)temp, &wkt_out);
-	char *str = (char *)palloc(strlen(str1) + strlen(str2) + 1);
+	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
 	strcpy(str, str1);
 	strcat(str, str2);
 	text *result = cstring_to_text(str);

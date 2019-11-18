@@ -34,28 +34,6 @@ time_type_oid(Oid timetypid)
 }
 
 /*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(timestampset_to_period);
-
-PGDLLEXPORT Datum
-timestampset_to_period(PG_FUNCTION_ARGS)
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Period *result = timestampset_bbox(ts);
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(periodset_to_period);
-
-PGDLLEXPORT Datum
-periodset_to_period(PG_FUNCTION_ARGS)
-{
-	PeriodSet *ps = PG_GETARG_PERIODSET(0);
-	Period *result = periodset_bbox(ps);
-	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
 /* contains? */
 
 bool
@@ -2407,7 +2385,7 @@ union_timestampset_period(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	PeriodSet *ps = timestampset_as_periodset_internal(ts);
+	PeriodSet *ps = timestampset_to_periodset_internal(ts);
 	PeriodSet *result = union_period_periodset_internal(p, ps);
 	pfree(ps);
 	PG_FREE_IF_COPY(ts, 0);
@@ -2421,7 +2399,7 @@ union_timestampset_periodset(PG_FUNCTION_ARGS)
 {
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	PeriodSet *ps1 = timestampset_as_periodset_internal(ts);
+	PeriodSet *ps1 = timestampset_to_periodset_internal(ts);
 	PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
 	pfree(ps1);
 	PG_FREE_IF_COPY(ts, 0);
@@ -2507,7 +2485,7 @@ union_period_timestampset(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	PeriodSet *ps = timestampset_as_periodset_internal(ts);
+	PeriodSet *ps = timestampset_to_periodset_internal(ts);
 	PeriodSet *result = union_period_periodset_internal(p, ps);
 	pfree(ps);
 	PG_FREE_IF_COPY(ts, 1);
@@ -2632,7 +2610,7 @@ union_periodset_timestampset(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-	PeriodSet *ps1 = timestampset_as_periodset_internal(ts);
+	PeriodSet *ps1 = timestampset_to_periodset_internal(ts);
 	PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
 	pfree(ps1);
 	PG_FREE_IF_COPY(ps, 0);

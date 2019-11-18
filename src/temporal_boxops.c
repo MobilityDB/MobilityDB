@@ -887,7 +887,7 @@ contains_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -901,7 +901,7 @@ contains_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -915,8 +915,8 @@ contains_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = contains_period_period_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -933,7 +933,7 @@ contained_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -947,7 +947,7 @@ contained_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -961,8 +961,8 @@ contained_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = contains_period_period_internal(&p2, &p1);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -979,7 +979,7 @@ overlaps_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = overlaps_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -993,7 +993,7 @@ overlaps_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = overlaps_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -1007,8 +1007,8 @@ overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = overlaps_period_period_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1025,7 +1025,7 @@ same_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = period_eq_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -1039,7 +1039,7 @@ same_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = period_eq_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -1053,8 +1053,8 @@ same_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = period_eq_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);

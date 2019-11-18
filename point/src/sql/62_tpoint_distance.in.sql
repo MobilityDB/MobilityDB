@@ -14,7 +14,7 @@
  * temporal geometry points
  *****************************************************************************/
 
-/* geometry <-> <TemporalType> */
+/* geometry <-> <duration> */
 
 CREATE FUNCTION distance(geometry, tgeompoint)
 	RETURNS tfloat
@@ -49,7 +49,7 @@ CREATE OPERATOR <-> (
  * temporal geography points
  *****************************************************************************/
 
-/* geography <-> <TemporalType> */
+/* geography <-> <duration> */
 
 CREATE FUNCTION distance(geography, tgeogpoint)
 	RETURNS tfloat

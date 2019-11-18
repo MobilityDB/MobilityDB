@@ -916,9 +916,9 @@ bool
 intersection_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 	TemporalI **inter1, TemporalI **inter2)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporali_timespan(&p, ti);
+	temporali_period(&p, ti);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return false;
 	
@@ -967,7 +967,7 @@ bool
 intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalSeq **inter1, TemporalSeq **inter2)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -1006,7 +1006,7 @@ bool
 synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalSeq **sync1, TemporalSeq **sync2, bool crossings)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period, 
 		&seq2->period);
 	if (inter == NULL)
@@ -1322,10 +1322,10 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		Datum line1 = tgeogpointseq_trajectory1(start1, end1);
 		Datum line2 = tgeogpointseq_trajectory1(start2, end2);
 		Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
-		TemporalInst *start1geom1 = tgeogpointinst_as_tgeompointinst(start1);
-		TemporalInst *end1geom1 = tgeogpointinst_as_tgeompointinst(end1);
-		TemporalInst *start2geom1 = tgeogpointinst_as_tgeompointinst(start2);
-		TemporalInst *end2geom1 = tgeogpointinst_as_tgeompointinst(end2);
+		TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
+		TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
+		TemporalInst *start2geom1 = tgeogpointinst_to_tgeompointinst(start2);
+		TemporalInst *end2geom1 = tgeogpointinst_to_tgeompointinst(end2);
 		TemporalInst *start1geom2 = tgeompointinst_transform(start1, bestsrid);
 		TemporalInst *end1geom2 = tgeompointinst_transform(start1, bestsrid);
 		TemporalInst *start2geom2 = tgeompointinst_transform(start2, bestsrid);
@@ -1340,10 +1340,10 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	return result;
 }
 
-/* Duration of the TemporalSeq as a double */
+/* Interval of the TemporalSeq as a double */
 
 static double
-temporalseq_duration_double(TemporalSeq *seq)
+temporalseq_interval_double(TemporalSeq *seq)
 {
 	return (double) (seq->period.upper - seq->period.lower);
 }
@@ -1427,12 +1427,12 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 /* Cast a temporal integer as a temporal float */
 
 int
-tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
+tintseq_to_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = tintinst_as_tfloatinst(inst);
+		TemporalInst *inst1 = tintinst_to_tfloatinst(inst);
 		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
 			true, true, false);
 		pfree(inst1); 
@@ -1449,7 +1449,7 @@ tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 		inst2 = temporalseq_inst_n(seq, i);
 		Datum value2 = temporalinst_value(inst2);
 		TemporalInst *instants[2];
-		instants[0] = tintinst_as_tfloatinst(inst1);
+		instants[0] = tintinst_to_tfloatinst(inst1);
 		Datum fvalue1 = temporalinst_value(instants[0]);
 		instants[1] = temporalinst_make(fvalue1, inst2->t, FLOAT8OID);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc && 
@@ -1467,7 +1467,7 @@ tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 		Datum value2 = temporalinst_value(inst2);
 		if (datum_ne(value1, value2, INT4OID))
 		{
-			TemporalInst *inst1 = tintinst_as_tfloatinst(inst2);
+			TemporalInst *inst1 = tintinst_to_tfloatinst(inst2);
 			result[k++] = temporalseq_from_temporalinstarr(&inst1, 1,
 				true, true, false);
 		}
@@ -1476,10 +1476,10 @@ tintseq_as_tfloatseq1(TemporalSeq **result, TemporalSeq *seq)
 }
 
 TemporalS *
-tintseq_as_tfloatseq(TemporalSeq *seq)
+tintseq_to_tfloatseq(TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
-	int count = tintseq_as_tfloatseq1(sequences, seq);
+	int count = tintseq_to_tfloatseq1(sequences, seq);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count, false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -1492,13 +1492,13 @@ tintseq_as_tfloatseq(TemporalSeq *seq)
  *****************************************************************************/
 
 TemporalSeq *
-temporalinst_as_temporalseq(TemporalInst *inst)
+temporalinst_to_temporalseq(TemporalInst *inst)
 {
 	return temporalseq_from_temporalinstarr(&inst, 1, true, true, false);
 }
 
 TemporalSeq *
-temporali_as_temporalseq(TemporalI *ti)
+temporali_to_temporalseq(TemporalI *ti)
 {
 	if (ti->count != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1508,7 +1508,7 @@ temporali_as_temporalseq(TemporalI *ti)
 }
 
 TemporalSeq *
-temporals_as_temporalseq(TemporalS *ts)
+temporals_to_temporalseq(TemporalS *ts)
 {
 	if (ts->count != 1)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1678,19 +1678,19 @@ temporalseq_max_value(TemporalSeq *seq)
 	return result;
 }
 
-/* Duration */
+/* Timespan */
 
 Datum
-temporalseq_duration(TemporalSeq *seq)
+temporalseq_timespan(TemporalSeq *seq)
 {
-	Interval *result = period_duration_internal(&seq->period);
+	Interval *result = period_timespan_internal(&seq->period);
 	return PointerGetDatum(result);
 }
 
 /* Bounding period on which the temporal value is defined */
 
 void
-temporalseq_timespan(Period *p, TemporalSeq *seq)
+temporalseq_period(Period *p, TemporalSeq *seq)
 {
 	Period *p1 = &seq->period;
 	period_set(p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
@@ -3571,7 +3571,7 @@ tfloatseq_integral(TemporalSeq *seq)
 double
 tintseq_twavg(TemporalSeq *seq)
 {
-	double duration = temporalseq_duration_double(seq);
+	double duration = temporalseq_interval_double(seq);
 	double result;
 	if (duration == 0)
 		result = (double) DatumGetInt32(temporalinst_value(temporalseq_inst_n(seq, 0)));
@@ -3585,7 +3585,7 @@ tintseq_twavg(TemporalSeq *seq)
 double
 tfloatseq_twavg(TemporalSeq *seq)
 {
-	double duration = temporalseq_duration_double(seq);
+	double duration = temporalseq_interval_double(seq);
 	double result;
 	if (duration == 0)
 		/* The temporal sequence contains a single temporal instant */

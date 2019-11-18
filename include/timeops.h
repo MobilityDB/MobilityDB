@@ -21,9 +21,6 @@
 
 /* Miscellaneous */
 
-extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
-extern Datum periodset_to_period(PG_FUNCTION_ARGS);
-
 extern void time_type_oid(Oid timetypid);
 
 /* contains? */

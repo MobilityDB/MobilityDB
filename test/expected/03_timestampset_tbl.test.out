@@ -126,8 +126,8 @@ SELECT memSize(ts) FROM tbl_timestampset;
      104
 (100 rows)
 
-SELECT timespan(ts) FROM tbl_timestampset;
-                     timespan                     
+SELECT period(ts) FROM tbl_timestampset;
+                      period                      
 --------------------------------------------------
  
  [2001-01-23 07:13:00+00, 2001-01-23 07:19:00+00]

@@ -361,10 +361,10 @@ bool
 intersection_temporals_temporali(TemporalS *ts, TemporalI *ti, 
 	TemporalI **inter1, TemporalI **inter2)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts);
-	temporali_timespan(&p2, ti);
+	temporals_period(&p1, ts);
+	temporali_period(&p2, ti);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return false;
 	
@@ -419,9 +419,9 @@ bool
 intersection_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
 	TemporalS **inter1, TemporalS **inter2)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return false;
 
@@ -468,10 +468,10 @@ bool
 intersection_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	TemporalS **inter1, TemporalS **inter2)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return false;
 	
@@ -530,9 +530,9 @@ bool
 synchronize_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
 	TemporalS **sync1, TemporalS **sync2, bool crossings)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!overlaps_period_period_internal(&seq->period, &p))
 		return false;
 	
@@ -589,10 +589,10 @@ bool
 synchronize_temporals_temporals(TemporalS *ts1, TemporalS *ts2, 
 	TemporalS **sync1, TemporalS **sync2, bool crossings)
 {
-	/* Test whether the bounding timespan of the two temporal values overlap */
+	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
-	temporals_timespan(&p1, ts1);
-	temporals_timespan(&p2, ts2);
+	temporals_period(&p1, ts1);
+	temporals_period(&p2, ts2);
 	if (!overlaps_period_period_internal(&p1, &p2))
 		return false;
 	
@@ -712,11 +712,11 @@ temporals_read(StringInfo buf, Oid valuetypid)
 /* Cast a temporal integer value as a temporal float value */
 
 TemporalS *
-tints_as_tfloats(TemporalS *ts)
+tints_to_tfloats(TemporalS *ts)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
-		return tintseq_as_tfloatseq(temporals_seq_n(ts, 0));
+		return tintseq_to_tfloatseq(temporals_seq_n(ts, 0));
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
@@ -724,7 +724,7 @@ tints_as_tfloats(TemporalS *ts)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tintseq_as_tfloatseq1(&sequences[k], seq);
+		countstep = tintseq_to_tfloatseq1(&sequences[k], seq);
 		k += countstep;
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true);
@@ -739,7 +739,7 @@ tints_as_tfloats(TemporalS *ts)
  *****************************************************************************/
 
 TemporalS *
-temporalinst_as_temporals(TemporalInst *inst)
+temporalinst_to_temporals(TemporalInst *inst)
 {
 	TemporalSeq *seq = temporalseq_from_temporalinstarr(&inst, 1, 
 		true, true, false);
@@ -749,7 +749,7 @@ temporalinst_as_temporals(TemporalInst *inst)
 }
 
 TemporalS *
-temporali_as_temporals(TemporalI *ti)
+temporali_to_temporals(TemporalI *ti)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -764,7 +764,7 @@ temporali_as_temporals(TemporalI *ti)
 }
 
 TemporalS *
-temporalseq_as_temporals(TemporalSeq *seq)
+temporalseq_to_temporals(TemporalSeq *seq)
 {
 	return temporals_from_temporalseqarr(&seq, 1, false);
 }
@@ -920,10 +920,10 @@ temporals_get_time(TemporalS *ts)
 	return result;
 }
 
-/* Duration */
+/* Timespan */
 
 Datum
-temporals_duration(TemporalS *ts)
+temporals_timespan(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	Datum result = call_function2(timestamp_mi, 
@@ -940,10 +940,10 @@ temporals_duration(TemporalS *ts)
 	return result;
 }
 
-/* Duration of the TemporalS as a double */
+/* Interval of the TemporalS as a double */
 
 double
-temporals_duration_time(TemporalS *ts)
+temporals_interval_double(TemporalS *ts)
 {
 	double result = 0;
 	for (int i = 0; i < ts->count; i++)
@@ -957,7 +957,7 @@ temporals_duration_time(TemporalS *ts)
 /* Bounding period on which the temporal value is defined */
 
 void
-temporals_timespan(Period *p, TemporalS *ts)
+temporals_period(Period *p, TemporalS *ts)
 {
 	TemporalSeq *start = temporals_seq_n(ts, 0);
 	TemporalSeq *end = temporals_seq_n(ts, ts->count - 1);
@@ -1734,7 +1734,7 @@ temporals_at_timestamp(TemporalS *ts, TimestampTz t)
 {
 	/* Bounding box test */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!contains_period_timestamp_internal(&p, t))
 		return NULL;
 
@@ -1758,7 +1758,7 @@ temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 {
 	/* Bounding box test */
 	Period p;
-	temporals_timespan(&p, ts);
+	temporals_period(&p, ts);
 	if (!contains_period_timestamp_internal(&p, t))
 		return temporals_copy(ts);
 
@@ -1813,7 +1813,7 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts1);
+	temporals_period(&p1, ts1);
 	Period *p2 = timestampset_bbox(ts2);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
@@ -1864,7 +1864,7 @@ temporals_minus_timestampset(TemporalS *ts1, TimestampSet *ts2)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts1);
+	temporals_period(&p1, ts1);
 	Period *p2 = timestampset_bbox(ts2);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return temporals_copy(ts1);
@@ -1904,7 +1904,7 @@ temporals_at_period(TemporalS *ts, Period *p)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts);
+	temporals_period(&p1, ts);
 	if (!overlaps_period_period_internal(&p1, p))
 		return NULL;
 
@@ -1959,7 +1959,7 @@ temporals_minus_period(TemporalS *ts, Period *p)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts);
+	temporals_period(&p1, ts);
 	if (!overlaps_period_period_internal(&p1, p))
 		return temporals_copy(ts);
 
@@ -1988,7 +1988,7 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts);
+	temporals_period(&p1, ts);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return NULL;
@@ -2044,7 +2044,7 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 {
 	/* Bounding box test */
 	Period p1;
-	temporals_timespan(&p1, ts);
+	temporals_period(&p1, ts);
 	Period *p2 = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&p1, p2))
 		return temporals_copy(ts);
@@ -2194,7 +2194,7 @@ tfloats_integral(TemporalS *ts)
 double
 tints_twavg(TemporalS *ts)
 {
-	double duration = temporals_duration_time(ts);
+	double duration = temporals_interval_double(ts);
 	double result;
 	if (duration == 0)
 	{
@@ -2213,7 +2213,7 @@ tints_twavg(TemporalS *ts)
 double
 tfloats_twavg(TemporalS *ts)
 {
-	double duration = temporals_duration_time(ts);
+	double duration = temporals_interval_double(ts);
 	double result;
 	if (duration == 0)
 	{

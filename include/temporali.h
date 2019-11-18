@@ -49,15 +49,15 @@ extern TemporalI *temporali_append_instant(TemporalI *ti, TemporalInst *inst);
 
 /* Cast functions */
  
-TemporalI *tinti_as_tfloati(TemporalI *ti);
-TemporalI *tfloati_as_tinti(TemporalI *ti);
-TemporalSeq *temporali_as_temporalseq(TemporalI *ti);
+TemporalI *tinti_to_tfloati(TemporalI *ti);
+TemporalI *tfloati_to_tinti(TemporalI *ti);
+TemporalSeq *temporali_to_temporalseq(TemporalI *ti);
 
 /* Transformation functions */
 
-extern TemporalI *temporalinst_as_temporali(TemporalInst *inst);
-extern TemporalI *temporalseq_as_temporali(TemporalSeq *seq);
-extern TemporalI *temporals_as_temporali(TemporalS *ts);
+extern TemporalI *temporalinst_to_temporali(TemporalInst *inst);
+extern TemporalI *temporalseq_to_temporali(TemporalSeq *seq);
+extern TemporalI *temporals_to_temporali(TemporalS *ts);
 
 /* Accessor functions */
 
@@ -70,7 +70,7 @@ extern void temporali_bbox(void *box, TemporalI *ti);
 extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
-extern void temporali_timespan(Period *p, TemporalI *ti);
+extern void temporali_period(Period *p, TemporalI *ti);
 extern TemporalInst **temporali_instants(TemporalI *ti);
 extern ArrayType *temporali_instants_array(TemporalI *ti);
 extern TimestampTz temporali_start_timestamp(TemporalI *ti);

@@ -10,25 +10,23 @@
  *
  *****************************************************************************/
 
- /*****************************************************************************
- * Casting for period
- *****************************************************************************/
-
-CREATE FUNCTION period(tbool)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(ttext)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tbool AS period) WITH FUNCTION period(tbool);
-CREATE CAST (ttext AS period) WITH FUNCTION period(ttext);
-
 /*****************************************************************************
  * Casting for tbox
  *****************************************************************************/
+
+CREATE FUNCTION floatrange(tbox)
+	RETURNS floatrange
+	AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION period(tbox)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'tbox_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
+CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
+
+/*****************************************************************************/
 
 CREATE FUNCTION tbox(integer)
 	RETURNS tbox

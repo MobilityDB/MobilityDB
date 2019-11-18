@@ -52,10 +52,10 @@ extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
-extern TemporalInst *tgeogpointinst_as_tgeompointinst(TemporalInst *inst);
-extern TemporalI *tgeogpointi_as_tgeompointi(TemporalI *ti);
-extern TemporalSeq *tgeogpointseq_as_tgeompointseq(TemporalSeq *seq);
-extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
+extern TemporalInst *tgeogpointinst_to_tgeompointinst(TemporalInst *inst);
+extern TemporalI *tgeogpointi_to_tgeompointi(TemporalI *ti);
+extern TemporalSeq *tgeogpointseq_to_tgeompointseq(TemporalSeq *seq);
+extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
 
 /* Trajectory functions */
 

@@ -49,14 +49,14 @@
 
 /* Structure for the type array */
 
-struct temporaltype_struct
+struct temporal_duration_struct
 {
 	char *typename;
 	int type;
 };
 
-#define TEMPORALTYPE_STRUCT_ARRAY_LEN \
-	(sizeof temporaltype_struct_array/sizeof(struct temporaltype_struct))
+#define temporal_duration_struct_ARRAY_LEN \
+	(sizeof temporal_duration_struct_array/sizeof(struct temporal_duration_struct))
 
 /*****************************************************************************
  * Additional operator strategy numbers used in the GiST and SP-GiST temporal
@@ -292,8 +292,8 @@ extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool type_is_continuous(Oid type);
 
-extern const char *temporal_type_name(uint8_t type);
-extern bool temporal_type_from_string(const char *str, uint8_t *type);
+extern const char *temporal_duration_name(uint8_t type);
+extern bool temporal_duration_from_string(const char *str, uint8_t *type);
 
 /* Catalog functions */
 
@@ -341,12 +341,13 @@ extern Datum temporal_make_temporals(PG_FUNCTION_ARGS);
 /* Cast functions */
 
 extern Datum tint_to_tfloat(PG_FUNCTION_ARGS);
+extern Datum temporal_to_period(PG_FUNCTION_ARGS);
 
-extern Temporal *tint_as_tfloat_internal(Temporal *temp);
+extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 
 /* Accessor functions */
 
-extern Datum temporal_type(PG_FUNCTION_ARGS);
+extern Datum temporal_duration(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
 extern Datum tempdisc_get_values(PG_FUNCTION_ARGS);
 extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
@@ -359,7 +360,6 @@ extern Datum temporal_end_value(PG_FUNCTION_ARGS);
 extern Datum temporal_min_value(PG_FUNCTION_ARGS);
 extern Datum temporal_max_value(PG_FUNCTION_ARGS);
 extern Datum temporal_time(PG_FUNCTION_ARGS);
-extern Datum temporal_timespan(PG_FUNCTION_ARGS);
 extern Datum temporal_num_instants(PG_FUNCTION_ARGS);
 extern Datum temporal_start_instant(PG_FUNCTION_ARGS);
 extern Datum temporal_end_instant(PG_FUNCTION_ARGS);
@@ -408,7 +408,7 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
  
 extern Temporal *temporal_at_min_internal(Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
-extern void temporal_timespan_internal(Period *p, Temporal *temp);
+extern void temporal_period(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void temporal_bbox(void *box, const Temporal *temp);
 

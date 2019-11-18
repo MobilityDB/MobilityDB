@@ -232,11 +232,11 @@ set seq = (select ~ seq from tbl_tboolseq_big t2 where t2.k = t1.k+perc)
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tboolseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tboolseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tboolseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tboolseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tboolseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -257,11 +257,11 @@ set seq = (select seq + random_int(1, 2) from tbl_tintseq_big t2 where t2.k = t1
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tintseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tintseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tintseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tintseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tintseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -282,11 +282,11 @@ set seq = (select seq + random_int(1, 2) from tbl_tfloatseq_big t2 where t2.k = 
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tfloatseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tfloatseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tfloatseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tfloatseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tfloatseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -307,11 +307,11 @@ set seq = (select seq || text 'A' from tbl_ttextseq_big t2 where t2.k = t1.k+per
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_ttextseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_ttextseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_ttextseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_ttextseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_ttextseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -334,11 +334,11 @@ set ts = (select ~ ts from tbl_tbools_big t2 where t2.k = t1.k+perc)
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tbools_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tbools_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tbools_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tbools_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tbools_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -359,11 +359,11 @@ set ts = (select ts + random_int(1, 2) from tbl_tints_big t2 where t2.k = t1.k+p
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tints_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tints_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tints_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -384,11 +384,11 @@ set ts = (select ts + random_int(1, 2) from tbl_tfloats_big t2 where t2.k = t1.k
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_tfloats_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tfloats_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tfloats_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tfloats_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tfloats_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 
@@ -409,11 +409,11 @@ set ts = (select ts || text 'A' from tbl_ttexts_big t2 where t2.k = t1.k+perc)
 where k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that meet */
 update tbl_ttexts_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_ttexts_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_ttexts_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 /* Add perc tuples that overlap */
 update tbl_ttexts_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_ttexts_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 8*perc, 9*perc) i);
 

@@ -309,6 +309,26 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Bounding period on which the temporal value is defined */
+
+void
+timestampset_to_period_internal(Period *p, TimestampSet *ts)
+{
+	TimestampTz start = timestampset_time_n(ts, 0);
+	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+	period_set(p, start, end, true, true);
+}
+
+PG_FUNCTION_INFO_V1(timestampset_to_period);
+
+PGDLLEXPORT Datum
+timestampset_to_period(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	Period *result = timestampset_bbox(ts);
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Accessor functions 
  *****************************************************************************/
@@ -322,28 +342,6 @@ timestampset_mem_size(PG_FUNCTION_ARGS)
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
 	PG_FREE_IF_COPY(ts, 0);
 	PG_RETURN_DATUM(result);
-}
-
-/* Bounding period on which the temporal value is defined */
-
-void
-timestampset_timespan_internal(Period *p, TimestampSet *ts)
-{
-	TimestampTz start = timestampset_time_n(ts, 0);
-	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-	period_set(p, start, end, true, true);
-}
-
-PG_FUNCTION_INFO_V1(timestampset_timespan);
-
-PGDLLEXPORT Datum
-timestampset_timespan(PG_FUNCTION_ARGS)
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Period *result = (Period *)palloc(sizeof(Period));
-	timestampset_timespan_internal(result, ts);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_POINTER(result);
 }
 
 /* Number of timestamps */

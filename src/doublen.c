@@ -89,7 +89,7 @@ double2 *
 double2_construct(double a, double b)
 {
 	double2 *result;
-	result = (double2 *)palloc(sizeof(double2));
+	result = (double2 *) palloc(sizeof(double2));
 	result->a = a;
 	result->b = b;
 	return result;

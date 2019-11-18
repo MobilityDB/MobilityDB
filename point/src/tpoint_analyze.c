@@ -950,9 +950,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* How many bytes does this sample use? */
 		total_width += VARSIZE(temp);
 
-		/* Get trajectory and timespan from temporal point */
+		/* Get trajectory and period from temporal point */
 		traj = (GSERIALIZED *) DatumGetPointer(tpoint_values_internal(temp));
-		temporal_timespan_internal(&period, temp);
+		temporal_period(&period, temp);
 
 		/* Remember time bounds and length for further usage in histograms */
 		period_deserialize(&period, &period_lower, &period_upper);

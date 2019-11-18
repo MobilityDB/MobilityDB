@@ -722,7 +722,7 @@ gist_timestampset_compress(PG_FUNCTION_ARGS)
 		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
 		TimestampSet *ts = DatumGetTimestampSet(entry->key);
 		Period *period = palloc(sizeof(Period));
-		timestampset_timespan_internal(period, ts);
+		timestampset_to_period_internal(period, ts);
 		gistentryinit(*retval, PointerGetDatum(period),
 			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
@@ -769,7 +769,7 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
 		PeriodSet *ps = DatumGetPeriodSet(entry->key);
 		Period *period = palloc(sizeof(Period));
-		periodset_timespan_internal(period, ps);
+		periodset_to_period_internal(period, ps);
 		gistentryinit(*retval, PointerGetDatum(period),
 			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
