@@ -4,25 +4,25 @@
 
 <!ENTITY geography_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/world.pdf'/></imageobject>
-	<imageobject><imagedata fileref='images/world.svg'/></imageobject>
-	<imageobject><imagedata fileref='images/world.png'/></imageobject>
+	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.png' width='16pt' /></imageobject>
  </inlinemediaobject>
 ">
 
 <!ENTITY Z_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.pdf'/></imageobject>
-	<imageobject><imagedata fileref='images/cube.svg'/></imageobject>
-	<imageobject><imagedata fileref='images/cube.png'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
  </inlinemediaobject>
 ">
 
 <!ENTITY python_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/python.pdf'/></imageobject>
-	<imageobject><imagedata fileref='images/python.svg'/></imageobject>
-	<imageobject><imagedata fileref='images/python.png'/></imageobject>
+	<imageobject><imagedata fileref='images/python.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.png' width='16pt' /></imageobject>
  </inlinemediaobject>
 ">
 
