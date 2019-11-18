@@ -33,26 +33,35 @@
 
 		<author>
 			<firstname>Esteban</firstname>
-
 			<surname>Zim&aacute;nyi</surname>
-
 			<affiliation>
 				<orgname>Universit&eacute; libre de Bruxelles, Belgium</orgname>
 			</affiliation>
 		</author>
 
-		<pubdate>01.09.2019</pubdate>
+		<pubdate>18.11.2019</pubdate>
 		<abstract>
 			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>.</para>
 
-			<para><inlinemediaobject><imageobject><imagedata fileref='images/mobilitydb-logo.png' width='200pt' /></imageobject></inlinemediaobject></para>
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata fileref='images/mobilitydb-logo.png' width='200pt' />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
 
 			<para>
 			MobilityDB is developed by the Computer &amp; Decision Engineering Department of the Universit&eacute; Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zim&aacute;nyi. ULB is an OGC Associate Member.
 			</para>
 
-			<para><inlinemediaobject><imageobject><imagedata fileref='images/OGC_Associate_Member_3DR.png' width='100pt' /></imageobject></inlinemediaobject></para>
-
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata fileref='images/OGC_Associate_Member_3DR.png' width='100pt' />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
 		</abstract>
 	</bookinfo>
 
