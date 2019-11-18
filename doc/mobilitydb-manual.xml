@@ -83,15 +83,6 @@ SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)'; -- empty period
 			</programlisting>
 		</para>
 
-		<para>The <varname>period</varname> type has a constructor function that accepts two or four arguments. The two-argument form constructs a period in <emphasis role="strong">normal</emphasis> form, that is, with inclusive lower bound and exclusive upper bound. The four-argument form constructs a period with bounds specified by the third and fourth arguments, which are Boolean values stating, respectively, whether the left and right bounds are inclusive or not. Examples of periods defined with the constructor functions are as follows:
-			<programlisting>
--- It is assumed that the lower bound is inclusive and the upper bound is exclusive.
-SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
--- Period defined with four arguments
-SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);
-			</programlisting>
-		</para>
-
 		<para>The <varname>timestampset</varname> type represents a set of distinct <varname>timestamptz</varname> values. A <varname>timestampset</varname> value must contain at least one element, in which case it corresponds to a <varname>timestamptz</varname> value. The elements composing a <varname>timestampset</varname> value must be ordered. Examples of <varname>timestampset</varname> values are as follows:
 			<programlisting>
 SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';
@@ -100,12 +91,6 @@ SELECT timestampset '{2012-01-01 08:00:00}';
 -- Erroneous timestampset values
 SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}'; -- unordered elements
 SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}'; -- duplicate elements
-			</programlisting>
-		</para>
-
-		<para>The <varname>timestampset</varname> type has a constructor function that accepts a single argument which is an array of <varname>timestamptz</varname> values. An example of <varname>timestampset</varname> value defined with the constructor function is as follows:
-			<programlisting>
-SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:00']);
 			</programlisting>
 		</para>
 
@@ -122,13 +107,6 @@ SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
 	[2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
 -- overlapping elements
-			</programlisting>
-		</para>
-
-		<para>The <varname>periodset</varname> type has a constructor function that accepts a single argument which is an array of <varname>period</varname> values. An example of <varname>periodset</varname> value defined with the constructor function is as follows:
-			<programlisting>
-SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
-'[2012-01-01 08:20:00, 2012-01-01 08:40:00]']);
 			</programlisting>
 		</para>
 
@@ -185,11 +163,56 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 				<programlisting>
 {timestampset, period, periodset} @&gt; time
 				</programlisting>
-			Furthermore, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.</para>
+			Furthermore, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
+			</para>
+
+			<sect2>
+				<title>Constructor Functions</title>
+
+				<para>The <varname>period</varname> type has a constructor function that accepts two or four arguments. The two-argument form constructs a period in <emphasis role="strong">normal</emphasis> form, that is, with inclusive lower bound and exclusive upper bound. The four-argument form constructs a period with bounds specified by the third and fourth arguments, which are Boolean values stating, respectively, whether the left and right bounds are inclusive or not.
+				</para>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for periods</para>
+						<para><varname>period(timestamptz, timestamptz, boolean = true, boolean = false): period</varname></para>
+						<programlisting>
+-- It is assumed that the lower bound is inclusive and the upper bound is exclusive.
+SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
+-- Period defined with four arguments
+SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);
+						</programlisting>
+					</listitem>
+				</itemizedlist>
+
+				<para>The <varname>timestampset</varname> type has a constructor function that accepts a single argument which is an array of <varname>timestamptz</varname> values.
+				</para>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for timestampsets</para>
+						<para><varname>timestampset(timestamptz[]): timestampset</varname></para>
+						<programlisting>
+SELECT timestampset(ARRAY[timestamptz '2012-01-01 08:00:00', '2012-01-03 09:30:00']);
+-- "{2012-01-01 08:00:00+00, 2012-01-03 09:30:00+00}"
+						</programlisting>
+					</listitem>
+				</itemizedlist>
+
+				<para>The <varname>periodset</varname> type has a constructor function that accepts a single argument which is an array of <varname>period</varname> values.
+				</para>
+				<itemizedlist>
+					<listitem>
+						<para>Constructor for periodsets</para>
+						<para><varname>periodset(period[]): periodset</varname></para>
+						<programlisting>
+SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
+-- '[2012-01-01 08:20:00, 2012-01-01 08:40:00]']);
+						</programlisting>
+					</listitem>
+				</itemizedlist>
+			</sect2>
 
 			<sect2>
 				<title>Accessor Functions</title>
-				<para>The functions available for use with the time types are given next.</para>
 
 				<itemizedlist>
 					<listitem>
@@ -792,61 +815,6 @@ SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
 				</programlisting>
 			The temporal extent of a temporal instant set value is a set of instants while the temporal extent of temporal sequence set value is a set of periods.</para>
 
-			<para>Each temporal type has a constructor function with the same name as the type and with a suffix for the duration, where &ldquo;inst&rdquo;, &ldquo;i&rdquo;, &ldquo;seq&rdquo;, and &ldquo;s&rdquo; correspond, respectively, to the durations instant, instant set, sequence, and sequence set. Using the constructor function is frequently more convenient than writing a literal constant. The constructor functions for temporal instant values have one argument for the base type value and one argument for the <varname>timestamptz</varname> value. Examples temporal instant values defined with the constructor functions are as follows:
-				<programlisting>
-SELECT tboolinst(true, '2001-01-01 08:00:00');
-SELECT tintinst(2, '2001-01-01 08:00:00');
-SELECT tfloatinst(2.0, '2001-01-01 08:00:00');
-SELECT ttextinst('AAA', '2001-01-01 08:00:00');
-SELECT tgeompointinst('Point(0 0)', '2001-01-01 08:00:00');
-SELECT tgeogpointinst('Point(1 1)', '2001-01-01 08:05:00');
-				</programlisting>
-			</para>
-
-			<para>The constructor functions of temporal sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the last two arguments are not specified they are assumed to be true by default. Examples of temporal sequence values defined with the constructor functions are as follows:
-				<programlisting>
-SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'], 
-	true, true);
-SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'), tintinst(2,'2001-01-01 08:10:00')],
-	true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
-	'1@2001-01-03 08:10:00'], true, false);
-SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
-	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
-SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
-SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 0)@2001-01-03 08:05:00']);
-				</programlisting>
-			As can be seen above, the values in the array can be specified using either a literal constant or the constructor function.</para>
-
-			<para>The constructor functions of the temporal set values have a single argument, which is an array of values of the corresponding unit values. Examples of temporal set values defined with the constructor functions are as follows:
-				<programlisting>
-SELECT tbooli(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
-SELECT tinti(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
-SELECT tfloati(ARRAY[tfloat '1.0@2001-01-01 08:00:00)', '2.0@2001-01-01 08:05:00']);
-SELECT ttexti(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
-SELECT tgeompointi(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00']);
-SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
-	'Point(2 2)@2001-01-01 08:05:00']);
-SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
-	'[true@2001-01-01 08:05:00]', '(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
-SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
-	2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
-SELECT tfloats(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
-	2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT ttexts(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
-	'[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
-SELECT tgeompoints(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
-	Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
-	'[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
-SELECT tgeogpoints(ARRAY[tgeogpointseq
-	'[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-01 08:05:00)',
-	'[Point(0 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-				</programlisting>
-			</para>
-
 			<para>Temporal sequence values are converted into a <emphasis role="strong">normal</emphasis> form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For discrete types, three consecutive instant values can be merged into two if they have the same value. For continuous types, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.
 				<programlisting>
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
@@ -969,91 +937,6 @@ SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00)',
 				</programlisting>
 			</para>
 		</sect1>
-
-		<sect1 id="casting_temporal_types">
-			<title>Casting for Temporal Types</title>
-
-			<para>A temporal value can be converted into a temporal value of a compatible type. This can be done using the notation <varname>CAST(ttype1 AS ttype2)</varname> or <varname>ttype1::ttype2</varname>.</para>
-			<itemizedlist>
-				<listitem>
-					<para>Temporal integer to temporal float</para>
-					<para><varname>tint::tfloat</varname></para>
-					<programlisting>
-SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
--- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Temporal float to temporal integer</para>
-					<para><varname>tfloat::tint</varname></para>
-					<programlisting>
-SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
--- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Temporal geography point to temporal geometry point</para>
-					<para><varname>tgeogpoint::tgeompoint</varname></para>
-					<programlisting>
-SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
--- "{[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Temporal geometry point to temporal geography point</para>
-					<para><varname>tgeompoint::tgeogpoint</varname></para>
-					<programlisting>
-SELECT astext((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
--- "{POINT(0 0)@2001-01-01}"
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-
-			<para>A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and abuse the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called trajectories, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.</para>
-
-			<itemizedlist>
-				<listitem>
-				<para>Temporal point to trajectory</para>
-				<para><varname>tgeompoint::geometry</varname>, <varname>tgeogpoint::geography</varname></para>
-				<programlisting>
-SELECT ST_astext((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
--- "POINT M (0 0 978307200)"
-SELECT ST_astext((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
-	Point(1 1)@2001-01-03}')::geometry);
--- "MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)"
-SELECT ST_astext((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
--- "LINESTRING M (0 0 978307200,1 1 978393600)"
-SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-	[Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
-	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
--- "MULTILINESTRING M ((0 0 978307200,1 1 978393600),(1 1 978480000,1 1 978566400),
-(1 1 978652800,0 0 978739200))"
-SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
-	[Point(1 1)@2001-01-03],
-	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
--- "GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Trajectory to temporal point</para>
-					<para><varname>geometry::tgeompoint</varname>, <varname>geography::tgeogpoint</varname></para>
-					<programlisting>
-SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
-	1 1 978480000)'::tgeompoint);
--- "[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]";
-SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoints);
--- "{[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
-	[POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]}"
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect1>
 	</chapter>
 
 	<chapter id="manipulating_box_types">
@@ -1082,12 +965,14 @@ SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
 -- Both coordinate (X, Y, and Z) and time dimensions
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
+-- Only time dimension
+SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 -- Only geodetic coordinate (X, Y and Z) dimension
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 --  Both geodetic coordinate (X, Y, and Z) and time dimensions
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
 -- Only time dimension
-SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 				</programlisting>
 			</para>
 		</sect1>
@@ -1199,55 +1084,85 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 			<itemizedlist>
 				<listitem>
 					<para>Minimum X value</para>
-					<para><varname>Xmin(tbox): float</varname></para>
-					<para><varname>Xmin(stbox): float</varname></para>
+					<para><varname>Xmin(tbox): float</varname>, <varname>Xmin(stbox): float</varname></para>
+					<programlisting>
+SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
+-- 1
+SELECT Xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- 1
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Maximum X value</para>
-					<para><varname>Xmax(tbox): float</varname></para>
-					<para><varname>Xmax(stbox): float</varname></para>
+					<para><varname>Xmax(tbox): float</varname>, <varname>Xmax(stbox): float</varname></para>
+					<programlisting>
+SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
+-- 3
+SELECT Xmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- 3
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Minimum Y value</para>
 					<para><varname>Ymin(stbox): float</varname></para>
+					<programlisting>
+SELECT Ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- 2
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Maximum Y value</para>
-
 					<para><varname>Ymax(stbox): float</varname></para>
+					<programlisting>
+SELECT Ymax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
+-- 4
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Minimum Z value</para>
 					<para><varname>Zmin(stbox): float</varname></para>
+					<programlisting>
+SELECT Zmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+-- 3
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Maximum Z value</para>
-
 					<para><varname>Zmax(stbox): float</varname></para>
+					<programlisting>
+SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
+-- 6
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Minimum timestamp</para>
-					<para><varname>Tmin(tbox): timestamptz</varname></para>
-					<para><varname>Tmin(stbox): timestamptz</varname></para>
+					<para><varname>Tmin(tbox): timestamptz</varname>, <varname>Tmin(stbox): timestamptz</varname></para>
+					<programlisting>
+SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
+-- "2001-01-01"
+					</programlisting>
 				</listitem>
 
 				<listitem>
 					<para>Maximum timestamp</para>
-					<para><varname>Tmax(tbox): timestamptz</varname></para>
-					<para><varname>Tmax(stbox): timestamptz</varname></para>
+					<para><varname>Tmax(tbox): timestamptz</varname>, <varname>Tmax(stbox): timestamptz</varname></para>
+					<programlisting>
+SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
+-- "2001-01-03"
+					</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect1>
 	</chapter>
 
 	<chapter id="manipulating_temporal_types">
-		<title>Functions and Operators for Temporal Types</title>
+		<title>Manipulating Temporal Types</title>
 		<para>We present next the functions and operators for the temporal types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this, we use the following notation for all temporal types, whether alphanumeric or spatial:</para>
 
 			<itemizedlist>
@@ -1384,6 +1299,91 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 
 			<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
 
+		<sect1 id="casting_temporal_types">
+			<title>Casting</title>
+
+			<para>A temporal value can be converted into a temporal value of a compatible type. This can be done using the notation <varname>CAST(ttype1 AS ttype2)</varname> or <varname>ttype1::ttype2</varname>.</para>
+			<itemizedlist>
+				<listitem>
+					<para>Temporal integer to temporal float</para>
+					<para><varname>tint::tfloat</varname></para>
+					<programlisting>
+SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
+-- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Temporal float to temporal integer</para>
+					<para><varname>tfloat::tint</varname></para>
+					<programlisting>
+SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+-- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Temporal geography point to temporal geometry point</para>
+					<para><varname>tgeogpoint::tgeompoint</varname></para>
+					<programlisting>
+SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
+-- "{[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Temporal geometry point to temporal geography point</para>
+					<para><varname>tgeompoint::tgeogpoint</varname></para>
+					<programlisting>
+SELECT astext((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
+-- "{POINT(0 0)@2001-01-01}"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>A common way to store temporal points in PostGIS is to represent them as geometries of type <varname>LINESTRING M</varname> and abuse the M dimension to encode timestamps as seconds since 1970-01-01 00:00:00. These time-enhanced geometries, called trajectories, can be validated with the function <varname>ST_IsValidTrajectory</varname> to verify that the M value is growing from each vertex to the next. Trajectories can be manipulated with the functions <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname>, and <varname>ST_CPAWithin</varname>. Temporal point values can be converted to/from PostGIS trajectories.</para>
+
+			<itemizedlist>
+				<listitem>
+				<para>Temporal point to trajectory</para>
+				<para><varname>tgeompoint::geometry</varname>, <varname>tgeogpoint::geography</varname></para>
+				<programlisting>
+SELECT ST_astext((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
+-- "POINT M (0 0 978307200)"
+SELECT ST_astext((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+	Point(1 1)@2001-01-03}')::geometry);
+-- "MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)"
+SELECT ST_astext((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
+-- "LINESTRING M (0 0 978307200,1 1 978393600)"
+SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
+	[Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
+	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
+-- "MULTILINESTRING M ((0 0 978307200,1 1 978393600),(1 1 978480000,1 1 978566400),
+(1 1 978652800,0 0 978739200))"
+SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
+	[Point(1 1)@2001-01-03],
+	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
+-- "GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
+POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Trajectory to temporal point</para>
+					<para><varname>geometry::tgeompoint</varname>, <varname>geography::tgeogpoint</varname></para>
+					<programlisting>
+SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
+	1 1 978480000)'::tgeompoint);
+-- "[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]";
+SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
+	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoints);
+-- "{[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
+	[POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]}"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
 		<sect1 id="transformation_functions">
 			<title>Transformation Functions</title>
 			<para>A temporal value can be transformed to another duration. An error is raised if the durations are incompatible.</para>
@@ -1424,6 +1424,99 @@ SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 				</programlisting>
 				</listitem>
 
+			</itemizedlist>
+		</sect1>
+
+		<sect1>
+			<title>Constructor Functions</title>
+
+			<para>Each temporal type has a constructor function with the same name as the type and with a suffix for the duration, where the suffix &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, and &lsquo;<varname>s</varname>&rsquo; correspond, respectively, to the durations instant, instant set, sequence, and sequence set. Using the constructor function is frequently more convenient than writing a literal constant. 
+			</para>
+
+			<para>
+			The constructor functions for temporal instant values have one argument for the base type value and one argument for the <varname>timestamptz</varname> value.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of instant duration</para>
+					<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
+					<programlisting>
+SELECT tboolinst(true, '2001-01-01 08:00:00');
+SELECT tintinst(2, '2001-01-01 08:00:00');
+SELECT tfloatinst(2.0, '2001-01-01 08:00:00');
+SELECT ttextinst('AAA', '2001-01-01 08:00:00');
+SELECT tgeompointinst('Point(0 0)', '2001-01-01 08:00:00');
+SELECT tgeogpointinst('Point(1 1)', '2001-01-01 08:05:00');
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The constructor functions for temporal instant set values have a single argument, which is an array of values of the corresponding instant values.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of instant set duration</para>
+					<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
+					<programlisting>
+SELECT tbooli(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
+SELECT tinti(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
+SELECT tfloati(ARRAY[tfloat '1.0@2001-01-01 08:00:00)', '2.0@2001-01-01 08:05:00']);
+SELECT ttexti(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
+SELECT tgeompointi(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00']);
+SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
+	'Point(2 2)@2001-01-01 08:05:00']);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The constructor functions of temporal sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the last two arguments are not specified they are assumed to be true by default.
+			As can be seen below, the values in the array can be specified using either a literal constant or the constructor function.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of sequence duration</para>
+					<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
+					<programlisting>
+SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
+	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
+SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
+	2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
+SELECT tfloats(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
+	2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+SELECT ttexts(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
+	'[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
+SELECT tgeompoints(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
+	Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
+	'[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
+SELECT tgeogpoints(ARRAY[tgeogpointseq
+	'[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-01 08:05:00)',
+	'[Point(0 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of sequence set duration</para>
+					<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
+					<programlisting>
+SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'], 
+	true, true);
+SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'), 
+	tintinst(2,'2001-01-01 08:10:00')], true, false);
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+	'1@2001-01-03 08:10:00'], true, false);
+SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
+	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
+SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
+SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 0)@2001-01-03 08:05:00']);
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect1>
 
@@ -1673,7 +1766,7 @@ SELECT timestamps(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-0
 
 				<listitem>
 					<para>Number of sequences</para>
-					<para><varname>numSequences(ttypes): int</varname></para>
+					<para><varname>numSequences({ttypeseq,ttypes}): int</varname></para>
 					<programlisting>
 SELECT numSequences(tfloat '{[1@2012-01-01, 2@2012-01-03), 
 	[3@2012-01-03, 5@2012-01-05)}');
@@ -1683,7 +1776,7 @@ SELECT numSequences(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 				<listitem>
 					<para>Start sequence</para>
-					<para><varname>startSequence(ttypes): ttypeseq</varname></para>
+					<para><varname>startSequence({ttypeseq,ttypes}): ttypeseq</varname></para>
 					<programlisting>
 SELECT startSequence(tfloat '{[1@2012-01-01, 2@2012-01-03), 
 	[3@2012-01-03, 5@2012-01-05)}');
@@ -1693,7 +1786,7 @@ SELECT startSequence(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 				<listitem>
 					<para>End sequence</para>
-					<para><varname>endSequence(ttypes): ttypeseq</varname></para>
+					<para><varname>endSequence({ttypeseq,ttypes}): ttypeseq</varname></para>
 					<programlisting>
 SELECT endSequence(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- "[3@2012-01-03, 5@2012-01-05)"
@@ -1702,7 +1795,7 @@ SELECT endSequence(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-
 
 				<listitem>
 					<para>N-th sequence</para>
-					<para><varname>sequenceN(ttypes, int): ttypeseq</varname></para>
+					<para><varname>sequenceN({ttypeseq,ttypes}, int): ttypeseq</varname></para>
 					<programlisting>
 SELECT sequenceN(tfloat '{[1@2012-01-01, 2@2012-01-03), 
 	[3@2012-01-03, 5@2012-01-05)}', 2);
@@ -1712,7 +1805,7 @@ SELECT sequenceN(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 				<listitem>
 					<para>Sequences</para>
-					<para><varname>sequences(ttypes): ttypeseq[]</varname></para>
+					<para><varname>sequences({ttypeseq,ttypes}): ttypeseq[]</varname></para>
 					<programlisting>
 SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- "{"[1@2012-01-01, 2@2012-01-03)", "[3@2012-01-03, 5@2012-01-05)"}"
@@ -3937,7 +4030,8 @@ WHERE intersects(T.Trip, R.Geom);
 				<programlisting>
 docker pull codewit/mobilitydb
 docker volume create mobilitydb_data
-docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
+docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql 
+	codewit/mobilitydb
 				</programlisting>
 				In the above commands
 				<itemizedlist>
@@ -6317,14 +6411,12 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 						<para>Minimum X value</para>
-						<para><varname>Xmin(tbox): float</varname></para>
-						<para><varname>Xmin(stbox): float</varname></para>
+						<para><varname>Xmin(tbox): float</varname>, <varname>Xmin(stbox): float</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Maximum X value</para>
-						<para><varname>Xmax(tbox): float</varname></para>
-						<para><varname>Xmax(stbox): float</varname></para>
+						<para><varname>Xmax(tbox): float</varname>, <varname>Xmax(stbox): float</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6351,14 +6443,12 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Minimum timestamp</para>
-						<para><varname>Tmin(tbox): timestamptz</varname></para>
-						<para><varname>Tmin(stbox): timestamptz</varname></para>
+						<para><varname>Tmin(tbox): timestamptz</varname>, <varname>Tmin(stbox): timestamptz</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Maximum timestamp</para>
-						<para><varname>Tmax(tbox): timestamptz</varname></para>
-						<para><varname>Tmax(stbox): timestamptz</varname></para>
+						<para><varname>Tmax(tbox): timestamptz</varname>, <varname>Tmax(stbox): timestamptz</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -6531,31 +6621,13 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Constructor for temporal types of period duration</para>
+						<para>Constructor for temporal types of sequence duration</para>
 						<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Constructor for temporal types of period set duration</para>
+						<para>Constructor for temporal types of sequence set duration</para>
 						<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Constructors for <varname>tbox</varname></para>
-						<para><varname>tbox(float, float): tbox</varname></para>
-						<para><varname>tboxt(timestamptz, timestamptz): tbox</varname></para>
-						<para><varname>tbox(float, timestamptz, float, timestamptz): tbox</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Constructors for <varname>stbox</varname></para>
-						<para><varname>stbox(float, float, float, float): stbox</varname></para>
-						<para><varname>stbox(float, float, float, float, float, float): stbox</varname></para>
-						<para><varname>stboxt(float, float, timestamptz, float, float, timestamptz): stbox</varname></para>
-						<para><varname>stbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
-						<para><varname>geodstbox(float, float, float, float, float, float): stbox</varname></para>
-						<para><varname>geodstbox(float, float, float, timestamptz, float, float, float, timestamptz): stbox</varname></para>
-						<para><varname>stbox(timestamptz, timestamptz): stbox</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
