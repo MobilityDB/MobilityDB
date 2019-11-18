@@ -105,8 +105,12 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	for (int i = 1; i < count; i++)
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
+			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
@@ -175,8 +179,12 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
+			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 	bool isgeo = false, hasz;
 	int srid;
@@ -753,17 +761,16 @@ temporali_timestamps(TemporalI *ti)
 /* Is the temporal value ever equal to the value? */
 
 bool
-temporali_ever_equals(TemporalI *ti, Datum value)
+temporali_ever_eq(TemporalI *ti, Datum value)
 {
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		temporali_bbox(&box1, ti);
-		number_to_box(&box2, value, ti->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
 
@@ -779,12 +786,13 @@ temporali_ever_equals(TemporalI *ti, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporali_always_equals(TemporalI *ti, Datum value)
+temporali_always_eq(TemporalI *ti, Datum value)
 {
 	/* Bounding box test */
 	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TBOX box = {0,0,0,0,0};
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		if (ti->valuetypid == INT4OID)
 			return box.xmin == box.xmax &&

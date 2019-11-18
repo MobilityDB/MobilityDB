@@ -103,8 +103,8 @@ extern TimestampTz temporalseq_start_timestamp(TemporalSeq *seq);
 extern TimestampTz temporalseq_end_timestamp(TemporalSeq *seq);
 extern TimestampTz *temporalseq_timestamps1(TemporalSeq *seq);
 extern ArrayType *temporalseq_timestamps(TemporalSeq *seq);
-extern bool temporalseq_ever_equals(TemporalSeq *seq, Datum value);
-extern bool temporalseq_always_equals(TemporalSeq *seq, Datum value);
+extern bool temporalseq_ever_eq(TemporalSeq *seq, Datum value);
+extern bool temporalseq_always_eq(TemporalSeq *seq, Datum value);
 extern TemporalSeq *temporalseq_shift(TemporalSeq *seq, 
 	Interval *interval);
 

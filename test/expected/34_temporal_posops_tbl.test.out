@@ -1,4 +1,3 @@
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_tbool_gist_idx;
 NOTICE:  index "tbl_tbool_gist_idx" does not exist, skipping
 DROP INDEX
@@ -23,7 +22,6 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
 NOTICE:  index "tbl_ttext_spgist_idx" does not exist, skipping
 DROP INDEX
-/*****************************************************************************/
 DROP TABLE IF EXISTS test_relativeposops;
 NOTICE:  table "test_relativeposops" does not exist, skipping
 DROP TABLE
@@ -35,10 +33,6 @@ CREATE TABLE test_relativeposops(
 	gistidx bigint,
 	spgistidx bigint );
 CREATE TABLE
-/*****************************************************************************/
-
-
-
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'int', 'tint', count(*) FROM tbl_int, tbl_tint WHERE i << temp;
 INSERT 0 1
@@ -783,7 +777,6 @@ INSERT 0 1
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'ttext', 'ttext', count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #&> t2.temp;
 INSERT 0 1
-/*****************************************************************************/
 CREATE INDEX tbl_tbool_gist_idx ON tbl_tbool USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_tint_gist_idx ON tbl_tint USING GIST(temp);
@@ -792,10 +785,6 @@ CREATE INDEX tbl_tfloat_gist_idx ON tbl_tfloat USING GIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_ttext_gist_idx ON tbl_ttext USING GIST(temp);
 CREATE INDEX
-/*****************************************************************************/
-
-
-
 UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_int, tbl_tint WHERE i << temp )
 WHERE op = '<<' and leftarg = 'int' and rightarg = 'tint';
@@ -1788,7 +1777,6 @@ UPDATE test_relativeposops
 SET gistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 UPDATE 1
-/*****************************************************************************/
 DROP INDEX IF EXISTS tbl_tbool_gist_idx;
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tint_gist_idx;
@@ -1805,10 +1793,6 @@ CREATE INDEX tbl_tfloat_spgist_idx ON tbl_tfloat USING SPGIST(temp);
 CREATE INDEX
 CREATE INDEX tbl_ttext_spgist_idx ON tbl_ttext USING SPGIST(temp);
 CREATE INDEX
-/*****************************************************************************/
-
-
-
 UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_int, tbl_tint WHERE i << temp )
 WHERE op = '<<' and leftarg = 'int' and rightarg = 'tint';
@@ -2801,7 +2785,6 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 UPDATE 1
-/*****************************************************************************/
 SELECT * FROM test_relativeposops
 WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
@@ -2819,4 +2802,3 @@ DROP INDEX tbl_ttext_spgist_idx;
 DROP INDEX
 DROP TABLE test_relativeposops;
 DROP TABLE
-/*****************************************************************************/

@@ -158,14 +158,15 @@ Datum
 geog_intersects(Datum geog1, Datum geog2)
 {
 	double dist = DatumGetFloat8(call_function4(geography_distance, 
-		geog1, geog2, 0.0, false));
+		geog1, geog2, Float8GetDatum(0.0), BoolGetDatum(false)));
 	return BoolGetDatum(dist < 0.00001);
 }
 
 Datum
 geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 {
-	return call_function4(geography_dwithin, geog1, geog2, dist, true);
+	return call_function4(geography_dwithin, geog1, geog2, dist, 
+		BoolGetDatum(true));
 }
  
 /*****************************************************************************

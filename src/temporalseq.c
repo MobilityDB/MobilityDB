@@ -98,14 +98,15 @@ float_collinear(double x1, double x2, double x3,
 {
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3 = x2 + (x3 - x2) * ratio;
 	}
 	else if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1 = x1 + (x2 - x1) * ratio;
 	}
 	double d1 = x2 - x1;
@@ -120,9 +121,10 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double2 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double2_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio);
@@ -131,7 +133,7 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double2_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b = x1->b + (x2->b - x1->b) * ratio);
@@ -158,10 +160,12 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	void *tofree = NULL;
+	double ratio;
+	Datum line;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
-		Datum line = geompoint_trajectory(value2, value3);
+		ratio = duration1 / duration2;
+		line = geompoint_trajectory(value2, value3);
 		value3 = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line));
@@ -169,8 +173,8 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 	}
 	else if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
-		Datum line = geompoint_trajectory(value1, value2);
+		ratio = duration2 / duration1;
+		line = geompoint_trajectory(value1, value2);
 		value1 = call_function2(LWGEOM_line_interpolate_point, 
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line)); 
@@ -214,9 +218,10 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double3 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double3_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio,
@@ -226,7 +231,7 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double3_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b + (x2->b - x1->b) * ratio,
@@ -256,9 +261,10 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
 	double4 *x1new, *x3new;
+	double ratio;
 	if (duration1 < duration2)
 	{
-		double ratio = duration1 / duration2;
+		ratio = duration1 / duration2;
 		x3new = double4_construct(
 			x2->a + (x3->a - x2->a) * ratio,
 			x2->b + (x3->b - x2->b) * ratio,
@@ -269,7 +275,7 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 		x3new = x3;
 	if (duration1 > duration2)
 	{
-		double ratio = duration2 / duration1;
+		ratio = duration2 / duration1;
 		x1new = double4_construct(
 			x1->a + (x2->a - x1->a) * ratio,
 			x1->b + (x2->b - x1->b) * ratio,
@@ -583,8 +589,12 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	for (int i = 1; i < count; i++)
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
+			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
@@ -709,8 +719,12 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
+			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("Invalid timestamps for temporal value")));
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 	bool isgeo = false;
 	if (valuetypid == type_oid(T_GEOMETRY) ||
@@ -1744,7 +1758,7 @@ temporalseq_timestamps(TemporalSeq *seq)
  * same valuetypid.
  */
 static bool
-tempcontseq_ever_equals1(TemporalInst *inst1, TemporalInst *inst2, 
+tempcontseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2, 
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -1768,17 +1782,16 @@ tempcontseq_ever_equals1(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 bool
-temporalseq_ever_equals(TemporalSeq *seq, Datum value)
+temporalseq_ever_eq(TemporalSeq *seq, Datum value)
 {
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
 	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		temporalseq_bbox(&box1, seq);
-		number_to_box(&box2, value, seq->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporalseq_bbox(&box, seq);
+		double d = datum_double(value, seq->valuetypid);
+		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
 
@@ -1800,7 +1813,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (tempcontseq_ever_equals1(inst1, inst2, lower_inc, upper_inc, value))
+		if (tempcontseq_ever_eq1(inst1, inst2, lower_inc, upper_inc, value))
 			return true;
 		inst1 = inst2;
 		lower_inc = true;
@@ -1811,7 +1824,7 @@ temporalseq_ever_equals(TemporalSeq *seq, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporalseq_always_equals(TemporalSeq *seq, Datum value)
+temporalseq_always_eq(TemporalSeq *seq, Datum value)
 {
 	/* Bounding box test */
 	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)

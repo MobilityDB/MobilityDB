@@ -134,11 +134,11 @@ DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
 DROP TABLE IF EXISTS tbl_period_test;
 CREATE TABLE tbl_period_test AS
 SELECT period '[2000-01-01,2000-01-02]';
-VACUUM ANALYZE tbl_period_test;
+ANALYZE tbl_period_test;
 DELETE FROM tbl_period_test;
 INSERT INTO tbl_period_test
 SELECT NULL::period UNION SELECT NULL::period;
-VACUUM ANALYZE tbl_period_test;
+ANALYZE tbl_period_test;
 DROP TABLE tbl_period_test;
 
 -------------------------------------------------------------------------------

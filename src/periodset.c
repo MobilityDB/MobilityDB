@@ -417,11 +417,13 @@ periodset_duration(PG_FUNCTION_ARGS)
 {
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	Period *p = periodset_per_n(ps, 0);
-	Datum result = call_function2(timestamp_mi, p->upper, p->lower);
+	Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p->upper), 
+		TimestampTzGetDatum(p->lower));
 	for (int i = 1; i < ps->count; i++)
 	{
 		p = periodset_per_n(ps, i);
-		Datum interval1 = call_function2(timestamp_mi, p->upper, p->lower);
+		Datum interval1 = call_function2(timestamp_mi, 
+			TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
 		Datum interval2 = call_function2(interval_pl, result, interval1);
 		pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
 		result = interval2;

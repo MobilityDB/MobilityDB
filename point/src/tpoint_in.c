@@ -14,7 +14,6 @@
 
 #include <float.h>
 #include <json-c/json.h>
-#include <json-c/json_object_private.h>
 
 #include "temporaltypes.h"
 #include "oidcache.h"

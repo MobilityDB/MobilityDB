@@ -1,6 +1,7 @@
+/* Errors */
 SELECT periodset '2000-01-01, 2000-01-02';
 ERROR:  Could not parse period set
-LINE 1: SELECT periodset '2000-01-01, 2000-01-02';
+LINE 2: SELECT periodset '2000-01-01, 2000-01-02';
                          ^
 SELECT periodset '{[2000-01-01, 2000-01-02]';
 ERROR:  Could not parse period set
@@ -12,6 +13,7 @@ SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-02]', '[2000-01-03,2000-01-
  {[2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00], [2000-01-03 00:00:00+00, 2000-01-04 00:00:00+00]}
 (1 row)
 
+/* Errors */
 SELECT periodset(ARRAY [period '[2000-01-01, 2000-01-03]', '[2000-01-02,2000-01-04]']);
 ERROR:  Invalid value for period set
 SELECT periodset('{}'::period[]);

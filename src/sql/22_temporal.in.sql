@@ -20,6 +20,18 @@ SELECT register_temporal('tint', 'int4') ;
 SELECT register_temporal('tfloat', 'float8') ;
 SELECT register_temporal('ttext', 'text') ;
 
+/*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+CREATE FUNCTION mobdb_lib_version() RETURNS text
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION mobdb_full_version() RETURNS text
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE;
+
 /******************************************************************************
  * Input/Output
  ******************************************************************************/
@@ -858,79 +870,79 @@ CREATE FUNCTION timestamps(ttext)
 	AS 'MODULE_PATHNAME', 'temporal_timestamps'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION ever_equals(tbool, boolean)
+CREATE FUNCTION ever_eq(tbool, boolean)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_equals'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_equals(tint, integer)
+CREATE FUNCTION ever_eq(tint, integer)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_equals'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_equals(tfloat, float)
+CREATE FUNCTION ever_eq(tfloat, float)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_equals'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_equals(ttext, text)
+CREATE FUNCTION ever_eq(ttext, text)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_equals'
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &= (
 	LEFTARG = tbool, RIGHTARG = boolean,
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &= (
 	LEFTARG = tint, RIGHTARG = integer,
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &= (
 	LEFTARG = tfloat, RIGHTARG = float,
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR &= (
 	LEFTARG = ttext, RIGHTARG = text,
-	PROCEDURE = ever_equals,
+	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
-CREATE FUNCTION always_equals(tbool, boolean)
+CREATE FUNCTION always_eq(tbool, boolean)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_equals'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_equals(tint, integer)
+CREATE FUNCTION always_eq(tint, integer)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_equals'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_equals(tfloat, float)
+CREATE FUNCTION always_eq(tfloat, float)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_equals'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_equals(ttext, text)
+CREATE FUNCTION always_eq(ttext, text)
 	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_equals'
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @= (
 	LEFTARG = tbool, RIGHTARG = boolean,
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR @= (
 	LEFTARG = tint, RIGHTARG = integer,
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR @= (
 	LEFTARG = tfloat, RIGHTARG = float,
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR @= (
 	LEFTARG = ttext, RIGHTARG = text,
-	PROCEDURE = always_equals,
+	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 

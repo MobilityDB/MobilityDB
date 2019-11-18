@@ -556,14 +556,14 @@ DROP TABLE
 CREATE TABLE tbl_period_test AS
 SELECT period '[2000-01-01,2000-01-02]';
 SELECT 1
-VACUUM ANALYZE tbl_period_test;
-VACUUM
+ANALYZE tbl_period_test;
+ANALYZE
 DELETE FROM tbl_period_test;
 DELETE 1
 INSERT INTO tbl_period_test
 SELECT NULL::period UNION SELECT NULL::period;
 INSERT 0 1
-VACUUM ANALYZE tbl_period_test;
-VACUUM
+ANALYZE tbl_period_test;
+ANALYZE
 DROP TABLE tbl_period_test;
 DROP TABLE

@@ -110,8 +110,12 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 		if (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) > 0 ||
 		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
 		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-				errmsg("Invalid sequence for temporal sequence set")));
+		{
+			char *t1 = call_output(TIMESTAMPTZOID, sequences[i - 1]->period.upper);
+			char *t2 = call_output(TIMESTAMPTZOID, sequences[i]->period.lower);
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
+				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+		}
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
@@ -923,12 +927,12 @@ temporals_duration(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	Datum result = call_function2(timestamp_mi, 
-		seq->period.upper, seq->period.lower);
+		TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
 	for (int i = 1; i < ts->count; i++)
 	{
 		seq = temporals_seq_n(ts, i);
 		Datum interval1 = call_function2(timestamp_mi, 
-			seq->period.upper, seq->period.lower);
+			TimestampTzGetDatum(seq->period.upper), TimestampTzGetDatum(seq->period.lower));
 		Datum interval2 = call_function2(interval_pl, result, interval1);
 		pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
 		result = interval2;
@@ -1208,22 +1212,21 @@ temporals_timestamps(TemporalS *ts)
 /* Is the temporal value ever equal to the value? */
 
 bool
-temporals_ever_equals(TemporalS *ts, Datum value)
+temporals_ever_eq(TemporalS *ts, Datum value)
 {
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
 	{
-		TBOX box1, box2;
-		memset(&box1, 0, sizeof(TBOX));
-		memset(&box2, 0, sizeof(TBOX));
-		temporals_bbox(&box1, ts);
-		number_to_box(&box2, value, ts->valuetypid);
-		if (!contains_tbox_tbox_internal(&box1, &box2))
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporals_bbox(&box, ts);
+		double d = datum_double(value, ts->valuetypid);
+		if (d < box.xmin || box.xmax < d)
 			return false;
 	}
 
 	for (int i = 0; i < ts->count; i++) 
-		if (temporalseq_ever_equals(temporals_seq_n(ts, i), value))
+		if (temporalseq_ever_eq(temporals_seq_n(ts, i), value))
 			return true;
 	return false;
 }
@@ -1231,7 +1234,7 @@ temporals_ever_equals(TemporalS *ts, Datum value)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporals_always_equals(TemporalS *ts, Datum value)
+temporals_always_eq(TemporalS *ts, Datum value)
 {
 	/* Bounding box test */
 	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
@@ -1248,7 +1251,7 @@ temporals_always_equals(TemporalS *ts, Datum value)
 	}
 
 	for (int i = 0; i < ts->count; i++) 
-		if (!temporalseq_always_equals(temporals_seq_n(ts, i), value))
+		if (!temporalseq_always_eq(temporals_seq_n(ts, i), value))
 			return false;
 	return true;
 }
@@ -1264,28 +1267,28 @@ temporals_shift(TemporalS *ts, Interval *interval)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = sequences[i] = temporals_seq_n(result, i);
-        for (int j = 0; j < seq->count; j++)
-    	{
-            TemporalInst *inst = instants[j] = temporalseq_inst_n(seq, j);
-            inst->t = DatumGetTimestampTz(
-                DirectFunctionCall2(timestamptz_pl_interval,
-                TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-        }
-        /* Shift period */
-        seq->period.lower = DatumGetTimestampTz(
-                DirectFunctionCall2(timestamptz_pl_interval,
-                TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
-        seq->period.upper = DatumGetTimestampTz(
-                DirectFunctionCall2(timestamptz_pl_interval,
-                TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
-        /* Recompute the bounding box of the sequence */
-        void *bbox = temporalseq_bbox_ptr(seq); 
-        temporalseq_make_bbox(bbox, instants, seq->count, 
-            seq->period.lower_inc, seq->period.upper_inc);		
+		for (int j = 0; j < seq->count; j++)
+		{
+			TemporalInst *inst = instants[j] = temporalseq_inst_n(seq, j);
+			inst->t = DatumGetTimestampTz(
+				DirectFunctionCall2(timestamptz_pl_interval,
+				TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+		}
+		/* Shift period */
+		seq->period.lower = DatumGetTimestampTz(
+				DirectFunctionCall2(timestamptz_pl_interval,
+				TimestampTzGetDatum(seq->period.lower), PointerGetDatum(interval)));
+		seq->period.upper = DatumGetTimestampTz(
+				DirectFunctionCall2(timestamptz_pl_interval,
+				TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
+		/* Recompute the bounding box of the sequence */
+		void *bbox = temporalseq_bbox_ptr(seq); 
+		temporalseq_make_bbox(bbox, instants, seq->count, 
+			seq->period.lower_inc, seq->period.upper_inc);		
 	}
 	/* Recompute the bounding box of the sequence set */
-    void *bbox = temporals_bbox_ptr(result); 
-    temporals_make_bbox(bbox, sequences, ts->count);
+	void *bbox = temporals_bbox_ptr(result); 
+	temporals_make_bbox(bbox, sequences, ts->count);
 	pfree(sequences);
 	pfree(instants);
 	return result;

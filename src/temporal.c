@@ -558,6 +558,36 @@ point_base_type_oid(Oid valuetypid)
 #endif
 
 /*****************************************************************************
+ * Utility functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(mobdb_lib_version);
+
+PGDLLEXPORT Datum
+mobdb_lib_version(PG_FUNCTION_ARGS)
+{
+	char *ver = MOBDB_LIB_VERSION_STR;
+	text *result = cstring_to_text(ver);
+	PG_RETURN_TEXT_P(result);
+}
+
+PG_FUNCTION_INFO_V1(mobdb_full_version);
+
+PGDLLEXPORT Datum
+mobdb_full_version(PG_FUNCTION_ARGS)
+{
+	char ver[64];
+	text *result;
+
+	snprintf(ver, 64, "%s, %s, %s", MOBDB_LIB_VERSION_STR, 
+		MOBDB_PGSQL_VERSION_STR, MOBDB_POSTGIS_VERSION_STR);
+	ver[63] = '\0';
+
+	result = cstring_to_text(ver);
+	PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -1791,23 +1821,23 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 
 /* Is the temporal value ever equal to the value? */
 
-PG_FUNCTION_INFO_V1(temporal_ever_equals);
+PG_FUNCTION_INFO_V1(temporal_ever_eq);
 
 PGDLLEXPORT Datum
-temporal_ever_equals(PG_FUNCTION_ARGS)
+temporal_ever_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_ever_equals((TemporalInst *)temp, value);
+		result = temporalinst_ever_eq((TemporalInst *)temp, value);
 	else if (temp->duration == TEMPORALI) 
-		result = temporali_ever_equals((TemporalI *)temp, value);
+		result = temporali_ever_eq((TemporalI *)temp, value);
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_ever_equals((TemporalSeq *)temp, value);
+		result = temporalseq_ever_eq((TemporalSeq *)temp, value);
 	else if (temp->duration == TEMPORALS) 
-		result = temporals_ever_equals((TemporalS *)temp, value);
+		result = temporals_ever_eq((TemporalS *)temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	FREE_DATUM(value, temp->valuetypid);
 	PG_RETURN_BOOL(result);
@@ -1815,23 +1845,23 @@ temporal_ever_equals(PG_FUNCTION_ARGS)
 
 /* Is the temporal value always equal to the value? */
 
-PG_FUNCTION_INFO_V1(temporal_always_equals);
+PG_FUNCTION_INFO_V1(temporal_always_eq);
 
 PGDLLEXPORT Datum
-temporal_always_equals(PG_FUNCTION_ARGS)
+temporal_always_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = false;
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_always_equals((TemporalInst *)temp, value);
+		result = temporalinst_always_eq((TemporalInst *)temp, value);
 	else if (temp->duration == TEMPORALI) 
-		result = temporali_always_equals((TemporalI *)temp, value);
+		result = temporali_always_eq((TemporalI *)temp, value);
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_always_equals((TemporalSeq *)temp, value);
+		result = temporalseq_always_eq((TemporalSeq *)temp, value);
 	else if (temp->duration == TEMPORALS) 
-		result = temporals_always_equals((TemporalS *)temp, value);
+		result = temporals_always_eq((TemporalS *)temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	FREE_DATUM(value, temp->valuetypid);
 	PG_RETURN_BOOL(result);
