@@ -1661,7 +1661,7 @@ SELECT endValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-
 
 				<listitem>
 					<para>Value at timestamp</para>
-					<para><varname>valueAtTimestamp(tpoint, timestamptz): geo</varname></para>
+						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
 					<programlisting>
 SELECT valueAtTimestamp(tfloat '[1@2012-01-01, 4@2012-01-04)', '2012-01-02');
 -- "2"
@@ -6782,7 +6782,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Value at timestamp</para>
-						<para><varname>valueAtTimestamp(tpoint, timestamptz): geo</varname></para>
+						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
 					</listitem>
 
 					<listitem>
