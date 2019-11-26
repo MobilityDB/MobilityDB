@@ -6751,8 +6751,33 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
+						<para>Start value</para>
+						<para><varname>startValue(ttype): base</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>End value</para>
+						<para><varname>endValue(ttype): base</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Minimum value</para>
+						<para><varname>minValue(torder): base</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Maximum value</para>
+						<para><varname>maxValue(torder): base</varname></para>
+					</listitem>
+
+					<listitem>
 						<para>Value range</para>
 						<para><varname>valueRange(tnumber): numrange</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Value at timestamp</para>
+						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6768,31 +6793,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					<listitem>
 						<para>Period on which the temporal value is defined ignoring the potential time gaps</para>
 						<para><varname>period(ttype): period</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Start value</para>
-						<para><varname>startValue(ttype): base</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>End value</para>
-						<para><varname>endValue(ttype): base</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Value at timestamp</para>
-						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Minimum value</para>
-						<para><varname>minValue(torder): base</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Maximum value</para>
-						<para><varname>maxValue(torder): base</varname></para>
 					</listitem>
 
 					<listitem>
