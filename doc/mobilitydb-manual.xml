@@ -1185,100 +1185,76 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 
 	<chapter id="manipulating_temporal_types">
 		<title>Manipulating Temporal Types</title>
-		<para>We present next the functions and operators for the temporal types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this, we use the following notation for all temporal types, whether alphanumeric or spatial:</para>
+		<para>We present next the functions and operators for the temporal types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this, we use the following notation:</para>
 
-			<itemizedlist>
-				<listitem>
-					<para><varname>ttype</varname> represents any temporal type,</para>
-				</listitem>
+		<itemizedlist>
+			<listitem>
+				<para><varname>ttype</varname> represents any temporal type,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>ttypeinst</varname> represents any temporal type with instant duration,</para>
-				</listitem>
+			<listitem>
+				<para><varname>tpoint</varname> represents a temporal point type, that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>ttypei</varname> represents any temporal type with instant set duration,</para>
-				</listitem>
+			<listitem>
+				<para><varname>ttypeinst</varname> represents any temporal type with instant duration,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>ttypeseq</varname> represents any temporal type with sequence duration,</para>
-				</listitem>
+			<listitem>
+				<para><varname>ttypei</varname> represents any temporal type with instant set duration,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
-				</listitem>
+			<listitem>
+				<para><varname>ttypeseq</varname> represents any temporal type with sequence duration,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>base</varname> represents any base type of a temporal type, that is, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry(point)</varname>, or <varname>geography(point)</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>number</varname> represents any numeric base type, that is, <varname>int</varname> or <varname>float</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>base</varname> represents any base type of a temporal type, that is, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, or <varname>geography</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
-				</listitem>
+			<listitem>
+				<para><varname>number</varname> represents any numeric base type, that is, <varname>int</varname> or <varname>float</varname>,</para>
+			</listitem>
 
-				<listitem>
-					<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
-				</listitem>
-			</itemizedlist>
+			<listitem>
+				<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>geo</varname> represents either <varname>geometry</varname> or <varname>geography</varname>,</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>point</varname> represents a <varname>geometry</varname> or a <varname>geography</varname> restricted to a point.</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
+			</listitem>
+		</itemizedlist>
 				
-			<para>In addition, for temporal point types we use the following notation:
-				<itemizedlist>
-					<listitem>
-						<para><varname>tpoint</varname> represents a temporal point type, that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tpointinst</varname> represents a temporal point type with instant set duration,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tpointseq</varname> represents a temporal point type with sequence duration,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tpoints</varname> represents any temporal sequence set point type with sequence set duration,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tgeompointseq</varname> represents a <varname>tgeompoint</varname> type with sequence duration,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tgeompoints</varname> represents a <varname>tgeompoint</varname> type with sequence set duration,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>geo</varname> represents either <varname>geometry</varname> or <varname>geography</varname>,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>point</varname> represents a <varname>geometry</varname> or a <varname>geography</varname> restricted to a point.</para>
-					</listitem>
-				</itemizedlist>
-			</para>
-				
-			<para>A common way to generalize the traditional operations to the temporal types is to apply the operation at each instant, which yields a temporal value as result. In that case, the operation is only defined on the intersection of the emporal extents of the operands; if the temporal extents are disjoint, then the result is null. For example, the temporal comparison operators, such as <varname>#&lt;</varname>, test whether the values taken by their operands at each instant satisfy the condition and return a temporal Boolean. Examples of the various generalizations of the operators are given next.
-				<programlisting>
+		<para>A common way to generalize the traditional operations to the temporal types is to apply the operation at each instant, which yields a temporal value as result. In that case, the operation is only defined on the intersection of the emporal extents of the operands; if the temporal extents are disjoint, then the result is null. For example, the temporal comparison operators, such as <varname>#&lt;</varname>, test whether the values taken by their operands at each instant satisfy the condition and return a temporal Boolean. Examples of the various generalizations of the operators are given next.
+			<programlisting>
 -- Temporal comparison
 SELECT tint '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
 -- "{[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}"
@@ -1295,11 +1271,11 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
 	tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 -- "[0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)"
-				</programlisting>
-			</para>
-				
-			<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
-				<programlisting>
+			</programlisting>
+		</para>
+			
+		<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
+			<programlisting>
 -- Is the left operand ever less than the right one ?
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
@@ -1398,7 +1374,7 @@ SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
 	1 1 978480000)'::tgeompoint);
 -- "[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]";
 SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
-	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoints);
+	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint);
 -- "{[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
 	[POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]}"
 					</programlisting>
@@ -6542,110 +6518,70 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 		<sect1>
 			<title>Functions and Operators for Temporal Types</title>
 			
-			<para>We present next the functions and operators for the temporal types. For all temporal types we use the following notation:
+			<para>We present next the functions and operators for the temporal types. For this we use the following notation:
 				<itemizedlist>
 					<listitem>
-						<para><varname>ttype</varname> represents any temporal type,
-						</para>
+						<para><varname>ttype</varname> represents any temporal type,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,
-						</para>
+						<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,
-						</para>
+						<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,
-						</para>
+						<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,
-						</para>
+						<para><varname>torder</varname> represents any temporal type whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>ttypeinst</varname> represents any temporal type with instant duration,
-						</para>
+						<para><varname>tpoint</varname> represents a temporal point type, that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>ttypei</varname> represents any temporal type with instant set duration,
-						</para>
+						<para><varname>ttypeinst</varname> represents any temporal type with instant duration,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>ttypeseq</varname> represents any temporal type with sequence duration,
-						</para>
+						<para><varname>ttypei</varname> represents any temporal type with instant set duration,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>ttypes</varname> represents any temporal type with sequence set duration,
-						</para>
+						<para><varname>ttypeseq</varname> represents any temporal type with sequence duration,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>base</varname> represents any base type of a temporal type, that is, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry(point)</varname>, or <varname>geography(point)</varname>,
-						</para>
+						<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>number</varname> represents any numeric base type, that is, <varname>int</varname> or <varname>float</varname>,
-						</para>
+						<para><varname>base</varname> represents any base type of a temporal type, that is, <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, or <varname>geography</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,
-						</para>
-					</listitem>
-				</itemizedlist>
-			</para>				
-			
-			<para>In addition, for temporal point types we use the following notation:
-				<itemizedlist>
-					<listitem>
-						<para><varname>tpoint</varname> represents a temporal point type, that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>,
-						</para>
+						<para><varname>number</varname> represents any numeric base type, that is, <varname>int</varname> or <varname>float</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tpointinst</varname> represents a temporal point type with instant set duration,
-						</para>
+						<para><varname>numrange</varname> represents any numeric range of values, that is, either <varname>intrange</varname> or <varname>floatrange</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tpointseq</varname> represents a temporal point type with sequence duration,
-						</para>
+						<para><varname>geo</varname> represents either <varname>geometry</varname> or <varname>geography</varname>,</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tpoints</varname> represents any temporal sequence set point type with sequence set duration,
-						</para>
+						<para><varname>point</varname> represents a <varname>geometry</varname> or a <varname>geography</varname> restricted to a point.</para>
 					</listitem>
 
 					<listitem>
-						<para><varname>tgeompointseq</varname> represents a <varname>tgeompoint</varname> type with sequence duration,
-						</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tgeompoints</varname> represents a <varname>tgeompoint</varname> type with sequence set duration,
-						</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>geo</varname> represents either <varname>geometry</varname> or <varname>geography</varname>,
-						</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>point</varname> represents a <varname>geometry</varname> or a <varname>geography</varname> restricted to a point.
-						</para>
+						<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
 					</listitem>
 				</itemizedlist>
 			</para>
@@ -6865,6 +6801,11 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					<listitem>
 						<para>Sequences</para>
 						<para><varname>sequences(ttypes): ttypeseq[]</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Shift</para>
+						<para><varname>shift(ttype): ttype</varname></para>
 					</listitem>
 
 					<listitem>
