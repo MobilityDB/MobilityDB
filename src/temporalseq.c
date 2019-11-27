@@ -1613,18 +1613,8 @@ RangeType *
 tnumberseq_value_range(TemporalSeq *seq)
 {
 	TBOX *box = temporalseq_bbox_ptr(seq);
-	Datum min = 0, max = 0;
-	numeric_base_type_oid(seq->valuetypid);
-	if (seq->valuetypid == INT4OID)
-	{
-		min = Int32GetDatum(box->xmin);
-		max = Int32GetDatum(box->xmax);
-	}
-	else if (seq->valuetypid == FLOAT8OID)
-	{
-		min = Float8GetDatum(box->xmin);
-		max = Float8GetDatum(box->xmax);
-	}
+	Datum min = Float8GetDatum(box->xmin);
+	Datum max = Float8GetDatum(box->xmax);
 	return range_make(min, max, true, true, seq->valuetypid);
 }
 

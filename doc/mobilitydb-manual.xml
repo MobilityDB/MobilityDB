@@ -1545,21 +1545,22 @@ SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 		<sect1>
 			<title>Accessor Functions</title>
 			<itemizedlist>
+
+				<listitem>
+					<para>Memory size in bytes</para>
+					<para><varname>memSize(ttype): integer</varname></para>
+					<programlisting>
+SELECT memSize(tint '{1@2012-01-01, 2@2012-01-02, 3@2012-01-03}');
+-- 280
+					</programlisting>
+				</listitem>
+
 				<listitem>
 					<para>Duration</para>
 					<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 					<programlisting>
 SELECT duration(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 -- "Sequence"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-				<para>Memory size in bytes</para>
-					<para><varname>memSize(ttype): integer</varname></para>
-					<programlisting>
-SELECT memSize(tint '{1@2012-01-01, 2@2012-01-02, 3@2012-01-03}');
--- 280
 					</programlisting>
 				</listitem>
 
@@ -1600,14 +1601,55 @@ SELECT ST_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-
 				</listitem>
 
 				<listitem>
+					<para>Start value</para>
+					<para><varname>startValue(ttype): base</varname></para>
+					<programlisting>
+SELECT startValue(tfloat '(1@2012-01-01, 2@2012-01-03)');
+-- 1
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
+					<para>End value</para>
+					<para><varname>endValue(ttype): base</varname></para>
+					<programlisting>
+SELECT endValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
+-- 5
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
+					<para>Minimum value</para>
+					<para><varname>minValue(torder): base</varname></para>
+					<programlisting>
+SELECT minValue(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+-- 1
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
+					<para>Maximum value</para>
+					<para><varname>maxValue(torder): base</varname></para>
+					<programlisting>
+SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
+-- 5
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
 					<para>Value range</para>
 					<para><varname>valueRange(tnumber): numrange</varname></para>
 					<programlisting>
 SELECT valueRange(tfloat '{[2@2012-01-01, 1@2012-01-03), [4@2012-01-03, 6@2012-01-05)}');
--- "(1,6)"
+-- "[1,6]"
 SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "[1,3])"
 					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem>
@@ -1637,55 +1679,6 @@ SELECT period(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 SELECT period(tfloat '{[1@2012-01-01, 1@2012-01-02), [2@2012-01-03, 3@2012-01-04)}');
 -- "[2012-01-01, 2012-01-04)"
 					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Start value</para>
-					<para><varname>startValue(ttype): base</varname></para>
-					<programlisting>
-SELECT startValue(tfloat '(1@2012-01-01, 2@2012-01-03)');
--- 1
-					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				</listitem>
-
-				<listitem>
-					<para>End value</para>
-					<para><varname>endValue(ttype): base</varname></para>
-					<programlisting>
-SELECT endValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
--- 5
-					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				</listitem>
-
-				<listitem>
-					<para>Value at timestamp</para>
-						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
-					<programlisting>
-SELECT valueAtTimestamp(tfloat '[1@2012-01-01, 4@2012-01-04)', '2012-01-02');
--- "2"
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Minimum value</para>
-					<para><varname>minValue(torder): base</varname></para>
-					<programlisting>
-SELECT minValue(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
--- 1
-					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				</listitem>
-
-				<listitem>
-					<para>Maximum value</para>
-					<para><varname>maxValue(torder): base</varname></para>
-					<programlisting>
-SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
--- 5
-					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem>
@@ -1910,7 +1903,7 @@ SELECT isContinuousInTime(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 				<listitem>
 					<para>Time-weighted average</para>
-					<para><varname>twAvg(tnum): float</varname></para>
+					<para><varname>twAvg(tnumber): float</varname></para>
 					<programlisting>
 SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)}');
 -- 1.75
@@ -2317,6 +2310,15 @@ SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)
 SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
 	geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{"[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]"}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Value at timestamp</para>
+					<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
+					<programlisting>
+SELECT valueAtTimestamp(tfloat '[1@2012-01-01, 4@2012-01-04)', '2012-01-02');
+-- "2"
 					</programlisting>
 				</listitem>
 
@@ -2808,7 +2810,7 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 			<itemizedlist>
 				<listitem>
 					<para>Addition</para>
-					<para><varname>{num, tnumber} + {num, tnumber}: tnumber</varname></para>
+					<para><varname>{number, tnumber} + {number, tnumber}: tnumber</varname></para>
 					<programlisting>
 SELECT tint '[2@2012-01-01, 2@2012-01-04)' + 1.5;
 -- "[3.5@2012-01-01, 3.5@2012-01-04)"
@@ -2822,7 +2824,7 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' +
 
 				<listitem>
 					<para>Substraction</para>
-					<para><varname>{num, tnumber} - {num, tnumber}: tnumber</varname></para>
+					<para><varname>{number, tnumber} - {number, tnumber}: tnumber</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' - tint '[2@2012-01-03, 2@2012-01-05)';
 -- "[-1@2012-01-03, -1@2012-01-04)"
@@ -2833,7 +2835,7 @@ SELECT tfloat '[3@2012-01-01, 6@2012-01-04)' - tint '[2@2012-01-01, 2@2012-01-04
 
 				<listitem>
 					<para>Multiplication</para>
-					<para><varname>{num, tnumber} * {num, tnumber}: tnumber</varname></para>
+					<para><varname>{number, tnumber} * {number, tnumber}: tnumber</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' * 2;
 -- "[2@2012-01-01, 8@2012-01-04)"
@@ -2846,7 +2848,7 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-03)' * '[3@2012-01-01, 1@2012-01-03)'
 
 				<listitem>
 					<para>Division</para>
-					<para><varname>{num, tnumber} / {num, tnumber}: tnumber</varname></para>
+					<para><varname>{number, tnumber} / {number, tnumber}: tnumber</varname></para>
 					<programlisting>
 SELECT 2 / tfloat '[1@2012-01-01, 3@2012-01-04)';
 -- "[2@2012-01-01, 1@2012-01-02 12:00:00+00, 0.666666666666667@2012-01-04)"
@@ -6731,13 +6733,13 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<title>Accessor Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para>Duration</para>
-						<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+					<para>Memory size in bytes</para>
+						<para><varname>memSize(ttype): integer</varname></para>
 					</listitem>
 
 					<listitem>
-					<para>Memory size in bytes</para>
-						<para><varname>memSize(ttype): integer</varname></para>
+						<para>Duration</para>
+						<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6773,11 +6775,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					<listitem>
 						<para>Value range</para>
 						<para><varname>valueRange(tnumber): numrange</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Value at timestamp</para>
-						<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6902,7 +6899,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Time-weighted average</para>
-						<para><varname>twAvg(tnum): float</varname></para>
+						<para><varname>twAvg(tnumber): float</varname></para>
 					</listitem>
 				</itemizedlist>
 			</sect2>
@@ -7066,6 +7063,11 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 						<para>Restrict to geometry</para>
 						<para><varname>atGeometry(tgeompoint, geometry): tgeompoint</varname></para>
 					</listitem>
+
+				<listitem>
+					<para>Value at timestamp</para>
+					<para><varname>valueAtTimestamp(ttype, timestamptz): base</varname></para>
+				</listitem>
 
 					<listitem>
 						<para>Restrict to timestamp</para>
@@ -7294,22 +7296,22 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 						<para>Addition</para>
-						<para><varname>{num, tnumber} + {num, tnumber}: tnumber</varname></para>
+						<para><varname>{number, tnumber} + {number, tnumber}: tnumber</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Substraction</para>
-						<para><varname>{num, tnumber} - {num, tnumber}: tnumber</varname></para>
+						<para><varname>{number, tnumber} - {number, tnumber}: tnumber</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Multiplication</para>
-						<para><varname>{num, tnumber} * {num, tnumber}: tnumber</varname></para>
+						<para><varname>{number, tnumber} * {number, tnumber}: tnumber</varname></para>
 					</listitem>
 
 					<listitem>
 						<para>Division</para>
-						<para><varname>{num, tnumber} / {num, tnumber}: tnumber</varname></para>
+						<para><varname>{number, tnumber} / {number, tnumber}: tnumber</varname></para>
 					</listitem>
 
 					<listitem>
