@@ -2456,212 +2456,212 @@ SELECT timestamps(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
  {"2000-01-01 00:00:00+00","2000-01-02 00:00:00+00","2000-01-03 00:00:00+00","2000-01-04 00:00:00+00","2000-01-05 00:00:00+00"}
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &= ST_Point(1,1);
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &= ST_Point(1,1);
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= ST_Point(1,1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}' &= ST_Point(2,2);
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}' ?= ST_Point(2,2);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' &= ST_Point(1,1);
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ?= ST_Point(1,1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' &= ST_Point(1,1);
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ?= ST_Point(1,1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' &= ST_Point(1.5,1.5);
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ?= ST_Point(1.5,1.5);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' &= ST_Point(1.5,1.5);
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ?= ST_Point(1.5,1.5);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' &= ST_Point(1.5,1.5);
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= ST_Point(1.5,1.5);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' &= ST_Point(1.5,1.5);
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= ST_Point(1.5,1.5);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &= geometry 'Point empty';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' &= geometry 'Point empty';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' ?= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' &= geometry 'Point empty';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' ?= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' &= geometry 'Point empty';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' ?= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' &= geography 'Point empty';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ?= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' &= geography 'Point empty';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ?= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' &= geography 'Point empty';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' &= geography 'Point empty';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
 /* Errors */
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &= geometry 'Linestring(1 1,2 2)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Linestring(1 1,2 2)';
 ERROR:  Only point geometries accepted
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &= geometry 'SRID=5676;Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tgeompoint 'Point(1 1)@2000-01-01' &= geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' &= geography 'Linestring(1 1,2 2)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'Linestring(1 1,2 2)';
 ERROR:  Only point geometries accepted
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' &= geography 'SRID=4283;Point(1 1)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'SRID=4283;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' &= geography 'Point(1 1 1)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' ?= geography 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @= ST_Point(1,1);
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= ST_Point(1,1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @= ST_Point(1,1);
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' %= ST_Point(1,1);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @= ST_Point(1,1);
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' %= ST_Point(1,1);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @= ST_Point(1,1);
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' %= ST_Point(1,1);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @= ST_Point(1.5,1.5);
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' %= ST_Point(1.5,1.5);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @= ST_Point(1.5,1.5);
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' %= ST_Point(1.5,1.5);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @= ST_Point(1.5,1.5);
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' %= ST_Point(1.5,1.5);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @= ST_Point(1.5,1.5);
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' %= ST_Point(1.5,1.5);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @= geometry 'Point empty';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' @= geometry 'Point empty';
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' %= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' @= geometry 'Point empty';
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' %= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' @= geometry 'Point empty';
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' %= geometry 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' @= geography 'Point empty';
+SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' %= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' @= geography 'Point empty';
+SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' %= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' @= geography 'Point empty';
+SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' %= geography 'Point empty';
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' @= geography 'Point empty';
+SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' %= geography 'Point empty';
  ?column? 
 ----------
  f
@@ -2716,17 +2716,17 @@ SELECT asewkt(shift(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000
 (1 row)
 
 /* Errors */
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @= geometry 'Linestring(1 1,2 2)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Linestring(1 1,2 2)';
 ERROR:  Only point geometries accepted
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @= geometry 'SRID=5676;Point(1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tgeompoint 'Point(1 1)@2000-01-01' @= geometry 'Point(1 1 1)';
+SELECT tgeompoint 'Point(1 1)@2000-01-01' %= geometry 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' @= geography 'Linestring(1 1,2 2)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'Linestring(1 1,2 2)';
 ERROR:  Only point geometries accepted
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' @= geography 'SRID=4283;Point(1 1)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'SRID=4283;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
-SELECT tgeogpoint 'Point(1 1)@2000-01-01' @= geography 'Point(1 1 1)';
+SELECT tgeogpoint 'Point(1 1)@2000-01-01' %= geography 'Point(1 1 1)';
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT astext(atValue(tgeompoint 'Point(1 1)@2000-01-01', ST_Point(1,1)));
               astext               

@@ -289,12 +289,12 @@ CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
@@ -309,13 +309,13 @@ CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
 	AS 'MODULE_PATHNAME', 'tpoint_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @= (
-	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
+CREATE OPERATOR %= (
+	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
-	LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
+CREATE OPERATOR %= (
+	LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );

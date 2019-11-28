@@ -96,7 +96,7 @@ temporal_duration_from_string(const char *str, uint8_t *type)
 	tmpstr[i - tmpstartpos] = '\0';
 	size_t len = strlen(tmpstr);
 	/* Now check for the type */
-	for (i = 0; i < temporal_duration_struct_ARRAY_LEN; i++)
+	for (i = 0; i < DURATION_STRUCT_ARRAY_LEN; i++)
 	{
 		if (len == strlen(temporal_duration_struct_array[i].typename) && 
 			!strcasecmp(tmpstr, temporal_duration_struct_array[i].typename))
@@ -1250,6 +1250,22 @@ temporalinst_timestamp(PG_FUNCTION_ARGS)
 /* Get the precomputed bounding box of a Temporal (if any) 
    Notice that TemporalInst do not have precomputed bonding box */
 
+TBOX * 
+temporal_bbox_ptr(const Temporal *temp)
+{
+	TBOX *result = NULL;
+	if (temp->duration == TEMPORALINST) 
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Temporal instants do not have bounding box")));
+	else if (temp->duration == TEMPORALI) 
+		result = temporali_bbox_ptr((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = temporalseq_bbox_ptr((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS) 
+		result = temporals_bbox_ptr((TemporalS *)temp);
+	return result;
+}
+
 void 
 temporal_bbox(void *box, const Temporal *temp)
 {
@@ -1284,14 +1300,28 @@ tnumber_value_range_internal(Temporal *temp)
 {
 	RangeType *result = NULL;
 	temporal_duration_is_valid(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = tnumberinst_value_range((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI) 
-		result = tnumberi_value_range((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = tnumberseq_value_range((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS) 
-		result = tnumbers_value_range((TemporalS *)temp);
+	if (temp->duration == TEMPORALINST)
+	{
+		Datum value = temporalinst_value((TemporalInst *)temp);
+		result = range_make(value, value, true, true, temp->valuetypid);		
+	}
+	else 
+	{
+		TBOX *box = temporal_bbox_ptr(temp);
+		Datum min = 0, max = 0;
+		numeric_base_type_oid(temp->valuetypid);
+		if (temp->valuetypid == INT4OID)
+		{
+			min = Int32GetDatum((int)(box->xmin));
+			max = Int32GetDatum((int)(box->xmax));
+		}
+		else if (temp->valuetypid == FLOAT8OID)
+		{
+			min = Float8GetDatum(box->xmin);
+			max = Float8GetDatum(box->xmax);
+		}
+		result = range_make(min, max, true, true, temp->valuetypid);
+	}	
 	return result;
 }
 

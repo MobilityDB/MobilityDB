@@ -9,7 +9,7 @@
  * - B-tree comparison operators: <, <=, >, >=
  * - Bounding box operators: &&, @>, <@, ~=
  * - Relative position operators: <<#, &<#, #>>, #>>
- * - Ever/always equal operators: &=, @= // TODO
+ * - Ever/always equal operators: ?=, %= // TODO
  *
  * Due to implicit casting, a condition such as tbool <<# timestamptz will be
  * transformed into tbool <<# period. This allows to reduce the number of 

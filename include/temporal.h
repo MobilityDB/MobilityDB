@@ -55,7 +55,7 @@ struct temporal_duration_struct
 	int type;
 };
 
-#define temporal_duration_struct_ARRAY_LEN \
+#define DURATION_STRUCT_ARRAY_LEN \
 	(sizeof temporal_duration_struct_array/sizeof(struct temporal_duration_struct))
 
 /*****************************************************************************

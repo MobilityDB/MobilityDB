@@ -336,15 +336,6 @@ temporalinst_get_time(TemporalInst *inst)
 	return result;
 }
 
-/* Value range of a temporal integer */
-
-RangeType *
-tnumberinst_value_range(TemporalInst *inst)
-{
-	Datum value = temporalinst_value(inst);
-	return range_make(value, value,	true, true, inst->valuetypid);
-}
-
 /* Bounding period on which the temporal value is defined */
 
 void

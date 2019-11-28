@@ -1302,49 +1302,49 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
   59
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);
  count 
 -------
     91
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext WHERE temp &= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?= startValue(temp);
  count 
 -------
     96
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp @= true;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %= true;
  count 
 -------
     14
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp @= i;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %= i;
  count 
 -------
     24
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp @= f;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %= f;
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp @= t;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
  count 
 -------
      1

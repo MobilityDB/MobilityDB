@@ -1607,17 +1607,6 @@ temporalseq_get_time(TemporalSeq *seq)
 	return result;
 }
 
-/* Bounding box range of a temporal number */
-
-RangeType *
-tnumberseq_value_range(TemporalSeq *seq)
-{
-	TBOX *box = temporalseq_bbox_ptr(seq);
-	Datum min = Float8GetDatum(box->xmin);
-	Datum max = Float8GetDatum(box->xmax);
-	return range_make(min, max, true, true, seq->valuetypid);
-}
-
 /* Minimum value */
 
 Datum

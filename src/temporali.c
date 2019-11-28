@@ -610,27 +610,6 @@ temporali_get_time(TemporalI *ti)
 	return result;
 }
 
-/* Bounding box range of a temporal integer */
-
-RangeType *
-tnumberi_value_range(TemporalI *ti)
-{
-	TBOX *box = temporali_bbox_ptr(ti);
-	Datum min = 0, max = 0;
-	numeric_base_type_oid(ti->valuetypid);
-	if (ti->valuetypid == INT4OID)
-	{
-		min = Int32GetDatum((int)(box->xmin));
-		max = Int32GetDatum((int)(box->xmax));
-	}
-	else if (ti->valuetypid == FLOAT8OID)
-	{
-		min = Float8GetDatum(box->xmin);
-		max = Float8GetDatum(box->xmax);
-	}
-	return range_make(min, max, true, true, ti->valuetypid);
-}
-
 /* Minimum value */
 
 Datum

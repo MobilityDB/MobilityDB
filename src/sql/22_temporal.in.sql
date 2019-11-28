@@ -874,22 +874,22 @@ CREATE FUNCTION ever_eq(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR &= (
+CREATE OPERATOR ?= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = ever_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
@@ -912,22 +912,22 @@ CREATE FUNCTION always_eq(ttext, text)
 	AS 'MODULE_PATHNAME', 'temporal_always_eq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tbool, RIGHTARG = boolean,
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tint, RIGHTARG = integer,
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = tfloat, RIGHTARG = float,
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
-CREATE OPERATOR @= (
+CREATE OPERATOR %= (
 	LEFTARG = ttext, RIGHTARG = text,
 	PROCEDURE = always_eq,
 	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
