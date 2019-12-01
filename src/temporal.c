@@ -304,10 +304,10 @@ synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	return result;
 }
 
-/* Is the base type continuous? */
+/* Does the base type implies a linear interpolation? */
 
 bool
-type_is_continuous(Oid type)
+linear_interpolation(Oid type)
 {
 	if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) || 
 		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
@@ -511,7 +511,7 @@ base_type_all_oid(Oid valuetypid)
 }
 
 void
-continuous_base_type_oid(Oid valuetypid)
+ensure_linear_interpolation(Oid valuetypid)
 {
 	if (valuetypid != FLOAT8OID
 #ifdef WITH_POSTGIS
@@ -519,12 +519,12 @@ continuous_base_type_oid(Oid valuetypid)
 		&& valuetypid != type_oid(T_GEOGRAPHY)
 #endif
 		)
-		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 	return;
 }
 
 void
-continuous_base_type_all_oid(Oid valuetypid)
+ensure_linear_interpolation_all(Oid valuetypid)
 {
 	if (valuetypid != FLOAT8OID &&
 		valuetypid !=  type_oid(T_DOUBLE2)
@@ -535,7 +535,7 @@ continuous_base_type_all_oid(Oid valuetypid)
 		&& valuetypid != type_oid(T_DOUBLE4)
 #endif
 		)
-		elog(ERROR, "unknown continuous base type: %d", valuetypid);
+		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 	return;
 }
 
@@ -1134,10 +1134,10 @@ temporal_mem_size(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
-/* Values of a discrete temporal */ 
+/* Values of a temporal type with stepwise interpolation */ 
 
 Datum
-tempdisc_get_values_internal(Temporal *temp)
+tstepwise_get_values_internal(Temporal *temp)
 {
 	ArrayType *result = NULL;	/* make the compiler quiet */
 	temporal_duration_is_valid(temp->duration);
@@ -1146,19 +1146,19 @@ tempdisc_get_values_internal(Temporal *temp)
 	else if (temp->duration == TEMPORALI)
 		result = temporali_values((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
-		result = tempdiscseq_values((TemporalSeq *)temp);
+		result = tstepwiseseq_values((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tempdiscs_values((TemporalS *)temp);
+		result = tstepwises_values((TemporalS *)temp);
 	return PointerGetDatum(result);
 }
 
-PG_FUNCTION_INFO_V1(tempdisc_get_values);
+PG_FUNCTION_INFO_V1(tstepwise_get_values);
 
 PGDLLEXPORT Datum
-tempdisc_get_values(PG_FUNCTION_ARGS)
+tstepwise_get_values(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = tempdisc_get_values_internal(temp);
+	Datum result = tstepwise_get_values_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

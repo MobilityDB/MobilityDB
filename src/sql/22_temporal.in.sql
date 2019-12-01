@@ -465,11 +465,11 @@ CREATE FUNCTION getValue(ttext)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tbool)
 	RETURNS boolean[]
-	AS 'MODULE_PATHNAME', 'tempdisc_get_values'
+	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
 	RETURNS integer[]
-	AS 'MODULE_PATHNAME', 'tempdisc_get_values'
+	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
 	RETURNS floatrange[]
@@ -477,7 +477,7 @@ CREATE FUNCTION getValues(tfloat)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tempdisc_get_values'
+	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueRange(tint)

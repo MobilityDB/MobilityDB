@@ -137,7 +137,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	result->t = t;
 	SET_VARSIZE(result, size);
 	MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, type_is_continuous(valuetypid));
+	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOMETRY) || 
 		valuetypid == type_oid(T_GEOGRAPHY))
@@ -259,7 +259,7 @@ tintinst_to_tfloatinst(TemporalInst *inst)
 {
 	TemporalInst *result = temporalinst_copy(inst);
 	result->valuetypid = FLOAT8OID;
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+	MOBDB_FLAGS_SET_LINEAR(result->flags, true);
 	Datum *value_ptr = temporalinst_value_ptr(result);
 	*value_ptr = Float8GetDatum((double)DatumGetInt32(temporalinst_value(inst)));
 	return result;

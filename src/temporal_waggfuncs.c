@@ -56,7 +56,7 @@ temporali_extend(TemporalSeq **result, TemporalI *ti, Interval *interval)
 }
 
 static int
-tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
+tstepwiseseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -85,7 +85,7 @@ tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 }
 
 static int
-tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
+tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -154,32 +154,32 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 }
 
 static int
-tempdiscs_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
+tstepwises_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
 	if (ts->count == 1)
-		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
+		return tstepwiseseq_extend(result, temporals_seq_n(ts, 0), interval);
 
 	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tempdiscseq_extend(&result[k], seq, interval);
+		countstep = tstepwiseseq_extend(&result[k], seq, interval);
 		k += countstep;
 	}
 	return k;
 }
 
 static int
-tempconts_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
+tlinears_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
 {
 	if (ts->count == 1)
-		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
+		return tstepwiseseq_extend(result, temporals_seq_n(ts, 0), interval);
 
 	int k = 0, countstep;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tempcontseq_extend(&result[k], seq, interval, min);
+		countstep = tlinearseq_extend(&result[k], seq, interval, min);
 		k += countstep;
 	}
 	return k;
@@ -208,19 +208,19 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
-		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			*count = tempdiscseq_extend(result, seq, interval);
+		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			*count = tstepwiseseq_extend(result, seq, interval);
 		else
-			*count = tempcontseq_extend(result, seq, interval, min);
+			*count = tlinearseq_extend(result, seq, interval, min);
 	}
 	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			*count = tempdiscs_extend(result, ts, interval);
+		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			*count = tstepwises_extend(result, ts, interval);
 		else
-			*count = tempconts_extend(result, ts, interval, min);
+			*count = tlinears_extend(result, ts, interval, min);
 	}
 	return result;
 }
@@ -370,8 +370,8 @@ tnumberi_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 	return ti->count;
 }
 
-/* Transform a discrete temporal numeric sequence into a temporal double and extend
- * it by a time interval. There is no equivalent function for continuous types */
+/* Transform a temporal integer sequence into a temporal double and extend
+ * it by a time interval. There is no equivalent function for temporal float types */
 
 static int
 tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interval)

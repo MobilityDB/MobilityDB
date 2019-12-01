@@ -654,7 +654,7 @@ CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
 
 	<chapter id="temporal_types">
 		<title>Temporal Types</title>
-		<para>There are six built-in temporal types, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points). Depending on their base type, temporal types may be discrete or continuous. Discrete temporal types (which are based on the <varname>boolean</varname>, <varname>int</varname>, or <varname>text</varname> base types) evolve in a stepwise manner, while continuous temporal types (which are based on the <varname>float</varname>, <varname>geometry</varname>, or <varname>geography</varname> base types) evolve in a continuous manner. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a car may be represented by a temporal point, since it is typically assumed the location between two consecutive GPS readings can be obtained by (linear) interpolation.</para>
+		<para>There are six built-in temporal types, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points). Depending on their base type, temporal types may evolve in a stepwise or linear manner. Temporal types based on the <varname>boolean</varname>, <varname>int</varname>, or <varname>text</varname> base types evolve in a stepwise manner, while temporal types based on the <varname>float</varname>, <varname>geometry</varname>, or <varname>geography</varname> base types evolve in a linear manner. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a car may be represented by a temporal point, since it is typically assumed the location between two consecutive GPS readings can be obtained by linear interpolation.</para>
 
 		<para>The duration of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four durations, namely, instant, instant set, sequence, and sequence set.</para>
 
@@ -676,7 +676,7 @@ SELECT tint '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:1
 			</programlisting>
 		</para>
 				
-		<para>As can be seen, a value of a type with sequence duration has a lower and an upper bound that can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the base type is discrete or continuous. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
+		<para>As can be seen, a value of a type with sequence duration has a lower and an upper bound that can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
 			<programlisting>
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 			</programlisting>
@@ -837,7 +837,7 @@ SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
 				</programlisting>
 			The temporal extent of a temporal instant set value is a set of instants while the temporal extent of temporal sequence set value is a set of periods.</para>
 
-			<para>Temporal sequence values are converted into a <emphasis role="strong">normal</emphasis> form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For discrete types, three consecutive instant values can be merged into two if they have the same value. For continuous types, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.
+			<para>Temporal sequence values are converted into a <emphasis role="strong">normal</emphasis> form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For stepwise interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.
 				<programlisting>
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
 -- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)"
@@ -916,7 +916,7 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 				</listitem>
 
 				<listitem>
-					<para>In a temporal discrete sequence value with exclusive upper bound, the last two values must be equal.</para>
+					<para>In a temporal sequence value with stepwise interpolation, the last two values must be equal if upper bound is exclusive.</para>
 				</listitem>
 
 				<listitem>
@@ -1198,10 +1198,6 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 
 			<listitem>
 				<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
-			</listitem>
-
-			<listitem>
-				<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
 			</listitem>
 
 			<listitem>
@@ -3991,7 +3987,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<para>The following statistics are collected for the value dimension:
 				<itemizedlist>
 					<listitem>
-						<para>For temporal discrete types (that is, <varname>tbool</varname>, <varname>ttext</varname>, and <varname>tint</varname>):
+						<para>For temporal types with stepwise interpolation (that is, temporal types whose base type is <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
 							<itemizedlist>
 								<listitem>
 									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
@@ -6530,10 +6526,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para><varname>tnumber</varname> represents any temporal numeric type, that is, <varname>tint</varname> or <varname>tfloat</varname>,</para>
-					</listitem>
-
-					<listitem>
-						<para><varname>tdisc</varname> represents any temporal discrete type, that is, <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname>,</para>
 					</listitem>
 
 					<listitem>

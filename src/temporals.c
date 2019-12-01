@@ -152,8 +152,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	result->totalcount = totalcount;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALS;
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(newsequences[0]->flags);
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 	{
@@ -214,7 +213,7 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	result->totalcount = ts->totalcount - seq->count + newseq->count;
 	result->valuetypid = ts->valuetypid;
 	result->duration = TEMPORALS;
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(ts->flags));
+	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
 #ifdef WITH_POSTGIS
 	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
 		ts->valuetypid == type_oid(T_GEOGRAPHY))
@@ -773,10 +772,10 @@ temporalseq_to_temporals(TemporalSeq *seq)
  * Accessor functions
  *****************************************************************************/
 
-/* Values of a discrete TemporalS */
+/* Values of a TemporalS with stepwise interpolation */
 
 ArrayType *
-tempdiscs_values(TemporalS *ts)
+tstepwises_values(TemporalS *ts)
 {
 	Datum **values = palloc(sizeof(Datum *) * ts->count);
 	int *countvalues = palloc0(sizeof(int) * ts->count);
@@ -784,7 +783,7 @@ tempdiscs_values(TemporalS *ts)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		values[i] = tempdiscseq_values1(seq);
+		values[i] = tstepwiseseq_values1(seq);
 		countvalues[i] = seq->count;
 		count += seq->count;
 	}
@@ -1380,7 +1379,7 @@ temporals_minus_value(TemporalS *ts, Datum value)
 
 	/* General case */
 	int count;
-	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+	if (! MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		count = ts->totalcount;
 	else 
 		count = ts->totalcount * 2;
@@ -1450,7 +1449,7 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count)
 
 	/* General case */
 	int maxcount;
-	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+	if (! MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		maxcount = ts->totalcount * count;
 	else 
 		maxcount = ts->totalcount * count *2;
@@ -1536,7 +1535,7 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 
 	/* General case */
 	int maxcount;
-	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+	if (! MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		maxcount = ts->totalcount;
 	else 
 		maxcount = ts->totalcount * 2;
@@ -1605,7 +1604,7 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 
 	/* General case */
 	int maxcount;
-	if (! MOBDB_FLAGS_GET_CONTINUOUS(ts->flags))
+	if (! MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		maxcount = ts->totalcount;
 	else 
 		maxcount = ts->totalcount * 2;

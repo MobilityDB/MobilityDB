@@ -389,8 +389,8 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
+	bool crossings = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp1->duration);
@@ -513,8 +513,8 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool crossings = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
+	bool crossings = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp1->duration);

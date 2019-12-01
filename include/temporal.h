@@ -76,7 +76,7 @@ struct temporal_duration_struct
  * Macros for manipulating the 'flags' element
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_CONTINUOUS(flags) 		((flags) & 0x01)
+#define MOBDB_FLAGS_GET_LINEAR(flags) 		((flags) & 0x01)
 /* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
 #define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
@@ -84,7 +84,7 @@ struct temporal_duration_struct
 #define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
 #define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
 
-#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
+#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 /* The following flag is only used for TemporalInst */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
@@ -290,7 +290,7 @@ extern bool intersection_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Temporal **inter1, Temporal **inter2);
 extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2, 
 	Temporal **sync1, Temporal **sync2, bool interpoint);
-extern bool type_is_continuous(Oid type);
+extern bool linear_interpolation(Oid type);
 
 extern const char *temporal_duration_name(uint8_t type);
 extern bool temporal_duration_from_string(const char *str, uint8_t *type);
@@ -317,8 +317,8 @@ extern void temporal_duration_all_is_valid(int16 type);
 extern void numrange_type_oid(Oid type);
 extern void base_type_oid(Oid valuetypid);
 extern void base_type_all_oid(Oid valuetypid);
-extern void continuous_base_type_oid(Oid valuetypid);
-extern void continuous_base_type_all_oid(Oid valuetypid);
+extern void ensure_linear_interpolation(Oid valuetypid);
+extern void ensure_linear_interpolation_all(Oid valuetypid);
 extern void numeric_base_type_oid(Oid type);
 extern void point_base_type_oid(Oid type);
 
@@ -349,7 +349,7 @@ extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 
 extern Datum temporal_duration(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
-extern Datum tempdisc_get_values(PG_FUNCTION_ARGS);
+extern Datum tstepwise_get_values(PG_FUNCTION_ARGS);
 extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
 extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
@@ -373,7 +373,7 @@ extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
-extern Datum tempdisc_get_values_internal(Temporal *temp);
+extern Datum tstepwise_get_values_internal(Temporal *temp);
 extern Datum tfloat_ranges_internal(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);

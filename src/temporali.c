@@ -139,8 +139,8 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	result->count = count;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
-		MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags));
+	MOBDB_FLAGS_SET_LINEAR(result->flags, 
+		MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 	{
@@ -218,8 +218,8 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	result->count = ti->count + 1;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALI;
-	MOBDB_FLAGS_SET_CONTINUOUS(result->flags, 
-		MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
+	MOBDB_FLAGS_SET_LINEAR(result->flags, 
+		MOBDB_FLAGS_GET_LINEAR(inst->flags));
 #ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);

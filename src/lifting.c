@@ -24,9 +24,9 @@
  *	  integer and float), and thus the third and fourth arguments are the
  *	  Oids of the first two arguments.
  *  2) For each of the previous families, there are two set of functions
- *	 depending on whether the resulting temporal type is discrete (e.g., 
- *	 = for temporal floats that results in a temporal Boolean) or 
- *	 continuous (e.g., distance for temporal points that results in a 
+ *	 depending on whether the interpolation of the resulting temporal type is
+ *   stepwise (e.g., for temporal floats that results in a temporal Boolean)
+ *	 or linear (e.g., distance for temporal points that results in a 
  *	 temporal float).
  *  3) For each of the previous cases there are two set of functions
  *	 depending on whether the arguments are 
@@ -542,8 +542,8 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 
 /*****************************************************************************
  * Functions that apply the function to the composing instants and to the 
- * crossings when the resulting value is discrete as required for comparisons 
- * (e.g., #<) and spatial relationships (e.g., tintersects).
+ * crossings when the resulting value has stepwise interpolation as required  
+ * for comparisons (e.g., #<) and spatial relationships (e.g., tintersects).
  *****************************************************************************/
 
 static int
@@ -619,7 +619,7 @@ tfunc4_temporalseq_base_crossdisc1(TemporalSeq **result,
 	
 	/* Determine whether there is a crossing */
 	TimestampTz crosstime;
-	bool cross = tempcontseq_timestamp_at_value(start, end, value, 
+	bool cross = tlinearseq_timestamp_at_value(start, end, value, 
 		datumtypid, &crosstime);
 
 	/* If there is no crossing */	
@@ -1095,9 +1095,9 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		inst2 = temporalseq_inst_n(seq2, j);
 	}
 	/* We are sure that k != 0 due to the period intersection test above */
-	/* The last two values of discrete sequences with exclusive upper bound 
-	   must be equal */
-	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
+	/* The last two values of sequences with stepwise interpolation and  
+	   exclusive upper bound must be equal */
+	if (!linear_interpolation(valuetypid) && !inter->upper_inc && k > 1)
 	{
 		tofree[l++] = instants[k - 1];
 		value = temporalinst_value(instants[k - 2]);
@@ -1653,9 +1653,9 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		pfree(instants); 
 		return NULL;
 	}
-	/ * The last two values of discrete sequences with exclusive upper bound 
-	   must be equal * /
-	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
+	/ * The last two values of sequences with stepwise interpolation and  
+	   exclusive upper bound must be equal * /
+	if (!linear_interpolation(valuetypid) && !inter->upper_inc && k > 1)
 	{
 		tofree[l++] = instants[k - 1];
 		value = temporalinst_value(instants[k - 2]);
@@ -2211,9 +2211,9 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		inst2 = temporalseq_inst_n(seq2, j);
 	}
 	/* We are sure that k != 0 due to the period intersection test above */
-	/* The last two values of discrete sequences with exclusive upper bound 
-	   must be equal */
-	if (!type_is_continuous(valuetypid) && !inter->upper_inc && k > 1)
+	/* The last two values of sequences with stepwise interpolation and  
+	   exclusive upper bound must be equal */
+	if (!linear_interpolation(valuetypid) && !inter->upper_inc && k > 1)
 	{
 		tofree[l++] = instants[k - 1];
 		value = temporalinst_value(instants[k - 2]);
@@ -2792,7 +2792,7 @@ sync_tfunc2_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * TemporalSeq and <Type>
  *****************************************************************************/
 
-/* This function is called when at both segments are continuous */
+/* This function is called when at both segments have linear interpolation */
 static int
 sync_tfunc3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
@@ -2865,8 +2865,8 @@ sync_tfunc3_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	}
 
 	/* Determine whether there is a crossing 
-	   It may be the case that one of the segments is discrete and the
-	   start and end values of that segment are different */
+	   It may be the case that one of the segments has stepwise interpolation
+	   and the start and end values of that segment are different */
 	TimestampTz crosstime;
 	bool cross = temporalseq_intersect_at_timestamp(start1, end1, 
 			start2, end2, &crosstime);
@@ -3177,7 +3177,7 @@ sync_tfunc3_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
  * TemporalSeq and <Type>
  *****************************************************************************/
 
-/* This function is called when at least one segment is continuous */
+/* This function is called when at least one segment has linear interpolation */
 static int
 sync_tfunc4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
@@ -3252,15 +3252,15 @@ sync_tfunc4_temporalseq_temporalseq_crossdisc1(TemporalSeq **result,
 	}
 
 	/* Determine whether there is a crossing 
-	   It may be the case that one of the segments is discrete and the
-	   start and end values of that segment are different */
+	   It may be the case that one of the segments has stepwise interpolation
+	   and the start and end values of that segment are different */
 	TimestampTz crosstime;
 	bool cross;
-	if (! MOBDB_FLAGS_GET_CONTINUOUS(start1->flags))
-		cross = tempcontseq_timestamp_at_value(start2, end2, 
+	if (! MOBDB_FLAGS_GET_LINEAR(start1->flags))
+		cross = tlinearseq_timestamp_at_value(start2, end2, 
 			startvalue1, start1->valuetypid, &crosstime);
-	else if (! MOBDB_FLAGS_GET_CONTINUOUS(start2->flags))
-		cross = tempcontseq_timestamp_at_value(start1, end1, 
+	else if (! MOBDB_FLAGS_GET_LINEAR(start2->flags))
+		cross = tlinearseq_timestamp_at_value(start1, end1, 
 			startvalue2, start2->valuetypid, &crosstime);
 	else 
 		cross = temporalseq_intersect_at_timestamp(start1, end1, 
@@ -3508,8 +3508,8 @@ Temporal *
 sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid)
 {
-	bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(temp1->flags) || 
-		MOBDB_FLAGS_GET_CONTINUOUS(temp2->flags);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp1->duration);
 	temporal_duration_is_valid(temp2->duration);
@@ -3546,13 +3546,13 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 		result = (Temporal *)sync_tfunc4_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2, func, valuetypid);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ)
-		result = continuous ?
+		result = linear ?
 			(Temporal *)sync_tfunc4_temporalseq_temporalseq_crossdisc(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporalseq_temporalseq(
 				(TemporalSeq *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
-		result = continuous ?
+		result = linear ?
 			(Temporal *)sync_tfunc4_temporalseq_temporals_crossdisc(
 				(TemporalSeq *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporalseq_temporals(
@@ -3565,13 +3565,13 @@ sync_tfunc4_temporal_temporal_crossdisc(Temporal *temp1, Temporal *temp2,
 		result = (Temporal *)sync_tfunc4_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2, func, valuetypid);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
-		result = continuous ?
+		result = linear ?
 			(Temporal *)sync_tfunc4_temporals_temporalseq_crossdisc(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporals_temporalseq(
 				(TemporalS *)temp1, (TemporalSeq *)temp2, func, valuetypid, false);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
-		result = continuous ?
+		result = linear ?
 			(Temporal *)sync_tfunc4_temporals_temporals_crossdisc(
 				(TemporalS *)temp1, (TemporalS *)temp2, func, valuetypid) :
 			(Temporal *)sync_tfunc4_temporals_temporals(

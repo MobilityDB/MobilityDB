@@ -91,7 +91,7 @@ extern TemporalS *temporalseq_to_temporals(TemporalSeq *seq);
 
 /* Accessor functions */
 
-extern ArrayType *tempdiscs_values(TemporalS *ts);
+extern ArrayType *tstepwises_values(TemporalS *ts);
 extern ArrayType *tfloats_ranges(TemporalS *ts);
 extern void *temporals_bbox_ptr(TemporalS *ts);
 extern void temporals_bbox(void *box, TemporalS *ts);
