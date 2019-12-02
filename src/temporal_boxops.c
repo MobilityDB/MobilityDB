@@ -248,7 +248,7 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 
 /* Expand the first box with the second one */
 
-static void
+void
 tbox_expand(TBOX *box1, const TBOX *box2)
 {
 	box1->xmin = Min(box1->xmin, box2->xmin);

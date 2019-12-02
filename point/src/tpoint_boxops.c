@@ -369,7 +369,7 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 
 /* Expand the first box with the second one */
 
-static void
+void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
 	box1->xmin = Min(box1->xmin, box2->xmin);

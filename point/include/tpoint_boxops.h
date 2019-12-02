@@ -36,6 +36,7 @@ extern double distance_stbox_stbox_internal(STBOX *box1, STBOX *box2);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
+extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t);
 extern void tpointinstarr_to_stbox(STBOX *box, TemporalInst **inst, int count);
 extern void tpointseqarr_to_stbox(STBOX *box, TemporalSeq **seq, int count);

@@ -31,6 +31,8 @@ extern void timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts);
 extern void period_to_tbox_internal(TBOX *box, Period *p);
 extern void periodset_to_tbox_internal(TBOX *box, PeriodSet *ps);
 
+extern void tbox_expand(TBOX *box1, const TBOX *box2);
+
 extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
