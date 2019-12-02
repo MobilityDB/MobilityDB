@@ -647,6 +647,29 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 	}
 }
 
+/* Join two trajectories */
+
+Datum 
+tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
+{
+	// This is and easy solution, but it can be made more efficient (I think)
+	// We just have to join two precomputed trajectories (point or line).
+	// Here we recompute it based on the instants.
+	int count1 = last ? seq1->count - 1 : seq1->count;
+	int start2 = first ? 1 : 0;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 
+		(count1 + seq2->count - start2));
+	int k = 0;
+	for (int i = 0; i < count1; i++)
+		instants[k++] = temporalseq_inst_n(seq1, i);
+	for (int i = start2; i < seq2->count; i++)
+		instants[k++] = temporalseq_inst_n(seq2, i);
+	Datum traj = tpointseq_make_trajectory(instants, k);
+	pfree(instants);
+
+	return traj;
+}
+
 /* Copy the precomputed trajectory of a tpointseq */
 
 Datum 

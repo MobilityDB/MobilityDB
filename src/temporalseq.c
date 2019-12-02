@@ -440,19 +440,107 @@ temporalinstarr_normalize(TemporalInst **instants, int count, int *newcount)
 static TemporalSeq *
 temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 {
+	Oid valuetypid = seq1->valuetypid;
+
+	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t memsize = double_pad(bboxsize);
+
 	int count1 = last ? seq1->count - 1 : seq1->count;
 	int start2 = first ? 1 : 0;
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 
-		(count1 + seq2->count - start2));
-	int k = 0;
 	for (int i = 0; i < count1; i++)
-		instants[k++] = temporalseq_inst_n(seq1, i);
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
 	for (int i = start2; i < seq2->count; i++)
-		instants[k++] = temporalseq_inst_n(seq2, i);
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
-		seq1->period.lower_inc, seq2->period.upper_inc, false);
-	
-	pfree(instants); 
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
+
+	int count = count1 + (seq2->count - start2);
+
+#ifdef WITH_POSTGIS
+	bool trajectory = type_has_precomputed_trajectory(valuetypid);
+	Datum traj = 0; /* keep compiler quiet */
+	if (trajectory)
+	{
+		/* A trajectory is a geometry/geography, either a point or a 
+		 * linestring, which may be self-intersecting */
+		traj = tpointseq_trajectory_join(seq1, seq2, last, first);
+		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
+	}
+#endif
+
+	/* Add the size of the struct and the offset array 
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (count + 1) * sizeof(size_t);
+	/* Create the TemporalSeq */
+	TemporalSeq *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = count;
+	result->valuetypid = valuetypid;
+	result->duration = TEMPORALSEQ;
+	// TODO Maybe create a period_join from two periods (seq1->period, seq2->period)
+	period_set(&result->period, temporalseq_inst_n(seq1, 0)->t, temporalseq_inst_n(seq2, seq2->count)->t,
+		seq1->period.lower_inc, seq2->period.upper_inc);
+	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+#ifdef WITH_POSTGIS
+	if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
+	}
+#endif
+
+	/* Initialization of the variable-length part */
+	int k = 0;
+	size_t pos = 0;
+	for (int i = 0; i < count1; i++)
+	{
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq1, i), 
+			VARSIZE(temporalseq_inst_n(seq1, i)));
+		result->offsets[k++] = pos;
+		pos += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
+	}
+	for (int i = start2; i < seq2->count; i++)
+	{
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq2, i), 
+			VARSIZE(temporalseq_inst_n(seq2, i)));
+		result->offsets[k++] = pos;
+		pos += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
+	}
+	/*
+	 * Precompute the bounding box 
+	 * TODO Maybe create a bbox_join
+	 */
+	if (bboxsize != 0)
+	{
+		void *box1 = temporalseq_bbox_ptr(seq1);
+		void *box2 = temporalseq_bbox_ptr(seq2);
+		void *bbox = ((char *) result) + pdata + pos;
+		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+			period_set((Period *)bbox, 
+				((Period *)box1)->lower, ((Period *)box2)->upper, 
+				((Period *)box1)->lower_inc, ((Period *)box2)->upper_inc); // Again we could use a period_join
+		else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		{
+			memcpy(bbox, box1, bboxsize);
+			tbox_expand((TBOX *)bbox, (TBOX *)box2);
+		}
+#ifdef WITH_POSTGIS
+		else if (valuetypid == type_oid(T_GEOGRAPHY) || 
+				 valuetypid == type_oid(T_GEOMETRY)) 
+		{
+			memcpy(bbox, box1, bboxsize);
+			stbox_expand((STBOX *)bbox, (STBOX *)box2);
+		}
+#endif
+		result->offsets[k] = pos;
+		pos += double_pad(bboxsize);
+	}
+	if (trajectory)
+	{
+		result->offsets[k + 1] = pos;
+		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
+			VARSIZE(DatumGetPointer(traj)));
+		pfree(DatumGetPointer(traj));
+	}
 
 	return result;
 }

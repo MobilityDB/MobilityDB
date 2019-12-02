@@ -63,6 +63,7 @@ extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
 extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
+extern Datum tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
 extern Datum tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2);
