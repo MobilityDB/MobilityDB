@@ -969,9 +969,9 @@ SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 1@2001-01-01 10:00:00)',
 			<para>A <varname>tbox</varname> is composed of value and/or time dimensions. For each dimension, minimum and maximum values are given. Examples of input of <varname>tbox</varname> values are as follows:
 				<programlisting>
 -- Both value and time dimensions
-SELECT tbox 'TBOX((1.0, 2000-01-01), (1.0, 2000-01-02))'; 
+SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))'; 
 -- Only value dimension
-SELECT tbox 'TBOX((1.0,), (1.0,))'; 
+SELECT tbox 'TBOX((1.0,), (2.0,))'; 
 -- Only time dimension
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'; 
 				</programlisting>
@@ -992,8 +992,8 @@ SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 -- Only geodetic coordinate (X, Y and Z) dimension
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 --  Both geodetic coordinate (X, Y, and Z) and time dimensions
-SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
--- Only time dimension
+SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
+-- Only time dimension for geodetic box
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 				</programlisting>
 			</para>
@@ -1012,9 +1012,12 @@ SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 					<para><varname>tboxt(timestamptz, timestamptz): tbox</varname></para>
 					<para><varname>tbox(float, timestamptz, float, timestamptz): tbox</varname></para>
 					<programlisting>
-SELECT tbox(1.0, 2.0)
-SELECT tboxt('2001-01-01 08:00:00', '2001-01-01 08:10:00')
-SELECT tbox(1.0, '2001-01-01 08:00:00', 2.0, '2001-01-01 08:10:00')
+-- Both value and time dimensions
+SELECT tbox(1.0, '2001-01-01', 2.0, '2001-01-02');
+-- Only value dimension
+SELECT tbox(1.0, 2.0);
+-- Only time dimension
+SELECT tboxt('2001-01-01', '2001-01-02');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -1039,12 +1042,14 @@ SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
 SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');
 -- Both coordinate (X, Y, and Z) and time dimensions
 SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');
+-- Only time dimension
+SELECT stboxt('2001-01-03', '2001-01-03');
 -- Only geodetic coordinate (X, Y and Z) dimension
 SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
 --  Both geodetic coordinate (X, Y, and Z) and time dimensions
 SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');
--- Only time dimension
-SELECT stbox('2001-01-03', '2001-01-03');
+-- Only time dimension for geodetic box
+SELECT geodstboxt('2001-01-03', '2001-01-03');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
