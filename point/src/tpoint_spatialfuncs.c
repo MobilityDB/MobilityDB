@@ -418,7 +418,7 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geom_to_geog, 
-		type_oid(T_GEOGRAPHY), true);
+		type_oid(T_GEOGRAPHY), MOBDB_FLAGS_GET_LINEAR(temp->flags), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -430,22 +430,22 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 TemporalInst *
 tgeogpointinst_to_tgeompointinst(TemporalInst *inst)
 {
-	return tfunc1_temporalinst(inst, &geog_to_geom,
-		type_oid(T_GEOMETRY), true);
+	return tfunc1_temporalinst(inst, &geog_to_geom, type_oid(T_GEOMETRY), 
+		true);
 }
 
 TemporalSeq *
 tgeogpointseq_to_tgeompointseq(TemporalSeq *seq)
 {
-	return tfunc1_temporalseq(seq, &geog_to_geom,
-		type_oid(T_GEOMETRY), true);
+	return tfunc1_temporalseq(seq, &geog_to_geom, type_oid(T_GEOMETRY),
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 }
 
 TemporalS *
 tgeogpoints_to_tgeompoints(TemporalS *ts)
 {
-	return tfunc1_temporals(ts, &geog_to_geom,
-		type_oid(T_GEOMETRY), true);
+	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY),
+		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 }
 
 PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
@@ -455,7 +455,7 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geog_to_geom, 
-		type_oid(T_GEOMETRY), true);
+		type_oid(T_GEOMETRY), MOBDB_FLAGS_GET_LINEAR(temp->flags), true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

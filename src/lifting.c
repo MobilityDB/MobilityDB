@@ -106,9 +106,8 @@ tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid valuetypid,
 
 TemporalSeq *
 tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
-	bool mustfree)
+	bool linear, bool mustfree)
 {
-	bool linear = linear_interpolation(valuetypid);
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -125,15 +124,14 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
 
 TemporalS *
 tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
-	bool mustfree)
+	bool linear, bool mustfree)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		sequences[i] = tfunc1_temporalseq(seq, func, valuetypid, mustfree);
+		sequences[i] = tfunc1_temporalseq(seq, func, valuetypid, linear, mustfree);
 	}
-	bool linear = linear_interpolation(valuetypid);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
 		linear, true);
 	
@@ -149,7 +147,7 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
 
 Temporal *
 tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid, 
-	bool mustfree)
+	bool linear, bool mustfree)
 {
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp->duration);
@@ -161,10 +159,10 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid,
 			func, valuetypid, mustfree);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc1_temporalseq((TemporalSeq *)temp,
-			func, valuetypid, mustfree);
+			func, valuetypid, linear, mustfree);
 	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc1_temporals((TemporalS *)temp,
-			func, valuetypid, mustfree);
+			func, valuetypid, linear, mustfree);
 	return result;
 }
 

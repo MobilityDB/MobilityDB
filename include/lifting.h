@@ -19,14 +19,14 @@
 
 /*****************************************************************************/
 
-TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid valuetypid,
-	bool mustfree);
-TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
-	bool mustfree);
-TemporalS *tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
-	bool mustfree);
-Temporal *tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid, 
-	bool mustfree);
+TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), 
+	Oid valuetypid,	bool mustfree);
+TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), 
+	Oid valuetypid, bool linear, bool mustfree);
+TemporalS *tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), 
+	Oid valuetypid, bool linear, bool mustfree);
+Temporal *tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), 
+	Oid valuetypid, bool linear, bool mustfree);
 TemporalInst *tfunc2_temporalinst(TemporalInst *inst, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
 TemporalI *tfunc2_temporali(TemporalI *ti, Datum param,

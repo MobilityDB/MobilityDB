@@ -98,7 +98,7 @@ PGDLLEXPORT Datum
 temporal_upper(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID, 
+	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID, false,
 		false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
@@ -110,7 +110,7 @@ PGDLLEXPORT Datum
 temporal_lower(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID,
+	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID, false,
 		false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
