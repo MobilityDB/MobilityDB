@@ -1422,7 +1422,7 @@ tcontains_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_contains, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1581,7 +1581,7 @@ tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		func, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1745,7 +1745,7 @@ tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_coveredby;
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		func, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1812,7 +1812,7 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_disjoint, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1878,7 +1878,7 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_equals, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2054,7 +2054,7 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		func, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2120,7 +2120,7 @@ ttouches_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_touches, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2186,7 +2186,7 @@ twithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_within, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2455,7 +2455,7 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc2_temporal_temporal_stepwcross(temp1, temp2, 
 		&geom_relate, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2524,7 +2524,7 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Datum pattern = PG_GETARG_DATUM(2);
 	tpoint_same_srid(temp1, temp2);
 	tpoint_same_dimensionality(temp1, temp2);
-	Temporal *result = sync_tfunc3_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc3_temporal_temporal_stepwcross(temp1, temp2, 
 		pattern, &geom_relate_pattern, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);

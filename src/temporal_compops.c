@@ -37,14 +37,14 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	else if (temp->duration == TEMPORALSEQ) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			/* Result is a TemporalS */
-			(Temporal *)tfunc4_temporalseq_base_crossdisc((TemporalSeq *)temp,
+			(Temporal *)tfunc4_temporalseq_base_stepwcross((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			/* Result is a TemporalSeq */
 			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert);
 	else if (temp->duration == TEMPORALS) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-			(Temporal *)tfunc4_temporals_base_crossdisc((TemporalS *)temp,
+			(Temporal *)tfunc4_temporals_base_stepwcross((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			(Temporal *)tfunc4_temporals_base((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert);
@@ -90,7 +90,7 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_eq2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -138,7 +138,7 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_ne2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -186,7 +186,7 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_lt2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -234,7 +234,7 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_le2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -282,7 +282,7 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_gt2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -330,7 +330,7 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
+	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 		&datum2_ge2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
