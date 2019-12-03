@@ -300,9 +300,8 @@ tfunc2_temporali_base(TemporalI *ti, Datum value,
 
 TemporalSeq *
 tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert)
 {
-	bool linear = linear_interpolation(valuetypid);
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
@@ -320,16 +319,15 @@ tfunc2_temporalseq_base(TemporalSeq *seq, Datum value,
 
 TemporalS *
 tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = tfunc2_temporalseq_base(seq, value, func, 
-			valuetypid, invert);
+			valuetypid, linear, invert);
 	}
-	bool linear = linear_interpolation(valuetypid);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
 		linear, true);
 	
@@ -345,7 +343,7 @@ tfunc2_temporals_base(TemporalS *ts, Datum value,
 
 Temporal *
 tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert)
 {
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp->duration);
@@ -357,10 +355,10 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 			func, valuetypid, invert);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, d, 
-			func, valuetypid, invert);
+			func, valuetypid, linear, invert);
 	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, d,
-			func, valuetypid, invert);
+			func, valuetypid, linear, invert);
 	return result;
 }
 

@@ -579,8 +579,8 @@ PGDLLEXPORT Datum
 temporal_degrees(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_degrees, FLOAT8OID, 
-		MOBDB_FLAGS_GET_LINEAR(temp->flags), false);
+	Temporal *result = tfunc1_temporal(temp, &datum_degrees, FLOAT8OID,
+		false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

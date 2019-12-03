@@ -42,11 +42,11 @@ TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum value,
 TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum value, 
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert);
 TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert);
 Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool linear, bool invert);
 TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
 TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
