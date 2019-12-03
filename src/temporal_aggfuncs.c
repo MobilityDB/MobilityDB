@@ -645,7 +645,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
 		result = temporalseq_from_temporalinstarr(&inst, 1,
-			true, true, false);
+			true, true, false, false);
 		pfree(inst);
 		return result;
 	}
@@ -656,7 +656,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	instants[1] = temporalinst_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
 	result = temporalseq_from_temporalinstarr(instants, 2,
-		seq->period.lower_inc, seq->period.upper_inc, false);
+		seq->period.lower_inc, seq->period.upper_inc, false, false);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
 }
@@ -743,7 +743,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = tnumberinst_transform_tavg(inst);
 		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
-			true, true, false);
+			true, true, true, false);
 		pfree(inst1);
 		return 1;
 	}
@@ -766,7 +766,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		bool upper_inc = ( (i == seq->count - 2) ? seq->period.upper_inc : false ) &&
 			datum_eq(value1, value2, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false);
+			lower_inc, upper_inc, true, false);
 		pfree(inst); pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
 		value1 = value2;
@@ -777,7 +777,7 @@ tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 	{
 		instants[0] = tnumberinst_transform_tavg(inst2);
 		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
-			true, true, false);
+			true, true, true, false);
 		count = seq->count;
 		pfree(instants[0]);
 	}
@@ -796,7 +796,7 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
 	result[0] = temporalseq_from_temporalinstarr(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, false);
+		seq->period.lower_inc, seq->period.upper_inc, true, false);
 		
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -1018,7 +1018,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 			inst1->t, inst1->valuetypid);
 	}
 	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
-		lower_inc, upper_inc, true);
+		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
 	pfree(instants); pfree(syncseq1); pfree(syncseq2);
@@ -1870,7 +1870,8 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 			(TemporalInst **)values, state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_from_temporalseqarr(
-			(TemporalSeq **)values, state->length, true);
+			(TemporalSeq **)values, state->length, 
+			MOBDB_FLAGS_GET_LINEAR(values[0]->flags), true);
 	pfree(values);
 	PG_RETURN_POINTER(result);
 }
@@ -1973,12 +1974,14 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 				FLOAT8OID);
 		}
 		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+			true, true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count, true);
+	TemporalS *result = temporals_from_temporalseqarr(newsequences, count,
+		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

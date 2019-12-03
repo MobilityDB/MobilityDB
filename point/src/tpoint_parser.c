@@ -382,8 +382,10 @@ tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	p_cbracket(str);
 	p_cparen(str);
 
+	/* Should be additional attribute */
+	bool linear = true;
 	TemporalSeq *result = temporalseq_from_temporalinstarr(insts, 
-		count, lower_inc, upper_inc, true);
+		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);
@@ -428,7 +430,10 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 		seqs[i] = tpointseq_parse(str, basetype, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_from_temporalseqarr(seqs, count, true);
+	/* Should be additional attribute */
+	bool linear = true;
+	TemporalS *result = temporals_from_temporalseqarr(seqs, count, 
+		linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(seqs[i]);

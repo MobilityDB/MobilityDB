@@ -286,8 +286,10 @@ tpointseq_from_mfjson(json_object *mfjson)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
 		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
+	/* Should be additional attribute */
+	bool linear = true;
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, numpoints, 
-		lower_inc, upper_inc, true);
+		lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < numpoints; i++)
 	{
@@ -355,8 +357,10 @@ tpoints_from_mfjson(json_object *mfjson)
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 		for (int j = 0; j < numpoints; j++)
 			instants[j] = temporalinst_make(values[j], times[j], type_oid(T_GEOMETRY));
+		/* Should be additional attribute */
+		bool linear = true;
 		sequences[i] = temporalseq_from_temporalinstarr(instants, numpoints, 
-			lower_inc, upper_inc, true);
+			lower_inc, upper_inc, linear, true);
 		for (int j = 0; j < numpoints; j++)
 		{
 			pfree(instants[j]);
@@ -366,7 +370,10 @@ tpoints_from_mfjson(json_object *mfjson)
 		pfree(values);
 		pfree(times);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, numseqs, true);
+	/* Should be additional attribute */
+	bool linear = true;
+	TemporalS *result = temporals_from_temporalseqarr(sequences, numseqs, 
+		linear, true);
 	for (int i = 0; i < numseqs; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -823,8 +830,10 @@ temporalseq_from_wkb_state(wkb_parse_state *s)
 		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
+	/* Should be additional attribute */
+	bool linear = true;
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, count, 
-		lower_inc, upper_inc, true); 
+		lower_inc, upper_inc, linear, true); 
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -883,13 +892,18 @@ temporals_from_wkb_state(wkb_parse_state *s)
 			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
+		/* Should be additional attribute */
+		bool linear = true;
 		sequences[i] = temporalseq_from_temporalinstarr(instants, count, 
-			lower_inc, upper_inc, true); 
+			lower_inc, upper_inc, linear, true); 
 		for (int j = 0; j < count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true); 
+	/* Should be additional attribute */
+	bool linear = true;
+	TemporalS *result = temporals_from_temporalseqarr(sequences, count, 
+		linear, true); 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);

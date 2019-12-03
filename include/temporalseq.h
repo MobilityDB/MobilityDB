@@ -22,7 +22,7 @@
 
 extern TemporalInst *temporalseq_inst_n(TemporalSeq *seq, int index);
 extern TemporalSeq *temporalseq_from_temporalinstarr(TemporalInst **instants, 
-	int count, bool lower_inc, bool upper_inc, bool normalize);
+	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TemporalSeq *temporalseq_copy(TemporalSeq *seq);
 extern int temporalseq_find_timestamp(TemporalSeq *seq, TimestampTz t);
 extern Datum temporalseq_value_at_timestamp1(TemporalInst *inst1, 
@@ -79,8 +79,8 @@ extern TemporalSeq *tfloatseq_to_tintseq(TemporalSeq *seq);
 
 /* Transformation functions */
 
-extern TemporalSeq *temporalinst_to_temporalseq(TemporalInst *inst);
-extern TemporalSeq *temporali_to_temporalseq(TemporalI *ti);
+extern TemporalSeq *temporalinst_to_temporalseq(TemporalInst *inst, bool linear);
+extern TemporalSeq *temporali_to_temporalseq(TemporalI *ti, bool linear);
 extern TemporalSeq *temporals_to_temporalseq(TemporalS *ts);
 
 /* Accessor functions */

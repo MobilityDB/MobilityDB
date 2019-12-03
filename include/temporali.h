@@ -51,7 +51,6 @@ extern TemporalI *temporali_append_instant(TemporalI *ti, TemporalInst *inst);
  
 TemporalI *tinti_to_tfloati(TemporalI *ti);
 TemporalI *tfloati_to_tinti(TemporalI *ti);
-TemporalSeq *temporali_to_temporalseq(TemporalI *ti);
 
 /* Transformation functions */
 

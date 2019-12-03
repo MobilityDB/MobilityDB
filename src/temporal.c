@@ -854,8 +854,10 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 		}
 	}
 
+	/* Should be additional attribute */
+	bool linear = true;
 	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants, 
-		count, lower_inc, upper_inc, true);
+		count, lower_inc, upper_inc, linear, true);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
@@ -888,7 +890,8 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 				errmsg("Input values must be of type temporal sequence")));
 		}
 	}
-	Temporal *result = (Temporal *)temporals_from_temporalseqarr(sequences, count, true);
+	Temporal *result = (Temporal *)temporals_from_temporalseqarr(sequences, count,
+		MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags), true);
 	
 	pfree(sequences);
 	PG_FREE_IF_COPY(array, 0);
@@ -1052,11 +1055,13 @@ temporal_to_temporalseq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
+	/* Should be an additional parameter */
+	bool linear = linear_interpolation(temp->valuetypid);
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_to_temporalseq((TemporalInst *)temp);
+		result = (Temporal *)temporalinst_to_temporalseq((TemporalInst *)temp, linear);
 	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)temporali_to_temporalseq((TemporalI *)temp);
+		result = (Temporal *)temporali_to_temporalseq((TemporalI *)temp, linear);
 	else if (temp->duration == TEMPORALSEQ)
 		result = temporal_copy(temp);
 	else if (temp->duration == TEMPORALS)
@@ -1074,11 +1079,13 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
+	/* Should be an additional parameter */
+	bool linear = linear_interpolation(temp->valuetypid);
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_to_temporals((TemporalInst *)temp);
+		result = (Temporal *)temporalinst_to_temporals((TemporalInst *)temp, linear);
 	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)temporali_to_temporals((TemporalI *)temp);
+		result = (Temporal *)temporali_to_temporals((TemporalI *)temp, linear);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)temporalseq_to_temporals((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
