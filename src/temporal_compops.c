@@ -90,8 +90,13 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_eq2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_eq2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -138,8 +143,13 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_ne2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_ne2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -186,8 +196,13 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_lt2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_lt2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_lt2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -234,8 +249,13 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_le2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_le2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_le2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -282,8 +302,13 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_gt2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_gt2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_gt2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -330,8 +355,13 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
-		&datum2_ge2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+			&datum2_ge2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ge2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

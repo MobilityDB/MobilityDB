@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * temporal_mathfuncs.c
+ * tnumber_mathfuncs.c
  *	Temporal mathematical operators (+, -, *, /) and functions (round, 
  *	degrees).
  *
@@ -11,7 +11,7 @@
  *
  *****************************************************************************/
 
-#include "temporal_mathfuncs.h"
+#include "tnumber_mathfuncs.h"
 
 #include <math.h>
 #include <utils/builtins.h>
@@ -187,27 +187,29 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp1->duration);
 	temporal_duration_is_valid(temp2->duration);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid valuetypid = base_oid_from_temporal(temptypid);
- 		result = sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 	&datum_add, valuetypid, NULL);
+ 		result = sync_tfunc4_temporal_temporal(temp1, temp2, &datum_add,
+		 	valuetypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result = sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 	&datum_add, FLOAT8OID, NULL);
+		result = sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_add,
+		 	FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result = sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 	&datum_add, FLOAT8OID, NULL);
+		result = sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_add,
+		 	FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
@@ -290,27 +292,29 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *result = NULL;
 	temporal_duration_is_valid(temp1->duration);
 	temporal_duration_is_valid(temp2->duration);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid valuetypid = base_oid_from_temporal(temptypid);
- 		result = sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 	&datum_sub, valuetypid, NULL);
+ 		result = sync_tfunc4_temporal_temporal(temp1, temp2, &datum_sub,
+		 	valuetypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result = sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 	&datum_sub, FLOAT8OID, NULL);
+		result = sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_sub,
+		 	FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result = sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 	&datum_sub, FLOAT8OID, NULL);
+		result = sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_sub,
+		 	FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
@@ -389,7 +393,7 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool crossings = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
@@ -401,30 +405,30 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid valuetypid = base_oid_from_temporal(temptypid);
- 		result = crossings ?
-			sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 		&datum_mult, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 		&datum_mult, valuetypid, NULL);
+ 		result = linear ?
+			sync_tfunc4_temporal_temporal(temp1, temp2, &datum_mult,
+		 		valuetypid, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(temp1, temp2, &datum_mult,
+		 		valuetypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result =  crossings ?
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 		&datum_mult, FLOAT8OID, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 		&datum_mult, FLOAT8OID, NULL);
+		result =  linear ?
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_mult,
+		 		FLOAT8OID, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_mult,
+		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result =  crossings ?
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 		&datum_mult, FLOAT8OID, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 		&datum_mult, FLOAT8OID, NULL);
+		result =  linear ?
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_mult, 
+		 		FLOAT8OID, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_mult, 
+		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
@@ -513,7 +517,7 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool crossings = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
@@ -525,30 +529,30 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 	{
 		Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 		Oid valuetypid = base_oid_from_temporal(temptypid);
- 		result = crossings ?
-			sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 		&datum_div, valuetypid, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(temp1, temp2, 
-		 		&datum_div, valuetypid, NULL);
+ 		result = linear ?
+			sync_tfunc4_temporal_temporal(temp1, temp2, &datum_div,
+		 		valuetypid, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(temp1, temp2, &datum_div,
+		 		valuetypid, linear, NULL);
 	}
 	else if (temp1->valuetypid == INT4OID && temp2->valuetypid == FLOAT8OID)
 	{
 		Temporal *ftemp1 = tint_to_tfloat_internal(temp1);
-		result =  crossings ?
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 		&datum_div, FLOAT8OID, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(ftemp1, temp2, 
-		 		&datum_div, FLOAT8OID, NULL);
+		result =  linear ?
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_div,
+		 		FLOAT8OID, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(ftemp1, temp2, &datum_div,
+		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp1);
 	}
 	else if (temp1->valuetypid == FLOAT8OID && temp2->valuetypid == INT4OID)
 	{
 		Temporal *ftemp2 = tint_to_tfloat_internal(temp2);
-		result =  crossings ?
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 		&datum_div, FLOAT8OID, &tnumberseq_mult_maxmin_at_timestamp) :
-			sync_tfunc4_temporal_temporal(temp1, ftemp2, 
-		 		&datum_div, FLOAT8OID, NULL);
+		result =  linear ?
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_div,
+		 		FLOAT8OID, linear, &tnumberseq_mult_maxmin_at_timestamp) :
+			sync_tfunc4_temporal_temporal(temp1, ftemp2, &datum_div,
+		 		FLOAT8OID, linear, NULL);
 		pfree(ftemp2);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
