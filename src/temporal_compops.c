@@ -91,7 +91,7 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_eq2, BOOLOID) :
@@ -144,7 +144,7 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_ne2, BOOLOID) :
@@ -197,7 +197,7 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_lt2, BOOLOID) :
@@ -250,7 +250,7 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_le2, BOOLOID) :
@@ -303,7 +303,7 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_gt2, BOOLOID) :
@@ -356,7 +356,7 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp1->flags);
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
 		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
 			&datum2_ge2, BOOLOID) :
