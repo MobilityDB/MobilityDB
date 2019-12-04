@@ -54,8 +54,8 @@ textcat_base_temporal(PG_FUNCTION_ARGS)
 {
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, 
-	 	&datum_textcat, TEXTOID, false, true);
+	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
+		TEXTOID, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -68,8 +68,8 @@ textcat_temporal_base(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, 
-	 	&datum_textcat, TEXTOID, false, false);
+	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
+		TEXTOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -82,7 +82,7 @@ textcat_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Temporal *result = sync_tfunc2_temporal_temporal(temp1, temp2, 
-	 	&datum_textcat, TEXTOID, NULL);
+	 	&datum_textcat, TEXTOID, false, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

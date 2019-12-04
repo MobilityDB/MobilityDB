@@ -287,8 +287,14 @@ distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
 	}
 	else
 		func = &geog_distance;
-	return sync_tfunc2_temporal_temporal(temp1, temp2,
-		func, FLOAT8OID, &tpointseq_min_dist_at_timestamp);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc2_temporal_temporal(temp1, temp2, func, 
+			FLOAT8OID, linear, &tpointseq_min_dist_at_timestamp) :
+		sync_tfunc2_temporal_temporal(temp1, temp2, func, 
+			FLOAT8OID, linear, NULL);
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(distance_tpoint_tpoint);

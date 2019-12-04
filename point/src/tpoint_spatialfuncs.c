@@ -2616,8 +2616,10 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	TemporalSeq *dist = sync_tfunc2_temporalseq_temporalseq(seq1, seq2, 
-		func, FLOAT8OID, NULL);
+		func, FLOAT8OID, linear, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
 	/* Make a copy of the sequences with inclusive bounds */
@@ -2640,8 +2642,10 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
+	bool linear = MOBDB_FLAGS_GET_LINEAR(ts1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(ts2->flags);
 	TemporalS *dist = sync_tfunc2_temporals_temporals(ts1, ts2, func, 
-		FLOAT8OID, NULL);
+		FLOAT8OID, linear, NULL);
 	TemporalS *mindist = temporals_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
 	TemporalInst *inst1 = temporals_at_timestamp(ts1, t);
