@@ -655,17 +655,24 @@ temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 {
 	char **strings = palloc((int) (sizeof(char *) * ts->count));
 	size_t outlen = 0;
-
+	char str[20];
+	if (linear_interpolation(ts->valuetypid) && 
+		!MOBDB_FLAGS_GET_LINEAR(ts->flags))
+		sprintf(str, "Interp=Stepwise;");
+	else
+		str[0] = '\0';
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		strings[i] = temporalseq_to_string(seq, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
-	char *result = palloc(outlen + 3);
+	char *result = palloc(strlen(str) + outlen + 3);
 	result[outlen] = '\0';
-	result[0] = '{';
-	size_t pos = 1;
+	size_t pos = 0;
+	strcpy(result, str);
+	pos += strlen(str);
+	result[pos++] = '{';
 	for (int i = 0; i < ts->count; i++)
 	{
 		strcpy(result + pos, strings[i]);
@@ -686,6 +693,7 @@ void
 temporals_write(TemporalS *ts, StringInfo buf)
 {
 	pq_sendint(buf, ts->count, 4);
+	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
@@ -699,11 +707,10 @@ TemporalS *
 temporals_read(StringInfo buf, Oid valuetypid)
 {
 	int count = (int) pq_getmsgint(buf, 4);
+	bool linear = (char) pq_getmsgbyte(buf);
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
 		sequences[i] = temporalseq_read(buf, valuetypid);
-	/* Should be additional attribute */
-	bool linear = linear_interpolation(valuetypid);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
 		linear, false);
 
@@ -723,26 +730,20 @@ temporals_read(StringInfo buf, Oid valuetypid)
 TemporalS *
 tints_to_tfloats(TemporalS *ts)
 {
-	/* Singleton sequence set */
-	if (ts->count == 1)
-		return tintseq_to_tfloatseq(temporals_seq_n(ts, 0));
-
-	/* General case */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-	int k = 0, countstep;
+	TemporalS *result = temporals_copy(ts);
+	result->valuetypid = FLOAT8OID;
+	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
 	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tintseq_to_tfloatseq1(&sequences[k], seq);
-		k += countstep;
+		TemporalSeq *seq = temporals_seq_n(result, i);
+		for (int j = 0; i < seq->count; j++)
+		{
+			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			inst->valuetypid = FLOAT8OID;
+			Datum *value_ptr = temporalinst_value_ptr(inst);
+			*value_ptr = Float8GetDatum((double)DatumGetInt32(temporalinst_value(inst)));
+		}
 	}
-	/* Should be an additional parameter */
-	bool linear = true;	
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	 pfree(sequences); 
 	return result;
 }
 

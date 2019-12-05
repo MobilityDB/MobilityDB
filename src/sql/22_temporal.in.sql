@@ -250,7 +250,7 @@ CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true,
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
-	upper_inc boolean DEFAULT true)
+	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -270,7 +270,7 @@ CREATE FUNCTION tints(tint[])
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloats(tfloat[])
+CREATE FUNCTION tfloats(tfloat[], stepwise boolean DEFAULT true)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

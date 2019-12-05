@@ -362,8 +362,8 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
  *****************************************************************************/
 
 static bool
-dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, Datum param,
+dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, bool linear1,
+	TemporalInst *start2, TemporalInst *end2, bool linear2, Datum param,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	Datum sv1 = temporalinst_value(start1);
@@ -391,8 +391,8 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1,
 	}
 
 	/* Find the values at the local minimum */
-	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
-	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
+	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the start instant and at the local minimum */
 	bool result = func(crossvalue1, crossvalue2, param);
 	
@@ -413,8 +413,8 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
-		result = dwithin_tpointseq_tpointseq1(start1, end1, 
-			start2, end2, d, func);
+		result = dwithin_tpointseq_tpointseq1(start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
+			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),d, func);
 		if (result == true)
 			return true;
 		start1 = end1;

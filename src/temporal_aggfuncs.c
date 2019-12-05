@@ -735,59 +735,8 @@ tnumberi_transform_tavg(TemporalI *ti)
 	return result;
 }
 
-static int
-tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
-{
-	if (seq->count == 1)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = tnumberinst_transform_tavg(inst);
-		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
-			true, true, true, false);
-		pfree(inst1);
-		return 1;
-	}
-	
-	int count;
-	TemporalInst *instants[2];
-	TemporalInst *inst1, *inst2;
-	inst1 = temporalseq_inst_n(seq, 0);
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2;
-	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count - 1; i++)
-	{
-		inst2 = temporalseq_inst_n(seq, i + 1);
-		value2 = temporalinst_value(inst2);
-		instants[0] = tnumberinst_transform_tavg(inst1);
-		TemporalInst *inst = temporalinst_make(value1, inst2->t,
-			inst1->valuetypid);
-		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = ( (i == seq->count - 2) ? seq->period.upper_inc : false ) &&
-			datum_eq(value1, value2, inst1->valuetypid);
-		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, true, false);
-		pfree(inst); pfree(instants[0]); pfree(instants[1]);
-		inst1 = inst2;
-		value1 = value2;
-		lower_inc = true;
-	}
-	if (seq->period.upper_inc && seq->count > 1 &&
-		! result[seq->count - 2]->period.upper_inc)
-	{
-		instants[0] = tnumberinst_transform_tavg(inst2);
-		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
-			true, true, true, false);
-		count = seq->count;
-		pfree(instants[0]);
-	}
-	else
-		count = seq->count - 1;
-	return count;
-}
-
-static int 
-tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
+static TemporalSeq *
+tnumberseq_transform_tavg(TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -795,53 +744,24 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	result[0] = temporalseq_from_temporalinstarr(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, true, false);
-		
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc, false, false);
+
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
-	return 1;
-}
-
-static TemporalSeq **
-tnumberseq_transform_tavg(TemporalSeq *seq, int *count)
-{
-	int maxcount = 0;
-	numeric_base_type_oid(seq->valuetypid);
-	if (seq->valuetypid == INT4OID)
-		maxcount = seq->count;
-	else if (seq->valuetypid == FLOAT8OID)
-		maxcount = 1;
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
-	if (seq->valuetypid == INT4OID)
-		*count = tintseq_transform_tavg(result, seq);
-	else if (seq->valuetypid == FLOAT8OID)
-		*count = tfloatseq_transform_tavg(result, seq);
 	return result;
 }
 
 static TemporalSeq **
-tnumbers_transform_tavg(TemporalS *ts, int *count)
+tnumbers_transform_tavg(TemporalS *ts)
 {
-	int maxcount = 0;
-	numeric_base_type_oid(ts->valuetypid);
-	if (ts->valuetypid == INT4OID)
-		maxcount = ts->totalcount;
-	else if (ts->valuetypid == FLOAT8OID)
-		maxcount = ts->count;
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
-	int k = 0, countstep;
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		if (seq->valuetypid == INT4OID)
-			countstep = tintseq_transform_tavg(&result[k], seq);
-		else if (seq->valuetypid == FLOAT8OID)
-			countstep = tfloatseq_transform_tavg(&result[k], seq);
-		k += countstep;
+		result[i] = tnumberseq_transform_tavg(seq);
 	}
-	*count = k;
 	return result;
 }
 
@@ -863,9 +783,15 @@ tnumber_transform_tavg(Temporal *temp, int *count)
 		*count = ((TemporalI *)temp)->count;
 	} 
 	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal **)tnumberseq_transform_tavg((TemporalSeq *) temp, count);
+	{
+		result = (Temporal **)tnumberseq_transform_tavg((TemporalSeq *) temp);
+		*count = 1;
+	} 
 	else if (temp->duration == TEMPORALS)
-		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp, count);
+	{
+		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp);
+		*count = ((TemporalS *)temp)->count;
+	} 
 	assert(result != NULL);
 	return result;
 }

@@ -150,8 +150,8 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
  */
 
 static TemporalSeq **
-tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo, 
-	bool lower_inc, bool upper_inc, Datum (*func)(Datum, Datum), 
+tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
+	Datum geo, bool lower_inc, bool upper_inc, Datum (*func)(Datum, Datum), 
 	Oid valuetypid, int *count, bool invert)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -204,7 +204,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 		 * Find the middle time between inst1 and inst2 
 		 * and compute the func at that point */
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
-		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
+		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, linear, inttime);
 		Datum intvalue1 = invert ? func(geo, intvalue) :
 			func(intvalue, geo);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -259,7 +259,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 			double time1 = (interinstants[i])->t;
 			double time2 = (interinstants[i + 1])->t;
 			TimestampTz inttime = time1 + ((time2 - time1)/2);
-			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
+			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, linear, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue) :
 				func(intvalue, geo);
 			instants[0] = temporalinst_make(intvalue1, time1, valuetypid);
@@ -324,7 +324,8 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, geo, 
+		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 		inst1 = inst2;
@@ -416,7 +417,8 @@ tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
  */
 
 static TemporalSeq **
-tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo, Datum param, 
+tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, 
+	bool linear, Datum geo, Datum param, 
 	bool lower_inc, bool upper_inc, Datum (*func)(Datum, Datum, Datum), 
 	Oid valuetypid, int *count, bool invert)
 {
@@ -470,7 +472,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 		 * Find the middle time between inst1 and inst2 
 		 * and compute the func at that point */
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
-		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
+		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, linear, inttime);
 		Datum intvalue1 = invert ? func(geo, intvalue, param) :
 		func(intvalue, geo, param);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -526,7 +528,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 			double time1 = (interinstants[i])->t;
 			double time2 = (interinstants[i + 1])->t;
 			TimestampTz inttime = time1 + ((time2 - time1)/2);
-			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, inttime);
+			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, linear, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue, param) :
 				func(intvalue, geo, param);
 			instants[0] = temporalinst_make(intvalue1, time1, valuetypid);
@@ -594,7 +596,8 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2, geo, param, 
+		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, param, 
 			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 		inst1 = inst2;

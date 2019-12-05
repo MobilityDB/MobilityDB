@@ -1556,8 +1556,8 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
  * points and the geometry are in 2D 
  */
 static TemporalSeq **
-tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
-	bool lower_inc, bool upper_inc, bool linear, Datum geom, int *count)
+tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
+	bool lower_inc, bool upper_inc, Datum geom, int *count)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -1615,7 +1615,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
 			{
 				/* Restriction at timestamp done to avoid floating point imprecision */
-				instants[0] = temporalseq_at_timestamp1(inst1, inst2, t);
+				instants[0] = temporalseq_at_timestamp1(inst1, inst2, linear, t);
 				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
 					true, true, linear, false);
 				pfree(instants[0]);
@@ -1636,8 +1636,8 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2,
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
 			/* Restriction at timestamp done to avoid floating point imprecision */
-			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1);
-			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1);
+			instants[0] = temporalseq_at_timestamp1(inst1, inst2, linear, lower1);
+			instants[1] = temporalseq_at_timestamp1(inst1, inst2, linear, upper1);
 			bool lower_inc1 = timestamp_cmp_internal(lower1, inst1->t) == 0 ? 
 				lower_inc : true;
 			bool upper_inc1 = timestamp_cmp_internal(upper1, inst2->t) == 0 ? 
@@ -1688,8 +1688,8 @@ tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-		sequences[i] = tpointseq_at_geometry1(inst1, inst2, 
-			lower_inc, upper_inc, linear, geom, &countseqs[i]);
+		sequences[i] = tpointseq_at_geometry1(inst1, inst2, linear,
+			lower_inc, upper_inc, geom, &countseqs[i]);
 		totalseqs += countseqs[i];
 		inst1 = inst2;
 		lower_inc = true;
@@ -2053,8 +2053,8 @@ NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 /* NAI between temporal sequence point and a geometry/geography */
 
 static Datum
-NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
-	TimestampTz *t, bool *tofree)
+NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
+	Datum geo, TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -2115,7 +2115,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, Datum geo,
 	double delta = (inst2->t - inst1->t) * fraction;
 	*t = inst1->t + delta;
 	*tofree = true;
-	return temporalseq_value_at_timestamp1(inst1, inst2, *t);
+	return temporalseq_value_at_timestamp1(inst1, inst2, linear, *t);
 }
 
 static TemporalInst *
@@ -2135,7 +2135,8 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		TimestampTz t;
 		bool tofree;
-		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
+		Datum point = NAI_tpointseq_geo1(inst1, inst2, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, &t, &tofree);
 		double dist = DatumGetFloat8(func(point, geo));
 		if (dist < mindist)
 		{

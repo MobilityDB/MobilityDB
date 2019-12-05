@@ -833,6 +833,7 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	bool lower_inc = PG_GETARG_BOOL(1);
 	bool upper_inc = PG_GETARG_BOOL(2);
+	bool linear = PG_GETARG_BOOL(3);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
@@ -854,8 +855,6 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 		}
 	}
 
-	/* Should be additional attribute */
-	bool linear = true;
 	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants, 
 		count, lower_inc, upper_inc, linear, true);
 	pfree(instants);
@@ -1055,8 +1054,7 @@ temporal_to_temporalseq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
-	/* Should be an additional parameter */
-	bool linear = linear_interpolation(temp->valuetypid);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_to_temporalseq((TemporalInst *)temp, linear);
@@ -1079,8 +1077,7 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
-	/* Should be an additional parameter */
-	bool linear = linear_interpolation(temp->valuetypid);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
 	temporal_duration_is_valid(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)temporalinst_to_temporals((TemporalInst *)temp, linear);

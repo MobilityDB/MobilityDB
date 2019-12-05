@@ -52,7 +52,7 @@ geog_distance(Datum geog1, Datum geog2)
 
 static void
 distance_tpointseq_geo1(TemporalInst **result,
-	TemporalInst *inst1, TemporalInst *inst2, 
+	TemporalInst *inst1, TemporalInst *inst2, bool linear, 
 	Datum point, Datum (*func)(Datum, Datum), int *count)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -106,7 +106,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 
 	double delta = (inst2->t - inst1->t) * fraction;
 	TimestampTz time = inst1->t + delta;
-	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, time);
+	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, time);
 	result[0] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID);
 	result[1] = temporalinst_make(func(point, value), time,
@@ -129,8 +129,8 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		int count;
-		distance_tpointseq_geo1(&instants[k], inst1, inst2, point, func,
-			&count);
+		distance_tpointseq_geo1(&instants[k], inst1, inst2, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), point, func, &count);
 		/* The previous step has added between one and three sequences */
 		k += count;
 		inst1 = inst2;
