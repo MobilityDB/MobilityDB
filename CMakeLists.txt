@@ -21,7 +21,7 @@ src/temporal_boolops.c
 src/temporal_boxops.c
 src/temporal_compops.c
 src/temporal_gist.c
-src/temporal_mathfuncs.c
+src/tnumber_mathfuncs.c
 src/temporal_parser.c
 src/temporal_posops.c
 src/temporal_selfuncs.c
@@ -52,10 +52,10 @@ src/sql/15_time_spgist.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
-src/sql/24_temporal_mathfuncs.in.sql
+src/sql/24_tnumber_mathfuncs.in.sql
 src/sql/26_temporal_boolops.in.sql
-src/sql/28_temporal_textfuncs.in.sql
-src/sql/30_temporal_compops.in.sql
+src/sql/27_temporal_textfuncs.in.sql
+src/sql/28_temporal_compops.in.sql
 src/sql/32_temporal_boxops.in.sql
 src/sql/34_temporal_posops.in.sql
 src/sql/36_temporal_aggfuncs.in.sql

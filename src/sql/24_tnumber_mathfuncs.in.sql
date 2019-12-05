@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * temporal_mathfuncs.sql
+ * tnumber_mathfuncs.sql
  *	  Temporal mathematic functions and operators.
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
