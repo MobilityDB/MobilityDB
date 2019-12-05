@@ -577,6 +577,15 @@ temporal_parse(char **str, Oid basetype)
 {
 	p_whitespace(str);
 	Temporal *result = NULL;  /* keep compiler quiet */
+	bool stepwise = false;
+	/* Starts with "Interp=Stepwise" */
+	char *bak = *str;
+	if (strncasecmp(*str,"Interp=Stepwise;",17) == 0)
+	{
+		/* Move str after the semicolon */
+		*str += 17;
+		stepwise = true;
+	}
 	if (**str != '{' && **str != '[' && **str != '(')
 		result = (Temporal *)temporalinst_parse(str, basetype, true);
 	else if (**str == '[' || **str == '(')
