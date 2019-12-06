@@ -2912,7 +2912,7 @@ SELECT ttext '[A@2012-01-01, B@2012-01-03, C@2012-01-04]' ||
 
 				<listitem>
 					<para>Transform to uppercase</para>
-					<para><varname>upper(ttext, integer): ttext</varname></para>
+					<para><varname>upper(ttext): ttext</varname></para>
 					<programlisting>
 SELECT upper(ttext '[AA@2000-01-01, bb@2000-01-02]');
 -- "["AA"@2000-01-01, "BB"@2000-01-02]"
