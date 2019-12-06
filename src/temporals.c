@@ -664,7 +664,7 @@ temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		strings[i] = temporalseq_to_string(seq, value_out);
+		strings[i] = temporalseq_to_string(seq, true, value_out);
 		outlen += strlen(strings[i]) + 2;
 	}
 	char *result = palloc(strlen(str) + outlen + 3);

@@ -629,7 +629,7 @@ temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum))
 	else if (temp->duration == TEMPORALI) 
 		result = temporali_to_string((TemporalI *)temp, value_out);
 	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_to_string((TemporalSeq *)temp, value_out);
+		result = temporalseq_to_string((TemporalSeq *)temp, false, value_out);
 	else if (temp->duration == TEMPORALS) 
 		result = temporals_to_string((TemporalS *)temp, value_out);
 	return result;

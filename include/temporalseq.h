@@ -63,7 +63,7 @@ extern bool temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalIns
 
 /* Input/output functions */
 
-extern char *temporalseq_to_string(TemporalSeq *seq, char *(*value_out)(Oid, Datum));
+extern char *temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, Datum));
 extern void temporalseq_write(TemporalSeq *seq, StringInfo buf);
 extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 

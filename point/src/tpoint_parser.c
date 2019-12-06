@@ -332,7 +332,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 }
 
 static TemporalSeq *
-tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -382,8 +382,6 @@ tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	p_cbracket(str);
 	p_cparen(str);
 
-	/* Should be additional attribute */
-	bool linear = true;
 	TemporalSeq *result = temporalseq_from_temporalinstarr(insts, 
 		count, lower_inc, upper_inc, linear, true);
 
@@ -395,7 +393,7 @@ tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 }
 
 static TemporalS *
-tpoints_parse(char **str, Oid basetype, int *tpoint_srid) 
+tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -404,13 +402,13 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalSeq *seq = tpointseq_parse(str, basetype, false, tpoint_srid);
+	TemporalSeq *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(seq);
-		seq = tpointseq_parse(str, basetype, false, tpoint_srid);
+		seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	pfree(seq);
 	if (!p_cbrace(str))
@@ -427,11 +425,9 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = tpointseq_parse(str, basetype, false, tpoint_srid);
+		seqs[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	/* Should be additional attribute */
-	bool linear = true;
 	TemporalS *result = temporals_from_temporalseqarr(seqs, count, 
 		linear, true);
 
@@ -453,14 +449,15 @@ tpoint_parse(char **str, Oid basetype)
 	 * because this requires a string terminated by '\0' and we cannot 
 	 * modify the string in case it must be passed to the tpointinst_parse
 	 * function. */
-	char *bak = *str;
 	if (strncasecmp(*str,"SRID=",5) == 0)
 	{
 		/* Move str to the start of the numeric part */
 		*str += 5;
 		int delim = 0;
 		tpoint_srid = 0;
-		while ((*str)[delim] != ';' && (*str)[delim] != '\0')
+		/* Delimiter will be either ',' or ';' depending on whether interpolation 
+		   is given after */
+		while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
 		{
 			tpoint_srid = tpoint_srid * 10 + (*str)[delim] - '0'; 
 			delim++;
@@ -474,25 +471,31 @@ tpoint_parse(char **str, Oid basetype)
 		srid_is_latlong(fcinfo, tpoint_srid);
      */	
 
+	bool linear = linear_interpolation(basetype);
+	/* Starts with "Interp=Stepwise" */
+	if (strncasecmp(*str,"Interp=Stepwise;",16) == 0)
+	{
+		/* Move str after the semicolon */
+		*str += 16;
+		linear = false;
+	}
 	Temporal *result = NULL; /* keep compiler quiet */
 	/* Determine the type of the temporal point */
 	if (**str != '{' && **str != '[' && **str != '(')
 	{
-		/* Pass the SRID specification */
-		*str = bak;
 		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
 	}
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)tpointseq_parse(str, basetype, true, &tpoint_srid);		
+		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, &tpoint_srid);		
 	else if (**str == '{')
 	{
-		bak = *str;
+		char *bak = *str;
 		p_obrace(str);
 		p_whitespace(str);
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			result = (Temporal *)tpoints_parse(str, basetype, &tpoint_srid);
+			result = (Temporal *)tpoints_parse(str, basetype, linear, &tpoint_srid);
 		}
 		else
 		{
