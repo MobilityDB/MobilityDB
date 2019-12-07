@@ -747,11 +747,11 @@ tfunc4_temporals_base_stepwcross(TemporalS *ts, Datum value,
 	Oid valuetypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount * 3);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tfunc4_temporalseq_base_stepwcross2(&sequences[k], seq, value,
+		int countstep = tfunc4_temporalseq_base_stepwcross2(&sequences[k], seq, value,
 			func, datumtypid, valuetypid, invert);
 		k += countstep;
 	}
@@ -2691,11 +2691,11 @@ sync_tfunc2_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq,
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * 
 		(ts->totalcount + seq->count) * 3);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		countstep = sync_tfunc2_temporalseq_temporalseq_stepwcross2(&sequences[k], 
+		int countstep = sync_tfunc2_temporalseq_temporalseq_stepwcross2(&sequences[k], 
 			seq1, seq, func, valuetypid);
 		k += countstep;
 	}
@@ -3071,11 +3071,11 @@ sync_tfunc3_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq,
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * 
 		(ts->totalcount + seq->count) * 3);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		countstep = sync_tfunc3_temporalseq_temporalseq_stepwcross2(&sequences[k], 
+		int countstep = sync_tfunc3_temporalseq_temporalseq_stepwcross2(&sequences[k], 
 			seq1, seq, param, func, valuetypid);
 		k += countstep;
 	}
@@ -3475,11 +3475,11 @@ sync_tfunc4_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq,
 {
 	int count = (ts->totalcount + seq->count);
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count * 3);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		countstep = sync_tfunc4_temporalseq_temporalseq_stepwcross2(&sequences[k],
+		int countstep = sync_tfunc4_temporalseq_temporalseq_stepwcross2(&sequences[k],
 			seq1, seq, func, valuetypid);
 		k += countstep;
 	}

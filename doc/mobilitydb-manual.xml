@@ -654,44 +654,92 @@ CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
 
 	<chapter id="temporal_types">
 		<title>Temporal Types</title>
-		<para>There are six built-in temporal types, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points). Depending on their base type, temporal types may evolve in a stepwise or linear manner. Temporal types based on the <varname>boolean</varname>, <varname>int</varname>, or <varname>text</varname> base types evolve in a stepwise manner, while temporal types based on the <varname>float</varname>, <varname>geometry</varname>, or <varname>geography</varname> base types evolve in a linear manner. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a car may be represented by a temporal point, since it is typically assumed the location between two consecutive GPS readings can be obtained by linear interpolation.</para>
+		<para>There are six built-in temporal types, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension). 
+		</para>
 
-		<para>The duration of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four durations, namely, instant, instant set, sequence, and sequence set.</para>
+		<para>The <emphasis role="strong">interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis role="strong">stepwise</emphasis> when the value remains constant between two successive instants. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis role="strong">linear</emphasis> when the value evolves linearly between two successive instants. For example, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Notice that temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a stepwise manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a stepwise or linear manner.</para>
 
-		<para>A temporal value of instant duration (briefly, an instant value) represents the value at a time instant, for example
+		<para>The <emphasis role="strong">duration</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four durations, namely, instant, instant set, sequence, and sequence set.</para>
+
+		<para>A temporal value of <emphasis role="strong">instant</emphasis> duration (briefly, an instant value) represents the value at a time instant, for example
 			<programlisting>
 SELECT tfloat '17@2018-01-01 08:00:00';
 			</programlisting>
 		</para>
 
-		<para>A temporal value of instant set duration (briefly, an instant set value) represents the evolution of the value at a set of time instants, where the values between these instants are unknown. An example is as follows:
+		<para>A temporal value of <emphasis role="strong">instant set</emphasis> duration (briefly, an instant set value) represents the evolution of the value at a set of time instants, where the values between these instants are unknown. An example is as follows:
 			<programlisting>
 SELECT tfloat '{17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00, 18@2018-01-01 08:10:00}';
 			</programlisting>
 		</para>
 
-		<para>A temporal value of sequence duration (briefly, a sequence value) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using either a stepwise or a linear function. An example is as follows:
+		<para>A temporal value of <emphasis role="strong">sequence</emphasis> duration (briefly, a sequence value) represents the evolution of the value during a sequence of time instants, where the values between these instants are interpolated using either a stepwise or a linear function (see below). An example is as follows:
 			<programlisting>
 SELECT tint '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 			</programlisting>
 		</para>
 				
-		<para>As can be seen, a value of a type with sequence duration has a lower and an upper bound that can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
+		<para>As can be seen, a value of a type with sequence duration has a lower and an upper bound that can be inclusive (represented by &lsquo;<varname>[</varname>&rsquo; and &lsquo;<varname>]</varname>&rsquo;) or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). A temporal sequence value with a single instant such as
+			<programlisting>
+SELECT tint '[10@2018-01-01 08:00:00]';
+			</programlisting>
+		is called an <emphasis role="strong">instantaneous sequence</emphasis>. In that case, both bounds must be inclusive.
+		</para>
+				
+		<para>The value of a temporal sequence is interpreted by assuming that the period of time defined by every pair of consecutive values <varname>v1@t1</varname> and <varname>v2@t2</varname> is lower inclusive and upper exclusive, unless they are the first or the last instants of the sequence and in that case the bounds of the whole sequence apply. Furthermore, the value taken by the temporal sequence between two consecutive instants depends on whether the interpolation is stepwise or linear. For example, the temporal sequence above represents that the value is <varname>10</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname>, <varname>20</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00)</varname>, and <varname>15</varname> at the end instant <varname>2018-01-01 08:10:00</varname>. On the other hand, the following temporal sequence
 			<programlisting>
 SELECT tfloat '(10@2018-01-01 08:00:00, 20@2018-01-01 08:05:00, 15@2018-01-01 08:10:00]';
 			</programlisting>
 		represents that the value evolves linearly from <varname>10</varname> to <varname>20</varname> during <varname>(2018-01-01 08:00:00, 2018-01-01 08:05:00)</varname> and evolves from <varname>20</varname> to <varname>15</varname> during <varname>[2018-01-01 08:05:00, 2018-01-01 08:10:00]</varname>.</para>
 
-		<para>Finally, a temporal value of sequence set duration (briefly, a sequence set value) represents the evolution of the value at a set of sequences, where the values between these sequences are unknown. An example is as follows:
+		<para>Finally, a temporal value of <emphasis role="strong">sequence set</emphasis> duration (briefly, a sequence set value) represents the evolution of the value at a set of sequences, where the values between these sequences are unknown. An example is as follows:
 			<programlisting>
 SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 	[18@2018-01-01 08:10:00, 18@2018-01-01 08:15:00]}';
 			</programlisting>
 		</para>
 				
-		<para>Temporal values with instant or sequence duration are called temporal unit values, while temporal values with instant set or sequence set duration are called temporal set values. Temporal set values can be thought of as an array of the corresponding unit values. Temporal set values must be uniform, that is, they must be constructed from unit values of the same base type and the same duration.</para>
+		<para>Temporal values with instant or sequence duration are called <emphasis role="strong">temporal unit values</emphasis>, while temporal values with instant set or sequence set duration are called <emphasis role="strong">temporal set values</emphasis>. Temporal set values can be thought of as an array of the corresponding unit values. Temporal set values must be <emphasis role="strong">uniform</emphasis>, that is, they must be constructed from unit values of the same base type and the same duration.</para>
 
-		<para>Temporal types support type modifiers (or <varname>typmod</varname> in PostgreSQL terminology), which specify additional nformation for a column definition. For example, in the following table definition:
+			<para>Temporal sequence values are converted into a <emphasis role="strong">normal</emphasis> form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For stepwise interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.
+				<programlisting>
+SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
+-- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)"
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
+	Point(1 1)@2001-01-01 08:10:00)';
+-- "[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)"
+SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]']);
+-- "{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}"
+SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
+	Point(3 3)@2001-01-01 08:10:00]';
+-- "[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]"
+				</programlisting>
+			</para>
+
+			<para> Similary, temporal sequence set values are converted into a normal form. For this, consecutive sequence values are merged when possible. Examples of transformation into a normal form are as follows.
+				<programlisting>
+SELECT tints(ARRAY[tint '[1@2001-01-01, 1@2001-01-03)', '[2@2001-01-03, 2@2001-01-05)']);
+-- '{[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)}'
+SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03)', 
+	'[2@2001-01-03, 3@2001-01-05]']);
+-- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
+SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 3@2001-01-05)', '[3@2001-01-05]']);
+-- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
+SELECT tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
+	Point(1 1)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00),
+	[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}';
+-- "{[[Point(0 0)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
+	Point(1 1)@2001-01-01 08:15:00)}"
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00),
+	[Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}';
+-- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
+SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00),
+	[Point(3 3)@2001-01-01 08:10:00]}';
+-- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
+				</programlisting>
+			</para>
+
+		<para>Temporal types support <emphasis role="strong">type modifiers</emphasis> (or <varname>typmod</varname> in PostgreSQL terminology), which specify additional information for a column definition. For example, in the following table definition:
 			<programlisting>
 CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequence));
 			</programlisting>
@@ -699,11 +747,11 @@ CREATE TABLE Department(DeptNo integer, DeptName varchar(25), NoEmps tint(Sequen
 
 		<para>On the other hand, in the case of temporal point types (that is, <varname>tgeompoint</varname> or <varname>tgeogpoint</varname>) the type modifier may be used to specify specify the duration, the dimensionality, and/or the spatial reference identifier (SRID). For example, in the following table definition:
 			<programlisting>
-CREATE TABLE Fligth(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
+CREATE TABLE Flight(FlightNo integer, Route tgeogpoint(Sequence, PointZ, 4326));
 			</programlisting>
 		the type modifier for the type <varname>tgeogpoint</varname> is composed of three values, the first one indicating the duration as above, the second one the spatial type of the geographies composing the temporal point, and the last one the SRID of the composing geographies. For temporal points, the possible values for the first argument of the type modifier are as above, those for the second argument are either <varname>Point</varname> or <varname>PointZ</varname>, and those for the third argument are valid SRIDs. All the three arguments are optional and if any of them is not specified for a column, values of any duration, dimensionality, and/or SRID are allowed.</para>
 
-		<para>Each temporal type is associated to another type, referred to as its bounding box, which represent its extent in the value and/or the time dimension. The bounding box of the various temporal types are as follows:
+		<para>Each temporal type is associated to another type, referred to as its <emphasis role="strong">bounding box</emphasis>, which represent its extent in the value and/or the time dimension. The bounding box of the various temporal types are as follows:
 			<itemizedlist>
 				<listitem>
 					<para>The <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, where only the temporal extent is considered.</para>
@@ -791,109 +839,6 @@ WHERE T1.CarId &lt; T2.CarId;
 			</programlisting>
 		</sect1>
 			
-		<sect1 id ="input_output_temporal_tyes">
-			<title>Input/Output of Temporal Types</title>
-			<para>A temporal instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A temporal sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by a lower and an upper bounds that can be inclusive (represented by &lsquo;<varname>[</varname>' and &lsquo;<varname>]</varname>') or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). A temporal sequence value with a single instant such as <varname>[v1@t1]</varname> is called an instantaneous sequence. In that case, both bounds must be inclusive. Examples of input of temporal unit values are as follows:
-				<programlisting>
-SELECT tbool 'true@2001-01-01 08:00:00';
-SELECT tint '1@2001-01-01 08:00:00';
-SELECT tfloat '1.5@2001-01-01 08:00:00';
-SELECT ttext 'AAA@2001-01-01 08:00:00';
-SELECT tgeompoint 'Point(0 0)@2017-01-01 08:00:05';
-SELECT tgeogpoint 'Point(0 0)@2017-01-01 08:00:05';
-SELECT tbool '[true@2001-01-01 08:00:00, true@2001-01-03 08:00:00]';
-SELECT tint '[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00]';
-SELECT tfloat '[1.5@2001-01-01 08:00:00]'; -- instant sequence
-SELECT tfloat '[2.5@2001-01-01 08:00:00, 3@2001-01-03 08:00:00, 1@2001-01-04 08:00:00]';
-SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
-SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
-SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
-	Point(0 0)@2017-01-01 08:10:00)';
-				</programlisting>
-			</para>
-				
-			<para>The temporal extent of a temporal instant value is a single instant while the temporal extent of temporal sequence value is a period defined by the first and last instants as well as the upper and lower bounds.</para>
-
-			<para>A temporal set value is a set <varname>{v1,...,vn}</varname> where every <varname>vi</varname> is a temporal unit value of the corresponding type. Examples of input of temporal set values are as follows:
-				<programlisting>
-SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
-SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
-SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
-SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
-SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
-SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),
-	[true@2001-01-03 08:00:00], (false@2001-01-04 08:00:00, false@2001-01-06 08:00:00]}';
-SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
-	[2@2001-01-04 08:00:00, 3@2001-01-05 08:00:00, 3@2001-01-06 08:00:00]}';
-SELECT tfloat '{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00, 2@2001-01-04 08:00:00,
-	3@2001-01-06 08:00:00]}';
-SELECT ttext '{[AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00, BBB@2001-01-04 08:00:00),
-	[CCC@2001-01-05 08:00:00, CCC@2001-01-06 08:00:00]}';
-SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
-	[Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
-	[Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-				</programlisting>
-			The temporal extent of a temporal instant set value is a set of instants while the temporal extent of temporal sequence set value is a set of periods.</para>
-
-			<para>Temporal sequence values are converted into a <emphasis role="strong">normal</emphasis> form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For stepwise interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.
-				<programlisting>
-SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
--- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)"
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
-	Point(1 1)@2001-01-01 08:10:00)';
--- "[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)"
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]']);
--- "{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}"
-SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
-	Point(3 3)@2001-01-01 08:10:00]';
--- "[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]"
-				</programlisting>
-			</para>
-
-			<para> Similary, temporal sequence set values are converted into a <emphasis role="strong">normal</emphasis> form. For this, consecutive sequence values are merged when possible. Examples of transformation into a normal form are as follows.
-				<programlisting>
-SELECT tints(ARRAY[tint '[1@2001-01-01, 1@2001-01-03)', '[2@2001-01-03, 2@2001-01-05)']);
--- '{[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)}'
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 2@2001-01-03)', 
-	'[2@2001-01-03, 3@2001-01-05]']);
--- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
-SELECT tfloats(ARRAY[tfloat '[1@2001-01-01, 3@2001-01-05)', '[3@2001-01-05]']);
--- '{[1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]}'
-SELECT tgeompoint '{[Point(0 0)@2001-01-01 08:00:00,
-	Point(1 1)@2001-01-01 08:05:00, Point(1 1)@2001-01-01 08:10:00),
-	[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)}';
--- "{[[Point(0 0)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
-	Point(1 1)@2001-01-01 08:15:00)}"
-SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00),
-	[Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:10:00]}';
--- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
-SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00),
-	[Point(3 3)@2001-01-01 08:10:00]}';
--- "{[Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]}"
-				</programlisting>
-			</para>
-
-			<para>For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows: 
-				<programlisting>
-SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
-				</programlisting>
-			All components geometries will then be of the given SRID. Furthermore, each component geometry can specify its SRID with the EWKT format as in the following example
-				<programlisting>
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
-				</programlisting>
-			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point
-				<programlisting>
-SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
-ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
-	SRID=4326;Point(0 1)@2000-01-02]'
-ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-				</programlisting>
-			</para>
-		</sect1>
-
 		<sect1 id="validity_temporal_types">
 			<title>Validity of Temporal Types</title>
 
@@ -924,11 +869,11 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 				</listitem>
 
 				<listitem>
-					<para>In a temporal instant set value, the composing instants must be distinct and ordered. This implies that the temporal extent of a temporal instant set value is a set of <varname>timestamptz</varname> values without duplicates.</para>
+					<para>In a temporal instant set value, the composing instants must be distinct and ordered. This implies that the temporal extent of a temporal instant set value is an ordered set of <varname>timestamptz</varname> values without duplicates.</para>
 				</listitem>
 
 				<listitem>
-					<para>In a temporal sequence set value, the composing sequence values must be non overlapping and ordered. This implies that the temporal extent of a temporal sequence set value is a set of disjoint periods.</para>
+					<para>In a temporal sequence set value, the composing sequence values must be non overlapping and ordered. This implies that the temporal extent of a temporal sequence set value is an ordered set of disjoint periods.</para>
 				</listitem>
 			</itemizedlist>
 			An error is raised whenever one of these constraints are not satisfied. Examples of incorrect temporal values are as follows.
@@ -1298,6 +1243,85 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 
 			<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
 
+		<sect1 id ="input_output_temporal_tyes">
+			<title>Input/Output of Temporal Types</title>
+			<para>A temporal instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A temporal sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by a lower and an upper bounds that can be inclusive (represented by &lsquo;<varname>[</varname>' and &lsquo;<varname>]</varname>') or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). Examples of input of temporal unit values are as follows:
+				<programlisting>
+SELECT tbool 'true@2001-01-01 08:00:00';
+SELECT tint '1@2001-01-01 08:00:00';
+SELECT tfloat '1.5@2001-01-01 08:00:00';
+SELECT ttext 'AAA@2001-01-01 08:00:00';
+SELECT tgeompoint 'Point(0 0)@2017-01-01 08:00:05';
+SELECT tgeogpoint 'Point(0 0)@2017-01-01 08:00:05';
+SELECT tbool '[true@2001-01-01 08:00:00, true@2001-01-03 08:00:00]';
+SELECT tint '[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00]';
+SELECT tfloat '[2.5@2001-01-01 08:00:00, 3@2001-01-03 08:00:00, 1@2001-01-04 08:00:00]';
+SELECT tfloat '[1.5@2001-01-01 08:00:00]';  -- Instant sequence
+SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
+SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
+SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
+	Point(0 0)@2017-01-01 08:10:00)';
+				</programlisting>
+			</para>
+			
+			<para>The temporal extent of a temporal instant value is a single instant while the temporal extent of temporal sequence value is a period defined by the first and last instants as well as the upper and lower bounds.</para>
+
+			<para>A temporal set value is a set <varname>{v1,...,vn}</varname> where every <varname>vi</varname> is a temporal unit value of the corresponding type. Examples of input of temporal set values are as follows:
+				<programlisting>
+SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
+SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
+SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
+SELECT ttext '{AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00}';
+SELECT tgeompoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
+SELECT tgeogpoint '{Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-02 08:05:00}';
+SELECT tbool '{[false@2001-01-01 08:00:00, false@2001-01-03 08:00:00),
+	[true@2001-01-03 08:00:00], (false@2001-01-04 08:00:00, false@2001-01-06 08:00:00]}';
+SELECT tint '{[1@2001-01-01 08:00:00, 1@2001-01-03 08:00:00),
+	[2@2001-01-04 08:00:00, 3@2001-01-05 08:00:00, 3@2001-01-06 08:00:00]}';
+SELECT tfloat '{[1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00, 2@2001-01-04 08:00:00,
+	3@2001-01-06 08:00:00]}';
+SELECT ttext '{[AAA@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00, BBB@2001-01-04 08:00:00),
+	[CCC@2001-01-05 08:00:00, CCC@2001-01-06 08:00:00]}';
+SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
+	[Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
+SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
+	[Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
+				</programlisting>
+			The temporal extent of a temporal instant set value is a set of instants while the temporal extent of temporal sequence set value is a set of periods.</para>
+
+			<para>Temporal values of sequence or sequence set duration whose base type is continuous may specify that the interpolation is stepwise. If this is not specified, it is supposed that the interpolation is linear by default.
+				<programlisting>
+-- Linear interpolation by default				
+SELECT tfloat '[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
+SELECT tgeompoint '{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
+	[Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
+-- Stepwise interpolation
+SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
+SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
+	[Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
+				</programlisting>
+			For temporal values of sequence set duration all component sequences are supposed to be in the same interpolation, either stepwise or linear, as in the examples above.
+			</para>
+
+			<para>For temporal points, it is possible to specify the spatial reference identifier (SRID) using the Extended Well-Known text (EWKT) representation as follows: 
+				<programlisting>
+SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
+				</programlisting>
+			All components geometries will then be of the given SRID. Furthermore, each component geometry can specify its SRID with the EWKT format as in the following example
+				<programlisting>
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
+				</programlisting>
+			An error is raised if the component geometries are not all in the same SRID or if the SRID of a component geometry is different from the one of the temporal point
+				<programlisting>
+SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
+ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
+SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
+	SRID=4326;Point(0 1)@2000-01-02]'
+ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
+				</programlisting>
+			</para>
+		</sect1>
+
 		<sect1 id="casting_temporal_types">
 			<title>Casting</title>
 
@@ -1309,6 +1333,8 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 					<programlisting>
 SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 -- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+SELECT tint '[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]'::tfloat;
+-- "Interp=Stepwise;[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01, 3@2000-01-05 00:00:00+01]"
 					</programlisting>
 				</listitem>
 
@@ -1316,8 +1342,10 @@ SELECT tint '[1@2001-01-01, 2@2001-01-03]'::tfloat;
 					<para>Temporal float to temporal integer</para>
 					<para><varname>tfloat::tint</varname></para>
 					<programlisting>
-SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+SELECT tfloat 'Interp=Stepwise;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 -- "[1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00]"
+SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
+-- ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 					</programlisting>
 				</listitem>
 
@@ -1395,7 +1423,7 @@ SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 SELECT tboolinst(tbool '{[true@2001-01-01]}');
 -- "t@2001-01-01 00:00:00+00"
 SELECT tboolinst(tbool '{[true@2001-01-01, true@2001-01-02]}');
---ERROR: Cannot transform input to a temporal instant
+-- ERROR: Cannot transform input to a temporal instant
 SELECT tbooli(tbool 'true@2001-01-01');
 -- "{t@2001-01-01}"
 SELECT tintseq(tint '1@2001-01-01');
@@ -1854,26 +1882,6 @@ SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
 					<programlisting>
 SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
 	periodset '{[2012-01-01, 2012-01-03), [2012-01-05, 2012-01-07)}');
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Is continuous in the value dimension?</para>
-					<para><varname>isContinuousInValue(tfloats): boolean</varname></para>
-					<programlisting>
-SELECT isContinuousInValue(tfloat '{[1@2012-01-01, 2@2012-01-03),
-	[1@2012-01-03, 2@2012-01-05)}');
--- false
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Is continuous in the time dimension?</para>
-					<para><varname>isContinuousInTime(ttypes): boolean</varname></para>
-					<programlisting>
-SELECT isContinuousInTime(tfloat '{[1@2012-01-01, 2@2012-01-03),
-	[1@2012-01-03, 2@2012-01-05)}');
 -- true
 					</programlisting>
 				</listitem>
@@ -4029,7 +4037,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<title>Selectivity Estimation of Operators</title>
 			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type defined in the temporal extension (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
 
 			<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
 		</sect1>

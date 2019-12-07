@@ -60,7 +60,6 @@ extern TemporalI *temporals_to_temporali(TemporalS *ts);
 
 /* Accessor functions */
 
-extern Datum *temporali_values1(TemporalI *ti, int *count);
 extern ArrayType *temporali_values(TemporalI *ti);
 extern ArrayType *tfloati_ranges(TemporalI *ti);
 extern PeriodSet *temporali_get_time(TemporalI *ti);

@@ -1303,12 +1303,12 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 			temporals_seq_n(ts2, 0), d, func);
 
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts1->totalcount * 3);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts1->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		countstep = tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d, 
+		int countstep = tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d, 
 			func);
 		k += countstep;
 	}

@@ -84,8 +84,8 @@ extern TemporalSeq *temporals_to_temporalseq(TemporalS *ts);
 
 /* Accessor functions */
 
-extern Datum *tstepwiseseq_values1(TemporalSeq *seq);
-extern ArrayType *tstepwiseseq_values(TemporalSeq *seq);
+extern ArrayType *temporalseq_values(TemporalSeq *seq);
+extern int tfloatseq_ranges1(RangeType **result, TemporalSeq *seq);
 extern PeriodSet *temporalseq_get_time(TemporalSeq *seq);
 extern void *temporalseq_bbox_ptr(TemporalSeq *seq);
 extern void temporalseq_bbox(void *box, TemporalSeq *seq);

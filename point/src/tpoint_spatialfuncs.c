@@ -1477,11 +1477,11 @@ tpoints_azimuth(TemporalS *ts)
 		return tpointseq_azimuth(temporals_seq_n(ts, 0));
 
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tpointseq_azimuth2(&sequences[k], seq);
+		int countstep = tpointseq_azimuth2(&sequences[k], seq);
 		k += countstep;
 	}
 	if (k == 0)

@@ -1453,6 +1453,27 @@ tintseq_to_tfloatseq(TemporalSeq *seq)
 	return result;
 }
 
+/* Cast a temporal float with stepwise interpolation as a temporal integer */
+
+TemporalSeq *
+tfloatseq_to_tintseq(TemporalSeq *seq)
+{
+	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+	TemporalSeq *result = temporalseq_copy(seq);
+	result->valuetypid = INT4OID;
+	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(result, i);
+		inst->valuetypid = INT4OID;
+		Datum *value_ptr = temporalinst_value_ptr(inst);
+		*value_ptr = Int32GetDatum((double)DatumGetFloat8(temporalinst_value(inst)));
+	}
+	return result;
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -1489,31 +1510,33 @@ temporals_to_temporalseq(TemporalS *ts)
 
 /* Set of values taken by the temporal sequence value */
 
-Datum *
-tstepwiseseq_values1(TemporalSeq *seq)
+static Datum *
+temporalseq_values1(TemporalSeq *seq, int *count)
 {
 	Datum *result = palloc(sizeof(Datum *) * seq->count);
 	for (int i = 0; i < seq->count; i++) 
 		result[i] = temporalinst_value(temporalseq_inst_n(seq, i));
+	datum_sort(result, seq->count, seq->valuetypid);
+	*count = datum_remove_duplicates(result, seq->count, seq->valuetypid);
 	return result;
 }
 
 ArrayType *
-tstepwiseseq_values(TemporalSeq *seq)
+temporalseq_values(TemporalSeq *seq)
 {
-	Datum *values = tstepwiseseq_values1(seq);
-	datum_sort(values, seq->count, seq->valuetypid);
-	int count = datum_remove_duplicates(values, seq->count, seq->valuetypid);
+	int count;
+	Datum *values = temporalseq_values1(seq, &count);
 	ArrayType *result = datumarr_to_array(values, count, seq->valuetypid);
 	pfree(values);
 	return result;
 }
 
-/* Range of a TemporalSeq float */
+/* Range of a TemporalSeq float with linear interpolation */
 
 RangeType *
 tfloatseq_range(TemporalSeq *seq)
 {
+	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	TBOX *box = temporalseq_bbox_ptr(seq);
 	Datum min = Float8GetDatum(box->xmin);
 	Datum max = Float8GetDatum(box->xmax);
@@ -1554,12 +1577,35 @@ tfloatseq_range(TemporalSeq *seq)
 	return range_make(min, max, min_inc, max_inc, FLOAT8OID);
 }
 
+int
+tfloatseq_ranges1(RangeType **result, TemporalSeq *seq)
+{
+	/* Temporal float with linear interpolation */
+	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+	{
+		result[0] = tfloatseq_range(seq);
+		return 1;
+	}
+
+	/* Temporal float with stepwise interpolation */
+	int count;
+	Datum *values = temporalseq_values1(seq, &count);
+	for (int i = 0; i < count; i++)
+		result[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
+	pfree(values);
+	return count;
+}
+
 ArrayType *
 tfloatseq_ranges(TemporalSeq *seq)
 {
-	RangeType *range = tfloatseq_range(seq);
-	ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE));
-	pfree(range);
+	int count = MOBDB_FLAGS_GET_LINEAR(seq->flags) ? 1 : seq->count;
+	RangeType **ranges = palloc(sizeof(RangeType *) * count);
+	int count1 = tfloatseq_ranges1(ranges, seq);
+	ArrayType *result = rangearr_to_array(ranges, count1, type_oid(T_FLOATRANGE));
+	for (int i = 0; i < count1; i++)
+		pfree(ranges[i]);
+	pfree(ranges);
 	return result;
 }
 
@@ -1960,7 +2006,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Discrete base type */
-	if (! MOBDB_FLAGS_GET_LINEAR(inst1->flags))
+	if (! linear)
 	{
 		TemporalSeq *result = NULL;
 		if (datum_eq(value1, value, valuetypid))

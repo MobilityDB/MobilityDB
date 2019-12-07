@@ -349,8 +349,7 @@ extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 
 extern Datum temporal_duration(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
-extern Datum tstepwise_get_values(PG_FUNCTION_ARGS);
-extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
+extern Datum temporal_get_values(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
 extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
 extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
@@ -373,8 +372,8 @@ extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
-extern Datum tstepwise_get_values_internal(Temporal *temp);
-extern Datum tfloat_ranges_internal(Temporal *temp);
+extern Datum temporal_get_values_internal(Temporal *temp);
+extern Datum tfloat_ranges(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 extern RangeType *tnumber_value_range_internal(Temporal *temp);

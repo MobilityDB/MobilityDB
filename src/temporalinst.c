@@ -12,6 +12,7 @@
 
 #include "temporalinst.h"
 
+#include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
@@ -262,6 +263,19 @@ tintinst_to_tfloatinst(TemporalInst *inst)
 	MOBDB_FLAGS_SET_LINEAR(result->flags, true);
 	Datum *value_ptr = temporalinst_value_ptr(result);
 	*value_ptr = Float8GetDatum((double)DatumGetInt32(temporalinst_value(inst)));
+	return result;
+}
+
+/* Cast temporal float as temporal integer */
+
+TemporalInst *
+tfloatinst_to_tintinst(TemporalInst *inst)
+{
+	TemporalInst *result = temporalinst_copy(inst);
+	result->valuetypid = INT4OID;
+	MOBDB_FLAGS_SET_LINEAR(result->flags, true);
+	Datum *value_ptr = temporalinst_value_ptr(result);
+	*value_ptr = Int32GetDatum((double)DatumGetFloat8(temporalinst_value(inst)));
 	return result;
 }
 

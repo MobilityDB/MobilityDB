@@ -91,7 +91,7 @@ extern TemporalS *temporalseq_to_temporals(TemporalSeq *seq);
 
 /* Accessor functions */
 
-extern ArrayType *tstepwises_values(TemporalS *ts);
+extern ArrayType *temporals_values(TemporalS *ts);
 extern ArrayType *tfloats_ranges(TemporalS *ts);
 extern void *temporals_bbox_ptr(TemporalS *ts);
 extern void temporals_bbox(void *box, TemporalS *ts);
@@ -115,8 +115,6 @@ extern ArrayType *temporals_timestamps(TemporalS *ts);
 extern bool temporals_ever_eq(TemporalS *ts, Datum value);
 extern bool temporals_always_eq(TemporalS *ts, Datum value);
 extern TemporalS *temporals_shift(TemporalS *ts, Interval *interval);
-extern bool temporals_continuous_value_internal(TemporalS *ts);
-extern bool temporals_continuous_time_internal(TemporalS *ts);
 
 /* Restriction Functions */
 
