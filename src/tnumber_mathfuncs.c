@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * temporal_mathfuncs.c
+ * tnumber_mathfuncs.c
  *	Temporal mathematical operators (+, -, *, /) and functions (round, 
  *	degrees).
  *
@@ -11,7 +11,7 @@
  *
  *****************************************************************************/
 
-#include "temporal_mathfuncs.h"
+#include "tnumber_mathfuncs.h"
 
 #include <math.h>
 #include <utils/builtins.h>

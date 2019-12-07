@@ -23,7 +23,7 @@
 #include "oidcache.h"
 #include "temporal_util.h"
 #include "lifting.h"
-#include "temporal_mathfuncs.h"
+#include "tnumber_mathfuncs.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"

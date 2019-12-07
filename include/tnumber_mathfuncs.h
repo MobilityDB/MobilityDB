@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * temporal_mathfuncs.c
+ * tnumber_mathfuncs.c
  *	Temporal mathematical operators (+, -, *, /) and functions (round, 
  *	degrees).
  *
