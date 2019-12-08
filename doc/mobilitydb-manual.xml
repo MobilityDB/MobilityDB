@@ -1436,6 +1436,21 @@ SELECT tfloats(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 				</listitem>
 
 				<listitem>
+					<para> Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+					<para><varname>toLinear(ttype) : ttype</varname></para>
+				<programlisting>
+SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 
+	1@2000-01-03, 2@2000-01-04]');
+-- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03), 
+	[1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
+SELECT astext(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, 
+	Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
+-- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02], 
+	[POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
+				</programlisting>
+				</listitem>
+
+				<listitem>
 					<para>Append a temporal instant to a temporal value</para>
 					<para><varname>appendInstant(ttype, ttypeinst) : ttype</varname></para>
 				<programlisting>

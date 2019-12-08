@@ -1121,6 +1121,31 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result); 
 }
 
+/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+
+PG_FUNCTION_INFO_V1(tstepw_to_linear);
+
+PGDLLEXPORT Datum
+tstepw_to_linear(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Input must be a temporal sequence (set)")));
+	ensure_linear_interpolation(temp->valuetypid);
+
+	if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			PG_RETURN_POINTER(temporal_copy(temp)); 
+
+	Temporal *result = NULL;
+	if (temp->duration == TEMPORALSEQ) 
+		result = (Temporal *)tstepwseq_to_linear((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS) 
+		result = (Temporal *)tstepws_to_linear((TemporalS *)temp);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_POINTER(result); 
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

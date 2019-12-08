@@ -449,6 +449,7 @@ tpoint_parse(char **str, Oid basetype)
 	 * because this requires a string terminated by '\0' and we cannot 
 	 * modify the string in case it must be passed to the tpointinst_parse
 	 * function. */
+	char *bak = *str;
 	if (strncasecmp(*str,"SRID=",5) == 0)
 	{
 		/* Move str to the start of the numeric part */
@@ -483,13 +484,14 @@ tpoint_parse(char **str, Oid basetype)
 	/* Determine the type of the temporal point */
 	if (**str != '{' && **str != '[' && **str != '(')
 	{
-		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
+		/* Pass the SRID specification */
+		*str = bak;		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
 	}
 	else if (**str == '[' || **str == '(')
 		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, &tpoint_srid);		
 	else if (**str == '{')
 	{
-		char *bak = *str;
+		bak = *str;
 		p_obrace(str);
 		p_whitespace(str);
 		if (**str == '[' || **str == '(')

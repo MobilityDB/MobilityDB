@@ -1503,6 +1503,63 @@ temporals_to_temporalseq(TemporalS *ts)
 	return temporalseq_copy(temporals_seq_n(ts, 0));
 }
 
+/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+
+int
+tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
+{
+	if (seq->count == 1)
+	{
+		result[0] = temporalseq_copy(seq);
+		MOBDB_FLAGS_SET_LINEAR(seq->flags, true); 
+		return 1;
+	}
+	
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	Datum value1 = temporalinst_value(inst1);
+	TemporalInst *inst2;
+	bool lower_inc = seq->period.lower_inc;
+	int k = 0;
+	for (int i = 1; i < seq->count; i++)
+	{
+		inst2 = temporalseq_inst_n(seq, i);
+		Datum value2 = temporalinst_value(inst2);
+		TemporalInst *instants[2];
+		instants[0] = inst1;
+		instants[1] = temporalinst_make(value1, inst2->t, seq->valuetypid);
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc && 
+			datum_eq(value1, value2, seq->valuetypid): false;
+		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			lower_inc, upper_inc, true, false);
+		inst1 = inst2;
+		value1 = value2;
+		lower_inc = true;
+		pfree(instants[1]);
+	}
+	if (seq->period.upper_inc)
+	{
+		Datum value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
+		Datum value2 = temporalinst_value(inst2);
+		if (datum_ne(value1, value2, seq->valuetypid))
+		{
+			result[k++] = temporalseq_from_temporalinstarr(&inst2, 1,
+				true, true, true, false);
+		}
+	}
+	return k;
+}
+
+TemporalS *
+tstepwseq_to_linear(TemporalSeq *seq)
+{
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = tstepwseq_to_linear1(sequences, seq);
+	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true, false);
+	for (int i = 0; i < count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
+}
 
 /*****************************************************************************
  * Accessor functions 

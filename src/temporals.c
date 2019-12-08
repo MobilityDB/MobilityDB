@@ -809,6 +809,31 @@ temporalseq_to_temporals(TemporalSeq *seq)
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 }
 
+/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+
+TemporalS *
+tstepws_to_linear(TemporalS *ts)
+{
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return tstepwseq_to_linear(temporals_seq_n(ts, 0));
+
+	/* General case */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0, countstep;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		countstep = tstepwseq_to_linear1(&sequences[k], seq);
+		k += countstep;
+	}
+	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	 pfree(sequences); 
+	return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
