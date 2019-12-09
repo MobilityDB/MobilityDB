@@ -816,7 +816,7 @@ INSERT INTO Trips VALUES
 (20, 1, tgeompoint '{[Point(0 0)@2012-01-01 08:05:00, Point(1 1)@2012-01-01 08:10:00,
 	Point(3 3)@2012-01-01 08:20:00)}');
 -- Value at a given timestamp
-SELECT CarId, ST_astext(valueAtTimestamp(Trip, timestamptz '2012-01-01 08:10:00'))
+SELECT CarId, ST_AsText(valueAtTimestamp(Trip, timestamptz '2012-01-01 08:10:00'))
 FROM Trips;
 -- 10;"POINT(2 0)"
 -- 20;"POINT(1 1)"
@@ -1375,19 +1375,19 @@ SELECT astext((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 				<para>Temporal point to trajectory</para>
 				<para><varname>tgeompoint::geometry</varname>, <varname>tgeogpoint::geography</varname></para>
 				<programlisting>
-SELECT ST_astext((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
+SELECT ST_AsText((tgeompoint 'Point(0 0)@2001-01-01')::geometry);
 -- "POINT M (0 0 978307200)"
-SELECT ST_astext((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
+SELECT ST_AsText((tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02,
 	Point(1 1)@2001-01-03}')::geometry);
 -- "MULTIPOINT M (0 0 978307200,1 1 978393600,1 1 978480000)"
-SELECT ST_astext((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
+SELECT ST_AsText((tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)')::geometry);
 -- "LINESTRING M (0 0 978307200,1 1 978393600)"
-SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
+SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
 	[Point(1 1)@2001-01-03, Point(1 1)@2001-01-04),
 	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
 -- "MULTILINESTRING M ((0 0 978307200,1 1 978393600),(1 1 978480000,1 1 978566400),
 (1 1 978652800,0 0 978739200))"
-SELECT ST_astext((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
+SELECT ST_AsText((tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02),
 	[Point(1 1)@2001-01-03],
 	[Point(1 1)@2001-01-05, Point(0 0)@2001-01-06)}')::geometry);
 -- "GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
@@ -1590,7 +1590,7 @@ SELECT duration(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 					<programlisting>
 SELECT getValue(tint '1@2012-01-01');
 -- 1
-SELECT ST_asText(getValue(tgeompoint 'Point(0 0)@2012-01-01'));
+SELECT ST_AsText(getValue(tgeompoint 'Point(0 0)@2012-01-01'));
 -- "POINT(0 0)"
 					</programlisting>
 				</listitem>
@@ -1605,15 +1605,21 @@ SELECT getValues(tfloat '[1@2012-01-01, 2@2012-01-03)');
 -- "{[1,2)}"
 SELECT getValues(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 4@2012-01-05)}');
 -- "{[1,2),[3,4)}"
-SELECT ST_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
+SELECT getValues(tfloat 'Interp=Stepwise;{[1@2012-01-01, 2@2012-01-02], 
+	[3@2012-01-03, 4@2012-01-05]}');
+-- "{"[1,1]","[2,2]","[3,3]","[4,4]"}"
+SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 	[Point(0 1)@2012-01-03, Point(1 1)@2012-01-04)}'));
 -- "LINESTRING(0 0,0 1,1 1)"
-SELECT ST_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
+SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 	[Point(1 1)@2012-01-03, Point(2 2)@2012-01-04)}'));
 -- "MULTILINESTRING((0 0,0 1),(1 1,2 2)"
-SELECT ST_astext(getValues1(tgeompoint '{Point(0 0)@2012-01-01, Point(0 1)@2012-01-02}'));
+SELECT ST_AsText(getValues(tgeompoint 'Interp=Stepwise;{[Point(0 0)@2012-01-01, 
+	Point(0 1)@2012-01-02], [Point(0 1)@2012-01-03, Point(1 1)@2012-01-04]}'));
+-- "GEOMETRYCOLLECTION(MULTIPOINT(0 0,0 1),MULTIPOINT(0 1,1 1))"
+SELECT ST_AsText(getValues(tgeompoint '{Point(0 0)@2012-01-01, Point(0 1)@2012-01-02}'));
 -- "MULTIPOINT(0 0,0 1)"
-SELECT ST_astext(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
+SELECT ST_AsText(getValues(tgeompoint '{[Point(0 0)@2012-01-01, Point(0 1)@2012-01-02),
 	[Point(1 1)@2012-01-03, Point(1 1)@2012-01-04), 
 	[Point(2 1)@2012-01-05, Point(2 2)@2012-01-06)}'));
 -- "GEOMETRYCOLLECTION(POINT(1 1),LINESTRING(0 0,0 1),LINESTRING(2 1,2 2))"
@@ -2123,7 +2129,7 @@ SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-0
 					<para>Time-weighted centroid &Z_support;</para>
 					<para><varname>twCentroid(tgeompoint): point</varname></para>
 					<programlisting>
-SELECT ST_astext(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01, 
+SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01, 
 	Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
 -- "POINT Z (0 0.666666666666667 0.666666666666667)"
 					</programlisting>

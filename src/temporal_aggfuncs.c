@@ -715,10 +715,9 @@ temporal_transform_tcount(Temporal *temp, int *count)
 static TemporalInst *
 tnumberinst_transform_tavg(TemporalInst *inst)
 {
-	double2 dvalue;
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
-	dvalue.a = value;
-	dvalue.b = 1;
+	double2 dvalue;
+	double2_set(&dvalue, value, 1);
 	TemporalInst *result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 		type_oid(T_DOUBLE2));
 	return result;

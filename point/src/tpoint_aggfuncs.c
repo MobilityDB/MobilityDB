@@ -75,18 +75,18 @@ tpointinst_transform_tcentroid(TemporalInst *inst)
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
 		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-		double4 *dvalue = double4_construct(point.x, point.y, point.z, 1);
-		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		double4 dvalue;
+		double4_set(&dvalue, point.x, point.y, point.z, 1);
+		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE4));
-		pfree(dvalue);
 	}
 	else 
 	{
 		POINT2D point = datum_get_point2d(temporalinst_value(inst));
-		double3 *dvalue = double3_construct(point.x, point.y, 1);
-		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		double3 dvalue;
+		double3_set(&dvalue, point.x, point.y, 1);
+		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE3));
-		pfree(dvalue);
 	}
 	return result;
 }
