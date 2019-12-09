@@ -539,19 +539,24 @@ tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2)
 
 /* Compute a line from a set of points */
 static Datum
-pointarr_makeline(Datum *points, int n)
+pointarr_make_trajectory(Datum *points, int count, bool linear)
 {
-	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * n);
-	for (int i = 0; i < n; i++)
+	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
+	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(points[i]);
 		lwpoints[i] = lwgeom_from_gserialized(gs);
 	}
-	LWLINE *line = lwline_from_lwgeom_array(lwpoints[0]->srid, n, lwpoints);
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)line));
-	for (int i = 0; i < n; i++)
+	LWGEOM *geom;
+	if (linear)
+		geom = (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, count, lwpoints);
+	else
+		geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
+			NULL, count, lwpoints);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)geom));
+	for (int i = 0; i < count; i++)
 		lwgeom_free(lwpoints[i]);
-	pfree(lwpoints);
+	pfree(lwpoints); pfree(geom);
 	return result;
 }
 
@@ -559,7 +564,7 @@ pointarr_makeline(Datum *points, int n)
  * This function is called by the constructor of a temporal sequence and 
  * returns a single Datum which is a geometry */
 static Datum 
-tgeompointseq_make_trajectory(TemporalInst **instants, int count)
+tgeompointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 {
 	Datum *points = palloc(sizeof(Datum) * count);
 	Datum value1 = temporalinst_value(instants[0]);
@@ -577,18 +582,18 @@ tgeompointseq_make_trajectory(TemporalInst **instants, int count)
 		result = PointerGetDatum(gserialized_copy(
 			(GSERIALIZED *)DatumGetPointer(points[0])));
 	else
-		result = pointarr_makeline(points, k);
+		result = pointarr_make_trajectory(points, k, linear);
 	pfree(points);
 	return result;	
 }
 
 static Datum
-tgeogpointseq_make_trajectory(TemporalInst **instants, int count)
+tgeogpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 {
 	TemporalInst **geominstants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		geominstants[i] = tgeogpointinst_to_tgeompointinst(instants[i]);
-	Datum geomresult = tgeompointseq_make_trajectory(geominstants, count);
+	Datum geomresult = tgeompointseq_make_trajectory(geominstants, count, linear);
 	Datum result = call_function1(geography_from_geometry, geomresult);
 	for (int i = 0; i < count; i++)
 		pfree(geominstants[i]);
@@ -597,15 +602,15 @@ tgeogpointseq_make_trajectory(TemporalInst **instants, int count)
 }
 
 Datum
-tpointseq_make_trajectory(TemporalInst **instants, int count)
+tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	Datum result = 0;
 	point_base_type_oid(valuetypid);
 	if (valuetypid == type_oid(T_GEOMETRY))
-		result = tgeompointseq_make_trajectory(instants, count);
+		result = tgeompointseq_make_trajectory(instants, count, linear);
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
-		result = tgeogpointseq_make_trajectory(instants, count);
+		result = tgeogpointseq_make_trajectory(instants, count, linear);
 	return result;
 }
 

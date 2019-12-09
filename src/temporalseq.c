@@ -638,7 +638,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		{
 			/* A trajectory is a geometry/geography, either a point or a 
 			 * linestring, which may be self-intersecting */
-			traj = tpointseq_make_trajectory(newinstants, newcount);
+			traj = tpointseq_make_trajectory(newinstants, newcount, linear);
 			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
 	}

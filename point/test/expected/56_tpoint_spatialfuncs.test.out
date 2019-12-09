@@ -337,6 +337,18 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000
  GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))
 (1 row)
 
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+        st_astext        
+-------------------------
+ MULTIPOINT(1 1,2 2,1 1)
+(1 row)
+
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+                       st_astext                        
+--------------------------------------------------------
+ GEOMETRYCOLLECTION(MULTIPOINT(1 1,2 2,1 1),POINT(3 3))
+(1 row)
+
 SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
    st_astext    
 ----------------
@@ -359,6 +371,18 @@ SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2
                                st_astext                                
 ------------------------------------------------------------------------
  GEOMETRYCOLLECTION(LINESTRING(1.5 1.5,2.5 2.5,1.5 1.5),POINT(3.5 3.5))
+(1 row)
+
+SELECT ST_AsText(trajectory(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
+              st_astext              
+-------------------------------------
+ MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5)
+(1 row)
+
+SELECT ST_AsText(trajectory(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+                               st_astext                                
+------------------------------------------------------------------------
+ GEOMETRYCOLLECTION(MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5),POINT(3.5 3.5))
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1 1)@2000-01-01'));
