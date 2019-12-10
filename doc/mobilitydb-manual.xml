@@ -1963,13 +1963,14 @@ SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
 					<programlisting>
 SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
 -- "{"type":"MovingPoint","coordinates":[1,2],"datetimes":"2019-01-01T17:00:00.15+01",
-"interpolations":["Discrete"]}"
+	"interpolations":["Discrete"]}"
 SELECT asMFJSON(tgeompoint 'SRID=4326;
 	Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 3);
 -- "{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-"stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],"period":{"begin":
-"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
-"coordinates":[50.81,4.38],"datetimes":"2019-01-01 (...)"
+	"stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
+	"period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
+	"coordinates":[50.81,4.38],"datetimes":"2019-01-01T17:00:00.15+01",
+	"interpolations":["Discrete"]}"
 					</programlisting>
 				</listitem>
 
@@ -2070,6 +2071,9 @@ SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 	Point(0 0 0)@2000-01-03]');
 -- 3.46410161513775
+SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
+	Point(0 0 0)@2000-01-03]');
+-- 0
 					</programlisting>
 				</listitem>
 
@@ -2077,11 +2081,14 @@ SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
 					<para>Cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
 					<para><varname>cumulativeLength(tpoint): tfloatseq</varname></para>
 					<programlisting>
-SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
-	'[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]',"
-	'[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]']));
+SELECT cumulativeLength(tgeompoint
+	'{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
+	[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}');
 -- "{[0@2000-01-01, 1.4142135623731@2000-01-02, 2.41421356237309@2000-01-03],
 	[2.41421356237309@2000-01-04, 3.41421356237309@2000-01-05]}"
+SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
+	Point(0 0 0)@2000-01-03]');
+-- "Interp=Stepwise;[0@2000-01-01, 0@2000-01-02, 0@2000-01-03]"
 					</programlisting>
 				</listitem>
 
@@ -2089,11 +2096,11 @@ SELECT cumulativeLength(tgeompoints(ARRAY[tgeompoint
 					<para>Speed of the temporal point in units per second &Z_support; &geography_support;</para>
 					<para><varname>speed(tpoint): tfloats</varname></para>
 					<programlisting>
-SELECT speed(tgeompoints(ARRAY[tgeompoint
-	'[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]',
-	'[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]'])) * 3600 * 24;
--- "{[1.4142135623731@2000-01-01, 1.4142135623731@2000-01-02),
-	[1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
+SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03],
+	[Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
+-- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03], [1@2000-01-04, 1@2000-01-05]}"
+SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02, Point(1 0)@2000-01-03]') * 3600 * 24;
+-- "Interp=Stepwise;[0@2000-01-01 00:00:00+01, 0@2000-01-03 00:00:00+01]"
 					</programlisting>
 				</listitem>
 
@@ -2121,7 +2128,7 @@ SELECT expandSpatial(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01
 
 				<listitem>
 					<para>Expand the bounding box of the temporal point by a time interval &Z_support; &geography_support;</para>
-					<para><varname>expandSpatial(tpoint, interval): stbox</varname></para>
+					<para><varname>expandTemporal(tpoint, interval): stbox</varname></para>
 					<programlisting>
 SELECT expandTemporal(tgeompoint '{[Point(1 1 1)@2012-01-01, Point(2 2 2)@2012-01-03),
 	[Point(1 1 1)@2012-01-03, Point(3 3 3)@2012-01-05)}', interval '1 day');
@@ -2143,10 +2150,10 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
 					<para>Temporal azimuth &Z_support; &geography_support;</para>
 					<para><varname>azimuth(tpoint): tfloat</varname></para>
 					<programlisting>
-SELECT azimuth(tgeompoint '{[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
-	Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}');
--- "{[0@2012-01-01 00:00:00+00, 0@2012-01-02 00:00:00+00), 
-	[3.14159265358979@2012-01-03 00:00:00+00, 3.14159265358979@2012-01-04 00:00:00+00)}"
+SELECT azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
+	Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)');
+-- "Interp=Stepwise;{[0@2012-01-01, 0@2012-01-02], 
+	[3.14159265358979@2012-01-03, 3.14159265358979@2012-01-04)}"
 					</programlisting>
 				</listitem>
 

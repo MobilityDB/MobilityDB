@@ -718,7 +718,7 @@ tgeompoints_trajectory(TemporalS *ts)
 	if (ts->count == 1)
 		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0)); 
 	
-	Datum *points = palloc(sizeof(Datum) * ts->count);
+	Datum *points = palloc(sizeof(Datum) * ts->totalcount);
 	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
 	int k = 0, l = 0;
 	for (int i = 0; i < ts->count; i++)
@@ -737,22 +737,62 @@ tgeompoints_trajectory(TemporalS *ts)
 				}
 			}
 			if (!found)
+				points[l++] = traj;
+		}
+		else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
+		{
+			int count = call_function1(LWGEOM_numgeometries_collection, traj);
+			for (int i = 1; i <= count; i++)
 			{
-				points[l++] = trajectories[k++] = traj;
+				Datum point = call_function2(LWGEOM_geometryn_collection, traj, i);
+				bool found = false;
+				for (int j = 0; j < l; j++)
+				{
+					if (datum_point_eq(point, points[j]))
+					{
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+					points[l++] = point;
 			}
 		}
-		if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
-		{
-		}
+		/* gserialized_get_type(gstraj) == LINETYPE */
 		else
 			trajectories[k++] = traj;
 	}
 	Datum result;
-	if (k == 1)
-		result = PointerGetDatum(gserialized_copy(
-				(GSERIALIZED *)(DatumGetPointer(trajectories[0]))));
+	if (k == 0)
+	{
+		/* Only points */
+		if (l == 1)
+			result = PointerGetDatum(gserialized_copy(
+					(GSERIALIZED *)(DatumGetPointer(points[0]))));
+		else
+			result = pointarr_make_trajectory(points, l, false);
+	}
+	else if (l == 0)
+	{
+		/* Only lines */
+		if (k == 1)
+			result = PointerGetDatum(gserialized_copy(
+					(GSERIALIZED *)(DatumGetPointer(trajectories[0]))));
+		else
+		{
+			ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
+			/* ST_linemerge is not used to avoid splitting lines at intersections */
+			result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+			pfree(array);
+		}
+	}
 	else
 	{
+		/* Both points and lines */
+		if (l == 1)
+			trajectories[k++] = points[0];
+		else
+			trajectories[k++] = pointarr_make_trajectory(points, l, false);
 		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
 		/* ST_linemerge is not used to avoid splitting lines at intersections */
 		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
@@ -765,53 +805,11 @@ tgeompoints_trajectory(TemporalS *ts)
 static Datum
 tgeogpoints_trajectory(TemporalS *ts)
 {
-	/* Singleton sequence set */
-	if (ts->count == 1)
-		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0)); 
-	
-	Datum *points = palloc(sizeof(Datum) * ts->count);
-	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
-	int k = 0, l = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
-		Datum geomtraj = call_function1(geometry_from_geography, traj);
-		GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(geomtraj);
-		if (gserialized_get_type(gstraj) == POINTTYPE)
-		{
-			bool found = false;
-			for (int j = 0; j < l; j++)
-			{
-				if (datum_point_eq(geomtraj, points[j]))
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-			{
-				points[l++] = trajectories[k++] = geomtraj;
-			}
-			else
-				pfree(DatumGetPointer(geomtraj));
-		}
-		else
-			trajectories[k++] = geomtraj;
-	}
-	Datum resultgeom;
-	if (k == 1)
-		resultgeom = trajectories[0];
-	else
-	{
-		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		resultgeom = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array); pfree(DatumGetPointer(resultgeom));
-	}
-	Datum result = call_function1(geography_from_geometry, resultgeom);
-	for (int i = 0; i < k; i++)
-		pfree(DatumGetPointer(trajectories[i]));
-	pfree(points); pfree(trajectories); 
+	TemporalS *tsgeom = tfunc1_temporals(ts, &geog_to_geom, 
+		type_oid(T_GEOMETRY), true);
+	Datum geomtraj = tgeompoints_trajectory(tsgeom);
+	Datum result = call_function1(geography_from_geometry, geomtraj);
+	pfree(DatumGetPointer(geomtraj)); 
 	return result;
 }
 
@@ -1065,36 +1063,50 @@ tpointseq_speed(TemporalSeq *seq)
 		return NULL;
 	
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	Datum value1 = temporalinst_value(inst1);
-	double speed;
-	for (int i = 0; i < seq->count - 1; i++)
+	/* Stepwise interpolation */
+	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
 	{
-		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
-		Datum value2 = temporalinst_value(inst2);
-		if (datum_point_eq(value1, value2))
-			speed = 0;
-		else
+		Datum length = Float8GetDatum(0.0);
+		for (int i = 0; i < seq->count; i++)
 		{
-			Datum traj = geompoint_trajectory(value1, value2);
-			double length = 0.0; /* Make compiler quiet */
-			ensure_point_base_type(seq->valuetypid);
-			if (seq->valuetypid == type_oid(T_GEOMETRY))
-				/* The next function works for 2D and 3D */
-				length = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
-			else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
-				length = DatumGetFloat8(call_function2(geography_length, traj, 
-					BoolGetDatum(true)));
-			pfree(DatumGetPointer(traj)); 
-			speed = length / ((double)(inst2->t - inst1->t) / 1000000);
+			TemporalInst *inst = temporalseq_inst_n(seq, i);
+			instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
 		}
-		instants[i] = temporalinst_make(Float8GetDatum(speed), inst1->t, 
-			FLOAT8OID);
-		inst1 = inst2;
-		value1 = value2;
-	}			
-	instants[seq->count - 1] = temporalinst_make(Float8GetDatum(speed), 
-		seq->period.upper, FLOAT8OID);
+	}
+	else
+	/* Linear interpolation */
+	{
+		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+		Datum value1 = temporalinst_value(inst1);
+		double speed;
+		for (int i = 0; i < seq->count - 1; i++)
+		{
+			TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+			Datum value2 = temporalinst_value(inst2);
+			if (datum_point_eq(value1, value2))
+				speed = 0;
+			else
+			{
+				Datum traj = geompoint_trajectory(value1, value2);
+				double length = 0.0; /* Make compiler quiet */
+				ensure_point_base_type(seq->valuetypid);
+				if (seq->valuetypid == type_oid(T_GEOMETRY))
+					/* The next function works for 2D and 3D */
+					length = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
+				else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
+					length = DatumGetFloat8(call_function2(geography_length, traj, 
+						BoolGetDatum(true)));
+				pfree(DatumGetPointer(traj)); 
+				speed = length / ((double)(inst2->t - inst1->t) / 1000000);
+			}
+			instants[i] = temporalinst_make(Float8GetDatum(speed), inst1->t, 
+				FLOAT8OID);
+			inst1 = inst2;
+			value1 = value2;
+		}			
+		instants[seq->count - 1] = temporalinst_make(Float8GetDatum(speed), 
+			seq->period.upper, FLOAT8OID);
+	}
 	/* The resulting sequence has stepwise interpolation */
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc, false, true);
