@@ -78,7 +78,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* The trajectory is a line */
-		Datum traj = tgeogpointseq_trajectory(inst1, inst2);
+		Datum traj = geogpoint_trajectory(value1, value2);
 		/* There is no function equivalent to LWGEOM_line_locate_point 
 		 * for geographies. We do as the ST_Intersection function, e.g.
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 

@@ -506,7 +506,7 @@ stbox_tmax(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-/* Cast an STBOX value as a Period value */
+/* Cast an STBOX as a period */
 
 PG_FUNCTION_INFO_V1(stbox_to_period);
 
@@ -517,6 +517,69 @@ stbox_to_period(PG_FUNCTION_ARGS)
 	if (!MOBDB_FLAGS_GET_T(box->flags))
 		PG_RETURN_NULL();
 	Period *result = period_make(box->tmin, box->tmax, true, true);
+	PG_RETURN_POINTER(result);
+}
+
+/* Cast an STBOX as a box2d */
+
+PG_FUNCTION_INFO_V1(stbox_to_box2d);
+
+PGDLLEXPORT Datum
+stbox_to_box2d(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+
+	GBOX *result = palloc0(sizeof(GBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+
+	/* Initialize the 4 vertices of the polygon */
+	POINT4D points[4];
+	points[0] = (POINT4D) { box->xmin, box->ymin, 0.0, 0.0 };
+	points[1] = (POINT4D) { box->xmin, box->ymax, 0.0, 0.0 };
+	points[2] = (POINT4D) { box->xmax, box->ymax, 0.0, 0.0 };
+	points[3] = (POINT4D) { box->xmax, box->ymin, 0.0, 0.0 };
+
+	/* Construct polygon */
+	LWPOLY *poly = lwpoly_construct_rectangle(LW_FALSE, LW_FALSE, &points[0], &points[1],
+			&points[2], &points[3]);
+	GSERIALIZED *result = geometry_serialize(lwpoly_as_lwgeom(poly));
+	lwpoly_free(poly);
+	PG_RETURN_POINTER(result);
+}
+
+
+/* Cast an STBOX as a box3d */
+
+PG_FUNCTION_INFO_V1(stbox_to_box3d);
+
+PGDLLEXPORT Datum
+stbox_to_box3d(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	Datum result;
+	if (MOBDB_FLAGS_GET_Z(box->flags))
+	{
+		/* The box is a point */
+		if (box->xmin == box->xmax && box->ymin == box->ymax && box->zmin == box->zmax)
+			result = call_function3(LWGEOM_makepoint, Float8GetDatum(box->xmin),
+				Float8GetDatum(valueb), Float8GetDatum(valuec));
+	}
+	else
+	{
+		/* The box is a point */
+		if (box->xmin == box->xmax && box->ymin == box->ymax)
+			result = call_function3(LWGEOM_makepoint, Float8GetDatum(valuea),
+				Float8GetDatum(valueb), Float8GetDatum(valuec));
+	}
+	
+	Datum result = call_function1(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
 }
 

@@ -1323,8 +1323,10 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
 		 * @extschema@._ST_BestSRID($1, $2)), 
 		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum line1 = tgeogpointseq_trajectory(start1, end1);
-		Datum line2 = tgeogpointseq_trajectory(start2, end2);
+		Datum line1 = geogpoint_trajectory(temporalinst_value(start1), 
+			temporalinst_value(end1));
+		Datum line2 = geogpoint_trajectory(temporalinst_value(start2), 
+			temporalinst_value(end2));
 		Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
 		TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
 		TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
@@ -2005,7 +2007,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		}
 
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeogpointseq_trajectory(inst1, inst2);
+		Datum line = geogpoint_trajectory(value1, value2);
 		bool inter = DatumGetFloat8(call_function4(geography_distance, line, 
 			value, Float8GetDatum(0.0), BoolGetDatum(false))) < 0.00001;
 		if (!inter)
@@ -2979,7 +2981,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeogpointseq_trajectory(inst1, inst2);
+		Datum line = geogpoint_trajectory(value1, value2);
 		/* There is no function equivalent to LWGEOM_line_interpolate_point 
 		 * for geographies. We do as the ST_Intersection function, e.g.
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 

@@ -47,7 +47,7 @@
  *	 applies the * operator to each instant.
  *   - tfloatseq < base => tfunc4_temporalseq_base_stepwcross
  *	 synchronizes the sequences, applies the < operator to each instant, 
- *	 and if the tfloatseq is equal to base in the middle of two subsequent
+ *	 and if the tfloatseq is equal to base in the middle of two consecutive
  *	 instants add an instant sequence at the crossing. The result is a 
  *	 tfloats.
  *   - tfloatseq + tfloatseq => tfunc4_temporalseq_temporalseq
@@ -57,7 +57,7 @@
  *	 operator to each instant. The result is a tfloatseq.
  *   - tfloatseq < tfloatseq => tfunc4_temporalseq_temporalseq_stepwcross
  *	 synchronizes the sequences, applies the < operator to each instant, 
- *	 and if there is a crossing in the middle of two subsequent pairs of 
+ *	 and if there is a crossing in the middle of two consecutive pairs of 
  *	 instants add an instant sequence and the crossing. The result is a 
  *	 tfloats.
  */
