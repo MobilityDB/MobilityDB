@@ -312,15 +312,15 @@ extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
 /* Assertion tests */
 
-extern void temporal_duration_is_valid(int16 type);
-extern void temporal_duration_all_is_valid(int16 type);
-extern void numrange_type_oid(Oid type);
+extern void ensure_valid_temporal_duration(int16 type);
+extern void ensure_valid_temporal_duration_all(int16 type);
+extern void ensure_numrange_type(Oid type);
 extern void base_type_oid(Oid valuetypid);
 extern void base_type_all_oid(Oid valuetypid);
 extern void ensure_linear_interpolation(Oid valuetypid);
 extern void ensure_linear_interpolation_all(Oid valuetypid);
-extern void numeric_base_type_oid(Oid type);
-extern void point_base_type_oid(Oid type);
+extern void ensure_numeric_base_type(Oid type);
+extern void ensure_point_base_type(Oid type);
 
 /* Input/output functions */
 

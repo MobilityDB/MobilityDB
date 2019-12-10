@@ -191,7 +191,7 @@ tnot_tbool(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_temporal_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tnot_tboolinst((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)

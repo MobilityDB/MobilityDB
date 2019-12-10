@@ -494,7 +494,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 void
 number_to_box(TBOX *box, Datum value, Oid valuetypid)
 {
-	numeric_base_type_oid(valuetypid);
+	ensure_numeric_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -567,7 +567,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 void
 range_to_tbox_internal(TBOX *box, RangeType *range)
 {
-	numrange_type_oid(range->rangetypid);
+	ensure_numrange_type(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->xmin = (double)(DatumGetInt32(lower_datum(range)));

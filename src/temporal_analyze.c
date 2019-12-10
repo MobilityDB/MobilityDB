@@ -1089,7 +1089,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	if (valuestats)
 	{
 		/* Ensure function is called for temporal numbers */
-		numeric_base_type_oid(temporal_extra_data->value_type_id);
+		ensure_numeric_base_type(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
 			rangetypid = type_oid(T_INTRANGE);
 		else if (temporal_extra_data->value_type_id == FLOAT8OID)
@@ -1344,7 +1344,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	 * temporal type and its base and time types.
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_temporal_duration_all(duration);
 	if (duration != TEMPORALINST)
 		temporal_extra_info(stats);
 
@@ -1379,7 +1379,7 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	 * temporal type and its base and time types.
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_temporal_duration_all(duration);
 	if (duration != TEMPORALINST)
 		temporal_extra_info(stats);
 

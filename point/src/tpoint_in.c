@@ -935,7 +935,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 	if (s->has_srid)
 		s->srid = (integer_from_wkb_state(s));
 
-	temporal_duration_is_valid(s->duration);
+	ensure_valid_temporal_duration(s->duration);
 	if (s->duration == TEMPORALINST)
 		return (Temporal *)tpointinst_from_wkb_state(s);
 	else if (s->duration == TEMPORALI)

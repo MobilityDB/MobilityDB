@@ -129,8 +129,8 @@ add_base_temporal(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value, 
@@ -159,8 +159,8 @@ add_temporal_base(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -185,8 +185,8 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
@@ -235,8 +235,8 @@ sub_base_temporal(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -264,8 +264,8 @@ sub_temporal_base(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -290,8 +290,8 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
@@ -340,8 +340,8 @@ mult_base_temporal(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -369,8 +369,8 @@ mult_temporal_base(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -397,8 +397,8 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
@@ -459,8 +459,8 @@ div_base_temporal(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -493,8 +493,8 @@ div_temporal_base(PG_FUNCTION_ARGS)
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
-	numeric_base_type_oid(datumtypid);
+	ensure_valid_temporal_duration(temp->duration);
+	ensure_numeric_base_type(datumtypid);
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
@@ -521,8 +521,8 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	/* The base types must be equal when the result is a temporal sequence (set) */
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)

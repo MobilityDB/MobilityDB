@@ -718,6 +718,7 @@ TemporalSeq *
 temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 {
 	Oid valuetypid = seq->valuetypid;
+
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
@@ -742,6 +743,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
 #endif
+
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	/* Normalize the result */
 	int newcount = seq->count + 1;
@@ -756,7 +758,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			/* stepwise sequences and 2 consecutive instants that have the same value 
 				... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
 			*/
-			(!linear && datum_eq(value1, value2, valuetypid))
+			(! linear && datum_eq(value1, value2, valuetypid))
 			||
 			/* 3 consecutive float/point instants that have the same value 
 				... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
@@ -766,7 +768,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			/* collinear float/point instants that have the same duration
 				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
 			*/
-			(datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
+			(linear && datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
 			)
 		{
 			/* The new instant replaces the last instant of the sequence */
@@ -1321,8 +1323,8 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
 		 * @extschema@._ST_BestSRID($1, $2)), 
 		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum line1 = tgeogpointseq_trajectory1(start1, end1);
-		Datum line2 = tgeogpointseq_trajectory1(start2, end2);
+		Datum line1 = tgeogpointseq_trajectory(start1, end1);
+		Datum line2 = tgeogpointseq_trajectory(start2, end2);
 		Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
 		TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
 		TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
@@ -2003,7 +2005,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		}
 
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeogpointseq_trajectory1(inst1, inst2);
+		Datum line = tgeogpointseq_trajectory(inst1, inst2);
 		bool inter = DatumGetFloat8(call_function4(geography_distance, line, 
 			value, Float8GetDatum(0.0), BoolGetDatum(false))) < 0.00001;
 		if (!inter)
@@ -2042,7 +2044,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 
 static TemporalSeq *
 temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2, 
-	bool lower_inc, bool upper_inc, bool linear, Datum value)
+	bool linear, bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -2062,7 +2064,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 		return result;
 	}
 
-	/* Discrete base type */
+	/* Stepwise interpolation */
 	if (! linear)
 	{
 		TemporalSeq *result = NULL;
@@ -2085,7 +2087,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 		return result;
 	}
 
-	/* Continuous base type: Test of bounds */
+	/* Linear interpolation: Test of bounds */
 	if (datum_eq(value1, value, valuetypid))
 	{
 		if (!lower_inc)
@@ -2153,7 +2155,7 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
 		TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2, 
-			lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), value);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), lower_inc, upper_inc, value);
 		if (seq1 != NULL) 
 			result[k++] = seq1;
 		inst1 = inst2;
@@ -2398,7 +2400,7 @@ temporalseq_at_values1(TemporalSeq **result, TemporalSeq *seq, Datum *values, in
 		for (int j = 0; j < count; j++)
 		{
 			TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2, 
-				lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), values[j]);
+				MOBDB_FLAGS_GET_LINEAR(seq->flags), lower_inc, upper_inc, values[j]);
 			if (seq1 != NULL) 
 				result[k++] = seq1;
 		}
@@ -2534,7 +2536,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		/* Test with inclusive bounds */
 		TemporalSeq *newseq = temporalseq_at_value1(inst1, inst2, 
-			true, true, linear, lowervalue);
+			linear, true, true, lowervalue);
 		/* We are sure that newseq is an instant sequence */
 		TemporalInst *inst = temporalseq_inst_n(newseq, 0);
 		result = temporalseq_from_temporalinstarr(&inst, 1,
@@ -2545,9 +2547,9 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		/* Test with inclusive bounds */
 		TemporalSeq *newseq1 = temporalseq_at_value1(inst1, inst2, 
-			true, true, linear, lowervalue);
+			linear, true, true, lowervalue);
 		TemporalSeq *newseq2 = temporalseq_at_value1(inst1, inst2, 
-			true, true, linear, uppervalue);
+			linear, true, true, uppervalue);
 		TimestampTz time1 = newseq1->period.lower;
 		TimestampTz time2 = newseq2->period.upper;
 		/* We are sure that both newseq1 and newseq2 are instant sequences */
@@ -2933,10 +2935,10 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	Oid valuetypid = inst1->valuetypid;
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or t is equal to lower bound or stepwise */
+	/* Constant segment or t is equal to lower bound or stepwise interpolation */
 	if (datum_eq(value1, value2, valuetypid) ||
 		timestamp_cmp_internal(inst1->t, t) == 0 ||
-		(!linear && timestamp_cmp_internal(t, inst2->t) < 0))
+		(! linear && timestamp_cmp_internal(t, inst2->t) < 0))
 		return temporalinst_value_copy(inst1);
 
 	/* t is equal to upper bound */
@@ -2977,7 +2979,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* We are sure that the trajectory is a line */
-		Datum line = tgeogpointseq_trajectory1(inst1, inst2);
+		Datum line = tgeogpointseq_trajectory(inst1, inst2);
 		/* There is no function equivalent to LWGEOM_line_interpolate_point 
 		 * for geographies. We do as the ST_Intersection function, e.g.
 		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 

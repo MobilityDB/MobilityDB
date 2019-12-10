@@ -152,7 +152,7 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid valuetypid,
 	bool mustfree)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_temporal_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc1_temporalinst((TemporalInst *)temp,
 			func, valuetypid, mustfree);
@@ -245,7 +245,7 @@ tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_temporal_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst((TemporalInst *)temp,
 			param, func, valuetypid, mustfree);
@@ -348,7 +348,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_temporal_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d, 
 			func, valuetypid, invert);
@@ -535,7 +535,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 	Oid valuetypid, bool inverted)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_temporal_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp, 
 			value, func, datumtypid, valuetypid, inverted);
@@ -1253,8 +1253,8 @@ sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -1814,8 +1814,8 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -2377,8 +2377,8 @@ sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
@@ -2769,8 +2769,8 @@ sync_tfunc2_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum), Datum valuetypid)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc2_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);
@@ -3159,8 +3159,8 @@ sync_tfunc3_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
 {
 
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, param, func, valuetypid);
@@ -3563,8 +3563,8 @@ sync_tfunc4_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp1->duration);
-	temporal_duration_is_valid(temp2->duration);
+	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_temporal_duration(temp2->duration);
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = (Temporal *)sync_tfunc4_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2, func, valuetypid);

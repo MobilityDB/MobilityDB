@@ -145,7 +145,7 @@ double
 datum_double(Datum d, Oid valuetypid)
 {
 	double result = 0.0;
-	numeric_base_type_oid(valuetypid);
+	ensure_numeric_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		result = (double)(DatumGetInt32(d));
 	if (valuetypid == FLOAT8OID)
