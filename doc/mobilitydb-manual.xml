@@ -821,12 +821,12 @@ FROM Trips;
 -- 10;"POINT(2 0)"
 -- 20;"POINT(1 1)"
 -- Restriction to a given value
-SELECT CarId, astext(atValue(Trip, 'Point(2 0)'))
+SELECT CarId, asText(atValue(Trip, 'Point(2 0)'))
 FROM Trips;
 -- 10;"{"[POINT(2 0)@2012-01-01 08:10:00+00]"}"
 -- 20; NULL
 -- Restriction to a period
-SELECT CarId, astext(atPeriod(Trip, '[2012-01-01 08:05:00,2012-01-01 08:10:00]'))
+SELECT CarId, asText(atPeriod(Trip, '[2012-01-01 08:05:00,2012-01-01 08:10:00]'))
 FROM Trips;
 -- 10;"{[POINT(1 0)@2012-01-01 08:05:00+00, POINT(2 0)@2012-01-01 08:10:00+00]}"
 -- 20;"{[POINT(0 0)@2012-01-01 08:05:00+00, POINT(1 1)@2012-01-01 08:10:00+00]}"
@@ -1029,10 +1029,14 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::tbox;
 
 				<listitem>
 					<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
-					<para><varname>stbox::period</varname></para>
+					<para><varname>stbox::period</varname>, <varname>stbox::box2d</varname>, <varname>stbox::box3d</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::period;
 -- "[2000-01-01, 2000-01-03]"
+SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box2d;
+-- "BOX(1 1,3 3)"
+SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
+-- "BOX3D(1 1 1,3 3 3)"
 					</programlisting>
 				</listitem>
 
@@ -1353,7 +1357,7 @@ SELECT tfloat '[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 					<para>Temporal geography point to temporal geometry point</para>
 					<para><varname>tgeogpoint::tgeompoint</varname></para>
 					<programlisting>
-SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
+SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tgeogpoint);
 -- "{[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02)}"
 					</programlisting>
 				</listitem>
@@ -1362,7 +1366,7 @@ SELECT astext((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 					<para>Temporal geometry point to temporal geography point</para>
 					<para><varname>tgeompoint::tgeogpoint</varname></para>
 					<programlisting>
-SELECT astext((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
+SELECT asText((tgeogpoint 'Point(0 0)@2001-01-01')::tgeompoint);
 -- "{POINT(0 0)@2001-01-01}"
 					</programlisting>
 				</listitem>
@@ -1399,10 +1403,10 @@ POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))"
 					<para>Trajectory to temporal point</para>
 					<para><varname>geometry::tgeompoint</varname>, <varname>geography::tgeogpoint</varname></para>
 					<programlisting>
-SELECT astext(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
+SELECT asText(geometry 'LINESTRING M (0 0 978307200,0 1 978393600,
 	1 1 978480000)'::tgeompoint);
 -- "[POINT(0 0)@2001-01-01, POINT(0 1)@2001-01-02, POINT(1 1)@2001-01-03]";
-SELECT astext(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
+SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 978393600),
 	POINT M (1 1 978480000),LINESTRING M (1 1 978652800,0 0 978739200))'::tgeompoint);
 -- "{[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02], [POINT(1 1)@2001-01-03],
 	[POINT(1 1)@2001-01-05, POINT(0 0)@2001-01-06]}"
@@ -1443,7 +1447,7 @@ SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
 	1@2000-01-03, 2@2000-01-04]');
 -- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03), 
 	[1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
-SELECT astext(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, 
+SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, 
 	Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
 -- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02], 
 	[POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
@@ -1458,7 +1462,7 @@ SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- "{1@2000-01-01, 1@2000-01-02}"
 SELECT appendInstant(tintseq(tint '1@2000-01-01'), tint '1@2000-01-02');
 -- "[1@2000-01-01, 1@2000-01-02]"
-SELECT astext(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, 
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01, 
 	Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 
 	tgeompoint 'Point(1 1 1)@2000-01-06'));
 -- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
@@ -1861,7 +1865,7 @@ SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day'::interva
 -- "{1@2001-01-02, 2@2001-01-04, 1@2001-01-06}"
 SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day'::interval);
 -- "[1@2001-01-02, 2@2001-01-04]"
-SELECT astext(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03], 
+SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03], 
 	[Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'::interval));
 -- "{[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04], [
 	POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]}"
@@ -2048,11 +2052,11 @@ SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 381
 					<para>Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
 					<para><varname>setPrecision(tpoint, int): tpoint</varname></para>
 					<programlisting>
-SELECT astext(setPrecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, 
+SELECT asText(setPrecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01, 
 	Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
 -- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02, 
 	POINT Z (1.12 1.12 1.12)@2000-01-03}"
-SELECT astext(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 -- "POINT(1.12 1.12)@2000-01-01"
 					</programlisting>
 				</listitem>
@@ -2242,7 +2246,7 @@ SELECT ST_CPAWithin(
 					<programlisting>
 SELECT atValue(tint '[1@2012-01-01, 1@2012-01-15)', 1);
 -- "[1@2012-01-01, 1@2012-01-15)"
-SELECT astext(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
+SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
 	'Point(1 1 1)'));
 -- "{[POINT Z (1 1 1)@2012-01-02]}"
 					</programlisting>
@@ -2254,7 +2258,7 @@ SELECT astext(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01
 					<programlisting>
 SELECT atValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[1, 3, 5]);
 -- "{[1@2012-01-01], [3@2012-01-03]}"
-SELECT astext(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)',
+SELECT asText(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)',
 	ARRAY[geometry 'Point(0 0)', 'Point(1 1)']));
 -- "{[POINT(0 0)@2012-01-01 00:00:00+00], [POINT(1 1)@2012-01-02 00:00:00+00]}"
 					</programlisting>
@@ -2313,7 +2317,7 @@ SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)
 					<para>Restrict to geometry</para>
 					<para><varname>atGeometry(tgeompoint, geometry): tgeompoint</varname></para>
 					<programlisting>
-SELECT astext(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
+SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
 	geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{"[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]"}"
 					</programlisting>
@@ -2379,7 +2383,7 @@ SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 				<programlisting>
 SELECT minusValue(tint '[1@2012-01-01, 2@2012-01-02, 2@2012-01-03)', 1);
 -- "{[2@2012-01-02, 2@2012-01-03)}"
-SELECT astext(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
+SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
 	'Point(1 1 1)'));
 -- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),
 (POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03)}"
@@ -2393,7 +2397,7 @@ SELECT astext(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012
 SELECT minusValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[2, 3]);
 -- "{[1@2012-01-01, 2@2012-01-02), (2@2012-01-02, 3@2012-01-03), 
 	(3@2012-01-03, 4@2012-01-04)}"
-SELECT astext(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@2012-01-04)',
+SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@2012-01-04)',
 	ARRAY[geometry 'Point(1 1 1)', 'Point(2 2 2)']));
 -- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),
 	(POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03),
@@ -2456,7 +2460,7 @@ SELECT minusMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-
 					<para>Difference with geometry</para>
 					<para><varname>minusGeometry(tgeompoint, geometry): tgeompoint</varname></para>
 					<programlisting>
-SELECT astext(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
+SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
 	geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
  -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02), (POINT(2 2)@2012-01-03,
 POINT(3 3)@2012-01-04)}"
@@ -6443,7 +6447,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
-						<para><varname>stbox::period</varname></para>
+						<para><varname>stbox::period</varname>, <varname>stbox::box2d</varname>, <varname>stbox::box3d</varname></para>
 					</listitem>
 
 					<listitem>

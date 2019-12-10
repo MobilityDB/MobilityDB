@@ -741,6 +741,9 @@ tgeompoints_trajectory(TemporalS *ts)
 				points[l++] = trajectories[k++] = traj;
 			}
 		}
+		if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
+		{
+		}
 		else
 			trajectories[k++] = traj;
 	}

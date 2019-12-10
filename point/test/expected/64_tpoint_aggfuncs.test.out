@@ -1,33 +1,33 @@
-SELECT astext(tcentroid(temp)) FROM (VALUES 
+SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02)'),
   (tgeompoint '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04)'),
   (tgeompoint '[Point(2 2)@2000-01-02, Point(3 3)@2000-01-03)')) t(temp);
-                                  astext                                  
+                                  asText                                  
 --------------------------------------------------------------------------
  {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(4 4)@2000-01-04 00:00:00+00)}
 (1 row)
 
-SELECT astext(tcentroid(temp)) FROM (VALUES 
+SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02)'),
   (tgeompoint '[Point(3 3 3)@2000-01-03, Point(4 4 4)@2000-01-04)'),
   (tgeompoint '[Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03)')) t(temp);
-                                       astext                                       
+                                       asText                                       
 ------------------------------------------------------------------------------------
  {[POINT Z (1 1 1)@2000-01-01 00:00:00+00, POINT Z (4 4 4)@2000-01-04 00:00:00+00)}
 (1 row)
 
 /* Errors */
-SELECT astext(tcentroid(temp)) FROM (VALUES 
+SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint 'srid=5676;Point(1 1)@2000-01-01'),
   ('Point(2 2)@2000-01-01')) t(temp);
 ERROR:  Geometries must have the same SRID for temporal aggregation
-SELECT astext(tcentroid(temp)) FROM (VALUES 
+SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint 'Point(1 1)@2000-01-01'),
   ('Point(2 2 2)@2000-01-01')) t(temp);
 ERROR:  Geometries must have the same dimensionality for temporal aggregation
-SELECT astext(tcentroid(temp)) FROM (VALUES 
+SELECT asText(tcentroid(temp)) FROM (VALUES 
   (tgeompoint 'Point(0 0)@2000-01-01'),
   (tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}'),
   ('Point(2 2 2)@2000-01-01')) t(temp);

@@ -13,10 +13,10 @@ SELECT tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]';
 SELECT tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-03], [3@2000-01-05]}';
 -- "Interp=Stepwise;{[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01], [3@2000-01-05 00:00:00+01]}"
 
-SELECT astext(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]');
+SELECT asText(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]');
 -- "Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
-SELECT astext(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03], [Point(3 3)@2000-01-05]}');
+SELECT asText(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03], [Point(3 3)@2000-01-05]}');
 -- "Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01], [POINT(3 3)@2000-01-05 00:00:00+01]}"
 
 SELECT asewkt(tgeompoint 'SRID=4326,Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]');
@@ -55,13 +55,13 @@ SELECT asEWKT(fromMFJSON('{"type":"MovingPoint","crs":{"type":"name","properties
 SELECT tfloatseq(ARRAY[tfloat '1@2000-01-01', tfloat '2@2000-01-03', tfloat '3@2000-01-05'], true, true, false);
 -- "Interp=Stepwise;[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01, 3@2000-01-05 00:00:00+01]"
 
-SELECT astext(tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-03', tgeompoint 'Point(3 3)@2000-01-05'], true, true, false));
+SELECT asText(tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-03', tgeompoint 'Point(3 3)@2000-01-05'], true, true, false));
 -- "Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
 SELECT asewkt(setSRID(tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-03', tgeompoint 'Point(3 3)@2000-01-05'], true, true, false), 4326));
 -- "SRID=4326;Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
-SELECT astext(tgeogpointseq(ARRAY[tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-03', tgeogpoint 'Point(3 3)@2000-01-05'], true, true, false));
+SELECT asText(tgeogpointseq(ARRAY[tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-03', tgeogpoint 'Point(3 3)@2000-01-05'], true, true, false));
 -- "Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
 SELECT asewkt(tgeogpointseq(ARRAY[tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-03', tgeogpoint 'Point(3 3)@2000-01-05'], true, true, false));
@@ -84,19 +84,19 @@ SELECT tfloat 'Interp=Stepwise;[1.5@2001-01-01, 2.5@2001-01-03]'::tint;
 SELECT tfloats(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]');
 -- "Interp=Stepwise;{[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01, 3@2000-01-05 00:00:00+01]}"
 
-SELECT astext(tgeompoints(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]'));
+SELECT asText(tgeompoints(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]'));
 -- "Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]}"
 
-SELECT astext(tgeogpoints(tgeogpoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]'));
+SELECT asText(tgeogpoints(tgeogpoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]'));
 -- "Interp=Stepwise;{[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]}"
 
 SELECT tfloatseq(tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-03, 3@2000-01-05]}');
 -- "Interp=Stepwise;[1@2000-01-01 00:00:00+01, 2@2000-01-03 00:00:00+01, 3@2000-01-05 00:00:00+01]"
 
-SELECT astext(tgeompointseq(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]}'));
+SELECT asText(tgeompointseq(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]}'));
 -- "Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
-SELECT astext(tgeogpointseq(tgeogpoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]}'));
+SELECT asText(tgeogpointseq(tgeogpoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(3 3)@2000-01-05]}'));
 -- "Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+01, POINT(2 2)@2000-01-03 00:00:00+01, POINT(3 3)@2000-01-05 00:00:00+01]"
 
 -------------------------
@@ -114,7 +114,7 @@ SELECT timespan(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2
 SELECT atTimestamp(tfloatseq(ARRAY[tfloat '1@2000-01-01', tfloat '2@2000-01-03', tfloat '3@2000-01-05'], true, true, false), '2000-01-02');
 -- "1@2000-01-02 00:00:00+01"
 
-SELECT astext(atTimestamp(tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-03', tgeompoint 'Point(3 3)@2000-01-05'], true, true, false), '2000-01-02'));
+SELECT asText(atTimestamp(tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(2 2)@2000-01-03', tgeompoint 'Point(3 3)@2000-01-05'], true, true, false), '2000-01-02'));
 -- "POINT(1 1)@2000-01-02 00:00:00+01"
 
 SELECT asewkt(atTimestamp(tgeogpointseq(ARRAY[tgeogpoint 'Point(1 1)@2000-01-01', tgeogpoint 'Point(2 2)@2000-01-03', tgeogpoint 'Point(3 3)@2000-01-05'], true, true, false), '2000-01-02'));

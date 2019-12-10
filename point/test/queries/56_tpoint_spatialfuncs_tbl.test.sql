@@ -41,10 +41,10 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
 SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT trajectory(temp) FROM tbl_tgeompoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
@@ -206,14 +206,14 @@ SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
 SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
 
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;

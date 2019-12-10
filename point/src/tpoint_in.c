@@ -753,7 +753,7 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 		{
 			x = double_from_wkb_state(s);
 			y = double_from_wkb_state(s);
-			value = call_function2(, Float8GetDatum(x),
+			value = call_function2(LWGEOM_makepoint, Float8GetDatum(x),
 				Float8GetDatum(y));
 		}
 		TimestampTz t = timestamp_from_wkb_state(s);

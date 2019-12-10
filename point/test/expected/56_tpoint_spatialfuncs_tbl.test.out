@@ -190,8 +190,8 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@2001-10-10 18:35:00+00
 (10 rows)
 
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
-                  astext                   
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+                  asText                   
 -------------------------------------------
  POINT(21.49 97.18)@2001-06-11 14:33:00+00
  POINT(90.3 54.24)@2001-08-11 06:38:00+00
@@ -205,8 +205,8 @@ SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
  POINT(35.47 22.96)@2001-10-09 17:44:00+00
 (10 rows)
 
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
-                  astext                   
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+                  asText                   
 -------------------------------------------
  POINT(27.54 35.3)@2001-10-16 15:01:00+00
  POINT(-5.01 47.33)@2001-02-15 16:33:00+00
@@ -220,8 +220,8 @@ SELECT astext(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
  POINT(-7.17 44.32)@2001-12-09 09:19:00+00
 (10 rows)
 
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
-                       astext                       
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+                       asText                       
 ----------------------------------------------------
  POINT Z (59.14 18.26 87.38)@2001-01-01 05:13:00+00
  POINT Z (39.72 95.66 65.75)@2001-11-05 01:52:00+00
@@ -235,8 +235,8 @@ SELECT astext(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
  POINT Z (72.48 35.63 62.94)@2001-04-26 00:13:00+00
 (10 rows)
 
-SELECT astext(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
-                       astext                        
+SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+                       asText                        
 -----------------------------------------------------
  POINT Z (23.51 35.36 420.4)@2001-06-22 10:37:00+00
  POINT Z (21.91 39.92 698.45)@2001-08-30 21:53:00+00
@@ -872,8 +872,8 @@ SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
  01010000E0E610000000003C6599203F400000C874E33051400000FABA469881400000006A4AE2CD41
 (10 rows)
 
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
-                             astext                              
+SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
+                             asText                              
 -----------------------------------------------------------------
  POINT(21.4863543398678 97.1849130932242)@2001-06-11 14:33:00+00
  POINT(90.2994092088193 54.2382061481476)@2001-08-11 06:38:00+00
@@ -887,8 +887,8 @@ SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint LIMIT 10;
  POINT(35.465402295813 22.9608578141779)@2001-10-09 17:44:00+00
 (10 rows)
 
-SELECT astext((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
-                                       astext                                        
+SELECT asText((temp::geometry)::tgeompoint) FROM tbl_tgeompoint3D LIMIT 10;
+                                       asText                                        
 -------------------------------------------------------------------------------------
  POINT Z (59.1398414690048 18.2560281828046 87.3753771185875)@2001-01-01 05:13:00+00
  POINT Z (39.7247624583542 95.6555702723563 65.7479343935847)@2001-11-05 01:52:00+00
@@ -914,8 +914,8 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
     58
 (1 row)
 
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
-                              astext                              
+SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
+                              asText                              
 ------------------------------------------------------------------
  POINT(27.5395015543327 35.3041434874758)@2001-10-16 15:01:00+00
  POINT(-5.00589677132666 47.3276112605818)@2001-02-15 16:33:00+00
@@ -929,8 +929,8 @@ SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint LIMIT 10;
  POINT(-7.16952536068857 44.3162976303138)@2001-12-09 09:19:00+00
 (10 rows)
 
-SELECT astext((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
-                                        astext                                        
+SELECT asText((temp::geography)::tgeogpoint) FROM tbl_tgeogpoint3D LIMIT 10;
+                                        asText                                        
 --------------------------------------------------------------------------------------
  POINT Z (23.5101143205538 35.3581259250641 420.396737754345)@2001-06-22 10:37:00+00
  POINT Z (21.908151069656 39.9248343114741 698.450852651149)@2001-08-30 21:53:00+00

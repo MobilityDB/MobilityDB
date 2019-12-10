@@ -139,8 +139,19 @@ CREATE FUNCTION period(stbox)
 	RETURNS period
 	AS 'MODULE_PATHNAME', 'stbox_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION box2d(stbox)
+	RETURNS box2d
+	AS 'MODULE_PATHNAME', 'stbox_to_box2d'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION box3d(stbox)
+	RETURNS box3d
+	AS 'MODULE_PATHNAME', 'stbox_to_box3d'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
+CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
+CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
+
 
 /*****************************************************************************
  * Comparison
