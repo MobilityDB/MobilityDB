@@ -233,14 +233,14 @@ geom_to_geog(Datum value)
 /* Get the spatial reference system identifier (SRID) of a temporal point */
 
 static int
-tpointinst_srid_internal(TemporalInst *inst)
+tpointinst_srid(TemporalInst *inst)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
 	return gserialized_get_srid(gs);
 }
 
 static int
-tpointi_srid_internal(TemporalI *ti)
+tpointi_srid(TemporalI *ti)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
@@ -248,7 +248,7 @@ tpointi_srid_internal(TemporalI *ti)
 }
 
 static int
-tpointseq_srid_internal(TemporalSeq *seq)
+tpointseq_srid(TemporalSeq *seq)
 {
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
@@ -256,7 +256,7 @@ tpointseq_srid_internal(TemporalSeq *seq)
 }
 
 static int
-tpoints_srid_internal(TemporalS *ts)
+tpoints_srid(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
@@ -268,16 +268,16 @@ int
 tpoint_srid_internal(Temporal *temp)
 {
 	int result = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	ensure_point_base_type(temp->valuetypid) ;
 	if (temp->duration == TEMPORALINST) 
-		result = tpointinst_srid_internal((TemporalInst *)temp);
+		result = tpointinst_srid((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
-		result = tpointi_srid_internal((TemporalI *)temp);
+		result = tpointi_srid((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 
-		result = tpointseq_srid_internal((TemporalSeq *)temp);
+		result = tpointseq_srid((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-		result = tpoints_srid_internal((TemporalS *)temp);
+		result = tpoints_srid((TemporalS *)temp);
 	return result;
 }
 
@@ -299,7 +299,7 @@ tpoint_srid(PG_FUNCTION_ARGS)
 /* TemporalInst */
 
 static TemporalInst *
-tpointinst_set_srid_internal(TemporalInst *inst, int32 srid)
+tpointinst_set_srid(TemporalInst *inst, int32 srid)
 {
 	TemporalInst *result = temporalinst_copy(inst); 
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(result));
@@ -308,7 +308,7 @@ tpointinst_set_srid_internal(TemporalInst *inst, int32 srid)
 }
 
 static TemporalI *
-tpointi_set_srid_internal(TemporalI *ti, int32 srid)
+tpointi_set_srid(TemporalI *ti, int32 srid)
 {
 	TemporalI *result = temporali_copy(ti);
 	for (int i = 0; i < ti->count; i++)
@@ -321,7 +321,7 @@ tpointi_set_srid_internal(TemporalI *ti, int32 srid)
 }
 
 static TemporalSeq *
-tpointseq_set_srid_internal(TemporalSeq *seq, int32 srid)
+tpointseq_set_srid(TemporalSeq *seq, int32 srid)
 {
 	TemporalSeq *result = temporalseq_copy(seq);
 	for (int i = 0; i < seq->count; i++)
@@ -334,7 +334,7 @@ tpointseq_set_srid_internal(TemporalSeq *seq, int32 srid)
 }
 
 static TemporalS *
-tpoints_set_srid_internal(TemporalS *ts, int32 srid)
+tpoints_set_srid(TemporalS *ts, int32 srid)
 {
 	TemporalS *result = temporals_copy(ts);
 	for (int i = 0; i < ts->count; i++)
@@ -355,13 +355,13 @@ tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
     Temporal *result = NULL;
     if (temp->duration == TEMPORALINST)
-        result = (Temporal *)tpointinst_set_srid_internal((TemporalInst *)temp, srid);
+        result = (Temporal *)tpointinst_set_srid((TemporalInst *)temp, srid);
     else if (temp->duration == TEMPORALI)
-        result = (Temporal *)tpointi_set_srid_internal((TemporalI *)temp, srid);
+        result = (Temporal *)tpointi_set_srid((TemporalI *)temp, srid);
     else if (temp->duration == TEMPORALSEQ)
-        result = (Temporal *)tpointseq_set_srid_internal((TemporalSeq *)temp, srid);
+        result = (Temporal *)tpointseq_set_srid((TemporalSeq *)temp, srid);
     else if (temp->duration == TEMPORALS)
-        result = (Temporal *)tpoints_set_srid_internal((TemporalS *)temp, srid);
+        result = (Temporal *)tpoints_set_srid((TemporalS *)temp, srid);
 
     assert(result != NULL);
     return result;
@@ -825,43 +825,44 @@ tpoints_trajectory(TemporalS *ts)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tgeompoint_trajectory);
+/*****************************************************************************/
+
+/* Internal function that DOES NOT COPY the trajectory for TemporalInst 
+ * and TemporalSeq. For this reason, this function cannot be simply called
+ * by the external function below */
+
+Datum
+tpoint_trajectory_internal(Temporal *temp)
+{
+	Datum result = 0;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST) 
+		result = temporalinst_value((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI) 
+		result = tpointi_values((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = tpointseq_trajectory((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS)
+		result = tpoints_trajectory((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_trajectory);
 
 PGDLLEXPORT Datum
-tgeompoint_trajectory(PG_FUNCTION_ARGS)
+tpoint_trajectory(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
-		result = tgeompointi_values((TemporalI *)temp);
+		result = tpointi_values((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 
 		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tgeompoints_trajectory((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(tgeogpoint_trajectory);
-
-PGDLLEXPORT Datum
-tgeogpoint_trajectory(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_value_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI) 
-		result = tgeogpointi_values((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_trajectory_copy((TemporalSeq *)temp);	
-	else if (temp->duration == TEMPORALS)
-		result = tgeogpoints_trajectory((TemporalS *)temp);	
-	PG_FREE_IF_COPY(temp, 0);
+		result = tpoints_trajectory((TemporalS *)temp);	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
 }
 
@@ -909,7 +910,7 @@ tpoint_length(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0; 
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI || 
 		(temp->duration == TEMPORALSEQ && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
 		(temp->duration == TEMPORALS && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
@@ -921,6 +922,8 @@ tpoint_length(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
+
+/*****************************************************************************/
 
 /* Cumulative length traversed by the temporal point */
 
@@ -1038,7 +1041,7 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL; 
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tpointinst_cumulative_length((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
@@ -1149,7 +1152,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL; 
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
 		;
 	else if (temp->duration == TEMPORALSEQ)
@@ -1169,7 +1172,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
 Datum
 tgeompointi_twcentroid(TemporalI *ti)
 {
-	int srid = tpointi_srid_internal(ti);
+	int srid = tpointi_srid(ti);
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsz = NULL ; /* keep compiler quiet */
@@ -1238,7 +1241,7 @@ tgeompointi_twcentroid(TemporalI *ti)
 Datum
 tgeompointseq_twcentroid(TemporalSeq *seq)
 {
-	int srid = tpointseq_srid_internal(seq);
+	int srid = tpointseq_srid(seq);
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * seq->count);
 	TemporalInst **instantsz;
@@ -1312,7 +1315,7 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 Datum
 tgeompoints_twcentroid(TemporalS *ts)
 {
-	int srid = tpoints_srid_internal(ts);
+	int srid = tpoints_srid(ts);
 	TemporalSeq **sequencesx = palloc(sizeof(TemporalSeq *) * ts->count);
 	TemporalSeq **sequencesy = palloc(sizeof(TemporalSeq *) * ts->count);
 	TemporalSeq **sequencesz = NULL; /* keep compiler quiet */
@@ -1415,7 +1418,7 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result = 0; 
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -1432,8 +1435,6 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
  * Temporal azimuth
  *****************************************************************************/
 
-/* This function assumes that the instant values are not equal 
- * This should be ensured by the calling function */
 static int
 tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 {
@@ -1549,7 +1550,7 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = NULL; 
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
 		;
 	else if (temp->duration == TEMPORALSEQ)
@@ -1862,7 +1863,7 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tpointinst_at_geometry((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -2053,7 +2054,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tpointinst_minus_geometry((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -2080,12 +2081,11 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 static TemporalInst *
 NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 {
-	TemporalInst *inst = temporali_inst_n(ti, 0);
 	double mindist = DBL_MAX;
 	int number = 0; /* keep compiler quiet */ 
 	for (int i = 0; i < ti->count; i++)
 	{
-		inst = temporali_inst_n(ti, i);
+		TemporalInst *inst = temporali_inst_n(ti, i);
 		Datum value = temporalinst_value(inst);
 		double dist = DatumGetFloat8(func(value, geo));	
 		if (dist < mindist)
@@ -2099,16 +2099,39 @@ NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 
 /*****************************************************************************/
 
-/* NAI between temporal sequence point and a geometry/geography */
+/* NAI between temporal sequence point with stepwise interpolation and a 
+ * geometry/geography */
+
+static TemporalInst *
+NAI_tpointseq_stw_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
+{
+	double mindist = DBL_MAX;
+	int number = 0; /* keep compiler quiet */ 
+	for (int i = 0; i < seq->count; i++)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		Datum value = temporalinst_value(inst);
+		double dist = DatumGetFloat8(func(value, geo));	
+		if (dist < mindist)
+		{
+			mindist = dist;
+			number = i;
+		}
+	}
+	return temporalinst_copy(temporalseq_inst_n(seq, number));
+}
+
+/* NAI between temporal sequence point with linear interpolation and a 
+ * geometry/geography */
 
 static Datum
-NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
+NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum geo, TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or stepwise interpolation */
-	if (datum_point_eq(value1, value2) || ! linear)
+	/* Constant segment */
+	if (datum_point_eq(value1, value2))
 	{
 		*t = inst1->t;
 		*tofree = false;
@@ -2126,7 +2149,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			traj, point));
 		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
 	}
-	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 	{
 		/* The trajectory is a line */
 		Datum traj = geogpoint_trajectory(value1, value2);
@@ -2164,7 +2187,8 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 	double delta = (inst2->t - inst1->t) * fraction;
 	*t = inst1->t + delta;
 	*tofree = true;
-	return temporalseq_value_at_timestamp1(inst1, inst2, linear, *t);
+	/* Linear interpolation */
+	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
 }
 
 static TemporalInst *
@@ -2174,6 +2198,11 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	if (seq->count == 1)
 		return temporalinst_copy(temporalseq_inst_n(seq, 0));
 
+	/* Stepwise interpolation */
+	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		return NAI_tpointseq_stw_geo(seq, geo, func);
+
+	/* Linear interpolation */
 	double mindist = DBL_MAX;
 	Datum minpoint = 0; /* keep compiler quiet */
 	TimestampTz tmin = 0; /* keep compiler quiet */
@@ -2184,8 +2213,7 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		TimestampTz t;
 		bool tofree;
-		Datum point = NAI_tpointseq_geo1(inst1, inst2, 
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, &t, &tofree);
+		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
 		double dist = DatumGetFloat8(func(point, geo));
 		if (dist < mindist)
 		{
@@ -2261,7 +2289,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 	else
 		func = &geog_distance;
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -2354,38 +2382,6 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Nearest approach distance
  *****************************************************************************/
 
-static Datum
-NAD_tpointinst_geo(TemporalInst *inst, Datum geo, Datum (*func)(Datum, Datum))
-{
-	Datum traj = temporalinst_value(inst);
-	return func(traj, geo);
-}
-
-static Datum
-NAD_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
-{
-	Datum traj = tpointi_values(ti);
-	Datum result = func(traj, geo);
-	pfree(DatumGetPointer(traj));
-	return result;
-}
-
-static Datum
-NAD_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
-{
-	Datum traj = tpointseq_trajectory(seq);
-	return func(traj, geo);
-}
-
-static Datum
-NAD_tpoints_geo(TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
-{
-	Datum traj = tpoints_trajectory(ts);
-	Datum result = func(traj, geo);
-	pfree(DatumGetPointer(traj));
-	return result;
-}
-
 PG_FUNCTION_INFO_V1(NAD_geo_tpoint);
 
 PGDLLEXPORT Datum
@@ -2413,21 +2409,12 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 	else
 		func = &geog_distance;
-	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = NAD_tpointinst_geo((TemporalInst *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALI) 
-		result = NAD_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = NAD_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALS) 
-		result = NAD_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
 
+	Datum traj = tpoint_trajectory_internal(temp);
+	Datum result = func(traj, PointerGetDatum(gs));
+
+	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS) 
+		pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
@@ -2460,21 +2447,12 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 	else
 		func = &geog_distance;
-	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = NAD_tpointinst_geo((TemporalInst *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALI) 
-		result = NAD_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = NAD_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALS) 
-		result = NAD_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
 
+	Datum traj = tpoint_trajectory_internal(temp);
+	Datum result = func(traj, PointerGetDatum(gs));
+
+	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS) 
+		pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
@@ -2510,48 +2488,6 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
-static Datum
-shortestline_tpointinst_geo(TemporalInst *inst, Datum geo, bool hasz)
-{
-	Datum traj = temporalinst_value(inst);
-	Datum result = hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geo) :
-		call_function2(LWGEOM_shortestline2d, traj, geo);
-	return result;
-}
-
-static Datum
-shortestline_tpointi_geo(TemporalI *ti, Datum geo, bool hasz)
-{
-	Datum traj = tgeompointi_values(ti);
-	Datum result =  hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geo) :
-		call_function2(LWGEOM_shortestline2d, traj, geo);
-	pfree(DatumGetPointer(traj));
-	return result;
-}
-
-static Datum
-shortestline_tpointseq_geo(TemporalSeq *seq, Datum geo, bool hasz)
-{
-	Datum traj = tpointseq_trajectory(seq);
-	Datum result =  hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geo) :
-		call_function2(LWGEOM_shortestline2d, traj, geo);
-	return result;
-}
-
-static Datum
-shortestline_tpoints_geo(TemporalS *ts, Datum geo, bool hasz)
-{
-	Datum traj = tpoints_trajectory(ts);
-	Datum result =  hasz ?
-		call_function2(LWGEOM_shortestline3d, traj, geo) :
-		call_function2(LWGEOM_shortestline2d, traj, geo);
-	pfree(DatumGetPointer(traj));
-	return result;
-}
-
 PG_FUNCTION_INFO_V1(shortestline_geo_tpoint);
 
 PGDLLEXPORT Datum
@@ -2568,22 +2504,13 @@ shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
-	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = shortestline_tpointinst_geo((TemporalInst *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALI) 
-		result = shortestline_tpointi_geo((TemporalI *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = shortestline_tpointseq_geo((TemporalSeq *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALS) 
-		result = shortestline_tpoints_geo((TemporalS *)temp, 
-			PointerGetDatum(gs), hasz);
+	Datum traj = tpoint_trajectory_internal(temp);
+	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
+		call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
+		call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
 
+	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS) 
+		pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
@@ -2605,22 +2532,13 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	bool hasz = MOBDB_FLAGS_GET_Z(temp->flags);
-	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = shortestline_tpointinst_geo((TemporalInst *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALI) 
-		result = shortestline_tpointi_geo((TemporalI *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = shortestline_tpointseq_geo((TemporalSeq *)temp, 
-			PointerGetDatum(gs), hasz);
-	else if (temp->duration == TEMPORALS) 
-		result = shortestline_tpoints_geo((TemporalS *)temp, 
-			PointerGetDatum(gs), hasz);
+	Datum traj = tpoint_trajectory_internal(temp);
+	Datum result =  MOBDB_FLAGS_GET_Z(temp->flags) ?
+		call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
+		call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
 
+	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS) 
+		pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
@@ -2796,7 +2714,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_distance;
 	Datum result = 0;
-	ensure_valid_temporal_duration(sync1->duration);
+	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
 		result = shortestline_tpointinst_tpointinst((TemporalInst *)sync1,
 			(TemporalInst *)sync2);
@@ -2953,7 +2871,7 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = tpointinst_to_geo((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 

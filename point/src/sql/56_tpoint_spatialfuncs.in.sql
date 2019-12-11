@@ -61,7 +61,6 @@ CREATE FUNCTION setprecision(tgeompoint, int)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION setprecision(tgeogpoint, int)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
@@ -69,12 +68,12 @@ CREATE FUNCTION setprecision(tgeogpoint, int)
 
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
-	AS 'MODULE_PATHNAME', 'tgeompoint_trajectory'
+	AS 'MODULE_PATHNAME', 'tpoint_trajectory'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE FUNCTION trajectory(tgeogpoint)
 	RETURNS geography
-	AS 'MODULE_PATHNAME', 'tgeogpoint_trajectory'
+	AS 'MODULE_PATHNAME', 'tpoint_trajectory'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

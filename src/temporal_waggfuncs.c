@@ -193,7 +193,7 @@ static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
 	TemporalSeq **result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
@@ -304,7 +304,7 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{
@@ -446,7 +446,7 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 static TemporalSeq **
 tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{	

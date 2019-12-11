@@ -657,7 +657,7 @@ CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
 		<para>There are six built-in temporal types, <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname> (the last two types restricted to 2D or 3D points with Z dimension). 
 		</para>
 
-		<para>The <emphasis role="strong">interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis role="strong">stepwise</emphasis> when the value remains constant between two successive instants. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis role="strong">linear</emphasis> when the value evolves linearly between two successive instants. For example, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Notice that temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a stepwise manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a stepwise or linear manner.</para>
+		<para>The <emphasis role="strong">interpolation</emphasis> of a temporal value states how the value evolves between successive instants. The interpolation is <emphasis role="strong">stepwise</emphasis> when the value remains constant between two successive instants. For example, the number of employees of a department may be represented with a temporal integer, which indicates that its value is constant between two time instants. On the other hand, the interpolation is <emphasis role="strong">linear</emphasis> when the value evolves linearly between two successive instants. For example, the temperature of a room may be represented with a temporal float, which indicates that the values are known at the two time instants but continuously evolve between them. Similarly, the location of a vehicule may be represented by a temporal point where the location between two consecutive GPS readings is obtained by linear interpolation. Temporal types based on discrete base types, that is the <varname>tbool</varname>, <varname>tint</varname>, or <varname>ttext</varname> evolve necesssarily in a stepwise manner. On the other hand, temporal types based on continuous base types, that is <varname>tfloat</varname>, <varname>tgeompoint</varname>, or <varname>tgeogpoint</varname> may evolve in a stepwise or linear manner.</para>
 
 		<para>The <emphasis role="strong">duration</emphasis> of a temporal value states the temporal extent at which the evolution of values is recorded. Temporal values come in four durations, namely, instant, instant set, sequence, and sequence set.</para>
 
@@ -2150,21 +2150,22 @@ SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
 					<para>Temporal azimuth &Z_support; &geography_support;</para>
 					<para><varname>azimuth(tpoint): tfloat</varname></para>
 					<programlisting>
-SELECT azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(0 1 1)@2012-01-02,
-	Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)');
--- "Interp=Stepwise;{[0@2012-01-01, 0@2012-01-02], 
-	[3.14159265358979@2012-01-03, 3.14159265358979@2012-01-04)}"
+SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02,
+	Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
+-- "Interp=Stepwise;{[45@2012-01-01, 45@2012-01-02], [225@2012-01-03, 225@2012-01-04)}"
 					</programlisting>
 				</listitem>
 
 				<listitem>
-					<para>Instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. Notice that the resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
+					<para>Instant of the first temporal point at which the two arguments are at the nearest distance. The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound. &Z_support; &geography_support;</para>
 					<para><varname>nearestApproachInstant({geo, tpoint}, {geo, tpoint}): tpoint</varname></para>
 					<programlisting>
-SELECT asText(nearestApproachInstant(
-	tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
-	geometry 'Linestring(2 2,2 1,3 1)'));
--- "POINT(1 1)@2012-01-04"
+SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- "POINT(2 1)@2000-01-02"
+SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- "POINT(1 1)@2000-01-01"
 SELECT asText(nearestApproachInstant(
 	tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, 
 	Point(0 0 0)@2012-01-05)', tgeompoint '[Point(2 0 0)@2012-01-02, 
@@ -2186,10 +2187,13 @@ SELECT to_timestamp(ST_ClosestPointOfApproach(
 					<para>Smallest distance ever between the two arguments &Z_support; &geography_support;</para>
 					<para><varname>nearestApproachDistance({geo, tpoint}, {geo, tpoint}): float</varname></para>
 					<programlisting>
-SELECT nearestApproachDistance(
-	tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
-	geometry 'Linestring(2 2,2 1,3 1)');
--- "1"
+
+SELECT NearestApproachDistance(tgeompoint '(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+-- 1
+SELECT NearestApproachDistance(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
+-- 1.4142135623731
 SELECT nearestApproachDistance(
 	tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, 
 		Point(0 0 0)@2012-01-05)',
@@ -2212,10 +2216,12 @@ SELECT ST_DistanceCPA(
 					<para>Line connecting the nearest approach point between the two arguments. The function will only return the first line that it finds if there are more than one. &Z_support; &geography_support;</para>
 					<para><varname>shortestLine({geo, tpoint}, {geo, tpoint}): geo</varname></para>
 					<programlisting>
-SELECT ST_AsText(shortestLine(
-	tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)',
-	geometry 'Linestring(2 2,2 1,3 1)'));
--- "LINESTRING(1 1,2 1)"
+SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- "LINESTRING(2 1,2 2)"
+SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, 
+	Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
+-- "LINESTRING(1 1,2 2)"
 SELECT ST_AsText(shortestLine(
 	tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03, 
 		Point(0 0 0)@2012-01-05)',
@@ -2605,7 +2611,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 
 		<sect1>
 			<title>Ever and Always Comparison Operators</title>
-			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. Notice that ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
+			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 			<itemizedlist>
 				<listitem>
 					<para>Is ever equal to the value?</para>
@@ -3367,7 +3373,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 					<para>The second version is defined with the temporal semantics, that is, the traditional spatial function is computed at each instant and results in a <varname>tbool</varname> or a <varname>ttext</varname>. Examples are the <varname>tintersects</varname> and <varname>trelate</varname> functions.</para>
 				</listitem>
 			</itemizedlist>
-			<para>Notice that semantics conveyed by the first version of the relationships varies depending on the relationship and the type of the arguments. For example, the following query
+			<para>The semantics conveyed by the first version of the relationships varies depending on the relationship and the type of the arguments. For example, the following query
 				<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 	tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');

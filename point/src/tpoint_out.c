@@ -77,7 +77,7 @@ static text *
 tpoint_as_text_internal(Temporal *temp)
 {
 	char *str = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		str = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALI) 
@@ -115,7 +115,7 @@ tpoint_as_ewkt_internal(Temporal *temp)
 	else
 		str1[0] = '\0';
 	char *str2 = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		str2 = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALI) 
@@ -654,7 +654,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	}
 
 	char *mfjson = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		mfjson = tpointinst_as_mfjson((TemporalInst *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALI)
@@ -963,7 +963,7 @@ static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
 	size_t size = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		size = tpointinst_to_wkb_size((TemporalInst *)temp, variant);
 	else if (temp->duration == TEMPORALI)
@@ -1168,7 +1168,7 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		return tpointinst_to_wkb_buf((TemporalInst *)temp, buf, variant);
 	else if (temp->duration == TEMPORALI)

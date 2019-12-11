@@ -312,7 +312,7 @@ PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	Temporal *result = NULL;
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tgeompointinst_transform_gk((TemporalInst *)temp);

@@ -536,7 +536,7 @@ spatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), bool invert)
 {
 	bool result = false;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_geo((TemporalInst *)temp,
 			geo, func, invert);
@@ -557,7 +557,7 @@ spatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	bool result = false;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_geo((TemporalInst *)temp,
 			geo, param, func, invert);
@@ -578,7 +578,7 @@ spatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum))
 {
 	bool result = false;
-	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_duration(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, func);
@@ -599,7 +599,7 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	bool result = false;
-	ensure_valid_temporal_duration(temp1->duration);
+	ensure_valid_duration(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, param, func);
@@ -619,7 +619,7 @@ static Datum
 relate_tpoint_geo_internal(Temporal *temp, Datum geo, bool invert)
 {
 	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = relate_tpointinst_geo((TemporalInst *)temp, geo, invert);
 	else if (temp->duration == TEMPORALI)
@@ -1616,7 +1616,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_dwithin;
 
 	bool result = false;
-	ensure_valid_temporal_duration(sync1->duration);
+	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func);
@@ -1701,7 +1701,7 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	
 	Datum result = 0;
-	ensure_valid_temporal_duration(inter1->duration);
+	ensure_valid_duration(inter1->duration);
 	if (inter1->duration == TEMPORALINST)
 		result = relate_tpointinst_tpointinst(
 			(TemporalInst *)inter1, (TemporalInst *)inter2);

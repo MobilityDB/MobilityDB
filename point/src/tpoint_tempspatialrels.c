@@ -1330,7 +1330,7 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			geo, func, valuetypid, invert);
@@ -1351,7 +1351,7 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			geo, param, func, BOOLOID, invert);
@@ -1460,7 +1460,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_covers;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
@@ -1525,7 +1525,7 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_covers;
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
@@ -1620,7 +1620,7 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_coveredby;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
@@ -1687,7 +1687,7 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		func = &geog_coveredby;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), func, BOOLOID, false);
@@ -1922,7 +1922,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_intersects;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, true);
@@ -1993,7 +1993,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_intersects;
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, BOOLOID, false);
@@ -2230,7 +2230,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, true);
@@ -2302,7 +2302,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
 		func = &geog_dwithin;
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp, 
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
@@ -2378,7 +2378,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_dwithin;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(sync1->duration);
+	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func, 

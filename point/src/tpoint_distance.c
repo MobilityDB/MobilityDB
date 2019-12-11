@@ -203,7 +203,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_distance;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);
@@ -253,7 +253,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		func = &geog_distance;
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
 			PointerGetDatum(gs), func, FLOAT8OID, true);

@@ -473,7 +473,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 	}
 
 	bool result = false;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_ever_eq((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -503,7 +503,7 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	tpoint_gs_same_srid(temp, gs);
 	tpoint_gs_same_dimensionality(temp, gs);
 	bool result = false;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_always_eq((TemporalInst *)temp, 
 			PointerGetDatum(gs));
@@ -619,7 +619,7 @@ Datum
 tpoint_values_internal(Temporal *temp)
 {
 	Datum result = 0;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
@@ -677,7 +677,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value(
 			(TemporalInst *)temp, PointerGetDatum(gs));
@@ -743,7 +743,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	}
 
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value(
 			(TemporalInst *)temp, PointerGetDatum(gs));
@@ -795,7 +795,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values(
 			(TemporalInst *)temp, values, count1);
@@ -849,7 +849,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
 	Temporal *result = NULL;
-	ensure_valid_temporal_duration(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values(
 			(TemporalInst *)temp, values, count1);
