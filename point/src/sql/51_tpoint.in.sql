@@ -238,6 +238,15 @@ CREATE FUNCTION duration(tgeogpoint)
 	AS 'MODULE_PATHNAME', 'temporal_duration'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION interpolation(tgeompoint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tgeogpoint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION memSize(tgeompoint)
 	RETURNS int
 	AS 'MODULE_PATHNAME', 'temporal_mem_size'

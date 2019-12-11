@@ -1589,6 +1589,23 @@ SELECT duration(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
 				</listitem>
 
 				<listitem>
+					<para>Interpolation</para>
+					<para><varname>interpolation(ttype): {'Discrete', 'Stepwise', 'Linear'}</varname></para>
+					<programlisting>
+SELECT interpolation(tfloat '{1@2012-01-01, 2@2012-01-02, 3@2012-01-03}');
+-- "Discrete"
+SELECT interpolation(tint '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+-- "Stepwise"
+SELECT interpolation(tfloat '[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+-- "Linear"
+SELECT interpolation(tfloat 'Interp=Stepwise;[1@2012-01-01, 2@2012-01-02, 3@2012-01-03]');
+-- "Stepwise"
+SELECT interpolation(tgeompoint 'Interp=Stepwise;[Point(1 1)@2012-01-01, Point(2 2)@2012-01-02, Point(3 3)@2012-01-03]');
+-- "Stepwise"
+					</programlisting>
+				</listitem>
+
+				<listitem>
 					<para>Value</para>
 					<para><varname>getValue(ttypeinst): base</varname></para>
 					<programlisting>
@@ -6719,6 +6736,11 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					<listitem>
 						<para>Duration</para>
 						<para><varname>duration(ttype): {'Instant', 'InstantSet', 'Sequence', 'SequenceSet'}</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Interpolation</para>
+						<para><varname>interpolation({ttypeseq,ttypes}): {'Stepwise', 'Linear'}</varname></para>
 					</listitem>
 
 					<listitem>

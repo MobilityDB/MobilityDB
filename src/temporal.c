@@ -1168,6 +1168,30 @@ Datum temporal_duration(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALS) 
 		strcpy(str, "SequenceSet");
 	text *result = cstring_to_text(str);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_TEXT_P(result);
+}
+
+/* Returns a string representation of the temporal interpolation */
+
+PG_FUNCTION_INFO_V1(temporal_interpolation);
+
+Datum temporal_interpolation(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	char str[12];
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI) 
+		strcpy(str, "Discrete");
+	else if (temp->duration == TEMPORALSEQ || temp->duration == TEMPORALS)
+	{
+		if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			strcpy(str, "Linear");
+		else
+			strcpy(str, "Stepwise");
+	}
+	text *result = cstring_to_text(str);
+	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_TEXT_P(result);
 }
 

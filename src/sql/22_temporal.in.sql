@@ -434,6 +434,23 @@ CREATE FUNCTION duration(ttext)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'temporal_duration'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION interpolation(tbool)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tfloat)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(ttext)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  
 CREATE FUNCTION memSize(tbool)
 	RETURNS int

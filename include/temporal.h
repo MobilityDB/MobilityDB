@@ -348,6 +348,7 @@ extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 /* Accessor functions */
 
 extern Datum temporal_duration(PG_FUNCTION_ARGS);
+extern Datum temporal_interpolation(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
 extern Datum temporal_get_values(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
