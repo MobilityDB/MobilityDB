@@ -2543,7 +2543,7 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 		<sect1 id="operators_temporal_types">
 			<title>Comparison Operators</title>
 
-			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the values and if those are equal, compare the timestamps. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both temporal sequence set.</para>
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the values and if those are equal, compare the timestamps. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
 
 			<para>The equality and inequality operators consider the normal forms of the temporal types and the equivalent representation for different durations as shown next.
 				<programlisting>
@@ -5459,8 +5459,7 @@ CREATE TABLE locations_mdb (
 INSERT INTO locations_mdb(date, trip)
 SELECT date, tgeompointseq(array_agg(tgeompointinst(
 	ST_SetSRID(ST_Point(longitudeE7/1e7, latitudeE7/1e7),4326),
-	to_timestamp(timestampMs / 1000.0)::timestamptz) 
-	ORDER BY timestampMs))
+	to_timestamp(timestampMs / 1000.0)::timestamptz) ORDER BY timestampMs))
 FROM location_history
 GROUP BY date;
 
@@ -5600,8 +5599,7 @@ CREATE TABLE trips_mdb (
 
 INSERT INTO trips_mdb(date, trip)
 SELECT date, tgeompointseq(array_agg(tgeompointinst(
-	ST_SetSRID(ST_Point(lon, lat),4326), time) 
-	ORDER BY time))
+	ST_SetSRID(ST_Point(lon, lat),4326), time) ORDER BY time))
 FROM trips_input
 GROUP BY date;
 
