@@ -485,7 +485,8 @@ tpoint_parse(char **str, Oid basetype)
 	if (**str != '{' && **str != '[' && **str != '(')
 	{
 		/* Pass the SRID specification */
-		*str = bak;		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
+		*str = bak;
+		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
 	}
 	else if (**str == '[' || **str == '(')
 		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, &tpoint_srid);		

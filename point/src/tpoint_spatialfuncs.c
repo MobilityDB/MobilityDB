@@ -1446,7 +1446,7 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
 	int k = 0, l = 0;
-	Datum azimuth = 0; /* To make the compiler quiet */
+	Datum azimuth = 0; /* Make the compiler quiet */
 	bool lower_inc = seq->period.lower_inc, upper_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
@@ -1471,8 +1471,9 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 			{
 				instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 				upper_inc = true;
+				/* Resulting sequence has stepwise interpolation */
 				result[l++] = temporalseq_from_temporalinstarr(instants, 
-					k, lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+					k, lower_inc, upper_inc, false, true);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
 				k = 0;
@@ -1598,7 +1599,7 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 }
 
 /*
- * This function assumes that inst1 and inst2 have same SRID and that the
+ * This function assumes that inst1 and inst2 have equal SRID and that the
  * points and the geometry are in 2D 
  */
 static TemporalSeq **
@@ -3014,8 +3015,9 @@ geo_to_tpointseq(GSERIALIZED *gs)
 		instants[i] = trajpoint_to_tpointinst(lwpoint);
 		lwpoint_free(lwpoint);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		npoints, true, true, true, true);
+	/* The resulting sequence assumes linear interpolation */
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, npoints,
+		true, true, true, true);
 	for (int i = 0; i < npoints; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -3050,6 +3052,7 @@ geo_to_tpoints(GSERIALIZED *gs)
 		if (lwgeom1->type == POINTTYPE)
 		{
 			TemporalInst *inst = geo_to_tpointinst(gs1);
+			/* The resulting sequence assumes linear interpolation */
 			sequences[i] = temporalseq_from_temporalinstarr(&inst, 1,
 				true, true, true, false); 
 			pfree(inst);
@@ -3058,6 +3061,7 @@ geo_to_tpoints(GSERIALIZED *gs)
 			sequences[i] = geo_to_tpointseq(gs1);
 		pfree(gs1);
 	}
+	/* The resulting sequence set assumes linear interpolation */
 	result = temporals_from_temporalseqarr(sequences, ngeoms, 
 		true, false);
 	for (int i = 0; i < ngeoms; i++)
