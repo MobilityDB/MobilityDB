@@ -120,9 +120,17 @@ CREATE FUNCTION tgeompointinst(geometry(Point), timestamptz)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointi(tgeompoint[])
 	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointi(tgeogpoint[])
+	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -131,31 +139,17 @@ CREATE FUNCTION tgeompointseq(tgeompoint[], lower_inc boolean DEFAULT true,
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeompoints(tgeompoint[], linear boolean DEFAULT true)
-	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
-
-CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeogpointi(tgeogpoint[])
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeogpoints(tgeogpoint[], linear boolean DEFAULT true)
+CREATE FUNCTION tgeompoints(tgeompoint[])
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoints(tgeogpoint[])
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

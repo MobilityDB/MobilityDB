@@ -170,7 +170,7 @@ bool
 temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	bool result = false;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_eq_internal((Period *)box1, (Period *)box2);
@@ -189,7 +189,7 @@ int
 temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	int result = 0;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_cmp_internal((Period *)box1, (Period *)box2);
@@ -216,7 +216,7 @@ void
 temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		period_set((Period *)box, t, t, true, true);
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
@@ -281,7 +281,7 @@ void
 temporali_make_bbox(void *box, TemporalInst **instants, int count) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(instants[0]->valuetypid);
+	ensure_temporal_base_type(instants[0]->valuetypid);
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
 		temporalinstarr_to_period((Period *)box, instants, count, true, true);
@@ -302,7 +302,7 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 	bool lower_inc, bool upper_inc) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(instants[0]->valuetypid);
+	ensure_temporal_base_type(instants[0]->valuetypid);
 	Oid valuetypid = instants[0]->valuetypid;
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
@@ -351,7 +351,7 @@ void
 temporals_make_bbox(void *box, TemporalSeq **sequences, int count) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(sequences[0]->valuetypid);
+	ensure_temporal_base_type(sequences[0]->valuetypid);
 	Oid valuetypid = sequences[0]->valuetypid;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
 		temporalseqarr_to_period_internal((Period *)box, sequences, count);
@@ -409,7 +409,7 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 bool 
 temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 {
-	base_type_oid(ti->valuetypid);
+	ensure_temporal_base_type(ti->valuetypid);
 	bool result = false;
 	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
 	{
@@ -435,7 +435,7 @@ temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 bool 
 temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 {
-	base_type_oid(seq->valuetypid);
+	ensure_temporal_base_type(seq->valuetypid);
 	bool result = false;
 	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
 	{
@@ -461,7 +461,7 @@ temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 bool 
 temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 {
-	base_type_oid(ts->valuetypid);
+	ensure_temporal_base_type(ts->valuetypid);
 	bool result = false;
 	if (ts->valuetypid == BOOLOID || ts->valuetypid == TEXTOID)
 	{

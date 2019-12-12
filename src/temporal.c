@@ -368,7 +368,7 @@ Oid
 temporal_oid_from_base(Oid valuetypid)
 {
 	Oid result = 0;
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID) 
 		result = type_oid(T_TBOOL);
 	if (valuetypid == INT4OID) 
@@ -480,7 +480,7 @@ ensure_numrange_type(Oid typid)
 }
 
 void
-base_type_oid(Oid valuetypid)
+ensure_temporal_base_type(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID
@@ -494,7 +494,7 @@ base_type_oid(Oid valuetypid)
 }
 
 void
-base_type_all_oid(Oid valuetypid)
+ensure_temporal_base_type_all(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
@@ -851,7 +851,7 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 			pfree(instants);
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Input values must be of type temporal instant")));
+				errmsg("Input values must be temporal instants")));
 		}
 	}
 
@@ -870,7 +870,6 @@ PGDLLEXPORT Datum
 temporal_make_temporals(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-	bool linear = PG_GETARG_BOOL(1);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	if (count == 0)
 	{
@@ -880,16 +879,24 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 	}
 	
 	TemporalSeq **sequences = (TemporalSeq **)temporalarr_extract(array, &count);
-	/* Ensure that all values are of type temporal sequence */
+	bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
+	/* Ensure that all values are of sequence duration and of the same interpolation */
 	for (int i = 0; i < count; i++)
 	{
 		if (sequences[i]->duration != TEMPORALSEQ)
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-				errmsg("Input values must be of type temporal sequence")));
+				errmsg("Input values must be temporal sequences")));
+		}
+		if (MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags) != linear)
+		{
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
+				errmsg("Input sequences must have the same interpolation")));
 		}
 	}
+
 	Temporal *result = (Temporal *)temporals_from_temporalseqarr(sequences, count,
 		linear, true);
 	

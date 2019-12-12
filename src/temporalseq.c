@@ -1310,7 +1310,7 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *inter)
 {
 	bool result = false;
-	base_type_oid(start1->valuetypid);
+	ensure_temporal_base_type(start1->valuetypid);
 	if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
 		(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
 		result = tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);

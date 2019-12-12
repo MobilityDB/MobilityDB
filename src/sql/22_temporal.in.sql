@@ -270,7 +270,7 @@ CREATE FUNCTION tints(tint[])
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloats(tfloat[], linear boolean DEFAULT true)
+CREATE FUNCTION tfloats(tfloat[])
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
