@@ -889,7 +889,7 @@ temporal_make_temporals(PG_FUNCTION_ARGS)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Input values must be temporal sequences")));
 		}
-		if (MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags) != linear)
+		if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
 		{
 			PG_FREE_IF_COPY(array, 0);
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
