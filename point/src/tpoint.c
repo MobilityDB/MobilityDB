@@ -451,9 +451,9 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	gserialized_check_point(gs);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -499,9 +499,9 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	gserialized_check_point(gs);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	bool result = false;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -655,9 +655,9 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	gserialized_check_point(gs);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -709,9 +709,9 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	gserialized_check_point(gs);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -786,9 +786,9 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
-		gserialized_check_point(gs);
-		tpoint_gs_same_srid(temp, gs);
-		tpoint_gs_same_dimensionality(temp, gs);
+		ensure_point_type(gs);
+		ensure_same_srid_tpoint_gs(temp, gs);
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
 	Oid valuetypid = temp->valuetypid;
@@ -840,9 +840,9 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	for (int i = 0; i < count; i++)
 	{
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
-		gserialized_check_point(gs);
-		tpoint_gs_same_srid(temp, gs);
-		tpoint_gs_same_dimensionality(temp, gs);
+		ensure_point_type(gs);
+		ensure_same_srid_tpoint_gs(temp, gs);
+		ensure_same_dimensionality_tpoint_gs(temp, gs);
 	}
 	
 	Oid valuetypid = temp->valuetypid;
