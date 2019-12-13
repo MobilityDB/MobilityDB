@@ -527,7 +527,7 @@ typedef struct
 	size_t wkb_size; /* Expected size of WKB */
 	bool swap_bytes; /* Do an endian flip? */
 	uint8_t duration; /* Current duration we are handling */
-	int32_t srid;    /* Current SRID we are handling */
+	int32_t srid;	/* Current SRID we are handling */
 	bool has_z; /* Z? */
 	bool has_srid; /* SRID? */
 	bool linear; /* Linear Interpolation? */
@@ -916,14 +916,14 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 	/* Check the endianness of our input  */
 	s->swap_bytes = false;
-	if (getMachineEndian() == NDR) /* Machine arch is little */
+	if (getMachineEndian() == NDR)	/* Machine arch is little */
 	{
-		if (! wkb_little_endian)    /* Data is big! */
+		if (! wkb_little_endian)	/* Data is big! */
 			s->swap_bytes = true;
 	}
-	else                              /* Machine arch is big */
+	else							/* Machine arch is big */
 	{
-		if (wkb_little_endian)      /* Data is little! */
+		if (wkb_little_endian)		/* Data is little! */
 			s->swap_bytes = true;
 	}
 

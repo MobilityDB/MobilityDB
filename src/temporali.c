@@ -822,9 +822,9 @@ temporali_shift(TemporalI *ti, Interval *interval)
 			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
 	}
 	/* Recompute the bounding box */
-    void *bbox = temporali_bbox_ptr(result); 
-    temporali_make_bbox(bbox, instants, ti->count);
-    pfree(instants);
+	void *bbox = temporali_bbox_ptr(result); 
+	temporali_make_bbox(bbox, instants, ti->count);
+	pfree(instants);
 	return result;
 }
 

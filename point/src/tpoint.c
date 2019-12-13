@@ -34,23 +34,23 @@
 static void
 pg_error(const char *fmt, va_list ap)
 {
-    char errmsg[PGC_ERRMSG_MAXLEN + 1];
+	char errmsg[PGC_ERRMSG_MAXLEN + 1];
 
-    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+	vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
 
-    errmsg[PGC_ERRMSG_MAXLEN]='\0';
-    ereport(ERROR, (errmsg_internal("%s", errmsg)));
+	errmsg[PGC_ERRMSG_MAXLEN]='\0';
+	ereport(ERROR, (errmsg_internal("%s", errmsg)));
 }
 
 static void
 pg_notice(const char *fmt, va_list ap)
 {
-    char errmsg[PGC_ERRMSG_MAXLEN + 1];
+	char errmsg[PGC_ERRMSG_MAXLEN + 1];
 
-    vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
+	vsnprintf (errmsg, PGC_ERRMSG_MAXLEN, fmt, ap);
 
-    errmsg[PGC_ERRMSG_MAXLEN]='\0';
-    ereport(NOTICE, (errmsg_internal("%s", errmsg)));
+	errmsg[PGC_ERRMSG_MAXLEN]='\0';
+	ereport(NOTICE, (errmsg_internal("%s", errmsg)));
 }
 
 void temporalgeom_init()

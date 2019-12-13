@@ -921,13 +921,13 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-    /* 
+	/* 
 	 * Transform the constant into an STBOX
 	 */
-    memset(&constBox, 0, sizeof(STBOX));
-    found = tpoint_const_to_stbox(other, &constBox);
-    /* In the case of unknown constant */
-    if (!found)
+	memset(&constBox, 0, sizeof(STBOX));
+	found = tpoint_const_to_stbox(other, &constBox);
+	/* In the case of unknown constant */
+	if (!found)
 		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
 	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));

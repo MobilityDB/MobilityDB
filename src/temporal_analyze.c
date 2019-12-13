@@ -1352,7 +1352,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	if (duration == TEMPORALINST)
 		stats->compute_stats = temporalinst_compute_stats;
 	else
-    	stats->compute_stats = temporals_compute_stats;
+		stats->compute_stats = temporals_compute_stats;
 
 	PG_RETURN_BOOL(true);
 }

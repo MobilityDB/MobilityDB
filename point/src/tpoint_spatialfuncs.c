@@ -353,18 +353,18 @@ tpoints_set_srid(TemporalS *ts, int32 srid)
 Temporal * 
 tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
-    Temporal *result = NULL;
-    if (temp->duration == TEMPORALINST)
-        result = (Temporal *)tpointinst_set_srid((TemporalInst *)temp, srid);
-    else if (temp->duration == TEMPORALI)
-        result = (Temporal *)tpointi_set_srid((TemporalI *)temp, srid);
-    else if (temp->duration == TEMPORALSEQ)
-        result = (Temporal *)tpointseq_set_srid((TemporalSeq *)temp, srid);
-    else if (temp->duration == TEMPORALS)
-        result = (Temporal *)tpoints_set_srid((TemporalS *)temp, srid);
+	Temporal *result = NULL;
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tpointinst_set_srid((TemporalInst *)temp, srid);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tpointi_set_srid((TemporalI *)temp, srid);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tpointseq_set_srid((TemporalSeq *)temp, srid);
+	else if (temp->duration == TEMPORALS)
+		result = (Temporal *)tpoints_set_srid((TemporalS *)temp, srid);
 
-    assert(result != NULL);
-    return result;
+	assert(result != NULL);
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_set_srid);
@@ -2147,7 +2147,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		/* The trajectory is a line */
 		Datum traj = geompoint_trajectory(value1, value2);
-        Datum point = call_function2(LWGEOM_closestpoint, traj, geo);
+		Datum point = call_function2(LWGEOM_closestpoint, traj, geo);
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			traj, point));
 		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
@@ -2166,7 +2166,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		Datum traj2 = call_function2(transform, traj1, bestsrid);
 		Datum geo1 = call_function1(geometry_from_geography, geo);
 		Datum geo2 = call_function2(transform, geo1, bestsrid);
-        Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
+		Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			traj2, point));
 		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1)); 

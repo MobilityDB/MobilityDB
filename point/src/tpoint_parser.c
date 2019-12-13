@@ -470,7 +470,7 @@ tpoint_parse(char **str, Oid basetype)
 	 * the srid_is_latlong function is not exported by PostGIS
 	if (basetype == type_oid(T_GEOGRAPHY))
 		srid_is_latlong(fcinfo, tpoint_srid);
-     */	
+	 */	
 
 	bool linear = linear_interpolation(basetype);
 	/* Starts with "Interp=Stepwise" */
