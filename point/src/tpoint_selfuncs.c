@@ -953,7 +953,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		/* Transform the STBOX into a Period */
 		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
 		duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-		temporal_duration_all_is_valid(duration);
+		ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 		if (duration == TEMPORALINST)

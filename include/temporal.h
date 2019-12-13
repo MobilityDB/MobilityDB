@@ -312,15 +312,15 @@ extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
 /* Assertion tests */
 
-extern void temporal_duration_is_valid(int16 type);
-extern void temporal_duration_all_is_valid(int16 type);
-extern void numrange_type_oid(Oid type);
-extern void base_type_oid(Oid valuetypid);
-extern void base_type_all_oid(Oid valuetypid);
+extern void ensure_valid_duration(int16 type);
+extern void ensure_valid_duration_all(int16 type);
+extern void ensure_numrange_type(Oid type);
+extern void ensure_temporal_base_type(Oid valuetypid);
+extern void ensure_temporal_base_type_all(Oid valuetypid);
 extern void ensure_linear_interpolation(Oid valuetypid);
 extern void ensure_linear_interpolation_all(Oid valuetypid);
-extern void numeric_base_type_oid(Oid type);
-extern void point_base_type_oid(Oid type);
+extern void ensure_numeric_base_type(Oid type);
+extern void ensure_point_base_type(Oid type);
 
 /* Input/output functions */
 
@@ -348,9 +348,9 @@ extern Temporal *tint_to_tfloat_internal(Temporal *temp);
 /* Accessor functions */
 
 extern Datum temporal_duration(PG_FUNCTION_ARGS);
+extern Datum temporal_interpolation(PG_FUNCTION_ARGS);
 extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
-extern Datum tstepwise_get_values(PG_FUNCTION_ARGS);
-extern Datum tfloat_ranges(PG_FUNCTION_ARGS);
+extern Datum temporal_get_values(PG_FUNCTION_ARGS);
 extern Datum temporal_get_time(PG_FUNCTION_ARGS);
 extern Datum temporalinst_get_value(PG_FUNCTION_ARGS);
 extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
@@ -373,8 +373,8 @@ extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
-extern Datum tstepwise_get_values_internal(Temporal *temp);
-extern Datum tfloat_ranges_internal(Temporal *temp);
+extern Datum temporal_get_values_internal(Temporal *temp);
+extern Datum tfloat_ranges(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 extern RangeType *tnumber_value_range_internal(Temporal *temp);

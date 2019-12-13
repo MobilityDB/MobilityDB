@@ -464,7 +464,7 @@ temporali_parse(char **str, Oid basetype)
 }
 
 static TemporalSeq *
-temporalseq_parse(char **str, Oid basetype, bool end) 
+temporalseq_parse(char **str, Oid basetype, bool linear, bool end) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -513,7 +513,7 @@ temporalseq_parse(char **str, Oid basetype, bool end)
 	p_cbracket(str);
 	p_cparen(str);
 	TemporalSeq *result = temporalseq_from_temporalinstarr(insts, 
-		count, lower_inc, upper_inc, true);
+		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);
@@ -523,7 +523,7 @@ temporalseq_parse(char **str, Oid basetype, bool end)
 }
 
 static TemporalS *
-temporals_parse(char **str, Oid basetype) 
+temporals_parse(char **str, Oid basetype, bool linear) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -532,13 +532,13 @@ temporals_parse(char **str, Oid basetype)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalSeq *seq = temporalseq_parse(str, basetype, false);
+	TemporalSeq *seq = temporalseq_parse(str, basetype, linear, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(seq);
-		seq = temporalseq_parse(str, basetype, false);
+		seq = temporalseq_parse(str, basetype, linear, false);
 	}
 	pfree(seq);
 	if (!p_cbrace(str))
@@ -555,10 +555,11 @@ temporals_parse(char **str, Oid basetype)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = temporalseq_parse(str, basetype, false);
+		seqs[i] = temporalseq_parse(str, basetype, linear, false);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_from_temporalseqarr(seqs, count, true);
+	TemporalS *result = temporals_from_temporalseqarr(seqs, count,
+		linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(seqs[i]);
@@ -572,10 +573,18 @@ temporal_parse(char **str, Oid basetype)
 {
 	p_whitespace(str);
 	Temporal *result = NULL;  /* keep compiler quiet */
+	bool linear = linear_interpolation(basetype);
+	/* Starts with "Interp=Stepwise" */
+	if (strncasecmp(*str,"Interp=Stepwise;",16) == 0)
+	{
+		/* Move str after the semicolon */
+		*str += 16;
+		linear = false;
+	}
 	if (**str != '{' && **str != '[' && **str != '(')
 		result = (Temporal *)temporalinst_parse(str, basetype, true);
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)temporalseq_parse(str, basetype, true);		
+		result = (Temporal *)temporalseq_parse(str, basetype, linear, true);		
 	else if (**str == '{')
 	{
 		char *bak = *str;
@@ -584,7 +593,7 @@ temporal_parse(char **str, Oid basetype)
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			result = (Temporal *)temporals_parse(str, basetype);
+			result = (Temporal *)temporals_parse(str, basetype, linear);
 		}
 		else
 		{

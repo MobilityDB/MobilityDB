@@ -77,13 +77,13 @@ static text *
 tpoint_as_text_internal(Temporal *temp)
 {
 	char *str = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		str = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALI) 
 		str = temporali_to_string((TemporalI *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALSEQ) 
-		str = temporalseq_to_string((TemporalSeq *)temp, &wkt_out);
+		str = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
 	else if (temp->duration == TEMPORALS) 
 		str = temporals_to_string((TemporalS *)temp, &wkt_out);
 	text *result = cstring_to_text(str);
@@ -110,17 +110,18 @@ tpoint_as_ewkt_internal(Temporal *temp)
 	int srid = tpoint_srid_internal(temp);
 	char str1[20];
 	if (srid > 0)
-		sprintf(str1, "SRID=%d;", srid);
+		sprintf(str1, "SRID=%d%c", srid,
+			MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
 	else
 		str1[0] = '\0';
 	char *str2 = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		str2 = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALI) 
 		str2 = temporali_to_string((TemporalI *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALSEQ) 
-		str2 = temporalseq_to_string((TemporalSeq *)temp, &wkt_out);
+		str2 = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
 	else if (temp->duration == TEMPORALS) 
 		str2 = temporals_to_string((TemporalS *)temp, &wkt_out);
 	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
@@ -487,7 +488,7 @@ tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, cha
 	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
-	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Linear']}");
+	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Stepwise']}");
 	if (srs) size += srs_mfjson_size(srs);
 	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	return size;
@@ -512,8 +513,9 @@ tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs,
 		if (i) ptr += sprintf(ptr, ",");
 		ptr += datetimes_mfjson_buf(ptr, temporalseq_inst_n(seq, i));
 	}
-	ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"Linear\"]}", 
-		seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false");
+	ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"%s\"]}", 
+		seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
+		MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Stepwise");
 	return (ptr - output);
 }
 
@@ -652,7 +654,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	}
 
 	char *mfjson = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		mfjson = tpointinst_as_mfjson((TemporalInst *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALI)
@@ -961,7 +963,7 @@ static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
 	size_t size = 0;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		size = tpointinst_to_wkb_size((TemporalInst *)temp, variant);
 	else if (temp->duration == TEMPORALI)
@@ -983,6 +985,8 @@ tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
 			wkb_flags |= WKB_ZFLAG;
 		if (tpoint_wkb_needs_srid(temp, variant))
 			wkb_flags |= WKB_SRIDFLAG;
+		if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			wkb_flags |= WKB_LINEAR_INTERP;
 	}
 	if (variant & WKB_HEX)
 	{
@@ -1086,7 +1090,7 @@ tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);
-	/* Set the temporal flags */
+	/* Set the temporal flags and interpolation */
 	buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
@@ -1123,7 +1127,7 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);
-	/* Set the temporal flags */
+	/* Set the temporal and interpolation flags */
 	buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
@@ -1164,7 +1168,7 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		return tpointinst_to_wkb_buf((TemporalInst *)temp, buf, variant);
 	else if (temp->duration == TEMPORALI)

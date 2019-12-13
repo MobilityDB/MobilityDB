@@ -505,6 +505,23 @@ tinti_to_tfloati(TemporalI *ti)
 	return result;
 }
 
+/* Cast a temporal float as a temporal integer */
+
+TemporalI *
+tfloati_to_tinti(TemporalI *ti)
+{
+	TemporalI *result = temporali_copy(ti);
+	result->valuetypid = INT4OID;
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = temporali_inst_n(result, i);
+		inst->valuetypid = INT4OID;
+		Datum *value_ptr = temporalinst_value_ptr(inst);
+		*value_ptr = Int32GetDatum((double)DatumGetFloat8(temporalinst_value(inst)));
+	}
+	return result;
+}
+
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -554,7 +571,7 @@ temporals_to_temporali(TemporalS *ts)
 
 /* Set of values taken by the temporal value */
 
-Datum *
+static Datum *
 temporali_values1(TemporalI *ti, int *count)
 {
 	Datum *result = palloc(sizeof(Datum *) * ti->count);

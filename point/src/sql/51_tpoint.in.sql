@@ -120,15 +120,28 @@ CREATE FUNCTION tgeompointinst(geometry(Point), timestamptz)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointi(tgeompoint[])
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointi(tgeogpoint[])
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointseq(tgeompoint[], lower_inc boolean DEFAULT true, 
-	upper_inc boolean DEFAULT true)
+	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true, 
+	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
+	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -136,29 +149,27 @@ CREATE FUNCTION tgeompoints(tgeompoint[])
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
-
-CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeogpointi(tgeogpoint[])
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true, 
-	upper_inc boolean DEFAULT true)
-	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION tgeogpoints(tgeogpoint[])
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Casting
+ ******************************************************************************/
+
+CREATE FUNCTION period(tgeompoint)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'temporal_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION period(tgeogpoint)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'temporal_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- Casting CANNOT be implicit to avoid ambiguity
+CREATE CAST (tgeompoint AS period) WITH FUNCTION period(tgeompoint);
+CREATE CAST (tgeogpoint AS period) WITH FUNCTION period(tgeogpoint);
 
 /******************************************************************************
  * Transformations
@@ -190,9 +201,14 @@ CREATE FUNCTION tgeogpoints(tgeogpoint)
 	RETURNS tgeogpoint AS 'MODULE_PATHNAME', 'temporal_to_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/******************************************************************************
- * Append function
- ******************************************************************************/
+CREATE FUNCTION toLinear(tgeompoint)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION toLinear(tgeogpoint)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)
 	RETURNS tgeompoint
@@ -202,23 +218,6 @@ CREATE FUNCTION appendInstant(tgeogpoint, tgeogpoint)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_append_instant'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
- * Casting
- ******************************************************************************/
-
-CREATE FUNCTION period(tgeompoint)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(tgeogpoint)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Casting CANNOT be implicit to avoid ambiguity
-CREATE CAST (tgeompoint AS period) WITH FUNCTION period(tgeompoint);
-CREATE CAST (tgeogpoint AS period) WITH FUNCTION period(tgeogpoint);
 
 /******************************************************************************
  * Functions
@@ -231,6 +230,15 @@ CREATE FUNCTION duration(tgeompoint)
 CREATE FUNCTION duration(tgeogpoint)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'temporal_duration'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION interpolation(tgeompoint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tgeogpoint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tgeompoint)

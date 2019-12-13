@@ -1393,7 +1393,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 
 	/* Get the duration of the temporal column */
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)

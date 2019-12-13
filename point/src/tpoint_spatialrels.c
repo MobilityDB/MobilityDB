@@ -362,8 +362,8 @@ spatialrel3_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum param,
  *****************************************************************************/
 
 static bool
-dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, Datum param,
+dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, bool linear1,
+	TemporalInst *start2, TemporalInst *end2, bool linear2, Datum param,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	Datum sv1 = temporalinst_value(start1);
@@ -391,8 +391,8 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1,
 	}
 
 	/* Find the values at the local minimum */
-	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, crosstime);
-	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, crosstime);
+	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the start instant and at the local minimum */
 	bool result = func(crossvalue1, crossvalue2, param);
 	
@@ -413,8 +413,8 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
-		result = dwithin_tpointseq_tpointseq1(start1, end1, 
-			start2, end2, d, func);
+		result = dwithin_tpointseq_tpointseq1(start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
+			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),d, func);
 		if (result == true)
 			return true;
 		start1 = end1;
@@ -536,7 +536,7 @@ spatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), bool invert)
 {
 	bool result = false;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_geo((TemporalInst *)temp,
 			geo, func, invert);
@@ -557,7 +557,7 @@ spatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	bool result = false;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_geo((TemporalInst *)temp,
 			geo, param, func, invert);
@@ -578,7 +578,7 @@ spatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum))
 {
 	bool result = false;
-	temporal_duration_is_valid(temp1->duration);
+	ensure_valid_duration(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, func);
@@ -599,7 +599,7 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 	Datum (*func)(Datum, Datum, Datum))
 {
 	bool result = false;
-	temporal_duration_is_valid(temp1->duration);
+	ensure_valid_duration(temp1->duration);
 	if (temp1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst((TemporalInst *)temp1,
 			(TemporalInst *)temp2, param, func);
@@ -619,7 +619,7 @@ static Datum
 relate_tpoint_geo_internal(Temporal *temp, Datum geo, bool invert)
 {
 	Datum result = 0;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = relate_tpointinst_geo((TemporalInst *)temp, geo, invert);
 	else if (temp->duration == TEMPORALI)
@@ -800,7 +800,7 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -830,7 +830,7 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -862,7 +862,7 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp1->valuetypid);
+	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -896,7 +896,7 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -926,7 +926,7 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
@@ -958,7 +958,7 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp1->valuetypid);
+	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1213,7 +1213,7 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1246,7 +1246,7 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1282,7 +1282,7 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 
 	Datum (*func)(Datum, Datum) = NULL;
-	point_base_type_oid(temp1->valuetypid);
+	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_intersects2d;
 	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1532,7 +1532,7 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1567,7 +1567,7 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	point_base_type_oid(temp->valuetypid);
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp->flags))
@@ -1604,7 +1604,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Datum (*func)(Datum, Datum, Datum) = NULL;
-	point_base_type_oid(temp1->valuetypid);
+	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		if (MOBDB_FLAGS_GET_Z(temp1->flags))
@@ -1616,7 +1616,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		func = &geog_dwithin;
 
 	bool result = false;
-	temporal_duration_is_valid(sync1->duration);
+	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST) 
 		result = spatialrel3_tpointinst_tpointinst(
 			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func);
@@ -1701,7 +1701,7 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	}
 	
 	Datum result = 0;
-	temporal_duration_is_valid(inter1->duration);
+	ensure_valid_duration(inter1->duration);
 	if (inter1->duration == TEMPORALINST)
 		result = relate_tpointinst_tpointinst(
 			(TemporalInst *)inter1, (TemporalInst *)inter2);

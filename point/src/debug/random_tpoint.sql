@@ -607,7 +607,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_tgeompointinst(0, 100, 0, 100, '2001-01-01', '2001-12-31')) AS inst
+SELECT k, asText(random_tgeompointinst(0, 100, 0, 100, '2001-01-01', '2001-12-31')) AS inst
 FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
@@ -621,7 +621,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_tgeompoint3Dinst(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31')) AS inst
+SELECT k, asText(random_tgeompoint3Dinst(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31')) AS inst
 FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
@@ -635,7 +635,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_tgeogpointinst(0, 80, 0, 80, '2001-01-01', '2001-12-31')) AS inst
+SELECT k, asText(random_tgeogpointinst(0, 80, 0, 80, '2001-01-01', '2001-12-31')) AS inst
 FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
@@ -649,7 +649,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, astext(random_tgeogpoint3Dinst(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31')) AS inst
+SELECT k, asText(random_tgeogpoint3Dinst(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31')) AS inst
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
@@ -679,7 +679,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompointi(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, astext(random_tgeompointi(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeompointi(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
@@ -707,7 +707,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompoint3Di(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10)
 FROM generate_series(1,10) k;
 
-SELECT k, astext(random_tgeompoint3Di(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10)) AS ti
+SELECT k, asText(random_tgeompoint3Di(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10)) AS ti
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
@@ -735,7 +735,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, astext(random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeogpointi(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
@@ -763,7 +763,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10) AS ti
 FROM generate_series(1,10) k;
 
-SELECT k, astext(random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeogpoint3Di(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
@@ -804,7 +804,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS seq
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -843,7 +843,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompoint3Dseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10) AS seq
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeompoint3Dseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeompoint3Dseq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -880,7 +880,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10) AS seq
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeogpointseq(0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -917,7 +917,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10) AS seq
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
+SELECT k, asText(random_tgeogpoint3Dseq(0, 80, 0, 80, 0, 80, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -966,7 +966,7 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompoints(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeompoints(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
+SELECT k, asText(random_tgeompoints(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -1013,13 +1013,13 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
+SELECT k, asText(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
 FROM generate_series (1, 15) AS k;
 
 SELECT k, numSequences(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) 
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(endSequence(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts
+SELECT k, asText(endSequence(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
@@ -1110,13 +1110,13 @@ $$ LANGUAGE 'plpgsql' STRICT;
 SELECT k, random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
+SELECT k, asText(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
 FROM generate_series (1, 15) AS k;
 
 SELECT k, numSequences(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) 
 FROM generate_series (1, 15) AS k;
 
-SELECT k, astext(endSequence(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts
+SELECT k, asText(endSequence(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts
 FROM generate_series (1, 15) AS k;
 */
 

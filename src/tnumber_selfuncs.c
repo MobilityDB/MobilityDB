@@ -1121,9 +1121,9 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	
 	/* Get the base type and duration of the temporal column */
 	valuetypid = base_oid_from_temporal(vardata.atttype);
-	numeric_base_type_oid(valuetypid);
+	ensure_numeric_base_type(valuetypid);
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)

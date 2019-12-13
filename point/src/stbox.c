@@ -506,7 +506,7 @@ stbox_tmax(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
-/* Cast an STBOX value as a Period value */
+/* Cast an STBOX as a period */
 
 PG_FUNCTION_INFO_V1(stbox_to_period);
 
@@ -517,6 +517,59 @@ stbox_to_period(PG_FUNCTION_ARGS)
 	if (!MOBDB_FLAGS_GET_T(box->flags))
 		PG_RETURN_NULL();
 	Period *result = period_make(box->tmin, box->tmax, true, true);
+	PG_RETURN_POINTER(result);
+}
+
+/* Cast an STBOX as a box2d */
+
+PG_FUNCTION_INFO_V1(stbox_to_box2d);
+
+PGDLLEXPORT Datum
+stbox_to_box2d(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+
+	/* Initialize existing dimensions */
+	GBOX *result = palloc0(sizeof(GBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	/* Strip out higher dimensions */
+	FLAGS_SET_Z(result->flags, 0);
+	FLAGS_SET_M(result->flags, 0);
+	PG_RETURN_POINTER(result);
+}
+
+
+/* Cast an STBOX as a box3d */
+
+PG_FUNCTION_INFO_V1(stbox_to_box3d);
+
+PGDLLEXPORT Datum
+stbox_to_box3d(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+
+	/* Initialize existing dimensions */
+	BOX3D *result = palloc0(sizeof(BOX3D));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	if (MOBDB_FLAGS_GET_Z(box->flags))
+	{
+		result->zmin = box->zmin;
+		result->zmax = box->zmax;
+	}
+	else
+	{
+		result->zmin = result->zmax = 0;
+	}
 	PG_RETURN_POINTER(result);
 }
 

@@ -66,24 +66,25 @@
 #define WKB_INT_SIZE 4 /* Internal use only */
 #define WKB_BYTE_SIZE 1 /* Internal use only */
 
-/* Durations */
-#define WKB_TEMPORALINST 1
-#define WKB_TEMPORALI 2
-#define WKB_TEMPORALSEQ 3
-#define WKB_TEMPORALS 4
+/* Duration */
+#define WKB_TEMPORALINST    1
+#define WKB_TEMPORALI       2
+#define WKB_TEMPORALSEQ     3
+#define WKB_TEMPORALS       4
 
 /* Period bounds */
-#define WKB_LOWER_INC	0x01
-#define WKB_UPPER_INC 	0x02
+#define WKB_LOWER_INC   0x01
+#define WKB_UPPER_INC   0x02
 
 /* Machine endianness */
 #define XDR 0 /* big endian */
 #define NDR 1 /* little endian */
 
 /* Variation flags */
-#define WKB_ZFLAG       0x10
-#define WKB_SRIDFLAG    0x20
-#define WKB_BBOXFLAG    0x40
+#define WKB_ZFLAG           0x10
+#define WKB_SRIDFLAG        0x20
+#define WKB_LINEAR_INTERP 	0x40
+#define WKB_BBOXFLAG        0x80 /* Currently not used */
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c

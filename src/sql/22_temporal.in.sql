@@ -250,7 +250,7 @@ CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true,
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
-	upper_inc boolean DEFAULT true)
+	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -277,27 +277,6 @@ CREATE FUNCTION tfloats(tfloat[])
 CREATE FUNCTION ttexts(ttext[])
 	RETURNS ttext
 	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
- * Append function
- ******************************************************************************/
-
- CREATE FUNCTION appendInstant(tbool, tbool)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporal_append_instant'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstant(tint, tint)
-	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporal_append_instant'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstant(tfloat, tfloat)
-	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_append_instant'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstant(ttext, ttext)
-	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_append_instant'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -331,8 +310,13 @@ CREATE FUNCTION tfloat(tint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'tint_to_tfloat'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tint(tfloat)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'tfloat_to_tint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tint AS tfloat) WITH FUNCTION tfloat(tint);
+CREATE CAST (tfloat AS tint) WITH FUNCTION tint(tfloat);
 
 /******************************************************************************
  * Transformation functions
@@ -406,6 +390,30 @@ CREATE FUNCTION ttexts(ttext)
 	AS 'MODULE_PATHNAME', 'temporal_to_temporals'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION toLinear(tfloat)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+ CREATE FUNCTION appendInstant(tbool, tbool)
+	RETURNS tbool
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tint, tint)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(tfloat, tfloat)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendInstant(ttext, ttext)
+	RETURNS ttext
+	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/
@@ -425,6 +433,23 @@ CREATE FUNCTION duration(tfloat)
 CREATE FUNCTION duration(ttext)
 	RETURNS text
 	AS 'MODULE_PATHNAME', 'temporal_duration'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION interpolation(tbool)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tint)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(tfloat)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION interpolation(ttext)
+	RETURNS text
+	AS 'MODULE_PATHNAME', 'temporal_interpolation'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  
 CREATE FUNCTION memSize(tbool)
@@ -465,19 +490,19 @@ CREATE FUNCTION getValue(ttext)
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tbool)
 	RETURNS boolean[]
-	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
+	AS 'MODULE_PATHNAME', 'temporal_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tint)
 	RETURNS integer[]
-	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
+	AS 'MODULE_PATHNAME', 'temporal_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(tfloat)
 	RETURNS floatrange[]
-	AS 'MODULE_PATHNAME', 'tfloat_ranges'
+	AS 'MODULE_PATHNAME', 'tfloat_get_ranges'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION getValues(ttext)
 	RETURNS text[]
-	AS 'MODULE_PATHNAME', 'tstepwise_get_values'
+	AS 'MODULE_PATHNAME', 'temporal_get_values'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueRange(tint)
@@ -948,28 +973,6 @@ CREATE FUNCTION shift(tfloat, interval)
 CREATE FUNCTION shift(ttext, interval)
 	RETURNS ttext
 	AS 'MODULE_PATHNAME', 'temporal_shift'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION isContinuousInValue(tfloat)
-	RETURNS bool
-	AS 'MODULE_PATHNAME', 'temporals_continuous_value'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-	
-CREATE FUNCTION isContinuousInTime(tbool)
-	RETURNS bool
-	AS 'MODULE_PATHNAME', 'temporals_continuous_time'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION isContinuousInTime(tint)
-	RETURNS bool
-	AS 'MODULE_PATHNAME', 'temporals_continuous_time'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION isContinuousInTime(tfloat)
-	RETURNS bool
-	AS 'MODULE_PATHNAME', 'temporals_continuous_time'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION isContinuousInTime(ttext)
-	RETURNS bool
-	AS 'MODULE_PATHNAME', 'temporals_continuous_time'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -------------------------------------------------------------------------------
