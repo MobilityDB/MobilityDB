@@ -2187,10 +2187,10 @@ temporalseq_at_value(TemporalSeq *seq, Datum value)
 
 /* Restriction to the complement of a value for a segment with linear interpolation. */
 
-static void
+static int
 tlinearseq_minus_value1(TemporalSeq **result,
 	TemporalInst *inst1, TemporalInst *inst2, 
-	bool lower_inc, bool upper_inc, Datum value, int *count)
+	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -2202,16 +2202,13 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	{
 		/* Equal to value */
 		if (datum_eq(value1, value, valuetypid))
-		{
-			*count = 0;
-			return;
-		}
+			return 0;
+
 		instants[0] = inst1;
 		instants[1] = inst2;
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, true, false);
-		*count = 1;
-		return;
+		return 1;
 	}
 
 	/* Test of bounds */
@@ -2221,8 +2218,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 		instants[1] = inst2;
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			false, upper_inc, true, false);
-		*count = 1;
-		return;
+		return 1;
 	}
 	if (datum_eq(value2, value, valuetypid))
 	{
@@ -2230,8 +2226,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 		instants[1] = inst2;
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, false, true, false);
-		*count = 1;
-		return;
+		return 1;
 	}
 	
 	/* Linear interpolation */
@@ -2242,8 +2237,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 		instants[1] = inst2;
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, true, false);
-		*count = 1;
-		return;
+		return 1;
 	}
 	instants[0] = inst1;
 	instants[1] = temporalinst_make(value, t, valuetypid);
@@ -2254,8 +2248,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	result[1] = temporalseq_from_temporalinstarr(instants, 2,
 			false, upper_inc, true, false);
 	pfree(instants[0]);
-	*count = 2;
-	return;
+	return 2;
 }
 
 /* 
@@ -2329,15 +2322,14 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	else
 	{
 		/* Linear interpolation */
-		int countseq;
 		bool lower_inc = seq->period.lower_inc;
 		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 		for (int i = 1; i < seq->count; i++)
 		{
 			TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-			tlinearseq_minus_value1(&result[k], inst1, inst2, 
-				lower_inc, upper_inc, value, &countseq);
+			int countseq = tlinearseq_minus_value1(&result[k], inst1, inst2, 
+				lower_inc, upper_inc, value);
 			/* The previous step has added between one and two sequences */
 			k += countseq;
 			inst1 = inst2;

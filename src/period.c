@@ -356,7 +356,8 @@ period_in(PG_FUNCTION_ARGS)
 
 /* Convert to string */
 
-static void unquote(char *str) 
+static void
+unquote(char *str) 
 {
 	char *last = str;
 	while (*str != '\0') 
@@ -370,7 +371,7 @@ static void unquote(char *str)
 	*last = '\0';
 }
 
-char*
+char *
 period_to_string(Period *p) 
 {
 	char *lower = call_output(TIMESTAMPTZOID, p->lower);

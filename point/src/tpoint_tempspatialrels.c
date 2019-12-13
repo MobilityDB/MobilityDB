@@ -1070,11 +1070,11 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 /* The following function supposes that the two temporal values are synchronized.
    This should be ensured by the calling function. */
 
-static void
+static int
 tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 	TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, bool lower_inc, bool upper_inc, 
-	Datum d, bool hasz, Datum (*func)(Datum, Datum, Datum), int *count)
+	Datum d, bool hasz, Datum (*func)(Datum, Datum, Datum))
 {
 	TimestampTz lower = start1->t;
 	TimestampTz upper = end1->t;
@@ -1093,8 +1093,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		*count = 1;
-		return;
+		return 1;
 	}
 
 	/* Find the instants t1 and t2 (if any) during which the dwithin function is true */
@@ -1110,8 +1109,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);			
 		pfree(instants[0]); pfree(instants[1]); 
-		*count = 1;
-		return;
+		return 1;
 	}
 	/* A single instant is returned */
 	if (solutions == 1)
@@ -1123,8 +1121,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 			result[0] = temporalseq_from_temporalinstarr(instants, 2,
 				lower_inc, upper_inc, false, false);			
 			pfree(instants[0]); pfree(instants[1]); 
-			*count = 1;
-			return;
+			return 1;
 		}		
 		if (t1 == lower) /* && lower_inc */
 		{	
@@ -1137,8 +1134,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 			result[1] = temporalseq_from_temporalinstarr(instants, 2,
 				false, upper_inc, false, false);			
 			pfree(instants[0]); pfree(instants[1]); 
-			*count = 2;
-			return;
+			return 2;
 		}
 		if (t1 == upper) /* && upper_inc */
 		{	
@@ -1147,8 +1143,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 			result[0] = temporalseq_from_temporalinstarr(instants, 2,
 				lower_inc, true, false, false);			
 			pfree(instants[0]); pfree(instants[1]);
-			*count = 1;
-			return;
+			return 1;
 		}
 		if (t1 != lower && t1 != upper)
 		{	
@@ -1166,8 +1161,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 			result[2] = temporalseq_from_temporalinstarr(instants, 2,
 				false, upper_inc, false, false);			
 			pfree(instants[0]); pfree(instants[1]);
-			*count = 3;
-			return;
+			return 3;
 		}		
 	}
 	/* Two instants are returned */
@@ -1178,8 +1172,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		*count = 1;
-		return;
+		return 1;
 	}
 	if (lower != t1 && upper == t2)
 	{	
@@ -1193,8 +1186,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[1] = temporalseq_from_temporalinstarr(instants, 2,
 			true, upper_inc, false, false);		
 		pfree(instants[0]); pfree(instants[1]);
-		*count = 2;
-		return;
+		return 2;
 	}
 	if (lower == t1 && upper != t2)
 	{	
@@ -1208,8 +1200,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[1] = temporalseq_from_temporalinstarr(instants, 2,
 			true, upper_inc, false, false);		
 		pfree(instants[0]); pfree(instants[1]);
-		*count = 2;
-		return;
+		return 2;
 	}
 	else
 	{	
@@ -1228,8 +1219,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 		result[2] = temporalseq_from_temporalinstarr(instants, 2,
 			false, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		*count = 3;
-		return;
+		return 3;
 	}
 }
 
@@ -1251,7 +1241,6 @@ tdwithin_tpointseq_tpointseq3(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 	}
 
 	int k = 0;
-	int countseq;
 	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *start2 = temporalseq_inst_n(seq2, 0);
 	bool lower_inc = seq1->period.lower_inc;
@@ -1261,8 +1250,8 @@ tdwithin_tpointseq_tpointseq3(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
 		bool upper_inc = (i == seq1->count - 1) ? seq1->period.upper_inc : false;
-		tdwithin_tpointseq_tpointseq2(&result[k], start1, end1, start2, end2, 
-			lower_inc, upper_inc, d, hasz, func, &countseq);
+		int countseq = tdwithin_tpointseq_tpointseq2(&result[k], start1, end1, 
+			start2, end2, lower_inc, upper_inc, d, hasz, func);
 		/* The previous step has added between one and three sequences */
 		k += countseq;
 		start1 = end1;
