@@ -20,18 +20,20 @@
 
 /*****************************************************************************/
 
-/* Assertion tests */
+/* Parameter tests */
 
 extern void ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2);
 extern void ensure_same_srid_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
 extern void ensure_same_dimensionality_tpoint(Temporal *temp1, Temporal *temp2);
 extern void ensure_same_dimensionality_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
-extern void ensure_hasZ_tpoint(Temporal *temp);
+extern void ensure_has_Z_tpoint(Temporal *temp);
+extern void ensure_has_not_Z_tpoint(Temporal *temp);
 extern void ensure_point_type(GSERIALIZED *gs);
 extern void ensure_non_empty(GSERIALIZED *gs);
-extern void ensure_hasZ(GSERIALIZED *gs);
-extern void ensure_hasM(GSERIALIZED *gs);
-extern void ensure_donot_hasM(GSERIALIZED *gs);
+extern void ensure_has_Z(GSERIALIZED *gs);
+extern void ensure_has_not_Z(GSERIALIZED *gs);
+extern void ensure_has_M(GSERIALIZED *gs);
+extern void ensure_has_not_M(GSERIALIZED *gs);
 
 /* Utility functions */
 

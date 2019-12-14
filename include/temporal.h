@@ -310,7 +310,7 @@ extern bool temporal_type_oid(Oid temptypid);
 
 extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
-/* Assertion tests */
+/* Parameter tests */
 
 extern void ensure_valid_duration(int16 type);
 extern void ensure_valid_duration_all(int16 type);

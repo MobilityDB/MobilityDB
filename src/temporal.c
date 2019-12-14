@@ -447,7 +447,7 @@ type_has_precomputed_trajectory(Oid valuetypid)
 } 
  
 /*****************************************************************************
- * Assertion tests
+ * Parameter tests
  *****************************************************************************/
 
 /* Used for the dispatch functions */

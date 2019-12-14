@@ -4769,9 +4769,9 @@ SELECT asText((tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
 
 /* Errors */
 SELECT geometry 'POINT empty'::tgeompoint;
-ERROR:  Input trajectory cannot be empty
+ERROR:  Only non-empty geometries accepted
 SELECT geometry 'POINT(1 1)'::tgeompoint;
-ERROR:  Input trajectory do not have M values
+ERROR:  Only geometries with M dimension accepted
 SELECT geometry 'POLYGON M((1 1 946681200,1 2 946681200,2 2 946681200,2 1 946681200,1 1 946681200))'::tgeompoint;
 ERROR:  Invalid geometry type for trajectory
 SELECT geometry 'MULTIPOINT M (1 1 946767600,1 1 946681200)'::tgeompoint;

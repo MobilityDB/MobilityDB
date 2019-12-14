@@ -29,7 +29,7 @@
 #include "tpoint_distance.h"
 
 /*****************************************************************************
- * Assertion tests
+ * Parameter tests
  *****************************************************************************/
 
 void
@@ -65,11 +65,19 @@ ensure_same_dimensionality_tpoint_gs(Temporal *temp, GSERIALIZED *gs)
 }
 
 void
-ensure_hasZ_tpoint(Temporal *temp)
+ensure_has_Z_tpoint(Temporal *temp)
 {
 	if (! MOBDB_FLAGS_GET_Z(temp->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("The temporal point must have Z dimension")));
+}
+
+void
+ensure_has_not_Z_tpoint(Temporal *temp)
+{
+	if (MOBDB_FLAGS_GET_Z(temp->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point must not have Z dimension")));
 }
 
 void
@@ -89,7 +97,7 @@ ensure_non_empty(GSERIALIZED *gs)
 }
 
 void
-ensure_hasZ(GSERIALIZED *gs)
+ensure_has_Z(GSERIALIZED *gs)
 {
 	if (! FLAGS_GET_Z(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -97,7 +105,7 @@ ensure_hasZ(GSERIALIZED *gs)
 }
 
 void
-ensure_hasM(GSERIALIZED *gs)
+ensure_has_M(GSERIALIZED *gs)
 {
 	if (! FLAGS_GET_M(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -105,7 +113,7 @@ ensure_hasM(GSERIALIZED *gs)
 }
 
 void
-ensure_donot_hasM(GSERIALIZED *gs)
+ensure_has_not_M(GSERIALIZED *gs)
 {
 	if (FLAGS_GET_M(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -3106,12 +3114,7 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	ensure_non_empty(gs);
-	if (! FLAGS_GET_M(gs->flags))
-	{
-		PG_FREE_IF_COPY(gs, 0);
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("Input trajectory do not have M values")));
-	}
+	ensure_has_M(gs);
 	
 	Temporal *result;
 	if (gserialized_get_type(gs) == POINTTYPE)
