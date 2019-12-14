@@ -163,7 +163,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
 	uint8_t duration = 0, geometry_type = 0;
-	int z = 0, m = 0;
+	int hasZ = 0, hasM = 0;
 	char *s;
 	
 	switch(n)
@@ -187,15 +187,15 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 						
 			/* Geometry type */
 			s = DatumGetCString(elem_values[1]);
-			if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE) 
+			if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE) 
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Invalid geometry type modifier: %s", s)));
-			if (geometry_type != POINTTYPE || m)
+			if (geometry_type != POINTTYPE || hasM)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("Only point geometries without M dimension accepted")));
 
 			TYPMOD_SET_TYPE(typmod, geometry_type);
-			if (z)
+			if (hasZ)
 				TYPMOD_SET_Z(typmod);
 		
 			/* SRID */
@@ -224,23 +224,23 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
 				/* Geometry type */
 				s = DatumGetCString(elem_values[1]);
-				if (geometry_type_from_string(s, &geometry_type, &z, &m) == LW_FAILURE)
+				if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 							errmsg("Invalid geometry type modifier: %s", s)));
-				if (geometry_type != POINTTYPE || m)
+				if (geometry_type != POINTTYPE || hasM)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Only point geometries without M dimension accepted")));
 
 				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (z)
+				if (hasZ)
 					TYPMOD_SET_Z(typmod);
 				/* Shift to restore the 4 bits of the duration */
 				TYPMOD_SET_DURATION(typmod, duration);
 			}
-			else if (geometry_type_from_string(s, &geometry_type, &z, &m))
+			else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
 			{
 				/* Type modifier is (Geometry, SRID) */
-				if (geometry_type != POINTTYPE || m)
+				if (geometry_type != POINTTYPE || hasM)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						errmsg("Only point geometries without M dimension accepted")));
 
@@ -253,7 +253,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
 				
 				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (z)
+				if (hasZ)
 					TYPMOD_SET_Z(typmod);
 				/* SRID */
 				s = DatumGetCString(elem_values[1]);
@@ -277,7 +277,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 			{
 				TYPMOD_SET_DURATION(typmod, duration);
 			}
-			else if (geometry_type_from_string(s, &geometry_type, &z, &m)) 
+			else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM)) 
 			{
 				if (geometry_type != POINTTYPE)
 					ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -292,7 +292,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 					TYPMOD_SET_SRID(typmod, SRID_UNKNOWN);
 
 				TYPMOD_SET_TYPE(typmod, geometry_type);
-				if (z)
+				if (hasZ)
 					TYPMOD_SET_Z(typmod);
 
 				/* Shift to restore the 4 bits of the duration */
