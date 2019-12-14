@@ -176,7 +176,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-		temporals_make_bbox(bbox, newsequences, newcount);
+		temporals_make_bbox(bbox, newsequences, newcount, linear);
 		result->offsets[newcount] = pos;
 	}
 	if (normalize && count > 1)
@@ -1318,14 +1318,14 @@ temporals_shift(TemporalS *ts, Interval *interval)
 		seq->period.upper = DatumGetTimestampTz(
 				DirectFunctionCall2(timestamptz_pl_interval,
 				TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
-		/* Recompute the bounding box of the sequence */
+		/* Shift bounding box */
 		void *bbox = temporalseq_bbox_ptr(seq); 
-		temporalseq_make_bbox(bbox, instants, seq->count, 
-			seq->period.lower_inc, seq->period.upper_inc);		
+		shift_bbox(bbox, seq->valuetypid, interval);
+	
 	}
-	/* Recompute the bounding box of the sequence set */
+	/* Shift bounding box */
 	void *bbox = temporals_bbox_ptr(result); 
-	temporals_make_bbox(bbox, sequences, ts->count);
+	shift_bbox(bbox, ts->valuetypid, interval);
 	pfree(sequences);
 	pfree(instants);
 	return result;

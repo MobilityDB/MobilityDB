@@ -299,7 +299,7 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 /* Make the bounding box a temporal sequence from its values */
 void
 temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
-	bool lower_inc, bool upper_inc) 
+	bool lower_inc, bool upper_inc, bool linear) 
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
@@ -348,7 +348,7 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 
 /* Make the bounding box a temporal sequence from its values */
 void
-temporals_make_bbox(void *box, TemporalSeq **sequences, int count) 
+temporals_make_bbox(void *box, TemporalSeq **sequences, int count, bool linear) 
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
@@ -363,6 +363,52 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 #endif
 	return;
+}
+
+/*****************************************************************************
+ * Shift the bounding box of a Temporal with an Interval
+ *****************************************************************************/
+
+void 
+shift_bbox(void *box, Oid valuetypid, Interval *interval)
+{
+	ensure_temporal_base_type(valuetypid);
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	{
+        Period *period = (Period *)box;
+		period->lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->lower), PointerGetDatum(interval)));
+		period->upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->upper), PointerGetDatum(interval)));
+		return;
+	}
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	{
+		TBOX *tbox = (TBOX *)box;
+		tbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
+		tbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#ifdef WITH_POSTGIS
+	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+		valuetypid == type_oid(T_GEOMETRY))
+	{
+		STBOX *stbox = (STBOX *)box;
+		stbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
+		stbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#endif
 }
 
 /*****************************************************************************

@@ -692,7 +692,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		else
 #endif
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
-				lower_inc, upper_inc);
+				lower_inc, upper_inc, linear);
 		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
@@ -1925,10 +1925,9 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 	result->period.upper = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
-	/* Recompute the bounding box */
+	/* Shift bounding box */
 	void *bbox = temporalseq_bbox_ptr(result); 
-	temporalseq_make_bbox(bbox, instants, seq->count, 
-		seq->period.lower_inc, seq->period.upper_inc);
+	shift_bbox(bbox, seq->valuetypid, interval);
 	pfree(instants);
 	return result;
 }
