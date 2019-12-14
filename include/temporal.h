@@ -333,10 +333,10 @@ extern void temporal_write(Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
 
-extern Datum temporal_make_temporalinst(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporali(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporalseq(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporals(PG_FUNCTION_ARGS);
+extern Datum temporalinst_constructor(PG_FUNCTION_ARGS);
+extern Datum temporali_constructor(PG_FUNCTION_ARGS);
+extern Datum temporalseq_constructor(PG_FUNCTION_ARGS);
+extern Datum temporals_constructor(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 

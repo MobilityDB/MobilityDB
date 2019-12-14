@@ -203,38 +203,38 @@ CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
 
 CREATE FUNCTION tboolinst(val boolean, t timestamptz)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'temporalinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintinst(val integer, t timestamptz)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'temporalinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatinst(val float, t timestamptz)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'temporalinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttextinst(val text, t timestamptz)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'temporalinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Temporal instant set */
 
 CREATE FUNCTION tbooli(tbool[])
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tinti(tint[])
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloati(tfloat[])
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttexti(ttext[])
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Temporal sequence */
@@ -242,41 +242,41 @@ CREATE FUNCTION ttexti(ttext[])
 CREATE FUNCTION tboolseq(tbool[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttextseq(ttext[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Temporal sequence set */
 	
 CREATE FUNCTION tbools(tbool[])
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tints(tint[])
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloats(tfloat[])
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttexts(ttext[])
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

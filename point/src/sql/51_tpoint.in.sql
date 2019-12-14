@@ -118,40 +118,40 @@ CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, inte
 
 CREATE FUNCTION tgeompointinst(geometry(Point), timestamptz)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'tpointinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tpoint_make_temporalinst'
+	AS 'MODULE_PATHNAME', 'tpointinst_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointi(tgeompoint[])
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointi(tgeogpoint[])
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporali'
+	AS 'MODULE_PATHNAME', 'temporali_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointseq(tgeompoint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporalseq'
+	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompoints(tgeompoint[])
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoints(tgeogpoint[])
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'temporal_make_temporals'
+	AS 'MODULE_PATHNAME', 'temporals_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

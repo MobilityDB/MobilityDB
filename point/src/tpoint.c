@@ -404,10 +404,10 @@ PGDLLEXPORT Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 
 /* Construct a temporal instant point from two arguments */
 
-PG_FUNCTION_INFO_V1(tpoint_make_temporalinst);
+PG_FUNCTION_INFO_V1(tpointinst_constructor);
  
 PGDLLEXPORT Datum
-tpoint_make_temporalinst(PG_FUNCTION_ARGS) 
+tpointinst_constructor(PG_FUNCTION_ARGS) 
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
