@@ -849,10 +849,10 @@ temporals_values1(TemporalS *ts, int *count)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		for (int j = 0; j < seq->count; j++)
-			values[k++] = temporalinst_value(temporalseq_inst_n(seq, j));
+			result[k++] = temporalinst_value(temporalseq_inst_n(seq, j));
 	}
-	datum_sort(values, k, ts->valuetypid);
-	*count = datum_remove_duplicates(result, k, seq->valuetypid);
+	datum_sort(result, k, ts->valuetypid);
+	*count = datum_remove_duplicates(result, k, ts->valuetypid);
 	return result;
 }
 
