@@ -86,6 +86,7 @@ extern TemporalS *tstepwseq_to_linear(TemporalSeq *seq);
 
 /* Accessor functions */
 
+extern Datum *temporalseq_values1(TemporalSeq *seq, int *count);
 extern ArrayType *temporalseq_values(TemporalSeq *seq);
 extern int tfloatseq_ranges1(RangeType **result, TemporalSeq *seq);
 extern PeriodSet *temporalseq_get_time(TemporalSeq *seq);

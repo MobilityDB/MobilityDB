@@ -1571,7 +1571,7 @@ tstepwseq_to_linear(TemporalSeq *seq)
 
 /* Values of a TemporalSeq with stepwise interpolation */
 
-static Datum *
+Datum *
 temporalseq_values1(TemporalSeq *seq, int *count)
 {
 	Datum *result = palloc(sizeof(Datum *) * seq->count);
