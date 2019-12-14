@@ -840,10 +840,10 @@ tstepws_to_linear(TemporalS *ts)
 
 /* Values of a TemporalS with stepwise interpolation */
 
-ArrayType *
-temporals_values(TemporalS *ts)
+Datum *
+temporals_values1(TemporalS *ts, int *count)
 {
-	Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
+	Datum *result = palloc(sizeof(Datum *) * ts->totalcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -852,8 +852,16 @@ temporals_values(TemporalS *ts)
 			values[k++] = temporalinst_value(temporalseq_inst_n(seq, j));
 	}
 	datum_sort(values, k, ts->valuetypid);
-	int newcount = datum_remove_duplicates(values, k, ts->valuetypid);
-	ArrayType *result = datumarr_to_array(values, newcount, ts->valuetypid);
+	*count = datum_remove_duplicates(result, k, seq->valuetypid);
+	return result;
+}
+
+ArrayType *
+temporals_values(TemporalS *ts)
+{
+	int count;
+	Datum *values = temporals_values1(ts, &count);
+	ArrayType *result = datumarr_to_array(values, count, ts->valuetypid);
 	pfree(values);
 	return result;
 }

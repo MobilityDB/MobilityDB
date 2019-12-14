@@ -1569,7 +1569,7 @@ tstepwseq_to_linear(TemporalSeq *seq)
  * Accessor functions 
  *****************************************************************************/
 
-/* Set of values taken by the temporal sequence value */
+/* Values of a TemporalSeq with stepwise interpolation */
 
 static Datum *
 temporalseq_values1(TemporalSeq *seq, int *count)
