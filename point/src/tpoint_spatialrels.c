@@ -33,12 +33,9 @@
 
 /*****************************************************************************
  * Spatial relationship functions
- *****************************************************************************/
-
-/* 
  * contains and within are inverse to each other
  * covers and coveredby are inverse to each other
- */
+ *****************************************************************************/
 
 Datum
 geom_contains(Datum geom1, Datum geom2)
@@ -268,7 +265,7 @@ spatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), bool invert)
 {
 	Datum traj = tpoint_trajectory_internal(temp);
-	bool result = invert ? func(geo, traj) : func(traj, geo);
+	Datum result = invert ? func(geo, traj) : func(traj, geo);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
@@ -278,7 +275,7 @@ spatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
 	Datum traj = tpoint_trajectory_internal(temp);
-	bool result = invert ? func(geo, traj, param) : func(traj, geo, param);
+	Datum result = invert ? func(geo, traj, param) : func(traj, geo, param);
 	pfree(DatumGetPointer(traj));
 	return result;
 }
@@ -289,7 +286,7 @@ spatialrel_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
 {
 	Datum traj1 = tpoint_trajectory_internal(temp1);
 	Datum traj2 = tpoint_trajectory_internal(temp2);
-	bool result = func(traj1, traj2);
+	Datum result = func(traj1, traj2);
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2)); 
 	return result;
 }
@@ -300,26 +297,7 @@ spatialrel3_tpoint_tpoint(Temporal *temp1, Temporal *temp2, Datum param,
 {
 	Datum traj1 = tpoint_trajectory_internal(temp1);
 	Datum traj2 = tpoint_trajectory_internal(temp2);
-	bool result = func(traj1, traj2, param);
-	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
-	return result;
-}
-
-static Datum
-relate_tpoint_geo_internal(Temporal *temp, Datum geo, bool invert)
-{
-	Datum traj = tpoint_trajectory_internal(temp);
-	Datum result = invert ? geom_relate(geo, traj) : geom_relate(traj, geo);
-	pfree(DatumGetPointer(traj));
-	return result;
-}
-
-static Datum
-relate_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
-{
-	Datum traj1 = tpoint_trajectory_internal(temp1);
-	Datum traj2 = tpoint_trajectory_internal(temp2);
-	Datum result = geom_relate(traj1, traj2);
+	Datum result = func(traj1, traj2, param);
 	pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
 	return result;
 }
@@ -1325,7 +1303,8 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Datum result = relate_tpoint_geo_internal(temp, PointerGetDatum(gs), true);
+	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
+		&geom_relate, false);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
@@ -1346,7 +1325,8 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum result = relate_tpoint_geo_internal(temp, PointerGetDatum(gs), false);
+	Datum result = spatialrel_tpoint_geo(temp, PointerGetDatum(gs), 
+		&geom_relate, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
@@ -1369,7 +1349,7 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	Datum result = relate_tpoint_tpoint_internal(inter1, inter2);
+	Datum result = spatialrel_tpoint_tpoint(inter1, inter2, &geom_relate);
 	pfree(inter1); pfree(inter2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
