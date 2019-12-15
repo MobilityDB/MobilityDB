@@ -70,6 +70,7 @@ extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
 
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
+extern Datum tpoint_trajectory_internal(Temporal *temp);
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
 extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
 

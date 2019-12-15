@@ -373,17 +373,18 @@ periodset_parse(char **str)
 
 	/* First parsing */
 	char *bak = *str;
-	Period *per = period_parse(str, false);
+	period_parse(str, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		per = period_parse(str, false);
+		period_parse(str, false);
 	}
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse period set")));
 
+	/* Second parsing */
 	*str = bak;
 	Period **periods = palloc(sizeof(Period *) * count);
 	for (int i = 0; i < count; i++) 
@@ -443,12 +444,12 @@ temporali_parse(char **str, Oid basetype)
 
 	/* First parsing */
 	char *bak = *str;
-	TemporalInst *inst = temporalinst_parse(str, basetype, false, false);
+	temporalinst_parse(str, basetype, false, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		inst = temporalinst_parse(str, basetype, false, false);
+		temporalinst_parse(str, basetype, false, false);
 	}
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
@@ -458,6 +459,7 @@ temporali_parse(char **str, Oid basetype)
 	if (**str != 0)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
+
 	/* Second parsing */
 	*str = bak;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
@@ -557,12 +559,12 @@ temporals_parse(char **str, Oid basetype, bool linear)
 
 	/* First parsing */
 	char *bak = *str;
-	TemporalSeq *seq = temporalseq_parse(str, basetype, linear, false, false);
+	temporalseq_parse(str, basetype, linear, false, false);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
-		seq = temporalseq_parse(str, basetype, linear, false, false);
+		temporalseq_parse(str, basetype, linear, false, false);
 	}
 	if (!p_cbrace(str))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
@@ -572,6 +574,7 @@ temporals_parse(char **str, Oid basetype, bool linear)
 	if (**str != 0)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse temporal value")));
+
 	/* Second parsing */
 	*str = bak;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);

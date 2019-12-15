@@ -861,21 +861,17 @@ tpoints_trajectory(TemporalS *ts)
 
 /*****************************************************************************/
 
-/* Internal function that DOES NOT COPY the trajectory for TemporalInst
- * and TemporalSeq. For this reason, this function cannot be simply called
- * by the external function below */
-
 Datum
 tpoint_trajectory_internal(Temporal *temp)
 {
 	Datum result = 0;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = temporalinst_value((TemporalInst *)temp);
+		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
 		result = tpointi_values((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_trajectory((TemporalSeq *)temp);
+		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
 		result = tpoints_trajectory((TemporalS *)temp);
 	return result;
@@ -887,16 +883,8 @@ PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = 0;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = temporalinst_value_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = tpointi_values((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = tpoints_trajectory((TemporalS *)temp);	PG_FREE_IF_COPY(temp, 0);
+	Datum result = tpoint_trajectory_internal(temp);
+	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
 }
 
@@ -2450,8 +2438,7 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result = func(traj, PointerGetDatum(gs));
 
-	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS)
-		pfree(DatumGetPointer(traj));
+	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
@@ -2488,8 +2475,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	Datum traj = tpoint_trajectory_internal(temp);
 	Datum result = func(traj, PointerGetDatum(gs));
 
-	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS)
-		pfree(DatumGetPointer(traj));
+	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
@@ -2546,8 +2532,7 @@ shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 		call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
 		call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
 
-	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS)
-		pfree(DatumGetPointer(traj));
+	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_DATUM(result);
@@ -2574,8 +2559,7 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 		call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
 		call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
 
-	if (temp->duration == TEMPORALI || temp->duration == TEMPORALS)
-		pfree(DatumGetPointer(traj));
+	pfree(DatumGetPointer(traj));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_DATUM(result);
