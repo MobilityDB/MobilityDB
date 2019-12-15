@@ -74,13 +74,6 @@
 #define SDFACTOR 3.25
 
 /**
-* The maximum number of dimensions our code can handle.
-* We'll use this to statically allocate a bunch of
-* arrays below.
-*/
-#define ND_DIMS 4
-
-/**
 * Minimum width of a dimension that we'll bother trying to
 * compute statistics on. Bearing in mind we have no control
 * over units, but noting that for geographics, 10E-5 is in the
@@ -97,26 +90,6 @@
 
 /* How many bins shall we use in figuring out the distribution? */
 #define NUM_BINS 50
-
-/**
-* N-dimensional box type for calculations, to avoid doing
-* explicit axis conversions from GBOX in all calculations
-* at every step.
-*/
-typedef struct ND_BOX_T
-{
-	float4 min[ND_DIMS];
-	float4 max[ND_DIMS];
-} ND_BOX;
-
-/**
-* N-dimensional box index type
-*/
-typedef struct ND_IBOX_T
-{
-	int min[ND_DIMS];
-	int max[ND_DIMS];
-} ND_IBOX;
 
 /**
 * N-dimensional statistics structure. Well, actually
@@ -177,7 +150,7 @@ cmp_int (const void *a, const void *b)
 }
 
 /** Zero out an ND_BOX */
-static int
+int
 nd_box_init(ND_BOX *a)
 {
 	memset(a, 0, sizeof(ND_BOX));
@@ -189,7 +162,7 @@ nd_box_init(ND_BOX *a)
 * set the maxes to the smallest thing possible and
 * the mins to the largest.
 */
-static int
+int
 nd_box_init_bounds(ND_BOX *a, int ndims)
 {
 	int d;
@@ -217,7 +190,7 @@ total_double(const double *vals, int nvals)
 }
 
 /** Expand the bounds of target to include source */
-static int
+int
 nd_box_merge(const ND_BOX *source, ND_BOX *target, int ndims)
 {
 	int d;
@@ -323,7 +296,7 @@ nd_box_ratio(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 }
 
 /** Set the values of an #ND_BOX from a #GBOX */
-static void
+void
 nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 {
 	int d = 0;
@@ -547,7 +520,7 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
  * can then use the histogram
  */
 
-static void
+void
 gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	double notnull_cnt, const ND_BOX **sample_boxes, ND_BOX *sum, 
 	ND_BOX *sample_extent, int *slot_idx, int ndims)

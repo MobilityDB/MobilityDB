@@ -53,14 +53,6 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 	return true;
 }
 
-/* Zero out an ND_BOX */
-static int
-nd_box_init(ND_BOX *a)
-{
-	memset(a, 0, sizeof(ND_BOX));
-	return true;
-}
-
 /*
  * Given a position in the n-d histogram (i,j,k,l) return the
  * position in the 1-d values array.
