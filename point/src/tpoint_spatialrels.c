@@ -168,38 +168,6 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
 	return call_function4(geography_dwithin, geog1, geog2, dist, 
 		BoolGetDatum(true));
 }
- 
-/*****************************************************************************
- * Generic binary functions
- * The functions that have two temporal points as argument suppose that they
- * overlap on the time dimension. This is ensured in the external function 
- * in order to return NULL if it is not the case.
- *****************************************************************************/
-
-/*****************************************************************************
- * Generic ternary functions
- *****************************************************************************/
-
-/* Temporal spatialrel Temporal */
-
-static bool
-spatialrel3_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2, Datum param,
-	Datum (*func)(Datum, Datum, Datum))
-{
-	return DatumGetBool(func(temporalinst_value(inst1), 
-		temporalinst_value(inst2), param));
-}
-
-static bool
-spatialrel3_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2, Datum param,
-	Datum (*func)(Datum, Datum, Datum))
-{
-	Datum geo1 = tpointi_values(ti1);
-	Datum geo2 = tpointi_values(ti2);
-	bool result = DatumGetBool(func(geo1, geo2, param));
-	pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2)); 
-	return result;
-}
 
 /*****************************************************************************
  * Generic dwithin functions when both temporal points are moving
@@ -266,8 +234,8 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 		start1 = end1;
 		start2 = end2;
 	}
-	result = spatialrel3_tpointinst_tpointinst(start1, start2, d, func);
-	return result;
+	return DatumGetBool(func(temporalinst_value(start1), 
+		temporalinst_value(start2), d));
 }
 
 static bool
@@ -289,9 +257,10 @@ dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 }
 
 /*****************************************************************************
- * Dispatch functions
- * It is supposed that the temporal values have been intersected before and
- * therefore they are both of the same duration.
+ * Generic functions
+ * The functions that have two temporal points as arguments suppose that they
+ * have been intersected before by the calling function. As a consequence of
+ * this, they have the same timeframe and they are of the same duration.
  *****************************************************************************/
 
 static Datum
@@ -1322,12 +1291,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
 	bool result = false;
 	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TEMPORALINST) 
-		result = spatialrel3_tpointinst_tpointinst(
-			(TemporalInst *)sync1, (TemporalInst *)sync2, dist, func);
-	else if (sync1->duration == TEMPORALI) 
-		result = spatialrel3_tpointi_tpointi(
-			(TemporalI *)sync1, (TemporalI *)sync2, dist, func);
+	if (sync1->duration == TEMPORALINST || sync1->duration == TEMPORALI) 
+		result = spatialrel3_tpoint_tpoint(sync1, sync2, dist, func);
 	else if (sync1->duration == TEMPORALSEQ) 
 		result = dwithin_tpointseq_tpointseq(
 			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
