@@ -1433,12 +1433,10 @@ tgeompoints_twcentroid(TemporalS *ts)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tgeompoint_twcentroid);
 
-PGDLLEXPORT Datum
-tgeompoint_twcentroid(PG_FUNCTION_ARGS)
+Datum
+tgeompoint_twcentroid_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum result = 0;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
@@ -1449,6 +1447,16 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 		result = tgeompointseq_twcentroid((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
 		result = tgeompoints_twcentroid((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tgeompoint_twcentroid);
+
+PGDLLEXPORT Datum
+tgeompoint_twcentroid(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum result = tgeompoint_twcentroid_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
 }
@@ -1460,6 +1468,7 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 static int
 tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 {
+	/* Instantaneous sequence */
 	if (seq->count == 1)
 		return 0;
 	
@@ -1618,6 +1627,7 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	TemporalI *result = NULL;
 	if (k != 0)
 		result = temporali_from_temporalinstarr(instants, k);
+	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
 }
@@ -1719,6 +1729,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 				upper_inc : true;
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 					lower_inc1, upper_inc1, linear, false);
+			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
 		}
 		POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
@@ -1742,9 +1753,10 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 TemporalSeq **
 tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
 {
+	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		/* Due to the bounding box test in the external function we are sure
+		/* Due to the bounding box test in the calling function we are sure
 		 * that the point intersects the geometry */
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		result[0] = temporalseq_copy(seq);
@@ -1792,7 +1804,6 @@ tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
 	*count = totalseqs;
 	return result;
 }
-
 
 static TemporalS *
 tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
@@ -1934,6 +1945,7 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	TemporalI *result = NULL;
 	if (k != 0)
 		result = temporali_from_temporalinstarr(instants, k);
+	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
 }
@@ -2134,8 +2146,7 @@ NAI_tpointseq_stw_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	int number = 0; /* keep compiler quiet */
 	for (int i = 0; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		Datum value = temporalinst_value(inst);
+		Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
 		double dist = DatumGetFloat8(func(value, geo));	
 		if (dist < mindist)
 		{
@@ -2590,13 +2601,13 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 	/* Compute the distance */
 	TemporalI *dist = sync_tfunc2_temporali_temporali(ti1, ti2, func,
 		FLOAT8OID);
-	Datum xmin = temporali_min_value(dist);
-	TemporalI *mindistance = temporali_at_value(dist, xmin);
-	TimestampTz t = temporali_start_timestamp(mindistance);
+	Datum mind = temporali_min_value(dist);
+	TemporalI *mindist = temporali_at_value(dist, mind);
+	TimestampTz t = temporali_start_timestamp(mindist);
 	TemporalInst *inst1 = temporali_at_timestamp(ti1, t);
 	TemporalInst *inst2 = temporali_at_timestamp(ti2, t);
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindistance); pfree(inst1); pfree(inst2);
+	pfree(dist); pfree(mindist); pfree(inst1); pfree(inst2);
 	return result;
 }
 
@@ -2839,6 +2850,7 @@ tpointseq_to_geo(TemporalSeq *seq)
 		points[i] = (LWGEOM *)point_to_trajpoint(gs, inst->t);
 	}
 	GSERIALIZED *result;
+	/* Instantaneous sequence */
 	if (seq->count == 1)
 		result = geometry_serialize(points[0]);
 	else

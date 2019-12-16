@@ -19,7 +19,7 @@
 #include "lifting.h"
 
 /*****************************************************************************
- * Generic dispatch functions
+ * Generic dispatch function
  *****************************************************************************/
 
 static Temporal *
@@ -37,14 +37,14 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	else if (temp->duration == TEMPORALSEQ) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			/* Result is a TemporalS */
-			(Temporal *)tfunc4_temporalseq_base_stepwcross((TemporalSeq *)temp,
+			(Temporal *)tfunc4_temporalseq_base_cross((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			/* Result is a TemporalSeq */
 			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert);
 	else if (temp->duration == TEMPORALS) 
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-			(Temporal *)tfunc4_temporals_base_stepwcross((TemporalS *)temp,
+			(Temporal *)tfunc4_temporals_base_cross((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			(Temporal *)tfunc4_temporals_base((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert);
@@ -93,7 +93,7 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_eq2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, 
 			linear, NULL);
@@ -146,7 +146,7 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_ne2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, 
 			linear, NULL);
@@ -199,7 +199,7 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_lt2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_lt2, BOOLOID, 
 			linear, NULL);
@@ -252,7 +252,7 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_le2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_le2, BOOLOID, 
 			linear, NULL);
@@ -305,7 +305,7 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_gt2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_gt2, BOOLOID, 
 			linear, NULL);
@@ -358,7 +358,7 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_stepwcross(temp1, temp2, 
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
 			&datum2_ge2, BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ge2, BOOLOID, 
 			linear, NULL);

@@ -114,6 +114,44 @@ datum_degrees(Datum value)
 }
 
 /*****************************************************************************
+ * Find the single timestamptz at which the multiplication of two temporal 
+ * number segments is at a local minimum/maximum. The function supposes that 
+ * the instants are synchronized, that is  start1->t = start2->t and 
+ * end1->t = end2->t. The function only return an intersection at the middle,
+ * that is, it returns false if the timestamp found is not at a bound.
+ *****************************************************************************/
+
+static bool
+tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+{
+	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
+	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
+	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
+	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
+	/* Compute the instants t1 and t2 at which the linear functions of the two
+	   segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+	   minimum/maximum exactly at the middle between t1 and t2.
+	   To reduce problems related to floating point arithmetic, t1 and t2
+	   are shifted, respectively, to 0 and 1 before the computation */
+	if ((x2 - x1) == 0 || (x4 - x3) == 0)
+		return false;
+
+	double d1 = (-1 * x1) / (x2 - x1);
+	double d2 = (-1 * x3) / (x4 - x3);
+	double min = Min(d1, d2);
+	double max = Max(d1, d2);
+	double fraction = min + (max - min)/2;
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+		/* Minimum/maximum occurs out of the period */
+		return false;
+
+	double duration = (double) (end1->t - start1->t);
+	*t = (double)(start1->t) + (duration * fraction);
+	return true;	
+}
+
+/*****************************************************************************
  * Temporal addition
  *****************************************************************************/
 

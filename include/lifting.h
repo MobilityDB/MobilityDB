@@ -68,10 +68,10 @@ TemporalS *tfunc4_temporals_base(TemporalS *ts, Datum value,
 Temporal *tfunc4_temporal_base(Temporal *temp, Datum value, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool inverted);
-TemporalS *tfunc4_temporalseq_base_stepwcross(TemporalSeq *seq, Datum value, 
+TemporalS *tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
-TemporalS *tfunc4_temporals_base_stepwcross(TemporalS *ts, Datum value, 
+TemporalS *tfunc4_temporals_base_cross(TemporalS *ts, Datum value, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert);
 
@@ -180,35 +180,35 @@ Temporal *sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid, bool linear,
 	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
-TemporalS *sync_tfunc2_temporalseq_temporalseq_stepwcross(TemporalSeq *seq1, TemporalSeq *seq2, 
+TemporalS *sync_tfunc2_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*func)(Datum, Datum), Oid valuetypid);
-TemporalS *sync_tfunc2_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq, 
+TemporalS *sync_tfunc2_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq, 
 	Datum (*func)(Datum, Datum), Oid valuetypid);
-TemporalS *sync_tfunc2_temporalseq_temporals_stepwcross(TemporalSeq *seq, TemporalS *ts,
+TemporalS *sync_tfunc2_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
 	Datum (*func)(Datum, Datum), Datum valuetypid);
-TemporalS *sync_tfunc2_temporals_temporals_stepwcross(TemporalS *ts1, TemporalS *ts2, 
+TemporalS *sync_tfunc2_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*func)(Datum, Datum), Oid valuetypid);
-Temporal *sync_tfunc2_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
+Temporal *sync_tfunc2_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum), Datum valuetypid);
-TemporalS *sync_tfunc3_temporalseq_temporalseq_stepwcross(TemporalSeq *seq1, TemporalSeq *seq2, 
+TemporalS *sync_tfunc3_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
-TemporalS *sync_tfunc3_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq, 
+TemporalS *sync_tfunc3_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
-TemporalS *sync_tfunc3_temporalseq_temporals_stepwcross(TemporalSeq *seq, TemporalS *ts,
+TemporalS *sync_tfunc3_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
-TemporalS *sync_tfunc3_temporals_temporals_stepwcross(TemporalS *ts1, TemporalS *ts2, 
+TemporalS *sync_tfunc3_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2, 
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
-Temporal *sync_tfunc3_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
+Temporal *sync_tfunc3_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Datum valuetypid);
-TemporalS *sync_tfunc4_temporalseq_temporalseq_stepwcross(TemporalSeq *seq1, TemporalSeq *seq2, 
+TemporalS *sync_tfunc4_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
-TemporalS *sync_tfunc4_temporals_temporalseq_stepwcross(TemporalS *ts, TemporalSeq *seq, 
+TemporalS *sync_tfunc4_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);
-TemporalS *sync_tfunc4_temporalseq_temporals_stepwcross(TemporalSeq *seq, TemporalS *ts,
+TemporalS *sync_tfunc4_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
-TemporalS *sync_tfunc4_temporals_temporals_stepwcross(TemporalS *ts1, TemporalS *ts2, 
+TemporalS *sync_tfunc4_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
-Temporal *sync_tfunc4_temporal_temporal_stepwcross(Temporal *temp1, Temporal *temp2,
+Temporal *sync_tfunc4_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Datum valuetypid);
 
 /*****************************************************************************/

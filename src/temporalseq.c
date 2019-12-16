@@ -988,11 +988,13 @@ intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
  * segments defined over the same set of instants covering the intersection
  * of their time spans. Depending on the value of the argument crossings,
  * potential crossings between successive pair of instants are added.
+ * Crossings are only added when at least one of the sequences has linear
+ * interpolation.
  *****************************************************************************/
 
-bool
-temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1, bool linear1, 
-	TemporalInst *inst2, TemporalInst *next2, bool linear2,
+static bool
+temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1, 
+	bool linear1, TemporalInst *inst2, TemporalInst *next2, bool linear2,
 	TemporalInst **cross1, TemporalInst **cross2)
 {
 	/* Determine whether there is a crossing */
@@ -1016,25 +1018,27 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	if (inter == NULL)
 		return false;
 
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	/* If the two sequences intersect at an instant */
 	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
 	{
 		TemporalInst *inst1 = temporalseq_at_timestamp(seq1, inter->lower);
 		TemporalInst *inst2 = temporalseq_at_timestamp(seq2, inter->lower);
 		*sync1 = temporalseq_from_temporalinstarr(&inst1, 1, 
-			true, true, MOBDB_FLAGS_GET_LINEAR(seq1->flags), false);
+			true, true, linear1, false);
 		*sync2 = temporalseq_from_temporalinstarr(&inst2, 1, 
-			true, true, MOBDB_FLAGS_GET_LINEAR(seq2->flags), false);
+			true, true, linear2, false);
 		pfree(inst1); pfree(inst2); pfree(inter);
 		return true;
 	}
 	
 	/* 
 	 * General case 
-	 * seq1 =  ... *	 *   *   *	  *>
-	 * seq2 =	   <*			*	 * ...
-	 * sync1 =	  <X C * C * C X C X C *>
-	 * sync1 =	  <* C X C X C * C * C X>
+	 * seq1 =  ... *     *   *   *      *>
+	 * seq2 =       <*            *     * ...
+	 * sync1 =      <X C * C * C X C X C *>
+	 * sync1 =      <* C X C X C * C * C X>
 	 * where X are values added for synchronization and C are values added
 	 * for the crossings
 	 */
@@ -1084,9 +1088,9 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		/* If not the first instant add potential crossing before adding
 		   the new instants */
 		TemporalInst *cross1, *cross2;
-		if (crossings && k > 0 && 
-			temporalseq_add_crossing(instants1[k - 1], inst1, MOBDB_FLAGS_GET_LINEAR(seq1->flags),
-				instants2[k - 1], inst2, MOBDB_FLAGS_GET_LINEAR(seq2->flags), &cross1, &cross2))
+		if (crossings && (linear1 || linear2) && k > 0 && 
+			temporalseq_add_crossing(instants1[k - 1], inst1, linear1,
+				instants2[k - 1], inst2, linear2, &cross1, &cross2))
 		{
 			instants1[k] = cross1; instants2[k++] = cross2;
 			tofree[l++] = cross1; tofree[l++] = cross2; 
@@ -1100,7 +1104,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	/* We are sure that k != 0 due to the period intersection test above */
 	/* The last two values of sequences with stepwise interpolation and 
 	   exclusive upper bound must be equal */
-	if (! inter->upper_inc && k > 1 && ! MOBDB_FLAGS_GET_LINEAR(seq1->flags))
+	if (! inter->upper_inc && k > 1 && ! linear2)
 	{
 		if (datum_ne(temporalinst_value(instants1[k - 2]), 
 			temporalinst_value(instants1[k - 1]), seq1->valuetypid))
@@ -1111,7 +1115,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			tofree[l++] = instants1[k - 1];
 		}
 	}
-	if (! inter->upper_inc && k > 1 && ! MOBDB_FLAGS_GET_LINEAR(seq2->flags))
+	if (! inter->upper_inc && k > 1 && ! linear2)
 	{
 		if (datum_ne(temporalinst_value(instants2[k - 2]), 
 			temporalinst_value(instants2[k - 1]), seq2->valuetypid))
@@ -1123,9 +1127,9 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		}
 	}
 	*sync1 = temporalseq_from_temporalinstarr(instants1, k, 
-		inter->lower_inc, inter->upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), false);
+		inter->lower_inc, inter->upper_inc, linear1, false);
 	*sync2 = temporalseq_from_temporalinstarr(instants2, k, 
-		inter->lower_inc, inter->upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), false);
+		inter->lower_inc, inter->upper_inc, linear2, false);
 	
 	for (int i = 0; i < l; i++) 
 		pfree(tofree[i]);
@@ -1134,56 +1138,24 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	return true;
 }
 
-/*****************************************************************************/
-
-/*
- * Find the single timestamptz at which the multiplication of two temporal 
- * segments has a local minimum/maximum.
- * The function supposes that the instants are synchronized, i.e.,
+/*****************************************************************************
+ * Functions that find the single timestamptz at which two temporal segments
+ * intersect or have a turning point, that is, a local minimum/maximum.
+ * The functions are used to add intermediate points when lifting operators.
+ * The functions suppose that the instants are synchronized, i.e.,
  * start1->t = start2->t and end1->t = end2->t 
- */
+ * The functions only return an intersection at the middle, i.e., 
+ * they return false if they intersect at a bound.
+ * There is no need to add functions for DoubleN, which are used for computing 
+ * avg and centroid aggregates, since these computations are based on sum and 
+ * thus they do not need to add intermediate points.
+ *****************************************************************************/
 
-bool
-tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
-{
-	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
-	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
-	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
-	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
-	/* Compute the instants t1 and t2 at which the linear functions of the two
-	   segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-	   minimum/maximum exactly at the middle between t1 and t2.
-	   To reduce problems related to floating point arithmetic, t1 and t2
-	   are shifted, respectively, to 0 and 1 before the computation */
-	if ((x2 - x1) == 0 || (x4 - x3) == 0)
-		return false;
-
-	double d1 = (-1 * x1) / (x2 - x1);
-	double d2 = (-1 * x3) / (x4 - x3);
-	double min = Min(d1, d2);
-	double max = Max(d1, d2);
-	double fraction = min + (max - min)/2;
-	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
-		/* Minimum/maximum occurs out of the period */
-		return false;
-
-	double duration = (double) (end1->t - start1->t);
-	*t = (double)(start1->t) + (duration * fraction);
-	return true;	
-}
-
-/*****************************************************************************/
-
-/*
- * Find the single timestamptz at which two temporal segments intersect.
- * The function supposes that the instants are synchronized, i.e.,
- * start1->t = start2->t and end1->t = end2->t 
- * The function only returns an intersection at the middle, i.e., it returns
- * false if they intersect at a bound.
- */
-
-bool
+/* Find the single timestamptz at which two temporal number segments 
+ * intersect. This function is used for temporal comparisons such as 
+ * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison 
+ * changes its value before/at/after the intersection point */
+static bool
 tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
 {
@@ -1212,10 +1184,9 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 
 #ifdef WITH_POSTGIS
 /* 
- * Determine the instant t at which two temporal periods are at the local 
- * minimum. 
- * The function assumes that the two periods are synchronized, 
- * that they are not instants, and that they are not constant.
+ * Find the single timestamptz at which two temporal point segments are at the
+ * minimum distance. This function is used for computing temporal distance.
+ * The function assumes that the two segments are not both constants.
  */
 bool
 tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
@@ -1303,8 +1274,6 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 }
 #endif
 
-/* DoubleN are used for computing avg and centroid aggregates based on sum 
-   and thus there is no need to add crossings */
 bool
 temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *inter)
@@ -1344,14 +1313,6 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 	}
 #endif
 	return result;
-}
-
-/* Interval of the TemporalSeq as a double */
-
-static double
-temporalseq_interval_double(TemporalSeq *seq)
-{
-	return (double) (seq->period.upper - seq->period.lower);
 }
 
 /*****************************************************************************
@@ -1937,9 +1898,9 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
  *****************************************************************************/
 
 /*
- * Timestamp at which a temporal segment with linear interpolation takes a value.
- * The function supposes that the value is between the range defined by
- * the values of inst1 and inst2 (both exclusive). 
+ * Timestamp at which a temporal segment with linear interpolation takes a 
+ * value. The function supposes that the value is between the range defined
+ * by the values of inst1 and inst2 (both exclusive). 
  */
 
 bool
@@ -3634,7 +3595,7 @@ tfloatseq_integral(TemporalSeq *seq)
 double
 tintseq_twavg(TemporalSeq *seq)
 {
-	double duration = temporalseq_interval_double(seq);
+	double duration = (double) (seq->period.upper - seq->period.lower);
 	double result;
 	if (duration == 0)
 		result = (double) DatumGetInt32(temporalinst_value(temporalseq_inst_n(seq, 0)));
@@ -3648,7 +3609,7 @@ tintseq_twavg(TemporalSeq *seq)
 double
 tfloatseq_twavg(TemporalSeq *seq)
 {
-	double duration = temporalseq_interval_double(seq);
+	double duration = (double) (seq->period.upper - seq->period.lower);
 	double result;
 	if (duration == 0)
 		/* The temporal sequence contains a single temporal instant */

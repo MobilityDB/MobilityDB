@@ -45,15 +45,10 @@ extern bool intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq 
 
 /* Synchronize functions */
 
-extern bool temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1, bool linear1,
-	TemporalInst *inst2, TemporalInst *next2, bool linear2,
-	TemporalInst **cross1, TemporalInst **cross2);
 extern bool synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
 	TemporalSeq **sync1, TemporalSeq **sync2, bool interpoint);
 
-extern bool tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
-// To put it in TempDistance.c ?
+// To put it in TempDistance.c after adding a function for crossing temporal point segments
 extern bool tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
 extern bool tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
