@@ -33,6 +33,9 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_boxops.h"
+#include "tnpoint.h"
+#include "tnpoint_static.h"
+#include "tnpoint_tempspatialrels.h"
 #endif
 
 /*****************************************************************************
@@ -300,6 +303,16 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 		pfree(x1new);
 	return result;
 }
+
+static bool
+npoint_collinear(Datum value1, Datum value2, Datum value3,
+	TimestampTz t1, TimestampTz t2, TimestampTz t3)
+{
+	npoint *np1 = DatumGetNpoint(value1);
+	npoint *np2 = DatumGetNpoint(value2);
+	npoint *np3 = DatumGetNpoint(value3);
+	return float_collinear(np1->pos, np2->pos, np3->pos, t1, t2, t3);
+}
 #endif
 
 static bool
@@ -325,6 +338,8 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	if (valuetypid == type_oid(T_DOUBLE4))
 		return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2), 
 			DatumGetDouble4P(value3), t1, t2, t3);
+	if (valuetypid == type_oid(T_NPOINT))
+		return npoint_collinear(value1, value2, value3, t1, t2, t3);
 #endif
 	return false;
 }
@@ -370,6 +385,14 @@ temporalinst_collinear(TemporalInst *inst1, TemporalInst *inst2,
 		double4 *x2 = DatumGetDouble4P(temporalinst_value(inst2));
 		double4 *x3 = DatumGetDouble4P(temporalinst_value(inst3));
 		return double4_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
+	}
+	if (valuetypid == type_oid(T_NPOINT))
+	{
+		npoint *np1 = DatumGetNpoint(temporalinst_value(inst1));
+		npoint *np2 = DatumGetNpoint(temporalinst_value(inst2));
+		npoint *np3 = DatumGetNpoint(temporalinst_value(inst3));
+		return float_collinear(np1->pos, np2->pos, np3->pos, 
+			inst1->t, inst2->t, inst3->t);
 	}
 #endif
 	return false;
@@ -588,6 +611,9 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
 		srid = tpoint_srid_internal((Temporal *) instants[0]);
 	}
+	int64 rid;
+	if (valuetypid == type_oid(T_NPOINT))
+		rid = DatumGetNpoint(temporalinst_value(instants[0]))->rid;
 #endif
 	for (int i = 1; i < count; i++)
 	{
@@ -607,6 +633,12 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+		}
+		if (valuetypid == type_oid(T_NPOINT))
+		{
+			if (rid != DatumGetNpoint(temporalinst_value(instants[i]))->rid)
+				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+					errmsg("All network points composing a temporal sequence must have same rid")));
 		}
 #endif
 	}
@@ -636,8 +668,8 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		trajectory = type_has_precomputed_trajectory(valuetypid);  
 		if (trajectory)
 		{
-			/* A trajectory is a geometry/geography, either a point or a 
-			 * linestring, which may be self-intersecting */
+			/* A trajectory is a geometry/geography, a point, a multipoint, 
+			 * or a linestring, which may be self-intersecting */
 			traj = tpointseq_make_trajectory(newinstants, newcount, linear);
 			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
@@ -741,6 +773,13 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		if (MOBDB_FLAGS_GET_Z(inst->flags) != MOBDB_FLAGS_GET_Z(seq->flags))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+	}
+	if (valuetypid == type_oid(T_NPOINT))
+	{
+		if (DatumGetNpoint(temporalinst_value(inst))->rid !=
+			DatumGetNpoint(temporalinst_value(inst1))->rid)
+			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+				errmsg("All network points composing a temporal sequence must have same rid")));
 	}
 #endif
 
@@ -1155,14 +1194,11 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
  * intersect. This function is used for temporal comparisons such as 
  * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison 
  * changes its value before/at/after the intersection point */
+
 static bool
-tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+float_intersect_at_timestamp(double x1, double x2, double x3, double x4,
+	TimestampTz t1, TimestampTz t2, TimestampTz *t)
 {
-	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
-	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
-	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
-	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
 	/* Compute the instant t at which the linear functions of the two segments
 	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
 	   To reduce problems related to floating point arithmetic, t1 and t2
@@ -1177,9 +1213,21 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		/* Intersection occurs out of the period */
 		return false;
 
-	double duration = (double) (end1->t - start1->t);
-	*t = (double) (start1->t) + (duration * fraction);
+	double duration = (double) (t2 - t1);
+	*t = (double) (t1) + (duration * fraction);
 	return true;	
+}
+
+static bool
+tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+{
+	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
+	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
+	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
+	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
+
+	return float_intersect_at_timestamp(x1, x2, x3, x4, start1->t, end1->t, t);
 }
 
 #ifdef WITH_POSTGIS
@@ -1260,17 +1308,49 @@ bool
 tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
 {
-	bool result;
-	if (!tpointseq_min_dist_at_timestamp(start1, end1, start2, end2, t))
-		return false;
-	Datum value1 = temporalseq_value_at_timestamp1(start1, end1, linear1, *t);
-	Datum value2 = temporalseq_value_at_timestamp1(start2, end2, linear2, *t);
-	if (datum_eq(value1, value2, start1->valuetypid))
-		result = true;
-	else
-		result = false;
-	pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
-	return result;
+	TimestampTz t1, t2, t3;
+	/* For each dimension we compute the instant t at which the linear 
+	 * functions of the two segments are equal */
+	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+	{
+		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
+		POINT3DZ p2 = linear1 ? datum_get_point3dz(temporalinst_value(end1)) : p1;
+		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
+		POINT3DZ p4 = linear2 ? datum_get_point3dz(temporalinst_value(end2)) : p3;
+
+		/* X */
+		if (! float_intersect_at_timestamp(p1.x, p2.x, p3.x, p4.x,
+			start1->t, end1->t, &t1))
+			return false;
+		/* Y */
+		if (! float_intersect_at_timestamp(p1.y, p2.y, p3.y, p4.y,
+			start1->t, end1->t, &t2))
+			return false;
+		if (t1 != t2)
+			return false;
+		/* Z */
+		if (! float_intersect_at_timestamp(p1.z, p2.z, p3.z, p4.z,
+			start1->t, end1->t, &t3))
+			return false;
+		return t1 == t3;
+	}
+	else /* 2D */
+	{
+		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
+		POINT2D p2 = linear1 ? datum_get_point2d(temporalinst_value(end1)) : p1;
+		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
+		POINT2D p4 = linear2 ? datum_get_point2d(temporalinst_value(end2)) : p3;
+
+		/* X */
+		if (! float_intersect_at_timestamp(p1.x, p2.x, p3.x, p4.x,
+			start1->t, end1->t, &t1))
+			return false;
+		/* Y */
+		if (! float_intersect_at_timestamp(p1.y, p2.y, p3.y, p4.y,
+			start1->t, end1->t, &t2))
+			return false;
+		return t1 == t2;
+	}
 }
 #endif
 
@@ -1311,6 +1391,10 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 		pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
 		pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
 	}
+	if (start1->valuetypid == type_oid(T_NPOINT))
+		// TODO: Take care of the bounding boxes
+		return tnpointseq_intersect_at_timestamp(start1, end1, linear1, 
+			start2, end2, linear2, false, false, inter);
 #endif
 	return result;
 }
@@ -1992,6 +2076,18 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1)); 
 		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1)); 
 		pfree(DatumGetPointer(value2));
+	}
+	else if (inst1->valuetypid == type_oid(T_NPOINT))
+	{
+		npoint *np1 = DatumGetNpoint(value1);
+		npoint *np2 = DatumGetNpoint(value2);
+		npoint *np = DatumGetNpoint(value);
+		if ((np->rid != np1->rid) ||
+		   (np->pos < np1->pos && np->pos < np2->pos) ||
+		   (np->pos > np1->pos && np->pos > np2->pos))
+			return false;
+
+		fraction = (np->pos - np1->pos) / (np2->pos - np1->pos);
 	}
 #endif
 
@@ -2971,6 +3067,14 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		dresult->c = start->c + (end->c - start->c) * ratio;
 		dresult->d = start->d + (end->d - start->d) * ratio;
 		result = Double4PGetDatum(dresult);
+	}
+	if (valuetypid == type_oid(T_NPOINT))
+	{
+		npoint *np1 = DatumGetNpoint(value1);
+		npoint *np2 = DatumGetNpoint(value2);
+		double pos = np1->pos + (np2->pos - np1->pos) * ratio;
+		npoint *result = npoint_make(np1->rid, pos);
+		return PointerGetDatum(result);
 	}
 #endif
 	return result;
