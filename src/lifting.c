@@ -144,7 +144,6 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
 	return result;
 }
 
-/*****************************************************************************/
 /* Dispatch function */
 
 Temporal *
@@ -237,7 +236,6 @@ tfunc2_temporals(TemporalS *ts, Datum param,
 	return result;
 }
 
-/*****************************************************************************/
 /* Dispatch function */
 
 Temporal *
@@ -340,7 +338,6 @@ tfunc2_temporals_base(TemporalS *ts, Datum value,
 	return result;
 }
 
-/*****************************************************************************/
 /* Dispatch function */
 
 Temporal *
@@ -2465,9 +2462,9 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	Datum (*func)(Datum, Datum), Oid valuetypid)
 {
 	Datum startvalue1 = temporalinst_value(start1);
-	Datum endvalue1 = temporalinst_value(end1);
+	Datum endvalue1 = linear1 ? temporalinst_value(end1) : startvalue1;
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum endvalue2 = temporalinst_value(end2);
+	Datum endvalue2 = linear2 ? temporalinst_value(end2) : startvalue2;
 	Datum startresult = func(startvalue1, startvalue2);
 	TemporalInst *instants[2];
 	int k = 0;
@@ -2852,9 +2849,9 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid)
 {
 	Datum startvalue1 = temporalinst_value(start1);
-	Datum endvalue1 = temporalinst_value(end1);
+	Datum endvalue1 = linear1 ? temporalinst_value(end1) : startvalue1;
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum endvalue2 = temporalinst_value(end2);
+	Datum endvalue2 = linear2 ? temporalinst_value(end2) : startvalue2;
 	Datum startresult = func(startvalue1, startvalue2, param);
 	TemporalInst *instants[2];
 	int k = 0;
@@ -3250,9 +3247,9 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid)
 {
 	Datum startvalue1 = temporalinst_value(start1);
-	Datum endvalue1 = temporalinst_value(end1);
+	Datum endvalue1 = linear1 ? temporalinst_value(end1) : startvalue1;
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum endvalue2 = temporalinst_value(end2);
+	Datum endvalue2 = linear2 ? temporalinst_value(end2) : startvalue2;
 	Datum startresult = func(startvalue1, startvalue2, 
 		start1->valuetypid, start2->valuetypid);
 	TemporalInst *instants[2];
@@ -3402,8 +3399,11 @@ sync_tfunc4_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		temporalseq_value_at_timestamp(seq2, inter->lower, &value2);
 		Datum value = func(value1, value2, seq1->valuetypid, seq2->valuetypid);
 		TemporalInst *inst = temporalinst_make(value, inter->lower, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(&inst, 1, true, true, false, false);
-		FREE_DATUM(value1, seq1->valuetypid); FREE_DATUM(value2, seq2->valuetypid);
+		/* Result has stepwise interpolation */
+		result[0] = temporalseq_from_temporalinstarr(&inst, 1, true, true, 
+			false, false);
+		FREE_DATUM(value1, seq1->valuetypid); 
+		FREE_DATUM(value2, seq2->valuetypid);
 		FREE_DATUM(value, valuetypid); pfree(inst);
 		return 1;
 	}

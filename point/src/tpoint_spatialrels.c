@@ -30,6 +30,7 @@
 #include "temporal_util.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
+#include "tpoint_distance.h"
 
 /*****************************************************************************
  * Spatial relationship functions
@@ -185,7 +186,7 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, bool line
 	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
 	{
 		/* Compute the function at the start instant */
-		return func(sv1, sv2, param);
+		return DatumGetBool(func(sv1, sv2, param));
 	}
 	
 	TimestampTz lower = start1->t;
@@ -198,14 +199,14 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, bool line
 	if (!cross || crosstime == lower || crosstime == upper)
 	{
 		/* Compute the function at the start and end instants */
-		return func(sv1, sv2, param);
+		return DatumGetBool(func(sv1, sv2, param));
 	}
 
 	/* Find the values at the local minimum */
 	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
 	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
 	/* Compute the function at the start instant and at the local minimum */
-	bool result = func(crossvalue1, crossvalue2, param);
+	bool result = DatumGetBool(func(crossvalue1, crossvalue2, param));
 	
 	pfree(DatumGetPointer(crossvalue1));
 	pfree(DatumGetPointer(crossvalue2));
@@ -239,18 +240,14 @@ static bool
 dwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 	Datum (*func)(Datum, Datum, Datum))
 {
-	bool result = false;
 	for (int i = 0; i < ts1->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
 		if (dwithin_tpointseq_tpointseq(seq1, seq2, d, func))
-		{
-			result = true;
-			break;
-		}
+			return true;
 	}
-	return result;
+	return false;
 }
 
 /*****************************************************************************

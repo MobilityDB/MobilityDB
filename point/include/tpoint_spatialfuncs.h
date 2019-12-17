@@ -65,6 +65,7 @@ extern TemporalInst *tgeogpointinst_to_tgeompointinst(TemporalInst *inst);
 extern TemporalI *tgeogpointi_to_tgeompointi(TemporalI *ti);
 extern TemporalSeq *tgeogpointseq_to_tgeompointseq(TemporalSeq *seq);
 extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
+extern Temporal *tgeogpoint_to_tgeompoint_internal(Temporal *temp);
 
 /* Trajectory functions */
 

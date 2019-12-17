@@ -165,6 +165,79 @@ distance_tpoints_geo(TemporalS *ts, Datum point,
 	return result;
 }
 
+/* 
+ * Find the single timestamptz at which two temporal point segments are at the
+ * minimum distance. This function is used for computing temporal distance.
+ * The function assumes that the two segments are not both constants.
+ */
+bool
+tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
+	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+{
+	double denum, fraction;
+	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+	{
+		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
+		POINT3DZ p2 = datum_get_point3dz(temporalinst_value(end1));
+		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
+		POINT3DZ p4 = datum_get_point3dz(temporalinst_value(end2));
+		/* The following basically computes d/dx (Euclidean distance) = 0.
+		   To reduce problems related to floating point arithmetic, t1 and t2
+		   are shifted, respectively, to 0 and 1 before computing d/dx */
+		double dx1 = p2.x - p1.x;
+		double dy1 = p2.y - p1.y;
+		double dz1 = p2.z - p1.z;
+		double dx2 = p4.x - p3.x;
+		double dy2 = p4.y - p3.y;
+		double dz2 = p4.z - p3.z;
+		
+		double f1 = p3.x * (dx1 - dx2);
+		double f2 = p1.x * (dx2 - dx1);
+		double f3 = p3.y * (dy1 - dy2);
+		double f4 = p1.y * (dy2 - dy1);
+		double f5 = p3.z * (dz1 - dz2);
+		double f6 = p1.z * (dz2 - dz1);
+
+		denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) + 
+			dx2*dx2 + dy2*dy2 + dz2*dz2;
+		if (denum == 0)
+			return false;
+
+		fraction = (f1 + f2 + f3 + f4 + f5 + f6) / denum;
+	}
+	else /* 2D */
+	{
+		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
+		POINT2D p2 = datum_get_point2d(temporalinst_value(end1));
+		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
+		POINT2D p4 = datum_get_point2d(temporalinst_value(end2));
+		/* The following basically computes d/dx (Euclidean distance) = 0.
+		   To reduce problems related to floating point arithmetic, t1 and t2
+		   are shifted, respectively, to 0 and 1 before computing d/dx */
+		double dx1 = p2.x - p1.x;
+		double dy1 = p2.y - p1.y;
+		double dx2 = p4.x - p3.x;
+		double dy2 = p4.y - p3.y;
+		
+		double f1 = p3.x * (dx1 - dx2);
+		double f2 = p1.x * (dx2 - dx1);
+		double f3 = p3.y * (dy1 - dy2);
+		double f4 = p1.y * (dy2 - dy1);
+
+		denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
+		/* If the segments are parallel */
+		if (denum == 0)
+			return false;
+
+		fraction = (f1 + f2 + f3 + f4) / denum;
+	}
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+		return false;
+	double duration = (double)(end1->t - start1->t);
+	*t = (double) (start1->t) + (duration * fraction);
+	return true;
+}
+
 /*****************************************************************************
  * Temporal distance
  *****************************************************************************/

@@ -48,9 +48,6 @@ extern bool intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq 
 extern bool synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2, 
 	TemporalSeq **sync1, TemporalSeq **sync2, bool interpoint);
 
-// To put it in TempDistance.c after adding a function for crossing temporal point segments
-extern bool tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
 extern bool tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	bool linear1, TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t);
 extern bool temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
