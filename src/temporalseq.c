@@ -1073,14 +1073,15 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		if (crossings && (linear1 || linear2) && k > 0)
 		{
 			TimestampTz crosstime;
-			bool hascross = temporalseq_intersect_at_timestamp(instants1[k - 1],
-				inst1, linear1, instants2[k - 1], inst2, linear2, &crosstime);
-			if (hascross)
-			instants1[k] = tofree[l++] = temporalseq_at_timestamp1(
-				instants1[k - 1], inst1, linear1, crosstime);
-			instants2[k] = tofree[l++] = temporalseq_at_timestamp1(
-				instants2[k - 1], inst2, linear2, crosstime);
-			k++;
+			if (temporalseq_intersect_at_timestamp(instants1[k - 1],
+				inst1, linear1, instants2[k - 1], inst2, linear2, &crosstime))
+			{
+				instants1[k] = tofree[l++] = temporalseq_at_timestamp1(
+					instants1[k - 1], inst1, linear1, crosstime);
+				instants2[k] = tofree[l++] = temporalseq_at_timestamp1(
+					instants2[k - 1], inst2, linear2, crosstime);
+				k++;
+			}
 		}
 		instants1[k] = inst1; instants2[k++] = inst2;
 		if (i == seq1->count || j == seq2->count)
