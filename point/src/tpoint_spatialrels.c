@@ -182,30 +182,22 @@ dwithin_tpointseq_tpointseq1(TemporalInst *start1, TemporalInst *end1, bool line
 	Datum ev1 = temporalinst_value(end1);
 	Datum sv2 = temporalinst_value(start2);
 	Datum ev2 = temporalinst_value(end2);
-	/* Both instants are constant */
+	/* If both instants are constant compute the function at the start instant */
 	if (datum_point_eq(sv1, ev1) &&	datum_point_eq(sv2, ev2))
-	{
-		/* Compute the function at the start instant */
 		return DatumGetBool(func(sv1, sv2, param));
-	}
 	
-	TimestampTz lower = start1->t;
-	TimestampTz upper = start2->t;
 	/* Determine whether there is a local minimum between lower and upper */
 	TimestampTz crosstime;
 	bool cross = tpointseq_min_dist_at_timestamp(start1, end1, 
 		start2, end2, &crosstime);
-	/* If there is no local minimum or if there is one at a bound */	
-	if (!cross || crosstime == lower || crosstime == upper)
-	{
-		/* Compute the function at the start and end instants */
+	/* If there is no local minimum compute the function at the start instant */	
+	if (! cross)
 		return DatumGetBool(func(sv1, sv2, param));
-	}
 
 	/* Find the values at the local minimum */
 	Datum crossvalue1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
 	Datum crossvalue2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
-	/* Compute the function at the start instant and at the local minimum */
+	/* Compute the function at the local minimum */
 	bool result = DatumGetBool(func(crossvalue1, crossvalue2, param));
 	
 	pfree(DatumGetPointer(crossvalue1));
@@ -220,14 +212,13 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 {
 	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *start2 = temporalseq_inst_n(seq2, 0);
-	bool result;
 	for (int i = 1; i < seq1->count; i++)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
-		result = dwithin_tpointseq_tpointseq1(start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
-			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags), d, func);
-		if (result == true)
+		if (dwithin_tpointseq_tpointseq1(start1, end1, 
+			MOBDB_FLAGS_GET_LINEAR(seq1->flags), start2, end2,
+			MOBDB_FLAGS_GET_LINEAR(seq2->flags), d, func))
 			return true;
 		start1 = end1;
 		start2 = end2;
