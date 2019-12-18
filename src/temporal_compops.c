@@ -93,8 +93,8 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_eq2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_eq2, 
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -146,8 +146,8 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_ne2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ne2,
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -199,8 +199,8 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_lt2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_lt2,
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_lt2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -252,8 +252,8 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_le2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_le2,
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_le2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -305,8 +305,8 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_gt2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_gt2,
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_gt2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -358,8 +358,8 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, 
-			&datum2_ge2, BOOLOID) :
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ge2,
+			BOOLOID) :
 		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ge2, BOOLOID, 
 			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
