@@ -39,15 +39,15 @@ TemporalS *tfunc2_temporals(TemporalS *ts, Datum param,
 Temporal *tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
 TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
 TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
 TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
 TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
 Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
 
 TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);

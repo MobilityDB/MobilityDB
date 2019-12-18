@@ -1242,7 +1242,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 	char **strings = palloc((int) (sizeof(char *)) * seq->count);
 	size_t outlen = 0;
 	char str[20];
-	if (!component && linear_interpolation(seq->valuetypid) && 
+	if (! component && linear_interpolation(seq->valuetypid) && 
 		!MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		sprintf(str, "Interp=Stepwise;");
 	else

@@ -657,7 +657,7 @@ temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 	size_t outlen = 0;
 	char str[20];
 	if (linear_interpolation(ts->valuetypid) && 
-		!MOBDB_FLAGS_GET_LINEAR(ts->flags))
+		! MOBDB_FLAGS_GET_LINEAR(ts->flags))
 		sprintf(str, "Interp=Stepwise;");
 	else
 		str[0] = '\0';

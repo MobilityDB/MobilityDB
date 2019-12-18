@@ -114,9 +114,11 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid valuetypid,
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tfunc1_temporalinst(inst, func, valuetypid, mustfree);
 	}
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
+		linear_interpolation(valuetypid);
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		linear, true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -134,8 +136,10 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid valuetypid,
 		sequences[i] = tfunc1_temporalseq(seq, func, valuetypid, 
 			mustfree);
 	}
+	bool linear = MOBDB_FLAGS_GET_LINEAR(ts->flags) && 
+		linear_interpolation(valuetypid);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+		linear, true);
 	
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -207,9 +211,11 @@ tfunc2_temporalseq(TemporalSeq *seq, Datum param,
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tfunc2_temporalinst(inst, param, func, valuetypid, mustfree);
 	}
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) && 
+		linear_interpolation(valuetypid);
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		linear, true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -226,8 +232,10 @@ tfunc2_temporals(TemporalS *ts, Datum param,
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = tfunc2_temporalseq(seq, param, func, valuetypid, mustfree);
 	}
+	bool linear = MOBDB_FLAGS_GET_LINEAR(ts->flags) && 
+		linear_interpolation(valuetypid);
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+		linear, true);
 	
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -270,25 +278,26 @@ tfunc2_temporal(Temporal *temp, Datum param,
 
 TemporalInst *
 tfunc2_temporalinst_base(TemporalInst *inst, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
 {
 	Datum value1 = temporalinst_value(inst);
-	TemporalInst *result = invert ?
-		temporalinst_make(func(value, value1), inst->t, valuetypid) :
-		temporalinst_make(func(value1, value), inst->t, valuetypid);
+	Datum resultvalue = invert ? func(value, value1) : func(value1, value);
+	TemporalInst *result = temporalinst_make(resultvalue, inst->t, valuetypid);
+	if (mustfree)
+		pfree(DatumGetPointer(resultvalue));
 	return result;
 }
 
 TemporalI *
 tfunc2_temporali_base(TemporalI *ti, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tfunc2_temporalinst_base(inst, value, func, 
-			valuetypid, invert);
+			valuetypid, invert, mustfree);
 	}
 	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -299,14 +308,14 @@ tfunc2_temporali_base(TemporalI *ti, Datum value,
 
 TemporalSeq *
 tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tfunc2_temporalinst_base(inst, value, func, 
-			valuetypid, invert);
+			valuetypid, invert, mustfree);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
@@ -319,14 +328,14 @@ tfunc2_temporalseq_base(TemporalSeq *seq, Datum value,
 
 TemporalS *
 tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = tfunc2_temporalseq_base(seq, value, func, 
-			valuetypid, invert);
+			valuetypid, invert, mustfree);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
@@ -342,27 +351,29 @@ tfunc2_temporals_base(TemporalS *ts, Datum value,
 
 Temporal *
 tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
 {
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d, 
-			func, valuetypid, invert);
+			func, valuetypid, invert, mustfree);
 	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp, d, 
-			func, valuetypid, invert);
+			func, valuetypid, invert, mustfree);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, d, 
-			func, valuetypid, invert);
+			func, valuetypid, invert, mustfree);
 	else if (temp->duration == TEMPORALS)
 		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, d,
-			func, valuetypid, invert);
+			func, valuetypid, invert, mustfree);
 	return result;
 }
 
 /*****************************************************************************
  * Version of the functions where the function takes 3 arguments
+ * These functions do not have an additional parameter to pfree the generated
+ * value since this is currently not needed.
  *****************************************************************************/
 
 /* Temporal op Base */
@@ -372,9 +383,9 @@ tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
-	TemporalInst *result = invert ?
-		temporalinst_make(func(value, value1, param), inst->t, valuetypid) :
-		temporalinst_make(func(value1, value, param), inst->t, valuetypid);
+	Datum resultvalue = invert ? func(value, value1, param) : 
+		func(value1, value, param);
+	TemporalInst *result = temporalinst_make(resultvalue, inst->t, valuetypid);
 	return result;
 }
 
@@ -442,6 +453,8 @@ tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 
 /*****************************************************************************
  * Version of the functions where the function takes 4 arguments 
+ * These functions do not have an additional parameter to pfree the generated
+ * value since this is currently not needed.
  *****************************************************************************/
 
 /* Temporal op Base */
@@ -451,13 +464,10 @@ tfunc4_temporalinst_base(TemporalInst *inst, Datum value,
 	Datum (*func)(Datum, Datum, Oid, Oid), 
 	Oid datumtypid, Oid valuetypid, bool invert)
 {
-	TemporalInst *result = invert ?
-		temporalinst_make(
-			func(value, temporalinst_value(inst), datumtypid, inst->valuetypid), 
-			inst->t, valuetypid) :
-		temporalinst_make(
-			func(temporalinst_value(inst), value, inst->valuetypid, datumtypid), 
-			inst->t, valuetypid);
+	Datum value1 = temporalinst_value(inst);
+	Datum resultvalue = invert ? func(value, value1, datumtypid, inst->valuetypid) : 
+		func(value1, value, inst->valuetypid, datumtypid);
+	TemporalInst *result = temporalinst_make(resultvalue, inst->t, valuetypid);
 	return result;
 }
 
@@ -760,8 +770,9 @@ tfunc4_temporals_base_cross(TemporalS *ts, Datum value,
 			func, datumtypid, valuetypid, invert);
 		k += countstep;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -2700,10 +2711,9 @@ sync_tfunc2_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
 		seq1, seq2, func, valuetypid); 
 	if (count == 0)
 		return NULL;
-
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
-		linear_interpolation(valuetypid), true);
-		
+		false, true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -2733,8 +2743,9 @@ sync_tfunc2_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -2778,8 +2789,9 @@ sync_tfunc2_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -3099,9 +3111,9 @@ sync_tfunc3_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
 		seq1, seq2, param, func, valuetypid); 
 	if (count == 0)
 		return NULL;
-
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
-		linear_interpolation(valuetypid), true);
+		false, true);
 		
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3132,8 +3144,9 @@ sync_tfunc3_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -3186,8 +3199,9 @@ sync_tfunc3_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -3513,9 +3527,9 @@ sync_tfunc4_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
 		seq1, seq2, func, valuetypid);
 	if (count == 0)
 		return NULL;
-
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
-		linear_interpolation(valuetypid), true);
+		false, true);
 		
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3546,8 +3560,9 @@ sync_tfunc4_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -3599,8 +3614,9 @@ sync_tfunc4_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 		pfree(sequences);
 		return NULL;
 	}
+	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
-		linear_interpolation(valuetypid), true);
+		false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
