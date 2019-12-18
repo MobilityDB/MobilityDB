@@ -993,22 +993,6 @@ intersection_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
  * interpolation.
  *****************************************************************************/
 
-static bool
-temporalseq_add_crossing(TemporalInst *inst1, TemporalInst *next1, 
-	bool linear1, TemporalInst *inst2, TemporalInst *next2, bool linear2,
-	TemporalInst **cross1, TemporalInst **cross2)
-{
-	/* Determine whether there is a crossing */
-	TimestampTz crosstime;
-	bool cross = temporalseq_intersect_at_timestamp(inst1, next1, linear1,
-		inst2, next2, linear2, &crosstime);
-	if (!cross)
-		return false;
-	*cross1 = temporalseq_at_timestamp1(inst1, next1, linear1, crosstime);
-	*cross2 = temporalseq_at_timestamp1(inst2, next2, linear2, crosstime);
-	return true;
-}
-
 bool
 synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalSeq **sync1, TemporalSeq **sync2, bool crossings)
@@ -1049,14 +1033,12 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	int i = 0, j = 0, k = 0, l = 0;
 	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
 	{
-		inst1 = temporalseq_at_timestamp(seq1, inter->lower);
-		tofreeinst = inst1;
+		inst1 = tofreeinst = temporalseq_at_timestamp(seq1, inter->lower);
 		i = temporalseq_find_timestamp(seq1, inter->lower);
 	}
 	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
 	{
-		inst2 = temporalseq_at_timestamp(seq2, inter->lower);
-		tofreeinst = inst2;
+		inst2 = tofreeinst = temporalseq_at_timestamp(seq2, inter->lower);
 		j = temporalseq_find_timestamp(seq2, inter->lower);
 	}
 	int count = (seq1->count - i + seq2->count - j) * 2;
@@ -1088,13 +1070,17 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		}
 		/* If not the first instant add potential crossing before adding
 		   the new instants */
-		TemporalInst *cross1, *cross2;
-		if (crossings && (linear1 || linear2) && k > 0 && 
-			temporalseq_add_crossing(instants1[k - 1], inst1, linear1,
-				instants2[k - 1], inst2, linear2, &cross1, &cross2))
+		if (crossings && (linear1 || linear2) && k > 0)
 		{
-			instants1[k] = cross1; instants2[k++] = cross2;
-			tofree[l++] = cross1; tofree[l++] = cross2; 
+			TimestampTz crosstime;
+			bool hascross = temporalseq_intersect_at_timestamp(instants1[k - 1],
+				inst1, linear1, instants2[k - 1], inst2, linear2, &crosstime);
+			if (hascross)
+			instants1[k] = tofree[l++] = temporalseq_at_timestamp1(
+				instants1[k - 1], inst1, linear1, crosstime);
+			instants2[k] = tofree[l++] = temporalseq_at_timestamp1(
+				instants2[k - 1], inst2, linear2, crosstime);
+			k++;
 		}
 		instants1[k] = inst1; instants2[k++] = inst2;
 		if (i == seq1->count || j == seq2->count)
@@ -1105,7 +1091,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	/* We are sure that k != 0 due to the period intersection test above */
 	/* The last two values of sequences with stepwise interpolation and 
 	   exclusive upper bound must be equal */
-	if (! inter->upper_inc && k > 1 && ! linear2)
+	if (! inter->upper_inc && k > 1 && ! linear1)
 	{
 		if (datum_ne(temporalinst_value(instants1[k - 2]), 
 			temporalinst_value(instants1[k - 1]), seq1->valuetypid))
