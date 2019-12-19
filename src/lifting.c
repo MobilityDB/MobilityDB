@@ -273,7 +273,7 @@ tfunc2_temporalinst_base(TemporalInst *inst, Datum value,
 	Datum value1 = temporalinst_value(inst);
 	Datum resultvalue = invert ? func(value, value1) : func(value1, value);
 	TemporalInst *result = temporalinst_make(resultvalue, inst->t, valuetypid);
-	FREE_DATUM(value, valuetypid);
+	FREE_DATUM(resultvalue, valuetypid);
 	return result;
 }
 
@@ -360,9 +360,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 }
 
 /*****************************************************************************
- * Version of the functions where the function takes 3 arguments
- * These functions do not have an additional parameter to pfree the generated
- * value since this is currently not needed.
+ * Versions of the functions that take 3 arguments 
  *****************************************************************************/
 
 TemporalInst *
@@ -439,9 +437,7 @@ tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
 */
 
 /*****************************************************************************
- * Version of the functions where the function takes 4 arguments 
- * These functions do not have an additional parameter to pfree the generated
- * value since this is currently not needed.
+ * Versions of the functions that take 4 arguments 
  *****************************************************************************/
 
 TemporalInst *
