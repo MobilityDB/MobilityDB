@@ -2795,12 +2795,12 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
  * Local aggregate functions 
  *****************************************************************************/
 
-/* Integral of the temporal integer */
+/* Integral of temporal numbers */
 
-PG_FUNCTION_INFO_V1(tint_integral);
+PG_FUNCTION_INFO_V1(tnumber_integral);
 
 PGDLLEXPORT Datum
-tint_integral(PG_FUNCTION_ARGS)
+tnumber_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0; 
@@ -2808,73 +2808,32 @@ tint_integral(PG_FUNCTION_ARGS)
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
 		;
 	else if (temp->duration == TEMPORALSEQ)
-		result = tintseq_integral((TemporalSeq *)temp);
+		result = tnumberseq_integral((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tints_integral((TemporalS *)temp);
+		result = tnumbers_integral((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
 
-/* Integral of the temporal float */
+/* Time-weighted average of temporal numbers */
 
-PG_FUNCTION_INFO_V1(tfloat_integral);
-
-PGDLLEXPORT Datum
-tfloat_integral(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
-		;
-	else if (temp->duration == TEMPORALSEQ)
-		result = tfloatseq_integral((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = tfloats_integral((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_FLOAT8(result);
-}
-
-/* Time-weighted average of the temporal integer */
-
-PG_FUNCTION_INFO_V1(tint_twavg);
+PG_FUNCTION_INFO_V1(tnumber_twavg);
 
 PGDLLEXPORT Datum
-tint_twavg(PG_FUNCTION_ARGS)
+tnumber_twavg(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = DatumGetInt32(temporalinst_value((TemporalInst *)temp));
+		result = datum_double(temporalinst_value((TemporalInst *)temp), 
+			temp->valuetypid);
 	else if (temp->duration == TEMPORALI)
-		result = temporali_twavg((TemporalI *)temp);
+		result = tnumberi_twavg((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
-		result = tintseq_twavg((TemporalSeq *)temp);
+		result = tnumberseq_twavg((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tints_twavg((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_FLOAT8(result);
-}
-
-/* Time-weighted average of the temporal float */
-
-PG_FUNCTION_INFO_V1(tfloat_twavg);
-
-PGDLLEXPORT Datum
-tfloat_twavg(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = DatumGetFloat8(temporalinst_value((TemporalInst *)temp));
-	else if (temp->duration == TEMPORALI)
-		result = temporali_twavg((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tfloatseq_twavg((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = tfloats_twavg((TemporalS *)temp);
+		result = tnumbers_twavg((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }

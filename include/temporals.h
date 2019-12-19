@@ -148,10 +148,8 @@ extern bool temporals_intersects_periodset(TemporalS *ts, PeriodSet *ps);
 
 /* Local aggregate functions */
 
-extern double tints_integral(TemporalS *ts);
-extern double tfloats_integral(TemporalS *ts);
-extern double tints_twavg(TemporalS *ts);
-extern double tfloats_twavg(TemporalS *ts);
+extern double tnumbers_integral(TemporalS *ts);
+extern double tnumbers_twavg(TemporalS *ts);
 
 /* Comparison functions */
 

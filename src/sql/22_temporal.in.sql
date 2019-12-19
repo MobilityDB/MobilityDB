@@ -1358,20 +1358,20 @@ CREATE FUNCTION intersectsPeriodSet(ttext, periodset)
 
 CREATE FUNCTION integral(tint)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tint_integral'
+	AS 'MODULE_PATHNAME', 'tnumber_integral'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION integral(tfloat)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tfloat_integral'
+	AS 'MODULE_PATHNAME', 'tnumber_integral'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION twAvg(tint)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tint_twavg'
+	AS 'MODULE_PATHNAME', 'tnumber_twavg'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION twAvg(tfloat)
 	RETURNS float
-	AS 'MODULE_PATHNAME', 'tfloat_twavg'
+	AS 'MODULE_PATHNAME', 'tnumber_twavg'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 /******************************************************************************

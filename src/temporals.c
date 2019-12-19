@@ -2192,32 +2192,21 @@ temporals_intersects_periodset(TemporalS *ts, PeriodSet *ps)
  * Local aggregate functions 
  *****************************************************************************/
 
-/* Integral of the temporal integer */
+/* Integral of the temporal numbers */
 
 double
-tints_integral(TemporalS *ts)
+tnumbers_integral(TemporalS *ts)
 {
 	double result = 0;
 	for (int i = 0; i < ts->count; i++)
-		result += tintseq_integral(temporals_seq_n(ts, i)); 
+		result += tnumberseq_integral(temporals_seq_n(ts, i)); 
 	return result;
 }
 
-/* Integral of the temporal float */
+/* Time-weighted average of the temporal number */
 
 double
-tfloats_integral(TemporalS *ts)
-{
-	double result = 0;
-	for (int i = 0; i < ts->count; i++)
-		result += tfloatseq_integral(temporals_seq_n(ts, i)); 
-	return result;
-}
-
-/* Time-weighted average of the temporal integer */
-
-double
-tints_twavg(TemporalS *ts)
+tnumbers_twavg(TemporalS *ts)
 {
 	double duration = temporals_interval_double(ts);
 	double result;
@@ -2225,30 +2214,11 @@ tints_twavg(TemporalS *ts)
 	{
 		result = 0;
 		for (int i = 0; i < ts->count; i++)
-			result += tintseq_twavg(temporals_seq_n(ts, i)); 
+			result += tnumberseq_twavg(temporals_seq_n(ts, i)); 
 		return result / ts->count;
 	}
 	else
-		result = tints_integral(ts) / duration;
-	return result;
-}
-
-/* Time-weighted average of the temporal float */
-
-double
-tfloats_twavg(TemporalS *ts)
-{
-	double duration = temporals_interval_double(ts);
-	double result;
-	if (duration == 0)
-	{
-		result = 0;
-		for (int i = 0; i < ts->count; i++)
-			result += tfloatseq_twavg(temporals_seq_n(ts, i)); 
-		return result / ts->count;
-	}
-	else
-		result = tfloats_integral(ts) / duration;
+		result = tnumbers_integral(ts) / duration;
 	return result;
 }
 

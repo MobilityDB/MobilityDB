@@ -108,7 +108,7 @@ extern bool temporali_intersects_periodset(TemporalI *ti, PeriodSet *ps);
 
 /* Local aggregate functions */
 
-extern double temporali_twavg(TemporalI *ti);
+extern double tnumberi_twavg(TemporalI *ti);
 
 /* Comparison functions */
 

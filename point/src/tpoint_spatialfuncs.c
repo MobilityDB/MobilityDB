@@ -1236,11 +1236,11 @@ tgeompointi_twcentroid(TemporalI *ti)
 	TemporalI *tiz = NULL; /* keep compiler quiet */
 	if (hasz)
 		tiz = temporali_from_temporalinstarr(instantsz, ti->count);
-	double avgx = temporali_twavg(tix);
-	double avgy = temporali_twavg(tiy);
+	double avgx = tnumberi_twavg(tix);
+	double avgy = tnumberi_twavg(tiy);
 	double avgz;
 	if (hasz)
-		avgz = temporali_twavg(tiz);
+		avgz = tnumberi_twavg(tiz);
 	LWPOINT *lwpoint;
 	if (hasz)
 		lwpoint = lwpoint_make3dz(srid, avgx, avgy, avgz);
@@ -1309,13 +1309,13 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 		seqz = temporalseq_from_temporalinstarr(instantsz,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	double twavgx = tfloatseq_twavg(seqx);
-	double twavgy = tfloatseq_twavg(seqy);
+	double twavgx = tnumberseq_twavg(seqx);
+	double twavgy = tnumberseq_twavg(seqy);
 	double twavgz;
 	LWPOINT *lwpoint;
 	if (hasz)
 	{
-		twavgz = tfloatseq_twavg(seqz);
+		twavgz = tnumberseq_twavg(seqz);
 		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
 	}
 	else
@@ -1409,13 +1409,13 @@ tgeompoints_twcentroid(TemporalS *ts)
 		tsz = temporals_from_temporalseqarr(sequencesz,
 		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 
-	double twavgx = tfloats_twavg(tsx);
-	double twavgy = tfloats_twavg(tsy);
+	double twavgx = tnumbers_twavg(tsx);
+	double twavgy = tnumbers_twavg(tsy);
 	double twavgz;
 	LWPOINT *lwpoint;
 	if (hasz)
 	{
-		twavgz = tfloats_twavg(tsz);
+		twavgz = tnumbers_twavg(tsz);
 		lwpoint = lwpoint_make3dz(srid, twavgx, twavgy, twavgz);
 	}
 	else

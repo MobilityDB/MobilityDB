@@ -3467,10 +3467,10 @@ temporalseq_intersects_periodset(TemporalSeq *seq, PeriodSet *ps)
  * Local aggregate functions 
  *****************************************************************************/
 
-/* Integral of the temporal integer */
+/* Integral of the temporal numbers with stepwise interpolation */
 
 double
-tintseq_integral(TemporalSeq *seq)
+tstepwseq_integral(TemporalSeq *seq)
 {
 	double result = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
@@ -3478,16 +3478,17 @@ tintseq_integral(TemporalSeq *seq)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		double duration = (double) (inst2->t - inst1->t);
-		result += (double) DatumGetInt32(temporalinst_value(inst1)) * duration;
+		result += datum_double(temporalinst_value(inst1), inst1->valuetypid) * 
+			duration;
 		inst1 = inst2;
 	}
 	return result;
 }
 
-/* Integral of the temporal float */
+/* Integral of the temporal float with linear interpolation */
 
 double
-tfloatseq_integral(TemporalSeq *seq)
+tlinearseq_integral(TemporalSeq *seq)
 {
 	double result = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
@@ -3505,32 +3506,28 @@ tfloatseq_integral(TemporalSeq *seq)
 	return result;
 }
 
-/* Time-weighted average of temporal integer */
-
 double
-tintseq_twavg(TemporalSeq *seq)
+tnumberseq_integral(TemporalSeq *seq)
 {
-	double duration = (double) (seq->period.upper - seq->period.lower);
-	double result;
-	if (duration == 0)
-		result = (double) DatumGetInt32(temporalinst_value(temporalseq_inst_n(seq, 0)));
+	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		return tlinearseq_integral(seq);
 	else
-		result = tintseq_integral(seq) / duration;
-	return result;
+		return tstepwseq_integral(seq);
 }
 
-/* Time-weighted average of temporal float */
+/* Time-weighted average of temporal numbers */
 
 double
-tfloatseq_twavg(TemporalSeq *seq)
+tnumberseq_twavg(TemporalSeq *seq)
 {
 	double duration = (double) (seq->period.upper - seq->period.lower);
 	double result;
 	if (duration == 0)
-		/* The temporal sequence contains a single temporal instant */
-		result = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(seq, 0)));
+		/* Instantaneous sequence */
+		result = datum_double(temporalinst_value(temporalseq_inst_n(seq, 0)),
+			seq->valuetypid);
 	else
-		result = tfloatseq_integral(seq) / duration;
+		result = tnumberseq_integral(seq) / duration;
 	return result;
 }
 

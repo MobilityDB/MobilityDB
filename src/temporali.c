@@ -1582,16 +1582,13 @@ temporali_intersects_periodset(TemporalI *ti, PeriodSet *ps)
  *****************************************************************************/
 
 double
-temporali_twavg(TemporalI *ti)
+tnumberi_twavg(TemporalI *ti)
 {
 	double result = 0.0;
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (ti->valuetypid == INT4OID)
-			result += (double)DatumGetInt32(temporalinst_value(inst));
-		else
-			result += DatumGetFloat8(temporalinst_value(inst));
+		result += datum_double(temporalinst_value(inst), inst->valuetypid);
 	}
 	return result / ti->count;
 }

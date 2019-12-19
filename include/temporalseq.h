@@ -160,10 +160,8 @@ extern bool temporalseq_intersects_periodset(TemporalSeq *seq, PeriodSet *ps);
 
 /* Local aggregate functions */
 
-extern double tintseq_integral(TemporalSeq *seq);
-extern double tfloatseq_integral(TemporalSeq *seq);
-extern double tintseq_twavg(TemporalSeq *seq);
-extern double tfloatseq_twavg(TemporalSeq *seq);
+extern double tnumberseq_integral(TemporalSeq *seq);
+extern double tnumberseq_twavg(TemporalSeq *seq);
 
 /* Comparison functions */
 
