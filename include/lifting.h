@@ -20,34 +20,34 @@
 /*****************************************************************************/
 
 TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), 
-	Oid valuetypid,	bool mustfree);
+	Oid valuetypid);
 TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), 
-	Oid valuetypid, bool mustfree);
+	Oid valuetypid);
 TemporalS *tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), 
-	Oid valuetypid,  bool mustfree);
+	Oid valuetypid);
 Temporal *tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), 
-	Oid valuetypid, bool mustfree);
+	Oid valuetypid);
 
 TemporalInst *tfunc2_temporalinst(TemporalInst *inst, Datum param,
-    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+    Datum (*func)(Datum, Datum), Oid valuetypid);
 TemporalI *tfunc2_temporali(TemporalI *ti, Datum param,
-    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+    Datum (*func)(Datum, Datum), Oid valuetypid);
 TemporalSeq *tfunc2_temporalseq(TemporalSeq *seq, Datum param,
-    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+    Datum (*func)(Datum, Datum), Oid valuetypid);
 TemporalS *tfunc2_temporals(TemporalS *ts, Datum param,
-    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+    Datum (*func)(Datum, Datum), Oid valuetypid);
 Temporal *tfunc2_temporal(Temporal *temp, Datum param,
-    Datum (*func)(Datum, Datum), Oid valuetypid, bool mustfree);
+    Datum (*func)(Datum, Datum), Oid valuetypid);
 TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree);
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
 
 TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);

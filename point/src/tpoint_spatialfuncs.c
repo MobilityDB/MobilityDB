@@ -421,7 +421,7 @@ TemporalInst *
 tgeompointinst_transform(TemporalInst *inst, Datum srid)
 {
 	return tfunc2_temporalinst(inst, srid, &datum_transform,
-		type_oid(T_GEOMETRY), true);
+		type_oid(T_GEOMETRY));
 }
 
 PG_FUNCTION_INFO_V1(tpoint_transform);
@@ -432,7 +432,7 @@ tpoint_transform(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
 	Temporal *result = tfunc2_temporal(temp, srid, &datum_transform,
-		type_oid(T_GEOMETRY), true);
+		type_oid(T_GEOMETRY));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -452,7 +452,7 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geom_to_geog,
-		type_oid(T_GEOGRAPHY), true);
+		type_oid(T_GEOGRAPHY));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -464,28 +464,25 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 TemporalInst *
 tgeogpointinst_to_tgeompointinst(TemporalInst *inst)
 {
-	return tfunc1_temporalinst(inst, &geog_to_geom, type_oid(T_GEOMETRY),
-		true);
+	return tfunc1_temporalinst(inst, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalSeq *
 tgeogpointseq_to_tgeompointseq(TemporalSeq *seq)
 {
-	return tfunc1_temporalseq(seq, &geog_to_geom, type_oid(T_GEOMETRY),
-		true);
+	return tfunc1_temporalseq(seq, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalS *
 tgeogpoints_to_tgeompoints(TemporalS *ts)
 {
-	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY),
-		true);
+	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 Temporal *
 tgeogpoint_to_tgeompoint_internal(Temporal *temp)
 {
-	return tfunc1_temporal(temp, &geog_to_geom, type_oid(T_GEOMETRY), true);
+	return tfunc1_temporal(temp, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
@@ -495,7 +492,7 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = tfunc1_temporal(temp, &geog_to_geom,
-		type_oid(T_GEOMETRY), true);
+		type_oid(T_GEOMETRY));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -512,7 +509,7 @@ tpoint_setprecision(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum size = PG_GETARG_DATUM(1);
 	Temporal *result = tfunc2_temporal(temp, size, &datum_setprecision,
-		temp->valuetypid, true);
+		temp->valuetypid);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -846,7 +843,7 @@ static Datum
 tgeogpoints_trajectory(TemporalS *ts)
 {
 	TemporalS *tsgeom = tfunc1_temporals(ts, &geog_to_geom,
-		type_oid(T_GEOMETRY), true);
+		type_oid(T_GEOMETRY));
 	Datum geomtraj = tgeompoints_trajectory(tsgeom);
 	Datum result = call_function1(geography_from_geometry, geomtraj);
 	pfree(DatumGetPointer(geomtraj));
