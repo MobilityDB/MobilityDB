@@ -274,8 +274,6 @@ tfunc2_temporal(Temporal *temp, Datum param,
  * we are computing (1) base <oper> temporal or (2) temporal <oper> base
  *****************************************************************************/
 
-/* Temporal op Base */
-
 TemporalInst *
 tfunc2_temporalinst_base(TemporalInst *inst, Datum value, 
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert, bool mustfree)
@@ -376,8 +374,6 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
  * value since this is currently not needed.
  *****************************************************************************/
 
-/* Temporal op Base */
-
 TemporalInst *
 tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
 	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert)
@@ -457,8 +453,6 @@ tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
  * value since this is currently not needed.
  *****************************************************************************/
 
-/* Temporal op Base */
-
 TemporalInst *
 tfunc4_temporalinst_base(TemporalInst *inst, Datum value,  
 	Datum (*func)(Datum, Datum, Oid, Oid), 
@@ -533,7 +527,6 @@ tfunc4_temporals_base(TemporalS *ts, Datum value,
 	return result;
 }
 
-/*****************************************************************************/
 /* Dispatch function */
 
 Temporal *
@@ -560,8 +553,8 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
 
 /*****************************************************************************
  * Functions that apply the function to the composing instants and to the 
- * crossings when the resulting value has stepwise interpolation as required  
- * for comparisons (e.g., #<) and spatial relationships (e.g., tintersects).
+ * potential crossings when the resulting value has stepwise interpolation  
+ * as required for comparisons (e.g., #<).
  * These functions suppose that the sequence has linear interpolation.
  *****************************************************************************/
 
@@ -577,7 +570,6 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalInst *start,
 		func(value, startvalue, datumtypid, start->valuetypid) :
 		func(startvalue, value, start->valuetypid, datumtypid);
 	TemporalInst *instants[2];
-	int k = 0;
 	
 	/* If both segments are constant compute the function at the start and 
 	 * end instants */
@@ -593,10 +585,12 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalInst *start,
 		return 1;
 	}
 	
-	/* If either the start or the end value is equal to base */	
+	/* If either the start or the end value is equal to the value compute
+	 * the function at the start, at the middle, and at the end instants */	
 	if (datum_eq2(startvalue, value, start->valuetypid, datumtypid) ||
 		datum_eq2(endvalue, value, start->valuetypid, datumtypid))
 	{
+		int k = 0;
 		/* Compute the function at the start instant */
 		if (lower_inc)
 		{
@@ -724,11 +718,9 @@ tfunc4_temporalseq_base_cross2(TemporalSeq **result, TemporalSeq *seq,
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		int countseq = tfunc4_temporalseq_base_cross1(&result[k], 
-			inst1, inst2, lower_inc, upper_inc, value, func, datumtypid, 
-			valuetypid, invert);
-		/* The previous step has added between one and three sequences */
-		k += countseq;
+		/* The next step adds between one and three sequences */
+		k += tfunc4_temporalseq_base_cross1(&result[k], inst1, inst2, 
+			lower_inc, upper_inc, value, func, datumtypid, valuetypid, invert);
 		inst1 = inst2;
 		lower_inc = true;
 	}	
@@ -754,8 +746,6 @@ tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value,
 	return result;
 }
 
-/*****************************************************************************/
-
 TemporalS *
 tfunc4_temporals_base_cross(TemporalS *ts, Datum value, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
@@ -766,9 +756,8 @@ tfunc4_temporals_base_cross(TemporalS *ts, Datum value,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tfunc4_temporalseq_base_cross2(&sequences[k], seq, value,
+		k += tfunc4_temporalseq_base_cross2(&sequences[k], seq, value,
 			func, datumtypid, valuetypid, invert);
-		k += countstep;
 	}
 	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
@@ -783,11 +772,7 @@ tfunc4_temporals_base_cross(TemporalS *ts, Datum value,
 
 /*****************************************************************************
  * Functions that synchronize two temporal values and apply a function in
- * a single pass.
- *****************************************************************************/
-
-/*****************************************************************************
- * TemporalInst and <Type>
+ * a single pass. Version for 2 arguments.
  *****************************************************************************/
 
 TemporalInst *
@@ -867,9 +852,7 @@ sync_tfunc2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 	return sync_tfunc2_temporals_temporalinst(ts, inst, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalI and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalI *
 sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
@@ -1021,9 +1004,7 @@ sync_tfunc2_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	return sync_tfunc2_temporals_temporali(ts, ti, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalSeq and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalSeq *
 sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
@@ -1151,9 +1132,7 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	return result; 
 }
 
-/*****************************************************************************
- * TemporalS and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalS *
 sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
@@ -1261,6 +1240,7 @@ sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 }
 
 /*****************************************************************************/
+
 /* Dispatch function */
 
 Temporal *
@@ -1343,7 +1323,8 @@ sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
 }
 
 /*****************************************************************************
- * TemporalInst and <Type>
+ * Functions that synchronize two temporal values and apply a function in
+ * a single pass. Version for 3 arguments.
  *****************************************************************************/
 
 TemporalInst *
@@ -1423,9 +1404,7 @@ sync_tfunc3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 	return sync_tfunc3_temporals_temporalinst(ts, inst, param, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalI and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalI *
 sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
@@ -1577,9 +1556,7 @@ sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	return sync_tfunc3_temporals_temporali(ts, ti, param, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalSeq and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 /* 
  * These functions are currently not used. They are kept as comment if they 
@@ -1712,9 +1689,7 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	return result; 
 }
 
-/ *****************************************************************************
- * TemporalS and <Type>
- ***************************************************************************** /
+/ ***************************************************************************** /
 
 TemporalS *
 sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
@@ -1905,7 +1880,8 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 */
 
 /*****************************************************************************
- * TemporalInst and <Type>
+ * Functions that synchronize two temporal values and apply a function in
+ * a single pass. Version for 4 arguments.
  *****************************************************************************/
 
 TemporalInst *
@@ -1988,9 +1964,7 @@ sync_tfunc4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 	return sync_tfunc4_temporals_temporalinst(ts, inst, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalI and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalI *
 sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2, 
@@ -2144,9 +2118,7 @@ sync_tfunc4_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	return sync_tfunc4_temporals_temporali(ts, ti, func, valuetypid);
 }
 
-/*****************************************************************************
- * TemporalSeq and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalSeq *
 sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
@@ -2275,9 +2247,7 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	return result; 
 }
 
-/*****************************************************************************
- * TemporalS and <Type>
- *****************************************************************************/
+/*****************************************************************************/
 
 TemporalS *
 sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq, 
@@ -2467,7 +2437,9 @@ sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
 }
 
 /*****************************************************************************
- * TemporalSeq and <Type>
+ * Functions that synchronize two temporal values and apply a function in
+ * a single pass while adding intermediate point for crossings. 
+ * Version for 2 arguments.
  *****************************************************************************/
 
 /* This function is called when at least one segment has linear interpolation */
@@ -2687,12 +2659,11 @@ sync_tfunc2_temporalseq_temporalseq_cross2(TemporalSeq **result, TemporalSeq *se
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq = sync_tfunc2_temporalseq_temporalseq_cross1(&result[k], 
+		/* The next step adds between one and three sequences */
+		k += sync_tfunc2_temporalseq_temporalseq_cross1(&result[k], 
 			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
 			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags), 
 			lower_inc, upper_inc, func, valuetypid);
-		/* The previous step has added between one and three sequences */
-		k += countseq;
 		start1 = end1;
 		start2 = end2;
 		lower_inc = true;
@@ -2734,9 +2705,8 @@ sync_tfunc2_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		int countstep = sync_tfunc2_temporalseq_temporalseq_cross2(&sequences[k], 
+		k += sync_tfunc2_temporalseq_temporalseq_cross2(&sequences[k], 
 			seq1, seq, func, valuetypid);
-		k += countstep;
 	}
 	if (k == 0)
 	{
@@ -2767,14 +2737,13 @@ sync_tfunc2_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * 
 		(ts1->totalcount + ts2->totalcount) * 3);
-	int i = 0, j = 0, k = 0, countstep;
+	int i = 0, j = 0, k = 0;
 	while (i < ts1->count && j < ts2->count)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-		countstep = sync_tfunc2_temporalseq_temporalseq_cross2(&sequences[k], 
+		k += sync_tfunc2_temporalseq_temporalseq_cross2(&sequences[k], 
 			seq1, seq2, func, valuetypid);
-		k += countstep;
 		if (period_eq_internal(&seq1->period, &seq2->period))
 		{
 			i++; j++;
@@ -3087,11 +3056,11 @@ sync_tfunc3_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq = sync_tfunc3_temporalseq_temporalseq_cross1(&result[k],
-			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), start2, end2, 
-			MOBDB_FLAGS_GET_LINEAR(seq2->flags), lower_inc, upper_inc, param, func, valuetypid);
-		/* The previous step has added between one and three sequences */
-		k += countseq;
+		/* The next step adds between one and three sequences */
+		k += sync_tfunc3_temporalseq_temporalseq_cross1(&result[k],
+			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
+			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),
+			lower_inc, upper_inc, param, func, valuetypid);
 		start1 = end1;
 		start2 = end2;
 		lower_inc = true;
@@ -3135,9 +3104,8 @@ sync_tfunc3_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		int countstep = sync_tfunc3_temporalseq_temporalseq_cross2(&sequences[k], 
+		k += sync_tfunc3_temporalseq_temporalseq_cross2(&sequences[k], 
 			seq1, seq, param, func, valuetypid);
-		k += countstep;
 	}
 	if (k == 0)
 	{
@@ -3503,12 +3471,11 @@ sync_tfunc4_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
-		int countseq = sync_tfunc4_temporalseq_temporalseq_cross1(&result[k], 
+		/* The next step adds between one and three sequences */
+		k += sync_tfunc4_temporalseq_temporalseq_cross1(&result[k], 
 			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags),
 			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),
 			lower_inc, upper_inc, func, valuetypid);
-		/* The previous step has added between one and three sequences */
-		k += countseq;
 		start1 = end1;
 		start2 = end2;
 		lower_inc = true;
@@ -3551,9 +3518,8 @@ sync_tfunc4_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts, i);
-		int countstep = sync_tfunc4_temporalseq_temporalseq_cross2(&sequences[k],
+		k += sync_tfunc4_temporalseq_temporalseq_cross2(&sequences[k],
 			seq1, seq, func, valuetypid);
-		k += countstep;
 	}
 	if (k == 0)
 	{
