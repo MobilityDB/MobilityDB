@@ -1122,7 +1122,8 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, func, crossings);
@@ -1144,7 +1145,8 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != MOBDB_FLAGS_GET_LINEAR(ts->flags))
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) !=
+				MOBDB_FLAGS_GET_LINEAR(ts->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, func, crossings);
@@ -1191,7 +1193,7 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
 	if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state1)->flags) != 
-		MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
+			MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different interpolation")));
 
@@ -1837,6 +1839,11 @@ tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 		if (skiplist_headval(state)->duration != temporals[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
+
 		skiplist_splice(fcinfo, state, temporals, count, &datum_sum_double2, false);
 	}
 	else

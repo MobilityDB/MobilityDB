@@ -309,6 +309,11 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		if (skiplist_headval(state)->duration != temporals[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
+
 		skiplist_splice(fcinfo, state, temporals, count, func, false);
 	}
 	else
