@@ -9,7 +9,7 @@
  *		tequals, tintersects, ttouches, twithin, tdwithin, and
  *		trelate (with 2 and 3 arguments)
  * The following relationships are supported for geographies
- *		tcovers, tcoveredby, tintersects
+ *		tcovers, tcoveredby, tintersects, tdwithin
  *
  * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
  *		Universite Libre de Bruxelles
@@ -1154,8 +1154,8 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 	TimestampTz t1, t2;
 	Datum sev1 = linear1 ? ev1 : sv1;
 	Datum sev2 = linear2 ? ev2 : sv2;
-	int solutions = tdwithin_tpointseq_tpointseq1(sv1, sev1, sv2, sev2, lower, upper,
-		DatumGetFloat8(d), hasz, func, &t1, &t2);
+	int solutions = tdwithin_tpointseq_tpointseq1(sv1, sev1, sv2, sev2,
+		lower, upper, DatumGetFloat8(d), hasz, func, &t1, &t2);
 
 	/* No instant is returned */
 	int k;
