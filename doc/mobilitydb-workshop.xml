@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+
+<!ENTITY geography_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/world.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+
+<!ENTITY Z_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+
+<!ENTITY python_support
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.pdf' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.svg' width='16pt' /></imageobject>
+	<imageobject><imagedata fileref='images/python.png' width='16pt' /></imageobject>
+ </inlinemediaobject>
+">
+
+		]>
+<book lang="en">
+	<bookinfo>
+		<title>MobilityDB Workshop</title>
+
+		<author>
+			<firstname>Mahmoud</firstname>
+			<surname>SAKR</surname>
+			<affiliation>
+				<orgname>Universit&eacute; Libre de Bruxelles, Belgium</orgname>
+			</affiliation>
+		</author>
+                
+		<abstract>
+			<para>Last updated on <?dbtimestamp format="Y-m-d H:M:S"?>.</para>
+                        <para>
+                            Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets, and the tools are described inside each of the modules. Eventually more modules will be added to discover more MobilityDB features.
+                        </para>
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata fileref='images/mobilitydb-logo.png' width='200pt' />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
+
+		</abstract>
+	</bookinfo>
+
+	<chapter id ="AIS">
+		<title>Managing Ship Trajectories (AIS)</title>
+
+		<para> AIS stands for Automatic Identification System. It is the location tracking system for sea vessels. This module illustrates how to load big AIS data sets into MobilityDB, and do basic exploration.  
+                </para>
+                <para>
+                The idea and the queries in this module are inspired from the tutorial of <ulink url="https://github.com/anitagraser/movingpandas">MovingPandas</ulink> on ship data analysis by Anita Graser.      
+                </para>    
+                <section>
+                <title>This Module Covers</title>
+                    <itemizedlist>
+			<listitem>
+                            <para>Loading large trajectory datasets into MobilityDB</para>
+			</listitem>
+                        <listitem>
+                            <para>Create proper indexes to speed up trajectory construction</para>
+			</listitem>
+                        <listitem>
+                            <para>Select trajectories by a spatial window</para>
+			</listitem>
+                        <listitem>
+                            <para>Join trajectories tables by proximity</para>
+			</listitem>
+                        <listitem>
+                            <para>Select certain parts inside individual trajectories</para>
+			</listitem>
+                        <listitem>
+                            <para>Manage the temporal speed and azimuth features of ships</para>
+			</listitem>
+                        
+                    </itemizedlist>		
+                </section>    
+                <section>
+                <title>Data</title>
+                <para>
+                The Danish Maritime Authority publishes about 3 TB of AIS routes <ulink url="https://www.dma.dk/SikkerhedTilSoes/Sejladsinformation/AIS/Sider/default.aspx">here</ulink>, in CSV format. The columns in the CSV are listed in table <xref linkend="tabdata"/> 
+                
+                <table pgwide='1' width='100%' id='tabdata' frame='all'><title>AIS columns</title>
+                    <tgroup cols='2' align='left' colsep='1' rowsep='1'>
+                    <colspec colwidth="1*" colname='c1'/>
+                    <colspec colwidth="3*" colname='c2'/>
+                    <tbody>
+                    <row> <entry>Timestamp</entry> <entry>Timestamp from the AIS base station, format: 31/12/2015 23:59:59</entry> </row>
+                    <row> <entry>Type of mobile</entry> <entry>Describes what type of target this message is received from (class A AIS Vessel, Class B AIS vessel, etc)</entry> </row>
+                    <row> <entry>MMSI</entry> <entry>MMSI number of vessel</entry> </row>
+                    <row> <entry>Latitude</entry> <entry>Latitude of message report (e.g. 57,8794)</entry> </row>
+                    <row> <entry>Longitude</entry> <entry>Longitude of message report (e.g. 17,9125)</entry> </row>
+                    <row> <entry>Navigational status</entry> <entry>Navigational status from AIS message if available, e.g.: 'Engaged in fishing', 'Under way using engine', mv.</entry> </row>
+                    <row> <entry>ROT</entry> <entry>Rot of turn from AIS message if available</entry> </row>
+                    <row> <entry>SOG</entry> <entry>Speed over ground from AIS message if available</entry> </row>
+                    <row> <entry>COG</entry> <entry>Course over ground from AIS message if available</entry> </row>
+                    <row> <entry>Heading</entry> <entry>Heading from AIS message if available</entry> </row>
+                    <row> <entry>IMO</entry> <entry>IMO number of the vessel</entry> </row>
+                    <row> <entry>Callsign</entry> <entry>Callsign of the vessel</entry> </row>
+                    <row> <entry>Name</entry> <entry>Name of the vessel</entry> </row>
+                    <row> <entry>Ship type</entry> <entry>Describes the AIS ship type of this vessel</entry> </row>
+                    <row> <entry>Cargo type</entry> <entry>Type of cargo from the AIS message</entry> </row>
+                    <row> <entry>Width</entry> <entry>Width of the vessel</entry> </row>
+                    <row> <entry>Length</entry> <entry>Lenght of the vessel</entry> </row>
+                    <row> <entry>Type of position fixing device</entry> <entry>Type of positional fixing device from the AIS message</entry> </row>
+                    <row> <entry>Draught</entry> <entry>Draugth field from AIS message</entry> </row>
+                    <row> <entry>Destination</entry> <entry>Destination from AIS message</entry> </row>
+                    <row> <entry>ETA</entry> <entry>Estimated Time of Arrival, if available</entry> </row>
+                    <row> <entry>Data source type</entry> <entry>Data source type, e.g. AIS</entry> </row>
+                    <row> <entry>Size A</entry> <entry>Length from GPS to the bow</entry> </row>
+                    <row> <entry>Size B</entry> <entry>Length from GPS to the stern</entry> </row>
+                    <row> <entry>Size C</entry> <entry>Length from GPS to starboard side</entry> </row>
+                    <row> <entry>Size D</entry> <entry>Length from GPS to port side</entry> </row>
+                    </tbody>
+                    </tgroup>
+                </table>
+                </para>
+                <para>
+                This module uses the data of one day April 1st 2018. The CSV file size is 1.9 GB, and it contains about 10 M rows.   
+                </para>
+                </section>
+                <section>
+                    <title>Tools</title>
+                    <itemizedlist>
+			<listitem>
+                            <para>MobilityDB, on top of PostgreSQL and PostGIS. Here I use the MobilityDB <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB"> docker image</ulink>. </para>
+			</listitem>
+                        <listitem>
+                            <para>QGIS</para>
+			</listitem>
+                        <listitem>
+                            <para><ulink url="https://github.com/dimitri/pgloader">pgloader</ulink></para>
+			</listitem>
+                    </itemizedlist>		
+                </section>
+                <section>
+                    <title>Preparing the database</title>
+                    <para>
+                        Create a new database <varname>DanishAIS</varname>, then use your SQL editor to create the MobilityDB extension as follows:
+                        <programlisting>
+CREATE EXTENSION MobilityDB CASCADE;
+			</programlisting>
+                        The <varname>CASCADE</varname> command will additionally create the PostGIS extension.
+                    </para>    
+                    <para>
+                        Now create a table in which the CSV file will be loaded:
+                    <programlisting>
+CREATE TABLE AISInput(
+    T	timestamp,
+    TypeOfMobile varchar(50),
+    MMSI integer, 
+    Latitude float,
+    Longitude float,
+    navigationalStatus varchar(50), 
+    ROT float, 
+    SOG float,
+    COG float,
+    Heading integer,
+    IMO varchar(50),
+    Callsign varchar(50),
+    Name varchar(100),
+    ShipType varchar(50),
+    CargoType varchar(100),
+    Width	float,
+    Length float,
+    TypeOfPositionFixingDevice varchar(50),
+    Draught float,
+    Destination varchar(50),
+    ETA varchar(50),
+    DataSourceType varchar(50),
+    SizeA float,
+    SizeB float,
+    SizeC float,
+    SizeD float);
+                    </programlisting>    
+                    </para>    
+                </section> 
+                <section>
+                    <title>Loading the data</title>
+                    <para>
+                        For big datasets, like the one we have here, one needs a highly optimized import tool. Don't try to use the PostgreSQL import. It will take forever, and most probably it will eventually break. <varname>pgloader</varname> is the right tool for this task. It can import a GB of CSV data into a PostgreSQL database in order of minutes. To do so, you simply run this in command window:
+                    </para>    
+                    <para>    
+                    <programlisting>    
+pgloader commandfile
+                    </programlisting>                    
+                    </para>    
+                    <para>
+                        where the <varname>commandfile</varname> has all the necessary configurations. Here is the file that I used:
+                    </para>
+                    <para>
+                    <programlisting>    
+LOAD CSV  
+	FROM 'MobilityDBWorkshop/AIS/aisdk_20180401.csv' ( 
+            T [date format 'DD/MM/YYYY HH24-MI-SS'],
+            Typeofmobile,   
+            MMSI,   
+            Latitude,   
+            Longitude,  
+            Navigationalstatus [null if "Unknown value"],
+            ROT [null if blanks],
+            SOG [null if blanks],
+            COG [null if blanks],
+            Heading [null if blanks],
+            IMO [null if "Unknown"],
+            Callsign [null if blanks],
+            Name [null if blanks],
+            Shiptype [null if "Undefined"],
+            Cargotype [null if blanks],
+            Width [null if blanks],
+            Length [null if blanks],
+            Typeofpositionfixingdevice [null if "Undefined"],
+            Draught [null if "Undefined"],
+            Destination [null if "Undefined"],
+            ETA [null if blanks],
+            Datasourcetype [null if blanks],
+            SizeA,
+            SizeB,
+            SizeC,
+            SizeD
+	)   
+	INTO postgresql://docker:docker@127.0.0.1:25432/DanishAIS?tablename=aisinput ( T, TypeOfMobile, MMSI, Latitude, Longitude, navigationalStatus, ROT, SOG, COG, Heading, IMO, Callsign, Name, ShipType, CargoType, Width, Length, TypeOfPositionFixingDevice, Draught, Destination, ETA,  DataSourceType, SizeA, SizeB, SizeC, SizeD)
+	WITH 
+            skip header = 1,		
+            truncate,		
+            fields terminated by ','  	
+                    </programlisting>                                        
+                    </para>
+                    <para>
+                        This import took about 19 minutes on my machine, which is an average laptop. The CSV file has 10,619,212 rows, all of which were correctly imported.
+                    </para>    
+                    
+                    </section> 
+                
+	</chapter>
+	
+</book>
