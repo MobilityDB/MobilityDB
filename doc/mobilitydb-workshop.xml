@@ -40,11 +40,17 @@
 		</author>
                 
 		<abstract>
-			<para>Last updated on <?dbtimestamp format="Y-m-d H:M:S"?>.</para>
+			<para>Last updated on Dec 29, 2019.</para>
                         <para>
-                            Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets, and the tools are described inside each of the modules. Eventually more modules will be added to discover more MobilityDB features.
+                            Every module in this workshop illustrates a usage scenario of MobilityDB. The data sets, and the tools are described inside each of the modules. Eventually more modules will be added to discover more MobilityDB features. 
                         </para>
-			<para>
+                        <para>
+                            While this workshop illustrates the usage of MobilityDB functions, it doesn't explain them in detail. If you need help concerning the functions of MobilityDB, please refer to the <ulink url="https://docs.mobilitydb.com/nightly/">documentation</ulink>.
+                        </para>
+                        <para>
+                            If you have questions, ideas, comments, etc, please contact me on <ulink url="mailto:mahmoud.sakr@ulb.ac.be">mahmoud.sakr@ulb.ac.be</ulink>. 
+			</para>
+                        <para>
 				<inlinemediaobject>
 					<imageobject>
 						<imagedata fileref='images/mobilitydb-logo.png' width='200pt' />
@@ -61,7 +67,7 @@
 		<para> AIS stands for Automatic Identification System. It is the location tracking system for sea vessels. This module illustrates how to load big AIS data sets into MobilityDB, and do basic exploration.  
                 </para>
                 <para>
-                The idea and the queries in this module are inspired from the tutorial of <ulink url="https://github.com/anitagraser/movingpandas">MovingPandas</ulink> on ship data analysis by Anita Graser.      
+                The idea of this module is inspired from the tutorial of <ulink url="https://github.com/anitagraser/movingpandas">MovingPandas</ulink> on ship data analysis by Anita Graser.      
                 </para>    
                 <section>
                 <title>This Module Covers</title>
@@ -331,7 +337,7 @@ SELECT SUM( length( TripETRS ) ) FROM Ships;
                         These queries first add a new column to stores the projected spatiotemporal trajectory of the ship. MobilityDB builds on the coordinate transformation feature of PostGIS. Here the SRID 25832 (European Terrestrial Reference System 1989) is used, because it is the one advised by Danish Maritime Authority in the download page of this dataset. The projection is done, so that the <varname>length</varname> function can compute the sailing distance in meters. 
                     </para> 
                     <para>
-                        The <varname>length</varname> function returns a number per trip, which is its total traveled distance. We then aggregate over all trips and calculate the sum. Clearly, the resulting number (500 Million km) does not make sense. This is mainly because the  data is not cleaned. Let's have a more detailed look, and generate a histogram of trip lengths:
+                        The <varname>length</varname> function returns a number per trip, which is its total traveled distance. We then aggregate over all trips and calculate the sum. Let's have a more detailed look, and generate a histogram of trip lengths:
                     </para>                     
                     <para>
                     <programlisting>    
@@ -502,7 +508,7 @@ CREATE INDEX Ships_tripETRS_idx ON Ships USING GiST(TripETRS);
 EXPLAIN
 WITH Ports(Rodby, Puttgarden) AS
 (
-	SELECT ST_MakeEnvelope(561135, 6058230, 651422, 6058548, 25832), ST_MakeEnvelope(644339, 6042108, 644896, 6042487, 25832)
+    SELECT ST_MakeEnvelope(651135, 6058230, 651422, 6058548, 25832), ST_MakeEnvelope(644339, 6042108, 644896, 6042487, 25832)
 )
 SELECT S.*, Rodby, Puttgarden
 FROM Ports P, Ships S
@@ -512,14 +518,14 @@ WHERE intersects(S.TripETRS, P.Rodby) AND intersects(S.TripETRS, P.Puttgarden)
                     </programlisting>   
                     </para>  
                     <para>
-                    <figure id="imgtrajFerry" float="1"><title>Ship trajectories with big difference between azimuth(Trip) and COG</title>
+                    <figure id="imgtrajFerry" float="1"><title>A sample ship trajectory between R&oslash;dby and Puttgarden</title>
 			<mediaobject>
                             <imageobject><imagedata width='80%' fileref='workshopimages/trajFerry.png'/></imageobject>
                         </mediaobject>
                     </figure>
                     </para>  
                    <para>
-                    <figure id="imgtrajFerries" float="1"><title>Ship trajectories with big difference between azimuth(Trip) and COG</title>
+                    <figure id="imgtrajFerries" float="1"><title>All ferries between R&oslash;dby and Puttgarden</title>
 			<mediaobject>
                             <imageobject><imagedata width='80%' fileref='workshopimages/trajFerries.png'/></imageobject>
                         </mediaobject>
@@ -533,7 +539,7 @@ WHERE intersects(S.TripETRS, P.Rodby) AND intersects(S.TripETRS, P.Puttgarden)
                     <programlisting>    
 WITH Ports(Rodby, Puttgarden) AS
 (
-	SELECT ST_MakeEnvelope(651135, 6058230, 651422, 6058548, 25832), ST_MakeEnvelope(644339, 6042108, 644896, 6042487, 25832)
+    SELECT ST_MakeEnvelope(651135, 6058230, 651422, 6058548, 25832), ST_MakeEnvelope(644339, 6042108, 644896, 6042487, 25832)
 )
 SELECT MMSI, (numSequences(atGeometry(S.TripETRS, P.Rodby)) + numSequences(atGeometry(S.TripETRS, P.Puttgarden)))/2.0 AS NumTrips
 FROM Ports P, Ships S
@@ -548,10 +554,6 @@ MMSI        NumTrips
 
                     </programlisting>   
                     </para>  
-                    <para>
-                        The function <varname>atGeometry</varname> restricts the temporal point to the parts where it is inside the given geometry. The result is thus a temporal point that consists of multiple pieces (sequences), with temporal gaps in between. The function <varname>numSequences</varname> counts the number of these pieces.
-                    </para>                    
-
                     <para>
                         The function <varname>atGeometry</varname> restricts the temporal point to the parts where it is inside the given geometry. The result is thus a temporal point that consists of multiple pieces (sequences), with temporal gaps in between. The function <varname>numSequences</varname> counts the number of these pieces.
                     </para>                    
@@ -580,21 +582,21 @@ WHERE S1.MMSI > S2.MMSI AND
                         The query first defines the area of interest as an envelope, the red dashed line in figrue <xref linkend="imgtrajApproach"/>). It then restricts/crops the trajectories to only this envelope using the <varname>atGeometry</varname> function. The main query then find pairs of different trajectories that ever came within a distance of 300 meters to one another (the <varname>dwithin</varname>). For these trajectories, it computes the spatial line that connects the two instants where the two trajectories were closest to one another (the <varname>shortestLine</varname> function). Figure <xref linkend="imgtrajApproach"/> shows the green trajectories that came close to the blue trajectories, and their shortest connecting line in solid red. Most of the approaches occur at the entrance of the R&oslash;dby port, which looks normal. But we also see two interesting approaches, that may indicate danger of collision away from the port. They are shown with more zoom in figures  <xref linkend="imgApproach1"/>, <xref linkend="imgApproach2"/> 
                     </para>    
                    <para>
-                    <figure id="imgtrajApproach" float="1"><title>Ship trajectories with big difference between azimuth(Trip) and COG</title>
+                    <figure id="imgtrajApproach" float="1"><title>Ship that come closer than 300 meters to one another</title>
 			<mediaobject>
                             <imageobject><imagedata width='80%' fileref='workshopimages/trajApproach.png'/></imageobject>
                         </mediaobject>
                     </figure>
                     </para>                                        
                    <para>
-                    <figure id="imgApproach1" float="1"><title>Ship trajectories with big difference between azimuth(Trip) and COG</title>
+                    <figure id="imgApproach1" float="1"><title>A zoom-in on a dangerous approach</title>
 			<mediaobject>
                             <imageobject><imagedata width='80%' fileref='workshopimages/approach1.png'/></imageobject>
                         </mediaobject>
                     </figure>
                     </para>                                        
                    <para>
-                    <figure id="imgApproach2" float="1"><title>Ship trajectories with big difference between azimuth(Trip) and COG</title>
+                    <figure id="imgApproach2" float="1"><title>Aother dangerous approach</title>
 			<mediaobject>
                             <imageobject><imagedata width='80%' fileref='workshopimages/approach2.png'/></imageobject>
                         </mediaobject>
