@@ -3543,23 +3543,23 @@ tnumberseq_twavg(TemporalSeq *seq)
 bool
 temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 {
-	/* If number of sequences or the periods are not equal */
-	if (seq1->count != seq2->count || 
+	/* If number of sequences, flags, or periods are not equal */
+	if (seq1->count != seq2->count || seq1->flags != seq2->flags ||
 			! period_eq_internal(&seq1->period, &seq2->period)) 
 		return false;
 
 	/* If bounding boxes are not equal */
 	void *box1 = temporalseq_bbox_ptr(seq1);
 	void *box2 = temporalseq_bbox_ptr(seq2);
-	if (!temporal_bbox_eq(seq1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(seq1->valuetypid, box1, box2))
 		return false;
 	
-	/* We need to compare the composing instants */
+	/* Compare the composing instants */
 	for (int i = 0; i < seq1->count; i++)
 	{
 		TemporalInst *inst1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *inst2 = temporalseq_inst_n(seq2, i);
-		if (!temporalinst_eq(inst1, inst2))
+		if (! temporalinst_eq(inst1, inst2))
 			return false;
 	}
 	return true;

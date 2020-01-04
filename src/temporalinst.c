@@ -676,6 +676,11 @@ temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 bool
 temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 {
+	/* If flags are not equal */
+	if (inst1->flags != inst2->flags) 
+		return false;
+
+	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	return datum_eq(value1, value2, inst1->valuetypid) && 

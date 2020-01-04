@@ -1605,21 +1605,22 @@ tnumberi_twavg(TemporalI *ti)
 bool
 temporali_eq(TemporalI *ti1, TemporalI *ti2)
 {
-	/* If number of sequences are not equal */
-	if (ti1->count != ti2->count)
+	/* If number of sequences or flags are not equal */
+	if (ti1->count != ti2->count || ti1->flags != ti2->flags)
 		return false;
+
 	/* If bounding boxes are not equal */
 	void *box1 = temporali_bbox_ptr(ti1);
 	void *box2 = temporali_bbox_ptr(ti2);
-	if (!temporal_bbox_eq(ti1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(ti1->valuetypid, box1, box2))
 		return false;
 	
-	/* We need to compare the composing instants */
+	/* Compare the composing instants */
 	for (int i = 0; i < ti1->count; i++)
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);
 		TemporalInst *inst2 = temporali_inst_n(ti2, i);
-		if (!temporalinst_eq(inst1, inst2))
+		if (! temporalinst_eq(inst1, inst2))
 			return false;
 	}
 	return true;
