@@ -703,7 +703,8 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 	if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
 		box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
 		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
-		box1->zmax != box2->zmax || box1->tmax != box2->tmax)
+		box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
+		box1->flags != box2->flags )
 		return false;
 	/* The two boxes are equal */
 	return true;
