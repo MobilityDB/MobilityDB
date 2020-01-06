@@ -1638,7 +1638,6 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 	int result = temporal_bbox_cmp(ti1->valuetypid, box1, box2);
 	if (result)
 		return result;
-
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)
@@ -1654,8 +1653,13 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		return -1;
 	else if (ti2->count < ti1->count) /* ti2 has less instants than ti1 */
 		return 1;
-	else
-		return 0;
+	/* Compare flags */
+	if (ti1->flags < ti2->flags)
+		return -1;
+	if (ti1->flags > ti2->flags)
+		return 1;
+	/* The two values are equal */
+	return 0;
 }
 
 /*****************************************************************************

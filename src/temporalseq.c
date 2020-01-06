@@ -3593,6 +3593,12 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		return -1;
 	else if (seq2->count < seq1->count) /* seq2 has less instants than seq1 */
 		return 1;
+	/* Compare flags */
+	if (seq1->flags < seq2->flags)
+		return -1;
+	if (seq1->flags > seq2->flags)
+		return 1;
+	/* The two values are equal */
 	return 0;
 }
 

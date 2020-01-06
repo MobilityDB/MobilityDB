@@ -583,11 +583,6 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 int 
 stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* Compare the flags */
-	if (box1->flags < box2->flags)
-		return -1;
-	if (box1->flags > box2->flags)
-		return 1;
 	/* Compare the box minima */
 	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags))
 	{
@@ -640,6 +635,11 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 		if (box1->tmax > box2->tmax)
 			return 1;
 	}
+	/* Finally compare the flags */
+	if (box1->flags < box2->flags)
+		return -1;
+	if (box1->flags > box2->flags)
+		return 1;
 	/* The two boxes are equal */
 	return 0;
 }

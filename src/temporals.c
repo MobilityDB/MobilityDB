@@ -2284,8 +2284,13 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		return -1;
 	else if (ts2->count < ts1->count) /* ts2 has less sequences than ts1 */
 		return 1;
-	else
-		return 0;
+	/* Compare flags */
+	if (ts1->flags < ts2->flags)
+		return -1;
+	if (ts1->flags > ts2->flags)
+		return 1;
+	/* The two values are equal */
+	return 0;
 }
 
 /*****************************************************************************
