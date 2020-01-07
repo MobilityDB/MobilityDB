@@ -358,14 +358,14 @@ SELECT bucketNo, RangeKM, freq,
 FROM histogram;
 --Total query runtime: 5.6 secs
 
-bucketNo, bucketRange,	   freq	   bar
-1;		  "[0,0]";			303;	&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
-2;		  "(0,50)";		   1693;   &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
-3;		  "[50,100)";		 267;	&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
-4;		  "[100,200)";		276;	&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
-5;		  "[200,500)";		361;	&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
-6;		  "[500,1500)";	   86;	 &#x25AA;&#x25AA;
-7;		  "[1500,10000)";	 6;	  
+bucketNo,   bucketRange,        freq	   bar
+1;          "[0,0]";            303;       &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
+2;          "(0,50)";           1693;      &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
+3;          "[50,100)";         267;       &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
+4;          "[100,200)";        276;       &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
+5;          "[200,500)";        361;       &#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;&#x25AA;
+6;          "[500,1500)";       86;        &#x25AA;&#x25AA;
+7;          "[1500,10000)";     6;	  
 						</programlisting>   
 					</para>
 					<para>
