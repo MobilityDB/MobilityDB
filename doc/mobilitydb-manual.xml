@@ -2898,11 +2898,16 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-03)' * '[3@2012-01-01, 1@2012-01-03)'
 				<listitem>
 					<para>Division</para>
 					<para><varname>{number, tnumber} / {number, tnumber}: tnumber</varname></para>
+					<para>The function will raise an error if the denominator will ever be equal to zero during the common timespan of the arguments.</para>
 					<programlisting>
 SELECT 2 / tfloat '[1@2012-01-01, 3@2012-01-04)';
 -- "[2@2012-01-01, 1@2012-01-02 12:00:00+00, 0.666666666666667@2012-01-04)"
 SELECT tfloat '[1@2012-01-01, 5@2012-01-05)' / '[5@2012-01-01, 1@2012-01-05)'
 -- "{[0.2@2012-01-01, 1@2012-01-03,2012-01-03, 5@2012-01-03,2012-01-05)}"
+select 2 / tfloat '[-1@2000-01-01, 1@2000-01-02]'
+-- ERROR:  Division by zero
+select tfloat '[-1@2000-01-04, 1@2000-01-05]' / tfloat '[-1@2000-01-01, 1@2000-01-05]'
+-- "[-2@2000-01-04, 1@2000-01-05]"
 					</programlisting>
 				</listitem>
 

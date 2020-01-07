@@ -1303,11 +1303,9 @@ temporalinst_get_value(PG_FUNCTION_ARGS)
 
 /* Returns the time of the temporal type */
 
-PG_FUNCTION_INFO_V1(temporal_get_time);
-
-Datum temporal_get_time(PG_FUNCTION_ARGS)
+PeriodSet *
+temporal_get_time_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	PeriodSet *result = NULL;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1318,6 +1316,17 @@ Datum temporal_get_time(PG_FUNCTION_ARGS)
 		result = temporalseq_get_time((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = temporals_get_time((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_get_time);
+
+PGDLLEXPORT Datum
+temporal_get_time(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	PeriodSet *result = temporal_get_time_internal(temp);
+	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1953,13 +1962,9 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 
 /* Is the temporal value ever equal to the value? */
 
-PG_FUNCTION_INFO_V1(temporal_ever_eq);
-
-PGDLLEXPORT Datum
-temporal_ever_eq(PG_FUNCTION_ARGS)
+bool
+temporal_ever_eq_internal(Temporal *temp, Datum value)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = false;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1970,6 +1975,17 @@ temporal_ever_eq(PG_FUNCTION_ARGS)
 		result = temporalseq_ever_eq((TemporalSeq *)temp, value);
 	else if (temp->duration == TEMPORALS) 
 		result = temporals_ever_eq((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_ever_eq);
+
+PGDLLEXPORT Datum
+temporal_ever_eq(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_ever_eq_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
 	FREE_DATUM(value, temp->valuetypid);
 	PG_RETURN_BOOL(result);
@@ -2638,6 +2654,26 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 }
 
 /* Restriction to a periodset */
+
+Temporal *
+temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps)
+{
+	Temporal *result = NULL;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST) 
+		result = (Temporal *)temporalinst_at_periodset(
+			(TemporalInst *)temp, ps);
+	else if (temp->duration == TEMPORALI) 
+		result = (Temporal *)temporali_at_periodset(
+			(TemporalI *)temp, ps);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = (Temporal *)temporalseq_at_periodset(
+			(TemporalSeq *)temp, ps);
+	else if (temp->duration == TEMPORALS) 
+		result = (Temporal *)temporals_at_periodset(
+			(TemporalS *)temp, ps);
+	return result;
+}
 
 PG_FUNCTION_INFO_V1(temporal_at_periodset);
 
