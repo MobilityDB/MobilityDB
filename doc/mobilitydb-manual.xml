@@ -39,7 +39,7 @@
 			</affiliation>
 		</author>
 
-		<pubdate>18.11.2019</pubdate>
+		<pubdate>07.01.2020</pubdate>
 		<abstract>
 			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB-Python">Github</ulink>.</para>
 
