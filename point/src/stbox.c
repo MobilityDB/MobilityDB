@@ -3,9 +3,9 @@
  * stbox.c
  *	  Basic functions for STBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -635,6 +635,11 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 		if (box1->tmax > box2->tmax)
 			return 1;
 	}
+	/* Finally compare the flags */
+	if (box1->flags < box2->flags)
+		return -1;
+	if (box1->flags > box2->flags)
+		return 1;
 	/* The two boxes are equal */
 	return 0;
 }
@@ -703,7 +708,8 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 	if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
 		box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
 		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
-		box1->zmax != box2->zmax || box1->tmax != box2->tmax)
+		box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
+		box1->flags != box2->flags )
 		return false;
 	/* The two boxes are equal */
 	return true;

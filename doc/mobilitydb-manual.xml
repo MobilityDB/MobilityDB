@@ -1701,10 +1701,19 @@ SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 
 				<listitem>
 					<para>Time</para>
+					<para><varname>getTimestamp(ttypeinst): timestamptz</varname></para>
+					<programlisting>
+SELECT getTimestamp(tint '1@2012-01-01');
+-- "2012-01-01"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Time</para>
 					<para><varname>getTime(ttype): periodset</varname></para>
 					<programlisting>
 SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
--- "{[2012-01-01 ,2012-01-15)}"
+-- "{[2012-01-01, 2012-01-15)}"
 					</programlisting>
 				</listitem>
 

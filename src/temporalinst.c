@@ -3,9 +3,9 @@
  * temporalinst.c
  *	  Basic functions for temporal instants.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -676,6 +676,11 @@ temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 bool
 temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 {
+	/* If flags are not equal */
+	if (inst1->flags != inst2->flags) 
+		return false;
+
+	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	return datum_eq(value1, value2, inst1->valuetypid) && 
@@ -688,16 +693,24 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
+	/* Compare values */
 	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
 		return -1;
 	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
 		return 1;
+	/* Compare timestamps */
 	if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
 		return -1;
 	if (timestamp_cmp_internal(inst1->t, inst2->t) > 0)
 		return 1;
+	/* Compare flags */
+	if (inst1->flags < inst2->flags)
+		return -1;
+	if (inst1->flags > inst2->flags)
+		return 1;
+	/* The two values are equal */
 	return 0;
 }
 
