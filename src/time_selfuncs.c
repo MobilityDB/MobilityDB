@@ -15,6 +15,7 @@
 
 #include "time_selfuncs.h"
 
+#include <math.h>
 #include <port.h>
 #include <access/htup_details.h>
 #include <utils/lsyscache.h>
