@@ -9,15 +9,15 @@
  * - B-tree comparison operators: <, <=, >, >=
  * - Bounding box operators: &&, @>, <@, ~=
  * - Relative position operators: <<#, &<#, #>>, #>>
- * - Ever/always equal operators: &=, @= // TODO
+ * - Ever/always comparison operators: !=, %=, !<>, %<>,  !<, %<, ...// TODO
  *
  * Due to implicit casting, a condition such as tbool <<# timestamptz will be
  * transformed into tbool <<# period. This allows to reduce the number of 
  * cases for the operator definitions, indexes, selectivity, etc. 
  * 
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -1393,7 +1393,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 
 	/* Get the duration of the temporal column */
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)

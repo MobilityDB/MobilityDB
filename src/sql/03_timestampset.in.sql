@@ -3,9 +3,9 @@
  * timestampset.sql
  *	  Functions for set of timestamps.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -65,7 +65,7 @@ CREATE FUNCTION timestampset(timestamptz[])
 
 CREATE FUNCTION timestampset(timestamptz)
 	RETURNS timestampset
-	AS 'MODULE_PATHNAME', 'timestamp_as_timestampset'
+	AS 'MODULE_PATHNAME', 'timestamp_to_timestampset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestampset)
 	RETURNS period
@@ -82,11 +82,6 @@ CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset) AS IMPLI
 CREATE FUNCTION memSize(timestampset)
 	RETURNS int
 	AS 'MODULE_PATHNAME', 'timestampset_mem_size'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION timespan(timestampset)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'timestampset_timespan'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numTimestamps(timestampset)

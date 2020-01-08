@@ -223,32 +223,32 @@ SELECT upper_inc(period '(2000-01-01,2000-01-02)');
  f
 (1 row)
 
-SELECT duration(period '[2000-01-01,2000-01-01]');
- duration 
+SELECT timespan(period '[2000-01-01,2000-01-01]');
+ timespan 
 ----------
  00:00:00
 (1 row)
 
-SELECT duration(period '[2000-01-01,2000-01-02]');
- duration 
+SELECT timespan(period '[2000-01-01,2000-01-02]');
+ timespan 
 ----------
  1 day
 (1 row)
 
-SELECT duration(period '(2000-01-01,2000-01-02]');
- duration 
+SELECT timespan(period '(2000-01-01,2000-01-02]');
+ timespan 
 ----------
  1 day
 (1 row)
 
-SELECT duration(period '[2000-01-01,2000-01-02)');
- duration 
+SELECT timespan(period '[2000-01-01,2000-01-02)');
+ timespan 
 ----------
  1 day
 (1 row)
 
-SELECT duration(period '(2000-01-01,2000-01-02)');
- duration 
+SELECT timespan(period '(2000-01-01,2000-01-02)');
+ timespan 
 ----------
  1 day
 (1 row)

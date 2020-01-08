@@ -3,9 +3,9 @@
  * period.sql
  *	  SQL definitions for timestamptz periods.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -64,15 +64,15 @@ CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
 
 CREATE FUNCTION period(timestamptz)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'timestamp_as_period'
+	AS 'MODULE_PATHNAME', 'timestamp_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION period(tstzrange)
 	RETURNS period
-	AS 'MODULE_PATHNAME', 'tstzrange_as_period'
+	AS 'MODULE_PATHNAME', 'tstzrange_to_period'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 CREATE FUNCTION tstzrange(period)
 	RETURNS tstzrange
-	AS 'MODULE_PATHNAME', 'period_as_tstzrange'
+	AS 'MODULE_PATHNAME', 'period_to_tstzrange'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz) AS IMPLICIT;
@@ -103,9 +103,9 @@ CREATE FUNCTION upper_inc(period)
 	AS 'MODULE_PATHNAME', 'period_upper_inc'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
 
-CREATE FUNCTION duration(period)
+CREATE FUNCTION timespan(period)
 	RETURNS interval
-	AS 'MODULE_PATHNAME', 'period_duration'
+	AS 'MODULE_PATHNAME', 'period_timespan'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(period, interval)

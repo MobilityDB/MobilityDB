@@ -177,11 +177,11 @@ set seq = (select setPrecision(seq,3) from tbl_tgeompointseq_big t2 where t2.k =
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeompointseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tgeompointseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tgeompointseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeompointseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tgeompointseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -199,11 +199,11 @@ set seq = (select setPrecision(seq,3) from tbl_tgeompoint3Dseq_big t2 where t2.k
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeompoint3Dseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tgeompoint3Dseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tgeompoint3Dseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeompoint3Dseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tgeompoint3Dseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -221,11 +221,11 @@ set seq = (select setPrecision(seq,3) from tbl_tgeogpointseq_big t2 where t2.k =
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeogpointseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tgeogpointseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tgeogpointseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeogpointseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tgeogpointseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -243,11 +243,11 @@ set seq = (select setPrecision(seq,3) from tbl_tgeogpoint3Dseq_big t2 where t2.k
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeogpoint3Dseq_big t1
-set seq = (select shift(seq, duration(seq)) from tbl_tgeogpoint3Dseq_big t2 where t2.k = t1.k+perc)
+set seq = (select shift(seq, timespan(seq)) from tbl_tgeogpoint3Dseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeogpoint3Dseq_big t1
-set seq = (select shift(seq, date_trunc('minute',duration(seq)/2)) 
+set seq = (select shift(seq, date_trunc('minute',timespan(seq)/2)) 
 	from tbl_tgeogpoint3Dseq_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -267,11 +267,11 @@ set ts = (select setPrecision(ts,3) from tbl_tgeompoints_big t2 where t2.k = t1.
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeompoints_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tgeompoints_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tgeompoints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeompoints_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tgeompoints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -289,11 +289,11 @@ set ts = (select setPrecision(ts,3) from tbl_tgeompoint3Ds_big t2 where t2.k = t
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeompoint3Ds_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tgeompoint3Ds_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tgeompoint3Ds_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeompoint3Ds_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tgeompoint3Ds_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -311,11 +311,11 @@ set ts = (select setPrecision(ts,3) from tbl_tgeogpoints_big t2 where t2.k = t1.
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeogpoints_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tgeogpoints_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tgeogpoints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeogpoints_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tgeogpoints_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 
@@ -333,11 +333,11 @@ set ts = (select setPrecision(ts,3) from tbl_tgeogpoint3Ds_big t2 where t2.k = t
 where k in (select i from generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 update tbl_tgeogpoint3Ds_big t1
-set ts = (select shift(ts, duration(ts)) from tbl_tgeogpoint3Ds_big t2 where t2.k = t1.k+perc)
+set ts = (select shift(ts, timespan(ts)) from tbl_tgeogpoint3Ds_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
 update tbl_tgeogpoint3Ds_big t1
-set ts = (select shift(ts, date_trunc('minute', duration(ts)/2)) 
+set ts = (select shift(ts, date_trunc('minute', timespan(ts)/2)) 
 	from tbl_tgeogpoint3Ds_big t2 where t2.k = t1.k+perc)
 where t1.k in (select i from generate_series(1 + 6*perc, 7*perc) i);
 

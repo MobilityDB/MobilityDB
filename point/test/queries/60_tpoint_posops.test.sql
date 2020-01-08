@@ -1925,3 +1925,22 @@ SELECT geometry 'Point(1 1)'::stbox #>> tgeompoint '[Point(1 1)@20000-01-01, Poi
 SELECT geometry 'Point(1 1)'::stbox #&> tgeompoint '[Point(1 1)@20000-01-01, Point(1 1)@20000-01-02]';
 
 -------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
+
+-------------------------------------------------------------------------------

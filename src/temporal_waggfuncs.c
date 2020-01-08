@@ -3,9 +3,9 @@
  * temporal_waggfuncs.c
  *	  Window temporal aggregate functions
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -30,6 +30,8 @@
 static int
 temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
+	/* Should be additional attribute */
+	bool linear = linear_interpolation(inst->valuetypid);
 	TemporalInst *instants[2];
 	TimestampTz upper = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
@@ -39,7 +41,7 @@ temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval
 	instants[1] = temporalinst_make(temporalinst_value(inst), 
 		upper, inst->valuetypid);
 	result[0] = temporalseq_from_temporalinstarr(instants, 2,
-		true, true, false);
+		true, true, linear, false);
 	pfree(instants[1]);
 	return 1;
 }
@@ -56,7 +58,7 @@ temporali_extend(TemporalSeq **result, TemporalI *ti, Interval *interval)
 }
 
 static int
-tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
+tstepwseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -76,7 +78,7 @@ tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 		instants[1] = temporalinst_make(temporalinst_value(inst1), 
 			upper, inst1->valuetypid);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false);
+			lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -85,7 +87,7 @@ tempdiscseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 }
 
 static int
-tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
+tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -109,7 +111,7 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 			instants[0] = inst1;
 			instants[1] = temporalinst_make(value1, upper, inst1->valuetypid);
 			result[i] = temporalseq_from_temporalinstarr(instants, 2,
-				lower_inc, upper_inc, false);
+				lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			pfree(instants[1]);
 		}
 		else
@@ -130,7 +132,7 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 				instants[1] = temporalinst_make(value1, lower, inst1->valuetypid);
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
 				result[i] = temporalseq_from_temporalinstarr(instants, 3,
-					lower_inc, upper_inc, false);
+					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 				pfree(instants[1]); pfree(instants[2]);
 			}
 			else
@@ -143,7 +145,7 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 				instants[1] = inst2;
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
 				result[i] = temporalseq_from_temporalinstarr(instants, 3,
-					lower_inc, upper_inc, false);
+					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 				pfree(instants[2]);
 			}
 		}
@@ -154,32 +156,32 @@ tempcontseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, b
 }
 
 static int
-tempdiscs_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
+tstepws_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
 	if (ts->count == 1)
-		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
+		return tstepwseq_extend(result, temporals_seq_n(ts, 0), interval);
 
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tempdiscseq_extend(&result[k], seq, interval);
+		int countstep = tstepwseq_extend(&result[k], seq, interval);
 		k += countstep;
 	}
 	return k;
 }
 
 static int
-tempconts_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
+tlinears_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
 {
 	if (ts->count == 1)
-		return tempdiscseq_extend(result, temporals_seq_n(ts, 0), interval);
+		return tstepwseq_extend(result, temporals_seq_n(ts, 0), interval);
 
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tempcontseq_extend(&result[k], seq, interval, min);
+		int countstep = tlinearseq_extend(&result[k], seq, interval, min);
 		k += countstep;
 	}
 	return k;
@@ -191,7 +193,7 @@ static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
 	TemporalSeq **result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
@@ -208,19 +210,19 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 	{
 		TemporalSeq *seq = (TemporalSeq *)temp;
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
-		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			*count = tempdiscseq_extend(result, seq, interval);
+		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			*count = tstepwseq_extend(result, seq, interval);
 		else
-			*count = tempcontseq_extend(result, seq, interval, min);
+			*count = tlinearseq_extend(result, seq, interval, min);
 	}
 	else if (temp->duration == TEMPORALS)
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-		if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
-			*count = tempdiscs_extend(result, ts, interval);
+		if (! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+			*count = tstepws_extend(result, ts, interval);
 		else
-			*count = tempconts_extend(result, ts, interval, min);
+			*count = tlinears_extend(result, ts, interval, min);
 	}
 	return result;
 }
@@ -231,7 +233,8 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
  *****************************************************************************/
 
 static int
-temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst, Interval *interval)
+temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst, 
+	Interval *interval)
 {
 	TemporalInst *instants[2];
 	TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
@@ -239,7 +242,8 @@ temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst, Interval
 		PointerGetDatum(interval)));
 	instants[0] = temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 	instants[1] = temporalinst_make(Int32GetDatum(1), upper, INT4OID);
-	result[0] = temporalseq_from_temporalinstarr(instants, 2, true, true, false);
+	result[0] = temporalseq_from_temporalinstarr(instants, 2, true, true, 
+		false, false);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
 }
@@ -274,7 +278,7 @@ temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *i
 		instants[0] = temporalinst_make(Int32GetDatum(1), inst1->t, INT4OID);
 		instants[1] = temporalinst_make(Int32GetDatum(1), upper, INT4OID);
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false);
+			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -285,11 +289,11 @@ temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *i
 static int
 temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = temporalseq_transform_wcount(&result[k], seq, interval);
+		int countstep = temporalseq_transform_wcount(&result[k], seq, interval);
 		k += countstep;
 	}
 	return k;
@@ -300,7 +304,7 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{
@@ -337,8 +341,10 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 static int
 tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *interval)
 {
+	/* Should be additional attribute */
+	bool linear = true;
 	float8 value = 0.0;
-	numeric_base_type_oid(inst->valuetypid);
+	ensure_numeric_base_type(inst->valuetypid);
 	if (inst->valuetypid == INT4OID)
 		value = DatumGetInt32(temporalinst_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)
@@ -354,7 +360,7 @@ tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *i
 	instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
 		upper, type_oid(T_DOUBLE2));
 	result[0] = temporalseq_from_temporalinstarr(instants, 2,
-		true, true, false);
+		true, true, linear, false);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
 }
@@ -370,12 +376,14 @@ tnumberi_transform_wavg(TemporalSeq **result, TemporalI *ti, Interval *interval)
 	return ti->count;
 }
 
-/* Transform a discrete temporal numeric sequence into a temporal double and extend
- * it by a time interval. There is no equivalent function for continuous types */
+/* Transform a temporal integer sequence into a temporal double and extend
+ * it by a time interval. There is no equivalent function for temporal float types */
 
 static int
 tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 {
+	/* Should be additional attribute */
+	bool linear = true;
 	TemporalInst *instants[2];
 	if (seq->count == 1)
 	{
@@ -391,7 +399,7 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 		instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
 			upper, type_oid(T_DOUBLE2));
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
-			true, true, false);
+			true, true, linear, false);
 		pfree(instants[0]);	pfree(instants[1]);
 		return 1;
 	}
@@ -412,7 +420,7 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 		instants[1] = temporalinst_make(PointerGetDatum(dvalue), upper,
 			type_oid(T_DOUBLE2));
 		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false);
+			lower_inc, upper_inc, linear, false);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
 		lower_inc = true;
@@ -423,11 +431,11 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 static int
 tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 {
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tintseq_transform_wavg(&result[k], seq, interval);
+		int countstep = tintseq_transform_wavg(&result[k], seq, interval);
 		k += countstep;
 	}
 	return k;
@@ -438,7 +446,7 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 static TemporalSeq **
 tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	TemporalSeq **result = NULL;
 	if (temp->duration == TEMPORALINST)
 	{	

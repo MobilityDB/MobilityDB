@@ -70,9 +70,9 @@
  * tbool and ttext, no statistics are collected for the value dimension and
  * the statistics for the temporal part are stored in slots 1 and 2.
  * 
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -1089,7 +1089,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	if (valuestats)
 	{
 		/* Ensure function is called for temporal numbers */
-		numeric_base_type_oid(temporal_extra_data->value_type_id);
+		ensure_numeric_base_type(temporal_extra_data->value_type_id);
 		if (temporal_extra_data->value_type_id == INT4OID)
 			rangetypid = type_oid(T_INTRANGE);
 		else if (temporal_extra_data->value_type_id == FLOAT8OID)
@@ -1127,7 +1127,7 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			continue;
 		}
 
-		total_width += toast_datum_size(value);
+		total_width += VARSIZE(value);
 
 		/* Get Temporal value */
 		temp = DatumGetTemporal(value);
@@ -1147,11 +1147,11 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 				value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
 					DatumGetFloat8(range_lower.val);
 		}
-		temporal_timespan_internal(&period, temp);
+		temporal_period(&period, temp);
 		period_deserialize(&period, &period_lower, &period_upper);
 		time_lowers[non_null_cnt] = period_lower;
 		time_uppers[non_null_cnt] = period_upper;
-		time_lengths[non_null_cnt] = period_duration_secs(period_upper.val, 
+		time_lengths[non_null_cnt] = period_to_secs(period_upper.val, 
 			period_lower.val);
 
 		non_null_cnt++;
@@ -1344,7 +1344,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	 * temporal type and its base and time types.
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 	if (duration != TEMPORALINST)
 		temporal_extra_info(stats);
 
@@ -1352,7 +1352,7 @@ temporal_analyze(PG_FUNCTION_ARGS)
 	if (duration == TEMPORALINST)
 		stats->compute_stats = temporalinst_compute_stats;
 	else
-    	stats->compute_stats = temporals_compute_stats;
+		stats->compute_stats = temporals_compute_stats;
 
 	PG_RETURN_BOOL(true);
 }
@@ -1379,7 +1379,7 @@ tnumber_analyze(PG_FUNCTION_ARGS)
 	 * temporal type and its base and time types.
 	 */
 	duration = TYPMOD_GET_DURATION(stats->attrtypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 	if (duration != TEMPORALINST)
 		temporal_extra_info(stats);
 
