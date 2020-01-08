@@ -7058,16 +7058,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Is continuous in the value dimension?</para>
-						<para><varname>isContinuousInValue(tfloats): boolean</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Is continuous in the time dimension?</para>
-						<para><varname>isContinuousInTime(ttypes): boolean</varname></para>
-					</listitem>
-
-					<listitem>
 						<para>Time-weighted average</para>
 						<para><varname>twAvg(tnumber): float</varname></para>
 					</listitem>
