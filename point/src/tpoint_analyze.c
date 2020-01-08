@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
+#include <float.h>
 
 #include "period.h"
 #include "time_analyze.h"
