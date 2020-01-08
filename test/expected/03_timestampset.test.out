@@ -42,14 +42,14 @@ SELECT memSize(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
       88
 (1 row)
 
-SELECT timespan(timestampset '{2000-01-01}');
-                     timespan                     
+SELECT period(timestampset '{2000-01-01}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00]
 (1 row)
 
-SELECT timespan(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
-                     timespan                     
+SELECT period(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
+                      period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-03 00:00:00+00]
 (1 row)

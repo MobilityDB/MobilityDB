@@ -13,9 +13,9 @@
  * average from the doubleN values.
  * from the doubleN values.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -89,10 +89,19 @@ double2 *
 double2_construct(double a, double b)
 {
 	double2 *result;
-	result = (double2 *)palloc(sizeof(double2));
+	result = (double2 *) palloc(sizeof(double2));
 	result->a = a;
 	result->b = b;
 	return result;
+}
+
+/* Set a double2 value from argument values */
+
+void 
+double2_set(double2 *result, double a, double b)
+{
+	result->a = a;
+	result->b = b;
 }
 
 /* Addition */
@@ -190,6 +199,16 @@ double3_construct(double a, double b, double c)
 	result->b = b;
 	result->c = c;
 	return result;
+}
+
+/* Set a double3 value from argument values */
+
+void 
+double3_set(double3 *result, double a, double b, double c)
+{
+	result->a = a;
+	result->b = b;
+	result->c = c;
 }
 
 /* Addition */
@@ -294,6 +313,17 @@ double4_construct(double a, double b, double c, double d)
 	result->c = c;
 	result->d = d;
 	return result;
+}
+
+/* Set a double4 value from argument values */
+
+void 
+double4_set(double4 *result, double a, double b, double c, double d)
+{
+	result->a = a;
+	result->b = b;
+	result->c = c;
+	result->d = d;
 }
 
 /* Addition */

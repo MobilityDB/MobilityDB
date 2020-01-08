@@ -9,8 +9,9 @@ MobilityDB is an open source software program that adds support for temporal and
 
 Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html).
 
-MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/).
+MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member.
 
+<img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
 Features
 --------
@@ -66,10 +67,11 @@ Docker container
 A docker container with MobilityDB and all its dependencies is available. If you have docker installed in your system you can run:
 ```
 docker pull codewit/mobilitydb
-docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
+docker volume create mobilitydb_data
+docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
 ```
 
-The first command is to download the image, if it is the first time, else to make sure you have the most up-to-date version of that image. The second command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
+The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
 
 Issues
 ------

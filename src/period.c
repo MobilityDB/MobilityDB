@@ -3,9 +3,9 @@
  * period.c
  *	  Basic routines for timestamptz periods
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -229,21 +229,12 @@ period_copy(Period *p)
 /* Number of seconds in a period */
 
 float8
-period_duration_secs(TimestampTz v1, TimestampTz v2)
+period_to_secs(TimestampTz v1, TimestampTz v2)
 {
 	float8		result;
 
 	result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
 	return result;
-}
-
-/* Duration of the period as an interval */
-
-Interval *
-period_duration_internal(Period *p)
-{
-	return DatumGetIntervalP(call_function2(timestamp_mi, 
-		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
 }
 
 /*
@@ -359,13 +350,14 @@ PGDLLEXPORT Datum
 period_in(PG_FUNCTION_ARGS) 
 {
 	char *input = PG_GETARG_CSTRING(0);
-	Period *result = period_parse(&input);
+	Period *result = period_parse(&input, true);
 	PG_RETURN_POINTER(result);
 }
 
 /* Convert to string */
 
-static void unquote(char *str) 
+static void
+unquote(char *str) 
 {
 	char *last = str;
 	while (*str != '\0') 
@@ -379,7 +371,7 @@ static void unquote(char *str)
 	*last = '\0';
 }
 
-char*
+char *
 period_to_string(Period *p) 
 {
 	char *lower = call_output(TIMESTAMPTZOID, p->lower);
@@ -494,10 +486,10 @@ period_constructor4(PG_FUNCTION_ARGS)
 
 /* Cast a TimestampTz value as a TimestampSet value */
 
-PG_FUNCTION_INFO_V1(timestamp_as_period);
+PG_FUNCTION_INFO_V1(timestamp_to_period);
 
 PGDLLEXPORT Datum
-timestamp_as_period(PG_FUNCTION_ARGS)
+timestamp_to_period(PG_FUNCTION_ARGS)
 {
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
 	Period *result = period_make(t, t, true, true);
@@ -506,10 +498,10 @@ timestamp_as_period(PG_FUNCTION_ARGS)
 
 /* Conversion functions period <-> range */
 
-PG_FUNCTION_INFO_V1(period_as_tstzrange);
+PG_FUNCTION_INFO_V1(period_to_tstzrange);
 
 PGDLLEXPORT Datum
-period_as_tstzrange(PG_FUNCTION_ARGS)
+period_to_tstzrange(PG_FUNCTION_ARGS)
 {
 	Period	   *period = PG_GETARG_PERIOD(0);
 	RangeType  *range;
@@ -519,10 +511,10 @@ period_as_tstzrange(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(range);
 }
 
-PG_FUNCTION_INFO_V1(tstzrange_as_period);
+PG_FUNCTION_INFO_V1(tstzrange_to_period);
 
 PGDLLEXPORT Datum
-tstzrange_as_period(PG_FUNCTION_ARGS)
+tstzrange_to_period(PG_FUNCTION_ARGS)
 {
 	RangeType  *range = PG_GETARG_RANGE_P(0);
 	TypeCacheEntry *typcache;
@@ -628,13 +620,19 @@ period_shift(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Timespan */
 
-/* Duration of the period as an interval */
+Interval *
+period_timespan_internal(Period *p)
+{
+	return DatumGetIntervalP(call_function2(timestamp_mi, 
+		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
+}
 
-PG_FUNCTION_INFO_V1(period_duration);
+PG_FUNCTION_INFO_V1(period_timespan);
 
 PGDLLEXPORT Datum
-period_duration(PG_FUNCTION_ARGS)
+period_timespan(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
 	Datum result = call_function2(timestamp_mi, 

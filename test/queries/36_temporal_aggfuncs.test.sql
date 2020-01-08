@@ -88,13 +88,71 @@ SELECT tcount(temp) FROM (VALUES
 
 --------------------------------------------------
 
-SELECT tavg(temp) FROM (VALUES
+SELECT tcount(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint), 
+('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+
+SELECT tmin(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint), 
+('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+
+SELECT tmax(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint), 
+('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+
+SELECT tsum(temp) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint), 
 ('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
 
 SELECT tavg(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tint), 
+('[3@2000-01-02, 4@2000-01-06]'::tint)) t(temp);
+
+--------------------------------------------------
+
+SELECT tcount(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('Interp=Stepwise;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tmin(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('Interp=Stepwise;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tmax(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('Interp=Stepwise;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tsum(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('Interp=Stepwise;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tavg(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('Interp=Stepwise;[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+--------------------------------------------------
+
+SELECT tcount(temp) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tmin(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tmax(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tsum(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+SELECT tavg(temp) FROM (VALUES
+('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
+
+--------------------------------------------------
 
 /* Errors */
 SELECT tsum(temp) FROM ( VALUES
@@ -103,5 +161,8 @@ SELECT tsum(temp) FROM ( VALUES
 SELECT tsum(temp) FROM ( VALUES
 (tfloat '{1@2000-01-01, 2@2000-01-02}'), 
 (tfloat '[3@2000-01-03, 4@2000-01-04]')) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('Interp=Stepwise;[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
+('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
 --------------------------------------------------

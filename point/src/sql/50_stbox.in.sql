@@ -3,9 +3,9 @@
  * stbox.sql
  *	  Basic functions for STBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -92,6 +92,66 @@ CREATE FUNCTION geodstbox(float8, float8, float8, timestamptz, float8, float8, f
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'geodstbox_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+CREATE FUNCTION Xmin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_xmin'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Ymin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_ymin'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Zmin(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_zmin'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Tmin(stbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'stbox_tmin'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE FUNCTION Xmax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_xmax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Ymax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_ymax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Zmax(stbox)
+	RETURNS float
+	AS 'MODULE_PATHNAME', 'stbox_zmax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION Tmax(stbox)
+	RETURNS timestamptz
+	AS 'MODULE_PATHNAME', 'stbox_tmax'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+CREATE FUNCTION period(stbox)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'stbox_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION box2d(stbox)
+	RETURNS box2d
+	AS 'MODULE_PATHNAME', 'stbox_to_box2d'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION box3d(stbox)
+	RETURNS box3d
+	AS 'MODULE_PATHNAME', 'stbox_to_box3d'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
+CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
+CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
+
 
 /*****************************************************************************
  * Comparison

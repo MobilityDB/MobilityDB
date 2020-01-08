@@ -3,9 +3,9 @@
  * periodset.sql
  *	  Functions for set of periods.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -68,15 +68,15 @@ CREATE FUNCTION periodset(period[])
 
 CREATE FUNCTION periodset(timestamptz)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'timestamp_as_periodset'
+	AS 'MODULE_PATHNAME', 'timestamp_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestampset)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'timestampset_as_periodset'
+	AS 'MODULE_PATHNAME', 'timestampset_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(period)
 	RETURNS periodset
-	AS 'MODULE_PATHNAME', 'period_as_periodset'
+	AS 'MODULE_PATHNAME', 'period_to_periodset'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(periodset)
 	RETURNS period
@@ -98,13 +98,8 @@ CREATE FUNCTION memSize(periodset)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(periodset)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'periodset_timespan'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION duration(periodset)
 	RETURNS interval
-	AS 'MODULE_PATHNAME', 'periodset_duration'
+	AS 'MODULE_PATHNAME', 'periodset_timespan'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numPeriods(periodset)

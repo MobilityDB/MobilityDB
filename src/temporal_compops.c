@@ -3,9 +3,9 @@
  * temporal_compops.c
  *	  Temporal comparison operators (=, <>, <, >, <=, >=).
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -19,7 +19,7 @@
 #include "lifting.h"
 
 /*****************************************************************************
- * Generic dispatch functions
+ * Generic dispatch function
  *****************************************************************************/
 
 static Temporal *
@@ -27,7 +27,7 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
 	Temporal *result = NULL;
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
 			value, func, datumtypid, BOOLOID, invert);
@@ -35,16 +35,16 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 		result = (Temporal *)tfunc4_temporali_base((TemporalI *)temp,
 			value, func, datumtypid, BOOLOID, invert);
 	else if (temp->duration == TEMPORALSEQ) 
-		result = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ?
+		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			/* Result is a TemporalS */
-			(Temporal *)tfunc4_temporalseq_base_crossdisc((TemporalSeq *)temp,
+			(Temporal *)tfunc4_temporalseq_base_cross((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			/* Result is a TemporalSeq */
 			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 				value, func, datumtypid, BOOLOID, invert);
 	else if (temp->duration == TEMPORALS) 
-		result = MOBDB_FLAGS_GET_CONTINUOUS(temp->flags) ?
-			(Temporal *)tfunc4_temporals_base_crossdisc((TemporalS *)temp,
+		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
+			(Temporal *)tfunc4_temporals_base_cross((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert) :
 			(Temporal *)tfunc4_temporals_base((TemporalS *)temp,
 				value, func, datumtypid, BOOLOID, invert);
@@ -90,8 +90,13 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_eq2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_eq2, 
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -138,8 +143,13 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_ne2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ne2,
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -186,8 +196,13 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_lt2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_lt2,
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_lt2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -234,8 +249,13 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_le2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_le2,
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_le2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -282,8 +302,13 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_gt2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_gt2,
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_gt2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -330,8 +355,13 @@ tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	Temporal *result = sync_tfunc4_temporal_temporal_crossdisc(temp1, temp2, 
-		&datum2_ge2, BOOLOID);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ge2,
+			BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ge2, BOOLOID, 
+			linear, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

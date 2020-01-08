@@ -14,9 +14,9 @@
  * come from different tuples. In theory, the standard scalar selectivity
  * functions could be used with the combined histogram.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -282,7 +282,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		/* Remember bounds and length for further usage in histograms */
 		lowers[non_null_cnt] = lower;
 		uppers[non_null_cnt] = upper;
-		lengths[non_null_cnt] = period_duration_secs(upper.val, lower.val);
+		lengths[non_null_cnt] = period_to_secs(upper.val, lower.val);
 		non_null_cnt++;
 	}
 

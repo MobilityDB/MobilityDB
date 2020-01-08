@@ -6,9 +6,9 @@
  * This projection does not correspond to any standard projection in
  * http://www.epsg.org/
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mohamed Bakli,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -255,7 +255,8 @@ tgeompointseq_transform_gk_internal(TemporalSeq *seq)
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -278,13 +279,14 @@ tgeompoints_transform_gk_internal(TemporalS *ts)
 			instants[j] = tgeompointinst_transform_gk(inst);
 		}
 		sequences[i] = temporalseq_from_temporalinstarr(instants,
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences,
-		ts->count, false);
+		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
 
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -310,7 +312,7 @@ PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	Temporal *result = NULL;
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tgeompointinst_transform_gk((TemporalInst *)temp);

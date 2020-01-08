@@ -3,9 +3,9 @@
  * tpoint_spatialfuncs.h
  *	  Spatial functions for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -20,6 +20,23 @@
 
 /*****************************************************************************/
 
+/* Parameter tests */
+
+extern void ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_srid_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
+extern void ensure_same_dimensionality_tpoint(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_dimensionality_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
+extern void ensure_has_Z_tpoint(Temporal *temp);
+extern void ensure_has_not_Z_tpoint(Temporal *temp);
+extern void ensure_point_type(GSERIALIZED *gs);
+extern void ensure_non_empty(GSERIALIZED *gs);
+extern void ensure_has_Z(GSERIALIZED *gs);
+extern void ensure_has_not_Z(GSERIALIZED *gs);
+extern void ensure_has_M(GSERIALIZED *gs);
+extern void ensure_has_not_M(GSERIALIZED *gs);
+
+/* Utility functions */
+
 extern POINT2D gs_get_point2d(GSERIALIZED *gs);
 extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
 extern POINT3DM gs_get_point3dm(GSERIALIZED *gs);
@@ -27,14 +44,6 @@ extern POINT4D gs_get_point4d(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern void tpoint_same_srid(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_same_srid(Temporal *temp, GSERIALIZED *gs);
-extern void tpoint_same_dimensionality(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_same_dimensionality(Temporal *temp, GSERIALIZED *gs);
-extern void tpoint_check_Z_dimension(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_check_Z_dimension(Temporal *temp, GSERIALIZED *gs);
-extern void gserialized_check_point(GSERIALIZED *gs);
-extern void gserialized_check_M_dimension(GSERIALIZED *gs);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 /* Functions for spatial reference systems */
@@ -49,23 +58,25 @@ extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 
 /* Cast functions */
 
-extern Datum tgeompoint_as_tgeogpoint(PG_FUNCTION_ARGS);
-extern Datum tgeogpoint_as_tgeompoint(PG_FUNCTION_ARGS);
+extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
+extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
-extern TemporalInst *tgeogpointinst_as_tgeompointinst(TemporalInst *inst);
-extern TemporalI *tgeogpointi_as_tgeompointi(TemporalI *ti);
-extern TemporalSeq *tgeogpointseq_as_tgeompointseq(TemporalSeq *seq);
-extern TemporalS *tgeogpoints_as_tgeompoints(TemporalS *ts);
+extern TemporalInst *tgeogpointinst_to_tgeompointinst(TemporalInst *inst);
+extern TemporalI *tgeogpointi_to_tgeompointi(TemporalI *ti);
+extern TemporalSeq *tgeogpointseq_to_tgeompointseq(TemporalSeq *seq);
+extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
+extern Temporal *tgeogpoint_to_tgeompoint_internal(Temporal *temp);
 
 /* Trajectory functions */
 
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
-extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count);
+extern Datum tpoint_trajectory_internal(Temporal *temp);
+extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
 extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
-extern Datum tgeogpointseq_trajectory1(TemporalInst *inst1, TemporalInst *inst2);
+extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(TemporalSeq *seq);
 extern Datum tpointseq_trajectory_copy(TemporalSeq *seq);

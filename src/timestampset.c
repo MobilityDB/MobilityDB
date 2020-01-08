@@ -3,9 +3,9 @@
  * timestampset.c
  *	  Basic functions for set of timestamps.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -299,13 +299,33 @@ timestampset_from_timestamparr(PG_FUNCTION_ARGS)
 
 /* Cast a TimestampTz value as a TimestampSet value */
 
-PG_FUNCTION_INFO_V1(timestamp_as_timestampset);
+PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
 
 PGDLLEXPORT Datum
-timestamp_as_timestampset(PG_FUNCTION_ARGS)
+timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
 	TimestampSet *result = timestampset_from_timestamparr_internal(&t, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/* Bounding period on which the temporal value is defined */
+
+void
+timestampset_to_period_internal(Period *p, TimestampSet *ts)
+{
+	TimestampTz start = timestampset_time_n(ts, 0);
+	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+	period_set(p, start, end, true, true);
+}
+
+PG_FUNCTION_INFO_V1(timestampset_to_period);
+
+PGDLLEXPORT Datum
+timestampset_to_period(PG_FUNCTION_ARGS)
+{
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+	Period *result = timestampset_bbox(ts);
 	PG_RETURN_POINTER(result);
 }
 
@@ -322,28 +342,6 @@ timestampset_mem_size(PG_FUNCTION_ARGS)
 	Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
 	PG_FREE_IF_COPY(ts, 0);
 	PG_RETURN_DATUM(result);
-}
-
-/* Bounding period on which the temporal value is defined */
-
-void
-timestampset_timespan_internal(Period *p, TimestampSet *ts)
-{
-	TimestampTz start = timestampset_time_n(ts, 0);
-	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-	period_set(p, start, end, true, true);
-}
-
-PG_FUNCTION_INFO_V1(timestampset_timespan);
-
-PGDLLEXPORT Datum
-timestampset_timespan(PG_FUNCTION_ARGS)
-{
-	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-	Period *result = (Period *)palloc(sizeof(Period));
-	timestampset_timespan_internal(result, ts);
-	PG_FREE_IF_COPY(ts, 0);
-	PG_RETURN_POINTER(result);
 }
 
 /* Number of timestamps */

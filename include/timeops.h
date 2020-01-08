@@ -3,9 +3,9 @@
  * timeops.h
  *	  Operators for time types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -20,9 +20,6 @@
 /*****************************************************************************/
 
 /* Miscellaneous */
-
-extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
-extern Datum periodset_to_period(PG_FUNCTION_ARGS);
 
 extern void time_type_oid(Oid timetypid);
 

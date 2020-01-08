@@ -3,9 +3,9 @@
  * timestampset.h
  *	  Basic functions for set of timestamps.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -42,12 +42,12 @@ extern Datum timestampset_from_timestamparr(PG_FUNCTION_ARGS);
 
 /* Cast function */
 
-extern Datum timestamp_as_timestampset(PG_FUNCTION_ARGS);
+extern Datum timestamp_to_timestampset(PG_FUNCTION_ARGS);
+extern Datum timestampset_to_period(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
 extern Datum timestampset_mem_size(PG_FUNCTION_ARGS);
-extern Datum timestampset_timespan(PG_FUNCTION_ARGS);
 extern Datum timestampset_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum timestampset_end_timestamp(PG_FUNCTION_ARGS);
@@ -55,7 +55,7 @@ extern Datum timestampset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum timestampset_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_shift(PG_FUNCTION_ARGS);
 
-extern void timestampset_timespan_internal(Period *p, TimestampSet *ts);
+extern void timestampset_to_period_internal(Period *p, TimestampSet *ts);
 extern TimestampTz *timestampset_timestamps_internal(TimestampSet *ts);
 extern TimestampSet *timestampset_shift_internal(TimestampSet *ts, Interval *interval);
 
