@@ -1466,7 +1466,7 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 	Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 
 	tgeompoint 'Point(1 1 1)@2000-01-06'));
 -- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
-    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+	[POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
 				</programlisting>
 				</listitem>
 
@@ -3245,7 +3245,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 				<listitem>
 					<para>Does the bounding boxes overlap?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} &amp;&amp;</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;&amp; 3;
 -- true
@@ -3259,7 +3259,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&amp; tint '[2@2012-01-03, 2@201
 				<listitem>
 					<para>Does the first bounding box contains the second one?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' @&gt; timestamptz '2012-01-03';
 -- true
@@ -3273,7 +3273,7 @@ SELECT ttext '[A@2012-01-01, B@2012-01-06]' @&gt; ttext '[C@2012-01-03, D@2012-0
 				<listitem>
 					<para>Is the first bounding box contained in the second one?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} &lt;@</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@
 	box(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
@@ -3288,7 +3288,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-0
 				<listitem>
 					<para>Are the bounding boxes equal?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} ~=</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  
 	tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
@@ -3603,7 +3603,7 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 						</programlisting>
 					</listitem>
 				</itemizedlist>
-			</sect2>       
+			</sect2>
 
 			<sect2>
 				<title>Temporal Spatial Relationships</title>
@@ -4127,10 +4127,10 @@ docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/post
 				In the above commands
 				<itemizedlist>
 					<listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this checks whether a more recent image has been published in the docker repository, and downloads it. It is better to call this command every time, to ensures that you have the latest most up-to-date version of this image.</para></listitem>
-                                        
+
 					<listitem><para><varname>docker volume create mobilitydb_data</varname> creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. You need to run this command only once, during the first use of the image</para>
 					</listitem>
-                                        
+
 					<listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
 					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
@@ -4140,7 +4140,7 @@ docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/post
 
 					<listitem><para><varname>-v mobilitydb_data:/var/lib/postgresql</varname> tells the container filesystem to mount the <varname>mobilitydb_data</varname> volume that we have just created to the path /var/lib/postgresql. This means that any database objects that the container saves or creates (by default in <varname>/var/lib/postgresql</varname>) will instead be persisted in the <varname>mobilitydb_data</varname> directory, which is stored in the host. This options ensures that your data will not be lost when the container is removed. </para>
 					</listitem>
-                                        
+
 					<listitem><para><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.</para>
 					</listitem>
 				</itemizedlist>
@@ -4161,12 +4161,7 @@ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			</para>
 
 			<para>
-			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to know the IP address used by docker container with the following command.
-				<programlisting>
-docker-machine ip
-192.168.99.101
-				</programlisting>
-				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
+			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. 
 			</para>
 
 			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
@@ -4174,7 +4169,16 @@ docker-machine ip
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
-                         
+
+			<para>
+			The second option is to know the IP address used by docker container with the following command.
+				<programlisting>
+docker-machine ip
+192.168.99.101
+				</programlisting>
+				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
+			</para>
+
 			<para>
 			Now you can use pgAdmin to query the mobilitydb database, as will be further explained in the following sections. Here are few more docker commands that you will eventually need:
 			<programlisting>
@@ -4414,8 +4418,8 @@ DECLARE
 BEGIN
 	IF NOT EXISTS
 		(SELECT 1
-		 FROM   information_schema.tables 
-		 WHERE  table_name = lower(TableName)) 
+		 FROM information_schema.tables 
+		 WHERE table_name = lower(TableName)) 
 	THEN
 		RAISE EXCEPTION 'Table % does not exist', TableName;
 	END IF;
@@ -4428,7 +4432,7 @@ BEGIN
 		PartitionName = TableName || '_' || to_char(d, 'YYYY_MM_DD');
 		IF NOT EXISTS
 			(SELECT 1
-			 FROM   information_schema.tables 
+			 FROM information_schema.tables 
 			 WHERE  table_name = lower(PartitionName))
 		THEN
 			EXECUTE format('CREATE TABLE %s PARTITION OF %s FOR VALUES IN (''%s'');', 
@@ -4811,7 +4815,7 @@ ORDER BY T1.CarId, T2.CarId, Position;
 						</programlisting>
 						<para>The query performs for each pair of trips <varname>T1</varname> and <varname>T2</varname> of distinct cars a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table, where the bounding box of <varname>T2</varname> is expanded by 10 m. Then, the <varname>period</varname> expression computes the periods during which the cars were within 10 m. from each other and the <varname>atPeriodSet</varname> function projects the trips to those periods. Notice that the expression <varname>tdwithin(T1.Trip, T2.Trip, 10.0)</varname> is conceptually equivalent to <varname>dwithin(T1.Trip, T2.Trip) #&lt;= 10.0</varname>. However, in this case the spatio-temporal index cannot be used for filtering values.</para>
 					</listitem>
-				</orderedlist>            
+				</orderedlist>
 			</sect2>
 
 			<sect2>
@@ -7596,7 +7600,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 							<para><varname>relate({geo, tgeompoint}, {geo, tgeompoint}, text): boolean</varname></para>
 						</listitem>
 					</itemizedlist>
-				</sect3>       
+				</sect3>
 
 				<sect3>
 					<title>Temporal Spatial Relationships</title>
