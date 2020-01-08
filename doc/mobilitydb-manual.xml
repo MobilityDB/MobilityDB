@@ -12,13 +12,6 @@
 
 <!ENTITY Z_support
 "<inlinemediaobject>
-<<<<<<< HEAD
-	<imageobject><imagedata fileref='images/cube.png' /></imageobject>
- </inlinemediaobject>
-">
-
-]>
-=======
 	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
 	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
 	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
@@ -33,8 +26,7 @@
  </inlinemediaobject>
 ">
 
-		]>
->>>>>>> master
+]>
 <book lang="en">
 	<bookinfo>
 		<title>MobilityDB Manual</title>
@@ -1229,39 +1221,31 @@ SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
 	tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 -- "[0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)"
-<<<<<<< HEAD
-				</programlisting>
-			</para>
-				
-			<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
-				<programlisting>
-=======
 			</programlisting>
 		</para>
 			
-		<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
+		<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying the ever/always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
 			<programlisting>
->>>>>>> master
--- Is the left operand ever less than the right one ?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
--- true
 -- Does the operands ever intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 	geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
--- true
--- Is the left operand always less than the right one ?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 -- Does the operands always intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 	geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
-				</programlisting>
-			For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.</para>
+-- Is the left operand ever less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
+-- true
+-- Is the left operand always less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+	tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
+-- true
+			</programlisting>
+		For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.</para>
 
-			<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
+		<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
 
 		<sect1 id ="input_output_temporal_tyes">
 			<title>Input/Output of Temporal Types</title>
@@ -2653,54 +2637,17 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 
 		<sect1>
 			<title>Ever and Always Comparison Operators</title>
-<<<<<<< HEAD
-			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. Notice that ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
-			<itemizedlist>
-				<listitem>
-					<para><varname>?=</varname>: Is ever equal to the value?</para>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<para>Signature: <varname>ttype ?= base: bool</varname></para>
-=======
 			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types, is to determine whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 			<itemizedlist>
 				<listitem>
 					<para>Is ever equal to the value?</para>
 					<para><varname>ttype ?= base: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 2;
 -- true
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 3;
 -- true
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ?= 
-	geometry 'Point(1 1)';
--- true
-					</programlisting>
-<<<<<<< HEAD
-				</listitem>
-
-				<listitem>
-					<para><varname>%=</varname>: Is always equal to the value?</para>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-					<para>Signature: <varname>ttype %= base: bool</varname></para>
-=======
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				</listitem>
-
-				<listitem>
-					<para>Is always equal to the value?</para>
-					<para><varname>ttype %= base: bool</varname></para>
->>>>>>> master
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
--- true
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
-<<<<<<< HEAD
--- true
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
-=======
--- true
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
@@ -2716,59 +2663,14 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?&lt;&gt; 2;
 SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' ?&lt;&gt; 2;
 -- true
 SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' ?&lt;&gt; 
->>>>>>> master
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>?&lt;&gt;</varname>: Is ever different from the value?</para>
-					<para>Signature: <varname>ttype ?&lt;&gt; base: bool</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?&lt;&gt; 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' ?&lt;&gt; 2;
--- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' ?&lt;&gt; 
-=======
-					<para>Is always different to the value?</para>
-					<para><varname>ttype @&lt;&gt; base: bool</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @&lt;&gt; 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @&lt;&gt; 2;
--- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @&lt;&gt;
->>>>>>> master
-	geometry 'Point(1 1)';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
-<<<<<<< HEAD
-					<para><varname>%=</varname>: Is always different to the value?</para>
-					<para>Signature: <varname>ttype @&lt;&gt; base: bool</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @&lt;&gt; 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @&lt;&gt; 2;
--- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @&lt;&gt;
-	geometry 'Point(1 1)';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para><varname>?&lt;</varname>: Ever less than</para>
-					<para>Signature: <varname>tnumber ?&lt; number: bool</varname></para>
-=======
 					<para>Is ever less than the value?</para>
 					<para><varname>tnumber ?&lt; number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ?&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
@@ -2778,13 +2680,8 @@ SELECT tint '[2@2012-01-01, 2@2012-01-05)' ?&lt; tfloat '[1@2012-01-03, 3@2012-0
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>?&gt;</varname>: Ever greater than</para>
-					<para>Signature: <varname>tnumber ?&gt; number: bool</varname></para>
-=======
 					<para>Is ever greater than the value?</para>
 					<para><varname>tnumber ?&gt; number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tint '[1@2012-01-03, 1@2012-01-05)' ?&gt; 1;
 -- "[f@2012-01-03, f@2012-01-05)"
@@ -2792,13 +2689,8 @@ SELECT tint '[1@2012-01-03, 1@2012-01-05)' ?&gt; 1;
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>?&lt;=</varname>: Ever less than or equal to</para>
-					<para>Signature: <varname>tnumber ?&lt;= number: bool</varname></para>
-=======
 					<para>Is ever less than or equal to the value?</para>
 					<para><varname>tnumber ?&lt;= number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' ?&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
@@ -2806,13 +2698,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' ?&lt;= tfloat '{2@2012-01-03, 3@2012-
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>?&gt;=</varname>: Ever greater than or equal to</para>
-					<para>Signature: <varname>tnumber ?&gt;= number: bool</varname></para>
-=======
 					<para>Is ever greater than or equal to the value?</para>
 					<para><varname>tnumber ?&gt;= number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';
@@ -2821,13 +2708,37 @@ SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&lt;</varname>: Always less than</para>
-					<para>Signature: <varname>tnumber %&lt; number: bool</varname></para>
-=======
+					<para>Is always equal to the value?</para>
+					<para><varname>ttype %= base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
+-- true
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
+					<para>Is always different to the value?</para>
+					<para><varname>ttype @&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' %&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' %&lt;&gt;
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
 					<para>Is always less than the value?</para>
 					<para><varname>tnumber %&lt; number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' %&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
@@ -2837,13 +2748,8 @@ SELECT tint '[2@2012-01-01, 2@2012-01-05)' %&lt; tfloat '[1@2012-01-03, 3@2012-0
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&gt;</varname>: Always greater than</para>
-					<para>Signature: <varname>tnumber %&gt; number: bool</varname></para>
-=======
 					<para>Is always greater than the value?</para>
 					<para><varname>tnumber %&gt; number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tint '[1@2012-01-03, 1@2012-01-05)' %&gt; 1;
 -- "[f@2012-01-03, f@2012-01-05)"
@@ -2851,13 +2757,8 @@ SELECT tint '[1@2012-01-03, 1@2012-01-05)' %&gt; 1;
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&lt;=</varname>: Always less than or equal to</para>
-					<para>Signature: <varname>tnumber %&lt;= number: bool</varname></para>
-=======
 					<para>Is always less than or equal to the value?</para>
 					<para><varname>tnumber %&lt;= number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' %&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
@@ -2865,13 +2766,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' %&lt;= tfloat '{2@2012-01-03, 3@2012-
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&gt;=</varname>: Always greater than or equal to</para>
-					<para>Signature: <varname>tnumber %&gt;= number: bool</varname></para>
-=======
 					<para>Is always greater than or equal to the value?</para>
 					<para><varname>tnumber %&gt;= number: bool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT 'AAA'::text %&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';
@@ -2917,13 +2813,8 @@ SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; tint '[2@2012-01-02, 2@20
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>#&lt;</varname>: Temporal less than</para>
-					<para>Signature: <varname>{base, torder} #&lt; {base, torder}: tbool</varname></para>
-=======
 					<para>Temporal less than</para>
 					<para><varname>{base, torder} #&lt; {base, torder}: tbool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
@@ -2933,13 +2824,8 @@ SELECT tint '[2@2012-01-01, 2@2012-01-05)' #&lt; tfloat '[1@2012-01-03, 3@2012-0
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>#&gt;</varname>: Temporal greater than</para>
-					<para>Signature: <varname>{base, torder} #&gt; {base, torder}: tbool</varname></para>
-=======
 					<para>Temporal greater than</para>
 					<para><varname>{base, torder} #&gt; {base, torder}: tbool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
@@ -2947,13 +2833,8 @@ SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>#&lt;=</varname>: Temporal less than or equal to</para>
-					<para>Signature: <varname>{base, torder} #&lt;= {base, torder}: tbool</varname></para>
-=======
 					<para>Temporal less than or equal to</para>
 					<para><varname>{base, torder} #&lt;= {base, torder}: tbool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
@@ -2961,13 +2842,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>#&gt;=</varname>: Temporal greater than or equal to</para>
-					<para>Signature: <varname>{base, torder} #&gt;= {base, torder}: tbool</varname></para>
-=======
 					<para>Temporal greater than or equal to</para>
 					<para><varname>{base, torder} #&gt;= {base, torder}: tbool</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';
@@ -3381,13 +3257,8 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&amp; tint '[2@2012-01-03, 2@201
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&gt;</varname>: Does the first bounding box contains the second one?</para>
-					<para>Signature: <varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
-=======
 					<para>Does the first bounding box contains the second one?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
->>>>>>> master
 					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' @&gt; timestamptz '2012-01-03';
@@ -3440,13 +3311,8 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 				</listitem>
 
 				<listitem>
-<<<<<<< HEAD
-					<para><varname>%&gt;</varname>: Does the first bounding box contains the second one?</para>
-					<para>Signature: <varname>{geo, time, stbox, tpoint} @&gt; {geo, time, stbox, tpoint}: boolean</varname></para>
-=======
 					<para>Does the first bounding box contains the second one?</para>
 					<para><varname>{geo, time, stbox, tpoint} @&gt; {geo, time, stbox, tpoint}: boolean</varname></para>
->>>>>>> master
 					<programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 	tgeompoint '[Point(1 1)@2012-01-03, Point(2 0)@2012-01-05)';
@@ -4254,13 +4120,9 @@ WHERE intersects(T.Trip, R.Geom);
 			<para>For this tutorial we will use a Docker image containing MobilityDB and all its dependencies (including PostgreSQL and PostGIS). The container has a default database called <varname>mobilitydb</varname> with the MobilityDB extension installed where <varname>user = pw = docker</varname>. This presupposes that you have installed Docker into your computer. In that case, you can run the following command.
 				<programlisting>
 docker pull codewit/mobilitydb
-<<<<<<< HEAD
-docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
-=======
 docker volume create mobilitydb_data
 docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql 
 	codewit/mobilitydb
->>>>>>> master
 				</programlisting>
 				In the above commands
 				<itemizedlist>
@@ -4304,16 +4166,7 @@ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 docker-machine ip
 192.168.99.101
 				</programlisting>
-<<<<<<< HEAD
-<<<<<<< HEAD
-				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" /> The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
-=======
 				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
->>>>>>> fee3523ad7bb7882379415d9e4af058cb76a67eb
-=======
-
-				Notice that the address obtained in your computer may be different from the one above. Use this as the host address, and 5432 as the port in the pgAdmin connection configurations. the remaining configurations remain the same as in the first option.   
->>>>>>> master
 			</para>
 
 			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
@@ -4321,13 +4174,7 @@ docker-machine ip
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
-<<<<<<< HEAD
-<<<<<<< HEAD
- 
-=======
                          
->>>>>>> fee3523ad7bb7882379415d9e4af058cb76a67eb
-=======
 			<para>
 			Now you can use pgAdmin to query the mobilitydb database, as will be further explained in the following sections. Here are few more docker commands that you will eventually need:
 			<programlisting>
@@ -4349,7 +4196,6 @@ docker rm "mobilitydb"
 					</listitem>
 				</itemizedlist>
 			</para>
->>>>>>> master
 		</sect1>
 
 		<sect1>
@@ -7358,13 +7204,33 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Is always equal to the value?</para>
-						<para><varname>ttype %= base: bool</varname></para>
+						<para>Is ever different from the value?</para>
+						<para><varname>ttype ?&lt;&gt; base: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is ever different from the value?</para>
-						<para><varname>ttype ?&lt;&gt; base: bool</varname></para>
+						<para>Is ever less than the value?</para>
+						<para><varname>tnumber ?&lt; number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever greater than the value?</para>
+						<para><varname>tnumber ?&gt; number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever less than or equal to the value?</para>
+						<para><varname>tnumber ?&lt;= number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever greater than or equal to the value?</para>
+						<para><varname>tnumber ?&gt;= number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is always equal to the value?</para>
+						<para><varname>ttype %= base: bool</varname></para>
 					</listitem>
 
 					<listitem>
@@ -7373,42 +7239,22 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Ever less than</para>
-						<para><varname>tnumber ?&lt; number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever greater than</para>
-						<para><varname>tnumber ?&gt; number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever less than or equal to</para>
-						<para><varname>tnumber ?&lt;= number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever greater than or equal to</para>
-						<para><varname>tnumber ?&gt;= number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Always less than</para>
+						<para>Is always less than the value?</para>
 						<para><varname>tnumber %&lt; number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always greater than</para>
+						<para>Is always greater than the value?</para>
 						<para><varname>tnumber %&gt; number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always less than or equal to</para>
+						<para>Is always less than or equal to the value?</para>
 						<para><varname>tnumber %&lt;= number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always greater than or equal to</para>
+						<para>Is always greater than or equal to the value?</para>
 						<para><varname>tnumber %&gt;= number: bool</varname></para>
 					</listitem>
 				</itemizedlist>
