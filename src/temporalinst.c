@@ -375,6 +375,22 @@ temporalinst_instants_array(TemporalInst *inst)
 	return temporalarr_to_array((Temporal **)(&inst), 1);
 }
 
+/* Shift the time span of a temporal value by an interval */
+
+TemporalInst *
+temporalinst_shift(TemporalInst *inst, Interval *interval)
+{
+	TemporalInst *result = temporalinst_copy(inst);
+	result->t = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+	return result;
+}
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions 
+ *****************************************************************************/
+
 /* Is the temporal value ever equal to the value? */
 
 bool
@@ -391,16 +407,86 @@ temporalinst_always_eq(TemporalInst *inst, Datum value)
 	return datum_eq(temporalinst_value(inst), value, inst->valuetypid);
 }
 
-/* Shift the time span of a temporal value by an interval */
+/* Is the temporal value ever not equal to the value? */
 
-TemporalInst *
-temporalinst_shift(TemporalInst *inst, Interval *interval)
+bool
+temporalinst_ever_ne(TemporalInst *inst, Datum value)
 {
-	TemporalInst *result = temporalinst_copy(inst);
-	result->t = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-	return result;
+	return datum_ne(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+bool
+temporalinst_always_ne(TemporalInst *inst, Datum value)
+{
+	return datum_ne(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/*****************************************************************************/
+
+/* Is the temporal value ever less than the value? */
+
+bool
+temporalinst_ever_lt(TemporalInst *inst, Datum value)
+{
+	return datum_lt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporalinst_ever_le(TemporalInst *inst, Datum value)
+{
+	return datum_le(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value ever greater than the value? */
+
+bool
+temporalinst_ever_gt(TemporalInst *inst, Datum value)
+{
+	return datum_gt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value ever greater than or equal to the value? */
+
+bool
+temporalinst_ever_ge(TemporalInst *inst, Datum value)
+{
+	return datum_ge(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporalinst_always_lt(TemporalInst *inst, Datum value)
+{
+	return datum_lt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporalinst_always_le(TemporalInst *inst, Datum value)
+{
+	return datum_le(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always greater than the value? */
+
+bool
+temporalinst_always_gt(TemporalInst *inst, Datum value)
+{
+	return datum_gt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always greater than or equal to the value? */
+
+bool
+temporalinst_always_ge(TemporalInst *inst, Datum value)
+{
+	return datum_ge(temporalinst_value(inst), value, inst->valuetypid);
 }
 
 /*****************************************************************************
