@@ -7,7 +7,7 @@ MobilityDB
 
 MobilityDB is an open source software program that adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/). MobilityDB follows the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) specification from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
 
-Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html). An  [adapter](https://github.com/ULB-CoDE-WIT/MobilityDB-Python) for the Python programming language is also available.
+Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html). An [adapter](https://github.com/ULB-CoDE-WIT/python-mobilitydb) for the Python programming language is also available.
 
 MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member.
 
