@@ -80,8 +80,8 @@ Please report any issues at the address
 
 https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 
-Manuals
--------
+Manual
+------
 
 HTML: https://docs.mobilitydb.com/nightly/
 
@@ -89,6 +89,10 @@ PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 EPUB: https://docs.mobilitydb.com/nightly/mobilitydb.epub
 
+Workshop
+--------
+
+HTML: https://docs.mobilitydb.com/nightly/workshop/
 
 Publications
 ------------
