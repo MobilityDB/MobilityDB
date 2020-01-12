@@ -262,7 +262,7 @@ ALTER TABLE AISInput ADD COLUMN Geom geometry(point, 4326);
 UPDATE AISInput SET Geom = st_setsrid( st_makepoint( Longitude, Latitude ), 4326);
 						</programlisting>
 					</para>
-					<figure id="imgpoints" float="1"><title>Visualizing the input points</title>
+					<figure id="imgpoints" float="start"><title>Visualizing the input points</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/points.png'/></imageobject>
 						</mediaobject>
@@ -318,7 +318,7 @@ UPDATE Ships SET Traj= trajectory(Trip);
 -- Query returned successfully: 2995 rows affected, 3.8 secs execution time.
 						</programlisting>   
 					</para>
-					<figure id="imgtrajs" float="1"><title>Visualizing the ship trajectories</title>
+					<figure id="imgtrajs" float="start"><title>Visualizing the ship trajectories</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajs.png'/></imageobject>
 						</mediaobject>
@@ -379,12 +379,12 @@ bucketNo,   bucketRange,        freq	   bar
 					<para>
 						Surprisingly there are trips with zero length. These are clearly noise that can be deleted. Also there are very many short trips, that are less than 50 km long. On the other hand, there are few long trips that are more than 1500 km long. Let's visualize these last two cases in <xref linkend="imgtrajsshort"/>. They look like noise. Normally one should validate more, but to simplify this module, we consider them as noise, and delete them. Now the <varname>Ships</varname> table looks like <xref linkend="imgtrajsfiltered"/>.
 					</para> 
-					<figure id="imgtrajsshort" float="1"><title>Visualizing trips with abnormal lengths</title>
+					<figure id="imgtrajsshort" float="start"><title>Visualizing trips with abnormal lengths</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajsShort.png'/></imageobject>
 						</mediaobject>
 					</figure>
-					<figure id="imgtrajsfiltered" float="1"><title>Ship trajectories after filtering</title>
+					<figure id="imgtrajsfiltered" float="start"><title>Ship trajectories after filtering</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajsFiltered.png'/></imageobject>
 						</mediaobject>
@@ -435,7 +435,7 @@ NULL
 					<para>
 						The query shows that 26 out of the 990 ship trajectories in the table have a difference of more than 10 km/h or NULL. These trajectories are shown in <xref linkend="imgtrajsWrongSpeed"/>. Again they look like noise, so we remove them.
 					</para> 
-					<figure id="imgtrajsWrongSpeed" float="1"><title>Ship trajectories with big difference between <varname>speed(Trip)</varname> and <varname>SOG</varname></title>
+					<figure id="imgtrajsWrongSpeed" float="start"><title>Ship trajectories with big difference between <varname>speed(Trip)</varname> and <varname>SOG</varname></title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajsWrongSpeed.png'/></imageobject>
 						</mediaobject>
@@ -473,7 +473,7 @@ ORDER BY AzimuthDifference DESC
 					<para>
 						Here we see that the COG is not as accurate as the SOG attribute. More than 100 trajectories have an azimuth difference bigger than 45 degrees. <xref linkend="imgtrajsWrongAzimuth"/> visualizes them. Some of them look like noise, but some look fine. For simplicity, we keep them all. 
 					</para> 
-					<figure id="imgtrajsWrongAzimuth" float="1"><title>Ship trajectories with big difference between <varname>azimuth(Trip)</varname> and <varname>COG</varname></title>
+					<figure id="imgtrajsWrongAzimuth" float="start"><title>Ship trajectories with big difference between <varname>azimuth(Trip)</varname> and <varname>COG</varname></title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajsWrongAzimuth.png'/></imageobject>
 						</mediaobject>
@@ -501,12 +501,12 @@ WHERE intersects(S.TripETRS, P.Rodby) AND intersects(S.TripETRS, P.Puttgarden)
 --4 rows retrieved.
 						</programlisting>   
 					</para>  
-					<figure id="imgtrajFerry" float="1"><title>A sample ship trajectory between R&oslash;dby and Puttgarden</title>
+					<figure id="imgtrajFerry" float="start"><title>A sample ship trajectory between R&oslash;dby and Puttgarden</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajFerry.png'/></imageobject>
 						</mediaobject>
 					</figure>
-					<figure id="imgtrajFerries" float="1"><title>All ferries between R&oslash;dby and Puttgarden</title>
+					<figure id="imgtrajFerries" float="start"><title>All ferries between R&oslash;dby and Puttgarden</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajFerries.png'/></imageobject>
 						</mediaobject>
@@ -561,17 +561,17 @@ WHERE S1.MMSI > S2.MMSI AND
 					<para>
 						The query first defines the area of interest as an envelope, the red dashed line in <xref linkend="imgtrajApproach"/>). It then restricts/crops the trajectories to only this envelope using the <varname>atGeometry</varname> function. The main query then find pairs of different trajectories that ever came within a distance of 300 meters to one another (the <varname>dwithin</varname>). For these trajectories, it computes the spatial line that connects the two instants where the two trajectories were closest to one another (the <varname>shortestLine</varname> function). <xref linkend="imgtrajApproach"/> shows the green trajectories that came close to the blue trajectories, and their shortest connecting line in solid red. Most of the approaches occur at the entrance of the R&oslash;dby port, which looks normal. But we also see two interesting approaches, that may indicate danger of collision away from the port. They are shown with more zoom in <xref linkend="imgApproach1"/> and <xref linkend="imgApproach2"/> 
 					</para>
-					<figure id="imgtrajApproach" float="1"><title>Ship that come closer than 300 meters to one another</title>
+					<figure id="imgtrajApproach" float="start"><title>Ship that come closer than 300 meters to one another</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/trajApproach.png'/></imageobject>
 						</mediaobject>
 					</figure>
-					<figure id="imgApproach1" float="1"><title>A zoom-in on a dangerous approach</title>
+					<figure id="imgApproach1" float="start"><title>A zoom-in on a dangerous approach</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/approach1.png'/></imageobject>
 						</mediaobject>
 					</figure>
-					<figure id="imgApproach2" float="1"><title>Another dangerous approach</title>
+					<figure id="imgApproach2" float="start"><title>Another dangerous approach</title>
 						<mediaobject>
 							<imageobject><imagedata width='80%' fileref='workshopimages/approach2.png'/></imageobject>
 						</mediaobject>
@@ -822,7 +822,7 @@ SET stop_geom = ST_SetSRID(ST_MakePoint(stop_lon, stop_lat),4326);
 				The visualization of the routes and stops in QGIS is given in <xref linkend="stib" />. In the figure, red lines correspond to the trajectories of vehicles, while orange points correspond to the location of stops.
 			</para>
 
-			<figure id="stib" float="1"><title>Visualization of the routes and stops for the GTFS data from Brussels.</title>
+			<figure id="stib" float="start"><title>Visualization of the routes and stops for the GTFS data from Brussels.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='35' fileref='workshopimages/stib.png' /></imageobject>
 				</mediaobject>
@@ -1133,7 +1133,7 @@ SET trajectory = trajectory(trip);
 			</para>
 
 
-			<figure id="location_history_fig" float="1"><title>Visualization in QGIS of the Google location history loaded into MobilityDB.</title>
+			<figure id="location_history_fig" float="start"><title>Visualization in QGIS of the Google location history loaded into MobilityDB.</title>
 				<mediaobject>
 					<imageobject><imagedata fileref='workshopimages/location_history.png' /></imageobject>
 				</mediaobject>
