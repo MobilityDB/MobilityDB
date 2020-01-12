@@ -369,15 +369,29 @@ extern Datum temporal_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum temporal_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
+extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_le(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ge(PG_FUNCTION_ARGS);
+
+extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_always_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_le(PG_FUNCTION_ARGS);
+extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
+
 extern Datum temporal_get_values_internal(Temporal *temp);
+extern PeriodSet *temporal_get_time_internal(Temporal *temp);
 extern Datum tfloat_ranges(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 extern RangeType *tnumber_value_range_internal(Temporal *temp);
+extern bool temporal_ever_eq_internal(Temporal *temp, Datum value);
 
 /* Restriction functions */
 
@@ -408,6 +422,7 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
  
 extern Temporal *temporal_at_min_internal(Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
+extern Temporal *temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps);
 extern void temporal_period(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void temporal_bbox(void *box, const Temporal *temp);

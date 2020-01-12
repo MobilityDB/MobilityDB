@@ -16,6 +16,8 @@
 #include <math.h>
 #include <utils/builtins.h>
 
+#include "period.h"
+#include "timeops.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
 #include "lifting.h"
@@ -221,13 +223,21 @@ add_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+
+	/* Bounding box test */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	if (! overlaps_period_period_internal(&p1, &p2))
+		PG_RETURN_NULL();
+
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
+	Temporal *result = NULL;
+	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST ||
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{
@@ -326,13 +336,21 @@ sub_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+
+	/* Bounding box test */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	if (! overlaps_period_period_internal(&p1, &p2))
+		PG_RETURN_NULL();
+
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
+	Temporal *result = NULL;
+	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST ||
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{
@@ -431,13 +449,21 @@ mult_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+
+	/* Bounding box test */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	if (! overlaps_period_period_internal(&p1, &p2))
+		PG_RETURN_NULL();
+
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
-	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = NULL;
+	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST ||
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{
@@ -485,14 +511,14 @@ PG_FUNCTION_INFO_V1(div_base_temporal);
 PGDLLEXPORT Datum
 div_base_temporal(PG_FUNCTION_ARGS)
 {
-	Datum value = PG_GETARG_DATUM(0);
-	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	double d = datum_double(value, datumtypid);
-	if (fabs(d) < EPSILON)
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	/* Test whether the denominator will ever be zero */
+	if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Division by zero")));
-	
-	Temporal *temp = PG_GETARG_TEMPORAL(1);
+
+	Datum value = PG_GETARG_DATUM(0);
+	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
 	Oid valuetypid = base_oid_from_temporal(temptypid);
 	/* The base type and the argument type must be equal for temporal sequences */
@@ -555,13 +581,30 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+
+	/* Bounding box test */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	if (! overlaps_period_period_internal(&p1, &p2))
+		PG_RETURN_NULL();
+
+	/* Test whether the denominator will ever be zero during the common timespan */
+	PeriodSet *ps = temporal_get_time_internal(temp1);
+	Temporal *projtemp2 = temporal_at_periodset_internal(temp2, ps);
+    if (projtemp2 == NULL)
+        PG_RETURN_NULL();
+	if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Division by zero")));
+
 	/* The base types must be equal when the result is a temporal sequence (set) */
-	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	ensure_valid_duration(temp2->duration);
-	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST || 
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = NULL;
+	if (temp1->valuetypid == temp2->valuetypid || temp1->duration == TEMPORALINST ||
 		temp1->duration == TEMPORALI || temp2->duration == TEMPORALINST || 
 		temp2->duration == TEMPORALI)
 	{

@@ -882,82 +882,6 @@ CREATE FUNCTION timestamps(ttext)
 	AS 'MODULE_PATHNAME', 'temporal_timestamps'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION ever_eq(tbool, boolean)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_eq(tint, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_eq(tfloat, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ever_eq(ttext, text)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-	LEFTARG = tbool, RIGHTARG = boolean,
-	PROCEDURE = ever_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR ?= (
-	LEFTARG = tint, RIGHTARG = integer,
-	PROCEDURE = ever_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR ?= (
-	LEFTARG = tfloat, RIGHTARG = float,
-	PROCEDURE = ever_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR ?= (
-	LEFTARG = ttext, RIGHTARG = text,
-	PROCEDURE = ever_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-
-CREATE FUNCTION always_eq(tbool, boolean)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(tint, integer)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(tfloat, float)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION always_eq(ttext, text)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'temporal_always_eq'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %= (
-	LEFTARG = tbool, RIGHTARG = boolean,
-	PROCEDURE = always_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR %= (
-	LEFTARG = tint, RIGHTARG = integer,
-	PROCEDURE = always_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR %= (
-	LEFTARG = tfloat, RIGHTARG = float,
-	PROCEDURE = always_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-CREATE OPERATOR %= (
-	LEFTARG = ttext, RIGHTARG = text,
-	PROCEDURE = always_eq,
-	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-
 CREATE FUNCTION shift(tbool, interval)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME', 'temporal_shift'
@@ -1134,6 +1058,442 @@ CREATE FUNCTION minusMax(ttext)
 	RETURNS ttext
 	AS 'MODULE_PATHNAME', 'temporal_minus_max'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions 
+ *****************************************************************************/
+
+CREATE FUNCTION ever_eq(tbool, boolean)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_eq(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_eq(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_eq(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+	LEFTARG = tbool, RIGHTARG = boolean,
+	PROCEDURE = ever_eq,
+	NEGATOR = %<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_eq,
+	NEGATOR = %<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_eq,
+	NEGATOR = %<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_eq,
+	NEGATOR = %<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_eq(tbool, boolean)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_eq(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_eq(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_eq(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_eq'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+	LEFTARG = tbool, RIGHTARG = boolean,
+	PROCEDURE = always_eq,
+	NEGATOR = ?<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_eq,
+	NEGATOR = ?<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_eq,
+	NEGATOR = ?<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_eq,
+	NEGATOR = ?<>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_ne(tbool, boolean)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ne(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ne(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ne(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<> (
+	LEFTARG = tbool, RIGHTARG = boolean,
+	PROCEDURE = ever_ne,
+	NEGATOR = %=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?<> (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_ne,
+	NEGATOR = %=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?<> (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_ne,
+	NEGATOR = %=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?<> (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_ne,
+	NEGATOR = %=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_ne(tbool, boolean)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ne(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ne(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ne(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ne'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<> (
+	LEFTARG = tbool, RIGHTARG = boolean,
+	PROCEDURE = always_ne,
+	NEGATOR = ?=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %<> (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_ne,
+	NEGATOR = ?=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %<> (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_ne,
+	NEGATOR = ?=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %<> (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_ne,
+	NEGATOR = ?=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions 
+ *****************************************************************************/
+
+CREATE FUNCTION ever_lt(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_lt(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_lt(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?< (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_lt,
+	NEGATOR = %>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?< (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_lt,
+	NEGATOR = %>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?< (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_lt,
+	NEGATOR = %>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_le(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_le(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_le(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_le,
+	NEGATOR = %>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?<= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_le,
+	NEGATOR = %>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?<= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_le,
+	NEGATOR = %>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_lt(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_lt(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_lt(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_lt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %< (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_lt,
+	NEGATOR = ?>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %< (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_lt,
+	NEGATOR = ?>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %< (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_lt,
+	NEGATOR = ?>=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_le(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_le(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_le(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_le'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_le,
+	NEGATOR = ?>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %<= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_le,
+	NEGATOR = ?>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %<= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_le,
+	NEGATOR = ?>,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_gt(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_gt(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_gt(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?> (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_gt,
+	NEGATOR = %<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?> (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_gt,
+	NEGATOR = %<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?> (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_gt,
+	NEGATOR = %<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION ever_ge(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ge(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ever_ge(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_ever_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?>= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = ever_ge,
+	NEGATOR = %<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?>= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = ever_ge,
+	NEGATOR = %<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR ?>= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = ever_ge,
+	NEGATOR = %<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_gt(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_gt(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_gt(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_gt'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %> (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_gt,
+	NEGATOR = ?<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %> (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_gt,
+	NEGATOR = ?<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %> (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_gt,
+	NEGATOR = ?<=,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+CREATE FUNCTION always_ge(tint, integer)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ge(tfloat, float)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION always_ge(ttext, text)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'temporal_always_ge'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %>= (
+	LEFTARG = tint, RIGHTARG = integer,
+	PROCEDURE = always_ge,
+	NEGATOR = ?<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %>= (
+	LEFTARG = tfloat, RIGHTARG = float,
+	PROCEDURE = always_ge,
+	NEGATOR = ?<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR %>= (
+	LEFTARG = ttext, RIGHTARG = text,
+	PROCEDURE = always_ge,
+	NEGATOR = ?<,
+	RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+
+/*****************************************************************************
+ * Restriction Functions 
+ *****************************************************************************/
 
 CREATE FUNCTION atTimestamp(tbool, timestamptz)
 	RETURNS tbool
