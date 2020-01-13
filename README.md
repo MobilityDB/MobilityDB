@@ -96,6 +96,10 @@ Workshop
 
 HTML: https://docs.mobilitydb.com/nightly/workshop/
 
+PDF: https://docs.mobilitydb.com/nightly/workshop.pdf
+
+EPUB: https://docs.mobilitydb.com/nightly/workshop.epub
+
 Publications
 ------------
 * Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial 2019. [Slides](https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf).
