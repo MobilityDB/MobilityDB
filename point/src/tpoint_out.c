@@ -24,9 +24,6 @@
 
 /* The following definitions are taken from PostGIS */
 
-#define FP_TOLERANCE 1e-12
-
-#define OUT_MAX_DOUBLE 1E15
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
@@ -78,13 +75,13 @@ tpoint_as_text_internal(Temporal *temp)
 {
 	char *str = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
+	if (temp->duration == TEMPORALINST)
 		str = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALI) 
+	else if (temp->duration == TEMPORALI)
 		str = temporali_to_string((TemporalI *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ)
 		str = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
-	else if (temp->duration == TEMPORALS) 
+	else if (temp->duration == TEMPORALS)
 		str = temporals_to_string((TemporalS *)temp, &wkt_out);
 	text *result = cstring_to_text(str);
 	pfree(str);
@@ -116,13 +113,13 @@ tpoint_as_ewkt_internal(Temporal *temp)
 		str1[0] = '\0';
 	char *str2 = NULL;
 	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
+	if (temp->duration == TEMPORALINST)
 		str2 = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALI) 
+	else if (temp->duration == TEMPORALI)
 		str2 = temporali_to_string((TemporalI *)temp, &wkt_out);
-	else if (temp->duration == TEMPORALSEQ) 
+	else if (temp->duration == TEMPORALSEQ)
 		str2 = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
-	else if (temp->duration == TEMPORALS) 
+	else if (temp->duration == TEMPORALS)
 		str2 = temporals_to_string((TemporalS *)temp, &wkt_out);
 	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
 	strcpy(str, str1);
@@ -274,11 +271,11 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 {
 	assert(precision <= OUT_MAX_DOUBLE_PRECISION);
 	if (hasz)
-		return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(",,"))
-		   * 3 * npoints + sizeof(",[]");
+		return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(","))
+			* 3 * npoints + sizeof(",[]");
 	else
 		return (OUT_MAX_DIGS_DOUBLE + precision + sizeof(","))
-			   * 2 * npoints + sizeof(",[]");
+			* 2 * npoints + sizeof(",[]");
 }
 
 static size_t
@@ -319,7 +316,7 @@ coordinates_mfjson_buf(char *output, TemporalInst *inst, int precision)
 static size_t
 datetimes_mfjson_size(int npoints)
 {
-	return 35 * npoints + sizeof("[],");
+	return sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * npoints + sizeof("[],");
 }
 
 static size_t
@@ -361,8 +358,9 @@ srs_mfjson_buf(char *output, char *srs)
 static size_t
 bbox_mfjson_size(int hasz, int precision)
 {
-	/* The maximum size of a timestamptz is 35, e.g., "2019-08-06 23:18:16.195062-09:30" */
-	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") + 70;
+	/* The maximum size of a timestamptz is 35 characters, e.g., "2019-08-06 23:18:16.195062-09:30" */
+	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
+		sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
 	if (!hasz)
 	{
 		size += sizeof("'bbox':[,,,],");
@@ -383,16 +381,16 @@ bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 	ptr += sprintf(ptr, "\"stBoundedBy\":{");
 	if (!hasz)
 		ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f],",
-				   precision, bbox->xmin, precision, bbox->ymin,
-				   precision, bbox->xmax, precision, bbox->ymax);
+			precision, bbox->xmin, precision, bbox->ymin,
+			precision, bbox->xmax, precision, bbox->ymax);
 	else
 		ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f,%.*f,%.*f],",
-					precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
-					precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
+			precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
+			precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
 	char *begin = call_output(TIMESTAMPTZOID, bbox->tmin);
 	char *end = call_output(TIMESTAMPTZOID, bbox->tmax);
 	ptr += sprintf(ptr, "\"period\":{\"begin\":\"%s\",\"end\":\"%s\"}},", begin, end);
-	pfree(begin); pfree(end); 
+	pfree(begin); pfree(end);
 	return (ptr - output);
 }
 
@@ -488,6 +486,7 @@ tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, cha
 	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
+	/* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
 	size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Stepwise']}");
 	if (srs) size += srs_mfjson_size(srs);
 	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
@@ -513,7 +512,7 @@ tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs,
 		if (i) ptr += sprintf(ptr, ",");
 		ptr += datetimes_mfjson_buf(ptr, temporalseq_inst_n(seq, i));
 	}
-	ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"%s\"]}", 
+	ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s,\"interpolations\":[\"%s\"]}",
 		seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false",
 		MOBDB_FLAGS_GET_LINEAR(seq->flags) ? "Linear" : "Stepwise");
 	return (ptr - output);
@@ -535,13 +534,10 @@ tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
 	int size = sizeof("{'type':'MovingPoint','sequences':[],");
 	size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
-	for (int i = 0; i < ts->count; i++)
-	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(ts->flags), precision);
-		size += datetimes_mfjson_size(seq->count);
-	}
-	size += sizeof(",interpolations':['Linear']}");
+	size += coordinates_mfjson_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+	size += datetimes_mfjson_size(ts->totalcount);
+	/* We reserve space for the largest interpolation string, i.e., "Stepwise" */
+	size += sizeof(",interpolations':['Stepwise']}");
 	if (srs) size += srs_mfjson_size(srs);
 	if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(ts->flags), precision);
 	return size;
@@ -571,10 +567,11 @@ tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char
 			if (j) ptr += sprintf(ptr, ",");
 			ptr += datetimes_mfjson_buf(ptr, temporalseq_inst_n(seq, j));
 		}
-		ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s}", 
+		ptr += sprintf(ptr, "],\"lower_inc\":%s,\"upper_inc\":%s}",
 			seq->period.lower_inc ? "true" : "false", seq->period.upper_inc ? "true" : "false");
 	}
-	ptr += sprintf(ptr, "],\"interpolations\":[\"Linear\"]}");
+	ptr += sprintf(ptr, "],\"interpolations\":[\"%s\"]}",
+		MOBDB_FLAGS_GET_LINEAR(ts->flags) ? "Linear" : "Stepwise");
 	return (ptr - output);
 }
 
@@ -597,7 +594,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 	int has_bbox = 0;
 	int precision = DBL_DIG;
 	char *srs = NULL;
-	
+
 	/* Get the temporal point */
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 
@@ -890,12 +887,12 @@ tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
 	if (hasz)
 		dims = 3;
 	/* size of the TemporalInst array */
-	size += dims * npoints * WKB_DOUBLE_SIZE + 
+	size += dims * npoints * WKB_DOUBLE_SIZE +
 		npoints * WKB_TIMESTAMP_SIZE;
 	return size;
 }
 
-static size_t 
+static size_t
 tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
 {
 	/* Endian flag + temporal flag */
@@ -909,7 +906,7 @@ tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
 	return size;
 }
 
-static size_t 
+static size_t
 tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
 {
 	/* Endian flag + duration flag */
@@ -925,7 +922,7 @@ tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
 	return size;
 }
 
-static size_t 
+static size_t
 tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
 {
 	/* Endian flag + duration flag */
@@ -941,7 +938,7 @@ tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
 	return size;
 }
 
-static size_t 
+static size_t
 tpoints_to_wkb_size(TemporalS *ts, uint8_t variant)
 {
 	/* Endian flag + duration flag */
@@ -1019,12 +1016,12 @@ tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
 		buf = double_to_wkb_buf(point.y, buf, variant);
 		buf = double_to_wkb_buf(point.z, buf, variant);
 	}
-	else 
+	else
 	{
 		POINT2D point = datum_get_point2d(temporalinst_value(inst));
 		buf = double_to_wkb_buf(point.x, buf, variant);
 		buf = double_to_wkb_buf(point.y, buf, variant);
-	}	
+	}
 	buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	return buf;
 }
@@ -1053,12 +1050,12 @@ tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
 			buf = double_to_wkb_buf(point.y, buf, variant);
 			buf = double_to_wkb_buf(point.z, buf, variant);
 		}
-		else 
+		else
 		{
 			POINT2D point = datum_get_point2d(temporalinst_value(inst));
 			buf = double_to_wkb_buf(point.x, buf, variant);
 			buf = double_to_wkb_buf(point.y, buf, variant);
-		}	
+		}
 		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	}
 	return buf;
@@ -1111,12 +1108,12 @@ tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 			buf = double_to_wkb_buf(point.y, buf, variant);
 			buf = double_to_wkb_buf(point.z, buf, variant);
 		}
-		else 
+		else
 		{
 			POINT2D point = datum_get_point2d(temporalinst_value(inst));
 			buf = double_to_wkb_buf(point.x, buf, variant);
 			buf = double_to_wkb_buf(point.y, buf, variant);
-		}	
+		}
 		buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 	}
 	return buf;
@@ -1153,12 +1150,12 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 				buf = double_to_wkb_buf(point.y, buf, variant);
 				buf = double_to_wkb_buf(point.z, buf, variant);
 			}
-			else 
+			else
 			{
 				POINT2D point = datum_get_point2d(temporalinst_value(inst));
 				buf = double_to_wkb_buf(point.x, buf, variant);
 				buf = double_to_wkb_buf(point.y, buf, variant);
-			}	
+			}
 			buf = timestamp_to_wkb_buf(inst->t, buf, variant);
 		}
 	}
@@ -1274,7 +1271,7 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
  */
 PG_FUNCTION_INFO_V1(tpoint_as_binary);
 
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_as_binary(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -1314,7 +1311,7 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
  */
 PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
 
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -1354,7 +1351,7 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
  */
 PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
 
-PGDLLEXPORT Datum 
+PGDLLEXPORT Datum
 tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
