@@ -523,14 +523,14 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 */
 typedef struct
 {
-	const uint8_t *wkb; /* Points to start of WKB */
-	size_t wkb_size; /* Expected size of WKB */
-	bool swap_bytes; /* Do an endian flip? */
-	uint8_t duration; /* Current duration we are handling */
-	int32_t srid;	/* Current SRID we are handling */
-	bool has_z; /* Z? */
-	bool has_srid; /* SRID? */
-	bool linear; /* Linear Interpolation? */
+	const uint8_t *wkb;	/* Points to start of WKB */
+	size_t wkb_size; 	/* Expected size of WKB */
+	bool swap_bytes; 	/* Do an endian flip? */
+	uint8_t duration;	/* Current duration we are handling */
+	int32_t srid;		/* Current SRID we are handling */
+	bool has_z; 		/* Z? */
+	bool has_srid; 		/* SRID? */
+	bool linear; 		/* Linear Interpolation? */
 	const uint8_t *pos; /* Current parse position */
 } wkb_parse_state;
 
@@ -851,14 +851,14 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		/* Get the number of instants. */
+		/* Get the number of instants */
 		int countinst = integer_from_wkb_state(s);
 		/* Get the period bounds */
 		uint8_t wkb_bounds = byte_from_wkb_state(s);
 		bool lower_inc, upper_inc;
 		tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
 		/* Does the data we want to read exist? */
-		size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+		size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 		wkb_parse_state_check(s, size);
 		/* Parse the instants */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst);
@@ -892,9 +892,9 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = temporalseq_from_temporalinstarr(instants, count, 
+		sequences[i] = temporalseq_from_temporalinstarr(instants, countinst,
 			lower_inc, upper_inc, s->linear, true); 
-		for (int j = 0; j < count; j++)
+		for (int j = 0; j < countinst; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
@@ -927,13 +927,13 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 			s->swap_bytes = true;
 	}
 
-	/* Read the temporal flag */
+	/* Read the temporal and interpolation flags */
 	uint8_t wkb_type = byte_from_wkb_state(s);
 	tpoint_type_from_wkb_state(s, wkb_type);
 
 	/* Read the SRID, if necessary */
 	if (s->has_srid)
-		s->srid = (integer_from_wkb_state(s));
+		s->srid = integer_from_wkb_state(s);
 
 	ensure_valid_duration(s->duration);
 	if (s->duration == TEMPORALINST)

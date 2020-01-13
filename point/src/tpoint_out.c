@@ -952,7 +952,7 @@ tpoints_to_wkb_size(TemporalS *ts, uint8_t variant)
 	size += ts->count * (WKB_INT_SIZE + WKB_BYTE_SIZE);
 	/* Include all the TemporalInst of all the sequences */
 	size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags),
-			variant);
+		variant);
 	return size;
 }
 
@@ -1131,11 +1131,11 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ts), buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(ts->count, buf, variant);
-	/* Set the TemporalInst array */
+	/* Set the sequences */
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		/* Set the count */
+		/* Set the number of instants */
 		buf = integer_to_wkb_buf(seq->count, buf, variant);
 		/* Set the period bounds */
 		buf = tpointseq_wkb_bounds(seq, buf, variant);
