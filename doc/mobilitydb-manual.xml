@@ -4169,7 +4169,7 @@ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. 
 			</para>
 
-			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
+			<figure id="pgAdmin" float="start"><title>Configuration of a connection to the docker image in pgAdmin.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
@@ -4558,7 +4558,7 @@ SELECT extent(Trip) from Trips
 				</programlisting>
 			</para>
 
-			<figure id="berlinmod_trips" float="1"><title>Visualization of the trajectories of the trips in QGIS.</title>
+			<figure id="berlinmod_trips" float="start"><title>Visualization of the trajectories of the trips in QGIS.</title>
 				<mediaobject>
 					<imageobject><imagedata scalefit="1" fileref='images/berlinmod_trips.png' /></imageobject>
 				</mediaobject>
@@ -4623,7 +4623,7 @@ FROM histogram;
 				The result of the above query is given in <xref linkend="histogram_length" />. 
 			</para>
 
-			<figure id="histogram_length" float="1"><title>Result of the query building an histogram of trip lengths.</title>
+			<figure id="histogram_length" float="start"><title>Result of the query building an histogram of trip lengths.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='80' fileref='images/histogram_length.png' /></imageobject>
 				</mediaobject>
