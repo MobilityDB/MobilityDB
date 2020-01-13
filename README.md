@@ -96,9 +96,9 @@ Workshop
 
 HTML: https://docs.mobilitydb.com/nightly/workshop/
 
-PDF: https://docs.mobilitydb.com/nightly/workshop.pdf
+PDF: https://docs.mobilitydb.com/nightly/workshop/workshop.pdf
 
-EPUB: https://docs.mobilitydb.com/nightly/workshop.epub
+EPUB: https://docs.mobilitydb.com/nightly/workshop/workshop.epub
 
 Publications
 ------------
