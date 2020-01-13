@@ -119,7 +119,7 @@ Forthcoming Presentations
 * MobilityDB: Managing Mobility Data in PostgreSQL, [FOSSDEM](https://fosdem.org/2020/schedule/event/mobilitydb_/), February 2020
 * MobilityDB: Managing Mobility Data in PostgreSQL, [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 2020.
 * Road public transport in Moscow analysis: from PostGIS to MobilityDB, [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 2020
-* MobilityDB: Managing Spatiotemporal Data in PostgreSQL, [PGConf.New York](https://postgresconf.org/conferences/2020/program/proposals/mobilitydb-extending-postgresql-to-manage-spatiotemporal-features), March 2020
+* MobilityDB: Managing Spatiotemporal Data in PostgreSQL, [Postgres Conference](https://postgresconf.org/conferences/2020/program/proposals/mobilitydb-extending-postgresql-to-manage-spatiotemporal-features), March 2020
 
 License
 -------
