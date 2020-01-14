@@ -397,8 +397,7 @@ CREATE FUNCTION _dwithin(geometry, tgeompoint, dist float8)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(geometry, tgeompoint, dist float8)
 	RETURNS boolean
-	AS 'SELECT @extschema@.ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2
-	AND @extschema@._dwithin($1, $2, $3)'
+	AS 'SELECT @extschema@.ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tgeompoint, geometry, dist float8)
@@ -407,8 +406,7 @@ CREATE FUNCTION _dwithin(tgeompoint, geometry, dist float8)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
 	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.ST_Expand($2,$3) 
-	AND @extschema@._dwithin($1, $2, $3)'
+	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.ST_Expand($2,$3)	AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
@@ -424,8 +422,7 @@ CREATE FUNCTION _dwithin(geography, tgeogpoint, dist float8)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(geography, tgeogpoint, dist float8)
 	RETURNS boolean
-	AS 'SELECT @extschema@._ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2
-	AND @extschema@._dwithin($1, $2, $3)'
+	AS 'SELECT @extschema@._ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tgeogpoint, geography, dist float8)
@@ -434,8 +431,7 @@ CREATE FUNCTION _dwithin(tgeogpoint, geography, dist float8)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
 	RETURNS boolean
-	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@._ST_Expand($2,$3) 
-	AND @extschema@._dwithin($1, $2, $3)'
+	AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@._ST_Expand($2,$3) AND @extschema@._dwithin($1, $2, $3)'
 	LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 	
 CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
