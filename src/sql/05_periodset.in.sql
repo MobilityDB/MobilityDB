@@ -212,13 +212,21 @@ CREATE OPERATOR <= (
 	LEFTARG = periodset, RIGHTARG = periodset,
 	PROCEDURE = periodset_le,
 	COMMUTATOR = >=, NEGATOR = >,
+#if MOBDB_PGSQL_VERSION >= 110000
 	RESTRICT = periodsel, JOIN = scalarlejoinsel
+#else
+	RESTRICT = periodsel, JOIN = scalarltjoinsel
+#endif
 );
 CREATE OPERATOR >= (
 	LEFTARG = periodset, RIGHTARG = periodset,
 	PROCEDURE = periodset_ge,
 	COMMUTATOR = <=, NEGATOR = <,
+#if MOBDB_PGSQL_VERSION >= 110000
 	RESTRICT = periodsel, JOIN = scalargejoinsel
+#else
+	RESTRICT = periodsel, JOIN = scalargtjoinsel
+#endif
 );
 CREATE OPERATOR > (
 	LEFTARG = periodset, RIGHTARG = periodset,
