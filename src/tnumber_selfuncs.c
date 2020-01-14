@@ -3,9 +3,9 @@
  * tnumber_selfuncs.c
  *	  Functions for selectivity estimation of operators on temporal numeric types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -13,6 +13,7 @@
 #include "tnumber_selfuncs.h"
 
 #include <assert.h>
+#include <math.h>
 #include <access/htup_details.h>
 #include <utils/builtins.h>
 #include <utils/selfuncs.h>
@@ -636,7 +637,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 	else if (consttype == FLOAT8OID)
 		float_to_tbox_internal(box, ((Const *) other)->constvalue);
 	else if (consttype == type_oid(T_INTRANGE))
- #if MOBDB_PGSQL_VERSION < 110000
+#if MOBDB_PGSQL_VERSION < 110000
 	   intrange_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
 	   intrange_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
@@ -825,7 +826,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 			operator = oper_oid(GT_OP, valuetypid, valuetypid);
 			selec_value += scalarineqsel(root, operator, true, false, vardata, 
 				Float8GetDatum(box->xmax), valuetypid);
-			selec_value = fabs(1 - selec_value);
+			selec_value = fabs(1.0 - selec_value);
 		}
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
@@ -836,7 +837,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 			operator = oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			selec_time += scalarineqsel(root, operator, true, false, vardata, 
 				TimestampTzGetDatum(box->tmax), TIMESTAMPTZOID);
-			selec_time = fabs(1 - selec_time);
+			selec_time = fabs(1.0 - selec_time);
 		}
 		selec = selec_value * selec_time;
 	}
@@ -1133,9 +1134,9 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	
 	/* Get the base type and duration of the temporal column */
 	valuetypid = base_oid_from_temporal(vardata.atttype);
-	numeric_base_type_oid(valuetypid);
+	ensure_numeric_base_type(valuetypid);
 	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-	temporal_duration_all_is_valid(duration);
+	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 	if (duration == TEMPORALINST)

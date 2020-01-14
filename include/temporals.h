@@ -3,9 +3,9 @@
  * temporals.h
  *	  Basic functions for temporal sequence sets.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -27,13 +27,13 @@
 extern TemporalSeq **temporals_seqs(TemporalS *ts);
 extern TemporalSeq *temporals_seq_n(TemporalS *ts, int index);
 extern TemporalS *temporals_from_temporalseqarr(TemporalSeq **sequences, 
-	int count, bool normalize);
+	int count, bool linear, bool normalize);
 extern TemporalS *temporals_copy(TemporalS *ts);
 extern bool temporalseqarr_find_timestamp(TemporalSeq **array, int from, 
 	int count, TimestampTz t, int *pos);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
-extern double temporals_duration_time(TemporalS *ts);
+extern double temporals_interval_double(TemporalS *ts);
 extern bool temporals_contains_timestamp(TemporalS *ts, TimestampTz t, int *n);
 
 /* Intersection functions */
@@ -82,18 +82,20 @@ extern TemporalS *temporals_append_instant(TemporalS *ts, TemporalInst *inst);
 
 /* Cast functions */
 
-extern TemporalS *tints_as_tfloats(TemporalS *ts);
-extern TemporalS *tfloats_as_tints(TemporalS *ts);
+extern TemporalS *tints_to_tfloats(TemporalS *ts);
+extern TemporalS *tfloats_to_tints(TemporalS *ts);
 
 /* Transformation functions */
 
-extern TemporalS *temporalinst_as_temporals(TemporalInst *inst);
-extern TemporalS *temporali_as_temporals(TemporalI *ti);
-extern TemporalS *temporalseq_as_temporals(TemporalSeq *seq);
+extern TemporalS *temporalinst_to_temporals(TemporalInst *inst, bool linear);
+extern TemporalS *temporali_to_temporals(TemporalI *ti, bool linear);
+extern TemporalS *temporalseq_to_temporals(TemporalSeq *seq);
+extern TemporalS *tstepws_to_linear(TemporalS *ts);
 
 /* Accessor functions */
 
-extern ArrayType *tempdiscs_values(TemporalS *ts);
+extern Datum *temporals_values1(TemporalS *ts, int *count);
+extern ArrayType *temporals_values(TemporalS *ts);
 extern ArrayType *tfloats_ranges(TemporalS *ts);
 extern void *temporals_bbox_ptr(TemporalS *ts);
 extern void temporals_bbox(void *box, TemporalS *ts);
@@ -101,8 +103,8 @@ extern RangeType *tnumbers_value_range(TemporalS *ts);
 extern Datum temporals_min_value(TemporalS *ts);
 extern Datum temporals_max_value(TemporalS *ts);
 extern PeriodSet *temporals_get_time(TemporalS *ts);
-extern Datum temporals_duration(TemporalS *ts);
-extern void temporals_timespan(Period *p, TemporalS *ts);
+extern Datum temporals_timespan(TemporalS *ts);
+extern void temporals_period(Period *p, TemporalS *ts);
 extern TemporalSeq **temporals_sequences(TemporalS *ts);
 extern ArrayType *temporals_sequences_array(TemporalS *ts);
 extern int temporals_num_instants(TemporalS *ts);
@@ -114,11 +116,21 @@ extern int temporals_num_timestamps(TemporalS *ts);
 extern bool temporals_timestamp_n(TemporalS *ts, int n, TimestampTz *result);
 extern TimestampTz *temporals_timestamps1(TemporalS *ts, int *count);
 extern ArrayType *temporals_timestamps(TemporalS *ts);
-extern bool temporals_ever_eq(TemporalS *ts, Datum value);
-extern bool temporals_always_eq(TemporalS *ts, Datum value);
 extern TemporalS *temporals_shift(TemporalS *ts, Interval *interval);
-extern bool temporals_continuous_value_internal(TemporalS *ts);
-extern bool temporals_continuous_time_internal(TemporalS *ts);
+
+extern bool temporals_ever_eq(TemporalS *ts, Datum value);
+extern bool temporals_ever_ne(TemporalS *ts, Datum value);
+extern bool temporals_ever_lt(TemporalS *ts, Datum value);
+extern bool temporals_ever_le(TemporalS *ts, Datum value);
+extern bool temporals_ever_gt(TemporalS *ts, Datum value);
+extern bool temporals_ever_ge(TemporalS *ts, Datum value);
+
+extern bool temporals_always_eq(TemporalS *ts, Datum value);
+extern bool temporals_always_ne(TemporalS *ts, Datum value);
+extern bool temporals_always_lt(TemporalS *ts, Datum value);
+extern bool temporals_always_le(TemporalS *ts, Datum value);
+extern bool temporals_always_gt(TemporalS *ts, Datum value);
+extern bool temporals_always_ge(TemporalS *ts, Datum value);
 
 /* Restriction Functions */
 
@@ -150,10 +162,8 @@ extern bool temporals_intersects_periodset(TemporalS *ts, PeriodSet *ps);
 
 /* Local aggregate functions */
 
-extern double tints_integral(TemporalS *ts);
-extern double tfloats_integral(TemporalS *ts);
-extern double tints_twavg(TemporalS *ts);
-extern double tfloats_twavg(TemporalS *ts);
+extern double tnumbers_integral(TemporalS *ts);
+extern double tnumbers_twavg(TemporalS *ts);
 
 /* Comparison functions */
 

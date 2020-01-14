@@ -13,8 +13,8 @@ DROP TABLE tbl_periodset_tmp;
 -------------------------------------------------------------------------------
 
 select memSize(ps) from tbl_periodset;
+select period(ps) from tbl_periodset;
 select timespan(ps) from tbl_periodset;
-select duration(ps) from tbl_periodset;
 
 select numPeriods(ps) from tbl_periodset;
 select startPeriod(ps) from tbl_periodset;

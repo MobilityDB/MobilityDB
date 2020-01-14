@@ -3,9 +3,9 @@
  * tpoint_spatialfuncs.sql
  *	  Spatial functions for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -47,11 +47,11 @@ CREATE FUNCTION transform_gk(geometry)
 
 CREATE FUNCTION tgeogpoint(tgeompoint)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tgeompoint_as_tgeogpoint'
+	AS 'MODULE_PATHNAME', 'tgeompoint_to_tgeogpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tgeogpoint)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tgeogpoint_as_tgeompoint'
+	AS 'MODULE_PATHNAME', 'tgeogpoint_to_tgeompoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeompoint);
@@ -61,7 +61,6 @@ CREATE FUNCTION setprecision(tgeompoint, int)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION setprecision(tgeogpoint, int)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'tpoint_setprecision'
@@ -69,12 +68,12 @@ CREATE FUNCTION setprecision(tgeogpoint, int)
 
 CREATE FUNCTION trajectory(tgeompoint)
 	RETURNS geometry
-	AS 'MODULE_PATHNAME', 'tgeompoint_trajectory'
+	AS 'MODULE_PATHNAME', 'tpoint_trajectory'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 	
 CREATE FUNCTION trajectory(tgeogpoint)
 	RETURNS geography
-	AS 'MODULE_PATHNAME', 'tgeogpoint_trajectory'
+	AS 'MODULE_PATHNAME', 'tpoint_trajectory'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

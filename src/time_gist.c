@@ -4,9 +4,9 @@
  *	R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -179,7 +179,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 		 * values) and minimal ratio secondarily.  The subtype_diff is
 		 * used for overlap measure. 
 		 */
-		overlap = period_duration_secs(left_upper->val, right_lower->val);
+		overlap = period_to_secs(left_upper->val, right_lower->val);
 
 		/* If there is no previous selection, select this split */
 		if (context->first)
@@ -476,8 +476,8 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 				 * (context.left_upper - upper)
 				 */
 				common_entries[common_entries_count].delta =
-					period_duration_secs(period->lower, context.right_lower.val) -
-					period_duration_secs(context.left_upper.val, period->upper);
+					period_to_secs(period->lower, context.right_lower.val) -
+					period_to_secs(context.left_upper.val, period->upper);
 				common_entries_count++;
 			}
 			else
@@ -722,7 +722,7 @@ gist_timestampset_compress(PG_FUNCTION_ARGS)
 		GISTENTRY	*retval = palloc(sizeof(GISTENTRY));
 		TimestampSet *ts = DatumGetTimestampSet(entry->key);
 		Period *period = palloc(sizeof(Period));
-		timestampset_timespan_internal(period, ts);
+		timestampset_to_period_internal(period, ts);
 		gistentryinit(*retval, PointerGetDatum(period),
 			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
@@ -769,7 +769,7 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
 		GISTENTRY *retval = palloc(sizeof(GISTENTRY));
 		PeriodSet *ps = DatumGetPeriodSet(entry->key);
 		Period *period = palloc(sizeof(Period));
-		periodset_timespan_internal(period, ps);
+		periodset_to_period_internal(period, ps);
 		gistentryinit(*retval, PointerGetDatum(period),
 			entry->rel, entry->page, entry->offset, false);
 		PG_RETURN_POINTER(retval);
@@ -808,10 +808,10 @@ gist_period_penalty(PG_FUNCTION_ARGS)
 
 	if (period_cmp_bounds(new->lower, orig->lower, true, true, 
 			new->lower_inc, orig->lower_inc) < 0)
-		diff += period_duration_secs(orig->lower, new->lower);
+		diff += period_to_secs(orig->lower, new->lower);
 	if (period_cmp_bounds(new->upper, orig->upper, false, false, 
 			new->upper_inc, orig->upper_inc) > 0)
-		diff += period_duration_secs(new->upper, orig->upper);
+		diff += period_to_secs(new->upper, orig->upper);
 	*penalty = diff;
 
 	PG_RETURN_POINTER(penalty);

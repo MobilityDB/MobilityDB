@@ -841,7 +841,7 @@ select numSequences(tsum(seq)) from tbl_tintseq;
 select numSequences(tavg(seq)) from tbl_tintseq;
  numsequences 
 --------------
-          432
+           97
 (1 row)
 
 select numSequences(tmin(seq)) from tbl_tfloatseq;
@@ -1000,16 +1000,16 @@ select k%10, numSequences(tsum(seq)) from tbl_tintseq group by k%10 order by k%1
 select k%10, numSequences(tavg(seq)) from tbl_tintseq group by k%10 order by k%10;
  ?column? | numsequences 
 ----------+--------------
-        0 |           45
-        1 |           35
-        2 |           51
-        3 |           58
-        4 |           45
-        5 |           44
-        6 |           54
-        7 |           37
-        8 |           31
-        9 |           43
+        0 |           10
+        1 |            9
+        2 |           10
+        3 |           10
+        4 |           10
+        5 |           10
+        6 |           10
+        7 |           10
+        8 |           10
+        9 |           10
 (10 rows)
 
 select k%10, numSequences(tmin(seq)) from tbl_tfloatseq group by k%10 order by k%10;
@@ -1177,7 +1177,7 @@ select numSequences(tsum(ts)) from tbl_tints;
 select numSequences(tavg(ts)) from tbl_tints;
  numsequences 
 --------------
-         2065
+          453
 (1 row)
 
 select numSequences(tmin(ts)) from tbl_tfloats;
@@ -1336,16 +1336,16 @@ select k%10, numSequences(tsum(ts)) from tbl_tints group by k%10 order by k%10;
 select k%10, numSequences(tavg(ts)) from tbl_tints group by k%10 order by k%10;
  ?column? | numsequences 
 ----------+--------------
-        0 |          206
-        1 |          220
-        2 |          154
-        3 |          247
-        4 |          162
-        5 |          195
-        6 |          250
-        7 |          208
-        8 |          224
-        9 |          213
+        0 |           45
+        1 |           47
+        2 |           36
+        3 |           51
+        4 |           40
+        5 |           45
+        6 |           57
+        7 |           43
+        8 |           51
+        9 |           43
 (10 rows)
 
 select k%10, numSequences(tmin(ts)) from tbl_tfloats group by k%10 order by k%10;

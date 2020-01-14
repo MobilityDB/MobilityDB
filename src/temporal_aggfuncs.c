@@ -3,9 +3,9 @@
  * temporal_aggfuncs.c
  *	  Temporal aggregate functions
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -657,7 +657,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
 		result = temporalseq_from_temporalinstarr(&inst, 1,
-			true, true, false);
+			true, true, false, false);
 		pfree(inst);
 		return result;
 	}
@@ -668,7 +668,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	instants[1] = temporalinst_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
 	result = temporalseq_from_temporalinstarr(instants, 2,
-		seq->period.lower_inc, seq->period.upper_inc, false);
+		seq->period.lower_inc, seq->period.upper_inc, false, false);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
 }
@@ -728,10 +728,10 @@ static TemporalInst *
 tnumberinst_transform_tavg(TemporalInst *inst)
 {
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
-	double2 *dvalue = double2_construct(value, 1);
-	TemporalInst *result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
+	double2 dvalue;
+	double2_set(&dvalue, value, 1);
+	TemporalInst *result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 		type_oid(T_DOUBLE2));
-	pfree(dvalue);
 	return result;
 }
 
@@ -747,59 +747,8 @@ tnumberi_transform_tavg(TemporalI *ti)
 	return result;
 }
 
-static int
-tintseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
-{
-	if (seq->count == 1)
-	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0);
-		TemporalInst *inst1 = tnumberinst_transform_tavg(inst);
-		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
-			true, true, false);
-		pfree(inst1);
-		return 1;
-	}
-	
-	int count;
-	TemporalInst *instants[2];
-	TemporalInst *inst1, *inst2;
-	inst1 = temporalseq_inst_n(seq, 0);
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2;
-	bool lower_inc = seq->period.lower_inc;
-	for (int i = 0; i < seq->count - 1; i++)
-	{
-		inst2 = temporalseq_inst_n(seq, i + 1);
-		value2 = temporalinst_value(inst2);
-		instants[0] = tnumberinst_transform_tavg(inst1);
-		TemporalInst *inst = temporalinst_make(value1, inst2->t,
-			inst1->valuetypid);
-		instants[1] = tnumberinst_transform_tavg(inst);
-		bool upper_inc = ( (i == seq->count - 2) ? seq->period.upper_inc : false ) &&
-			datum_eq(value1, value2, inst1->valuetypid);
-		result[i] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false);
-		pfree(inst); pfree(instants[0]); pfree(instants[1]);
-		inst1 = inst2;
-		value1 = value2;
-		lower_inc = true;
-	}
-	if (seq->period.upper_inc && seq->count > 1 &&
-		! result[seq->count - 2]->period.upper_inc)
-	{
-		instants[0] = tnumberinst_transform_tavg(inst2);
-		result[seq->count - 1] = temporalseq_from_temporalinstarr(instants, 1,
-			true, true, false);
-		count = seq->count;
-		pfree(instants[0]);
-	}
-	else
-		count = seq->count - 1;
-	return count;
-}
-
-static int 
-tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
+static TemporalSeq *
+tnumberseq_transform_tavg(TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -807,53 +756,25 @@ tfloatseq_transform_tavg(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	result[0] = temporalseq_from_temporalinstarr(instants, seq->count,
-		seq->period.lower_inc, seq->period.upper_inc, false);
-		
+	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
-	return 1;
-}
-
-static TemporalSeq **
-tnumberseq_transform_tavg(TemporalSeq *seq, int *count)
-{
-	int maxcount = 0;
-	numeric_base_type_oid(seq->valuetypid);
-	if (seq->valuetypid == INT4OID)
-		maxcount = seq->count;
-	else if (seq->valuetypid == FLOAT8OID)
-		maxcount = 1;
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
-	if (seq->valuetypid == INT4OID)
-		*count = tintseq_transform_tavg(result, seq);
-	else if (seq->valuetypid == FLOAT8OID)
-		*count = tfloatseq_transform_tavg(result, seq);
 	return result;
 }
 
 static TemporalSeq **
-tnumbers_transform_tavg(TemporalS *ts, int *count)
+tnumbers_transform_tavg(TemporalS *ts)
 {
-	int maxcount = 0;
-	numeric_base_type_oid(ts->valuetypid);
-	if (ts->valuetypid == INT4OID)
-		maxcount = ts->totalcount;
-	else if (ts->valuetypid == FLOAT8OID)
-		maxcount = ts->count;
-	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * maxcount);
-	int k = 0, countstep;
+	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		if (seq->valuetypid == INT4OID)
-			countstep = tintseq_transform_tavg(&result[k], seq);
-		else if (seq->valuetypid == FLOAT8OID)
-			countstep = tfloatseq_transform_tavg(&result[k], seq);
-		k += countstep;
+		result[i] = tnumberseq_transform_tavg(seq);
 	}
-	*count = k;
 	return result;
 }
 
@@ -875,9 +796,16 @@ tnumber_transform_tavg(Temporal *temp, int *count)
 		*count = ((TemporalI *)temp)->count;
 	} 
 	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal **)tnumberseq_transform_tavg((TemporalSeq *) temp, count);
+	{
+		result = palloc(sizeof(Temporal *));
+		result[0] = (Temporal *)tnumberseq_transform_tavg((TemporalSeq *) temp);
+		*count = 1;
+	} 
 	else if (temp->duration == TEMPORALS)
-		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp, count);
+	{
+		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp);
+		*count = ((TemporalS *)temp)->count;
+	} 
 	assert(result != NULL);
 	return result;
 }
@@ -940,9 +868,9 @@ temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2
  * Returns new sequences that must be freed by the calling function.
  */
 
-static void
+static int
 temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum (*func)(Datum, Datum), bool crossings, int *newcount)
+	Datum (*func)(Datum, Datum), bool crossings)
 {
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
 	if (intersect == NULL)
@@ -965,17 +893,17 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 		for (int i = 0; i < l; i++)
 			result[i] = normsequences[i];
 		pfree(normsequences);
-		*newcount = l;	
-		return;
+		return l;
 	}
 
 	/* 
 	 * If the two sequences intersect there will be at most 3 sequences in the
 	 * result: one before the intersection, one for the intersection, and one 
-	 * after the intersection. This will be also the case for discrete sequences
-	 * (e.g., tint) that has the last value different from the previous one as
-	 * tint '[1@2000-01-03, 2@2000-01-04]' and tint '[3@2000-01-01, 4@2000-01-05]'
-	 * whose result for sum would be the following three sequences
+	 * after the intersection. This will be also the case for sequences with 
+	 * stepwise interploation (e.g., tint) that has the last value different 
+	 * from the previous one as tint '[1@2000-01-03, 2@2000-01-04]' and 
+	 * tint '[3@2000-01-01, 4@2000-01-05]' whose result for sum would be the 
+	 * following three sequences
 	 * [3@2000-01-01, 3@2000-01-03), [4@2000-01-03, 5@2000-01-04], and
 	 * (3@2000-01-04, 4@2000-01-05] which after normalization becomes
 	 * [3@2000-01-01, 4@2000-01-03, 5@2000-01-04], and
@@ -1029,7 +957,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 			inst1->t, inst1->valuetypid);
 	}
 	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
-		lower_inc, upper_inc, true);
+		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
 	pfree(instants); pfree(syncseq1); pfree(syncseq2);
@@ -1054,8 +982,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	if (k == 1)
 	{
 		result[0] = sequences[0];
-		*newcount = 1;	
-		return;
+		return 1;
 	}
 	int l;
 	TemporalSeq **normsequences = temporalseqarr_normalize(sequences, k, &l);
@@ -1064,8 +991,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	for (int i = 0; i < l; i++)
 		result[i] = normsequences[i];
 	pfree(normsequences);
-	*newcount = l;	
-	return;
+	return l;
 }
 
 /* 
@@ -1088,13 +1014,12 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 	 */
 	int seqcount = (count1 * 3) + count1 + count2 + 1;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seqcount);
-	int i = 0, j = 0, k = 0, countstep;
+	int i = 0, j = 0, k = 0;
 	TemporalSeq *seq1 = sequences1[i];
 	TemporalSeq *seq2 = sequences2[j];
 	while (i < count1 && j < count2)
 	{
-		temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings,
-			&countstep);
+		int countstep = temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings);
 		k += countstep - 1;
 		/* If both upper bounds are equal */
 		if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0 &&
@@ -1209,6 +1134,10 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(seq->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, func, crossings);
 		result = state;
 	}
@@ -1228,6 +1157,10 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) !=
+				MOBDB_FLAGS_GET_LINEAR(ts->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, func, crossings);
 		result = state;
 	}
@@ -1239,7 +1172,7 @@ static SkipList *
 temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
-	temporal_duration_is_valid(temp->duration);
+	ensure_valid_duration(temp->duration);
 	SkipList *result = NULL;
 	if (temp->duration == TEMPORALINST) 
 		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
@@ -1271,6 +1204,10 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 	if (skiplist_headval(state1)->duration != skiplist_headval(state2)->duration)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
+	if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state1)->flags) != 
+			MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Cannot aggregate temporal values of different interpolation")));
 
 	int count2 = state2->length;
 	Temporal **values2 = skiplist_values(state2);
@@ -1874,14 +1811,15 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 
 	Temporal **values = skiplist_values(state);
 	Temporal *result = NULL;
-	assert(values[0]->duration == TEMPORALINST || 
+	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
 		result = (Temporal *)temporali_from_temporalinstarr(
 			(TemporalInst **)values, state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_from_temporalseqarr(
-			(TemporalSeq **)values, state->length, true);
+			(TemporalSeq **)values, state->length,
+			MOBDB_FLAGS_GET_LINEAR(values[0]->flags), true);
 	pfree(values);
 	PG_RETURN_POINTER(result);
 }
@@ -1913,12 +1851,17 @@ tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 		if (skiplist_headval(state)->duration != temporals[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
+
 		skiplist_splice(fcinfo, state, temporals, count, &datum_sum_double2, false);
 	}
 	else
 		state = skiplist_make(fcinfo, temporals, count);
 
-	for (int i = 0; i< count; i++)
+	for (int i = 0; i < count; i++)
 		pfree(temporals[i]);
 	pfree(temporals);
 	PG_FREE_IF_COPY(temp, 1);
@@ -1984,12 +1927,14 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 				FLOAT8OID);
 		}
 		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count, true);
+	TemporalS *result = temporals_from_temporalseqarr(newsequences, count,
+		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

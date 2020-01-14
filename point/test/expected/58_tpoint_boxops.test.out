@@ -178,6 +178,18 @@ SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
  GEODSTBOX T((0.99726093,0.017449748,0.017452406,2000-01-01 00:00:00+00),(0.99969542,0.052264232,0.052335956,2000-01-05 00:00:00+00))
 (1 row)
 
+SELECT count(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
 SELECT expandSpatial(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', 0.5);
        expandspatial        
 ----------------------------
@@ -6564,3 +6576,27 @@ SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@20
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be of the same dimensionality
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <@ t2.b;
+ count 
+-------
+   100
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
+ count 
+-------
+   100
+(1 row)
+

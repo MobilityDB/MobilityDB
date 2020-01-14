@@ -14,9 +14,9 @@
  * basic temporal types. In this file they are defined when one of the
  * arguments is a stbox.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -435,8 +435,8 @@ left_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -460,8 +460,8 @@ overleft_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -485,8 +485,8 @@ right_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -510,8 +510,8 @@ overright_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -535,8 +535,8 @@ below_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -560,8 +560,8 @@ overbelow_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -585,8 +585,8 @@ above_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -610,8 +610,8 @@ overabove_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -635,8 +635,9 @@ front_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -660,8 +661,9 @@ overfront_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -685,7 +687,8 @@ back_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -709,8 +712,9 @@ overback_geom_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -737,8 +741,8 @@ left_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -762,8 +766,8 @@ overleft_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -787,8 +791,8 @@ right_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -812,8 +816,8 @@ overright_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -837,8 +841,8 @@ below_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -862,8 +866,8 @@ overbelow_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -887,8 +891,8 @@ above_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -912,8 +916,8 @@ overabove_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_same_dimensionality(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -937,8 +941,9 @@ front_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -962,8 +967,9 @@ overfront_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -987,8 +993,9 @@ back_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1012,8 +1019,9 @@ overback_tpoint_geom(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	tpoint_gs_same_srid(temp, gs);
-	tpoint_gs_check_Z_dimension(temp, gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_has_Z_tpoint(temp);
+	ensure_has_Z(gs);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1654,8 +1662,8 @@ left_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1674,8 +1682,8 @@ overleft_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1694,8 +1702,8 @@ right_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1714,8 +1722,8 @@ overright_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1734,8 +1742,8 @@ below_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1754,8 +1762,8 @@ overbelow_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1774,8 +1782,8 @@ above_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1794,8 +1802,8 @@ overabove_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_same_dimensionality(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1814,8 +1822,9 @@ front_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_check_Z_dimension(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_has_Z_tpoint(temp1);
+	ensure_has_Z_tpoint(temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1834,8 +1843,9 @@ overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_check_Z_dimension(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_has_Z_tpoint(temp1);
+	ensure_has_Z_tpoint(temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1854,8 +1864,9 @@ back_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_check_Z_dimension(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_has_Z_tpoint(temp1);
+	ensure_has_Z_tpoint(temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
@@ -1874,8 +1885,9 @@ overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	tpoint_same_srid(temp1, temp2);
-	tpoint_check_Z_dimension(temp1, temp2);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_has_Z_tpoint(temp1);
+	ensure_has_Z_tpoint(temp2);
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
