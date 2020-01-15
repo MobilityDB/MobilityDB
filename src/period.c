@@ -812,6 +812,7 @@ period_hash(PG_FUNCTION_ARGS)
 	PG_RETURN_UINT32(result);
 }
 
+#if MOBDB_PGSQL_VERSION >= 110000
 /*
  * Returns 64-bit value by hashing a value to a 64-bit value, with a seed.
  * Otherwise, similar to period_hash.
@@ -822,9 +823,6 @@ PG_FUNCTION_INFO_V1(period_hash_extended);
 PGDLLEXPORT Datum
 period_hash_extended(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
-		elog(ERROR, "This function is only available for PostgreSQL versions > 11.0");
-#else
 	Period	   *p = PG_GETARG_PERIOD(0);
 	Datum		seed = PG_GETARG_DATUM(1);
 	uint64		result;
@@ -852,7 +850,7 @@ period_hash_extended(PG_FUNCTION_ARGS)
 	result ^= upper_hash;
 
 	PG_RETURN_UINT64(result);
-#endif
 }
- 
+#endif
+
 /*****************************************************************************/

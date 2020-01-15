@@ -1020,9 +1020,10 @@ SELECT max(period_hash(p)) FROM tbl_period;
  2061847155
 (1 row)
 
+#if MOBDB_PGSQL_VERSION >= 110000
 SELECT max(period_hash_extended(p)) FROM tbl_period;
     max     
 ------------
  2061847155
 (1 row)
-
+#endif
