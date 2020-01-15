@@ -58,7 +58,7 @@ CREATE FUNCTION temporal_add(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'add_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_add(tint, f float)
+CREATE FUNCTION temporal_add(tint, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'add_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -95,7 +95,7 @@ CREATE OPERATOR + (
 /*****************************************************************************/
 /* tfloat + <TYPE> */
 
-CREATE FUNCTION temporal_add(tfloat, f float)
+CREATE FUNCTION temporal_add(tfloat, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'add_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -148,7 +148,7 @@ CREATE FUNCTION temporal_sub(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'sub_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_sub(tint, f float)
+CREATE FUNCTION temporal_sub(tint, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'sub_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -182,11 +182,11 @@ CREATE OPERATOR - (
 
 /* float - <TYPE> */
 
-CREATE FUNCTION temporal_sub(f float, tint)
+CREATE FUNCTION temporal_sub(float, tint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'sub_base_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_sub(f float, tfloat)
+CREATE FUNCTION temporal_sub(float, tfloat)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'sub_base_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -204,7 +204,7 @@ CREATE OPERATOR - (
 
 /* tfloat - <TYPE> */
 
-CREATE FUNCTION temporal_sub(tfloat, f float)
+CREATE FUNCTION temporal_sub(tfloat, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'sub_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -254,7 +254,7 @@ CREATE FUNCTION temporal_mult(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'mult_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_mult(tint, f float)
+CREATE FUNCTION temporal_mult(tint, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'mult_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -315,7 +315,7 @@ CREATE OPERATOR * (
 /*****************************************************************************/
 /* tfloat * <TYPE> */
 
-CREATE FUNCTION temporal_mult(tfloat, f float)
+CREATE FUNCTION temporal_mult(tfloat, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'mult_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -367,7 +367,7 @@ CREATE FUNCTION temporal_div(tint, integer)
 	RETURNS tint
 	AS 'MODULE_PATHNAME', 'div_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_div(tint, f float)
+CREATE FUNCTION temporal_div(tint, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'div_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -401,11 +401,11 @@ CREATE OPERATOR / (
 
 /* float / <TYPE> */
 
-CREATE FUNCTION temporal_div(f float, tint)
+CREATE FUNCTION temporal_div(float, tint)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'div_base_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_div(f float, tfloat)
+CREATE FUNCTION temporal_div(float, tfloat)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'div_base_temporal'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -423,7 +423,7 @@ CREATE OPERATOR / (
 
 /* tfloat / <TYPE> */
 
-CREATE FUNCTION temporal_div(tfloat, f float)
+CREATE FUNCTION temporal_div(tfloat, float)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'div_temporal_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
