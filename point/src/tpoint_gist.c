@@ -3,9 +3,9 @@
  * tpoint_gist.c
  *	  R-tree GiST index for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -381,8 +381,7 @@ size_stbox(const STBOX *box)
 	 *
 	 * The less-than cases should not happen, but if they do, say "zero".
 	 */
-	if (FLOAT8_LE(box->xmax, box->xmin) ||
-		FLOAT8_LE(box->ymax, box->ymin) ||
+	if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
 		FLOAT8_LE(box->zmax, box->zmin) ||
 		timestamp_cmp_internal(box->tmax, box->tmin) <= 0)
 		return 0.0;
@@ -395,7 +394,7 @@ size_stbox(const STBOX *box)
 	if (isnan(box->xmax) || isnan(box->ymax) || isnan(box->zmax))
 		return get_float8_infinity();
 	return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
-		(box->tmax - box->tmin) * (box->tmax - box->tmin);
+		(box->zmax - box->zmin) * (box->tmax - box->tmin);
 }
 
 /*
@@ -424,10 +423,10 @@ gist_tpoint_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float *result = (float *) PG_GETARG_POINTER(2);
-	STBOX *oristbox = (STBOX *) DatumGetPointer(origentry->key);
+	STBOX *origstbox = (STBOX *) DatumGetPointer(origentry->key);
 	STBOX *newbox = (STBOX *) DatumGetPointer(newentry->key);
 	
-	*result = (float) stbox_penalty(oristbox, newbox);
+	*result = (float) stbox_penalty(origstbox, newbox);
 	PG_RETURN_POINTER(result);
 }
 
@@ -624,8 +623,10 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 			range = context->boundingBox.xmax - context->boundingBox.xmin;
 		else if (dimNum == 1)
 			range = context->boundingBox.ymax - context->boundingBox.ymin;
-		else
+		else if (dimNum == 2)
 			range = context->boundingBox.zmax - context->boundingBox.zmin;
+		else
+			range = context->boundingBox.tmax - context->boundingBox.tmin;
 		
 		overlap = (leftUpper - rightLower) / range;
 		
@@ -799,7 +800,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 				intervalsLower[i - FirstOffsetNumber].lower = box->ymin;
 				intervalsLower[i - FirstOffsetNumber].upper = box->ymax;
 			}
-			else if (dim == 2 && hasz)
+			else if (dim == 2)
 			{
 				intervalsLower[i - FirstOffsetNumber].lower = box->zmin;
 				intervalsLower[i - FirstOffsetNumber].upper = box->zmax;

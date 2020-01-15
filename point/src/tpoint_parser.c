@@ -3,9 +3,9 @@
  * tpoint_parser.c
  *	  Functions for parsing temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -24,7 +24,7 @@ STBOX *
 stbox_parse(char **str) 
 {
 	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
-	TimestampTz tmin = 0, tmax = 0, ttmp; /* make compiler quiet */
+	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false, geodetic = false;
 	char *nextstr;
 
@@ -50,10 +50,10 @@ stbox_parse(char **str)
 		}
 		p_whitespace(str);
 	}
-	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0) 
+	else if (strncasecmp(*str, "GEODSTBOX", 9) == 0)
 	{
 		*str += 9;
-		hasz = geodetic = 1;
+		hasz = geodetic = true;
 		p_whitespace(str);
 		if (strncasecmp(*str, "T", 1) == 0)
 		{
@@ -76,9 +76,9 @@ stbox_parse(char **str)
 	if (((*str)[0]) != ',')
 		hasx = true;
 
-	if (! hasx && ! hast)
+	if (!hasx && !hast)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Could not parse TBOX")));
+			errmsg("Could not parse STBOX")));
 
 	if (hasx)
 	{
@@ -87,7 +87,7 @@ stbox_parse(char **str)
 		xmin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		/* ymin */
 		p_whitespace(str);
@@ -96,7 +96,7 @@ stbox_parse(char **str)
 		ymin = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		if (hasz)
 		{	
@@ -106,7 +106,7 @@ stbox_parse(char **str)
 			zmin = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 			*str = nextstr; 
 		}
 	}
@@ -148,7 +148,7 @@ stbox_parse(char **str)
 		xmax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
 		p_whitespace(str);
 		p_comma(str);
@@ -156,9 +156,9 @@ stbox_parse(char **str)
 		ymax = strtod(*str, &nextstr);
 		if (*str == nextstr)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-				errmsg("Could not parse TBOX: Invalid input syntax for type double")));
+				errmsg("Could not parse STBOX: Invalid input syntax for type double")));
 		*str = nextstr; 
-		if (hasz != 0)
+		if (hasz)
 		{	
 			p_whitespace(str);
 			p_comma(str);
@@ -166,8 +166,8 @@ stbox_parse(char **str)
 			zmax = strtod(*str, &nextstr);
 			if (*str == nextstr)
 				ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-					errmsg("Could not parse TBOX: Invalid input syntax for type double")));
-		*str = nextstr; 
+					errmsg("Could not parse STBOX: Invalid input syntax for type double")));
+			*str = nextstr; 
 		}
 	}
 	else
@@ -178,7 +178,7 @@ stbox_parse(char **str)
 		p_whitespace(str);
 		p_comma(str);
 	}
-	if (hast != 0)
+	if (hast)
 	{	
 		p_whitespace(str);
 		p_comma(str);
@@ -213,17 +213,17 @@ stbox_parse(char **str)
 		result->xmax = xmax;
 		result->ymin = ymin;
 		result->ymax = ymax;
-	}
-	if (hasz)
-	{
-		if (zmin > zmax)
+		if (hasz)
 		{
-			tmp = zmin;
-			zmin = zmax;
-			zmax = tmp;
+			if (zmin > zmax)
+			{
+				tmp = zmin;
+				zmin = zmax;
+				zmax = tmp;
+			}
+			result->zmin = zmin;
+			result->zmax = zmax;
 		}
-		result->zmin = zmin;
-		result->zmax = zmax;
 	}
 	if (hast)
 	{
@@ -332,7 +332,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 }
 
 static TemporalSeq *
-tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid) 
+tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	bool lower_inc = false, upper_inc = false;
@@ -383,7 +383,7 @@ tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	p_cparen(str);
 
 	TemporalSeq *result = temporalseq_from_temporalinstarr(insts, 
-		count, lower_inc, upper_inc, true);
+		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);
@@ -393,7 +393,7 @@ tpointseq_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 }
 
 static TemporalS *
-tpoints_parse(char **str, Oid basetype, int *tpoint_srid) 
+tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid) 
 {
 	p_whitespace(str);
 	/* We are sure to find an opening brace because that was the condition 
@@ -402,13 +402,13 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 
 	//FIXME: parsing twice
 	char *bak = *str;
-	TemporalSeq *seq = tpointseq_parse(str, basetype, false, tpoint_srid);
+	TemporalSeq *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	int count = 1;
 	while (p_comma(str)) 
 	{
 		count++;
 		pfree(seq);
-		seq = tpointseq_parse(str, basetype, false, tpoint_srid);
+		seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	pfree(seq);
 	if (!p_cbrace(str))
@@ -425,10 +425,11 @@ tpoints_parse(char **str, Oid basetype, int *tpoint_srid)
 	for (int i = 0; i < count; i++) 
 	{
 		p_comma(str);
-		seqs[i] = tpointseq_parse(str, basetype, false, tpoint_srid);
+		seqs[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_from_temporalseqarr(seqs, count, true);
+	TemporalS *result = temporals_from_temporalseqarr(seqs, count, 
+		linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(seqs[i]);
@@ -455,7 +456,9 @@ tpoint_parse(char **str, Oid basetype)
 		*str += 5;
 		int delim = 0;
 		tpoint_srid = 0;
-		while ((*str)[delim] != ';' && (*str)[delim] != '\0')
+		/* Delimiter will be either ',' or ';' depending on whether interpolation 
+		   is given after */
+		while ((*str)[delim] != ',' && (*str)[delim] != ';' && (*str)[delim] != '\0')
 		{
 			tpoint_srid = tpoint_srid * 10 + (*str)[delim] - '0'; 
 			delim++;
@@ -467,8 +470,16 @@ tpoint_parse(char **str, Oid basetype)
 	 * the srid_is_latlong function is not exported by PostGIS
 	if (basetype == type_oid(T_GEOGRAPHY))
 		srid_is_latlong(fcinfo, tpoint_srid);
-     */	
+	 */	
 
+	bool linear = linear_interpolation(basetype);
+	/* Starts with "Interp=Stepwise" */
+	if (strncasecmp(*str,"Interp=Stepwise;",16) == 0)
+	{
+		/* Move str after the semicolon */
+		*str += 16;
+		linear = false;
+	}
 	Temporal *result = NULL; /* keep compiler quiet */
 	/* Determine the type of the temporal point */
 	if (**str != '{' && **str != '[' && **str != '(')
@@ -478,7 +489,7 @@ tpoint_parse(char **str, Oid basetype)
 		result = (Temporal *)tpointinst_parse(str, basetype, true, &tpoint_srid);
 	}
 	else if (**str == '[' || **str == '(')
-		result = (Temporal *)tpointseq_parse(str, basetype, true, &tpoint_srid);		
+		result = (Temporal *)tpointseq_parse(str, basetype, linear, true, &tpoint_srid);		
 	else if (**str == '{')
 	{
 		bak = *str;
@@ -487,7 +498,7 @@ tpoint_parse(char **str, Oid basetype)
 		if (**str == '[' || **str == '(')
 		{
 			*str = bak;
-			result = (Temporal *)tpoints_parse(str, basetype, &tpoint_srid);
+			result = (Temporal *)tpoints_parse(str, basetype, linear, &tpoint_srid);
 		}
 		else
 		{

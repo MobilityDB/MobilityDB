@@ -5,12 +5,15 @@ MobilityDB
 
 <img src="doc/images/mobilitydb-logo.svg" width="200" alt="MobilityDB Logo" />
 
-MobilityDB is an open source software program that adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/). MobilityDB follows the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) specification from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
+MobilityDB is an open source software program that adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) object-relational database and its spatial extension [PostGIS](http://postgis.net/). MobilityDB follows the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) specification from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC). Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html). 
 
-Technically, MobilityDB is implemented as a PostgreSQL [external extension](https://www.postgresql.org/docs/current/static/external-extensions.html).
+MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member.
 
-MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/).
+<img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
+Database adapters to access MobilityDB from Python are also available
+* [python-mobilitydb](https://github.com/ULB-CoDE-WIT/python-mobilitydb) supports both the [psycopg2](https://github.com/psycopg/psycopg2) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+* [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
 
 Features
 --------
@@ -24,7 +27,7 @@ All these types have associated an extensive set of functions and operators. GiS
 
 Status
 ------
-The extension is under development. We are planning to release the first version in late 2019.
+The extension is under development. We are planning to release the first version at the begining of 2020.
 
 Requirements
 ------------
@@ -65,10 +68,12 @@ Docker container
 
 A docker container with MobilityDB and all its dependencies is available. If you have docker installed in your system you can run:
 ```
-docker run --name "mobilitydb" -d -p 25432:5432 codewit/mobilitydb
+docker pull codewit/mobilitydb
+docker volume create mobilitydb_data
+docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/postgresql codewit/mobilitydb
 ```
 
-This command downloads and executes a binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
+The first command is to download the latest most up-to-date image of MobilityDB. The second command creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. The third command executes this binary image of PostgreSQL, PostGIS, and MobilityDB with the TCP port 5432 in the container mapped to port 25432 on the Docker host (user = pw = docker, db = mobilitydb). This image is based on [this docker container](https://github.com/kartoza/docker-postgis/), please refer to it for more information.
 
 Issues
 ------
@@ -77,8 +82,8 @@ Please report any issues at the address
 
 https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 
-Manuals
--------
+Manual
+------
 
 HTML: https://docs.mobilitydb.com/nightly/
 
@@ -86,19 +91,35 @@ PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
 
 EPUB: https://docs.mobilitydb.com/nightly/mobilitydb.epub
 
+Workshop
+--------
+
+HTML: https://docs.mobilitydb.com/nightly/workshop/
+
+PDF: https://docs.mobilitydb.com/nightly/workshop/workshop.pdf
+
+EPUB: https://docs.mobilitydb.com/nightly/workshop/workshop.epub
 
 Publications
 ------------
-* Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial 2019. To appear.
+* Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial 2019. [Slides](https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf).
 * Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, [MobilityDB: A Mainstream Moving Object Database System](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19.pdf). In [Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019, p. 206-209](https://dl.acm.org/citation.cfm?id=3340991). ACM. [Best Demo Paper Award](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_BDPA.pdf). [Poster](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_Poster.pdf)
 * Alejandro A. Vaisman, Esteban Zimányi:
 [Mobility Data Warehouses](https://docs.mobilitydb.com/pub/MobilityDW_IJGI19.pdf). [ISPRS International Journal of Geo-Information, 8(4): 170, 2019](https://www.mdpi.com/2220-9964/8/4/170).
 
 Presentations
-------------
+-------------
 * [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
 * [MobilityDB: A PostgreSQL-PostGIS extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_FOSS4G_Brussels_2019.pdf), FOSS4G Belgium, 2019.
 
+Forthcoming Presentations
+-------------------------
+
+* Managing Mobility Data in PostgreSQL, [FOSSDEM PGDay](https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/), January 31, 2020
+* Trajectory Data Analysis Using MobilityDB, [FOSSDEM GeoSpatial Devroom](https://fosdem.org/2020/schedule/event/mobilitydb_/), February 2, 2020
+* Extending PostgreSQL With Spatiotemoral Data Management, [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020.
+* Road public transport in Moscow analysis: from PostGIS to MobilityDB, [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 2020
+* MobilityDB: A Spatiotemporal Data Management Extension of PostgreSQL and PostGIS, [Postgres Conference](https://postgresconf.org/conferences/2020/program/proposals/mobilitydb-extending-postgresql-to-manage-spatiotemporal-features), March 24, 2020
 
 License
 -------

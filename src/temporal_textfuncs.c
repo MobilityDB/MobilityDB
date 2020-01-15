@@ -3,9 +3,9 @@
  * temporal_textfuncs.c
  *	Text functions (textcat, lower, upper).
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -54,8 +54,8 @@ textcat_base_temporal(PG_FUNCTION_ARGS)
 {
 	Datum value = PG_GETARG_DATUM(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, 
-	 	&datum_textcat, TEXTOID, true);
+	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
+		TEXTOID, true);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
@@ -68,8 +68,8 @@ textcat_temporal_base(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum value = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal_base(temp, value, 
-	 	&datum_textcat, TEXTOID, false);
+	Temporal *result = tfunc2_temporal_base(temp, value, &datum_textcat, 
+		TEXTOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -82,7 +82,7 @@ textcat_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Temporal *result = sync_tfunc2_temporal_temporal(temp1, temp2, 
-	 	&datum_textcat, TEXTOID, NULL);
+	 	&datum_textcat, TEXTOID, false, NULL);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -98,8 +98,7 @@ PGDLLEXPORT Datum
 temporal_upper(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID, 
-		false);
+	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -110,8 +109,7 @@ PGDLLEXPORT Datum
 temporal_lower(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID,
-		false);
+	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

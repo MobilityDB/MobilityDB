@@ -5,9 +5,9 @@
  *
  * The only functions currently provided are extent and temporal centroid.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *	  Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -75,18 +75,18 @@ tpointinst_transform_tcentroid(TemporalInst *inst)
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
 		POINT3DZ point = datum_get_point3dz(temporalinst_value(inst));
-		double4 *dvalue = double4_construct(point.x, point.y, point.z, 1);
-		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		double4 dvalue;
+		double4_set(&dvalue, point.x, point.y, point.z, 1);
+		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE4));
-		pfree(dvalue);
 	}
 	else 
 	{
 		POINT2D point = datum_get_point2d(temporalinst_value(inst));
-		double3 *dvalue = double3_construct(point.x, point.y, 1);
-		result = temporalinst_make(PointerGetDatum(dvalue), inst->t,
+		double3 dvalue;
+		double3_set(&dvalue, point.x, point.y, 1);
+		result = temporalinst_make(PointerGetDatum(&dvalue), inst->t,
 			type_oid(T_DOUBLE3));
-		pfree(dvalue);
 	}
 	return result;
 }
@@ -113,7 +113,8 @@ tpointseq_transform_tcentroid(TemporalSeq *seq)
 		instants[i] = tpointinst_transform_tcentroid(inst);
 	}
 	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, false);
+		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -178,6 +179,7 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 	STBOX box1, *result = NULL;
+	memset(&box1, 0, sizeof(STBOX));
 
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
@@ -185,30 +187,30 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	/* Null box and non-null temporal, return the bbox of the temporal */
 	if (!box)
 	{
-		result = palloc(sizeof(STBOX));
+		result = palloc0(sizeof(STBOX));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null box and null temporal, return the box */
 	if (!temp)
 	{
-		result = palloc(sizeof(STBOX));
+		result = palloc0(sizeof(STBOX));
 		memcpy(result, box, sizeof(STBOX));
 		PG_RETURN_POINTER(result);
 	}
 
+	temporal_bbox(&box1, temp);
 	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Argument STBOX must have both X and T dimensions")));
-	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(temp->flags))
+	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(box1.flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has Z dimension but the other does not")));
-	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(box1.flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has geodetic coordinates but the other does not")));
 
-	temporal_bbox(&box1, temp);
-	result = palloc(sizeof(STBOX));
+	result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box->xmax, box1.xmax);
 	result->ymax = Max(box->ymax, box1.ymax);
 	result->tmax = Max(box->tmax, box1.tmax);
@@ -256,7 +258,7 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("One argument has geodetic coordinates but the other does not")));
 
-	result = palloc(sizeof(STBOX));
+	result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box1->xmax, box2->xmax);
 	result->ymax = Max(box1->ymax, box2->ymax);
 	result->tmax = Max(box1->tmax, box2->tmax);
@@ -307,6 +309,11 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 		if (skiplist_headval(state)->duration != temporals[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
+
 		skiplist_splice(fcinfo, state, temporals, count, func, false);
 	}
 	else
@@ -435,12 +442,14 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			pfree(DatumGetPointer(value));
 		}
 		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
-			seq->count, seq->period.lower_inc, seq->period.upper_inc, true);
+			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count, true);
+	TemporalS *result = temporals_from_temporalseqarr(newsequences, count, 
+		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

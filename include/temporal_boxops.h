@@ -3,9 +3,9 @@
  * temporal_boxops.h
  *	  Bounding box operators for temporal types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -48,8 +48,12 @@ extern void temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,
 	Oid valuetypid);
 extern void temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
 extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
-	bool lower_inc, bool upper_inc);
-extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
+	bool lower_inc, bool upper_inc, bool linear);
+extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count, bool linear);
+
+/* Shift the bounding box of a Temporal with an Interval */
+
+extern void shift_bbox(void *box, Oid valuetypid, Interval *interval);
 
 /* Expand the bounding box of a Temporal with a TemporalInst */
 

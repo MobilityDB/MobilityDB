@@ -3,9 +3,9 @@
  * tpoint.h
  *	  Functions for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -69,24 +69,25 @@
 #define WKB_INT_SIZE 4 /* Internal use only */
 #define WKB_BYTE_SIZE 1 /* Internal use only */
 
-/* Durations */
-#define WKB_TEMPORALINST 1
-#define WKB_TEMPORALI 2
-#define WKB_TEMPORALSEQ 3
-#define WKB_TEMPORALS 4
+/* Duration */
+#define WKB_TEMPORALINST    1
+#define WKB_TEMPORALI       2
+#define WKB_TEMPORALSEQ     3
+#define WKB_TEMPORALS       4
 
 /* Period bounds */
-#define WKB_LOWER_INC	0x01
-#define WKB_UPPER_INC 	0x02
+#define WKB_LOWER_INC   0x01
+#define WKB_UPPER_INC   0x02
 
 /* Machine endianness */
 #define XDR 0 /* big endian */
 #define NDR 1 /* little endian */
 
 /* Variation flags */
-#define WKB_ZFLAG  		0x10
-#define WKB_SRIDFLAG 	0x20
-#define WKB_BBOXFLAG 	0x40
+#define WKB_ZFLAG           0x10
+#define WKB_SRIDFLAG        0x20
+#define WKB_LINEAR_INTERP 	0x40
+#define WKB_BBOXFLAG        0x80 /* Currently not used */
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c
@@ -103,12 +104,16 @@ extern Datum tpoint_in(PG_FUNCTION_ARGS);
 extern Datum tpoint_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum tpoint_ever_equals(PG_FUNCTION_ARGS);
-extern Datum tpoint_always_equals(PG_FUNCTION_ARGS);
+
+extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
+
+extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_values_internal(Temporal *temp);
 
-extern bool tpointinst_ever_equals(TemporalInst *inst, GSERIALIZED *value);
+extern bool tpointinst_ever_eq(TemporalInst *inst, GSERIALIZED *value);
 
 extern Datum tgeompointi_values(TemporalI *ti);
 extern Datum tgeogpointi_values(TemporalI *ti);

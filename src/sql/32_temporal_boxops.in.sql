@@ -3,32 +3,30 @@
  * temporal_boxops.sql
  *	  Bounding tbox operators for temporal types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
- /*****************************************************************************
- * Casting for period
- *****************************************************************************/
-
-CREATE FUNCTION period(tbool)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period(ttext)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'temporal_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tbool AS period) WITH FUNCTION period(tbool);
-CREATE CAST (ttext AS period) WITH FUNCTION period(ttext);
-
 /*****************************************************************************
  * Casting for tbox
  *****************************************************************************/
+
+CREATE FUNCTION floatrange(tbox)
+	RETURNS floatrange
+	AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+CREATE FUNCTION period(tbox)
+	RETURNS period
+	AS 'MODULE_PATHNAME', 'tbox_to_period'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+
+CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
+CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
+
+/*****************************************************************************/
 
 CREATE FUNCTION tbox(integer)
 	RETURNS tbox
@@ -68,11 +66,11 @@ CREATE FUNCTION tbox(periodset)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(tint)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'tnumber_tbox'
+	AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(tfloat)
 	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'tnumber_tbox'
+	AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (int AS tbox) WITH FUNCTION tbox(int) AS IMPLICIT;

@@ -4139,15 +4139,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT geometry 'SRID=5676;Point(1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <</ geometry 'Point(1 1 1)';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4438,17 +4438,17 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' />> geometry 'Point(1 1 1)';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' />> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4741,15 +4741,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT geometry 'SRID=5676;Point(1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' &</ geometry 'Point(1 1 1)';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' &</ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -5042,15 +5042,15 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT geometry 'SRID=5676;Point(1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT geometry 'Point(1 1 1)' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'SRID=5676;Point(1 1)';
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' /&> geometry 'Point(1 1 1)';
-ERROR:  The temporal point and the geometry must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' /&> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The temporal points must have Z dimension
+ERROR:  The temporal point must have Z dimension
 SELECT timestamptz '2000-01-01' <<# tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -9465,5 +9465,101 @@ SELECT geometry 'Point(1 1)'::stbox #&> tgeompoint '[Point(1 1)@20000-01-01, Poi
  ?column? 
 ----------
  
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
+ count 
+-------
+  4434
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
+ count 
+-------
+  4434
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
+ count 
+-------
+  4420
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
+ count 
+-------
+  4420
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
+ count 
+-------
+  4365
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
+ count 
+-------
+  4365
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
+ count 
+-------
+  5050
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
+ count 
+-------
+  4950
+(1 row)
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
+ count 
+-------
+  5050
 (1 row)
 

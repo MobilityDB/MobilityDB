@@ -6,15 +6,16 @@
  * These functions are based on those of the file rangetypes_selfuncs.c.
  * Estimates are based on histograms of lower and upper bounds. 
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
 #include "time_selfuncs.h"
 
+#include <math.h>
 #include <port.h>
 #include <access/htup_details.h>
 #include <utils/lsyscache.h>
@@ -307,7 +308,7 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 static float8
 get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
 {
-	return period_duration_secs(bound2->val, bound1->val);
+	return period_to_secs(bound2->val, bound1->val);
 }
 
 /*

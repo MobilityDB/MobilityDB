@@ -13,9 +13,9 @@
  * arguments: only the value dimension, only the time dimension, or both
  * the value and the time dimensions.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -170,7 +170,7 @@ bool
 temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	bool result = false;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_eq_internal((Period *)box1, (Period *)box2);
@@ -189,7 +189,7 @@ int
 temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	int result = 0;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		result = period_cmp_internal((Period *)box1, (Period *)box2);
@@ -216,7 +216,7 @@ void
 temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(valuetypid);
+	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 		period_set((Period *)box, t, t, true, true);
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
@@ -281,7 +281,7 @@ void
 temporali_make_bbox(void *box, TemporalInst **instants, int count) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(instants[0]->valuetypid);
+	ensure_temporal_base_type(instants[0]->valuetypid);
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
 		temporalinstarr_to_period((Period *)box, instants, count, true, true);
@@ -299,10 +299,10 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 /* Make the bounding box a temporal sequence from its values */
 void
 temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
-	bool lower_inc, bool upper_inc) 
+	bool lower_inc, bool upper_inc, bool linear) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(instants[0]->valuetypid);
+	ensure_temporal_base_type(instants[0]->valuetypid);
 	Oid valuetypid = instants[0]->valuetypid;
 	if (instants[0]->valuetypid == BOOLOID || 
 		instants[0]->valuetypid == TEXTOID)
@@ -348,10 +348,10 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 
 /* Make the bounding box a temporal sequence from its values */
 void
-temporals_make_bbox(void *box, TemporalSeq **sequences, int count) 
+temporals_make_bbox(void *box, TemporalSeq **sequences, int count, bool linear) 
 {
 	/* Only external types have bounding box */
-	base_type_oid(sequences[0]->valuetypid);
+	ensure_temporal_base_type(sequences[0]->valuetypid);
 	Oid valuetypid = sequences[0]->valuetypid;
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID) 
 		temporalseqarr_to_period_internal((Period *)box, sequences, count);
@@ -363,6 +363,52 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 #endif
 	return;
+}
+
+/*****************************************************************************
+ * Shift the bounding box of a Temporal with an Interval
+ *****************************************************************************/
+
+void 
+shift_bbox(void *box, Oid valuetypid, Interval *interval)
+{
+	ensure_temporal_base_type(valuetypid);
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	{
+        Period *period = (Period *)box;
+		period->lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->lower), PointerGetDatum(interval)));
+		period->upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->upper), PointerGetDatum(interval)));
+		return;
+	}
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	{
+		TBOX *tbox = (TBOX *)box;
+		tbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
+		tbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#ifdef WITH_POSTGIS
+	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+		valuetypid == type_oid(T_GEOMETRY))
+	{
+		STBOX *stbox = (STBOX *)box;
+		stbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
+		stbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#endif
 }
 
 /*****************************************************************************
@@ -409,7 +455,7 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 bool 
 temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 {
-	base_type_oid(ti->valuetypid);
+	ensure_temporal_base_type(ti->valuetypid);
 	bool result = false;
 	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
 	{
@@ -435,7 +481,7 @@ temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
 bool 
 temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 {
-	base_type_oid(seq->valuetypid);
+	ensure_temporal_base_type(seq->valuetypid);
 	bool result = false;
 	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
 	{
@@ -461,7 +507,7 @@ temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
 bool 
 temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 {
-	base_type_oid(ts->valuetypid);
+	ensure_temporal_base_type(ts->valuetypid);
 	bool result = false;
 	if (ts->valuetypid == BOOLOID || ts->valuetypid == TEXTOID)
 	{
@@ -494,7 +540,7 @@ temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
 void
 number_to_box(TBOX *box, Datum value, Oid valuetypid)
 {
-	numeric_base_type_oid(valuetypid);
+	ensure_numeric_base_type(valuetypid);
 	if (valuetypid == INT4OID)
 		box->xmin = box->xmax = (double)(DatumGetInt32(value));
 	else if (valuetypid == FLOAT8OID)
@@ -567,7 +613,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 void
 range_to_tbox_internal(TBOX *box, RangeType *range)
 {
-	numrange_type_oid(range->rangetypid);
+	ensure_numrange_type(range->rangetypid);
 	if (range->rangetypid == type_oid(T_INTRANGE))
 	{
 		box->xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -887,7 +933,7 @@ contains_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -901,7 +947,7 @@ contains_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -915,8 +961,8 @@ contains_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = contains_period_period_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -933,7 +979,7 @@ contained_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -947,7 +993,7 @@ contained_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = contains_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -961,8 +1007,8 @@ contained_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = contains_period_period_internal(&p2, &p1);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -979,7 +1025,7 @@ overlaps_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = overlaps_period_period_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -993,7 +1039,7 @@ overlaps_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = overlaps_period_period_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -1007,8 +1053,8 @@ overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = overlaps_period_period_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -1025,7 +1071,7 @@ same_bbox_period_temporal(PG_FUNCTION_ARGS)
 	Period *p = PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = period_eq_internal(p, &p1);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_BOOL(result);
@@ -1039,7 +1085,7 @@ same_bbox_temporal_period(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
 	Period p1;
-	temporal_timespan_internal(&p1, temp);
+	temporal_period(&p1, temp);
 	bool result = period_eq_internal(&p1, p);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_BOOL(result);
@@ -1053,8 +1099,8 @@ same_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Period p1, p2;
-	temporal_timespan_internal(&p1, temp1);
-	temporal_timespan_internal(&p2, temp2);
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
 	bool result = period_eq_internal(&p1, &p2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);

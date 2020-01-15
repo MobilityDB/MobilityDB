@@ -3,9 +3,9 @@
  * tpoint_selfuncs.c
  *		Functions for selectivity estimation of operators on temporal points
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -50,14 +50,6 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
 		return false;
 
 	/* Increment complete! */
-	return true;
-}
-
-/* Zero out an ND_BOX */
-static int
-nd_box_init(ND_BOX *a)
-{
-	memset(a, 0, sizeof(ND_BOX));
 	return true;
 }
 
@@ -921,13 +913,13 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		}
 	}
 
-    /* 
+	/* 
 	 * Transform the constant into an STBOX
 	 */
-    memset(&constBox, 0, sizeof(STBOX));
-    found = tpoint_const_to_stbox(other, &constBox);
-    /* In the case of unknown constant */
-    if (!found)
+	memset(&constBox, 0, sizeof(STBOX));
+	found = tpoint_const_to_stbox(other, &constBox);
+	/* In the case of unknown constant */
+	if (!found)
 		PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
 
 	assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
@@ -953,7 +945,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 		/* Transform the STBOX into a Period */
 		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
 		duration = TYPMOD_GET_DURATION(vardata.atttypmod);
-		temporal_duration_all_is_valid(duration);
+		ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
 		if (duration == TEMPORALINST)

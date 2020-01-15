@@ -4,9 +4,9 @@
  * 		Selectivity functions for the temporal point types
  * Most definitions come from PostGIS file gserialized_estimate.c
  * 
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -19,6 +19,7 @@
 
 #include "oidcache.h"
 #include "tpoint.h"
+#include "tpoint_analyze.h"
 
 /**
 * The maximum number of dimensions our code can handle.
@@ -61,26 +62,6 @@
 */
 #define FALLBACK_ND_SEL 0.2
 #define FALLBACK_ND_JOINSEL 0.3
-
-/*
- * N-dimensional box type for calculations, to avoid doing
- * explicit axis conversions from STBOX in all calculations
- * at every step.
- */
-typedef struct ND_BOX_T
-{
-	float4 min[ND_DIMS];
-	float4 max[ND_DIMS];
-} ND_BOX;
-
-/**
-* N-dimensional box index type
-*/
-typedef struct ND_IBOX_T
-{
-	int min[ND_DIMS];
-	int max[ND_DIMS];
-} ND_IBOX;
 
 /*
  * N-dimensional statistics structure. Well, actually

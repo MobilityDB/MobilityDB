@@ -3,9 +3,9 @@
  * tbox.c
  *	  Basic functions for TBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -16,6 +16,7 @@
 #include <utils/timestamp.h>
 
 #include "period.h"
+#include "rangetypes_ext.h"
 #include "temporal.h"
 #include "temporal_parser.h"
 #include "temporal_util.h"
@@ -48,9 +49,9 @@ tbox_in(PG_FUNCTION_ARGS)
 char *
 tbox_to_string(const TBOX *box)
 {
-	static int sz = MAXTBOXLEN + 1;
+	static int size = MAXTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
-	str = (char *)palloc(sz);
+	str = (char *) palloc(size);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -60,15 +61,15 @@ tbox_to_string(const TBOX *box)
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
 		if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, sz, "TBOX((%.8g,%s),(%.8g,%s))", 
+			snprintf(str, size, "TBOX((%.8g,%s),(%.8g,%s))", 
 				box->xmin, strtmin, box->xmax, strtmax);
 		else 
-			snprintf(str, sz, "TBOX((%.8g,),(%.8g,))", 
+			snprintf(str, size, "TBOX((%.8g,),(%.8g,))", 
 				box->xmin,box->xmax);
 	}
 	else
 		/* Missing X dimension */
-		snprintf(str, sz, "TBOX((,%s),(,%s))", 
+		snprintf(str, size, "TBOX((,%s),(,%s))", 
 			strtmin, strtmax);
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
@@ -170,6 +171,95 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	}
 	result->tmin = tmin;
 	result->tmax = tmax;
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+/* Get the minimum value of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_xmin);
+
+PGDLLEXPORT Datum
+tbox_xmin(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->xmin);
+}
+
+/* Get the maximum value of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_xmax);
+
+PGDLLEXPORT Datum
+tbox_xmax(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_FLOAT8(box->xmax);
+}
+
+/* Get the minimum timestamp of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_tmin);
+
+PGDLLEXPORT Datum
+tbox_tmin(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmin);
+}
+
+/* Get the maximum timestamp of a TBOX value */
+
+PG_FUNCTION_INFO_V1(tbox_tmax);
+
+PGDLLEXPORT Datum
+tbox_tmax(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	PG_RETURN_TIMESTAMPTZ(box->tmax);
+}
+
+/*****************************************************************************
+ * Casting
+ *****************************************************************************/
+
+ /* Cast a TBOX value as a floatrange value */
+
+PG_FUNCTION_INFO_V1(tbox_to_floatrange);
+
+PGDLLEXPORT Datum
+tbox_to_floatrange(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_X(box->flags))
+		PG_RETURN_NULL();
+	RangeType *result = range_make(Float8GetDatum(box->xmin), Float8GetDatum(box->xmax), 
+		true, true, FLOAT8OID);
+	PG_RETURN_POINTER(result);
+}
+
+/* Cast a TBOX value as a Period value */
+
+PG_FUNCTION_INFO_V1(tbox_to_period);
+
+PGDLLEXPORT Datum
+tbox_to_period(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	if (!MOBDB_FLAGS_GET_T(box->flags))
+		PG_RETURN_NULL();
+	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
 }
 

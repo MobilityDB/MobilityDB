@@ -35,6 +35,11 @@ SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 
 -------------------------------------------------------------------------------
 
+SELECT count(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
+
+-------------------------------------------------------------------------------
+
 SELECT expandSpatial(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', 0.5);
 SELECT expandSpatial(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', 0.5);
 SELECT expandSpatial(stbox 'STBOX T((1.0, 2.0, 2000-01-03), (1.0, 2.0, 2000-01-03))', 0.5);
@@ -1298,5 +1303,12 @@ SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'SRID=5676;Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'Point(1 1 1)';
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
+
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <@ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
 
 -------------------------------------------------------------------------------

@@ -3,9 +3,9 @@
  * tpoint_distance.sql
  *	  Temporal distance for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -14,7 +14,7 @@
  * temporal geometry points
  *****************************************************************************/
 
-/* geometry <-> <TemporalType> */
+/* geometry <-> <duration> */
 
 CREATE FUNCTION distance(geometry, tgeompoint)
 	RETURNS tfloat
@@ -49,7 +49,7 @@ CREATE OPERATOR <-> (
  * temporal geography points
  *****************************************************************************/
 
-/* geography <-> <TemporalType> */
+/* geography <-> <duration> */
 
 CREATE FUNCTION distance(geography, tgeogpoint)
 	RETURNS tfloat
