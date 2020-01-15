@@ -15,7 +15,7 @@ PGCTL="pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -
 
 #FIXME: this is cheating
 PGSODIR=`pg_config --pkglibdir`
-POSTGIS=`find $PGSODIR -name 'postgis-3.so' | head -1`
+POSTGIS=`find $PGSODIR -name 'postgis-2.5.so' | head -1`
 
 case $CMD in
 setup)
