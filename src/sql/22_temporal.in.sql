@@ -250,7 +250,7 @@ CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true,
 	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
-	upper_inc boolean DEFAULT true, linear boolean DEFAULT false)
+	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
