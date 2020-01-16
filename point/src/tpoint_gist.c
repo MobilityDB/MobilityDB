@@ -1155,4 +1155,19 @@ gist_tpoint_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
+#if MOBDB_PGSQL_VERSION < 110000
+/*****************************************************************************
+ * Decompress method for temporal point types (result in an stbox)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_tpoint_decompress);
+
+PGDLLEXPORT Datum
+gist_tpoint_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+#endif
+
 /*****************************************************************************/

@@ -99,4 +99,32 @@ gist_temporal_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
+#if MOBDB_PGSQL_VERSION < 110000
+/*****************************************************************************
+ * Decompress method for temporal types (result in a period)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_temporal_decompress);
+
+PGDLLEXPORT Datum
+gist_temporal_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+
+/*****************************************************************************
+ * Decompress method for temporal numeric types (result in a tbox)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_tnumber_decompress);
+
+PGDLLEXPORT Datum
+gist_tnumber_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+#endif
+
 /*****************************************************************************/

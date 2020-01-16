@@ -67,6 +67,9 @@ CREATE OPERATOR CLASS gist_tbool_ops
 	FUNCTION	1	gist_tbool_consistent(internal, tbool, smallint, oid, internal),
 	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_tbool_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_period_decompress(internal),
+#endif
 	FUNCTION	5	gist_period_penalty(internal, internal, internal),
 	FUNCTION	6	gist_period_picksplit(internal, internal),
 	FUNCTION	7	gist_period_same(period, period, internal);
@@ -81,6 +84,12 @@ CREATE FUNCTION gist_tint_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_tnumber_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#if MOBDB_PGSQL_VERSION < 110000
+CREATE FUNCTION gist_tnumber_decompress(internal)
+	RETURNS internal
+AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif
 
 CREATE OPERATOR CLASS gist_tint_ops
 	DEFAULT FOR TYPE tint USING gist AS
@@ -145,6 +154,9 @@ CREATE OPERATOR CLASS gist_tint_ops
 	FUNCTION	1	gist_tint_consistent(internal, tint, smallint, oid, internal),
 	FUNCTION	2	gist_tbox_union(internal, internal),
 	FUNCTION	3	gist_tint_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_tnumber_decompress(internal),
+#endif
 	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
 	FUNCTION	6	gist_tbox_picksplit(internal, internal),
 	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
@@ -223,6 +235,9 @@ CREATE OPERATOR CLASS gist_tfloat_ops
 	FUNCTION	1	gist_tfloat_consistent(internal, tfloat, smallint, oid, internal),
 	FUNCTION	2	gist_tbox_union(internal, internal),
 	FUNCTION	3	gist_tfloat_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_tnumber_decompress(internal),
+#endif
 	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
 	FUNCTION	6	gist_tbox_picksplit(internal, internal),
 	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
@@ -269,6 +284,9 @@ CREATE OPERATOR CLASS gist_ttext_ops
 	FUNCTION	1	gist_ttext_consistent(internal, ttext, smallint, oid, internal),
 	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_ttext_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_period_decompress(internal),
+#endif
 	FUNCTION	5	gist_period_penalty(internal, internal, internal),
 	FUNCTION	6	gist_period_picksplit(internal, internal),
 	FUNCTION	7	gist_period_same(period, period, internal);

@@ -780,7 +780,7 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
 
 #if MOBDB_PGSQL_VERSION < 110000
 /*****************************************************************************
- * Decompress methods for time types (result in a period)
+ * Decompress method for time types (result in a period)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(gist_period_decompress);
