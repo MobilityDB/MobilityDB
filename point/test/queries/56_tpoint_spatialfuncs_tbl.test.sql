@@ -24,10 +24,10 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 -------------------------------------------------------------------------------
 -- Transform by using Gauss Kruger Projection that is used in Secondo
 
-SELECT MAX(ST_X(startValue(transform_gk(temp)))) from tbl_tgeompoint;
+SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) from tbl_tgeompoint;
 
-SELECT MAX(ST_X(transform_gk(g))) from tbl_geompoint LIMIT 10;
-SELECT MAX(ST_X(ST_StartPoint(transform_gk(g)))) from tbl_geomlinestring LIMIT 10;
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) from tbl_geompoint LIMIT 10;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) from tbl_geomlinestring LIMIT 10;
 
 -------------------------------------------------------------------------------
 
@@ -51,19 +51,19 @@ SELECT trajectory(temp) FROM tbl_tgeogpoint ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeompoint3D ORDER BY k LIMIT 10 ;
 SELECT trajectory(temp) FROM tbl_tgeogpoint3D ORDER BY k LIMIT 10 ;
 
-SELECT MAX(length(temp)) FROM tbl_tgeompoint;
-SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
 -- Tests independent of PROJ version
 SELECT count(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
 SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(temp));
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
 -- Tests intended to avoid floating point precision errors
 SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
