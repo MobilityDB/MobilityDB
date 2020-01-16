@@ -42,22 +42,22 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
    100
 (1 row)
 
-SELECT MAX(ST_X(startValue(transform_gk(temp)))) from tbl_tgeompoint;
-       max       
+SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) from tbl_tgeompoint;
+      round      
 -----------------
  12685412.960367
 (1 row)
 
-SELECT MAX(ST_X(transform_gk(g))) from tbl_geompoint LIMIT 10;
-       max        
-------------------
- 15523281.6704085
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) from tbl_geompoint LIMIT 10;
+      round      
+-----------------
+ 15523281.670409
 (1 row)
 
-SELECT MAX(ST_X(ST_StartPoint(transform_gk(g)))) from tbl_geomlinestring LIMIT 10;
-       max        
-------------------
- 13567136.0865787
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) from tbl_geomlinestring LIMIT 10;
+      round      
+-----------------
+ 13567136.086579
 (1 row)
 
 SELECT tgeogpoint(temp) FROM tbl_tgeompoint LIMIT 10;
@@ -310,16 +310,16 @@ SELECT trajectory(temp) FROM tbl_tgeogpoint3D ORDER BY k LIMIT 10 ;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140
 (10 rows)
 
-SELECT MAX(length(temp)) FROM tbl_tgeompoint;
-       max        
-------------------
- 2517.03444019264
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint;
+    round    
+-------------
+ 2517.034440
 (1 row)
 
-SELECT MAX(length(temp)) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 2974.57730244914
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tgeompoint3D;
+    round    
+-------------
+ 2974.577302
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint WHERE length(temp) = ST_Length(trajectory(temp));
@@ -334,40 +334,40 @@ SELECT count(*) FROM tbl_tgeogpoint3D WHERE length(temp) = ST_Length(trajectory(
    100
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint;
-       max        
-------------------
- 33709.1589600302
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint;
+    round     
+--------------
+ 33709.158960
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint;
-       max        
-------------------
- 12494.2315442694
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint;
+    round     
+--------------
+ 12494.231544
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 58410.8961074691
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+    round     
+--------------
+ 58410.896107
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tgeogpoint3D;
-       max        
-------------------
- 164523.440795882
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tgeogpoint3D;
+     round     
+---------------
+ 164523.440796
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint;
-       max        
-------------------
- 1.60651499595649
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint;
+  round   
+----------
+ 1.606515
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tgeompoint3D;
-       max        
-------------------
- 1.86021761279442
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tgeompoint3D;
+  round   
+----------
+ 1.860218
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint where startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp)) 
