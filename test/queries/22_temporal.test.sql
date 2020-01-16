@@ -1889,21 +1889,21 @@ SELECT integral(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@200
 SELECT integral(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 SELECT integral(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
 
-SELECT twAvg(tint '1@2000-01-01');
-SELECT twAvg(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT twAvg(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT twAvg(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT twAvg(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT twAvg(tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT round(twAvg(tint '1@2000-01-01')::numeric, 6);
+SELECT round(twAvg(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}')::numeric, 6);
+SELECT round(twAvg(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]')::numeric, 6);
+SELECT round(twAvg(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]')::numeric, 6);
+SELECT round(twAvg(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}')::numeric, 6);
+SELECT round(twAvg(tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}')::numeric, 6);
 
-SELECT twAvg(tint '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}');
+SELECT round(twAvg(tint '{[1@2000-01-01], [2@2000-01-02], [1@2000-01-03]}')::numeric, 6);
 
-SELECT twAvg(tfloat '1.5@2000-01-01');
-SELECT twAvg(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT twAvg(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT twAvg(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT twAvg(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT twAvg(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT round(twAvg(tfloat '1.5@2000-01-01')::numeric, 6);
+SELECT round(twAvg(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}')::numeric, 6);
+SELECT round(twAvg(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]')::numeric, 6);
+SELECT round(twAvg(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]')::numeric, 6);
+SELECT round(twAvg(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}')::numeric, 6);
+SELECT round(twAvg(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}')::numeric, 6);
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing

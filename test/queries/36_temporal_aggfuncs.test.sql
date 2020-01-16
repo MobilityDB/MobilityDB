@@ -136,11 +136,11 @@ SELECT tcount(temp) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
-SELECT tmin(temp) FROM (VALUES
+SELECT round(tmin(temp), 6) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
-SELECT tmax(temp) FROM (VALUES
+SELECT round(tmax(temp), 6) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
@@ -148,7 +148,7 @@ SELECT tsum(temp) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
-SELECT tavg(temp) FROM (VALUES
+SELECT round(tavg(temp), 6) FROM (VALUES
 ('[1@2000-01-01, 2@2000-01-03, 1@2000-01-05, 2@2000-01-07]'::tfloat), 
 ('[3@2000-01-02, 4@2000-01-06]'::tfloat)) t(temp);
 
