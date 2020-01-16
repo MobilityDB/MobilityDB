@@ -22,6 +22,12 @@ CREATE FUNCTION gist_timestampset_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_timestampset_compress'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#if MOBDB_PGSQL_VERSION < 110000
+CREATE FUNCTION gist_period_decompress(internal)
+	RETURNS internal
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif
 CREATE FUNCTION gist_period_penalty(internal, internal, internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
@@ -77,6 +83,9 @@ CREATE OPERATOR CLASS gist_timestampset_ops
 	FUNCTION	1	gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
 	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_timestampset_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_period_decompress(internal),
+#endif
 	FUNCTION	5	gist_period_penalty(internal, internal, internal),
 	FUNCTION	6	gist_period_picksplit(internal, internal),
 	FUNCTION	7	gist_period_same(period, period, internal);
@@ -131,6 +140,9 @@ CREATE OPERATOR CLASS gist_period_ops
 	FUNCTION	1	gist_period_consistent(internal, period, smallint, oid, internal),
 	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_period_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_period_decompress(internal),
+#endif
 	FUNCTION	5	gist_period_penalty(internal, internal, internal),
 	FUNCTION	6	gist_period_picksplit(internal, internal),
 	FUNCTION	7	gist_period_same(period, period, internal),
@@ -186,6 +198,9 @@ CREATE OPERATOR CLASS gist_periodset_ops
 	FUNCTION	1	gist_periodset_consistent(internal, periodset, smallint, oid, internal),
 	FUNCTION	2	gist_period_union(internal, internal),
 	FUNCTION	3	gist_periodset_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+	FUNCTION	4	gist_period_decompress(internal),
+#endif
 	FUNCTION	5	gist_period_penalty(internal, internal, internal),
 	FUNCTION	6	gist_period_picksplit(internal, internal),
 	FUNCTION	7	gist_period_same(period, period, internal);

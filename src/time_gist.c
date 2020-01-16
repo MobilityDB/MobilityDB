@@ -778,6 +778,21 @@ gist_periodset_compress(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(entry);
 }
 
+#if MOBDB_PGSQL_VERSION < 110000
+/*****************************************************************************
+ * Decompress methods for time types (result in a period)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(gist_period_decompress);
+
+PGDLLEXPORT Datum
+gist_period_decompress(PG_FUNCTION_ARGS)
+{
+	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	PG_RETURN_POINTER(entry);
+}
+#endif
+
 /*****************************************************************************
  * Penalty method for time types
  *****************************************************************************/
