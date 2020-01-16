@@ -825,6 +825,42 @@ temporali_constructor(PG_FUNCTION_ARGS)
 
 /* Make a TemporalSeq from an array of TemporalInst */
 
+PG_FUNCTION_INFO_V1(tlinearseq_constructor);
+
+PGDLLEXPORT Datum
+tlinearseq_constructor(PG_FUNCTION_ARGS)
+{
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	bool lower_inc = PG_GETARG_BOOL(1);
+	bool upper_inc = PG_GETARG_BOOL(2);
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("A temporal sequence must have at least one temporal instant")));
+	}
+
+	TemporalInst **instants = (TemporalInst **)temporalarr_extract(array, &count);
+	/* Ensure that all values are of type temporal instant */
+	for (int i = 0; i < count; i++)
+	{
+		if (instants[i]->duration != TEMPORALINST)
+		{
+			pfree(instants);
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Input values must be temporal instants")));
+		}
+	}
+
+	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants,
+		count, lower_inc, upper_inc, false, true);
+	pfree(instants);
+	PG_FREE_IF_COPY(array, 0);
+	PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(temporalseq_constructor);
 
 PGDLLEXPORT Datum
