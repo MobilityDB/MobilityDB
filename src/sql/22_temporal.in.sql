@@ -242,12 +242,12 @@ CREATE FUNCTION ttexti(ttext[])
 CREATE FUNCTION tboolseq(tbool[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
+	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintseq(tint[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS tint
-	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
+	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
@@ -257,7 +257,7 @@ CREATE FUNCTION tfloatseq(tfloat[], lower_inc boolean DEFAULT true,
 CREATE FUNCTION ttextseq(ttext[], lower_inc boolean DEFAULT true, 
 	upper_inc boolean DEFAULT true)
 	RETURNS ttext
-	AS 'MODULE_PATHNAME', 'temporalseq_constructor'
+	AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* Temporal sequence set */
