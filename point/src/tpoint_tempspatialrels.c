@@ -174,11 +174,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 	
 	/* Look for intersections */
 	Datum line = geompoint_trajectory(value1, value2);
-#if MOBDB_POSTGIS_VERSION >= 30
-	Datum intersections = call_function2(ST_Intersection, line, geo);
-#else	
 	Datum intersections = call_function2(intersection, line, geo);
-#endif
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -424,11 +420,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	
 	/* Look for intersections */
 	Datum line = geompoint_trajectory(value1, value2);
-#if MOBDB_POSTGIS_VERSION >= 30
-	Datum intersections = call_function2(ST_Intersection, line, geo);
-#else	
 	Datum intersections = call_function2(intersection, line, geo);
-#endif
 	if (call_function1(LWGEOM_isempty, intersections))
 	{	
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));

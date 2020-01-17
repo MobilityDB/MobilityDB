@@ -28,21 +28,13 @@
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
-#if MOBDB_POSTGIS_VERSION >= 30
-	return call_function2(ST_Distance, geom1, geom2);
-#else	
 	return call_function2(distance, geom1, geom2);
-#endif
 }
 
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
-#if MOBDB_POSTGIS_VERSION >= 30
-	return call_function2(ST_3DDistance, geom1, geom2);
-#else	
 	return call_function2(distance3d, geom1, geom2);
-#endif
 }
 
 /* Distance between two geographies */
