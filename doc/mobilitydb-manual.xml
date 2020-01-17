@@ -1175,6 +1175,14 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 			</listitem>
 
 			<listitem>
+				<para><varname>tdiscseq</varname> represents any temporal type with sequence duration and a discrete base type,</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>tcontseq</varname> represents any temporal type with sequence duration and a continuous base type,</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
 			</listitem>
 
@@ -1522,7 +1530,8 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			<itemizedlist>
 				<listitem>
 					<para>Constructor for temporal types of sequence duration</para>
-					<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
+					<para><varname>tdiscseq(ttypeinst[], boolean = true, boolean = true}): tdiscseq</varname></para>
+					<para><varname>tcontseq(ttypeinst[], boolean = true, boolean = true, linear = true}): tcontseq</varname></para>
 					<programlisting>
 SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
 	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);

@@ -344,6 +344,7 @@ extern void temporal_write(Temporal* temp, StringInfo buf);
 
 extern Datum temporalinst_constructor(PG_FUNCTION_ARGS);
 extern Datum temporali_constructor(PG_FUNCTION_ARGS);
+extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum temporalseq_constructor(PG_FUNCTION_ARGS);
 extern Datum temporals_constructor(PG_FUNCTION_ARGS);
 
