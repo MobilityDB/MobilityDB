@@ -334,7 +334,7 @@ temporal_typinfo(Oid temptypid, Oid* valuetypid)
 	ScanKeyData scandata;
 	ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ, 
 		ObjectIdGetDatum(temptypid));
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 		TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
 #else
 		HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);

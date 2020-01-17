@@ -17,7 +17,7 @@
 #include <access/gist.h>
 #include <utils/builtins.h>
 
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 #include <utils/float.h>
 #endif
 

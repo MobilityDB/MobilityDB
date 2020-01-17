@@ -185,7 +185,7 @@ get_actual_variable_endpoint(Relation heapRel,
 							 ScanKey scankeys,
 							 int16 typLen,
 							 bool typByVal,
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 							 TupleTableSlot *tableslot,
 #endif
 							 MemoryContext outercontext,
@@ -254,14 +254,14 @@ get_actual_variable_endpoint(Relation heapRel,
 							&vmbuffer))
 		{
 			/* Rats, we have to visit the heap to check visibility */
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 			if (!index_fetch_heap(index_scan, tableslot))
 #else
 			if (index_fetch_heap(index_scan) == NULL)
 #endif
 				continue;		/* no visible tuple, try next index entry */
 
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 			/* We don't actually need the heap tuple for anything */
 			ExecClearTuple(tableslot);
 #endif
@@ -392,7 +392,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			MemoryContext oldcontext;
 			Relation	heapRel;
 			Relation	indexRel;
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 			TupleTableSlot *slot;
 #endif
 			int16		typLen;
@@ -414,7 +414,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			indexRel = index_open(index->indexoid, AccessShareLock);
 
 			/* build some stuff needed for indexscan execution */
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 			slot = table_slot_create(heapRel, NULL);
 #endif
 			get_typlenbyval(vardata->atttype, &typLen, &typByVal);
@@ -438,7 +438,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 														 slot,
 #endif
 														 oldcontext,
@@ -460,7 +460,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 														 scankeys,
 														 typLen,
 														 typByVal,
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 														 slot,
 #endif
 														 oldcontext,
@@ -468,7 +468,7 @@ get_actual_variable_range(PlannerInfo *root, VariableStatData *vardata,
 			}
 
 			/* Clean everything up */
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 			ExecDropSingleTupleTableSlot(slot);
 #endif
 			index_close(indexRel, AccessShareLock);

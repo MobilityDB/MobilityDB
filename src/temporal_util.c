@@ -211,7 +211,7 @@ call_recv(Oid type, StringInfo buf)
 
 /* Call PostgreSQL function with 1 to 4 arguments */
 
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 Datum
 call_function1(PGFunction func, Datum arg1)
 {

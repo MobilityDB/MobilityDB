@@ -13,7 +13,7 @@
 #include "oidcache.h"
 
 
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 #include <access/tableam.h>
 #endif
 #include <access/heapam.h>
@@ -164,7 +164,7 @@ populate_oidcache()
 		Relation rel = heap_open(catalog, AccessShareLock);
 		TupleDesc tupDesc = rel->rd_att;
 		ScanKeyData scandata;
-#if MOBDB_PGSQL_VERSION >= 120
+#if MOBDB_PGSQL_VERSION >= 120000
 		TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
 #else
 		HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
