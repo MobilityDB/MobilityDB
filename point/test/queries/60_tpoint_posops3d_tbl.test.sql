@@ -969,6 +969,10 @@ WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 
 -------------------------------------------------------------------------------
 
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+
+-------------------------------------------------------------------------------
+
 SELECT * FROM test_georelativeposops
 WHERE noidx <> gistidx 
 #if MOBDB_PGSQL_VERSION >= 110000
@@ -976,7 +980,6 @@ OR noidx <> spgistidx OR gistidx <> spgistidx
 #endif
 ORDER BY op, leftarg, rightarg;
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
 DROP TABLE test_georelativeposops;
 
 -------------------------------------------------------------------------------
