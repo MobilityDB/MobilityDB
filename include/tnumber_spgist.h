@@ -17,6 +17,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+#include "temporal.h"
 
 /*****************************************************************************/
 

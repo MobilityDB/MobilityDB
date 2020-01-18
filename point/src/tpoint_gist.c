@@ -15,6 +15,10 @@
 #include <utils/timestamp.h>
 #include <access/gist.h>
 
+#if MOBDB_PGSQL_VERSION >= 120000
+#include <utils/float.h>
+#endif
+
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "tpoint.h"

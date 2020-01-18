@@ -15,9 +15,8 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include <liblwgeom.h>
-
 #include "temporal.h"
+#include <liblwgeom.h>
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

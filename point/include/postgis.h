@@ -44,7 +44,6 @@ extern Datum transform(PG_FUNCTION_ARGS);
 extern Datum buffer(PG_FUNCTION_ARGS);
 extern Datum centroid(PG_FUNCTION_ARGS);
 extern Datum geography_centroid(PG_FUNCTION_ARGS);
-extern Datum ST_GeometricMedian(PG_FUNCTION_ARGS);
 
 extern Datum geography_from_geometry(PG_FUNCTION_ARGS);
 extern Datum geometry_from_geography(PG_FUNCTION_ARGS);
@@ -64,9 +63,6 @@ extern Datum within(PG_FUNCTION_ARGS);
 extern Datum relate_full(PG_FUNCTION_ARGS);
 extern Datum relate_pattern(PG_FUNCTION_ARGS);
 extern Datum geomunion(PG_FUNCTION_ARGS);
-extern Datum ST_Scale(PG_FUNCTION_ARGS);
-extern Datum ST_Snap(PG_FUNCTION_ARGS);
-extern Datum ST_UnaryUnion(PG_FUNCTION_ARGS);
 
 extern Datum intersection(PG_FUNCTION_ARGS);
 extern Datum difference(PG_FUNCTION_ARGS);
@@ -152,4 +148,8 @@ extern Datum gserialized_analyze_nd(PG_FUNCTION_ARGS);
 
 #define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
 
+#include "temporal.h"
+#include <liblwgeom.h>
+
 #endif /* __TEMPORAL_POSTGIS_H__ */
+/*****************************************************************************/

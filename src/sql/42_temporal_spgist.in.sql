@@ -10,6 +10,8 @@
  *
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE FUNCTION spgist_temporal_inner_consistent(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
@@ -18,13 +20,11 @@ CREATE FUNCTION spgist_temporal_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION >= 110000
 CREATE FUNCTION spgist_temporal_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
-	
+
 /******************************************************************************/
 
 CREATE FUNCTION spgist_tnumber_config(internal, internal)
@@ -47,12 +47,10 @@ CREATE FUNCTION spgist_tnumber_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION >= 110000
 CREATE FUNCTION spgist_tnumber_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
 
 /******************************************************************************/
 
@@ -87,7 +85,6 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 	FUNCTION	2	spgist_period_choose(internal, internal),
 	FUNCTION	3	spgist_period_picksplit(internal, internal),
 	FUNCTION	4	spgist_temporal_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
 	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal);
 #else
 	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal),

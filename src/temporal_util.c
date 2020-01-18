@@ -211,12 +211,96 @@ call_recv(Oid type, StringInfo buf)
 
 /* Call PostgreSQL function with 1 to 4 arguments */
 
+#if MOBDB_PGSQL_VERSION >= 120000
+Datum
+call_function1(PGFunction func, Datum arg1)
+{
+	LOCAL_FCINFO(fcinfo, 1);
+	FmgrInfo flinfo;
+	memset(&flinfo, 0, sizeof(flinfo));
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(*fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
+	fcinfo->args[0].value = arg1;
+	fcinfo->args[0].isnull = false;
+	result = (*func) (fcinfo);
+	if (fcinfo->isnull)
+		elog(ERROR, "Function %p returned NULL", (void *) func);
+	return result;
+}
+
+Datum
+call_function2(PGFunction func, Datum arg1, Datum arg2)
+{
+	LOCAL_FCINFO(fcinfo, 2);
+	FmgrInfo flinfo;
+	memset(&flinfo, 0, sizeof(flinfo)) ;
+	flinfo.fn_nargs = 2;
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL, NULL);
+	fcinfo->args[0].value = arg1;
+	fcinfo->args[0].isnull = false;
+	fcinfo->args[1].value = arg2;
+	fcinfo->args[1].isnull = false;
+	result = (*func) (fcinfo);
+	if (fcinfo->isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+	return result;
+}
+
+Datum
+call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
+{
+	LOCAL_FCINFO(fcinfo, 3);
+	FmgrInfo flinfo;
+	memset(&flinfo, 0, sizeof(flinfo)) ;
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL, NULL);
+	fcinfo->args[0].value = arg1;
+	fcinfo->args[0].isnull = false;
+	fcinfo->args[1].value = arg2;
+	fcinfo->args[1].isnull = false;
+	fcinfo->args[2].value = arg3;
+	fcinfo->args[2].isnull = false;
+	result = (*func) (fcinfo);
+	if (fcinfo->isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+	return result;
+}
+
+Datum
+call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
+{
+	LOCAL_FCINFO(fcinfo, 4);
+	FmgrInfo flinfo;
+	memset(&flinfo, 0, sizeof(flinfo)) ;
+	flinfo.fn_mcxt = CurrentMemoryContext;
+	Datum result;
+	InitFunctionCallInfoData(*fcinfo, &flinfo, 4, DEFAULT_COLLATION_OID, NULL, NULL);
+	fcinfo->args[0].value = arg1;
+	fcinfo->args[0].isnull = false;
+	fcinfo->args[1].value = arg2;
+	fcinfo->args[1].isnull = false;
+	fcinfo->args[2].value = arg3;
+	fcinfo->args[2].isnull = false;
+	fcinfo->args[3].value = arg4;
+	fcinfo->args[3].isnull = false;
+	result = (*func) (fcinfo);
+	if (fcinfo->isnull)
+		elog(ERROR, "function %p returned NULL", (void *) func);
+	return result;
+}
+
+#else
+
 Datum
 call_function1(PGFunction func, Datum arg1)
 {
 	FunctionCallInfoData fcinfo;
 	FmgrInfo flinfo;
-	memset(&flinfo, 0, sizeof(flinfo)) ;
+	memset(&flinfo, 0, sizeof(flinfo));
 	flinfo.fn_mcxt = CurrentMemoryContext;
 	Datum result;
 	InitFunctionCallInfoData(fcinfo, &flinfo, 1, DEFAULT_COLLATION_OID, NULL, NULL);
@@ -290,6 +374,7 @@ call_function4(PGFunction func, Datum arg1, Datum arg2, Datum arg3, Datum arg4)
 		elog(ERROR, "function %p returned NULL", (void *) func);
 	return result;
 }
+#endif
 
 /*****************************************************************************
  * Array functions

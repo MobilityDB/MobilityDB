@@ -1624,7 +1624,8 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
+		Datum value = temporalinst_value(inst);
+		if (DatumGetBool(call_function2(intersects, value, geom)))
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;
@@ -1942,7 +1943,8 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (!DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
+		Datum value = temporalinst_value(inst);
+		if (!DatumGetBool(call_function2(intersects, value, geom)))
 			instants[k++] = inst;
 	}
 	TemporalI *result = NULL;

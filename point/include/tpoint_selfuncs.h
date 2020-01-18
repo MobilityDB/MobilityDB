@@ -15,7 +15,6 @@
 
 #include <postgres.h>
 #include <catalog/pg_statistic.h>
-#include <nodes/relation.h>
 #include <utils/selfuncs.h>
 
 #include "oidcache.h"

@@ -34,7 +34,7 @@
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
 
-#define MOBDB_LIB_VERSION_STR "MobilityDB 1.0alpha1"
+#define MOBDB_LIB_VERSION_STR "MobilityDB 1.0beta1"
 #ifndef MOBDB_PGSQL_VERSION
 #error Unconfigured source code -- please run cmake
 #endif

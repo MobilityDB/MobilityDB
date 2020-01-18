@@ -15,7 +15,6 @@
 
 #include "projection_gk.h"
 
-#include <liblwgeom.h>
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "postgis.h"
