@@ -1,23 +1,23 @@
 DROP INDEX IF EXISTS tbl_tbool_gist_idx;
 NOTICE:  index "tbl_tbool_gist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
-NOTICE:  index "tbl_tbool_spgist_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tint_gist_idx;
 NOTICE:  index "tbl_tint_gist_idx" does not exist, skipping
-DROP INDEX
-DROP INDEX IF EXISTS tbl_tint_spgist_idx;
-NOTICE:  index "tbl_tint_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
 NOTICE:  index "tbl_tfloat_gist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
-NOTICE:  index "tbl_tfloat_spgist_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 NOTICE:  index "tbl_ttext_gist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
+NOTICE:  index "tbl_tbool_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+NOTICE:  index "tbl_tint_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
+NOTICE:  index "tbl_tfloat_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
 NOTICE:  index "tbl_ttext_spgist_idx" does not exist, skipping
@@ -30,8 +30,9 @@ CREATE TABLE test_relativeposops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 CREATE TABLE
 INSERT INTO test_relativeposops(op, leftarg, rightarg, noidx) 
 SELECT '<<', 'int', 'tint', count(*) FROM tbl_int, tbl_tint WHERE i << temp;
@@ -2786,7 +2787,8 @@ SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp 
 WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 UPDATE 1
 SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx | spgistidx 
 ----+---------+----------+-------+---------+-----------

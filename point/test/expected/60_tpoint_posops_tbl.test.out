@@ -1,11 +1,11 @@
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
 NOTICE:  index "tbl_tgeompoint_gist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
-NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
 NOTICE:  index "tbl_tgeogpoint_gist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 NOTICE:  index "tbl_tgeogpoint_spgist_idx" does not exist, skipping
@@ -18,8 +18,9 @@ CREATE TABLE test_georelativeposops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 CREATE TABLE
 INSERT INTO test_georelativeposops(op, leftarg, rightarg, noidx)
 SELECT '<<', 'geometry', 'tgeompoint', count(*) FROM tbl_geometry, tbl_tgeompoint WHERE g << temp;
@@ -1046,7 +1047,9 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp 
 WHERE op = '#&>' and leftarg = 'tgeogpoint' and rightarg = 'periodset';
 UPDATE 1
 SELECT * FROM test_georelativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx | spgistidx 
 ----+---------+----------+-------+---------+-----------
 (0 rows)
