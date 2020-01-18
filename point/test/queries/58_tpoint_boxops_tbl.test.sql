@@ -984,7 +984,6 @@ WHERE noidx <> gistidx
 OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
-
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 
