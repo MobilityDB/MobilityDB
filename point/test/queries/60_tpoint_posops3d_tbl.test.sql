@@ -958,12 +958,15 @@ WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 
 -------------------------------------------------------------------------------
 
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+
+-------------------------------------------------------------------------------
+
 SELECT * FROM test_georelativeposops
 WHERE noidx <> gistidx 
 OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
 DROP TABLE test_georelativeposops;
 
 -------------------------------------------------------------------------------
