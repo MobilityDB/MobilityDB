@@ -13,14 +13,14 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_period_big_gist_idx;
 NOTICE:  index "tbl_period_big_gist_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
-NOTICE:  index "tbl_period_big_spgist_idx" does not exist, skipping
-DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_big_gist_idx;
 NOTICE:  index "tbl_periodset_big_gist_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
 NOTICE:  index "tbl_periodset_big_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
+NOTICE:  index "tbl_period_big_spgist_idx" does not exist, skipping
 DROP INDEX
 CREATE INDEX tbl_timestampset_big_gist_idx ON tbl_timestampset_big USING GIST(ts);
 CREATE INDEX

@@ -1,15 +1,13 @@
 ﻿-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tbool_gist_idx;
-DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_tint_gist_idx;
-DROP INDEX IF EXISTS tbl_tint_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
-DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
+
+DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
 DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
 
 -------------------------------------------------------------------------------
@@ -20,8 +18,9 @@ CREATE TABLE test_relativeposops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 
 -------------------------------------------------------------------------------
 -- Left
@@ -2367,7 +2366,8 @@ WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
 DROP INDEX tbl_tbool_spgist_idx;
