@@ -2786,14 +2786,6 @@ UPDATE test_relativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp #&> t2.temp )
 WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 UPDATE 1
-SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx 
-OR noidx <> spgistidx OR gistidx <> spgistidx
-ORDER BY op, leftarg, rightarg;
- op | leftarg | rightarg | noidx | gistidx | spgistidx 
-----+---------+----------+-------+---------+-----------
-(0 rows)
-
 DROP INDEX tbl_tbool_spgist_idx;
 DROP INDEX
 DROP INDEX tbl_tint_spgist_idx;
@@ -2802,5 +2794,13 @@ DROP INDEX tbl_tfloat_spgist_idx;
 DROP INDEX
 DROP INDEX tbl_ttext_spgist_idx;
 DROP INDEX
+SELECT * FROM test_relativeposops
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
+ op | leftarg | rightarg | noidx | gistidx | spgistidx 
+----+---------+----------+-------+---------+-----------
+(0 rows)
+
 DROP TABLE test_relativeposops;
 DROP TABLE
