@@ -1,9 +1,9 @@
 ﻿-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint_gist_idx;
-DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_tgeogpoint_gist_idx;
+
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 
 -------------------------------------------------------------------------------
@@ -14,8 +14,9 @@ CREATE TABLE test_geoboundboxops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 
 -------------------------------------------------------------------------------
 -- <type> op tgeompoint
@@ -979,7 +980,10 @@ WHERE op = '~=' and leftarg = 'tgeogpoint' and rightarg = 'tgeogpoint';
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_geoboundboxops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx; 
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
+
 
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;

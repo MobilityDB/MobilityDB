@@ -4,12 +4,12 @@
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
-DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_period_gist_idx;
-DROP INDEX IF EXISTS tbl_period_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_periodset_gist_idx;
+
+
+DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
+DROP INDEX IF EXISTS tbl_period_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
 
 -------------------------------------------------------------------------------
@@ -20,8 +20,9 @@ CREATE table test_timeops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	,spgistidx bigint 
+);
 
 -------------------------------------------------------------------------------
 
@@ -847,7 +848,8 @@ WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_timeops
-WHERE noidx <> gistidx OR noidx <> spgistidx OR gistidx <> spgistidx
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
 -------------------------------------------------------------------------------

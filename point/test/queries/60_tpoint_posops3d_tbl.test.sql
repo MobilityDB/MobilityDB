@@ -11,8 +11,9 @@ create TABLE test_georelativeposops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 
 -------------------------------------------------------------------------------
 
@@ -958,7 +959,9 @@ WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_georelativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx;
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
 DROP TABLE test_georelativeposops;
