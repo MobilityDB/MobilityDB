@@ -16,11 +16,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
-#if MOBDB_POSTGIS_VERSION < 30
 #include <liblwgeom.h>
-#else
-#include "postgis.h"
-#endif
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:
