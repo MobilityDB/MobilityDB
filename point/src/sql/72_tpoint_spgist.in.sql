@@ -10,6 +10,8 @@
  *
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE FUNCTION spgist_tpoint_config(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
@@ -30,12 +32,10 @@ CREATE FUNCTION spgist_tpoint_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION >= 110000
 CREATE FUNCTION spgist_tpoint_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
 
 /******************************************************************************/
 
@@ -118,12 +118,8 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
 	FUNCTION	2	spgist_tpoint_choose(internal, internal),
 	FUNCTION	3	spgist_tpoint_picksplit(internal, internal),
 	FUNCTION	4	spgist_tpoint_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tpoint_compress(internal);
-#endif
 
 /******************************************************************************/
 
@@ -166,9 +162,6 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
 	FUNCTION	2	spgist_tpoint_choose(internal, internal),
 	FUNCTION	3	spgist_tpoint_picksplit(internal, internal),
 	FUNCTION	4	spgist_tpoint_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tpoint_compress(internal);
 #endif

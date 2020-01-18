@@ -11,6 +11,8 @@
  *
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 #include "temporal_spgist.h"
 
 #include <access/spgist.h>
@@ -324,7 +326,6 @@ spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION >= 110000
 PG_FUNCTION_INFO_V1(spgist_temporal_compress);
 
 PGDLLEXPORT Datum

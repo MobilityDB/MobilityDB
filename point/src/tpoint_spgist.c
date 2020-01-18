@@ -70,6 +70,8 @@
  *
  *****************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 #include "tpoint_spgist.h"
 
 #include <access/spgist.h>
@@ -401,9 +403,7 @@ spgist_tpoint_config(PG_FUNCTION_ARGS)
 	Oid stbox_oid = type_oid(T_STBOX);
 	cfg->prefixType = stbox_oid;	/* A type represented by its bounding box */
 	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-#if MOBDB_PGSQL_VERSION >= 110000
 	cfg->leafType = stbox_oid;
-#endif
 	cfg->canReturnData = false;
 	cfg->longValuesOK = false;
 
@@ -766,7 +766,6 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION >= 110000
 PG_FUNCTION_INFO_V1(spgist_tpoint_compress);
 
 PGDLLEXPORT Datum

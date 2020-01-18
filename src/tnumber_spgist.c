@@ -72,6 +72,8 @@
  *-----------------------------------------------------------------------------
  */
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 #include "tnumber_spgist.h"
 
 #include <access/spgist.h>
@@ -297,9 +299,7 @@ spgist_tnumber_config(PG_FUNCTION_ARGS)
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 	cfg->prefixType = type_oid(T_TBOX);	/* A type represented by its bounding box */
 	cfg->labelType = VOIDOID;	/* We don't need node labels. */
-#if MOBDB_PGSQL_VERSION >= 110000
 	cfg->leafType = type_oid(T_TBOX);
-#endif
 	cfg->canReturnData = false;
 	cfg->longValuesOK = false;
 	PG_RETURN_VOID();
@@ -452,18 +452,10 @@ spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS)
 		
 		if (subtype == type_oid(T_INTRANGE))
 			intrange_to_tbox_internal(&queries[i],
-#if MOBDB_PGSQL_VERSION < 110000
-				DatumGetRangeType(in->scankeys[i].sk_argument));
-#else
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-#endif
 		else if (subtype == type_oid(T_FLOATRANGE))
 			floatrange_to_tbox_internal(&queries[i],
-#if MOBDB_PGSQL_VERSION < 110000
-				DatumGetRangeType(in->scankeys[i].sk_argument));
-#else
 				DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-#endif
 		else if (subtype == type_oid(T_TBOX))
 			memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument), sizeof(TBOX));
 		else if (temporal_type_oid(subtype))
@@ -589,22 +581,14 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
 		
 		if (subtype == type_oid(T_INTRANGE))
 		{
-#if MOBDB_PGSQL_VERSION < 110000
-			RangeType *range = DatumGetRangeType(in->scankeys[i].sk_argument);
-#else
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-#endif
-			intrange_to_tbox_internal(&query, range);									  
+			intrange_to_tbox_internal(&query, range);
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_FLOATRANGE))
 		{
-#if MOBDB_PGSQL_VERSION < 110000
-			RangeType *range = DatumGetRangeType(in->scankeys[i].sk_argument);
-#else
 			RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-#endif
-			floatrange_to_tbox_internal(&query, range);									  
+			floatrange_to_tbox_internal(&query, range);
 			res = index_leaf_consistent_tbox(key, &query, strategy);
 		}
 		else if (subtype == type_oid(T_TBOX))
@@ -633,7 +617,6 @@ spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION >= 110000
 PG_FUNCTION_INFO_V1(spgist_tnumber_compress);
 
 PGDLLEXPORT Datum

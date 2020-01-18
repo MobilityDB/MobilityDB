@@ -85,11 +85,8 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 	FUNCTION	2	spgist_period_choose(internal, internal),
 	FUNCTION	3	spgist_period_picksplit(internal, internal),
 	FUNCTION	4	spgist_temporal_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_temporal_compress(internal);
-#endif
 
 /******************************************************************************/
 
@@ -156,12 +153,8 @@ CREATE OPERATOR CLASS spgist_tint_ops
 	FUNCTION	2	spgist_tnumber_choose(internal, internal),
 	FUNCTION	3	spgist_tnumber_picksplit(internal, internal),
 	FUNCTION	4	spgist_tnumber_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tnumber_compress(internal);
-#endif
 
 /******************************************************************************/
 
@@ -228,12 +221,8 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	FUNCTION	2	spgist_tnumber_choose(internal, internal),
 	FUNCTION	3	spgist_tnumber_picksplit(internal, internal),
 	FUNCTION	4	spgist_tnumber_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tnumber_compress(internal);
-#endif
 
 /******************************************************************************/
 
@@ -268,9 +257,6 @@ CREATE OPERATOR CLASS spgist_ttext_ops
 	FUNCTION	2	spgist_period_choose(internal, internal),
 	FUNCTION	3	spgist_period_picksplit(internal, internal),
 	FUNCTION	4	spgist_temporal_inner_consistent(internal, internal),
-#if MOBDB_PGSQL_VERSION < 110000
-	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal);
-#else
 	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_temporal_compress(internal);
 #endif
