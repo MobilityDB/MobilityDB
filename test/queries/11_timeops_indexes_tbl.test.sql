@@ -7,7 +7,6 @@ DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX IF EXISTS tbl_period_gist_idx;
 DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
-
 DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
 DROP INDEX IF EXISTS tbl_period_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
@@ -234,6 +233,12 @@ INSERT INTO test_timeops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'period', count(*) FROM tbl_periodset, tbl_period WHERE ps #&> p;
 INSERT INTO test_timeops(op, leftarg, rightarg, noidx) 
 SELECT '#&>', 'periodset', 'periodset', count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps;
+
+-------------------------------------------------------------------------------
+
+DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
+DROP INDEX IF EXISTS tbl_period_gist_idx;
+DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
 -------------------------------------------------------------------------------
 
@@ -544,6 +549,8 @@ DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX IF EXISTS tbl_period_gist_idx;
 DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
+-------------------------------------------------------------------------------
+
 CREATE INDEX tbl_timestampset_spgist_idx ON tbl_timestampset USING SPGIST(ts);
 CREATE INDEX tbl_period_spgist_idx ON tbl_period USING SPGIST(p);
 CREATE INDEX tbl_periodset_spgist_idx ON tbl_periodset USING SPGIST(ps);
@@ -847,9 +854,17 @@ WHERE op = '#&>' AND leftarg = 'periodset' AND rightarg = 'periodset';
 
 -------------------------------------------------------------------------------
 
+DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
+DROP INDEX IF EXISTS tbl_period_spgist_idx;
+DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
+
+-------------------------------------------------------------------------------
+
 SELECT * FROM test_timeops
 WHERE noidx <> gistidx 
 OR noidx <> spgistidx OR gistidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
+
+DROP TABLE test_timeops;
 
 -------------------------------------------------------------------------------
