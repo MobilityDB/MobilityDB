@@ -965,11 +965,11 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 
-#endif
-
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+
+#endif
 
 -------------------------------------------------------------------------------
 

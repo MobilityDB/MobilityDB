@@ -871,6 +871,8 @@ WHERE op = '#&>' and leftarg = 'tgeogpoint' and rightarg = 'periodset';
 DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint_spgist_idx;
 
+#endif
+
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_georelativeposops
