@@ -331,16 +331,27 @@ SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';
  f
 (1 row)
 
-SELECT period_hash('[2000-01-01,2000-01-02]');
- period_hash 
--------------
- -1505124228
+SELECT period_hash('[2000-01-01,2000-01-02]') = period_hash('[2000-01-01,2000-01-02]');
+ ?column? 
+----------
+ t
 (1 row)
 
-#if MOBDB_PGSQL_VERSION >= 110000
-SELECT period_hash_extended('[2000-01-01,2000-01-02]');
- period_hash_extended 
-----------------------
-          -1505124228
+SELECT period_hash('[2000-01-01,2000-01-02]') <> period_hash('[2000-01-02,2000-01-02]');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period_hash_extended('[2000-01-01,2000-01-02]') = period_hash_extended('[2000-01-01,2000-01-02]');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT period_hash_extended('[2000-01-01,2000-01-02]') <> period_hash_extended('[2000-01-02,2000-01-02]');
+ ?column? 
+----------
+ t
 (1 row)
 #endif
