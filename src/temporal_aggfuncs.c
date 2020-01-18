@@ -554,6 +554,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pq_sendint64(buf, state->extrasize);
 #endif
 	if (state->extra)
+	
 		pq_sendbytes(buf, state->extra, state->extrasize);
 	pfree(values);
 }
