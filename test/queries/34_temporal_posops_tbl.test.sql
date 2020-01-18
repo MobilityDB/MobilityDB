@@ -5,10 +5,12 @@ DROP INDEX IF EXISTS tbl_tint_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
+#if MOBDB_PGSQL_VERSION >= 110000
 DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
 DROP INDEX IF EXISTS tbl_tint_spgist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
 DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
+#endif
 
 -------------------------------------------------------------------------------
 
@@ -19,7 +21,9 @@ CREATE TABLE test_relativeposops(
 	rightarg text, 
 	noidx bigint,
 	gistidx bigint
+#if MOBDB_PGSQL_VERSION >= 110000
 	, spgistidx bigint
+#endif
 );
 
 -------------------------------------------------------------------------------
@@ -1501,6 +1505,10 @@ DROP INDEX IF EXISTS tbl_tint_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
+-------------------------------------------------------------------------------
+
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE INDEX tbl_tbool_spgist_idx ON tbl_tbool USING SPGIST(temp);
 CREATE INDEX tbl_tint_spgist_idx ON tbl_tint USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_spgist_idx ON tbl_tfloat USING SPGIST(temp);
@@ -2365,15 +2373,21 @@ WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 
 -------------------------------------------------------------------------------
 
-SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx 
-OR noidx <> spgistidx OR gistidx <> spgistidx
-ORDER BY op, leftarg, rightarg;
-
 DROP INDEX tbl_tbool_spgist_idx;
 DROP INDEX tbl_tint_spgist_idx;
 DROP INDEX tbl_tfloat_spgist_idx;
 DROP INDEX tbl_ttext_spgist_idx;
+
+#endif
+
+-------------------------------------------------------------------------------
+
+SELECT * FROM test_relativeposops
+WHERE noidx <> gistidx 
+#if MOBDB_PGSQL_VERSION >= 110000
+OR noidx <> spgistidx OR gistidx <> spgistidx
+#endif
+ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_relativeposops;
 

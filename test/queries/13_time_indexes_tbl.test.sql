@@ -5,13 +5,14 @@ ANALYZE tbl_period_big;
 ANALYZE tbl_periodset_big;
 
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
-DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_period_big_gist_idx;
 DROP INDEX IF EXISTS tbl_periodset_big_gist_idx;
 
+#if MOBDB_PGSQL_VERSION >= 110000
+DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
+#endif
 
 -------------------------------------------------------------------------------
 
@@ -73,6 +74,8 @@ DROP INDEX IF EXISTS tbl_periodset_big_gist_idx;
 
 -------------------------------------------------------------------------------
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE INDEX tbl_timestampset_big_spgist_idx ON tbl_timestampset_big USING SPGIST(ts);
 CREATE INDEX tbl_period_big_spgist_idx ON tbl_period_big USING SPGIST(p);
 CREATE INDEX tbl_periodset_big_spgist_idx ON tbl_periodset_big USING SPGIST(ps);
@@ -128,6 +131,8 @@ SELECT count(*) FROM tbl_periodset_big WHERE ps #&> period '[2001-01-01, 2001-02
 DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
+
+#endif
 
 -------------------------------------------------------------------------------
 

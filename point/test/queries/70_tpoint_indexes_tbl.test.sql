@@ -6,8 +6,10 @@ ANALYZE tbl_tgeogpoint3D_big;
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_gist_idx;
 
+#if MOBDB_PGSQL_VERSION >= 110000
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_spgist_idx;
+#endif
 
 -------------------------------------------------------------------------------
 
@@ -51,6 +53,8 @@ DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_gist_idx;
 
 -------------------------------------------------------------------------------
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE INDEX tbl_tgeompoint3D_big_spgist_idx ON tbl_tgeompoint3D_big USING SPGIST(temp);
 CREATE INDEX tbl_tgeogpoint3D_big_spgist_idx ON tbl_tgeogpoint3D_big USING SPGIST(temp);
 
@@ -88,5 +92,7 @@ SELECT count(*) FROM tbl_tgeogpoint3D_big WHERE temp #&> period '[2001-01-01, 20
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_tgeogpoint3D_big_spgist_idx;
+
+#endif
 
 -------------------------------------------------------------------------------

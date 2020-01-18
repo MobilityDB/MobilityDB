@@ -10,10 +10,12 @@ DROP INDEX IF EXISTS tbl_tint_big_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_big_gist_idx;
 DROP INDEX IF EXISTS tbl_ttext_big_gist_idx;
 
+#if MOBDB_PGSQL_VERSION >= 110000
 DROP INDEX IF EXISTS tbl_tbool_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_tint_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_ttext_big_spgist_idx;
+#endif
 
 -------------------------------------------------------------------------------
 
@@ -85,6 +87,8 @@ DROP INDEX IF EXISTS tbl_ttext_big_gist_idx;
 
 -------------------------------------------------------------------------------
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE INDEX tbl_tbool_big_spgist_idx ON tbl_tbool_big USING SPGIST(temp);
 CREATE INDEX tbl_tint_big_spgist_idx ON tbl_tint_big USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_big_spgist_idx ON tbl_tfloat_big USING SPGIST(temp);
@@ -151,6 +155,7 @@ DROP INDEX IF EXISTS tbl_tint_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_ttext_big_spgist_idx;
 
+#endif
 
 -------------------------------------------------------------------------------
 

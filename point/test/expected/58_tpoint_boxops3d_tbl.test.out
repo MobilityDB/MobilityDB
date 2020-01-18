@@ -1178,6 +1178,10 @@ UPDATE test_geoboundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' and leftarg = 'tgeogpoint3D' and rightarg = 'tgeogpoint3D';
 UPDATE 1
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tgeogpoint3D_spgist_idx;
+DROP INDEX
 SELECT * FROM test_geoboundboxops
 WHERE noidx <> gistidx 
 OR noidx <> spgistidx OR gistidx <> spgistidx
@@ -1186,9 +1190,5 @@ ORDER BY op, leftarg, rightarg;
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
-DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
-DROP INDEX
-DROP INDEX IF EXISTS tbl_tgeogpoint3D_spgist_idx;
-DROP INDEX
 DROP TABLE test_geoboundboxops;
 DROP TABLE

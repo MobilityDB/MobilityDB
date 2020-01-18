@@ -1,7 +1,9 @@
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
+#if MOBDB_PGSQL_VERSION >= 110000
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+#endif
 
 -------------------------------------------------------------------------------
 
@@ -12,7 +14,9 @@ create TABLE test_georelativeposops(
 	rightarg text, 
 	noidx bigint,
 	gistidx bigint
+#if MOBDB_PGSQL_VERSION >= 110000
 	, spgistidx bigint
+#endif
 );
 
 -------------------------------------------------------------------------------
@@ -608,6 +612,11 @@ WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_gist_idx;
+
+-------------------------------------------------------------------------------
+
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE INDEX tbl_tgeompoint3D_spgist_idx ON tbl_tgeompoint3D USING SPGIST(temp);
 
 -------------------------------------------------------------------------------
@@ -956,11 +965,15 @@ UPDATE test_georelativeposops
 SET spgistidx = ( SELECT count(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp #&> ps )
 WHERE op = '#&>' and leftarg = 'tgeogpoint3D' and rightarg = 'periodset';
 
+#endif
+
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_georelativeposops
 WHERE noidx <> gistidx 
+#if MOBDB_PGSQL_VERSION >= 110000
 OR noidx <> spgistidx OR gistidx <> spgistidx
+#endif
 ORDER BY op, leftarg, rightarg;
 
 DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;

@@ -1082,6 +1082,7 @@ DROP INDEX IF EXISTS tbl_tint_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
+-------------------------------------------------------------------------------
 #if MOBDB_PGSQL_VERSION >= 110000
 
 CREATE INDEX tbl_tbool_spgist_idx ON tbl_tbool USING SPGIST(temp);
@@ -1717,6 +1718,13 @@ UPDATE test_boundboxops
 SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ~= t2.temp ) 
 WHERE op = '~=' and leftarg = 'ttext' and rightarg = 'ttext';
 
+-------------------------------------------------------------------------------
+
+DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
+DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
+
 #endif
 
 -------------------------------------------------------------------------------
@@ -1727,11 +1735,6 @@ WHERE noidx <> gistidx
 OR noidx <> spgistidx OR gistidx <> spgistidx
 #endif
 ORDER BY op, leftarg, rightarg;
-
-DROP INDEX tbl_tbool_spgist_idx;
-DROP INDEX tbl_tint_spgist_idx;
-DROP INDEX tbl_tfloat_spgist_idx;
-DROP INDEX tbl_ttext_spgist_idx;
 
 DROP TABLE test_boundboxops;
 
