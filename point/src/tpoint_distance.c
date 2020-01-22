@@ -102,8 +102,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 		return 1;
 	}
 
-	double delta = (inst2->t - inst1->t) * fraction;
-	TimestampTz time = inst1->t + delta;
+	TimestampTz time = inst1->t + (inst2->t - inst1->t) * fraction;
 	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, time);
 	result[0] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID);
@@ -125,10 +124,9 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	for (int i = 1; i < seq->count; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-		int count= distance_tpointseq_geo1(&instants[k], inst1, inst2, 
+        /* The next step adds between one and three sequences */
+		k += distance_tpointseq_geo1(&instants[k], inst1, inst2,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), point, func);
-		/* The previous step has added between one and three sequences */
-		k += count;
 		inst1 = inst2;
 	}
 	instants[k++] = temporalinst_make(func(point, temporalinst_value(inst1)),

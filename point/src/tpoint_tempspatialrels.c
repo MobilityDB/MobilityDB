@@ -1365,9 +1365,8 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		int countstep = tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d, 
+		k += tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d,
 			func);
-		k += countstep;
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
 		false, true);

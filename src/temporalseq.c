@@ -2498,10 +2498,9 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		{
 			TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-			int countseq = tlinearseq_minus_value1(&result[k], inst1, inst2, 
+            /* The next step adds between one and two sequences */
+            k += tlinearseq_minus_value1(&result[k], inst1, inst2,
 				lower_inc, upper_inc, value);
-			/* The previous step has added between one and two sequences */
-			k += countseq;
 			inst1 = inst2;
 			lower_inc = true;
 		}

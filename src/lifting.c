@@ -3132,14 +3132,13 @@ sync_tfunc3_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
 		(ts1->totalcount + ts2->totalcount) * 3);
-	int i = 0, j = 0, k = 0, countstep;
+	int i = 0, j = 0, k = 0;
 	while (i < ts1->count && j < ts2->count)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-		countstep = sync_tfunc3_temporalseq_temporalseq_cross2(&sequences[k],
+		k += sync_tfunc3_temporalseq_temporalseq_cross2(&sequences[k],
 			seq1, seq2, param, func, valuetypid);
-		k += countstep;
 		if (period_eq_internal(&seq1->period, &seq2->period))
 		{
 			i++; j++;
@@ -3545,14 +3544,13 @@ sync_tfunc4_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
 		(ts1->totalcount + ts2->totalcount) * 3);
-	int i = 0, j = 0, k = 0, countstep;
+	int i = 0, j = 0, k = 0;
 	while (i < ts1->count && j < ts2->count)
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, j);
-		countstep = sync_tfunc4_temporalseq_temporalseq_cross2(&sequences[k],
+		k += sync_tfunc4_temporalseq_temporalseq_cross2(&sequences[k],
 			seq1, seq2, func, valuetypid);
-		k += countstep;
 		if (period_eq_internal(&seq1->period, &seq2->period))
 		{
 			i++; j++;

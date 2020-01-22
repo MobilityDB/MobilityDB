@@ -820,12 +820,11 @@ tstepws_to_linear(TemporalS *ts)
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-	int k = 0, countstep;
+	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		countstep = tstepwseq_to_linear1(&sequences[k], seq);
-		k += countstep;
+		k += tstepwseq_to_linear1(&sequences[k], seq);
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true, true);
 	for (int i = 0; i < k; i++)
@@ -877,8 +876,7 @@ tfloats_ranges(TemporalS *ts)
 	for (int i = 0; i < ts->count; i++) 
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tfloatseq_ranges1(&ranges[k], seq);
-		k += countstep;
+		k += tfloatseq_ranges1(&ranges[k], seq);
 	}
 	int count1 = k;
 	RangeType **normranges = rangearr_normalize(ranges, &count1);
@@ -1527,8 +1525,7 @@ temporals_at_value(TemporalS *ts, Datum value)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = temporalseq_at_value2(&sequences[k], seq, value);
-		k += countstep;
+		k += temporalseq_at_value2(&sequences[k], seq, value);
 	}
 	if (k == 0)
 	{
@@ -1577,8 +1574,7 @@ temporals_minus_value(TemporalS *ts, Datum value)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = temporalseq_minus_value2(&sequences[k], seq, value);
-		k += countstep;
+		k += temporalseq_minus_value2(&sequences[k], seq, value);
 	}
 	if (k == 0)
 	{
@@ -1611,8 +1607,7 @@ temporals_at_values(TemporalS *ts, Datum *values, int count)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = temporalseq_at_values1(&sequences[k], seq, values, count);
-		k += countstep;
+		k += temporalseq_at_values1(&sequences[k], seq, values, count);
 	}
 	if (k == 0) 
 	{
@@ -1649,8 +1644,7 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = temporalseq_minus_values1(&sequences[k], seq, values, count);
-		k += countstep;
+		k += temporalseq_minus_values1(&sequences[k], seq, values, count);
 	}
 	if (k == 0)
 	{
@@ -1691,8 +1685,7 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tnumberseq_at_range2(&sequences[k], seq, range);
-		k += countstep;
+		k += tnumberseq_at_range2(&sequences[k], seq, range);
 	}
 	if (k == 0)
 	{
@@ -1737,8 +1730,7 @@ tnumbers_minus_range(TemporalS *ts, RangeType *range)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tnumberseq_minus_range1(&sequences[k], seq, range);
-		k += countstep;
+		k += tnumberseq_minus_range1(&sequences[k], seq, range);
 	}
 	if (k == 0)
 	{
@@ -1770,8 +1762,7 @@ tnumbers_at_ranges(TemporalS *ts, RangeType **ranges, int count)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tnumberseq_at_ranges1(&sequences[k], seq, ranges, count);
-		k += countstep;
+		k += tnumberseq_at_ranges1(&sequences[k], seq, ranges, count);
 	}
 	if (k == 0)
 	{
@@ -1808,8 +1799,7 @@ tnumbers_minus_ranges(TemporalS *ts, RangeType **ranges, int count)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tnumberseq_minus_ranges1(&sequences[k], seq, ranges, count);
-		k += countstep;
+		k += tnumberseq_minus_ranges1(&sequences[k], seq, ranges, count);
 	}
 	if (k == 0)
 	{
@@ -1849,8 +1839,7 @@ temporals_at_minmax(TemporalS *ts, Datum value)
 		for (int i = 0; i < ts->count; i++)
 		{
 			TemporalSeq *seq = temporals_seq_n(ts, i);
-			int countstep = temporalseq_at_minmax(&sequences[k], seq, value);
-			k += countstep;
+			k += temporalseq_at_minmax(&sequences[k], seq, value);
 		}
 		/* The minimum/maximum could be at the upper exclusive bound of one
 		 * sequence and at the lower exclusive bound of the next one
@@ -2263,9 +2252,8 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 			}
 			int count = l - j;
 			/* Compute the difference of the overlapping periods */
-			int countstep = temporalseq_minus_periodset1(&sequences[k], seq,
+			k += temporalseq_minus_periodset1(&sequences[k], seq,
 				ps, j, count);
-			k += countstep;
 			i++;
 			j = l;
 		}

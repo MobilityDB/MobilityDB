@@ -1561,8 +1561,7 @@ tpoints_azimuth(TemporalS *ts)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tpointseq_azimuth1(&sequences[k], seq);
-		k += countstep;
+		k += tpointseq_azimuth1(&sequences[k], seq);
 	}
 	if (k == 0)
 		return NULL;

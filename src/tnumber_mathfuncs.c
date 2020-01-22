@@ -204,12 +204,12 @@ add_temporal_base(PG_FUNCTION_ARGS)
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
-		 	&datum_add, datumtypid, valuetypid, true);
+		 	&datum_add, datumtypid, valuetypid, false);
 	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
 		result = tfunc4_temporal_base(ftemp, value,
-		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
+		 	&datum_add, FLOAT8OID, FLOAT8OID, false);
 		pfree(ftemp);
 	}
 	PG_FREE_IF_COPY(temp, 0);
@@ -317,12 +317,12 @@ sub_temporal_base(PG_FUNCTION_ARGS)
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
-		 	&datum_sub, datumtypid, valuetypid, true);
+		 	&datum_sub, datumtypid, valuetypid, false);
 	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
 		result = tfunc4_temporal_base(ftemp, value,
-		 	&datum_add, FLOAT8OID, FLOAT8OID, true);
+		 	&datum_add, FLOAT8OID, FLOAT8OID, false);
 		pfree(ftemp);
 	}
 	PG_FREE_IF_COPY(temp, 0);
@@ -430,12 +430,12 @@ mult_temporal_base(PG_FUNCTION_ARGS)
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
-		 	&datum_mult, datumtypid, valuetypid, true);
+		 	&datum_mult, datumtypid, valuetypid, false);
 	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
 		result = tfunc4_temporal_base(ftemp, value,
-		 	&datum_mult, FLOAT8OID, FLOAT8OID, true);
+		 	&datum_mult, FLOAT8OID, FLOAT8OID, false);
 		pfree(ftemp);
 	}
 	PG_FREE_IF_COPY(temp, 0);
@@ -562,12 +562,12 @@ div_temporal_base(PG_FUNCTION_ARGS)
 	if (temp->valuetypid == datumtypid || temp->duration == TEMPORALINST || 
 		temp->duration == TEMPORALI)
  		result = tfunc4_temporal_base(temp, value,
-		 	&datum_div, datumtypid, valuetypid, true);
+		 	&datum_div, datumtypid, valuetypid, false);
 	else if (datumtypid == FLOAT8OID && temp->valuetypid == INT4OID)
 	{
 		Temporal *ftemp = tint_to_tfloat_internal(temp);
 		result = tfunc4_temporal_base(ftemp, value,
-		 	&datum_div, FLOAT8OID, FLOAT8OID, true);
+		 	&datum_div, FLOAT8OID, FLOAT8OID, false);
 		pfree(ftemp);
 	}
 	PG_FREE_IF_COPY(temp, 0);

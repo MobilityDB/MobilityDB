@@ -4046,9 +4046,8 @@ minus_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 			}
 			int count = l - j;
 			/* Compute the difference of the overlapping periods */
-			int countstep = minus_period_periodset_internal1(&periods[k], p1,
+			k += minus_period_periodset_internal1(&periods[k], p1,
 				ps2, j, count);
-			k += countstep;
 			i++;
 			j = l;
 		}
