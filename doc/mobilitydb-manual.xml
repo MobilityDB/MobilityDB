@@ -1974,7 +1974,7 @@ SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 				</listitem>
 
 				<listitem>
-					<para>Extended Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
+					<para>Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
 					<para><varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
 					<programlisting>
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
@@ -2019,7 +2019,7 @@ SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem>
-					<para>Extended Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
 					<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
 					<programlisting>
 SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
@@ -2028,7 +2028,7 @@ SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem>
-					<para>Hexadecimal Extended Well-Known Binary (WKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
 					<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
 					<programlisting>
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
@@ -2048,7 +2048,7 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 				</listitem>
 
 				<listitem>
-					<para>Input temporal point from Extended Well-Known Binary (WKB) representation. &Z_support; &geography_support;</para>
+					<para>Input temporal point from Extended Well-Known Binary (EWKB) representation. &Z_support; &geography_support;</para>
 					<para><varname>fromEWKB(bytea): tpoint</varname></para>
 					<programlisting>
 SELECT asEWKT(fromEWKB(bytea 
@@ -2140,7 +2140,7 @@ SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000
 				</listitem>
 
 				<listitem>
-					<para>Construct the bounding box from a geometry/geography and a timestap or a period &Z_support; &geography_support;</para>
+					<para>Construct the bounding box from a geometry/geography and a timestamp or a period &Z_support; &geography_support;</para>
 					<para><varname>stbox(geo, {timestamp, period}): stbox</varname></para>
 					<programlisting>
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
@@ -6245,7 +6245,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Extended Well-Known Text (WKT) representation</para>
+						<para>Extended Well-Known Text (EWKT) representation</para>
 						<para><varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
 					</listitem>
 
@@ -6260,12 +6260,12 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Extended Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para>Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
 						<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Hexadecimal Extended Well-Known Binary (WKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para>Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding.</para>
 						<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
 					</listitem>
 
@@ -6275,7 +6275,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Input temporal point from Extended Well-Known Binary (WKB) representation.</para>
+						<para>Input temporal point from Extended Well-Known Binary (EWKB) representation.</para>
 						<para><varname>fromEWKB(bytea): tpoint</varname></para>
 					</listitem>
 
@@ -6315,7 +6315,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Construct the bounding box from a geometry/geography and a timestap or a period</para>
+						<para>Construct the bounding box from a geometry/geography and a timestamp or a period</para>
 						<para><varname>stbox(geo, {timestamp, period}): stbox</varname></para>
 					</listitem>
 
