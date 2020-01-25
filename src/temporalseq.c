@@ -1172,7 +1172,7 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 
 #ifdef WITH_POSTGIS
 bool
-tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
+tpointseq_intersect_at_timestamp_old(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
 {
 	bool result;
@@ -1186,6 +1186,106 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		result = false;
 	pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
 	return result;
+}
+
+bool
+tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
+	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
+{
+	/* For each dimension compute the instant t at which the linear functions
+	 * of the two segments are equal:
+	 * at + b = ct + d that is t = (d - b) / (a - c).
+	 * To reduce problems related to floating point arithmetic, t1 and t2
+	 * are shifted, respectively, to 0 and 1 before the computation */
+	double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
+	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+	{
+		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
+		POINT3DZ p2 = linear1 ? datum_get_point3dz(temporalinst_value(end1)) : p1;
+		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
+		POINT3DZ p4 = linear2 ? datum_get_point3dz(temporalinst_value(end2)) : p3;
+		xdenum = fabs(p2.x - p1.x - p4.x + p3.x);
+		ydenum = fabs(p2.y - p1.y - p4.y + p3.y);
+		double zdenum = fabs(p2.z - p1.z - p4.z + p3.z);
+		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
+			/* Parallel segments */
+			return false;
+
+		double zfraction = 0;
+		if (xdenum != 0)
+		{
+			xfraction = fabs((p3.x - p1.x) / xdenum);
+			/* If intersection occurs out of the period */
+			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (ydenum != 0)
+		{
+			yfraction = fabs((p3.y - p1.y) / ydenum);
+			/* If intersection occurs out of the period */
+			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (zdenum != 0)
+		{
+			/* If intersection occurs out of the period or intersect at different timestamps */
+			zfraction = fabs((p3.z - p1.z) / zdenum);
+			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		/* If intersect at different timestamps on each dimension */
+		if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+			fabs(xfraction - yfraction) > EPSILON && fabs(xfraction - zfraction) > EPSILON) ||
+			(xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+			fabs(yfraction - zfraction) > EPSILON) ||
+			(xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+			fabs(xfraction - zfraction) > EPSILON) ||
+			(xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+			fabs(xfraction - yfraction) > EPSILON))
+			return false;
+
+		if (xdenum != 0)
+			fraction = xfraction;
+		else if (ydenum != 0)
+			fraction = yfraction;
+		else
+			fraction = zfraction;
+	}
+	else /* 2D */
+	{
+		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
+		POINT2D p2 = linear1 ? datum_get_point2d(temporalinst_value(end1)) : p1;
+		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
+		POINT2D p4 = linear2 ? datum_get_point2d(temporalinst_value(end2)): p3;
+		xdenum = fabs(p2.x - p1.x - p4.x + p3.x);
+		ydenum = fabs(p2.y - p1.y - p4.y + p3.y);
+		if (xdenum == 0 && ydenum == 0)
+			/* Parallel segments */
+			return false;
+
+		if (xdenum != 0)
+		{
+			xfraction = fabs((p3.x - p1.x) / xdenum);
+			/* If intersection occurs out of the period */
+			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (ydenum != 0)
+		{
+			yfraction = fabs((p3.y - p1.y) / ydenum);
+			/* If intersection occurs out of the period */
+			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		/* If intersect at different timestamps on each dimension */
+		if (xdenum != 0 && ydenum != 0 && fabs(xfraction - yfraction) > EPSILON)
+			return false;
+		fraction = xdenum != 0 ? xfraction : yfraction;
+	}
+
+	*t = (double) (start1->t) + ((double) (end1->t - start1->t) * fraction);
+
+	return true;
 }
 #endif
 
