@@ -96,7 +96,6 @@ temporalinst_bbox(void *box, TemporalInst *inst)
 {
 	Datum value = temporalinst_value(inst);
 	temporalinst_make_bbox(box, value, inst->t, inst->valuetypid);
-	return;
 }
 
 /* Construct a temporal instant value */
@@ -182,7 +181,7 @@ temporalinst_copy(TemporalInst *inst)
 char *
 temporalinst_to_string(TemporalInst *inst, char *(*value_out)(Oid, Datum))
 {
-	char *t = call_output(TIMESTAMPTZOID, inst->t);
+	char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 	char *value = value_out(inst->valuetypid, temporalinst_value(inst));
 	char *result;
 	if (inst->valuetypid == TEXTOID)
@@ -206,7 +205,7 @@ temporalinst_to_string(TemporalInst *inst, char *(*value_out)(Oid, Datum))
 void
 temporalinst_write(TemporalInst *inst, StringInfo buf)
 {
-	bytea *bt = call_send(TIMESTAMPTZOID, inst->t);
+	bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 	bytea *bv = call_send(inst->valuetypid, temporalinst_value(inst));
 	pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
 	pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
@@ -574,13 +573,11 @@ TemporalInst *
 tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
 	Datum d = temporalinst_value(inst);
-	bool contains = false;
+	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
+		 TYPECACHE_RANGE_INFO);
 	for (int i = 0; i < count; i++)
 	{
-		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
-			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, normranges[i], d);
-		if (contains) 
+		if (range_contains_elem_internal(typcache, normranges[i], d))
 			return temporalinst_copy(inst);
 	}
 	return NULL;
@@ -593,13 +590,11 @@ TemporalInst *
 tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
 	Datum d = temporalinst_value(inst);
-	bool contains = false;
+	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
+		 TYPECACHE_RANGE_INFO);
 	for (int i = 0; i < count; i++)
 	{
-		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
-			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, normranges[i], d);
-		if (contains)
+		if (range_contains_elem_internal(typcache, normranges[i], d))
 			return NULL;
 	}
 	return temporalinst_copy(inst);
@@ -830,7 +825,7 @@ temporalinst_hash(TemporalInst *inst)
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
 #endif
 	/* Apply the hash function according to the timestamp */
-	time_hash = DatumGetUInt32(call_function1(hashint8, inst->t));
+	time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 
 	/* Merge hashes of value and timestamp */
 	result = value_hash;

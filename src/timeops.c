@@ -2760,7 +2760,7 @@ union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	PeriodSet *result = periodset_from_periodarr_internal(periods, k, true);
 
 	pfree(periods);
-	for (int i = 0; i < l; i++)
+	for (i = 0; i < l; i++)
 		pfree(mustfree[i]);
 	pfree(mustfree);
 
@@ -3117,7 +3117,7 @@ intersection_period_periodset_internal(Period *p, PeriodSet *ps)
 	int k = 0;
 	for (int i = n; i < ps->count; i++)
 	{
-		Period *p1 = periodset_per_n(ps, i);
+		p1 = periodset_per_n(ps, i);
 		Period *p2 = intersection_period_period_internal(p1, p);
 		if (p2 != NULL)
 			periods[k++] = p2;
@@ -3236,7 +3236,7 @@ intersection_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	}
 
 	PeriodSet *result = periodset_from_periodarr_internal(periods, k, true);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(periods[i]);
 	pfree(periods);
 	return result;
@@ -3810,9 +3810,8 @@ minus_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 	int k = 0;
 	for (int i = 0; i < ps->count; i++)
 	{
-		Period *p = periodset_per_n(ps, i);
-		int count = minus_period_timestamp_internal1(&periods[k], p, t);
-		k += count;
+		p = periodset_per_n(ps, i);
+		k += minus_period_timestamp_internal1(&periods[k], p, t);
 	}
 	if (k == 0)
 	{
@@ -3978,8 +3977,7 @@ minus_periodset_period_internal(PeriodSet *ps, Period *p)
 	for (int i = 0; i < ps->count; i++)
 	{
 		p1 = periodset_per_n(ps, i);
-		int count = minus_period_period_internal1(&periods[k], p1, p);
-		k += count;
+		k += minus_period_period_internal1(&periods[k], p1, p);
 	}
 	if (k == 0)
 	{
@@ -4059,7 +4057,7 @@ minus_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	}
 
 	PeriodSet *result = periodset_from_periodarr_internal(periods, k, false);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(periods[i]);
 	pfree(periods);
 	return result;

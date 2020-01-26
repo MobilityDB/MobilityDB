@@ -78,7 +78,6 @@ temporals_bbox(void *box, TemporalS *ts)
 	void *box1 = temporals_bbox_ptr(ts);
 	size_t bboxsize = temporal_bbox_size(ts->valuetypid);
 	memcpy(box, box1, bboxsize);
-	return;
 }
 
 /* Construct a TemporalS from an array of TemporalSeq 
@@ -111,8 +110,8 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
 		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, sequences[i - 1]->period.upper);
-			char *t2 = call_output(TIMESTAMPTZOID, sequences[i]->period.lower);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -298,33 +297,6 @@ temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos)
 	return false;
 }
 
-bool 
-temporalseqarr_find_timestamp(TemporalSeq **sequences, int from, int count, 
-	TimestampTz t, int *pos) 
-{
-	int first = from, last = count - 1;
-	int middle = 0; /* make compiler quiet */
-	TemporalSeq *seq = NULL; /* make compiler quiet */
-	while (first <= last) 
-	{
-		middle = (first + last)/2;
-		seq = sequences[middle];
-		if (contains_period_timestamp_internal(&seq->period, t))
-		{
-			*pos = middle;
-			return true;
-		}
-		if (timestamp_cmp_internal(t, seq->period.lower) <= 0)
-			last = middle - 1;
-		else
-			first = middle + 1;	
-	}
-	if (timestamp_cmp_internal(t, seq->period.upper) >= 0)
-		middle++;
-	*pos = middle;
-	return false;
-}
-
 /*****************************************************************************
  * Intersection functions
  *****************************************************************************/
@@ -396,7 +368,7 @@ intersection_temporals_temporali(TemporalS *ts, TemporalI *ti,
 	
 	*inter1 = temporali_from_temporalinstarr(instants1, k);
 	*inter2 = temporali_from_temporalinstarr(instants2, k);	
-	for (int i = 0; i < k; i++) 
+	for (i = 0; i < k; i++)
 		pfree(instants1[i]);
 	pfree(instants1); pfree(instants2); 
 	return true;
@@ -510,7 +482,7 @@ intersection_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 		MOBDB_FLAGS_GET_LINEAR(ts1->flags), false);
 	*inter2 = temporals_from_temporalseqarr(sequences2, k,
 		MOBDB_FLAGS_GET_LINEAR(ts2->flags), false);
-	for (int i = 0; i < k; i++) 
+	for (i = 0; i < k; i++)
 	{
 		pfree(sequences1[i]); pfree(sequences2[i]);
 	}
@@ -636,7 +608,7 @@ synchronize_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 		MOBDB_FLAGS_GET_LINEAR(ts1->flags), false);
 	*sync2 = temporals_from_temporalseqarr(sequences2, k,
 		MOBDB_FLAGS_GET_LINEAR(ts2->flags), false);
-	for (int i = 0; i < k; i++) 
+	for (i = 0; i < k; i++)
 	{
 		pfree(sequences1[i]); pfree(sequences2[i]);
 	}
@@ -653,7 +625,7 @@ synchronize_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 char *
 temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 {
-	char **strings = palloc((int) (sizeof(char *) * ts->count));
+	char **strings = palloc(sizeof(char *) * ts->count);
 	size_t outlen = 0;
 	char str[20];
 	if (linear_interpolation(ts->valuetypid) && 
@@ -829,7 +801,7 @@ tstepws_to_linear(TemporalS *ts)
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k, true, true);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	 pfree(sequences); 
+	pfree(sequences);
 	return result;
 }
 
@@ -1537,7 +1509,7 @@ temporals_at_value(TemporalS *ts, Datum value)
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);	
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	 pfree(sequences); 
+	pfree(sequences);
 	return result;
 }
 
@@ -1618,7 +1590,7 @@ temporals_at_values(TemporalS *ts, Datum *values, int count)
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	 pfree(sequences); 
+	pfree(sequences);
 	return result;
 }
 
@@ -1656,7 +1628,7 @@ temporals_minus_values(TemporalS *ts, Datum *values, int count)
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	 pfree(sequences); 
+	pfree(sequences);
 	return result;
 }
 
@@ -1696,7 +1668,7 @@ tnumbers_at_range(TemporalS *ts, RangeType *range)
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
-	 pfree(sequences	); 
+	pfree(sequences);
 	return result;
 }
 
@@ -2015,7 +1987,7 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 	}
 
 	TemporalI *result = temporali_from_temporalinstarr(instants, count);
-	for (int i = 0; i < count; i++)
+	for (i = 0; i < count; i++)
 		pfree(instants[i]);
 	pfree(instants);
 	return result;
@@ -2198,7 +2170,7 @@ temporals_at_periodset(TemporalS *ts, PeriodSet *ps)
 	   necessary to normalize the result of the projection */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences); 
 	return result;
@@ -2267,7 +2239,7 @@ temporals_minus_periodset(TemporalS *ts, PeriodSet *ps)
 	   necessary to normalize the result of the difference */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	return result;

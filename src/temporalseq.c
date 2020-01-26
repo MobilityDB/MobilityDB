@@ -85,7 +85,6 @@ temporalseq_bbox(void *box, TemporalSeq *seq)
 	void *box1 = temporalseq_bbox_ptr(seq);
 	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
 	memcpy(box, box1, bboxsize);
-	return;
 }
 
 /* 
@@ -112,7 +111,7 @@ float_collinear(double x1, double x2, double x3,
 	}
 	double d1 = x2 - x1;
 	double d2 = x3 - x2;
-	return (fabs(d1-d2) <= EPSILON);
+	return (fabs(d1 - d2) <= EPSILON);
 }
 
 static bool
@@ -145,7 +144,7 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	double d1b = x2->b - x1new->b;
 	double d2a = x3new->a - x2->a;
 	double d2b = x3new->b - x2->b;
-	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON);
+	bool result = (fabs(d1a - d2a) <= EPSILON && fabs(d1b - d2b) <= EPSILON);
 	if (duration1 < duration2)
 		pfree(x3new);
 	if (duration1 > duration2)
@@ -193,8 +192,8 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 		double dx2 = point3.x - point2.x;
 		double dy2 = point3.y - point2.y;
 		double dz2 = point3.z - point2.z;
-		result = fabs(dx1-dx2) <= EPSILON && fabs(dy1-dy2) <= EPSILON && 
-			fabs(dz1-dz2) <= EPSILON;
+		result = fabs(dx1 - dx2) <= EPSILON && fabs(dy1 - dy2) <= EPSILON &&
+			fabs(dz1 - dz2) <= EPSILON;
 	}
 	else
 	{
@@ -205,7 +204,7 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 		double dy1 = point2.y - point1.y;
 		double dx2 = point3.x - point2.x;
 		double dy2 = point3.y - point2.y;
-		result = fabs(dx1-dx2) <= EPSILON && fabs(dy1-dy2) <= EPSILON;
+		result = fabs(dx1 - dx2) <= EPSILON && fabs(dy1 - dy2) <= EPSILON;
 	}
 	if (tofree != NULL) 
 		pfree(tofree);
@@ -246,8 +245,8 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 	double d2a = x3new->a - x2->a;
 	double d2b = x3new->b - x2->b;
 	double d2c = x3new->c - x2->c;
-	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
-		fabs(d1c-d2c) <= EPSILON);
+	bool result = (fabs(d1a - d2a) <= EPSILON && fabs(d1b - d2b) <= EPSILON &&
+		fabs(d1c - d2c) <= EPSILON);
 	if (duration1 < duration2)
 		pfree(x3new);
 	if (duration1 > duration2)
@@ -293,8 +292,8 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	double d2b = x3new->b - x2->b;
 	double d2c = x3new->c - x2->c;
 	double d2d = x3new->d - x2->d;
-	bool result = (fabs(d1a-d2a) <= EPSILON && fabs(d1b-d2b) <= EPSILON && 
-		fabs(d1c-d2c) <= EPSILON && fabs(d1d-d2d) <= EPSILON);
+	bool result = (fabs(d1a - d2a) <= EPSILON && fabs(d1b - d2b) <= EPSILON &&
+		fabs(d1c - d2c) <= EPSILON && fabs(d1d - d2d) <= EPSILON);
 	if (duration1 < duration2)
 		pfree(x3new);
 	if (duration1 > duration2)
@@ -594,8 +593,8 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
-			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i - 1]->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i]->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -724,8 +723,8 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
-			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -1119,7 +1118,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	*sync2 = temporalseq_from_temporalinstarr(instants2, k, 
 		inter->lower_inc, inter->upper_inc, linear2, false);
 	
-	for (int i = 0; i < l; i++) 
+	for (i = 0; i < l; i++)
 		pfree(tofree[i]);
 	pfree(instants1); pfree(instants2); pfree(tofree); pfree(inter);
 
@@ -1155,39 +1154,21 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
 	   To reduce problems related to floating point arithmetic, t1 and t2
 	   are shifted, respectively, to 0 and 1 before the computation */
-	double denum = fabs(x2 - x1 - x4 + x3);
+	double denum = x2 - x1 - x4 + x3;
 	if (denum == 0)
 		/* Parallel segments */
 		return false;
 
-	double fraction = fabs((x3 - x1) / denum);
+	double fraction = (x3 - x1) / denum;
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		/* Intersection occurs out of the period */
 		return false;
 
-	double duration = (double) (end1->t - start1->t);
-	*t = (double) (start1->t) + (duration * fraction);
+	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
 	return true;	
 }
 
 #ifdef WITH_POSTGIS
-bool
-tpointseq_intersect_at_timestamp_old(TemporalInst *start1, TemporalInst *end1, bool linear1,
-	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
-{
-	bool result;
-	if (!tpointseq_min_dist_at_timestamp(start1, end1, start2, end2, t))
-		return false;
-	Datum value1 = temporalseq_value_at_timestamp1(start1, end1, linear1, *t);
-	Datum value2 = temporalseq_value_at_timestamp1(start2, end2, linear2, *t);
-	if (datum_eq(value1, value2, start1->valuetypid))
-		result = true;
-	else
-		result = false;
-	pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
-	return result;
-}
-
 bool
 tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
@@ -1204,9 +1185,9 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		POINT3DZ p2 = linear1 ? datum_get_point3dz(temporalinst_value(end1)) : p1;
 		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
 		POINT3DZ p4 = linear2 ? datum_get_point3dz(temporalinst_value(end2)) : p3;
-		xdenum = fabs(p2.x - p1.x - p4.x + p3.x);
-		ydenum = fabs(p2.y - p1.y - p4.y + p3.y);
-		double zdenum = fabs(p2.z - p1.z - p4.z + p3.z);
+		xdenum = p2.x - p1.x - p4.x + p3.x;
+		ydenum = p2.y - p1.y - p4.y + p3.y;
+		double zdenum = p2.z - p1.z - p4.z + p3.z;
 		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
 			/* Parallel segments */
 			return false;
@@ -1214,14 +1195,14 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		double zfraction = 0;
 		if (xdenum != 0)
 		{
-			xfraction = fabs((p3.x - p1.x) / xdenum);
+			xfraction = (p3.x - p1.x) / xdenum;
 			/* If intersection occurs out of the period */
 			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
 				return false;
 		}
 		if (ydenum != 0)
 		{
-			yfraction = fabs((p3.y - p1.y) / ydenum);
+			yfraction = (p3.y - p1.y) / ydenum;
 			/* If intersection occurs out of the period */
 			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
 				return false;
@@ -1229,7 +1210,7 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		if (zdenum != 0)
 		{
 			/* If intersection occurs out of the period or intersect at different timestamps */
-			zfraction = fabs((p3.z - p1.z) / zdenum);
+			zfraction = (p3.z - p1.z) / zdenum;
 			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
 				return false;
 		}
@@ -1257,22 +1238,22 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		POINT2D p2 = linear1 ? datum_get_point2d(temporalinst_value(end1)) : p1;
 		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
 		POINT2D p4 = linear2 ? datum_get_point2d(temporalinst_value(end2)): p3;
-		xdenum = fabs(p2.x - p1.x - p4.x + p3.x);
-		ydenum = fabs(p2.y - p1.y - p4.y + p3.y);
+		xdenum = p2.x - p1.x - p4.x + p3.x;
+		ydenum = p2.y - p1.y - p4.y + p3.y;
 		if (xdenum == 0 && ydenum == 0)
 			/* Parallel segments */
 			return false;
 
 		if (xdenum != 0)
 		{
-			xfraction = fabs((p3.x - p1.x) / xdenum);
+			xfraction = (p3.x - p1.x) / xdenum;
 			/* If intersection occurs out of the period */
 			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
 				return false;
 		}
 		if (ydenum != 0)
 		{
-			yfraction = fabs((p3.y - p1.y) / ydenum);
+			yfraction = (p3.y - p1.y) / ydenum;
 			/* If intersection occurs out of the period */
 			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
 				return false;
@@ -1283,7 +1264,7 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		fraction = xdenum != 0 ? xfraction : yfraction;
 	}
 
-	*t = (double) (start1->t) + ((double) (end1->t - start1->t) * fraction);
+	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
 
 	return true;
 }
@@ -1339,7 +1320,7 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 char *
 temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, Datum))
 {
-	char **strings = palloc((int) (sizeof(char *)) * seq->count);
+	char **strings = palloc(sizeof(char *) * seq->count);
 	size_t outlen = 0;
 	char str[20];
 	if (! component && linear_interpolation(seq->valuetypid) && 
@@ -1518,7 +1499,7 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 	}
 	if (seq->period.upper_inc)
 	{
-		Datum value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
+		value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
 		Datum value2 = temporalinst_value(inst2);
 		if (datum_ne(value1, value2, seq->valuetypid))
 		{
@@ -2295,8 +2276,8 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		Datum bestsrid = call_function2(geography_bestsrid, line, line);
 		Datum line1 = call_function1(geometry_from_geography, line);
 		Datum line2 = call_function2(transform, line1, bestsrid);
-		Datum value1 = call_function1(geometry_from_geography, value);
-		Datum value2 = call_function2(transform, value1, bestsrid);
+		value1 = call_function1(geometry_from_geography, value);
+		value2 = call_function2(transform, value1, bestsrid);
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			line2, value2));
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1)); 
@@ -2307,8 +2288,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 
 	if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
 		return false;
-	double duration = (double) (inst2->t - inst1->t);
-	*t = (double) (inst1->t) + duration * fraction;
+	*t = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 	return true;
 }
  
@@ -3644,8 +3624,8 @@ temporalseq_minus_period1(TemporalSeq **result, TemporalSeq *seq, Period *p)
 		return 0;
 	for (int i = 0; i < ps->count; i++)
 	{
-		Period *p = periodset_per_n(ps, i);
-		result[i] = temporalseq_at_period(seq, p);
+		Period *p1 = periodset_per_n(ps, i);
+		result[i] = temporalseq_at_period(seq, p1);
 	}
 	pfree(ps);
 	return ps->count;
@@ -3657,9 +3637,7 @@ temporalseq_minus_period(TemporalSeq *seq, Period *p)
 	TemporalSeq *sequences[2];
 	int count = temporalseq_minus_period1(sequences, seq, p);
 	if (count == 0)
-	{
 		return NULL;
-	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)

@@ -231,8 +231,7 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	}
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		return false;
-	double duration = (double)(end1->t - start1->t);
-	*t = (double) (start1->t) + (duration * fraction);
+	*t = (double) (start1->t) + ((double)(end1->t - start1->t) * fraction);
 	return true;
 }
 
@@ -266,7 +265,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		else
 			func = &geom_distance2d;
 	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_distance;
 
 	Temporal *result = NULL;
@@ -316,7 +315,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		else
 			func = &geom_distance2d;
 	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_distance;
 
 	Temporal *result = NULL;

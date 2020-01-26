@@ -601,9 +601,9 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 				points[k++] = value2;
 			value1 = value2;
 		}
-	 }
-	 else
-	 {
+	}
+	else
+	{
 		 /* Remove all duplicate points */
 		k = 0;
 		for (int i = 0; i < count; i++)
@@ -622,7 +622,7 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 			if (!found)
 				points[k++] = value;
 		}
-	 }
+	}
 	Datum result;
 	if (geometry)
 	{
@@ -778,10 +778,10 @@ tgeompoints_trajectory(TemporalS *ts)
 		}
 		else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
 		{
-			int count = call_function1(LWGEOM_numgeometries_collection, traj);
-			for (int i = 1; i <= count; i++)
+			int count = DatumGetInt32(call_function1(LWGEOM_numgeometries_collection, traj));
+			for (int m = 1; m <= count; m++)
 			{
-				Datum point = call_function2(LWGEOM_geometryn_collection, traj, i);
+				Datum point = call_function2(LWGEOM_geometryn_collection, traj, Int32GetDatum(m));
 				bool found = false;
 				for (int j = 0; j < l; j++)
 				{
@@ -2222,8 +2222,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		return value2;
 	}
 
-	double delta = (inst2->t - inst1->t) * fraction;
-	*t = inst1->t + delta;
+	*t = inst1->t + (inst2->t - inst1->t) * fraction;
 	*tofree = true;
 	/* Linear interpolation */
 	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
@@ -2745,7 +2744,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		else
 			func = &geom_distance2d;
 	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_distance;
 	Datum result = 0;
 	ensure_valid_duration(sync1->duration);

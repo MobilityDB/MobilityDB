@@ -148,8 +148,7 @@ tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 		/* Minimum/maximum occurs out of the period */
 		return false;
 
-	double duration = (double) (end1->t - start1->t);
-	*t = (double)(start1->t) + (duration * fraction);
+	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
 	return true;	
 }
 

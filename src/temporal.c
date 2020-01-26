@@ -413,7 +413,7 @@ Oid
 base_oid_from_temporal(Oid temptypid)
 {
 	assert(temporal_type_oid(temptypid));
-	int result = 0;
+	Oid result = 0;
 	if (temptypid == type_oid(T_TBOOL)) 
 		result = BOOLOID;
 	else if (temptypid == type_oid(T_TINT)) 
@@ -457,7 +457,6 @@ ensure_valid_duration(int16 duration)
 	if (duration != TEMPORALINST && duration != TEMPORALI && 
 		duration != TEMPORALSEQ && duration != TEMPORALS)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
-	return;
 }
 
 /* Used for the analyze and selectivity functions */
@@ -468,7 +467,6 @@ ensure_valid_duration_all(int16 duration)
 		duration != TEMPORALINST && duration != TEMPORALI && 
 		duration != TEMPORALSEQ && duration != TEMPORALS)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
-	return;
 }
 
 void 
@@ -476,7 +474,6 @@ ensure_numrange_type(Oid typid)
 {
 	if (typid != type_oid(T_INTRANGE) && typid != type_oid(T_FLOATRANGE))
 		elog(ERROR, "unknown numeric range type: %d", typid);
-	return;
 }
 
 void
@@ -490,7 +487,6 @@ ensure_temporal_base_type(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type: %d", valuetypid);
-	return;
 }
 
 void
@@ -507,7 +503,6 @@ ensure_temporal_base_type_all(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type: %d", valuetypid);
-	return;
 }
 
 void
@@ -520,7 +515,6 @@ ensure_linear_interpolation(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
-	return;
 }
 
 void
@@ -536,7 +530,6 @@ ensure_linear_interpolation_all(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
-	return;
 }
 
 void 
@@ -544,7 +537,6 @@ ensure_numeric_base_type(Oid valuetypid)
 {
 	if (valuetypid != INT4OID && valuetypid != FLOAT8OID)
 		elog(ERROR, "unknown numeric base type: %d", valuetypid);
-	return;
 }
 
 #ifdef WITH_POSTGIS
@@ -553,7 +545,6 @@ ensure_point_base_type(Oid valuetypid)
 {
 	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown point base type: %d", valuetypid);
-	return;
 }
 #endif
 
@@ -648,7 +639,8 @@ temporal_out(PG_FUNCTION_ARGS)
 
 /* Send function */
 
-void temporal_write(Temporal *temp, StringInfo buf) 
+void
+temporal_write(Temporal *temp, StringInfo buf)
 {
 	pq_sendint(buf, temp->duration, 2);
 	ensure_valid_duration(temp->duration);
@@ -660,7 +652,6 @@ void temporal_write(Temporal *temp, StringInfo buf)
 		temporalseq_write((TemporalSeq *) temp, buf);
 	else if (temp->duration == TEMPORALS)
 		temporals_write((TemporalS *) temp, buf);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_send);
@@ -678,7 +669,8 @@ temporal_send(PG_FUNCTION_ARGS)
 
 /* Receive function */
 
-Temporal *temporal_read(StringInfo buf, Oid valuetypid) 
+Temporal *
+temporal_read(StringInfo buf, Oid valuetypid)
 {
 	int type = (int) pq_getmsgint(buf, 2);
 	Temporal *result = NULL;
@@ -1055,7 +1047,6 @@ temporal_period(Period *p, Temporal *temp)
 		temporalseq_period(p, (TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		temporals_period(p, (TemporalS *)temp);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_to_period);
@@ -1414,7 +1405,6 @@ temporal_bbox(void *box, const Temporal *temp)
 		temporalseq_bbox(box, (TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		temporals_bbox(box, (TemporalS *)temp);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_to_tbox);
@@ -1966,7 +1956,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			result = (temporalseq_inst_n((TemporalSeq *)temp, n - 1))->t;
 		}
 	}
-	else if (temp->duration == TEMPORALS) 
+	else if (temp->duration == TEMPORALS)
 		found = temporals_timestamp_n((TemporalS *)temp, n, &result);
 	PG_FREE_IF_COPY(temp, 0);
 	if (!found) 

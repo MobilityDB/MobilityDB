@@ -361,7 +361,7 @@ ArrayType *
 periodarr_to_array(Period **periods, int count)
 {
 	ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
-										sizeof(Period), false, 'd');
+		sizeof(Period), false, 'd');
 	return result;
 }
 
@@ -395,7 +395,7 @@ temporalarr_to_array(Temporal **temporalarr, int count)
 /* Comparator functions */
 
 static int
-datum_sort_cmp(Datum *l, Datum *r, Oid *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
 {
 	Datum x = *l;
 	Datum y = *r;
@@ -409,7 +409,7 @@ datum_sort_cmp(Datum *l, Datum *r, Oid *type)
 }
 
 static int
-timestamp_sort_cmp(TimestampTz *l, TimestampTz *r)
+timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 {
 	TimestampTz x = *l;
 	TimestampTz y = *r;
@@ -530,9 +530,9 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
-	char		*a1p,
+	char	*a1p,
 			*a2p;
-	int			len1,
+	int		len1,
 			len2;
 
 	a1p = VARDATA_ANY(arg1);

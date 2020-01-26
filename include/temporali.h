@@ -22,9 +22,7 @@
 
 extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
 extern bool temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos);
-extern bool temporalinstarr_find_timestamp(TemporalInst **instants, int from, 
-	int count, TimestampTz t, int *pos);
-extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants, 
+extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants,
 	int count);
 extern TemporalI *temporali_copy(TemporalI *ti);
 
@@ -65,7 +63,6 @@ extern ArrayType *tfloati_ranges(TemporalI *ti);
 extern PeriodSet *temporali_get_time(TemporalI *ti);
 extern void *temporali_bbox_ptr(TemporalI *ti);
 extern void temporali_bbox(void *box, TemporalI *ti);
-extern RangeType *tnumberi_value_range(TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);
 extern void temporali_period(Period *p, TemporalI *ti);

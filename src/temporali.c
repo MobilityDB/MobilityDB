@@ -79,7 +79,6 @@ temporali_bbox(void *box, TemporalI *ti)
 	void *box1 = temporali_bbox_ptr(ti);
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	memcpy(box, box1, bboxsize);
-	return;
 }
 
 /* Construct a TemporalI from an array of TemporalInst */
@@ -106,8 +105,8 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
-			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i - 1]->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i]->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -180,8 +179,8 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
-			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -296,34 +295,6 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos)
 	return false;
 }
 
-bool 
-temporalinstarr_find_timestamp(TemporalInst **instants, int from, int count, 
-	TimestampTz t, int *pos) 
-{
-	int first = from, last = count - 1;
-	int middle = 0; /* make compiler quiet */
-	TemporalInst *inst = NULL; /* make compiler quiet */
-	while (first <= last) 
-	{
-		middle = (first + last)/2;
-		inst = instants[middle];
-		int cmp = timestamp_cmp_internal(inst->t, t);
-		if (cmp == 0)
-		{
-			*pos = middle;
-			return true;
-		}
-		if (cmp > 0)
-			last = middle - 1;
-		else
-			first = middle + 1;	
-	}
-	if (timestamp_cmp_internal(t, inst->t) > 0)
-		middle++;
-	*pos = middle;
-	return false;
-}
-
 /*****************************************************************************
  * Intersection functions
  *****************************************************************************/
@@ -410,7 +381,7 @@ intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 char*
 temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum))
 {
-	char** strings = palloc((int) (sizeof(char *)) * ti->count);
+	char** strings = palloc(sizeof(char *) * ti->count);
 	size_t outlen = 0;
 
 	for (int i = 0; i < ti->count; i++)
