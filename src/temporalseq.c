@@ -102,12 +102,12 @@ float_collinear(double x1, double x2, double x3,
 	if (duration1 < duration2)
 	{
 		ratio = duration1 / duration2;
-		x3 = x2 + (x3 - x2) * ratio;
+		x3 = x2 + (x3 - x2) * (1 - ratio);
 	}
 	else if (duration1 > duration2)
 	{
 		ratio = duration2 / duration1;
-		x1 = x1 + (x2 - x1) * ratio;
+		x1 = x1 + (x2 - x1) * (1 - ratio);
 	}
 	double d1 = x2 - x1;
 	double d2 = x3 - x2;
@@ -126,8 +126,8 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	{
 		ratio = duration1 / duration2;
 		x3new = double2_construct(
-			x2->a + (x3->a - x2->a) * ratio,
-			x2->b + (x3->b - x2->b) * ratio);
+			x2->a + (x3->a - x2->a) * (1 - ratio),
+			x2->b + (x3->b - x2->b) * (1 - ratio));
 	}
 	else
 		x3new = x3;
@@ -135,8 +135,8 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	{
 		ratio = duration2 / duration1;
 		x1new = double2_construct(
-			x1->a + (x2->a - x1->a) * ratio,
-			x1->b = x1->b + (x2->b - x1->b) * ratio);
+			x1->a + (x2->a - x1->a) * (1 - ratio),
+			x1->b = x1->b + (x2->b - x1->b) * (1 - ratio));
 	}
 	else
 		x1new = x1;
@@ -167,7 +167,7 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 		ratio = duration1 / duration2;
 		line = geompoint_trajectory(value2, value3);
 		value3 = call_function2(LWGEOM_line_interpolate_point, 
-			line, Float8GetDatum(ratio));
+			line, Float8GetDatum(1 - ratio));
 		pfree(DatumGetPointer(line));
 		tofree = DatumGetPointer(value3);
 	}
@@ -176,7 +176,7 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 		ratio = duration2 / duration1;
 		line = geompoint_trajectory(value1, value2);
 		value1 = call_function2(LWGEOM_line_interpolate_point, 
-			line, Float8GetDatum(ratio));
+			line, Float8GetDatum(1 - ratio));
 		pfree(DatumGetPointer(line)); 
 		tofree = DatumGetPointer(value1);
 	}
@@ -223,9 +223,9 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 	{
 		ratio = duration1 / duration2;
 		x3new = double3_construct(
-			x2->a + (x3->a - x2->a) * ratio,
-			x2->b + (x3->b - x2->b) * ratio,
-			x2->c + (x3->c - x2->c) * ratio);
+			x2->a + (x3->a - x2->a) * (1 - ratio),
+			x2->b + (x3->b - x2->b) * (1 - ratio),
+			x2->c + (x3->c - x2->c) * (1 - ratio));
 	}
 	else
 		x3new = x3;
@@ -233,9 +233,9 @@ double3_collinear(double3 *x1, double3 *x2, double3 *x3,
 	{
 		ratio = duration2 / duration1;
 		x1new = double3_construct(
-			x1->a + (x2->a - x1->a) * ratio,
-			x1->b + (x2->b - x1->b) * ratio,
-			x1->c + (x2->c - x1->c) * ratio);
+			x1->a + (x2->a - x1->a) * (1 - ratio),
+			x1->b + (x2->b - x1->b) * (1 - ratio),
+			x1->c + (x2->c - x1->c) * (1 - ratio));
 	}
 	else
 		x1new = x1;
@@ -266,10 +266,10 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	{
 		ratio = duration1 / duration2;
 		x3new = double4_construct(
-			x2->a + (x3->a - x2->a) * ratio,
-			x2->b + (x3->b - x2->b) * ratio,
-			x2->c + (x3->c - x2->c) * ratio,
-			x2->d + (x3->d - x2->d) * ratio);
+			x2->a + (x3->a - x2->a) * (1 - ratio),
+			x2->b + (x3->b - x2->b) * (1 - ratio),
+			x2->c + (x3->c - x2->c) * (1 - ratio),
+			x2->d + (x3->d - x2->d) * (1 - ratio));
 	}
 	else
 		x3new = x3;
@@ -277,10 +277,10 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 	{
 		ratio = duration2 / duration1;
 		x1new = double4_construct(
-			x1->a + (x2->a - x1->a) * ratio,
-			x1->b + (x2->b - x1->b) * ratio,
-			x1->c + (x2->c - x1->c) * ratio,
-			x1->d + (x2->c - x1->d) * ratio);
+			x1->a + (x2->a - x1->a) * (1 - ratio),
+			x1->b + (x2->b - x1->b) * (1 - ratio),
+			x1->c + (x2->c - x1->c) * (1 - ratio),
+			x1->d + (x2->c - x1->d) * (1 - ratio));
 	}
 	else
 		x1new = x1;
@@ -2578,8 +2578,8 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		{
 			TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 			bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-            /* The next step adds between one and two sequences */
-            k += tlinearseq_minus_value1(&result[k], inst1, inst2,
+			/* The next step adds between one and two sequences */
+			k += tlinearseq_minus_value1(&result[k], inst1, inst2,
 				lower_inc, upper_inc, value);
 			inst1 = inst2;
 			lower_inc = true;
@@ -3189,9 +3189,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		return temporalinst_value_copy(inst2);
 	
 	/* Interpolation for types with linear interpolation */
-	double duration = (double) (inst2->t - inst1->t);
-	double partial = (double) (t - inst1->t);
-	double ratio = partial / duration;
+	double ratio = (double) (t - inst1->t) / (double) (inst2->t - inst1->t);
 	Datum result = 0;
 	ensure_linear_interpolation_all(valuetypid);
 	if (valuetypid == FLOAT8OID)
@@ -3849,9 +3847,8 @@ tstepwseq_integral(TemporalSeq *seq)
 	for (int i = 1; i < seq->count; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-		double duration = (double) (inst2->t - inst1->t);
-		result += datum_double(temporalinst_value(inst1), inst1->valuetypid) * 
-			duration;
+		result += datum_double(temporalinst_value(inst1), inst1->valuetypid) *
+			(double) (inst2->t - inst1->t);
 		inst1 = inst2;
 	}
 	return result;
@@ -3871,8 +3868,7 @@ tlinearseq_integral(TemporalSeq *seq)
 			DatumGetFloat8(temporalinst_value(inst2)));
 		double max = Max(DatumGetFloat8(temporalinst_value(inst1)), 
 			DatumGetFloat8(temporalinst_value(inst2)));
-		double duration = (double) (inst2->t - inst1->t);
-		result += (max + min) * duration / 2.0;
+		result += (max + min) * (double) (inst2->t - inst1->t) / 2.0;
 		inst1 = inst2;
 	}
 	return result;
