@@ -534,7 +534,7 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 	int	i;
 	MemoryContext old_ctx;
 	CubeSTbox *cube_stbox;
-	uint8 octant;
+	uint16 octant;
 	STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
 
 	if (in->allTheSame)
