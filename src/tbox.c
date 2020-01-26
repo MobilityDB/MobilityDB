@@ -49,14 +49,14 @@ tbox_in(PG_FUNCTION_ARGS)
 char *
 tbox_to_string(const TBOX *box)
 {
-	static int size = MAXTBOXLEN + 1;
+	static size_t size = MAXTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *) palloc(size);
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
-		strtmin = call_output(TIMESTAMPTZOID, box->tmin);
-		strtmax = call_output(TIMESTAMPTZOID, box->tmax);
+		strtmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+		strtmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
 	}
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{

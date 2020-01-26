@@ -111,7 +111,7 @@ compareDoubles(const void *a, const void *b)
 /*
  * Calculate the octant
  *
- * The octant is 8 bit unsigned integer with 8 least bits in use.
+ * The octant is 8 bit unsigned integer with all bits in use.
  * This function accepts 2 STBOX as input.  All 8 bits are set by comparing a 
  * corner of the box. This makes 256 octants in total.
  */
@@ -534,7 +534,7 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 	int	i;
 	MemoryContext old_ctx;
 	CubeSTbox *cube_stbox;
-	uint16 octant;
+	uint8 octant;
 	STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries;
 
 	if (in->allTheSame)

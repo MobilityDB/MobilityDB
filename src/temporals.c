@@ -175,7 +175,7 @@ temporals_from_temporalseqarr(TemporalSeq **sequences, int count,
 	if (bboxsize != 0) 
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-		temporals_make_bbox(bbox, newsequences, newcount, linear);
+		temporals_make_bbox(bbox, newsequences, newcount);
 		result->offsets[newcount] = pos;
 	}
 	if (normalize && count > 1)
@@ -665,7 +665,7 @@ void
 temporals_write(TemporalS *ts, StringInfo buf)
 {
 	pq_sendint(buf, ts->count, 4);
-	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(ts->flags));
+	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(ts->flags) ? (uint8) 1 : (uint8) 0);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);

@@ -402,8 +402,8 @@ period_send_internal(Period *p, StringInfo buf)
 	bytea *upper = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
 	pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
 	pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-	pq_sendbyte(buf, p->lower_inc);
-	pq_sendbyte(buf, p->upper_inc);
+	pq_sendbyte(buf, p->lower_inc ? (uint8) 1 : (uint8) 0);
+	pq_sendbyte(buf, p->upper_inc ? (uint8) 1 : (uint8) 0);
 	pfree(lower);
 	pfree(upper);
 }

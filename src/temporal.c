@@ -749,7 +749,7 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
 	}
-	str += sprintf(str, "(%s)", temporal_duration_name(duration_type));
+	sprintf(str, "(%s)", temporal_duration_name(duration_type));
 	PG_RETURN_CSTRING(s);
 }
 

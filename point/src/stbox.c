@@ -51,7 +51,6 @@ stbox_to_period_internal(Period *period, const STBOX *box)
 {
 	assert(MOBDB_FLAGS_GET_T(box->flags));
 	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
-	return;
 }
 
 /*****************************************************************************
@@ -84,7 +83,7 @@ stbox_in(PG_FUNCTION_ARGS)
 static char *
 stbox_to_string(const STBOX *box)
 {
-	static int size = MAXSTBOXLEN + 1;
+	static size_t size = MAXSTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *) palloc(size);
 	char *boxtype = MOBDB_FLAGS_GET_GEODETIC(box->flags) ? "GEODSTBOX" : "STBOX";
@@ -92,8 +91,8 @@ stbox_to_string(const STBOX *box)
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
-		strtmin = call_output(TIMESTAMPTZOID, box->tmin);
-		strtmax = call_output(TIMESTAMPTZOID, box->tmax);
+		strtmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+		strtmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
 	}
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{

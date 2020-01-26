@@ -111,7 +111,6 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 	period_set(&bbox, times[0], times[count - 1], true, true);
 	offsets[count] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += double_pad(sizeof(Period));
 	return result;
 }
 

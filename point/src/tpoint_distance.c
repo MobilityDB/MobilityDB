@@ -64,7 +64,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 			inst1->t, FLOAT8OID); 
 		return 1;
 	}
-	double fraction = 0.0;
+	double fraction;
 	ensure_point_base_type(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -74,7 +74,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 			traj, point));
 		pfree(DatumGetPointer(traj)); 
 	}
-	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 	{
 		/* The trajectory is a line */
 		Datum traj = geogpoint_trajectory(value1, value2);
@@ -102,7 +102,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 		return 1;
 	}
 
-	TimestampTz time = inst1->t + (inst2->t - inst1->t) * fraction;
+	TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, time);
 	result[0] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID);
@@ -231,7 +231,7 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	}
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		return false;
-	*t = (double) (start1->t) + ((double)(end1->t - start1->t) * fraction);
+	*t = start1->t + (long) ((double)(end1->t - start1->t) * fraction);
 	return true;
 }
 

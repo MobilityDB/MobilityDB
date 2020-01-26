@@ -316,7 +316,7 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
-		bool hasz = FLAGS_GET_Z(gs->flags);
+		bool hasz = (bool) FLAGS_GET_Z(gs->flags);
 		return point_collinear(value1, value2, value3, t1, t2, t3, hasz);
 	}
 	if (valuetypid == type_oid(T_DOUBLE3))
@@ -692,7 +692,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 		else
 #endif
 			temporalseq_make_bbox(bbox, newinstants, newcount, 
-				lower_inc, upper_inc, linear);
+				lower_inc, upper_inc);
 		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
@@ -1096,7 +1096,6 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		if (datum_ne(temporalinst_value(instants1[k - 2]), 
 			temporalinst_value(instants1[k - 1]), seq1->valuetypid))
 		{
-			inst1 = instants1[k - 1];
 			instants1[k - 1] = temporalinst_make(temporalinst_value(instants1[k - 2]),
 				instants1[k - 1]->t, instants1[k - 1]->valuetypid); 
 			tofree[l++] = instants1[k - 1];
@@ -1107,7 +1106,6 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		if (datum_ne(temporalinst_value(instants2[k - 2]), 
 			temporalinst_value(instants2[k - 1]), seq2->valuetypid))
 		{
-			inst2 = instants2[k - 1];
 			instants2[k - 1] = temporalinst_make(temporalinst_value(instants2[k - 2]),
 				instants2[k - 1]->t, instants2[k - 1]->valuetypid); 
 			tofree[l++] = instants2[k - 1];
@@ -1360,9 +1358,9 @@ void
 temporalseq_write(TemporalSeq *seq, StringInfo buf)
 {
 	pq_sendint(buf, seq->count, 4);
-	pq_sendbyte(buf, seq->period.lower_inc);
-	pq_sendbyte(buf, seq->period.upper_inc);
-	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
+	pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
+	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);

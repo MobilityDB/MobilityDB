@@ -323,7 +323,7 @@ static size_t
 datetimes_mfjson_buf(char *output, TemporalInst *inst)
 {
 	char *ptr = output;
-	char *t = call_output(TIMESTAMPTZOID, inst->t);
+	char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 	/* Replace ' ' by 'T' as separator between date and time parts */
 	t[10] = 'T';
 	ptr += sprintf(ptr, "\"%s\"", t);
@@ -337,7 +337,7 @@ datetimes_mfjson_buf(char *output, TemporalInst *inst)
 static size_t
 srs_mfjson_size(char *srs)
 {
-	int size = sizeof("'crs':{'type':'name',");
+	size_t size = sizeof("'crs':{'type':'name',");
 	size += sizeof("'properties':{'name':''}},");
 	size += strlen(srs) * sizeof(char);
 	return size;
@@ -359,7 +359,7 @@ static size_t
 bbox_mfjson_size(int hasz, int precision)
 {
 	/* The maximum size of a timestamptz is 35 characters, e.g., "2019-08-06 23:18:16.195062-09:30" */
-	int size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
+	size_t size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
 		sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
 	if (!hasz)
 	{
@@ -387,8 +387,8 @@ bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 		ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f,%.*f,%.*f],",
 			precision, bbox->xmin, precision, bbox->ymin, precision, bbox->zmin,
 			precision, bbox->xmax, precision, bbox->ymax, precision, bbox->zmax);
-	char *begin = call_output(TIMESTAMPTZOID, bbox->tmin);
-	char *end = call_output(TIMESTAMPTZOID, bbox->tmax);
+	char *begin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmin));
+	char *end = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(bbox->tmax));
 	ptr += sprintf(ptr, "\"period\":{\"begin\":\"%s\",\"end\":\"%s\"}},", begin, end);
 	pfree(begin); pfree(end);
 	return (ptr - output);
@@ -399,7 +399,7 @@ bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 static size_t
 tpointinst_as_mfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
-	int size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	size_t size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	size += datetimes_mfjson_size(1);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
@@ -426,7 +426,7 @@ tpointinst_as_mfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *s
 static char *
 tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
+	size_t size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
 	char *output = palloc(size);
 	tpointinst_as_mfjson_buf(inst, precision, bbox, srs, output);
 	return output;
@@ -437,7 +437,7 @@ tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 static size_t
 tpointi_as_mfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-	int size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	size_t size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	size += datetimes_mfjson_size(ti->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
@@ -472,7 +472,7 @@ tpointi_as_mfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char
 static char *
 tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointi_as_mfjson_size(ti, precision, bbox, srs);
+	size_t size = tpointi_as_mfjson_size(ti, precision, bbox, srs);
 	char *output = palloc(size);
 	tpointi_as_mfjson_buf(ti, precision, bbox, srs, output);
 	return output;
@@ -483,7 +483,7 @@ tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 static size_t
 tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
-	int size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	size_t size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
 	/* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
@@ -521,7 +521,7 @@ tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs,
 static char *
 tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpointseq_as_mfjson_size(seq, precision, bbox, srs);
+	size_t size = tpointseq_as_mfjson_size(seq, precision, bbox, srs);
 	char *output = palloc(size);
 	tpointseq_as_mfjson_buf(seq, precision, bbox, srs, output);
 	return output;
@@ -532,7 +532,7 @@ tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 static size_t
 tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
-	int size = sizeof("{'type':'MovingPoint','sequences':[],");
+	size_t size = sizeof("{'type':'MovingPoint','sequences':[],");
 	size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
 	size += coordinates_mfjson_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags), precision);
 	size += datetimes_mfjson_size(ts->totalcount);
@@ -578,7 +578,7 @@ tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char
 static char *
 tpoints_as_mfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 {
-	int size = tpoints_as_mfjson_size(ts, precision, bbox, srs);
+	size_t size = tpoints_as_mfjson_size(ts, precision, bbox, srs);
 	char *output = palloc(size);
 	tpoints_as_mfjson_buf(ts, precision, bbox, srs, output);
 	return output;

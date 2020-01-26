@@ -857,7 +857,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
+	Selectivity selec;
 	CachedOp cachedOp;
 	STBOX constBox;
 	Period constperiod;

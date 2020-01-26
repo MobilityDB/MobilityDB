@@ -1224,8 +1224,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->lower_inc;
-		selec = scalarineqsel(root, operator, false, iseq, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, false, iseq, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == AFTER_OP || cachedOp == GT_OP || cachedOp == GE_OP)
 	{
@@ -1234,9 +1234,9 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		iseq = (cachedOp == LE_OP) ? true : ! period->upper_inc;
-		selec = scalarineqsel(root, operator, true, iseq, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		iseq = (cachedOp == GE_OP) ? true : ! period->upper_inc;
+		selec = scalarineqsel(root, operator, true, iseq, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
@@ -1245,8 +1245,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->upper_inc ? 
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, operator, false, period->upper_inc, vardata, 
-			period->upper, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, false, period->upper_inc, vardata,
+			TimestampTzGetDatum(period->upper), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
@@ -1255,8 +1255,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->lower_inc ? 
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, operator, true, period->lower_inc, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, true, period->lower_inc, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else /* Unknown operator */
 	{
@@ -1273,8 +1273,7 @@ Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
-	double selec = 0.0;
-	Oid operator = oper_oid(cachedOp, T_PERIOD, T_PERIOD);
+	double selec;
 
 	/*
 	 * There is no ~= operator for time types and thus it is necessary to
@@ -1282,7 +1281,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	 */
 	if (cachedOp == SAME_OP)
 	{
-		operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+		Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 		selec = var_eq_const(vardata, operator, PeriodGetDatum(period), 
 			false, false, false);
 	}
@@ -1328,7 +1327,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
+	Selectivity selec;
 	CachedOp cachedOp;
 	Period constperiod;
 

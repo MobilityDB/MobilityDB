@@ -568,7 +568,7 @@ pointarr_make_trajectory(Datum *points, int count, bool linear)
 	else
 		geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
 			NULL, count, lwpoints);
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)geom));
+	Datum result = PointerGetDatum(geometry_serialize(geom));
 	for (int i = 0; i < count; i++)
 		lwgeom_free(lwpoints[i]);
 	pfree(lwpoints); pfree(geom);
@@ -1697,7 +1697,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 		{
 			double fraction = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, inter));
-			TimestampTz t = (double)(inst1->t) + duration * fraction;
+			TimestampTz t = inst1->t + (long) (duration * fraction);
 			/* If the intersection is not at an exclusive bound */
 			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
 			{
@@ -1718,8 +1718,8 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 				LWGEOM_line_locate_point, line, point1));
 			double fraction2 = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, point2));
-			TimestampTz t1 = (double)(inst1->t) + duration * fraction1;
-			TimestampTz t2 = (double)(inst1->t) + duration * fraction2;					
+			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
+			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
 			/* Restriction at timestamp done to avoid floating point imprecision */
@@ -2176,7 +2176,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		return value1;
 	}
 
-	double fraction = 0.0;
+	double fraction;
 	ensure_point_base_type(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -2222,7 +2222,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		return value2;
 	}
 
-	*t = inst1->t + (inst2->t - inst1->t) * fraction;
+	*t = inst1->t + (long)((double) (inst2->t - inst1->t) * fraction);
 	*tofree = true;
 	/* Linear interpolation */
 	return temporalseq_value_at_timestamp1(inst1, inst2, true, *t);
@@ -2780,8 +2780,8 @@ static LWPOINT *
 point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 {
 	int32 srid = gserialized_get_srid(gs);
-	bool hasz = FLAGS_GET_Z(gs->flags);
-	bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+	bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+	bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
 	double epoch = ((double)t / 1e6) + 946684800 ;
 	LWPOINT *result;
 	if (hasz)
@@ -2842,13 +2842,11 @@ static Datum
 tpointseq_to_geo(TemporalSeq *seq)
 {
 	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(temporalinst_value(inst));
 	for (int i = 0; i < seq->count; i++)
 	{
-		inst = temporalseq_inst_n(seq, i);
-		gs = (GSERIALIZED *)PointerGetDatum(temporalinst_value(inst));
-		points[i] = (LWGEOM *)point_to_trajpoint(gs, inst->t);
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(temporalinst_value(inst));
+		points[i] = (LWGEOM *) point_to_trajpoint(gs, inst->t);
 	}
 	GSERIALIZED *result;
 	/* Instantaneous sequence */
@@ -2863,7 +2861,7 @@ tpointseq_to_geo(TemporalSeq *seq)
 		else
 			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
 				NULL, seq->count, points);
-		result = geometry_serialize((LWGEOM *)geom);
+		result = geometry_serialize(geom);
 		pfree(geom);
 	}
 
@@ -2926,20 +2924,20 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
 static TemporalInst *
 trajpoint_to_tpointinst(LWPOINT *lwpoint)
 {
-	bool hasz = FLAGS_GET_Z(lwpoint->flags);
-	bool geodetic = FLAGS_GET_GEODETIC(lwpoint->flags);
+	bool hasz = (bool) FLAGS_GET_Z(lwpoint->flags);
+	bool geodetic = (bool) FLAGS_GET_GEODETIC(lwpoint->flags);
 	LWPOINT *lwpoint1;
 	TimestampTz t;
 	if (hasz)
 	{
 		POINT4D point = getPoint4d(lwpoint->point, 0);
-		t = (point.m - 946684800) * 1e6;
+		t = (long) ((point.m - 946684800) * 1e6);
 		lwpoint1 = lwpoint_make3dz(lwpoint->srid, point.x, point.y, point.z);
 	}
 	else
 	{
 		POINT3DM point = getPoint3dm(lwpoint->point, 0);
-		t = (point.m - 946684800) * 1e6;
+		t = (long) ((point.m - 946684800) * 1e6);
 		lwpoint1 = lwpoint_make2d(lwpoint->srid, point.x, point.y);
 	}
 	FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
@@ -2967,7 +2965,7 @@ geo_to_tpointi(GSERIALIZED *gs)
 	TemporalI *result;
 	/* Geometry is a MULTIPOINT */
 	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-	bool hasz = FLAGS_GET_Z(gs->flags);
+	bool hasz = (bool) FLAGS_GET_Z(gs->flags);
 	/* Verify that is a valid set of trajectory points */
 	LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
 	double m1 = -1 * DBL_MAX, m2;
@@ -3009,7 +3007,7 @@ static TemporalSeq *
 geo_to_tpointseq(GSERIALIZED *gs)
 {
 	/* Geometry is a LINESTRING */
-	bool hasz = FLAGS_GET_Z(gs->flags);
+	bool hasz =(bool)  FLAGS_GET_Z(gs->flags);
 	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
 	LWLINE *lwline = lwgeom_as_lwline(lwgeom);
 	int npoints = lwline->points->npoints;
