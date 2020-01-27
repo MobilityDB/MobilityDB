@@ -1258,7 +1258,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	bool result = false;
 	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST || sync1->duration == TEMPORALI) 
-		result = spatialrel3_tpoint_tpoint(sync1, sync2, dist, func);
+		result = DatumGetBool(spatialrel3_tpoint_tpoint(sync1, sync2, dist, func));
 	else if (sync1->duration == TEMPORALSEQ) 
 		result = dwithin_tpointseq_tpointseq(
 			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
@@ -1269,7 +1269,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	pfree(sync1); pfree(sync2); 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
-	PG_RETURN_DATUM(result);
+	PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************

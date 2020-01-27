@@ -568,7 +568,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 */
 	histo_cells_target = (int)pow((double)(stats->attr->attstattarget), (double)ndims);
 	histo_cells_target = Min(histo_cells_target, ndims * 10000);
-	histo_cells_target = Min(histo_cells_target, (int)(total_rows/5));
+	histo_cells_target = Min(histo_cells_target, total_rows/5);
 
 	/* If there's no useful features, we can't work out stats */
 	if (! notnull_cnt)
@@ -747,7 +747,6 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 		const ND_BOX *nd_box;
 		ND_IBOX nd_ibox;
 		int at[ND_DIMS];
-		int d;
 		double num_cells = 0;
 		double tmp_volume = 1.0;
 		double min[ND_DIMS] = {0.0, 0.0, 0.0, 0.0};
@@ -842,8 +841,6 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	stats->numnumbers[stats_slot] = nd_stats_size/sizeof(float4);
 
 	(*slot_idx)++;
-
-	return;
 }
 
 static void
@@ -1021,8 +1018,6 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		stats->stawidth = 0;		/* "unknown" */
 		stats->stadistinct = 0.0;	/* "unknown" */
 	}
-
-	return;
 }
 
 /*****************************************************************************/

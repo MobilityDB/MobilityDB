@@ -24,13 +24,10 @@
 
 /* General functions */
 
-extern TemporalSeq **temporals_seqs(TemporalS *ts);
 extern TemporalSeq *temporals_seq_n(TemporalS *ts, int index);
 extern TemporalS *temporals_from_temporalseqarr(TemporalSeq **sequences, 
 	int count, bool linear, bool normalize);
 extern TemporalS *temporals_copy(TemporalS *ts);
-extern bool temporalseqarr_find_timestamp(TemporalSeq **array, int from, 
-	int count, TimestampTz t, int *pos);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern bool temporals_intersects_period(TemporalS *ts, Period *p);
 extern double temporals_interval_double(TemporalS *ts);

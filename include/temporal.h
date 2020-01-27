@@ -85,13 +85,13 @@ struct temporal_duration_struct
  * Macros for manipulating the 'flags' element
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_LINEAR(flags) 		((flags) & 0x01)
+#define MOBDB_FLAGS_GET_LINEAR(flags) 		((bool) ((flags) & 0x01))
 /* The following flag is only used for TemporalInst */
-#define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
-#define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
-#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
-#define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
-#define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
+#define MOBDB_FLAGS_GET_BYVAL(flags) 		((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_X(flags)			((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_Z(flags) 			((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_T(flags) 			((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_GEODETIC(flags) 	((bool) (((flags) & 0x20)>>5))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
@@ -369,7 +369,6 @@ extern Datum temporal_start_value(PG_FUNCTION_ARGS);
 extern Datum temporal_end_value(PG_FUNCTION_ARGS);
 extern Datum temporal_min_value(PG_FUNCTION_ARGS);
 extern Datum temporal_max_value(PG_FUNCTION_ARGS);
-extern Datum temporal_time(PG_FUNCTION_ARGS);
 extern Datum temporal_num_instants(PG_FUNCTION_ARGS);
 extern Datum temporal_start_instant(PG_FUNCTION_ARGS);
 extern Datum temporal_end_instant(PG_FUNCTION_ARGS);
@@ -395,7 +394,6 @@ extern Datum temporal_always_le(PG_FUNCTION_ARGS);
 extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
 extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
-extern Datum temporal_get_values_internal(Temporal *temp);
 extern PeriodSet *temporal_get_time_internal(Temporal *temp);
 extern Datum tfloat_ranges(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);

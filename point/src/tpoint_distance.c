@@ -64,7 +64,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 			inst1->t, FLOAT8OID); 
 		return 1;
 	}
-	double fraction = 0.0;
+	double fraction;
 	ensure_point_base_type(inst1->valuetypid);
 	if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
@@ -74,7 +74,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 			traj, point));
 		pfree(DatumGetPointer(traj)); 
 	}
-	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 	{
 		/* The trajectory is a line */
 		Datum traj = geogpoint_trajectory(value1, value2);
@@ -102,8 +102,7 @@ distance_tpointseq_geo1(TemporalInst **result,
 		return 1;
 	}
 
-	double delta = (inst2->t - inst1->t) * fraction;
-	TimestampTz time = inst1->t + delta;
+	TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, time);
 	result[0] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID);
@@ -125,10 +124,9 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	for (int i = 1; i < seq->count; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-		int count= distance_tpointseq_geo1(&instants[k], inst1, inst2, 
+        /* The next step adds between one and three sequences */
+		k += distance_tpointseq_geo1(&instants[k], inst1, inst2,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), point, func);
-		/* The previous step has added between one and three sequences */
-		k += count;
 		inst1 = inst2;
 	}
 	instants[k++] = temporalinst_make(func(point, temporalinst_value(inst1)),
@@ -233,8 +231,7 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	}
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		return false;
-	double duration = (double)(end1->t - start1->t);
-	*t = (double) (start1->t) + (duration * fraction);
+	*t = start1->t + (long) ((double)(end1->t - start1->t) * fraction);
 	return true;
 }
 
@@ -268,7 +265,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		else
 			func = &geom_distance2d;
 	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_distance;
 
 	Temporal *result = NULL;
@@ -318,7 +315,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		else
 			func = &geom_distance2d;
 	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_distance;
 
 	Temporal *result = NULL;

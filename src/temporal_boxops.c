@@ -233,7 +233,6 @@ temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid)
 		valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinst_make_stbox((STBOX *)box, value, t);
 #endif
-	return;
 }
 
 /* Transform an array of temporal instant to a period */
@@ -243,7 +242,6 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 	bool lower_inc, bool upper_inc) 
 {
 	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
-	return;
 }
 
 /* Expand the first box with the second one */
@@ -273,7 +271,6 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 		temporalinst_make_bbox(&box1, value, instants[i]->t, valuetypid);
 		tbox_expand(box, &box1);
 	}
-	return;
 }
 
 /* Make the bounding box a temporal instant set from its values */
@@ -293,13 +290,12 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
 void
 temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
-	bool lower_inc, bool upper_inc, bool linear) 
+	bool lower_inc, bool upper_inc)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
@@ -318,7 +314,6 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return;
 }
 
 /* Transform an array of temporal sequence to a period */
@@ -329,7 +324,6 @@ temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int c
 	Period *first = &sequences[0]->period;
 	Period *last = &sequences[count - 1]->period;
 	period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
-	return;
 }
 
 /* Transform an array of tnumber period to a box */
@@ -343,12 +337,11 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 		TBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
 		tbox_expand(box, box1);
 	}
-	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
 void
-temporals_make_bbox(void *box, TemporalSeq **sequences, int count, bool linear) 
+temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
@@ -362,7 +355,6 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count, bool linear)
 		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY)) 
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 #endif
-	return;
 }
 
 /*****************************************************************************

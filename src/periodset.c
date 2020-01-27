@@ -119,7 +119,6 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 		newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc);
 	offsets[newcount] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += double_pad(sizeof(Period));
 	/* Normalize */
 	if (normalize && count > 1)
 	{
@@ -200,7 +199,7 @@ periodset_in(PG_FUNCTION_ARGS)
 char *
 periodset_to_string(PeriodSet *ps)
 {
-	char **strings = palloc((int) (sizeof(char *) * ps->count));
+	char **strings = palloc(sizeof(char *) * ps->count);
 	size_t outlen = 0;
 
 	for (int i = 0; i < ps->count; i++)

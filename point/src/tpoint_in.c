@@ -70,7 +70,7 @@ findMemberByName(json_object *poObj, const char *pszName )
 					it.val = (json_object*)it.entry->v, it.entry) : 0);
 				it.entry = it.entry->next)
 		{
-			if (strcasecmp((char *)it.key, pszName) == 0)
+			if (strcasecmp(it.key, pszName) == 0)
 				return it.val;
 		}
 	}
@@ -273,14 +273,14 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	if (lowerinc == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'lower_inc' in MFJSON string")));
-	bool lower_inc = json_object_get_boolean(lowerinc);
+	bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
 	json_object *upperinc = NULL;
 	upperinc = findMemberByName(mfjson, "upper_inc");
 	if (upperinc == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'upper_inc' in MFJSON string")));
-	bool upper_inc = json_object_get_boolean(upperinc);
+	bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 	/* Construct the temporal point */
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
@@ -342,14 +342,14 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		if (lowerinc == NULL)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Unable to find 'lower_inc' in MFJSON string")));
-		bool lower_inc = json_object_get_boolean(lowerinc);
+		bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
 		json_object *upperinc = NULL;
 		upperinc = findMemberByName(seqvalue, "upper_inc");
 		if (upperinc == NULL)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Unable to find 'upper_inc' in MFJSON string")));
-		bool upper_inc = json_object_get_boolean(upperinc);
+		bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 		/* Construct the temporal point */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
@@ -674,7 +674,6 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 			elog(ERROR, "Unknown WKB duration (%d)!", wkb_type);
 			break;
 	}
-	return;
 }
 
 /**
@@ -783,7 +782,6 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 		*upper_inc = true;
 	else
 		*upper_inc = false;
-	return;
 }
 
 static TemporalSeq * 

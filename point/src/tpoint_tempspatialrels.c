@@ -256,15 +256,14 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		{
 			/* Find the middle time between current instant and the next one 
 			 * and compute the func at that point */
-			double time1 = (interinstants[i])->t;
-			double time2 = (interinstants[i + 1])->t;
-			TimestampTz inttime = time1 + ((time2 - time1)/2);
+			TimestampTz inttime = interinstants[i]->t +
+				(interinstants[i + 1]->t - interinstants[i]->t) / 2;
 			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, 
 				linear, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue) :
 				func(intvalue, geo);
-			instants[0] = temporalinst_make(intvalue1, time1, valuetypid);
-			instants[1] = temporalinst_make(intvalue1, time2, valuetypid);
+			instants[0] = temporalinst_make(intvalue1, interinstants[i]->t, valuetypid);
+			instants[1] = temporalinst_make(intvalue1, interinstants[i + 1]->t, valuetypid);
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
@@ -506,15 +505,13 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		{
 			/* Find the middle time between current instant and the next one 
 			 * and compute the func at that point */
-			double time1 = (interinstants[i])->t;
-			double time2 = (interinstants[i + 1])->t;
-			TimestampTz inttime = time1 + ((time2 - time1)/2);
+			TimestampTz inttime = interinstants[i]->t + (interinstants[i + 1]->t - interinstants[i]->t) / 2;
 			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, 
 				linear, inttime);
 			Datum intvalue1 = invert ? func(geo, intvalue, param) :
 				func(intvalue, geo, param);
-			instants[0] = temporalinst_make(intvalue1, time1, valuetypid);
-			instants[1] = temporalinst_make(intvalue1, time2, valuetypid);
+			instants[0] = temporalinst_make(intvalue1, interinstants[i]->t, valuetypid);
+			instants[1] = temporalinst_make(intvalue1, interinstants[i + 1]->t, valuetypid);
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
@@ -1068,13 +1065,13 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 		long double t5, t6;
 		if (b >= 0)
 		{
-			t5 = (-1 * b - sqrt(discriminant)) / (2 * a);
-			t6 = (2 * c ) / (-1 * b - sqrt(discriminant));
+			t5 = (-1 * b - sqrtl(discriminant)) / (2 * a);
+			t6 = (2 * c ) / (-1 * b - sqrtl(discriminant));
 		}
 		else
 		{
-			t5 = (2 * c ) / (-1 * b + sqrt(discriminant));
-			t6 = (-1 * b + sqrt(discriminant)) / (2 * a);
+			t5 = (2 * c ) / (-1 * b + sqrtl(discriminant));
+			t6 = (-1 * b + sqrtl(discriminant)) / (2 * a);
 		}
 
 		/* If the two intervals do not intersect */
@@ -1365,9 +1362,8 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 	{
 		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
 		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		int countstep = tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d, 
+		k += tdwithin_tpointseq_tpointseq3(&sequences[k], seq1, seq2, d,
 			func);
-		k += countstep;
 	}
 	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
 		false, true);

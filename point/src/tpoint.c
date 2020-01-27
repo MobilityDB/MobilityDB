@@ -529,7 +529,7 @@ PG_FUNCTION_INFO_V1(tpoint_ever_ne);
 PGDLLEXPORT Datum
 tpoint_ever_ne(PG_FUNCTION_ARGS)
 {
-	return ! tpoint_always_eq(fcinfo);
+	PG_RETURN_BOOL(! tpoint_always_eq(fcinfo));
 }
 
 /* Is the temporal value always not equal to the value? */
@@ -539,7 +539,7 @@ PG_FUNCTION_INFO_V1(tpoint_always_ne);
 PGDLLEXPORT Datum
 tpoint_always_ne(PG_FUNCTION_ARGS)
 {
-	return ! tpoint_ever_eq(fcinfo);
+	PG_RETURN_BOOL(! tpoint_ever_eq(fcinfo));
 }
 
 /*****************************************************************************

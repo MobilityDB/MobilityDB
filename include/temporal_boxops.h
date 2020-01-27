@@ -48,8 +48,8 @@ extern void temporalinst_make_bbox(void *bbox, Datum value, TimestampTz t,
 	Oid valuetypid);
 extern void temporali_make_bbox(void *bbox, TemporalInst **inst, int count);
 extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count, 
-	bool lower_inc, bool upper_inc, bool linear);
-extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count, bool linear);
+	bool lower_inc, bool upper_inc);
+extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
 /* Shift the bounding box of a Temporal with an Interval */
 
@@ -60,16 +60,6 @@ extern void shift_bbox(void *box, Oid valuetypid, Interval *interval);
 extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
 extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
 extern bool temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst);
-
-extern bool contains_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool contained_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool overlaps_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool same_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-
-extern bool contains_tbox_period_internal(TBOX *box, Period *p);
-extern bool contained_tbox_period_internal(TBOX *box, Period *p);
-extern bool overlaps_tbox_period_internal(TBOX *box, Period *p);
-extern bool same_tbox_period_internal(TBOX *box, Period *p);
 
 extern Datum int_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_to_tbox(PG_FUNCTION_ARGS);

@@ -445,7 +445,7 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				 maxoff;
 	STBOX		*unionL = NULL,
 				*unionR = NULL;
-	int			 nbytes;
+	size_t		nbytes;
 	
 	maxoff = entryvec->n - 1;
 	

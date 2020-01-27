@@ -374,8 +374,8 @@ unquote(char *str)
 char *
 period_to_string(Period *p) 
 {
-	char *lower = call_output(TIMESTAMPTZOID, p->lower);
-	char *upper = call_output(TIMESTAMPTZOID, p->upper);
+	char *lower = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
+	char *upper = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
 	char *result = period_deparse(p->lower_inc, p->upper_inc, lower, upper);
 	unquote(result);
 	pfree(lower); pfree(upper);
@@ -398,12 +398,12 @@ period_out(PG_FUNCTION_ARGS)
 void
 period_send_internal(Period *p, StringInfo buf)
 {
-	bytea *lower = call_send(TIMESTAMPTZOID, p->lower);
-	bytea *upper = call_send(TIMESTAMPTZOID, p->upper);
+	bytea *lower = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
+	bytea *upper = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
 	pq_sendbytes(buf, VARDATA(lower), VARSIZE(lower) - VARHDRSZ);
 	pq_sendbytes(buf, VARDATA(upper), VARSIZE(upper) - VARHDRSZ);
-	pq_sendbyte(buf, p->lower_inc);
-	pq_sendbyte(buf, p->upper_inc);
+	pq_sendbyte(buf, p->lower_inc ? (uint8) 1 : (uint8) 0);
+	pq_sendbyte(buf, p->upper_inc ? (uint8) 1 : (uint8) 0);
 	pfree(lower);
 	pfree(upper);
 }
@@ -557,7 +557,7 @@ PGDLLEXPORT Datum
 period_lower(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
-	PG_RETURN_DATUM(p->lower);
+	PG_RETURN_TIMESTAMPTZ(p->lower);
 }
 
 /* extract upper bound value */
@@ -568,7 +568,7 @@ PGDLLEXPORT Datum
 period_upper(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_GETARG_PERIOD(0);
-	PG_RETURN_DATUM(p->upper);
+	PG_RETURN_TIMESTAMPTZ(p->upper);
 }
 
 /* period -> bool functions */
@@ -800,8 +800,8 @@ period_hash(PG_FUNCTION_ARGS)
 		flags |= 0x02;
 
 	/* Apply the hash function to each bound */
-	lower_hash = DatumGetUInt32(call_function1(hashint8, p->lower));
-	upper_hash = DatumGetUInt32(call_function1(hashint8, p->upper));
+	lower_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(p->lower)));
+	upper_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(p->upper)));
 
 	/* Merge hashes of flags and bounds */
 	result = hash_uint32((uint32) flags);

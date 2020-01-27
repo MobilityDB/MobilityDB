@@ -269,7 +269,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			/* Adjust the size */
 			total_width += VARSIZE(ts);
 		}
-		else if (timetype == T_PERIODSET)
+		else
 		{
 			PeriodSet *ps= DatumGetPeriodSet(value);
 			period = periodset_bbox(ps);

@@ -294,7 +294,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 	 * to call this function in the dispatch function tpoint_parse */
 	p_obrace(str);
 
-	//FIXME: parsing twice
+	/* First parsing */
 	char *bak = *str;
 	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
@@ -343,8 +343,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	else if (p_oparen(str))
 		lower_inc = false;
 
-	// FIXME: I pre-parse to have the count, then re-parse. This is the only
-	// approach I see at the moment which is both correct and simple
+	/* First parsing */
 	char *bak = *str;
 	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
@@ -400,7 +399,7 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	 * to call this function in the dispatch function tpoint_parse */
 	p_obrace(str);
 
-	//FIXME: parsing twice
+	/* First parsing */
 	char *bak = *str;
 	TemporalSeq *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	int count = 1;

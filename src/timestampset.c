@@ -111,7 +111,6 @@ timestampset_from_timestamparr_internal(TimestampTz *times, int count)
 	period_set(&bbox, times[0], times[count - 1], true, true);
 	offsets[count] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += double_pad(sizeof(Period));
 	return result;
 }
 
@@ -185,13 +184,13 @@ timestampset_in(PG_FUNCTION_ARGS)
 char *
 timestampset_to_string(TimestampSet *ts)
 {
-	char **strings = palloc((int) (sizeof(char *) * ts->count));
+	char **strings = palloc(sizeof(char *) * ts->count);
 	size_t outlen = 0;
 
 	for (int i = 0; i < ts->count; i++)
 	{
 		TimestampTz t = timestampset_time_n(ts, i);
-		strings[i] = call_output(TIMESTAMPTZOID, t);
+		strings[i] = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(t));
 		outlen += strlen(strings[i]) + 2;
 	}
 	char *result = palloc(outlen + 3);
@@ -243,7 +242,7 @@ timestampset_send(PG_FUNCTION_ARGS)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TimestampTz t = timestampset_time_n(ts, i);
-		bytea *t1 = call_send(TIMESTAMPTZOID, t);
+		bytea *t1 = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(t));
 		pq_sendbytes(&buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
 		pfree(t1);
 	}
@@ -468,9 +467,7 @@ timestampset_shift(PG_FUNCTION_ARGS)
 int
 timestampset_cmp_internal(TimestampSet *ts1, TimestampSet *ts2)
 {
-	int count1 = ts1->count;
-	int count2 = ts2->count;
-	int count = count1 < count2 ? count1 : count2;
+	int count = Min(ts1->count, ts2->count);
 	int result = 0;
 	for (int i = 0; i < count; i++)
 	{
@@ -483,9 +480,9 @@ timestampset_cmp_internal(TimestampSet *ts1, TimestampSet *ts2)
 	/* The first count times of the two TimestampSet are equal */
 	if (!result) 
 	{
-		if (count < count1) /* ts1 has more timestamps than ts2 */
+		if (count < ts1->count) /* ts1 has more timestamps than ts2 */
 			result = 1;
-		else if (count < count2) /* ts2 has more timestamps than ts1 */
+		else if (count < ts2->count) /* ts2 has more timestamps than ts1 */
 			result = -1;
 		else
 			result = 0;
