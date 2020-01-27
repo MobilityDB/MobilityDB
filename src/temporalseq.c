@@ -1337,7 +1337,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 	size_t pos = 0;
 	strcpy(result, str);
 	pos += strlen(str);
-	result[pos++] = seq->period.lower_inc ? '[' : '(';
+	result[pos++] = seq->period.lower_inc ? (char) '[' : (char) '(';
 	for (int i = 0; i < seq->count; i++)
 	{
 		strcpy(result + pos, strings[i]);
@@ -1346,7 +1346,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 		result[pos++] = ' ';
 		pfree(strings[i]);
 	}
-	result[pos - 2] = seq->period.upper_inc ? ']' : ')';
+	result[pos - 2] = seq->period.upper_inc ? (char) ']' : (char) ')';
 	result[pos - 1] = '\0';
 	pfree(strings);
 	return result;
@@ -1357,7 +1357,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 void
 temporalseq_write(TemporalSeq *seq, StringInfo buf)
 {
-	pq_sendint(buf, seq->count, 4);
+	pq_sendint(buf, (uint32) seq->count, 4);
 	pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
 	pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
 	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
@@ -3938,7 +3938,7 @@ temporalseq_hash(TemporalSeq *seq)
 		flags |= 0x01;
 	if (seq->period.upper_inc)
 		flags |= 0x02;
-	result = hash_uint32((uint32) flags);
+	result = DatumGetUInt32(hash_uint32((uint32) flags));
 	
 	/* Merge with hash of instants */
 	for (int i = 0; i < seq->count; i++)

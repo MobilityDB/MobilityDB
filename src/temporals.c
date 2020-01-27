@@ -664,7 +664,7 @@ temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum))
 void
 temporals_write(TemporalS *ts, StringInfo buf)
 {
-	pq_sendint(buf, ts->count, 4);
+	pq_sendint(buf, (uint32) ts->count, 4);
 	pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(ts->flags) ? (uint8) 1 : (uint8) 0);
 	for (int i = 0; i < ts->count; i++)
 	{

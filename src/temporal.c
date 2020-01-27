@@ -35,7 +35,7 @@
  * Typmod 
  *****************************************************************************/
 
-static char *temporalTypeName[] =
+static char *temporalDurationName[] =
 {
 	"Unknown",
 	"Instant",
@@ -54,22 +54,22 @@ struct temporal_duration_struct temporal_duration_struct_array[] =
 };
 
 const char *
-temporal_duration_name(uint8_t type)
+temporal_duration_name(int16 duration)
 {
-	if (type > 4)
-		return "Invalid temporal type";
-	return temporalTypeName[(int)type];
+	if (duration < 0 || duration > 4)
+		return "Invalid duration for temporal type";
+	return temporalDurationName[duration];
 }
 
 bool
-temporal_duration_from_string(const char *str, uint8_t *type)
+temporal_duration_from_string(const char *str, int16 *duration)
 {
 	char *tmpstr;
 	size_t tmpstartpos, tmpendpos;
 	size_t i;
 
 	/* Initialize */
-	*type = 0;
+	*duration = 0;
 	/* Locate any leading/trailing spaces */
 	tmpstartpos = 0;
 	for (i = 0; i < strlen(str); i++)
@@ -98,10 +98,10 @@ temporal_duration_from_string(const char *str, uint8_t *type)
 	/* Now check for the type */
 	for (i = 0; i < DURATION_STRUCT_ARRAY_LEN; i++)
 	{
-		if (len == strlen(temporal_duration_struct_array[i].typename) && 
-			!strcasecmp(tmpstr, temporal_duration_struct_array[i].typename))
+		if (len == strlen(temporal_duration_struct_array[i].durationName) &&
+			!strcasecmp(tmpstr, temporal_duration_struct_array[i].durationName))
 		{
-			*type = temporal_duration_struct_array[i].type;
+			*duration = temporal_duration_struct_array[i].duration;
 			pfree(tmpstr);
 			return true;
 		}
@@ -642,7 +642,7 @@ temporal_out(PG_FUNCTION_ARGS)
 void
 temporal_write(Temporal *temp, StringInfo buf)
 {
-	pq_sendint(buf, temp->duration, 2);
+	pq_sendbyte(buf, (uint8) temp->duration);
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		temporalinst_write((TemporalInst *) temp, buf);
@@ -672,7 +672,7 @@ temporal_send(PG_FUNCTION_ARGS)
 Temporal *
 temporal_read(StringInfo buf, Oid valuetypid)
 {
-	int type = (int) pq_getmsgint(buf, 2);
+	int16 type = (int16) pq_getmsgbyte(buf);
 	Temporal *result = NULL;
 	ensure_valid_duration(type);
 	if (type == TEMPORALINST)
@@ -725,13 +725,13 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
 	/* Temporal Type */
 	char *s = DatumGetCString(elem_values[0]);
-	uint8_t type = 0;
-	if (!temporal_duration_from_string(s, &type))
+	int16 duration = 0;
+	if (!temporal_duration_from_string(s, &duration))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Invalid temporal type modifier: %s", s)));
 
 	pfree(elem_values);
-	PG_RETURN_INT32((int32)type);
+	PG_RETURN_INT32((int32)duration);
 }
 
 PG_FUNCTION_INFO_V1(temporal_typmod_out);
@@ -742,14 +742,14 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 	char *s = (char *) palloc(64);
 	char *str = s;
 	int32 typmod = PG_GETARG_INT32(0);
-	int32 duration_type = TYPMOD_GET_DURATION(typmod);
+	int16 duration = TYPMOD_GET_DURATION(typmod);
 	/* No type? Then no typmod at all. Return empty string.  */
-	if (typmod < 0 || !duration_type)
+	if (typmod < 0 || !duration)
 	{
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
 	}
-	sprintf(str, "(%s)", temporal_duration_name(duration_type));
+	sprintf(str, "(%s)", temporal_duration_name(duration));
 	PG_RETURN_CSTRING(s);
 }
 

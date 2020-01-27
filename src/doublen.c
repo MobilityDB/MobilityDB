@@ -123,16 +123,6 @@ double2_eq(double2 *d1, double2 *d2)
 	return (d1->a == d2->a && d1->b == d2->b);
 }
 
-/* Comparator */
-int
-double2_cmp(double2 *d1, double2 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-		cmp = float8_cmp_internal(d1->b, d2->b);
-	return cmp;
-}
-
 /*****************************************************************************
  * Input/Output functions
  *****************************************************************************/
@@ -229,21 +219,6 @@ bool
 double3_eq(double3 *d1, double3 *d2)
 {
 	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
-}
-
-/* Comparator */
-
-int
-double3_cmp(double3 *d1, double3 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-	{
-		cmp = float8_cmp_internal(d1->b, d2->b);
-		if (cmp == 0)
-			cmp = float8_cmp_internal(d1->c, d2->c);
-	}
-	return cmp;
 }
 
 /*****************************************************************************
@@ -346,25 +321,6 @@ double4_eq(double4 *d1, double4 *d2)
 {
 	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && 
 		d1->d == d2->d);
-}
-
-/* Comparator */
-
-int
-double4_cmp(double4 *d1, double4 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-	{
-		cmp = float8_cmp_internal(d1->b, d2->b);
-		if (cmp == 0)
-		{
-			cmp = float8_cmp_internal(d1->c, d2->c);
-			if (cmp == 0)
-				cmp = float8_cmp_internal(d1->d, d2->d);
-		}
-	}
-	return cmp;
 }
 
 /*****************************************************************************/

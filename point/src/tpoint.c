@@ -135,7 +135,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 static uint32 
 tpoint_typmod_in(ArrayType *arr, int is_geography)
 {
-	int32 typmod = 0;
+	uint32 typmod = 0;
 	Datum *elem_values;
 	int n = 0;
 
@@ -162,7 +162,8 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 	 * duration types in the same column. Similarly for all generic modifiers.
 	 */
 	deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-	uint8_t duration = 0, geometry_type = 0;
+	int16 duration = 0;
+	uint8_t geometry_type = 0;
 	int hasZ = 0, hasM = 0;
 	char *s;
 	
@@ -351,10 +352,10 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 	char *s = (char *) palloc(64);
 	char *str = s;
 	int32 typmod = PG_GETARG_INT32(0);
-	int32 duration = TYPMOD_GET_DURATION(typmod);
+	int16 duration = TYPMOD_GET_DURATION(typmod);
 	TYPMOD_DEL_DURATION(typmod);
 	int32 srid = TYPMOD_GET_SRID(typmod);
-	int32 geometry_type = TYPMOD_GET_TYPE(typmod);
+	uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
 	int32 hasz = TYPMOD_GET_Z(typmod);
 
 	/* No duration type or geometry type? Then no typmod at all. 
@@ -379,7 +380,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 		if (srid) str += sprintf(str, ",%d", srid);
 	}
 	/* Closing bracket.  */
-	str += sprintf(str, ")");
+	sprintf(str, ")");
 
 	PG_RETURN_CSTRING(s);
 }

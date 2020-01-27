@@ -234,7 +234,7 @@ timestampset_send(PG_FUNCTION_ARGS)
 	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, ts->count, 4);
+	pq_sendint(&buf, (uint32) ts->count, 4);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TimestampTz t = timestampset_time_n(ts, i);

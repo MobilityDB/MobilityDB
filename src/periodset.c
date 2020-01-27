@@ -249,7 +249,7 @@ periodset_send(PG_FUNCTION_ARGS)
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, ps->count, 4);
+	pq_sendint(&buf, (uint32) ps->count, 4);
 	for (int i = 0; i < ps->count; i++)
 	{
 		Period *p = periodset_per_n(ps, i);
