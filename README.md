@@ -85,12 +85,11 @@ https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 Manual
 ------
 
-
 HTML: https://docs.mobilitydb.com/MobilityDB/master/
 
-PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
+PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
 
-EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
+EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
 
 Workshop
 --------
