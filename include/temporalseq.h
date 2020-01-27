@@ -101,18 +101,12 @@ extern TemporalSeq *temporalseq_shift(TemporalSeq *seq,
 	Interval *interval);
 
 extern bool temporalseq_ever_eq(TemporalSeq *seq, Datum value);
-extern bool temporalseq_ever_ne(TemporalSeq *seq, Datum value);
 extern bool temporalseq_ever_lt(TemporalSeq *seq, Datum value);
 extern bool temporalseq_ever_le(TemporalSeq *seq, Datum value);
-extern bool temporalseq_ever_gt(TemporalSeq *seq, Datum value);
-extern bool temporalseq_ever_ge(TemporalSeq *seq, Datum value);
 
 extern bool temporalseq_always_eq(TemporalSeq *seq, Datum value);
-extern bool temporalseq_always_ne(TemporalSeq *seq, Datum value);
 extern bool temporalseq_always_lt(TemporalSeq *seq, Datum value);
 extern bool temporalseq_always_le(TemporalSeq *seq, Datum value);
-extern bool temporalseq_always_gt(TemporalSeq *seq, Datum value);
-extern bool temporalseq_always_ge(TemporalSeq *seq, Datum value);
 
 /* Restriction Functions */
 

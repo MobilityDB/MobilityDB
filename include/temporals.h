@@ -114,18 +114,12 @@ extern ArrayType *temporals_timestamps(TemporalS *ts);
 extern TemporalS *temporals_shift(TemporalS *ts, Interval *interval);
 
 extern bool temporals_ever_eq(TemporalS *ts, Datum value);
-extern bool temporals_ever_ne(TemporalS *ts, Datum value);
 extern bool temporals_ever_lt(TemporalS *ts, Datum value);
 extern bool temporals_ever_le(TemporalS *ts, Datum value);
-extern bool temporals_ever_gt(TemporalS *ts, Datum value);
-extern bool temporals_ever_ge(TemporalS *ts, Datum value);
 
 extern bool temporals_always_eq(TemporalS *ts, Datum value);
-extern bool temporals_always_ne(TemporalS *ts, Datum value);
 extern bool temporals_always_lt(TemporalS *ts, Datum value);
 extern bool temporals_always_le(TemporalS *ts, Datum value);
-extern bool temporals_always_gt(TemporalS *ts, Datum value);
-extern bool temporals_always_ge(TemporalS *ts, Datum value);
 
 /* Restriction Functions */
 
