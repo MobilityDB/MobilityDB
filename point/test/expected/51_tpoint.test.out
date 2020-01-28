@@ -34,11 +34,11 @@ LINE 1: SELECT tgeogpoint 'ABC@2012-01-01 08:00:00';
                           ^
 HINT:  "AB" <-- parse error at position 2 within geometry
 SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
                           ^
 SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
                           ^
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
@@ -75,11 +75,11 @@ SELECT asText(tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 
 
 /* Errors */
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 2: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
@@ -138,11 +138,11 @@ SELECT asText(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Poi
 
 /* Errors */
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 2: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point empty@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
@@ -200,12 +200,12 @@ SELECT asText(tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01
 /* Errors */
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
  [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 2: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00, Point(3 3)@2001-01-01 08:06:00],
  [Point(1 1)@2001-01-01 09:00:00, Point empty@2001-01-01 09:05:00, Point(1 1)@2001-01-01 09:06:00]}';
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
@@ -986,9 +986,9 @@ SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
 
 /* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamptz '2000-01-01'));
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamptz '2000-01-01'));
-ERROR:  Only non-empty point geometries without M dimension accepted
+ERROR:  Only non-empty geometries accepted
 SELECT asewkt(tgeompointi(ARRAY[
 tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeompointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
