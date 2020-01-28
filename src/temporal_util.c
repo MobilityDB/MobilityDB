@@ -535,44 +535,44 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 void
 datum_sort(Datum *values, int count, Oid type)
 {
-	qsort_arg(values, count, sizeof(Datum),
+	qsort_arg(values, (size_t) count, sizeof(Datum),
 			  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
 timestamp_sort(TimestampTz *times, int count)
 {
-	qsort(times, count, sizeof(TimestampTz),
+	qsort(times, (size_t) count, sizeof(TimestampTz),
 		  (qsort_comparator) &timestamp_sort_cmp);
-	qsort(times, count, sizeof(TimestampTz), 
+	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
 }
 
 void
 periodarr_sort(Period **periods, int count)
 {
-	qsort(periods, count, sizeof(Period *),
+	qsort(periods, (size_t) count, sizeof(Period *),
 		  (qsort_comparator) &period_sort_cmp);
 }
 
 void
 rangearr_sort(RangeType **ranges, int count)
 {
-	qsort(ranges, count, sizeof(RangeType *),
+	qsort(ranges, (size_t) count, sizeof(RangeType *),
 		  (qsort_comparator) &range_sort_cmp);
 }
 
 void
 temporalinstarr_sort(TemporalInst **instants, int count)
 {
-	qsort(instants, count, sizeof(TemporalInst *),
+	qsort(instants, (size_t) count, sizeof(TemporalInst *),
 		  (qsort_comparator) &temporalinstarr_sort_cmp);
 }
 
 void
 temporalseqarr_sort(TemporalSeq **sequences, int count)
 {
-	qsort(sequences, count, sizeof(TemporalSeq *),
+	qsort(sequences, (size_t) count, sizeof(TemporalSeq *),
 		  (qsort_comparator) &temporalseqarr_sort_cmp);
 }
 
@@ -623,8 +623,8 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 	a1p = VARDATA_ANY(arg1);
 	a2p = VARDATA_ANY(arg2);
 
-	len1 = VARSIZE_ANY_EXHDR(arg1);
-	len2 = VARSIZE_ANY_EXHDR(arg2);
+	len1 = (int) VARSIZE_ANY_EXHDR(arg1);
+	len2 = (int) VARSIZE_ANY_EXHDR(arg2);
 
 	return varstr_cmp(a1p, len1, a2p, len2, collid);
 }

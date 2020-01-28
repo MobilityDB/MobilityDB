@@ -118,7 +118,7 @@ adjustBox(TBOX *b, const TBOX *addon)
 
 PG_FUNCTION_INFO_V1(gist_tbox_union);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -145,7 +145,7 @@ gist_tbox_union(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(gist_tbox_penalty);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -449,7 +449,7 @@ common_entry_cmp(const void *i1, const void *i2)
 
 PG_FUNCTION_INFO_V1(gist_tbox_picksplit);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -1031,7 +1031,7 @@ gist_tnumber_compress(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(gist_tbox_same);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_same(PG_FUNCTION_ARGS)
 {
 	TBOX *b1 = PG_GETARG_TBOX_P(0);

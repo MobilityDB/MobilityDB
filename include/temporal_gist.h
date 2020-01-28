@@ -20,10 +20,6 @@
 /*****************************************************************************/
 
 extern Datum gist_temporal_consistent(PG_FUNCTION_ARGS);
-extern Datum gist_temporalinst_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporali_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporalseq_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporals_compress(PG_FUNCTION_ARGS);
 extern Datum gist_temporal_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/

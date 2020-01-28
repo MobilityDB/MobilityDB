@@ -684,7 +684,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root,
 				 * values to a uniform comparison scale, and do a linear
 				 * interpolation within this bin.
 				 */
-				if (convert_to_scalar_mobdb(constval, consttype, &val,
+				if (convert_to_scalar_mobdb(consttype, constval, &val,
 									  sslot.values[i - 1], sslot.values[i],
 									  vardata->vartype,
 									  &low, &high))
@@ -1427,7 +1427,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	/* Get the duration of the temporal column */
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int16 duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */

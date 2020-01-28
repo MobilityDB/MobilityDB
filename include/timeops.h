@@ -62,12 +62,9 @@ extern Datum contained_periodset_periodset(PG_FUNCTION_ARGS);
 
 /* overlaps? */
 
-extern Datum overlaps_timestampset_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum overlaps_period_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_timestampset(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_period(PG_FUNCTION_ARGS);
-extern Datum overlaps_periodset_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_periodset_timestampset(PG_FUNCTION_ARGS);
 extern Datum overlaps_periodset_period(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_periodset(PG_FUNCTION_ARGS);
