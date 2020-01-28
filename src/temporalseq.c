@@ -1788,7 +1788,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 }
 
 /*****************************************************************************
- * Ever/always comparison functions 
+ * Ever/always comparison operators
  * The functions assume that the temporal value and the datum value are of
  * the same valuetypid. Ever/always equal are valid for all temporal types 
  * including temporal points. All the other comparisons are only valid for

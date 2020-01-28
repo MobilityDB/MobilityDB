@@ -73,14 +73,6 @@ ensure_has_Z_tpoint(Temporal *temp)
 }
 
 void
-ensure_has_not_Z_tpoint(Temporal *temp)
-{
-	if (MOBDB_FLAGS_GET_Z(temp->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal point must not have Z dimension")));
-}
-
-void
 ensure_point_type(GSERIALIZED *gs)
 {
 	if (gserialized_get_type(gs) != POINTTYPE)
@@ -564,10 +556,10 @@ pointarr_make_trajectory(Datum *points, int count, bool linear)
 	}
 	LWGEOM *geom;
 	if (linear)
-		geom = (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, count, lwpoints);
+		geom = (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count, lwpoints);
 	else
 		geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
-			NULL, count, lwpoints);
+			NULL, (uint32_t) count, lwpoints);
 	Datum result = PointerGetDatum(geometry_serialize(geom));
 	for (int i = 0; i < count; i++)
 		lwgeom_free(lwpoints[i]);
@@ -2827,7 +2819,7 @@ tpointi_to_geo(TemporalI *ti)
 	else
 	{
 		LWGEOM *mpoint = (LWGEOM *)lwcollection_construct(MULTIPOINTTYPE, srid,
-			NULL, ti->count, points);
+			NULL, (uint32_t) ti->count, points);
 		result = geometry_serialize(mpoint);
 		pfree(mpoint);
 	}
@@ -2857,10 +2849,10 @@ tpointseq_to_geo(TemporalSeq *seq)
 		LWGEOM *geom;
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				seq->count, points);
+				(uint32_t) seq->count, points);
 		else
 			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-				NULL, seq->count, points);
+				NULL, (uint32_t) seq->count, points);
 		result = geometry_serialize(geom);
 		pfree(geom);
 	}
@@ -3022,12 +3014,12 @@ geo_to_tpointseq(GSERIALIZED *gs)
 	{
 		if (hasz)
 		{
-			POINT4D point = getPoint4d(lwline->points, i);
+			POINT4D point = getPoint4d(lwline->points, (uint32_t) i);
 			m2 = point.m;
 		}
 		else
 		{
-			POINT3DM point = getPoint3dm(lwline->points, i);
+			POINT3DM point = getPoint3dm(lwline->points, (uint32_t) i);
 			m2 = point.m;
 		}
 		if (m1 >= m2)
@@ -3042,7 +3034,7 @@ geo_to_tpointseq(GSERIALIZED *gs)
 	for (int i = 0; i < npoints; i++)
 	{
 		/* Returns freshly allocated LWPOINT */
-		LWPOINT *lwpoint = lwline_get_lwpoint(lwline, i);
+		LWPOINT *lwpoint = lwline_get_lwpoint(lwline, (uint32_t) i);
 		instants[i] = trajpoint_to_tpointinst(lwpoint);
 		lwpoint_free(lwpoint);
 	}

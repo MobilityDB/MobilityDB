@@ -2011,7 +2011,7 @@ temporal_shift(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Ever/Always Comparison Functions 
+ * Ever/always comparison operators
  *****************************************************************************/
 
 /* Is the temporal value ever equal to the value? */

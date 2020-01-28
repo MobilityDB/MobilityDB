@@ -92,7 +92,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 		{
 			double fraction = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, inter));
-			TimestampTz time = (double)(inst1->t) + duration * fraction;
+			TimestampTz time = inst1->t + (long) (duration * fraction);
 			/* If the point intersection is not at an exclusive bound */
 			if ((lower_inc || timestamp_cmp_internal(inst1->t, time) != 0) &&
 				(upper_inc || timestamp_cmp_internal(inst2->t, time) != 0))
@@ -106,7 +106,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 			Datum point1 = call_function2(LWGEOM_pointn_linestring, inter, 1);
 			double fraction1 = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, point1));
-			TimestampTz time1 = (double)(inst1->t) + duration * fraction1;
+			TimestampTz time1 = inst1->t + (long) (duration * fraction1);
 			/* If the point intersection is not at an exclusive bound */
 			if ((lower_inc || timestamp_cmp_internal(inst1->t, time1) != 0) &&
 				(upper_inc || timestamp_cmp_internal(inst2->t, time1) != 0))
@@ -117,7 +117,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 			Datum point2 = call_function2(LWGEOM_pointn_linestring, inter, 2);
 			double fraction2 = DatumGetFloat8(call_function2(
 				LWGEOM_line_locate_point, line, point2));
-			TimestampTz time2 = (double)(inst1->t) + duration * fraction2;
+			TimestampTz time2 = inst1->t + (long) (duration * fraction2);
 
 			/* If the point intersection is not at an exclusive bound and 
 			 * time2 != time1 (this last condition arrives when point1 is 
@@ -1052,7 +1052,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 		long double t5 = (-1 * b) / (2 * a);
 		if (t5 < 0.0 || t5 > 1.0)
 			return 0;
-		*t1 = (double)lower + (t5 * duration);
+		*t1 = lower + (long) (t5 * duration);
 		return 1;
 	}
 	/* No solution */
@@ -1082,13 +1082,13 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
 		long double t8 = Min(1.0, t6);
 		if (fabsl(t7 - t8) < EPSILON)
 		{
-			*t1 = (double)lower + (t7 * duration);
+			*t1 = lower + (long) (t7 * duration);
 			return 1;			
 		}
 		else
 		{
-			*t1 = (double)lower + (t7 * duration);
-			*t2 = (double)lower + (t8 * duration);
+			*t1 = lower + (long) (t7 * duration);
+			*t2 = lower + (long) (t8 * duration);
 			return 2;
 		}
 	}

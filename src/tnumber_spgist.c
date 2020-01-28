@@ -356,10 +356,10 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 		highTs[i] = (double) box->tmax;
 	}
 
-	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 

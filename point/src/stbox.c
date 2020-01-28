@@ -46,13 +46,6 @@ stbox_copy(const STBOX *box)
 	return result;
 }
 
-void
-stbox_to_period_internal(Period *period, const STBOX *box)
-{
-	assert(MOBDB_FLAGS_GET_T(box->flags));
-	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
-}
-
 /*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/

@@ -747,7 +747,7 @@ temporali_shift(TemporalI *ti, Interval *interval)
 }
 
 /*****************************************************************************
- * Ever/Always Comparison Functions 
+ * Ever/always comparison operators
  *****************************************************************************/
 
 /* Is the temporal value ever equal to the value? */

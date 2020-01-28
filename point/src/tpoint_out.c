@@ -673,17 +673,8 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 ** Variants available for WKB and WKT output types
 */
 
-#define WKB_ISO 0x01
-#define WKB_SFSQL 0x02
-#define WKB_EXTENDED 0x04
-#define WKB_NDR 0x08
-#define WKB_XDR 0x10
-#define WKB_HEX 0x20
-#define WKB_NO_NPOINTS 0x40 /* Internal use only */
-#define WKB_NO_SRID 0x80 /* Internal use only */
-
 #define WKT_ISO 0x01
-#define WKT_SFSQL 0x02
+// #define WKT_SFSQL 0x02
 #define WKT_EXTENDED 0x04
 
 /*
@@ -700,12 +691,12 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 	if (variant & WKB_HEX)
 	{
 		buf[0] = '0';
-		buf[1] = ((variant & WKB_NDR) ? '1' : '0');
+		buf[1] = ((variant & WKB_NDR) ? (uint8_t) '1' : (uint8_t) '0');
 		return buf + 2;
 	}
 	else
 	{
-		buf[0] = ((variant & WKB_NDR) ? 1 : 0);
+		buf[0] = ((variant & WKB_NDR) ? (uint8_t) 1 : (uint8_t) 0);
 		return buf + 1;
 	}
 }
@@ -744,11 +735,11 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 		for (i = 0; i < WKB_INT_SIZE; i++)
 		{
 			int j = (swap ? WKB_INT_SIZE - 1 - i : i);
-			uint8_t b = iptr[j];
+			uint8_t b = (uint8_t) iptr[j];
 			/* Top four bits to 0-F */
-			buf[2*i] = hexchr[b >> 4];
+			buf[2*i] = (uint8_t) hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i + 1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_INT_SIZE);
 	}
@@ -759,7 +750,7 @@ integer_to_wkb_buf(const int ival, uint8_t *buf, uint8_t variant)
 		{
 			for (i = 0; i < WKB_INT_SIZE; i++)
 			{
-				buf[i] = iptr[WKB_INT_SIZE - 1 - i];
+				buf[i] = (uint8_t) iptr[WKB_INT_SIZE - 1 - i];
 			}
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
@@ -792,11 +783,11 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
 		{
 			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
-			uint8_t b = dptr[j];
+			uint8_t b = (uint8_t) dptr[j];
 			/* Top four bits to 0-F */
-			buf[2*i] = hexchr[b >> 4];
+			buf[2*i] = (uint8_t) hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i + 1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_DOUBLE_SIZE);
 	}
@@ -807,7 +798,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 		{
 			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
 			{
-				buf[i] = dptr[WKB_DOUBLE_SIZE - 1 - i];
+				buf[i] = (uint8_t) dptr[WKB_DOUBLE_SIZE - 1 - i];
 			}
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
@@ -840,11 +831,11 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 		for (i = 0; i < WKB_DOUBLE_SIZE; i++)
 		{
 			int j = (swap ? WKB_DOUBLE_SIZE - 1 - i : i);
-			uint8_t b = tptr[j];
+			uint8_t b = (uint8_t) tptr[j];
 			/* Top four bits to 0-F */
-			buf[2*i] = hexchr[b >> 4];
+			buf[2*i] = (uint8_t)hexchr[b >> 4];
 			/* Bottom four bits to 0-F */
-			buf[2*i + 1] = hexchr[b & 0x0F];
+			buf[2*i + 1] = (uint8_t) hexchr[b & 0x0F];
 		}
 		return buf + (2 * WKB_DOUBLE_SIZE);
 	}
@@ -855,7 +846,7 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 		{
 			for (i = 0; i < WKB_DOUBLE_SIZE; i++)
 			{
-				buf[i] = tptr[WKB_DOUBLE_SIZE - 1 - i];
+				buf[i] = (uint8_t) tptr[WKB_DOUBLE_SIZE - 1 - i];
 			}
 		}
 		/* If machine arch and requested arch match, don't flip byte order */
@@ -987,13 +978,13 @@ tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
 	}
 	if (variant & WKB_HEX)
 	{
-		buf[0] = hexchr[wkb_flags >> 4];
-		buf[1] = hexchr[temp->duration];
+		buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
+		buf[1] = (uint8_t) hexchr[temp->duration];
 		return buf + 2;
 	}
 	else
 	{
-		buf[0] = temp->duration + wkb_flags;
+		buf[0] = (uint8_t) temp->duration + wkb_flags;
 		return buf + 1;
 	}
 }
@@ -1072,7 +1063,7 @@ tpointseq_wkb_bounds(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 	if (variant & WKB_HEX)
 	{
 		buf[0] = '0';
-		buf[1] = hexchr[wkb_flags];
+		buf[1] = (uint8_t) hexchr[wkb_flags];
 		return buf + 2;
 	}
 	else
@@ -1225,9 +1216,9 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 		   (variant & WKB_NDR && variant & WKB_XDR))
 	{
 		if (getMachineEndian() == NDR)
-			variant = variant | WKB_NDR;
+			variant = variant | (uint8_t) WKB_NDR;
 		else
-			variant = variant | WKB_XDR;
+			variant = variant | (uint8_t) WKB_XDR;
 	}
 
 	/* Allocate the buffer */
@@ -1287,9 +1278,9 @@ tpoint_as_binary(PG_FUNCTION_ARGS)
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | WKB_XDR;
+			variant = variant | (uint8_t) WKB_XDR;
 		else
-			variant = variant | WKB_NDR;
+			variant = variant | (uint8_t) WKB_NDR;
 	}
 	wkb_size = VARSIZE_ANY_EXHDR(temp);
 	/* Create WKB hex string */
@@ -1327,13 +1318,13 @@ tpoint_as_ewkb(PG_FUNCTION_ARGS)
 
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | WKB_XDR;
+			variant = variant | (uint8_t) WKB_XDR;
 		else
-			variant = variant | WKB_NDR;
+			variant = variant | (uint8_t) WKB_NDR;
 	}
 	wkb_size = VARSIZE_ANY_EXHDR(temp);
 	/* Create WKB hex string */
-	wkb = tpoint_to_wkb(temp, variant | WKB_EXTENDED, &wkb_size);
+	wkb = tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size);
 
 	/* Prepare the PgSQL text return type */
 	result = palloc(wkb_size + VARHDRSZ);
@@ -1367,13 +1358,13 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 		type = PG_GETARG_TEXT_P(1);
 		if (! strncmp(VARDATA(type), "xdr", 3) ||
 			! strncmp(VARDATA(type), "XDR", 3))
-			variant = variant | WKB_XDR;
+			variant = variant | (uint8_t) WKB_XDR;
 		else
-			variant = variant | WKB_NDR;
+			variant = variant | (uint8_t) WKB_NDR;
 	}
 
 	/* Create WKB hex string */
-	hexwkb = (char *)tpoint_to_wkb(temp, variant | WKB_EXTENDED | WKB_HEX, &hexwkb_size);
+	hexwkb = (char *)tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, &hexwkb_size);
 
 	/* Prepare the PgSQL text return type */
 	text_size = hexwkb_size - 1 + VARHDRSZ;

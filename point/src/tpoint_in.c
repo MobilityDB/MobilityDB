@@ -654,7 +654,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 		if (wkb_type & WKB_LINEAR_INTERP) s->linear = true;
 	}
 	/* Mask off the flags */
-	wkb_type = wkb_type & 0x0F;
+	wkb_type = wkb_type & (uint8_t) 0x0F;
 
 	switch (wkb_type)
 	{
@@ -792,7 +792,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	/* Get the number of instants. */
 	int count = integer_from_wkb_state(s);
 	/* Get the period bounds */
-	uint8_t wkb_bounds = byte_from_wkb_state(s);
+	uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
 	bool lower_inc, upper_inc;
 	tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
 	/* Does the data we want to read exist? */
@@ -852,7 +852,7 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 		/* Get the number of instants */
 		int countinst = integer_from_wkb_state(s);
 		/* Get the period bounds */
-		uint8_t wkb_bounds = byte_from_wkb_state(s);
+		uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
 		bool lower_inc, upper_inc;
 		tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
 		/* Does the data we want to read exist? */
@@ -926,7 +926,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 	}
 
 	/* Read the temporal and interpolation flags */
-	uint8_t wkb_type = byte_from_wkb_state(s);
+	uint8_t wkb_type = (uint8_t) byte_from_wkb_state(s);
 	tpoint_type_from_wkb_state(s, wkb_type);
 
 	/* Read the SRID, if necessary */
@@ -950,7 +950,7 @@ PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {
-	bytea *bytea_wkb = (bytea *) PG_GETARG_BYTEA_P(0);
+	bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
 	uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
 
 	/* Initialize the state appropriately */
