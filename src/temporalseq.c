@@ -1476,13 +1476,14 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 	
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
+	Datum value2;
 	TemporalInst *inst2;
 	bool lower_inc = seq->period.lower_inc;
 	int k = 0;
 	for (int i = 1; i < seq->count; i++)
 	{
 		inst2 = temporalseq_inst_n(seq, i);
-		Datum value2 = temporalinst_value(inst2);
+		value2 = temporalinst_value(inst2);
 		TemporalInst *instants[2];
 		instants[0] = inst1;
 		instants[1] = temporalinst_make(value1, inst2->t, seq->valuetypid);
@@ -1498,12 +1499,10 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 	if (seq->period.upper_inc)
 	{
 		value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
-		Datum value2 = temporalinst_value(inst2);
+		value2 = temporalinst_value(inst2);
 		if (datum_ne(value1, value2, seq->valuetypid))
-		{
 			result[k++] = temporalseq_from_temporalinstarr(&inst2, 1,
 				true, true, true, false);
-		}
 	}
 	return k;
 }
@@ -1895,17 +1894,13 @@ temporalseq_always_eq(TemporalSeq *seq, Datum value)
 /*****************************************************************************/
 
 static bool
-tempcontseq_ever_lt1(Datum value1, Datum value2, Oid valuetypid,
-	bool lower_inc, bool upper_inc, Datum value)
+tempcontseq_ever_lt1(Datum value1, Datum value2, Oid valuetypid, Datum value)
 {
-	/* Constant segment */
-	if (datum_eq(value1, value2, valuetypid))
-		return datum_lt(value, value1, valuetypid);
-	/* Increasing segment */
-	if (datum_lt(value1, value2, valuetypid))
-		return datum_lt(value, value1, valuetypid);
+	/* Constant or increasing segment */
+	if (datum_le(value1, value2, valuetypid))
+		return datum_lt(value1, value, valuetypid);
 	/* Decreasing segment */
-	return datum_lt(value, value2, valuetypid);
+	return datum_lt(value2, value, valuetypid);
 }
 
 static bool
@@ -1914,13 +1909,14 @@ tempcontseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
 {
 	/* Constant segment */
 	if (datum_eq(value1, value2, valuetypid))
-		return datum_ge(value, value1, valuetypid);
+		return datum_le(value1, value, valuetypid);
+	/* Increasing segment */
 	if (datum_lt(value1, value2, valuetypid))
-		return datum_lt(value, value1, valuetypid) ||
-			(lower_inc && datum_eq(value, value1, valuetypid));
+		return datum_lt(value1, value, valuetypid) ||
+			(lower_inc && datum_eq(value1, value, valuetypid));
 	/* Decreasing segment */
-	return datum_lt(value, value1, valuetypid) ||
-		(upper_inc && datum_eq(value, value2, valuetypid));
+	return datum_lt(value2, value, valuetypid) ||
+		(upper_inc && datum_eq(value2, value, valuetypid));
 }
 
 static bool
@@ -1929,28 +1925,25 @@ tempcontseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
 {
 	/* Constant segment */
 	if (datum_eq(value1, value2, valuetypid))
-		return datum_lt(value, value1, valuetypid);
+		return datum_lt(value1, value1, valuetypid);
 	/* Increasing segment */
 	if (datum_lt(value1, value2, valuetypid))
-		return datum_lt(value, value2, valuetypid) ||
+		return datum_lt(value2, value, valuetypid) ||
 			(! upper_inc && datum_eq(value, value2, valuetypid));
 	/* Decreasing segment */
-	return datum_lt(value, value1, valuetypid) ||
-		(! lower_inc && datum_eq(value, value1, valuetypid));
+	return datum_lt(value1, value, valuetypid) ||
+		(! lower_inc && datum_eq(value1, value, valuetypid));
 }
 
 static bool
-tempcontseq_always_le1(Datum value1, Datum value2, Oid valuetypid,
-	bool lower_inc, bool upper_inc, Datum value)
+tempcontseq_always_le1(Datum value1, Datum value2, Oid valuetypid, Datum value)
 {
-	/* Constant segment */
-	if (datum_eq(value1, value2, valuetypid))
-		return datum_lt(value, value1, valuetypid);
-	/* Increasing segment */
-	if (datum_lt(value1, value2, valuetypid))
-		return datum_le(value, value2, valuetypid);
+	/* Constant or increasing segment */
+	if (datum_eq(value1, value2, valuetypid) ||
+		datum_lt(value1, value2, valuetypid))
+		return datum_le(value2, value, valuetypid);
 	/* Decreasing segment */
-	return datum_gt(value, value1, valuetypid);
+	return datum_le(value1, value, valuetypid);
 }
 
 /*****************************************************************************/
@@ -1970,7 +1963,7 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
 		/* Maximum value may be non inclusive */ 
-		if (d > box.xmax)
+		if (d < box.xmin)
 			return false;
 	}
 
@@ -1979,7 +1972,7 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		for (int i = 0; i < seq->count; i++) 
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
-			if (datum_gt(valueinst, value, seq->valuetypid))
+			if (datum_lt(valueinst, value, seq->valuetypid))
 				return true;
 		}
 		return false;
@@ -1987,16 +1980,13 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 	
 	/* Continuous base type */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
-	bool lower_inc = seq->period.lower_inc;
+	/* It is not necessary to take the bounds into account */
 	for (int i = 1; i < seq->count; i++)
 	{
 		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (tempcontseq_ever_lt1(value1, value2, seq->valuetypid,
-			lower_inc, upper_inc, value))
+		if (tempcontseq_ever_lt1(value1, value2, seq->valuetypid, value))
 			return true;
 		value1 = value2;
-		lower_inc = true;
 	}
 	return false;
 }
@@ -2015,7 +2005,7 @@ temporalseq_ever_le(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		if (d > box.xmax)
+		if (d < box.xmin)
 			return false;
 	}
 
@@ -2059,7 +2049,7 @@ temporalseq_always_lt(TemporalSeq *seq, Datum value)
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
 		/* Minimum value may be non inclusive */ 
-		if (d > box.xmin)
+		if (d < box.xmax)
 			return false;
 	}
 
@@ -2102,7 +2092,7 @@ temporalseq_always_le(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		if (d > box.xmin)
+		if (d < box.xmax)
 			return false;
 	}
 
@@ -2119,16 +2109,13 @@ temporalseq_always_le(TemporalSeq *seq, Datum value)
 
 	/* Continuous base type */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
-	bool lower_inc = seq->period.lower_inc;
+	/* It is not necessary to take the bounds into account */
 	for (int i = 1; i < seq->count; i++)
 	{
 		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		if (! tempcontseq_always_le1(value1, value2, seq->valuetypid,
-			lower_inc, upper_inc, value))
+		if (! tempcontseq_always_le1(value1, value2, seq->valuetypid, value))
 			return false;
 		value1 = value2;
-		lower_inc = true;
 	}
 	return true;
 }

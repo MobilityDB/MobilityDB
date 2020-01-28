@@ -833,7 +833,7 @@ temporali_ever_lt(TemporalI *ti, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		double d = datum_double(value, ti->valuetypid);
-		if (d >= box.xmax)
+		if (d <= box.xmin)
 			return false;
 	}
 
@@ -858,7 +858,7 @@ temporali_ever_le(TemporalI *ti, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		double d = datum_double(value, ti->valuetypid);
-		if (d > box.xmax)
+		if (d < box.xmin)
 			return false;
 	}
 
@@ -883,7 +883,7 @@ temporali_always_lt(TemporalI *ti, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		double d = datum_double(value, ti->valuetypid);
-		if (d >= box.xmin)
+		if (d <= box.xmax)
 			return false;
 	}
 
@@ -908,7 +908,7 @@ temporali_always_le(TemporalI *ti, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporali_bbox(&box, ti);
 		double d = datum_double(value, ti->valuetypid);
-		if (d > box.xmin)
+		if (d < box.xmax)
 			return false;
 	}
 
