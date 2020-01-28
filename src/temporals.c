@@ -1328,7 +1328,7 @@ temporals_ever_lt(TemporalS *ts, Datum value)
 		temporals_bbox(&box, ts);
 		double d = datum_double(value, ts->valuetypid);
 		/* Maximum value may be non inclusive */ 
-		if (d > box.xmax)
+		if (d < box.xmin)
 			return false;
 	}
 
@@ -1353,7 +1353,7 @@ temporals_ever_le(TemporalS *ts, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporals_bbox(&box, ts);
 		double d = datum_double(value, ts->valuetypid);
-		if (d > box.xmax)
+		if (d < box.xmin)
 			return false;
 	}
 
@@ -1378,8 +1378,7 @@ temporals_always_lt(TemporalS *ts, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporals_bbox(&box, ts);
 		double d = datum_double(value, ts->valuetypid);
-		/* Minimum value may be non inclusive */ 
-		if (d > box.xmin)
+		if (d < box.xmax)
 			return false;
 	}
 
@@ -1404,7 +1403,7 @@ temporals_always_le(TemporalS *ts, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporals_bbox(&box, ts);
 		double d = datum_double(value, ts->valuetypid);
-		if (d > box.xmin)
+		if (d < box.xmax)
 			return false;
 	}
 
