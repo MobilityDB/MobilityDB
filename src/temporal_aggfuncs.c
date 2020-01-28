@@ -1061,7 +1061,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 	}
 	int l;
 	TemporalSeq **result = temporalseqarr_normalize(sequences, k, &l);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	*newcount = l;	

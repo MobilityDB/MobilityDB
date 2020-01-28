@@ -1443,13 +1443,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
  count 
 -------
-  2101
+  2196
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
  count 
 -------
-  2118
+  2196
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
@@ -1479,13 +1479,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
  count 
 -------
-  2159
+  2268
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
  count 
 -------
-  2118
+  2196
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
@@ -1497,7 +1497,7 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
 SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
  count 
 -------
-    50
+    45
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
@@ -1515,13 +1515,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
  count 
 -------
-  2780
+  2685
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
  count 
 -------
-  2899
+  2821
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
@@ -1551,13 +1551,13 @@ SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
 SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
  count 
 -------
-  2879
+  2784
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
  count 
 -------
-  2899
+  2821
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
