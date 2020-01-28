@@ -44,11 +44,11 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
 	StringInfoData buf;
 
 	initStringInfo(&buf);
-	appendStringInfoChar(&buf, lower_inc ? '[' : '(');
+	appendStringInfoChar(&buf, lower_inc ? (char) '[' : (char) '(');
 	appendStringInfoString(&buf, lbound_str);
 	appendStringInfoString(&buf, ", ");
 	appendStringInfoString(&buf, ubound_str);
-	appendStringInfoChar(&buf, upper_inc ? ']' : ')');
+	appendStringInfoChar(&buf, upper_inc ? (char) ']' : (char) ')');
 	return buf.data;
 }
 
@@ -804,7 +804,7 @@ period_hash(PG_FUNCTION_ARGS)
 	upper_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(p->upper)));
 
 	/* Merge hashes of flags and bounds */
-	result = hash_uint32((uint32) flags);
+	result = DatumGetUInt32(hash_uint32((uint32) flags));
 	result ^= lower_hash;
 	result = (result << 1) | (result >> 31);
 	result ^= upper_hash;

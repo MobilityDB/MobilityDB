@@ -235,7 +235,7 @@ timestampset_send(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 #if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(&buf, ts->count, 4);
+	pq_sendint(&buf, (uint32) ts->count, 4);
 #else
 	pq_sendint32(&buf, ts->count);
 #endif

@@ -250,7 +250,7 @@ periodset_send(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 #if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(&buf, ps->count, 4);
+	pq_sendint(&buf, (uint32) ps->count, 4);
 #else
 	pq_sendint32(&buf, ps->count);
 #endif

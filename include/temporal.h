@@ -54,14 +54,14 @@
 #define TEMPORALSEQ			3
 #define TEMPORALS			4
 
-#define TYPMOD_GET_DURATION(typmod) ((typmod == -1) ? (0) : (typmod & 0x0000000F))
+#define TYPMOD_GET_DURATION(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /* Structure for the type array */
 
 struct temporal_duration_struct
 {
-	char *typename;
-	int type;
+	char *durationName;
+	int16 duration;
 };
 
 #define DURATION_STRUCT_ARRAY_LEN \
@@ -156,7 +156,7 @@ typedef struct
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID  (4 bytes) */
-	TimestampTz t;				/* time span */
+	TimestampTz t;				/* timestamp (8 bytes) */
 	/* variable-length data follows */
 } TemporalInst;
 
@@ -301,8 +301,8 @@ extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool linear_interpolation(Oid type);
 
-extern const char *temporal_duration_name(uint8_t type);
-extern bool temporal_duration_from_string(const char *str, uint8_t *type);
+extern const char *temporal_duration_name(int16 duration);
+extern bool temporal_duration_from_string(const char *str, int16 *duration);
 
 /* Catalog functions */
 
@@ -400,6 +400,7 @@ extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 extern RangeType *tnumber_value_range_internal(Temporal *temp);
 extern bool temporal_ever_eq_internal(Temporal *temp, Datum value);
+extern bool temporal_always_eq_internal(Temporal *temp, Datum value);
 
 /* Restriction functions */
 

@@ -1337,7 +1337,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 	size_t pos = 0;
 	strcpy(result, str);
 	pos += strlen(str);
-	result[pos++] = seq->period.lower_inc ? '[' : '(';
+	result[pos++] = seq->period.lower_inc ? (char) '[' : (char) '(';
 	for (int i = 0; i < seq->count; i++)
 	{
 		strcpy(result + pos, strings[i]);
@@ -1346,7 +1346,7 @@ temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, 
 		result[pos++] = ' ';
 		pfree(strings[i]);
 	}
-	result[pos - 2] = seq->period.upper_inc ? ']' : ')';
+	result[pos - 2] = seq->period.upper_inc ? (char) ']' : (char) ')';
 	result[pos - 1] = '\0';
 	pfree(strings);
 	return result;
@@ -1358,7 +1358,7 @@ void
 temporalseq_write(TemporalSeq *seq, StringInfo buf)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(buf, seq->count, 4);
+	pq_sendint(buf, (uint32) seq->count, 4);
 #else
 	pq_sendint32(buf, seq->count);
 #endif
@@ -1896,18 +1896,6 @@ temporalseq_always_eq(TemporalSeq *seq, Datum value)
 	return true;
 }
 
-bool
-temporalseq_ever_ne(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_always_eq(seq, value);
-}
-
-bool
-temporalseq_always_ne(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_ever_eq(seq, value);
-}
-
 /*****************************************************************************/
 
 static bool
@@ -2147,43 +2135,6 @@ temporalseq_always_le(TemporalSeq *seq, Datum value)
 		lower_inc = true;
 	}
 	return true;
-}
-
-/*
- * Is the temporal value ever greater than the value?
- */
-
-bool
-temporalseq_ever_gt(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_always_le(seq, value);
-}
-
-/*
- * Is the temporal value ever greater than or equal to the value?
- */
-
-bool
-temporalseq_ever_ge(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_always_lt(seq, value);
-}
-
-
-/* Is the temporal value always greater than the value? */
-
-bool
-temporalseq_always_gt(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_ever_le(seq, value);
-}
-
-/* Is the temporal value always less than or equal to the value? */
-
-bool
-temporalseq_always_ge(TemporalSeq *seq, Datum value)
-{
-	return ! temporalseq_ever_lt(seq, value);
 }
 
 /*****************************************************************************
@@ -3397,7 +3348,8 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 	inst2 = temporalseq_inst_n(seq, n + 1);
 	if (timestamp_cmp_internal(t, inst2->t) < 0)
 	{
-		instants[0] = temporalseq_at_timestamp1(inst1, inst2, MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
+		instants[0] = temporalseq_at_timestamp1(inst1, inst2,
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
 		for (int i = 1; i < seq->count - n; i++)
 			instants[i] = temporalseq_inst_n(seq, i + n);
 		result[k++] = temporalseq_from_temporalinstarr(instants, seq->count - n, 
@@ -3995,7 +3947,7 @@ temporalseq_hash(TemporalSeq *seq)
 		flags |= 0x01;
 	if (seq->period.upper_inc)
 		flags |= 0x02;
-	result = hash_uint32((uint32) flags);
+	result = DatumGetUInt32(hash_uint32((uint32) flags));
 	
 	/* Merge with hash of instants */
 	for (int i = 0; i < seq->count; i++)

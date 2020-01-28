@@ -665,7 +665,7 @@ void
 temporals_write(TemporalS *ts, StringInfo buf)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-	pq_sendint(buf, ts->count, 4);
+	pq_sendint(buf, (uint32) ts->count, 4);
 #else
 	pq_sendint32(buf, ts->count);
 #endif
@@ -1317,22 +1317,6 @@ temporals_always_eq(TemporalS *ts, Datum value)
 	return true;
 }
 
-/* Is the temporal value ever not equal to the value? */
-
-bool
-temporals_ever_ne(TemporalS *ts, Datum value)
-{
-	return ! temporals_always_eq(ts, value);
-}
-
-/* Is the temporal value always not equal to the value? */
-
-bool
-temporals_always_ne(TemporalS *ts, Datum value)
-{
-	return ! temporals_ever_eq(ts, value);
-}
-
 /*****************************************************************************/
 
 /* Is the temporal value ever less than to the value? */
@@ -1435,38 +1419,6 @@ temporals_always_le(TemporalS *ts, Datum value)
 			return false;
 	}
 	return true;
-}
-
-/* Is the temporal value ever not equal to the value? */
-
-bool
-temporals_ever_gt(TemporalS *ts, Datum value)
-{
-	return ! temporals_always_le(ts, value);
-}
-
-/* Is the temporal value ever not equal to the value? */
-
-bool
-temporals_ever_ge(TemporalS *ts, Datum value)
-{
-	return ! temporals_always_lt(ts, value);
-}
-
-/* Is the temporal value always not equal to the value? */
-
-bool
-temporals_always_gt(TemporalS *ts, Datum value)
-{
-	return ! temporals_ever_le(ts, value);
-}
-
-/* Is the temporal value always not equal to the value? */
-
-bool
-temporals_always_ge(TemporalS *ts, Datum value)
-{
-	return ! temporals_ever_lt(ts, value);
 }
 
 /*****************************************************************************

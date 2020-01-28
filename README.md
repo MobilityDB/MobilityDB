@@ -85,20 +85,20 @@ https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 Manual
 ------
 
-HTML: https://docs.mobilitydb.com/nightly/
+HTML: https://docs.mobilitydb.com/MobilityDB/master/
 
-PDF: https://docs.mobilitydb.com/nightly/mobilitydb.pdf
+PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
 
-EPUB: https://docs.mobilitydb.com/nightly/mobilitydb.epub
+EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
 
 Workshop
 --------
 
-HTML: https://docs.mobilitydb.com/nightly/workshop/
+HTML: https://docs.mobilitydb.com/MobilityDB/master/workshop/
 
-PDF: https://docs.mobilitydb.com/nightly/workshop/workshop.pdf
+PDF: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.pdf
 
-EPUB: https://docs.mobilitydb.com/nightly/workshop/workshop.epub
+EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 
 Publications
 ------------
