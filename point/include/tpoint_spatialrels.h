@@ -37,7 +37,6 @@ extern Datum geom_relate_pattern(Datum geom1, Datum geom2, Datum pattern);
 
 extern Datum geog_covers(Datum geog1, Datum geog2);
 extern Datum geog_coveredby(Datum geog1, Datum geog2);
-extern Datum geog_disjoint(Datum geog1, Datum geog2);
 extern Datum geog_intersects(Datum geog1, Datum geog2);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 

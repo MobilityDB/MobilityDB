@@ -60,8 +60,6 @@ extern ArrayType *tfloatinst_ranges(TemporalInst *inst);
 extern PeriodSet *temporalinst_get_time(TemporalInst *inst);
 extern void temporalinst_bbox(void *box, TemporalInst *inst);
 extern RangeType *tnumberinst_value_range(TemporalInst *inst);
-extern bool temporalinst_ever_eq(TemporalInst *inst, Datum value);
-extern bool temporalinst_always_eq(TemporalInst *inst, Datum value);
 extern void temporalinst_period(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
 extern ArrayType *temporalinst_instants_array(TemporalInst *inst);
@@ -96,8 +94,6 @@ extern TemporalInst *temporalinst_minus_periodset(TemporalInst *inst, PeriodSet 
 
 extern TemporalInst *tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count);
 extern TemporalInst *tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count);
-extern TemporalInst *temporalinst_at_period(TemporalInst *inst, Period *p);
-extern TemporalInst *temporalinst_minus_period(TemporalInst *inst, Period *p);
 
 extern bool temporalinst_intersects_timestamp(TemporalInst *inst, TimestampTz t);
 extern bool temporalinst_intersects_timestampset(TemporalInst *inst, TimestampSet *ts);

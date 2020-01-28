@@ -61,7 +61,7 @@ PGDLLEXPORT Datum
 double2_recv(PG_FUNCTION_ARGS) 
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double2* result = palloc(sizeof(double2));
+	double2 *result = palloc(sizeof(double2));
 	const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
 	memcpy(result, bytes, sizeof(double2));
 	PG_RETURN_POINTER(result);
@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(double2_send);
 PGDLLEXPORT Datum
 double2_send(PG_FUNCTION_ARGS) 
 {
-	double2* d = (double2*) PG_GETARG_POINTER(0);
+	double2 *d = (double2 *) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 	pq_sendbytes(&buf, (void *) d, sizeof(double2));
@@ -255,7 +255,7 @@ PGDLLEXPORT Datum
 double4_recv(PG_FUNCTION_ARGS) 
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double4* result = palloc(sizeof(double4));
+	double4 *result = palloc(sizeof(double4));
 	const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
 	memcpy(result, bytes, sizeof(double4));
 	PG_RETURN_POINTER(result);
@@ -266,7 +266,7 @@ PG_FUNCTION_INFO_V1(double4_send);
 PGDLLEXPORT Datum
 double4_send(PG_FUNCTION_ARGS) 
 {
-	double4* d = (double4*) PG_GETARG_POINTER(0);
+	double4 *d = (double4 *) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 	pq_sendbytes(&buf, (void *) d, sizeof(double4));

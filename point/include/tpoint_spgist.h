@@ -18,11 +18,12 @@
 
 /*****************************************************************************/
 
-extern Datum spgist_tgeogpoint_config(PG_FUNCTION_ARGS);
+extern Datum spgist_tpoint_config(PG_FUNCTION_ARGS);
 extern Datum spgist_tpoint_choose(PG_FUNCTION_ARGS);
 extern Datum spgist_tpoint_picksplit(PG_FUNCTION_ARGS);
 extern Datum spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum spgist_tpoint_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

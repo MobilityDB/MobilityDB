@@ -35,11 +35,6 @@
 extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
 	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
 	Oid consttype);
-extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp);
-extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, bool isgt, bool iseq, CachedOp operator);
-
 extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
 extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,

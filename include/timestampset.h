@@ -30,9 +30,9 @@ extern bool timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *po
 /* Input/output functions */
 
 extern Datum timestampset_in(PG_FUNCTION_ARGS);
+extern Datum timestampset_out(PG_FUNCTION_ARGS);
 extern Datum timestampset_send(PG_FUNCTION_ARGS);
 extern Datum timestampset_recv(PG_FUNCTION_ARGS);
-extern Datum timestampset_send(PG_FUNCTION_ARGS);
 
 extern char *timestampset_to_string(TimestampSet *ts);
 

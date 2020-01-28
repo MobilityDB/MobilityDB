@@ -22,10 +22,6 @@ extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tcontains_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tcontains_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum tcontainsproperly_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tcontainsproperly_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tcontainsproperly_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 extern Datum tcovers_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tcovers_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tcovers_tpoint_tpoint(PG_FUNCTION_ARGS);
