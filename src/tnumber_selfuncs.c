@@ -628,7 +628,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 	Oid consttype = ((Const *) other)->consttype;
 
 	if (consttype == INT4OID)
-		int_to_tbox_internal(box, ((Const *) other)->constvalue);
+		int_to_tbox_internal(box, DatumGetInt32(((Const *) other)->constvalue));
 	else if (consttype == FLOAT8OID)
 		float_to_tbox_internal(box, ((Const *) other)->constvalue);
 	else if (consttype == type_oid(T_INTRANGE))
@@ -1122,7 +1122,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	/* Get the base type and duration of the temporal column */
 	valuetypid = base_oid_from_temporal(vardata.atttype);
 	ensure_numeric_base_type(valuetypid);
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int16 duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */
