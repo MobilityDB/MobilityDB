@@ -1267,7 +1267,7 @@ temporals_shift(TemporalS *ts, Interval *interval)
 }
 
 /*****************************************************************************
- * Ever/Always Comparison Functions 
+ * Ever/always comparison operators
  *****************************************************************************/
 
 /* Is the temporal value ever equal to the value? */

@@ -165,8 +165,8 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 		period_deserialize(DatumGetPeriod(in->datums[i]),
 						  &lowerBounds[i], &upperBounds[i]);
 
-	qsort(lowerBounds, in->nTuples, sizeof(PeriodBound), period_bound_cmp);
-	qsort(upperBounds, in->nTuples, sizeof(PeriodBound), period_bound_cmp);
+	qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
+	qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
 
 	median = in->nTuples / 2;
 

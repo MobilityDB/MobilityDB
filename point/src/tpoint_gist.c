@@ -447,7 +447,7 @@ fallafterSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 				*unionR = NULL;
 	size_t		nbytes;
 	
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	
 	nbytes = (maxoff + 2) * sizeof(OffsetNumber);
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
@@ -628,7 +628,7 @@ g_stbox_consider_split(ConsiderSplitContext *context, int dimNum,
 		else
 			range = context->boundingBox.tmax - context->boundingBox.tmin;
 		
-		overlap = (leftUpper - rightLower) / range;
+		overlap = (float4) ((leftUpper - rightLower) / range);
 		
 		/* If there is no previous selection, select this */
 		if (context->first)
@@ -748,7 +748,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 	
 	memset(&context, 0, sizeof(ConsiderSplitContext));
 	
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 	
 	/* Allocate arrays for intervals along axes */
@@ -818,9 +818,9 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		 */
 		memcpy(intervalsUpper, intervalsLower,
 			   sizeof(SplitInterval) * nentries);
-		qsort(intervalsLower, nentries, sizeof(SplitInterval),
+		qsort(intervalsLower, (size_t) nentries, sizeof(SplitInterval),
 			  interval_cmp_lower);
-		qsort(intervalsUpper, nentries, sizeof(SplitInterval),
+		qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
 			  interval_cmp_upper);
 		
 		/*----
@@ -1053,7 +1053,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		 * Calculate minimum number of entries that must be placed in both
 		 * groups, to reach LIMIT_RATIO.
 		 */
-		int			m = ceil(LIMIT_RATIO * (double) nentries);
+		int			m = (int) ceil(LIMIT_RATIO * (double) nentries);
 		
 		/*
 		 * Calculate delta between penalties of join "common entries" to
@@ -1070,7 +1070,7 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		 * Sort "common entries" by calculated deltas in order to distribute
 		 * the most ambiguous entries first.
 		 */
-		qsort(commonEntries, commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
+		qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
 		
 		/*
 		 * Distribute "common entries" between groups.

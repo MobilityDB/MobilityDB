@@ -22,7 +22,7 @@
  * Generic dispatch function
  *****************************************************************************/
 
-static Temporal *
+Temporal *
 tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {

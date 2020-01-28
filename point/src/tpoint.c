@@ -18,6 +18,8 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+#include "lifting.h"
+#include "temporal_compops.h"
 #include "stbox.h"
 #include "tpoint_parser.h"
 #include "tpoint_boxops.h"
@@ -411,11 +413,9 @@ PGDLLEXPORT Datum
 tpointinst_constructor(PG_FUNCTION_ARGS) 
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
-		FLAGS_GET_M(gs->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("Only non-empty point geometries without M dimension accepted")));
-
+	ensure_point_type(gs);
+	ensure_non_empty(gs);
+	ensure_has_not_M(gs);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(gs),
@@ -442,6 +442,10 @@ tpoint_stbox(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
+
+/*****************************************************************************
+ * Ever/always comparison operators
+ *****************************************************************************/
 
 /* Is the temporal value ever equal to the value? */
 
@@ -503,24 +507,27 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	bool result = false;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_always_eq((TemporalInst *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALI) 
-		result = temporali_always_eq((TemporalI *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_always_eq((TemporalSeq *)temp, 
-			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALS) 
-		result = temporals_always_eq((TemporalS *)temp, 
-			PointerGetDatum(gs));
+	/* The bounding box test is enough to test the predicate */
+	STBOX box1, box2;
+	memset(&box1, 0, sizeof(STBOX));
+	memset(&box2, 0, sizeof(STBOX));
+	if (!geo_to_stbox_internal(&box2, gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_BOOL(false);
+	}
+	temporal_bbox(&box1, temp);
+	if (!same_stbox_stbox_internal(&box1, &box2))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_BOOL(false);
+	}
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(true);
 }
 
 /* Is the temporal value ever not equal to the value? */
@@ -541,6 +548,128 @@ PGDLLEXPORT Datum
 tpoint_always_ne(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(! tpoint_ever_eq(fcinfo));
+}
+
+/*****************************************************************************
+ * Temporal eq
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(teq_geo_tpoint);
+
+PGDLLEXPORT Datum
+teq_geo_tpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	ensure_point_type(gs);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
+		&datum2_eq2, true);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(teq_tpoint_geo);
+
+PGDLLEXPORT Datum
+teq_tpoint_geo(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
+		&datum2_eq2, false);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(gs, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(teq_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+teq_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+				  MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_eq2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, linear, NULL);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Temporal ne
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tne_geo_tpoint);
+
+PGDLLEXPORT Datum
+tne_geo_tpoint(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+	ensure_point_type(gs);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
+		&datum2_ne2, true);
+	PG_FREE_IF_COPY(gs, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tne_tpoint_geo);
+
+PGDLLEXPORT Datum
+tne_tpoint_geo(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_point_type(gs);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
+		&datum2_ne2, false);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(gs, 1);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tne_tpoint_tpoint);
+
+PGDLLEXPORT Datum
+tne_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_srid_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+	Temporal *result = linear ?
+		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ne2, BOOLOID) :
+		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, linear, NULL);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

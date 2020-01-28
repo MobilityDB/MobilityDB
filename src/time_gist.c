@@ -275,7 +275,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 
 	memset(&context, 0, sizeof(ConsiderSplitContext));
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nentries = context.entries_count = maxoff - FirstOffsetNumber + 1;
 	context.first = true;
 
@@ -295,9 +295,9 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 	}
 	memcpy(by_upper, by_lower, nentries * sizeof(Period *));
 	/* Sort the arrays */
-	qsort(by_lower, nentries, sizeof(Period *), 
+	qsort(by_lower, (size_t) nentries, sizeof(Period *),
 		(qsort_comparator) period_cmp_lower);
-	qsort(by_upper, nentries, sizeof(Period *), 
+	qsort(by_upper, (size_t) nentries, sizeof(Period *),
 		(qsort_comparator) period_cmp_upper);
 
 	/*----------
@@ -509,7 +509,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 		 * Sort "common entries" by calculated deltas in order to distribute
 		 * the most ambiguous entries first.
 		 */
-		qsort(common_entries, common_entries_count, sizeof(CommonEntry),
+		qsort(common_entries, (size_t) common_entries_count, sizeof(CommonEntry),
 			  common_entry_cmp);
 
 		/*
@@ -843,10 +843,10 @@ gist_period_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
-	int			nbytes;
+	size_t			nbytes;
 	OffsetNumber maxoff;
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nbytes = (maxoff + 1) * sizeof(OffsetNumber);
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
 	v->spl_right = (OffsetNumber *) palloc(nbytes);

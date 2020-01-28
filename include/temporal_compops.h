@@ -17,6 +17,8 @@
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 
+#include "temporal.h"
+
 /*****************************************************************************/
 
 extern Datum teq_base_temporal(PG_FUNCTION_ARGS);
@@ -42,6 +44,9 @@ extern Datum tgt_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum tge_base_temporal(PG_FUNCTION_ARGS);
 extern Datum tge_temporal_base(PG_FUNCTION_ARGS);
 extern Datum tge_temporal_temporal(PG_FUNCTION_ARGS);
+
+extern Temporal * tcomp_temporal_base(Temporal *temp, Datum value, Oid datumtypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), bool invert);
 
 /*****************************************************************************/
 
