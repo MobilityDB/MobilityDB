@@ -178,7 +178,7 @@ initCubeSTbox(void)
  * Calculate the next traversal value
  *
  * All centroids are bounded by CubeSTbox, but SP-GiST only keeps
- * boxes.  When we are traversing the tree, we must calculate CubeSTbox,
+ * boxes. When we are traversing the tree, we must calculate CubeSTbox,
  * using centroid and octant.
  */
 static CubeSTbox *
@@ -598,7 +598,7 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 
 	for (octant = 0; octant < in->nNodes; octant++)
 	{
-		CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, octant);
+		CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, (uint8) octant);
 		bool flag = true;
 		for (i = 0; i < in->nkeys; i++)
 		{

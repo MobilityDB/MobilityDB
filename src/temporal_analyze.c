@@ -197,7 +197,7 @@ range_bound_qsort_cmp(const void *a1, const void *a2)
  * Function copied from PostgreSQL file analyze.c
  */
 static int
-analyze_mcv_list(int *mcv_counts,
+analyze_mcv_list(const int *mcv_counts,
 				 int num_mcv,
 				 double stadistinct,
 				 double stanullfrac,
@@ -361,7 +361,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 	/* Sort the collected values */
 	cxt.ssup = &ssup;
 	cxt.tupnoLink = tupnoLink;
-	qsort_arg((void *) values, values_cnt, sizeof(ScalarItem),
+	qsort_arg((void *) values, (size_t) values_cnt, sizeof(ScalarItem),
 			  compare_scalars, (void *) &cxt);
 
 	/*
@@ -430,9 +430,9 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 
 	stats->stats_valid = true;
 	/* Do the simple null-frac and width stats */
-	stats->stanullfrac = (double) null_cnt / (double) samplerows;
+	stats->stanullfrac = (float) ((double) null_cnt / (double) samplerows);
 	if (is_varwidth)
-		stats->stawidth = total_width / (double) nonnull_cnt;
+		stats->stawidth = (int) (total_width / (double) nonnull_cnt);
 	else
 		stats->stawidth = stats->attrtype->typlen;
 
@@ -442,7 +442,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 		 * If we found no repeated non-null values, assume it's a unique
 		 * column; but be sure to discount for any nulls we found.
 		 */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float) (-1.0 * (1.0 - stats->stanullfrac));
 	}
 	else if (toowide_cnt == 0 && nmultiple == ndistinct)
 	{
@@ -496,7 +496,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 		if (stadistinct > N)
 			stadistinct = N;
 		/* And round to integer */
-		stats->stadistinct = floor(stadistinct + 0.5);
+		stats->stadistinct = (float) floor(stadistinct + 0.5);
 	}
 
 	/*
@@ -567,7 +567,7 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 		{
 			mcv_values[i] = datumCopy(values[track[i].first].value, 
 				typbyval,typlen);
-			mcv_freqs[i] = (double) track[i].count / (double) samplerows;
+			mcv_freqs[i] = (float) ((double) track[i].count / (double) samplerows);
 		}
 		MemoryContextSwitchTo(old_context);
 
@@ -607,8 +607,8 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 					deltafrac;
 
 		/* Sort the MCV items into position order to speed next loop */
-		qsort((void *) track, num_mcv,
-			  sizeof(ScalarMCVItem), compare_mcvs);
+		qsort((void *) track, (size_t) num_mcv, sizeof(ScalarMCVItem),
+			compare_mcvs);
 
 		/*
 		 * Collapse out the MCV items from the values[] array.
@@ -731,8 +731,8 @@ compute_scalar_stats_mdb(VacAttrStats *stats, int values_cnt, bool is_varwidth,
 			((double) values_cnt) * (double) (2 * values_cnt - 1) / 6.0;
 
 		/* And the correlation coefficient reduces to */
-		corrs[0] = (values_cnt * corr_xysum - corr_xsum * corr_xsum) /
-			(values_cnt * corr_x2sum - corr_xsum * corr_xsum);
+		corrs[0] = (float) ((values_cnt * corr_xysum - corr_xsum * corr_xsum) /
+			(values_cnt * corr_x2sum - corr_xsum * corr_xsum));
 
 		stats->stakind[slot_idx] = STATISTIC_KIND_CORRELATION;
 		stats->staop[slot_idx] = ltopr;
@@ -867,7 +867,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 			slot_idx = compute_scalar_stats_mdb(stats, values_cnt, is_varwidth, 
 				toowide_cnt, scalar_values, scalar_tupnoLink, scalar_track, 
 				valuetypid, nonnull_cnt, null_cnt, slot_idx, 
-				total_width, totalrows, samplerows, true);
+				(int) total_width, (int) totalrows, samplerows, true);
 		}
 
 		/* Compute the statistics for the time dimension 
@@ -875,7 +875,7 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		compute_scalar_stats_mdb(stats, values_cnt, is_varwidth,
 			toowide_cnt, timestamp_values, timestamp_tupnoLink, timestamp_track, 
 			TIMESTAMPTZOID, nonnull_cnt, null_cnt, slot_idx, 
-			total_width, totalrows, samplerows, false);
+			(int) total_width, (int) totalrows, samplerows, false);
 	}
 	else if (nonnull_cnt > 0)
 	{
@@ -883,13 +883,13 @@ tempinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		Assert(nonnull_cnt == toowide_cnt);
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
+		stats->stanullfrac = (float) ((double) null_cnt / (double) samplerows);
 		if (is_varwidth)
-			stats->stawidth = total_width / (double) nonnull_cnt;
+			stats->stawidth = (int32) (total_width / (double) nonnull_cnt);
 		else
 			stats->stawidth = stats->attrtype->typlen;
 		/* Assume all too-wide values are distinct, so it's a unique column */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float) (-1.0 * (1.0 - stats->stanullfrac));
 	}
 	else if (null_cnt > 0)
 	{
@@ -939,8 +939,8 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(lowers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
-		qsort(uppers, non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+		qsort(lowers, (size_t) non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+		qsort(uppers, (size_t) non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -998,7 +998,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/*
 		* Ascending sort of range lengths for further filling of histogram
 		*/
-		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+		qsort(lengths, (size_t) non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -1222,14 +1222,14 @@ temporals_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 void
 tnumberinst_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						   int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
 	return tempinst_compute_stats(stats, fetchfunc, samplerows, totalrows, true);
 }
 
 void
 tnumbers_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-						int samplerows, double totalrows)
+	int samplerows, double totalrows)
 {
 	return temps_compute_stats(stats, fetchfunc, samplerows, true);
 }
@@ -1330,7 +1330,7 @@ PGDLLEXPORT Datum
 temporal_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration;
+	int16 duration;
 
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
@@ -1365,7 +1365,7 @@ PGDLLEXPORT Datum
 tnumber_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration;
+	int16 duration;
 
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed

@@ -291,11 +291,11 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	{
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
-		stats->stawidth = total_width / (double) non_null_cnt;
+		stats->stanullfrac = (float4) ((double) null_cnt / (double) samplerows);
+		stats->stawidth = (int32) (total_width / (double) non_null_cnt);
 
 		/* Estimate that non-null values are unique */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
 		period_compute_stats1(stats, non_null_cnt, &slot_idx,
 			lowers, uppers, lengths);

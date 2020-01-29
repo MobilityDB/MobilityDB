@@ -220,11 +220,11 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 		double smin = nd_stats->extent.min[d];
 		double smax = nd_stats->extent.max[d];
 		double width = smax - smin;
-		int size = roundf(nd_stats->size[d]);
+		int size = (int) roundf(nd_stats->size[d]);
 
 		/* ... find cells the box overlaps with in this dimension */
-		nd_ibox->min[d] = floor(size * (nd_box->min[d] - smin) / width);
-		nd_ibox->max[d] = floor(size * (nd_box->max[d] - smin) / width);
+		nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
+		nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
 
 		/* Push any out-of range values into range */
 		nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
@@ -302,31 +302,29 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 	int d = 0;
 
 	nd_box_init(nd_box);
-	nd_box->min[d] = gbox->xmin;
-	nd_box->max[d] = gbox->xmax;
+	nd_box->min[d] = (float4) gbox->xmin;
+	nd_box->max[d] = (float4) gbox->xmax;
 	d++;
-	nd_box->min[d] = gbox->ymin;
-	nd_box->max[d] = gbox->ymax;
+	nd_box->min[d] = (float4) gbox->ymin;
+	nd_box->max[d] = (float4) gbox->ymax;
 	d++;
 	if (FLAGS_GET_GEODETIC(gbox->flags))
 	{
-		nd_box->min[d] = gbox->zmin;
-		nd_box->max[d] = gbox->zmax;
+		nd_box->min[d] = (float4) gbox->zmin;
+		nd_box->max[d] = (float4) gbox->zmax;
 		return;
 	}
 	if (FLAGS_GET_Z(gbox->flags))
 	{
-		nd_box->min[d] = gbox->zmin;
-		nd_box->max[d] = gbox->zmax;
+		nd_box->min[d] = (float4) gbox->zmin;
+		nd_box->max[d] = (float4) gbox->zmax;
 		d++;
 	}
 	if (FLAGS_GET_M(gbox->flags))
 	{
-		nd_box->min[d] = gbox->mmin;
-		nd_box->max[d] = gbox->mmax;
-		d++;
+		nd_box->min[d] = (float4) gbox->mmin;
+		nd_box->max[d] = (float4) gbox->mmax;
 	}
-	return;
 }
 
 /**
@@ -336,7 +334,7 @@ nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 static int
 range_quintile(int *vals, int nvals)
 {
-	qsort(vals, nvals, sizeof(int), cmp_int);
+	qsort(vals, (size_t) nvals, sizeof(int), cmp_int);
 	return vals[4*nvals/5] - vals[nvals/5];
 }
 
@@ -392,7 +390,7 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
 * position in the 1-d values array.
 */
 static int
-nd_stats_value_index(const ND_STATS *stats, int *indexes)
+nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 {
 	int d;
 	int accum = 1, vdx = 0;
@@ -480,8 +478,8 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 			}
 
 			/* What bins does this range correspond to? */
-			bmin = floor(NUM_BINS * minoffset / swidth);
-			bmax = floor(NUM_BINS * maxoffset / swidth);
+			bmin = (int) floor(NUM_BINS * minoffset / swidth);
+			bmax = (int) floor(NUM_BINS * maxoffset / swidth);
 
 			/* Should only happen when maxoffset==swidth */
 			bmax = bmax >= NUM_BINS ? NUM_BINS-1 : bmax;
@@ -543,7 +541,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	ND_BOX histo_extent_new;		/* Temporary variable */
 	int	histo_cells_target;		 	/* Number of cells we will shoot for, given the stats target */
 	int	histo_cells;				/* Number of cells in the histogram */
-	int	histo_cells_new = 1;		/* Temporary variable */
+	int	histo_cells_new;			/* Temporary variable */
 
 	int   histo_ndims = 0;			/* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
@@ -585,8 +583,8 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	for (d = 0; d < ndims; d++)
 	{
 		/* Calculate average bounds values */
-		avg.min[d] = sum->min[d] / notnull_cnt;
-		avg.max[d] = sum->max[d] / notnull_cnt;
+		avg.min[d] = (float4) (sum->min[d] / notnull_cnt);
+		avg.max[d] = (float4) (sum->max[d] / notnull_cnt);
 
 		/* Calculate standard deviation for this dimension bounds */
 		for (i = 0; i < notnull_cnt; i++)
@@ -595,12 +593,12 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			stddev.min[d] += (ndb->min[d] - avg.min[d]) * (ndb->min[d] - avg.min[d]);
 			stddev.max[d] += (ndb->max[d] - avg.max[d]) * (ndb->max[d] - avg.max[d]);
 		}
-		stddev.min[d] = sqrt(stddev.min[d] / notnull_cnt);
-		stddev.max[d] = sqrt(stddev.max[d] / notnull_cnt);
+		stddev.min[d] = (float4) sqrt(stddev.min[d] / notnull_cnt);
+		stddev.max[d] = (float4) sqrt(stddev.max[d] / notnull_cnt);
 
 		/* Histogram bounds for this dimension bounds is avg +/- SDFACTOR * stdev */
-		histo_extent.min[d] = Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent->min[d]);
-		histo_extent.max[d] = Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent->max[d]);
+		histo_extent.min[d] = (float4) Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent->min[d]);
+		histo_extent.max[d] = (float4) Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent->max[d]);
 	}
 
 	/*
@@ -640,7 +638,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 * more cells useful (to distinguish between dense places and
 	 * homogeneous places).
 	 */
-	nd_box_array_distribution(sample_boxes, notnull_cnt, &histo_extent, ndims,
+	nd_box_array_distribution(sample_boxes, (int) notnull_cnt, &histo_extent, ndims,
 							  sample_distribution);
 
 	/*
@@ -724,7 +722,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	nd_stats->extent = histo_extent;
 	nd_stats->sample_features = sample_rows;
 	nd_stats->table_features = total_rows;
-	nd_stats->not_null_features = notnull_cnt;
+	nd_stats->not_null_features = (float4) notnull_cnt;
 	/* Copy in the histogram dimensions */
 	for (d = 0; d < ndims; d++)
 		nd_stats->size[d] = histo_size[d];
@@ -789,8 +787,8 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			/* Create a box for this histogram cell */
 			for (d = 0; d < nd_stats->ndims; d++)
 			{
-				nd_cell.min[d] = min[d] + (at[d]+0) * cellsize[d];
-				nd_cell.max[d] = min[d] + (at[d]+1) * cellsize[d];
+				nd_cell.min[d] = (float4) (min[d] + (at[d]+0) * cellsize[d]);
+				nd_cell.max[d] = (float4) (min[d] + (at[d]+1) * cellsize[d]);
 			}
 
 			/*
@@ -798,11 +796,11 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			 * 1.0. If a feature box is 50% in two cells, each cell will get
 			 * 0.5 added on.
 			 */
-			ratio = nd_box_ratio(&nd_cell, nd_box, nd_stats->ndims);
+			ratio = nd_box_ratio(&nd_cell, nd_box, (int) nd_stats->ndims);
 			nd_stats->value[nd_stats_value_index(nd_stats, at)] += ratio;
 			num_cells += ratio;
 		}
-		while (nd_increment(&nd_ibox, nd_stats->ndims, at));
+		while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
 
 		/* Keep track of overall number of overlaps counted */
 		total_cell_count += num_cells;
@@ -820,7 +818,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 
 	nd_stats->histogram_features = histogram_features;
 	nd_stats->histogram_cells = histo_cells;
-	nd_stats->cells_covered = total_cell_count;
+	nd_stats->cells_covered = (float4) total_cell_count;
 
 	/* Put this histogram data into the right slot/kind */
 	if (ndims == 2)
@@ -835,10 +833,10 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	}
 
 	/* Write the statistics data */
-	stats->stakind[stats_slot] = stats_kind;
+	stats->stakind[stats_slot] = (int16) stats_kind;
 	stats->staop[stats_slot] = InvalidOid;
 	stats->stanumbers[stats_slot] = (float4*) nd_stats;
-	stats->numnumbers[stats_slot] = nd_stats_size/sizeof(float4);
+	stats->numnumbers[stats_slot] = (int) (nd_stats_size/sizeof(float4));
 
 	(*slot_idx)++;
 }
@@ -1000,10 +998,10 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Compute statistics for spatial dimension */
 		/* 2D Mode */
-		gserialized_compute_stats(stats, sample_rows, total_rows, notnull_cnt,
+		gserialized_compute_stats(stats, sample_rows, (int) total_rows, notnull_cnt,
 			sample_boxes, &sum, &sample_extent, &slot_idx, 2);
 		/* ND Mode */
-		gserialized_compute_stats(stats, sample_rows, total_rows, notnull_cnt,
+		gserialized_compute_stats(stats, sample_rows, (int) total_rows, notnull_cnt,
 			sample_boxes, &sum, &sample_extent, &slot_idx, ndims);
 
 		/* Compute statistics for time dimension */
@@ -1028,7 +1026,7 @@ PGDLLEXPORT Datum
 tpoint_analyze(PG_FUNCTION_ARGS)
 {
 	VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
-	int duration;
+	int16 duration;
 
 	/*
 	 * Call the standard typanalyze function.  It may fail to find needed
