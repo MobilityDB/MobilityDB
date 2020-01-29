@@ -27,18 +27,9 @@
 /*****************************************************************************/
 
 /*
- * Minimum accepted ratio of split for items of the same class.  If the items
- * are of different classes, we will separate along those lines regardless of
- * the ratio.
+ * Minimum accepted ratio of split.
  */
 #define LIMIT_RATIO  0.3
-
-/* place on left or right side of split? */
-typedef enum
-{
-	SPLIT_LEFT = 0,				/* makes initialization to SPLIT_LEFT easier */
-	SPLIT_RIGHT
-} SplitLR;
 
 /*
  * Context for gist_period_consider_split.
@@ -92,11 +83,6 @@ typedef struct
 		v->spl_right[v->spl_nright++] = (off);	\
 	} while (0)
 
-/* Copy a Period datum (hardwires typbyval and typlen for periods...) */
-#define periodCopy(r) \
-	((Period *) DatumGetPointer(datumCopy(PointerGetDatum(r), \
-											 false, 24)))
-
 /*****************************************************************************
  * STATIC FUNCTIONS
  *****************************************************************************/
@@ -115,9 +101,9 @@ gist_period_fallafter_split(GistEntryVector *entryvec,
 				maxoff,
 				split_idx;
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	/* Split entries before this to left page, after to right: */
-	split_idx = (maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber;
+	split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber);
 
 	v->spl_nleft = 0;
 	v->spl_nright = 0;
@@ -179,7 +165,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 		 * values) and minimal ratio secondarily.  The subtype_diff is
 		 * used for overlap measure. 
 		 */
-		overlap = period_to_secs(left_upper->val, right_lower->val);
+		overlap = (float4) period_to_secs(left_upper->val, right_lower->val);
 
 		/* If there is no previous selection, select this split */
 		if (context->first)
@@ -627,10 +613,10 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid 		subtype = PG_GETARG_OID(3);
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
-				periodfree = false,
 				result;
 	Period	   *key = DatumGetPeriod(entry->key),
-			   *period;
+			   *period,
+			   p;
 	
 	/* Determine whether the operator is exact */
 	*recheck = index_period_bbox_recheck(strategy);
@@ -640,8 +626,8 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		/* Since function gist_period_consistent is strict, query is not NULL */
 		TimestampTz query;
 		query = PG_GETARG_TIMESTAMPTZ(1);
-		period = period_make(query, query, true, true);
-		periodfree = true;
+		period_set(&p, query, query, true, true);
+		period = &p;
 	}
 	else if (subtype == type_oid(T_TIMESTAMPSET))
 	{
@@ -672,10 +658,7 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
 		result = index_internal_consistent_period(key, period, strategy);
-	
-	if (periodfree)
-		pfree(period);
-	
+
 	PG_RETURN_BOOL(result);
 	
 }
@@ -827,7 +810,7 @@ gist_period_penalty(PG_FUNCTION_ARGS)
 	if (period_cmp_bounds(new->upper, orig->upper, false, false, 
 			new->upper_inc, orig->upper_inc) > 0)
 		diff += period_to_secs(new->upper, orig->upper);
-	*penalty = diff;
+	*penalty = (float4) diff;
 
 	PG_RETURN_POINTER(penalty);
 }

@@ -554,8 +554,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	pq_sendint64(buf, state->extrasize);
 #endif
 	if (state->extra)
-	
-		pq_sendbytes(buf, state->extra, state->extrasize);
+		pq_sendbytes(buf, state->extra, (int) state->extrasize);
 	pfree(values);
 }
 
@@ -571,7 +570,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	size_t extrasize = (size_t) pq_getmsgint64(buf);
 	if (extrasize)
 	{
-		const char *extra = pq_getmsgbytes(buf, extrasize);
+		const char *extra = pq_getmsgbytes(buf, (int) extrasize);
 		aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
 	}
 	for (int i = 0; i < size; i ++)

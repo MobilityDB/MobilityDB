@@ -58,7 +58,7 @@ nd_increment(ND_IBOX *ibox, int ndims, int *counter)
  * position in the 1-d values array.
  */
 static int
-nd_stats_value_index(const ND_STATS *stats, int *indexes)
+nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 {
 	int d;
 	int accum = 1, vdx = 0;
@@ -95,11 +95,11 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 		double smin = nd_stats->extent.min[d];
 		double smax = nd_stats->extent.max[d];
 		double width = smax - smin;
-		int size = roundf(nd_stats->size[d]);
+		int size = (int) roundf(nd_stats->size[d]);
 
 		/* ... find cells the box overlaps with in this dimension */
-		nd_ibox->min[d] = floor(size * (nd_box->min[d] - smin) / width);
-		nd_ibox->max[d] = floor(size * (nd_box->max[d] - smin) / width);
+		nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
+		nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
 
 		/* Push any out-of range values into range */
 		nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
@@ -275,7 +275,7 @@ nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is left of b1. */
 static double
-nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -292,7 +292,7 @@ nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overleft of b1. */
 static double
-nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -309,7 +309,7 @@ nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is right of b1. */
 static double
-nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -326,7 +326,7 @@ nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overright of b1. */
 static double
-nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -343,7 +343,7 @@ nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is below of b1. */
 static double
-nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -360,7 +360,7 @@ nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overbelow of b1. */
 static double
-nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -377,7 +377,7 @@ nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is above of b1. */
 static double
-nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -394,7 +394,7 @@ nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overabove of b1. */
 static double
-nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -411,7 +411,7 @@ nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is front of b1. */
 static double
-nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -428,7 +428,7 @@ nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overfront of b1. */
 static double
-nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -445,7 +445,7 @@ nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is back of b1. */
 static double
-nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -462,7 +462,7 @@ nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Returns the proportion of b2 that is overback of b1. */
 static double
-nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2, int ndims)
+nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2)
 {
 	double delta, width;
 
@@ -479,32 +479,32 @@ nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 
 /* Dispatch function for the position operators */
 static double
-nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, int ndims, CachedOp op)
+nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
 {
 	if (op == LEFT_OP)
-		return nd_box_ratio_left(b1, b2, ndims);
+		return nd_box_ratio_left(b1, b2);
 	else if (op == OVERLEFT_OP)
-		return nd_box_ratio_overleft(b1, b2, ndims);
+		return nd_box_ratio_overleft(b1, b2);
 	else if (op == RIGHT_OP)
-		return nd_box_ratio_right(b1, b2, ndims);
+		return nd_box_ratio_right(b1, b2);
 	else if (op == OVERRIGHT_OP)
-		return nd_box_ratio_overright(b1, b2, ndims);
+		return nd_box_ratio_overright(b1, b2);
 	else if (op == BELOW_OP)
-		return nd_box_ratio_below(b1, b2, ndims);
+		return nd_box_ratio_below(b1, b2);
 	else if (op == OVERBELOW_OP)
-		return nd_box_ratio_overbelow(b1, b2, ndims);
+		return nd_box_ratio_overbelow(b1, b2);
 	else if (op == ABOVE_OP)
-		return nd_box_ratio_above(b1, b2, ndims);
+		return nd_box_ratio_above(b1, b2);
 	else if (op == OVERABOVE_OP)
-		return nd_box_ratio_overabove(b1, b2, ndims);
+		return nd_box_ratio_overabove(b1, b2);
 	else if (op == FRONT_OP)
-		return nd_box_ratio_front(b1, b2, ndims);
+		return nd_box_ratio_front(b1, b2);
 	else if (op == OVERFRONT_OP)
-		return nd_box_ratio_overfront(b1, b2, ndims);
+		return nd_box_ratio_overfront(b1, b2);
 	else if (op == BACK_OP)
-		return nd_box_ratio_back(b1, b2, ndims);
+		return nd_box_ratio_back(b1, b2);
 	else if (op == OVERBACK_OP)
-		return nd_box_ratio_overback(b1, b2, ndims);
+		return nd_box_ratio_overback(b1, b2);
 	return FALLBACK_ND_SEL; /* make compiler quiet */
 }
 
@@ -554,19 +554,18 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 	int d = 0;
 
 	nd_box_init(nd_box);
-	nd_box->min[d] = box->xmin;
-	nd_box->max[d] = box->xmax;
+	nd_box->min[d] = (float4) box->xmin;
+	nd_box->max[d] = (float4) box->xmax;
 	d++;
-	nd_box->min[d] = box->ymin;
-	nd_box->max[d] = box->ymax;
+	nd_box->min[d] = (float4) box->ymin;
+	nd_box->max[d] = (float4) box->ymax;
 	d++;
 	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) ||
 		MOBDB_FLAGS_GET_Z(box->flags))
 	{
-		nd_box->min[d] = box->zmin;
-		nd_box->max[d] = box->zmax;
+		nd_box->min[d] = (float4) box->zmin;
+		nd_box->max[d] = (float4) box->zmax;
 	}
-	return;
 }
 
 /* Get the enum value associated to the operator */
@@ -688,7 +687,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
 	free_attstatsslot(&sslot);		
 	/* Calculate the number of common coordinate dimensions  on the histogram */
-	ndims_max = Max(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
+	ndims_max = (int) Max(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
 
 	/* Initialize nd_box. */
 	nd_box_from_stbox(box, &nd_box);
@@ -773,7 +772,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 		for (d = 0; d < nd_stats->ndims; d++)
 		{
 			search_ibox.min[d] = 0;
-			search_ibox.max[d] = nd_stats->size[d] - 1;
+			search_ibox.max[d] = (int) (nd_stats->size[d] - 1);
 			/* Initialize the counter */
 			at[d] = search_ibox.min[d];
 		}
@@ -813,25 +812,26 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 	do
 	{
 		float cell_count, ratio;
-		ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
+		ND_BOX nd_cell;
+		memset(&nd_cell, 0, sizeof(ND_BOX));
 
 		/* We have to pro-rate partially overlapped cells. */
 		for (d = 0; d < nd_stats->ndims; d++)
 		{
-			nd_cell.min[d] = min[d] + (at[d]+0) * cell_size[d];
-			nd_cell.max[d] = min[d] + (at[d]+1) * cell_size[d];
+			nd_cell.min[d] = (float4) (min[d] + (at[d]+0) * cell_size[d]);
+			nd_cell.max[d] = (float4) (min[d] + (at[d]+1) * cell_size[d]);
 		}
 
 		if (bboxop)
-			ratio = nd_box_ratio_overlaps(&nd_box, &nd_cell, nd_stats->ndims);
+			ratio = (float4) (nd_box_ratio_overlaps(&nd_box, &nd_cell, (int) nd_stats->ndims));
 		else 
-			ratio = nd_box_ratio_position(&nd_box, &nd_cell, nd_stats->ndims, op);
+			ratio = (float4) (nd_box_ratio_position(&nd_box, &nd_cell, op));
 		cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
 
 		/* Add the pro-rated count for this cell to the overall total */
 		total_count += cell_count * ratio;
 	}
-	while (nd_increment(&search_ibox, nd_stats->ndims, at));
+	while (nd_increment(&search_ibox, (int) nd_stats->ndims, at));
 
 	/* Scale by the number of features in our histogram to get the proportion */
 	selectivity = total_count / nd_stats->histogram_features;
@@ -940,7 +940,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
 	 */
 	if (MOBDB_FLAGS_GET_T(constBox.flags))
 	{
-		int duration;
+		int16 duration;
 		
 		/* Transform the STBOX into a Period */
 		period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);

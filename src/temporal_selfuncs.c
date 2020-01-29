@@ -160,10 +160,12 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 			*scaledlobound = convert_timevalue_to_scalar_mobdb(boundstypid, lobound);
 			*scaledhibound = convert_timevalue_to_scalar_mobdb(boundstypid, hibound);
 			return true;
+
+		default:
+			/* Don't know how to convert */
+			*scaledvalue = *scaledlobound = *scaledhibound = 0;
+			return false;
 	}
-	/* Don't know how to convert */
-	*scaledvalue = *scaledlobound = *scaledhibound = 0;
-	return false;
 }
 
 /*****************************************************************************

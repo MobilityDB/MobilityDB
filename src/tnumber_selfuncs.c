@@ -796,7 +796,7 @@ tnumberinst_sel(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 		/* Selectivity for the time dimension */
 		if (MOBDB_FLAGS_GET_T(box->flags))
 		{
-			operator *= oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
+			operator = oper_oid(EQ_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 			selec *= var_eq_const(vardata, operator, 
 				TimestampTzGetDatum(box->tmin), false, false, false);
 		}
