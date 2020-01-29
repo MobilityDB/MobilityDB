@@ -47,11 +47,8 @@ extern Datum elem_right_range(PG_FUNCTION_ARGS);
 extern Datum elem_overright_range(PG_FUNCTION_ARGS);
 extern Datum elem_adjacent_range(PG_FUNCTION_ARGS);
 
-extern bool elem_left_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 extern bool elem_overleft_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
-extern bool elem_right_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 extern bool elem_overright_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
-extern bool elem_adjacent_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 
 /*****************************************************************************/
 

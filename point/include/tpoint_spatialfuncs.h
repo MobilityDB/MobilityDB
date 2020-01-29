@@ -46,7 +46,6 @@ extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_transform(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
 extern int tpoint_srid_internal(Temporal *t);
@@ -58,10 +57,8 @@ extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
 extern TemporalInst *tgeogpointinst_to_tgeompointinst(TemporalInst *inst);
-extern TemporalI *tgeogpointi_to_tgeompointi(TemporalI *ti);
 extern TemporalSeq *tgeogpointseq_to_tgeompointseq(TemporalSeq *seq);
 extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
-extern Temporal *tgeogpoint_to_tgeompoint_internal(Temporal *temp);
 
 /* Trajectory functions */
 
