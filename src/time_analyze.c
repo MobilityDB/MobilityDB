@@ -104,8 +104,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-		qsort(uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -158,7 +158,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/*
 		 * Ascending sort of period lengths for further filling of histogram
 		 */
-		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+		qsort(lengths, (size_t) non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)

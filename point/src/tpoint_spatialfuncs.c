@@ -471,12 +471,6 @@ tgeogpoints_to_tgeompoints(TemporalS *ts)
 	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
-Temporal *
-tgeogpoint_to_tgeompoint_internal(Temporal *temp)
-{
-	return tfunc1_temporal(temp, &geog_to_geom, type_oid(T_GEOMETRY));
-}
-
 PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
 
 PGDLLEXPORT Datum
