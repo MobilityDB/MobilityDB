@@ -48,13 +48,12 @@ typedef struct ND_IBOX_T
 } ND_IBOX;
 
 extern int nd_box_init(ND_BOX *a);
-extern int nd_box_init_bounds(ND_BOX *a, int ndims);
-extern int nd_box_merge(const ND_BOX *source, ND_BOX *target, int ndims);
+extern int nd_box_init_bounds(ND_BOX *a);
+extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
 extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
 
-extern void gserialized_compute_stats(VacAttrStats *stats, int sample_rows, 
-    int total_rows, double notnull_cnt, const ND_BOX **sample_boxes, 
-    ND_BOX *sum, ND_BOX *sample_extent, int *slot_idx, int ndims);
+extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+	int sample_rows, double total_rows, int mode);
 
 extern Datum tpoint_analyze(PG_FUNCTION_ARGS);
 
