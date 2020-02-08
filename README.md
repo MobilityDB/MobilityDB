@@ -109,18 +109,25 @@ Publications
 
 Presentations
 -------------
-* [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
+
+* [Extending PostgreSQL With Spatiotemporal Data Management](https://docs.mobilitydb.com/pub/MobilityDB-Russia-2020.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020, Moscow, Russia
+* [Road public transport in Moscow analysis: from PostGIS to MobilityDB](https://docs.mobilitydb.com/pub/MoscowPublicTransport_MobilityDB_en.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 4, 2020, Moscow, Russia,
+* [Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-PGDay-2020.pdf), [FOSSDEM PGDay](https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/), January 31, 2020, Brussels, Belgium
+* [Trajectory Data Analysis Using MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-FOSDEM-2020.pdf), [FOSSDEM GeoSpatial Devroom](https://fosdem.org/2020/schedule/event/mobilitydb_/), February 2, 2020, Brussels, Belgium
 * [MobilityDB: A PostgreSQL-PostGIS extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_FOSS4G_Brussels_2019.pdf), FOSS4G Belgium, 2019.
+* [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
 
 Forthcoming Presentations
 -------------------------
 
-* Managing Mobility Data in PostgreSQL, [FOSSDEM PGDay](https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/), January 31, 2020, Brussels, Belgium
-* Trajectory Data Analysis Using MobilityDB, [FOSSDEM GeoSpatial Devroom](https://fosdem.org/2020/schedule/event/mobilitydb_/), February 2, 2020, Brussels, Belgium
-* Extending PostgreSQL With Spatiotemporal Data Management, [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020, Moscow, Russia
-* Road public transport in Moscow analysis: from PostGIS to MobilityDB, [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 4, 2020, Moscow, Russia,
 * MobilityDB: A Spatiotemporal Data Management Extension of PostgreSQL and PostGIS, [Postgres Conference](https://postgresconf.org/conferences/2020/program/proposals/mobilitydb-extending-postgresql-to-manage-spatiotemporal-features), March 24, 2020, New York, USA
-* MobilityDB: Managing Mobility Data in PostgreSQL, Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/), March 30, 2020, Copenhagen, Denmark
+* MobilityDB: Managing Mobility Data in PostgreSQL, Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark
+
+Users' Applications
+-------------------
+
+* Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia](https://pgconf.ru/en/2020/265266)
+<img src="doc/images/MoscowPublicTransport.png" width="200" alt="Moscow Public Transport Analysis" />
 
 License
 -------
