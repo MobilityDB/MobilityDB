@@ -14,6 +14,8 @@
 #ifndef __POSTGIS_H__
 #define __POSTGIS_H__
 
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+
 /*
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
