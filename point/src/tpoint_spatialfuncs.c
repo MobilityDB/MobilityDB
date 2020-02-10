@@ -3222,10 +3222,10 @@ tpointseq_to_linestringm(TemporalSeq *seq, TemporalSeq *measure)
 		LWGEOM *geom;
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-													   (uint32_t) seq->count, points);
+				(uint32_t) seq->count, points);
 		else
 			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-													 NULL, (uint32_t) seq->count, points);
+				NULL, (uint32_t) seq->count, points);
 		result = geometry_serialize(geom);
 		pfree(geom);
 	}
@@ -3238,14 +3238,60 @@ tpointseq_to_linestringm(TemporalSeq *seq, TemporalSeq *measure)
 }
 
 static Datum
-tpoints_to_linestringm(TemporalS *ts, TemporalS *measure)
+tpointseq_to_linestringm_segmentize(TemporalSeq *seq, TemporalSeq *measure)
+{
+	Datum *segments = palloc(sizeof(Datum) * (seq->count - 1));
+	LWGEOM *points[2];
+	TemporalInst *inst = temporalseq_inst_n(seq, 0);
+	double m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, 0)));
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+	points[0] = (LWGEOM *) point_measure_to_linestringm(gs, m);
+	for (int i = 0; i < seq->count - 1; i++)
+	{
+		inst = temporalseq_inst_n(seq, i + 1);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+		points[1] = (LWGEOM *) point_measure_to_linestringm(gs, m);
+		LWGEOM *seg = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
+			2, points);
+		segments[i] = PointerGetDatum(geometry_serialize(seg));
+		// pfree(DatumGetPointer(points[0]));
+		// pfree(DatumGetPointer(points[1]));
+		m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, i + 1)));
+		points[0] =  (LWGEOM *) point_measure_to_linestringm(gs, m);
+		// pfree(seg);
+	}
+	// pfree(DatumGetPointer(points[0]));
+	Datum result;
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+		result = segments[0];
+	else
+	{
+		ArrayType *array = datumarr_to_array(segments, seq->count - 1,
+			seq->valuetypid);
+		/* ST_linemerge is not used to avoid splitting lines at intersections */
+		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+		pfree(array);
+	}
+
+	for (int i = 0; i < seq->count - 1; i++)
+		pfree(DatumGetPointer(segments[i]));
+	pfree(segments);
+
+	return result;
+}
+
+static Datum
+tpoints_to_linestringm(TemporalS *ts, TemporalS *measure, bool segmentize)
 {
 	Datum *geoms = palloc(sizeof(Datum) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		TemporalSeq *m = temporals_seq_n(measure, i);
-		geoms[i] = tpointseq_to_linestringm(seq, m);
+		geoms[i] = segmentize ?
+			tpointseq_to_linestringm_segmentize(seq, m) :
+			tpointseq_to_linestringm(seq, m);
 	}
 	Datum result;
 	if (ts->count == 1)
@@ -3271,6 +3317,7 @@ tpoint_to_linestringm(PG_FUNCTION_ARGS)
 {
 	Temporal *tpoint = PG_GETARG_TEMPORAL(0);
 	Temporal *measure = PG_GETARG_TEMPORAL(1);
+	bool segmentize = PG_GETARG_BOOL(2);
 	ensure_point_base_type(tpoint->valuetypid);
 	ensure_numeric_base_type(measure->valuetypid);
 	Temporal *sync1, *sync2;
@@ -3292,11 +3339,14 @@ tpoint_to_linestringm(PG_FUNCTION_ARGS)
 		result = (Temporal *) tpointi_to_linestringm(
 				(TemporalI *) sync1, (TemporalI *) sync2);
 	else if (sync1->duration == TEMPORALSEQ)
-		result = (Temporal *) tpointseq_to_linestringm(
+		result = segmentize ?
+			(Temporal *) tpointseq_to_linestringm_segmentize(
+					(TemporalSeq *) sync1, (TemporalSeq *) sync2) :
+			(Temporal *) tpointseq_to_linestringm(
 				(TemporalSeq *) sync1, (TemporalSeq *) sync2);
 	else if (sync1->duration == TEMPORALS)
 		result = (Temporal *) tpoints_to_linestringm(
-				(TemporalS *) sync1, (TemporalS *) sync2);
+				(TemporalS *) sync1, (TemporalS *) sync2, segmentize);
 
 	pfree(sync1); pfree(sync2);
 	PG_FREE_IF_COPY(tpoint, 0);
