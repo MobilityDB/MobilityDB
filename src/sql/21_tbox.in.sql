@@ -81,7 +81,22 @@ CREATE FUNCTION Tmin(tbox)
 CREATE FUNCTION Tmax(tbox)
 	RETURNS timestamptz
 	AS 'MODULE_PATHNAME', 'tbox_tmax'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+CREATE FUNCTION tbox_intersection(tbox, tbox)
+	RETURNS tbox
+AS 'MODULE_PATHNAME', 'tbox_intersection'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+	PROCEDURE = tbox_intersection,
+	LEFTARG = tbox, RIGHTARG = tbox,
+	COMMUTATOR = *
+);
 
 /*****************************************************************************
  * Comparison
