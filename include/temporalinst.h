@@ -26,6 +26,7 @@ extern TemporalInst *temporalinst_copy(TemporalInst *inst);
 extern Datum* temporalinst_value_ptr(TemporalInst *inst);
 extern Datum temporalinst_value(TemporalInst *inst);
 extern Datum temporalinst_value_copy(TemporalInst *inst);
+extern void temporalinst_set(TemporalInst *inst, Datum value, TimestampTz t);
 
 /* Input/output functions */
 

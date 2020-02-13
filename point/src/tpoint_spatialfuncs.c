@@ -1708,7 +1708,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
 			{
 				/* Restriction at timestamp done to avoid floating point imprecision */
-				instants[0] = temporalseq_at_timestamp1(inst1, inst2, linear, t);
+				instants[0] = temporalseq_at_timestamp1(inst1, inst2, t, linear);
 				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
 					true, true, linear, false);
 				pfree(instants[0]);
@@ -1729,8 +1729,8 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
 			/* Restriction at timestamp done to avoid floating point imprecision */
-			instants[0] = temporalseq_at_timestamp1(inst1, inst2, linear, lower1);
-			instants[1] = temporalseq_at_timestamp1(inst1, inst2, linear, upper1);
+			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
+			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
 			bool lower_inc1 = timestamp_cmp_internal(lower1, inst1->t) == 0 ?
 				lower_inc : true;
 			bool upper_inc1 = timestamp_cmp_internal(upper1, inst2->t) == 0 ?

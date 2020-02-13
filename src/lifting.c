@@ -2633,15 +2633,15 @@ sync_tfunc2_temporalseq_temporalseq_cross2(TemporalSeq **result, TemporalSeq *se
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), end1->t);
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
+				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), end2->t);
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
+				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
@@ -3030,15 +3030,15 @@ sync_tfunc3_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), end1->t);
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
+				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), end2->t);
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
+				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
@@ -3444,15 +3444,15 @@ sync_tfunc4_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, 
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), end1->t);
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
+				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), end2->t);
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
+				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 

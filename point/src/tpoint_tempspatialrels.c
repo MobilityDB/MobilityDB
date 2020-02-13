@@ -748,7 +748,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 			pfree(instants[0]); pfree(instants[1]);
 			k++;
 		}
-		truevalue = !truevalue;
+		truevalue = ! truevalue;
 	}
 	pfree(ps); pfree(minus);
 	return result;
@@ -1111,10 +1111,10 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result,
 	Datum sv2 = temporalinst_value(start2);
 	Datum ev2 = temporalinst_value(end2);
 	bool hasz = MOBDB_FLAGS_GET_Z(start1->flags);
-	TemporalInst *instants[2];
 	Datum datum_true = BoolGetDatum(true);
 	Datum datum_false = BoolGetDatum(false);
-	
+	TemporalInst *instants[2];
+
 	/* Both segments are constant */
 	if (datum_point_eq(sv1, ev1) && datum_point_eq(sv2, ev2))
 	{
