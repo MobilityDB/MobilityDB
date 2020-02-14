@@ -431,7 +431,7 @@ temporalinstarr_normalize(TemporalInst **instants, bool linear, int count,
 
 /*****************************************************************************/
 
-/* Join two temporal sequences 
+/* Join two temporal sequences
  * This function is called when normalizing an array of sequences. It supposes
  * that the two sequences are adjacent. The resulting sequence will remove the
  * last and/or the first instant of the first/second sequence depending on the
@@ -461,14 +461,14 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	Datum traj = 0; /* keep compiler quiet */
 	if (trajectory)
 	{
-		/* A trajectory is a geometry/geography, either a point or a 
+		/* A trajectory is a geometry/geography, either a point or a
 		 * linestring, which may be self-intersecting */
 		traj = tpointseq_trajectory_join(seq1, seq2, last, first);
 		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 	}
 #endif
 
-	/* Add the size of the struct and the offset array 
+	/* Add the size of the struct and the offset array
 	 * Notice that the first offset is already declared in the struct */
 	size_t pdata = double_pad(sizeof(TemporalSeq)) + (count + 1) * sizeof(size_t);
 	/* Create the TemporalSeq */
@@ -477,8 +477,7 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	result->count = count;
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALSEQ;
-	// TODO Maybe create a period_join from two periods (seq1->period, seq2->period)
-	period_set(&result->period, temporalseq_inst_n(seq1, 0)->t, temporalseq_inst_n(seq2, seq2->count-1)->t,
+	period_set(&result->period, seq1->period.lower, seq2->period.upper,
 		seq1->period.lower_inc, seq2->period.upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
 #ifdef WITH_POSTGIS
@@ -495,20 +494,20 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	size_t pos = 0;
 	for (int i = 0; i < count1; i++)
 	{
-		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq1, i), 
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq1, i),
 			VARSIZE(temporalseq_inst_n(seq1, i)));
 		result->offsets[k++] = pos;
 		pos += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
 	}
 	for (int i = start2; i < seq2->count; i++)
 	{
-		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq2, i), 
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq2, i),
 			VARSIZE(temporalseq_inst_n(seq2, i)));
 		result->offsets[k++] = pos;
 		pos += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
 	}
 	/*
-	 * Precompute the bounding box 
+	 * Precompute the bounding box
 	 * TODO Maybe create a bbox_join
 	 */
 	if (bboxsize != 0)
@@ -517,17 +516,15 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 		void *box2 = temporalseq_bbox_ptr(seq2);
 		void *bbox = ((char *) result) + pdata + pos;
 		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-			period_set((Period *)bbox, 
-				((Period *)box1)->lower, ((Period *)box2)->upper, 
-				((Period *)box1)->lower_inc, ((Period *)box2)->upper_inc); // Again we could use a period_join
+			memcpy(bbox, &result->period, bboxsize);
 		else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 		{
 			memcpy(bbox, box1, bboxsize);
 			tbox_expand((TBOX *)bbox, (TBOX *)box2);
 		}
 #ifdef WITH_POSTGIS
-		else if (valuetypid == type_oid(T_GEOGRAPHY) || 
-				 valuetypid == type_oid(T_GEOMETRY)) 
+		else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+				 valuetypid == type_oid(T_GEOMETRY))
 		{
 			memcpy(bbox, box1, bboxsize);
 			stbox_expand((STBOX *)bbox, (STBOX *)box2);
