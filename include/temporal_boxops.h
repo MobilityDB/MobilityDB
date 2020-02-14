@@ -3,9 +3,9 @@
  * temporal_boxops.h
  *	  Bounding box operators for temporal types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -53,21 +53,15 @@ extern void temporalseq_make_bbox(void *bbox, TemporalInst** inst, int count,
 	bool lower_inc, bool upper_inc);
 extern void temporals_make_bbox(void *bbox, TemporalSeq **seqs, int count);
 
+/* Shift the bounding box of a Temporal with an Interval */
+
+extern void shift_bbox(void *box, Oid valuetypid, Interval *interval);
+
 /* Expand the bounding box of a Temporal with a TemporalInst */
 
 extern bool temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst);
 extern bool temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst);
 extern bool temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst);
-
-extern bool contains_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool contained_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool overlaps_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-extern bool same_tbox_timestamp_internal(TBOX *box, TimestampTz t);
-
-extern bool contains_tbox_period_internal(TBOX *box, Period *p);
-extern bool contained_tbox_period_internal(TBOX *box, Period *p);
-extern bool overlaps_tbox_period_internal(TBOX *box, Period *p);
-extern bool same_tbox_period_internal(TBOX *box, Period *p);
 
 extern Datum int_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_to_tbox(PG_FUNCTION_ARGS);
@@ -89,82 +83,42 @@ extern Datum floatrange_period_to_tbox(PG_FUNCTION_ARGS);
 
 /* Bounding box operators for temporal types */
 
-extern Datum contains_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_timestampset_temporal(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_temporal_timestampset(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_temporal_periodset(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_temporal_temporal(PG_FUNCTION_ARGS);
 
-extern Datum contained_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_timestampset_temporal(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_temporal_timestampset(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_temporal_periodset(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_temporal_temporal(PG_FUNCTION_ARGS);
 
-extern Datum overlaps_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_timestampset_temporal(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_temporal_timestampset(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_temporal_periodset(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS);
 
-extern Datum same_bbox_timestamp_temporal(PG_FUNCTION_ARGS);
-extern Datum same_bbox_timestampset_temporal(PG_FUNCTION_ARGS);
 extern Datum same_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum same_bbox_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum same_bbox_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum same_bbox_temporal_timestampset(PG_FUNCTION_ARGS);
 extern Datum same_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum same_bbox_temporal_periodset(PG_FUNCTION_ARGS);
 extern Datum same_bbox_temporal_temporal(PG_FUNCTION_ARGS);
 
-extern Datum overlaps_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum contains_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum contained_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum overlaps_bbox_datum_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_datum(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum same_bbox_datum_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_range_tnumber(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnumber_datum(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);

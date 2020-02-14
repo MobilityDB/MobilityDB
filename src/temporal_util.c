@@ -3,9 +3,9 @@
  * temporal_util.c
  *	  Miscellaneous utility functions for temporal types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -361,7 +361,7 @@ ArrayType *
 periodarr_to_array(Period **periods, int count)
 {
 	ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
-										sizeof(Period), false, 'd');
+		sizeof(Period), false, 'd');
 	return result;
 }
 
@@ -395,7 +395,7 @@ temporalarr_to_array(Temporal **temporalarr, int count)
 /* Comparator functions */
 
 static int
-datum_sort_cmp(Datum *l, Datum *r, Oid *type)
+datum_sort_cmp(const Datum *l, const Datum *r, const Oid *type)
 {
 	Datum x = *l;
 	Datum y = *r;
@@ -409,7 +409,7 @@ datum_sort_cmp(Datum *l, Datum *r, Oid *type)
 }
 
 static int
-timestamp_sort_cmp(TimestampTz *l, TimestampTz *r)
+timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 {
 	TimestampTz x = *l;
 	TimestampTz y = *r;
@@ -450,44 +450,44 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 void
 datum_sort(Datum *values, int count, Oid type)
 {
-	qsort_arg(values, count, sizeof(Datum),
+	qsort_arg(values, (size_t) count, sizeof(Datum),
 			  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
 timestamp_sort(TimestampTz *times, int count)
 {
-	qsort(times, count, sizeof(Timestamp),
+	qsort(times, (size_t) count, sizeof(TimestampTz),
 		  (qsort_comparator) &timestamp_sort_cmp);
-	qsort(times, count, sizeof(TimestampTz), 
+	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
 }
 
 void
 periodarr_sort(Period **periods, int count)
 {
-	qsort(periods, count, sizeof(Period *),
+	qsort(periods, (size_t) count, sizeof(Period *),
 		  (qsort_comparator) &period_sort_cmp);
 }
 
 void
 rangearr_sort(RangeType **ranges, int count)
 {
-	qsort(ranges, count, sizeof(RangeType *),
+	qsort(ranges, (size_t) count, sizeof(RangeType *),
 		  (qsort_comparator) &range_sort_cmp);
 }
 
 void
 temporalinstarr_sort(TemporalInst **instants, int count)
 {
-	qsort(instants, count, sizeof(TemporalInst *),
+	qsort(instants, (size_t) count, sizeof(TemporalInst *),
 		  (qsort_comparator) &temporalinstarr_sort_cmp);
 }
 
 void
 temporalseqarr_sort(TemporalSeq **sequences, int count)
 {
-	qsort(sequences, count, sizeof(TemporalSeq *),
+	qsort(sequences, (size_t) count, sizeof(TemporalSeq *),
 		  (qsort_comparator) &temporalseqarr_sort_cmp);
 }
 
@@ -530,16 +530,16 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 int
 text_cmp(text *arg1, text *arg2, Oid collid)
 {
-	char		*a1p,
+	char	*a1p,
 			*a2p;
-	int			len1,
+	int		len1,
 			len2;
 
 	a1p = VARDATA_ANY(arg1);
 	a2p = VARDATA_ANY(arg2);
 
-	len1 = VARSIZE_ANY_EXHDR(arg1);
-	len2 = VARSIZE_ANY_EXHDR(arg2);
+	len1 = (int) VARSIZE_ANY_EXHDR(arg1);
+	len2 = (int) VARSIZE_ANY_EXHDR(arg2);
 
 	return varstr_cmp(a1p, len1, a2p, len2, collid);
 }

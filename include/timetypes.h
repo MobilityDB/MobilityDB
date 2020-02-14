@@ -10,9 +10,9 @@
  * The TimestampSet type represents a set of disjoint timestamptz.
  * The PeriodSet type represents a set of disjoint periods. 
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -72,19 +72,6 @@ typedef struct
 #define PeriodSetGetDatum(X)		PointerGetDatum(X)
 #define PG_GETARG_PERIODSET(n)		DatumGetPeriodSet(PG_GETARG_POINTER(n))
 #define PG_RETURN_PERIODSET(x)		PG_RETURN_POINTER(x)
-
-/* Operator strategy numbers used in the GiST and SP-GiST period opclasses */
-/* Numbers are chosen to match up operator names with existing usages */
-#define TEMPORALSTRAT_CONTAINS			RTContainsStrategyNumber
-#define TEMPORALSTRAT_CONTAINS_ELEM		RTContainsElemStrategyNumber
-#define TEMPORALSTRAT_CONTAINED			RTContainedByStrategyNumber
-#define TEMPORALSTRAT_OVERLAPS			RTOverlapStrategyNumber
-#define TEMPORALSTRAT_SAME				RTSameStrategyNumber
-#define TEMPORALSTRAT_EQ				RTEqualStrategyNumber
-#define TEMPORALSTRAT_BEFORE			RTLeftStrategyNumber
-#define TEMPORALSTRAT_OVERBEFORE		RTOverLeftStrategyNumber
-#define TEMPORALSTRAT_AFTER				RTRightStrategyNumber
-#define TEMPORALSTRAT_OVERAFTER			RTOverRightStrategyNumber
 
 /*****************************************************************************/
 

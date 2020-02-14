@@ -3,9 +3,9 @@
  * temporal.c
  *	Basic functionss of any duration.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -35,7 +35,7 @@
  * Typmod 
  *****************************************************************************/
 
-static char *temporalTypeName[] =
+static char *temporalDurationName[] =
 {
 	"Unknown",
 	"Instant",
@@ -54,22 +54,22 @@ struct temporal_duration_struct temporal_duration_struct_array[] =
 };
 
 const char *
-temporal_duration_name(uint8_t type)
+temporal_duration_name(int16 duration)
 {
-	if (type > 4)
-		return "Invalid temporal type";
-	return temporalTypeName[(int)type];
+	if (duration < 0 || duration > 4)
+		return "Invalid duration for temporal type";
+	return temporalDurationName[duration];
 }
 
 bool
-temporal_duration_from_string(const char *str, uint8_t *type)
+temporal_duration_from_string(const char *str, int16 *duration)
 {
 	char *tmpstr;
 	size_t tmpstartpos, tmpendpos;
 	size_t i;
 
 	/* Initialize */
-	*type = 0;
+	*duration = 0;
 	/* Locate any leading/trailing spaces */
 	tmpstartpos = 0;
 	for (i = 0; i < strlen(str); i++)
@@ -98,10 +98,10 @@ temporal_duration_from_string(const char *str, uint8_t *type)
 	/* Now check for the type */
 	for (i = 0; i < DURATION_STRUCT_ARRAY_LEN; i++)
 	{
-		if (len == strlen(temporal_duration_struct_array[i].typename) && 
-			!strcasecmp(tmpstr, temporal_duration_struct_array[i].typename))
+		if (len == strlen(temporal_duration_struct_array[i].durationName) &&
+			!strcasecmp(tmpstr, temporal_duration_struct_array[i].durationName))
 		{
-			*type = temporal_duration_struct_array[i].type;
+			*duration = temporal_duration_struct_array[i].duration;
 			pfree(tmpstr);
 			return true;
 		}
@@ -413,7 +413,7 @@ Oid
 base_oid_from_temporal(Oid temptypid)
 {
 	assert(temporal_type_oid(temptypid));
-	int result = 0;
+	Oid result = 0;
 	if (temptypid == type_oid(T_TBOOL)) 
 		result = BOOLOID;
 	else if (temptypid == type_oid(T_TINT)) 
@@ -447,7 +447,7 @@ type_has_precomputed_trajectory(Oid valuetypid)
 } 
  
 /*****************************************************************************
- * Assertion tests
+ * Parameter tests
  *****************************************************************************/
 
 /* Used for the dispatch functions */
@@ -457,7 +457,6 @@ ensure_valid_duration(int16 duration)
 	if (duration != TEMPORALINST && duration != TEMPORALI && 
 		duration != TEMPORALSEQ && duration != TEMPORALS)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
-	return;
 }
 
 /* Used for the analyze and selectivity functions */
@@ -468,7 +467,6 @@ ensure_valid_duration_all(int16 duration)
 		duration != TEMPORALINST && duration != TEMPORALI && 
 		duration != TEMPORALSEQ && duration != TEMPORALS)
 		elog(ERROR, "unknown duration for temporal type: %d", duration);
-	return;
 }
 
 void 
@@ -476,7 +474,6 @@ ensure_numrange_type(Oid typid)
 {
 	if (typid != type_oid(T_INTRANGE) && typid != type_oid(T_FLOATRANGE))
 		elog(ERROR, "unknown numeric range type: %d", typid);
-	return;
 }
 
 void
@@ -490,7 +487,6 @@ ensure_temporal_base_type(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type: %d", valuetypid);
-	return;
 }
 
 void
@@ -507,7 +503,6 @@ ensure_temporal_base_type_all(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type: %d", valuetypid);
-	return;
 }
 
 void
@@ -520,7 +515,6 @@ ensure_linear_interpolation(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
-	return;
 }
 
 void
@@ -536,7 +530,6 @@ ensure_linear_interpolation_all(Oid valuetypid)
 #endif
 		)
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
-	return;
 }
 
 void 
@@ -544,7 +537,6 @@ ensure_numeric_base_type(Oid valuetypid)
 {
 	if (valuetypid != INT4OID && valuetypid != FLOAT8OID)
 		elog(ERROR, "unknown numeric base type: %d", valuetypid);
-	return;
 }
 
 #ifdef WITH_POSTGIS
@@ -553,7 +545,6 @@ ensure_point_base_type(Oid valuetypid)
 {
 	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown point base type: %d", valuetypid);
-	return;
 }
 #endif
 
@@ -648,9 +639,10 @@ temporal_out(PG_FUNCTION_ARGS)
 
 /* Send function */
 
-void temporal_write(Temporal *temp, StringInfo buf) 
+void
+temporal_write(Temporal *temp, StringInfo buf)
 {
-	pq_sendint(buf, temp->duration, 2);
+	pq_sendbyte(buf, (uint8) temp->duration);
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		temporalinst_write((TemporalInst *) temp, buf);
@@ -660,7 +652,6 @@ void temporal_write(Temporal *temp, StringInfo buf)
 		temporalseq_write((TemporalSeq *) temp, buf);
 	else if (temp->duration == TEMPORALS)
 		temporals_write((TemporalS *) temp, buf);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_send);
@@ -678,9 +669,10 @@ temporal_send(PG_FUNCTION_ARGS)
 
 /* Receive function */
 
-Temporal *temporal_read(StringInfo buf, Oid valuetypid) 
+Temporal *
+temporal_read(StringInfo buf, Oid valuetypid)
 {
-	int type = (int) pq_getmsgint(buf, 2);
+	int16 type = (int16) pq_getmsgbyte(buf);
 	Temporal *result = NULL;
 	ensure_valid_duration(type);
 	if (type == TEMPORALINST)
@@ -733,13 +725,13 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
 	/* Temporal Type */
 	char *s = DatumGetCString(elem_values[0]);
-	uint8_t type = 0;
-	if (!temporal_duration_from_string(s, &type))
+	int16 duration = 0;
+	if (!temporal_duration_from_string(s, &duration))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Invalid temporal type modifier: %s", s)));
 
 	pfree(elem_values);
-	PG_RETURN_INT32((int32)type);
+	PG_RETURN_INT32((int32)duration);
 }
 
 PG_FUNCTION_INFO_V1(temporal_typmod_out);
@@ -750,14 +742,14 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
 	char *s = (char *) palloc(64);
 	char *str = s;
 	int32 typmod = PG_GETARG_INT32(0);
-	int32 duration_type = TYPMOD_GET_DURATION(typmod);
+	int16 duration = TYPMOD_GET_DURATION(typmod);
 	/* No type? Then no typmod at all. Return empty string.  */
-	if (typmod < 0 || !duration_type)
+	if (typmod < 0 || !duration)
 	{
 		*str = '\0';
 		PG_RETURN_CSTRING(str);
 	}
-	str += sprintf(str, "(%s)", temporal_duration_name(duration_type));
+	sprintf(str, "(%s)", temporal_duration_name(duration));
 	PG_RETURN_CSTRING(s);
 }
 
@@ -777,10 +769,10 @@ PGDLLEXPORT Datum temporal_enforce_typmod(PG_FUNCTION_ARGS)
 
  /* Make temporal instant value from two arguments */
 
-PG_FUNCTION_INFO_V1(temporal_make_temporalinst);
+PG_FUNCTION_INFO_V1(temporalinst_constructor);
 
 PGDLLEXPORT Datum
-temporal_make_temporalinst(PG_FUNCTION_ARGS)
+temporalinst_constructor(PG_FUNCTION_ARGS)
 {
 	Datum value = PG_GETARG_ANYDATUM(0);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -791,10 +783,10 @@ temporal_make_temporalinst(PG_FUNCTION_ARGS)
 
 /* Make a TemporalI from an array of TemporalInst */
 
-PG_FUNCTION_INFO_V1(temporal_make_temporali);
+PG_FUNCTION_INFO_V1(temporali_constructor);
 
 PGDLLEXPORT Datum
-temporal_make_temporali(PG_FUNCTION_ARGS)
+temporali_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
@@ -825,10 +817,46 @@ temporal_make_temporali(PG_FUNCTION_ARGS)
 
 /* Make a TemporalSeq from an array of TemporalInst */
 
-PG_FUNCTION_INFO_V1(temporal_make_temporalseq);
+PG_FUNCTION_INFO_V1(tlinearseq_constructor);
 
 PGDLLEXPORT Datum
-temporal_make_temporalseq(PG_FUNCTION_ARGS)
+tlinearseq_constructor(PG_FUNCTION_ARGS)
+{
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	bool lower_inc = PG_GETARG_BOOL(1);
+	bool upper_inc = PG_GETARG_BOOL(2);
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("A temporal sequence must have at least one temporal instant")));
+	}
+
+	TemporalInst **instants = (TemporalInst **)temporalarr_extract(array, &count);
+	/* Ensure that all values are of type temporal instant */
+	for (int i = 0; i < count; i++)
+	{
+		if (instants[i]->duration != TEMPORALINST)
+		{
+			pfree(instants);
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Input values must be temporal instants")));
+		}
+	}
+
+	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants,
+		count, lower_inc, upper_inc, false, true);
+	pfree(instants);
+	PG_FREE_IF_COPY(array, 0);
+	PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(temporalseq_constructor);
+
+PGDLLEXPORT Datum
+temporalseq_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	bool lower_inc = PG_GETARG_BOOL(1);
@@ -864,10 +892,10 @@ temporal_make_temporalseq(PG_FUNCTION_ARGS)
 
 /* Make a TemporalS from an array of TemporalSeq */
 
-PG_FUNCTION_INFO_V1(temporal_make_temporals);
+PG_FUNCTION_INFO_V1(temporals_constructor);
 
 PGDLLEXPORT Datum
-temporal_make_temporals(PG_FUNCTION_ARGS)
+temporals_constructor(PG_FUNCTION_ARGS)
 {
 	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
 	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
@@ -1019,7 +1047,6 @@ temporal_period(Period *p, Temporal *temp)
 		temporalseq_period(p, (TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		temporals_period(p, (TemporalS *)temp);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(temporal_to_period);
@@ -1303,11 +1330,9 @@ temporalinst_get_value(PG_FUNCTION_ARGS)
 
 /* Returns the time of the temporal type */
 
-PG_FUNCTION_INFO_V1(temporal_get_time);
-
-Datum temporal_get_time(PG_FUNCTION_ARGS)
+PeriodSet *
+temporal_get_time_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	PeriodSet *result = NULL;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1318,6 +1343,17 @@ Datum temporal_get_time(PG_FUNCTION_ARGS)
 		result = temporalseq_get_time((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		result = temporals_get_time((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_get_time);
+
+PGDLLEXPORT Datum
+temporal_get_time(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	PeriodSet *result = temporal_get_time_internal(temp);
+	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1369,7 +1405,6 @@ temporal_bbox(void *box, const Temporal *temp)
 		temporalseq_bbox(box, (TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
 		temporals_bbox(box, (TemporalS *)temp);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_to_tbox);
@@ -1549,7 +1584,8 @@ temporal_timespan(PG_FUNCTION_ARGS)
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI) 
 	{
 		Interval *interval = (Interval *) palloc(sizeof(Interval));
-		interval->month = interval->day = interval->time = 0;
+		interval->month = interval->day =  0;
+		interval->time = (TimeOffset) 0;
 		result = PointerGetDatum(interval);
 	}
 	else if (temp->duration == TEMPORALSEQ) 
@@ -1921,7 +1957,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
 			result = (temporalseq_inst_n((TemporalSeq *)temp, n - 1))->t;
 		}
 	}
-	else if (temp->duration == TEMPORALS) 
+	else if (temp->duration == TEMPORALS)
 		found = temporals_timestamp_n((TemporalS *)temp, n, &result);
 	PG_FREE_IF_COPY(temp, 0);
 	if (!found) 
@@ -1951,54 +1987,6 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 	PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* Is the temporal value ever equal to the value? */
-
-PG_FUNCTION_INFO_V1(temporal_ever_eq);
-
-PGDLLEXPORT Datum
-temporal_ever_eq(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	bool result = false;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_ever_eq((TemporalInst *)temp, value);
-	else if (temp->duration == TEMPORALI) 
-		result = temporali_ever_eq((TemporalI *)temp, value);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_ever_eq((TemporalSeq *)temp, value);
-	else if (temp->duration == TEMPORALS) 
-		result = temporals_ever_eq((TemporalS *)temp, value);
-	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
-	PG_RETURN_BOOL(result);
-}
-
-/* Is the temporal value always equal to the value? */
-
-PG_FUNCTION_INFO_V1(temporal_always_eq);
-
-PGDLLEXPORT Datum
-temporal_always_eq(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum value = PG_GETARG_ANYDATUM(1);
-	bool result = false;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = temporalinst_always_eq((TemporalInst *)temp, value);
-	else if (temp->duration == TEMPORALI) 
-		result = temporali_always_eq((TemporalI *)temp, value);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = temporalseq_always_eq((TemporalSeq *)temp, value);
-	else if (temp->duration == TEMPORALS) 
-		result = temporals_always_eq((TemporalS *)temp, value);
-	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
-	PG_RETURN_BOOL(result);
-}
-
 /* Shift the time span of a temporal value by an interval */
 
 PG_FUNCTION_INFO_V1(temporal_shift);
@@ -2020,6 +2008,288 @@ temporal_shift(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporals_shift((TemporalS *)temp, interval);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Ever/always comparison operators
+ *****************************************************************************/
+
+/* Is the temporal value ever equal to the value? */
+
+bool
+temporal_ever_eq_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST) 
+		result = temporalinst_ever_eq((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI) 
+		result = temporali_ever_eq((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = temporalseq_ever_eq((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS) 
+		result = temporals_ever_eq((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_ever_eq);
+
+PGDLLEXPORT Datum
+temporal_ever_eq(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_ever_eq_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always equal to the value? */
+
+bool
+temporal_always_eq_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_always_eq((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_always_eq((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_always_eq((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_always_eq((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_always_eq);
+
+PGDLLEXPORT Datum
+temporal_always_eq(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_always_eq_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value ever not equal to the value? */
+
+PG_FUNCTION_INFO_V1(temporal_ever_ne);
+
+PGDLLEXPORT Datum
+temporal_ever_ne(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_always_eq_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always not equal to the value? */
+
+PG_FUNCTION_INFO_V1(temporal_always_ne);
+
+PGDLLEXPORT Datum
+temporal_always_ne(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_ever_eq_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/* Is the temporal value ever less than the value? */
+
+bool
+temporal_ever_lt_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_ever_lt((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_ever_lt((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_ever_lt((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_ever_lt((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_ever_lt);
+
+PGDLLEXPORT Datum
+temporal_ever_lt(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_ever_lt_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporal_always_lt_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_always_lt((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_always_lt((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_always_lt((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_always_lt((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_always_lt);
+
+PGDLLEXPORT Datum
+temporal_always_lt(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_always_lt_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporal_ever_le_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_ever_le((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_ever_le((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_ever_le((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_ever_le((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_ever_le);
+
+PGDLLEXPORT Datum
+temporal_ever_le(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_ever_le_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporal_always_le_internal(Temporal *temp, Datum value)
+{
+	bool result = false;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_always_le((TemporalInst *)temp, value);
+	else if (temp->duration == TEMPORALI)
+		result = temporali_always_le((TemporalI *)temp, value);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_always_le((TemporalSeq *)temp, value);
+	else if (temp->duration == TEMPORALS)
+		result = temporals_always_le((TemporalS *)temp, value);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_always_le);
+
+PGDLLEXPORT Datum
+temporal_always_le(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = temporal_always_le_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value ever greater than the value? */
+
+PG_FUNCTION_INFO_V1(temporal_ever_gt);
+
+PGDLLEXPORT Datum
+temporal_ever_gt(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_always_le_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always greater than the value? */
+
+PG_FUNCTION_INFO_V1(temporal_always_gt);
+
+PGDLLEXPORT Datum
+temporal_always_gt(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_ever_le_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value ever greater than the value? */
+
+PG_FUNCTION_INFO_V1(temporal_ever_ge);
+
+PGDLLEXPORT Datum
+temporal_ever_ge(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_always_lt_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
+}
+
+/* Is the temporal value always greater than the value? */
+
+PG_FUNCTION_INFO_V1(temporal_always_ge);
+
+PGDLLEXPORT Datum
+temporal_always_ge(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum value = PG_GETARG_ANYDATUM(1);
+	bool result = ! temporal_ever_lt_internal(temp, value);
+	PG_FREE_IF_COPY(temp, 0);
+	FREE_DATUM(value, temp->valuetypid);
+	PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -2639,6 +2909,26 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 
 /* Restriction to a periodset */
 
+Temporal *
+temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps)
+{
+	Temporal *result = NULL;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST) 
+		result = (Temporal *)temporalinst_at_periodset(
+			(TemporalInst *)temp, ps);
+	else if (temp->duration == TEMPORALI) 
+		result = (Temporal *)temporali_at_periodset(
+			(TemporalI *)temp, ps);
+	else if (temp->duration == TEMPORALSEQ) 
+		result = (Temporal *)temporalseq_at_periodset(
+			(TemporalSeq *)temp, ps);
+	else if (temp->duration == TEMPORALS) 
+		result = (Temporal *)temporals_at_periodset(
+			(TemporalS *)temp, ps);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_at_periodset);
 
 PGDLLEXPORT Datum
@@ -2795,12 +3085,12 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
  * Local aggregate functions 
  *****************************************************************************/
 
-/* Integral of the temporal integer */
+/* Integral of temporal numbers */
 
-PG_FUNCTION_INFO_V1(tint_integral);
+PG_FUNCTION_INFO_V1(tnumber_integral);
 
 PGDLLEXPORT Datum
-tint_integral(PG_FUNCTION_ARGS)
+tnumber_integral(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0; 
@@ -2808,73 +3098,32 @@ tint_integral(PG_FUNCTION_ARGS)
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
 		;
 	else if (temp->duration == TEMPORALSEQ)
-		result = tintseq_integral((TemporalSeq *)temp);
+		result = tnumberseq_integral((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tints_integral((TemporalS *)temp);
+		result = tnumbers_integral((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }
 
-/* Integral of the temporal float */
+/* Time-weighted average of temporal numbers */
 
-PG_FUNCTION_INFO_V1(tfloat_integral);
-
-PGDLLEXPORT Datum
-tfloat_integral(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0; 
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
-		;
-	else if (temp->duration == TEMPORALSEQ)
-		result = tfloatseq_integral((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = tfloats_integral((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_FLOAT8(result);
-}
-
-/* Time-weighted average of the temporal integer */
-
-PG_FUNCTION_INFO_V1(tint_twavg);
+PG_FUNCTION_INFO_V1(tnumber_twavg);
 
 PGDLLEXPORT Datum
-tint_twavg(PG_FUNCTION_ARGS)
+tnumber_twavg(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double result = 0.0;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
-		result = DatumGetInt32(temporalinst_value((TemporalInst *)temp));
+		result = datum_double(temporalinst_value((TemporalInst *)temp), 
+			temp->valuetypid);
 	else if (temp->duration == TEMPORALI)
-		result = temporali_twavg((TemporalI *)temp);
+		result = tnumberi_twavg((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
-		result = tintseq_twavg((TemporalSeq *)temp);
+		result = tnumberseq_twavg((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS)
-		result = tints_twavg((TemporalS *)temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_FLOAT8(result);
-}
-
-/* Time-weighted average of the temporal float */
-
-PG_FUNCTION_INFO_V1(tfloat_twavg);
-
-PGDLLEXPORT Datum
-tfloat_twavg(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double result = 0.0;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = DatumGetFloat8(temporalinst_value((TemporalInst *)temp));
-	else if (temp->duration == TEMPORALI)
-		result = temporali_twavg((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tfloatseq_twavg((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
-		result = tfloats_twavg((TemporalS *)temp);
+		result = tnumbers_twavg((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_FLOAT8(result);
 }

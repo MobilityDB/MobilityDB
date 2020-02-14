@@ -3,9 +3,9 @@
  * temporal_aggfuncs.c
  *	  Temporal aggregate functions
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -14,7 +14,7 @@
 
 #include <assert.h>
 #include <math.h>
-#include <strings.h>
+#include <string.h>
 #include <catalog/pg_collation.h>
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
@@ -542,7 +542,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 	}
 	pq_sendint64(buf, state->extrasize);
 	if (state->extra)
-		pq_sendbytes(buf, state->extra, state->extrasize);
+		pq_sendbytes(buf, state->extra, (int) state->extrasize);
 	pfree(values);
 }
 
@@ -558,7 +558,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 	size_t extrasize = (size_t) pq_getmsgint64(buf);
 	if (extrasize)
 	{
-		const char *extra = pq_getmsgbytes(buf, extrasize);
+		const char *extra = pq_getmsgbytes(buf, (int) extrasize);
 		aggstate_set_extra(fcinfo, result, (void *)extra, extrasize);
 	}
 	for (int i = 0; i < size; i ++)
@@ -856,9 +856,9 @@ temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2
  * Returns new sequences that must be freed by the calling function.
  */
 
-static void
+static int
 temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2, 
-	Datum (*func)(Datum, Datum), bool crossings, int *newcount)
+	Datum (*func)(Datum, Datum), bool crossings)
 {
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
 	if (intersect == NULL)
@@ -881,8 +881,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 		for (int i = 0; i < l; i++)
 			result[i] = normsequences[i];
 		pfree(normsequences);
-		*newcount = l;	
-		return;
+		return l;
 	}
 
 	/* 
@@ -971,8 +970,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	if (k == 1)
 	{
 		result[0] = sequences[0];
-		*newcount = 1;	
-		return;
+		return 1;
 	}
 	int l;
 	TemporalSeq **normsequences = temporalseqarr_normalize(sequences, k, &l);
@@ -981,8 +979,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	for (int i = 0; i < l; i++)
 		result[i] = normsequences[i];
 	pfree(normsequences);
-	*newcount = l;	
-	return;
+	return l;
 }
 
 /* 
@@ -1005,13 +1002,12 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 	 */
 	int seqcount = (count1 * 3) + count1 + count2 + 1;
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seqcount);
-	int i = 0, j = 0, k = 0, countstep;
+	int i = 0, j = 0, k = 0;
 	TemporalSeq *seq1 = sequences1[i];
 	TemporalSeq *seq2 = sequences2[j];
 	while (i < count1 && j < count2)
 	{
-		temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings,
-			&countstep);
+		int countstep = temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings);
 		k += countstep - 1;
 		/* If both upper bounds are equal */
 		if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0 &&
@@ -1065,7 +1061,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 	}
 	int l;
 	TemporalSeq **result = temporalseqarr_normalize(sequences, k, &l);
-	for (int i = 0; i < k; i++)
+	for (i = 0; i < k; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	*newcount = l;	
@@ -1126,7 +1122,8 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != MOBDB_FLAGS_GET_LINEAR(seq->flags))
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)&seq, 1, func, crossings);
@@ -1148,7 +1145,8 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 		if (skiplist_headval(state)->duration != TEMPORALSEQ)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
-		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != MOBDB_FLAGS_GET_LINEAR(ts->flags))
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) !=
+				MOBDB_FLAGS_GET_LINEAR(ts->flags))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different interpolation")));
 		skiplist_splice(fcinfo, state, (Temporal **)sequences, ts->count, func, crossings);
@@ -1195,7 +1193,7 @@ temporal_tagg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different duration")));
 	if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state1)->flags) != 
-		MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
+			MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state2)->flags))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("Cannot aggregate temporal values of different interpolation")));
 
@@ -1841,6 +1839,11 @@ tnumber_tavg_transfn(PG_FUNCTION_ARGS)
 		if (skiplist_headval(state)->duration != temporals[0]->duration)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("Cannot aggregate temporal values of different duration")));
+		if (MOBDB_FLAGS_GET_LINEAR(skiplist_headval(state)->flags) != 
+				MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Cannot aggregate temporal values of different interpolation")));
+
 		skiplist_splice(fcinfo, state, temporals, count, &datum_sum_double2, false);
 	}
 	else

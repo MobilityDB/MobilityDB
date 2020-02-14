@@ -3,9 +3,9 @@
  * stbox.sql
  *	  Basic functions for STBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -152,6 +152,20 @@ CREATE CAST (stbox AS period) WITH FUNCTION period(stbox);
 CREATE CAST (stbox AS box2d) WITH FUNCTION box2d(stbox);
 CREATE CAST (stbox AS box3d) WITH FUNCTION box3d(stbox);
 
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+CREATE FUNCTION stbox_intersection(stbox, stbox)
+	RETURNS stbox
+AS 'MODULE_PATHNAME', 'stbox_intersection'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+	PROCEDURE = stbox_intersection,
+	LEFTARG = stbox, RIGHTARG = stbox,
+	COMMUTATOR = *
+);
 
 /*****************************************************************************
  * Comparison

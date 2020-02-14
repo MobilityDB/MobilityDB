@@ -3,9 +3,9 @@
  * temporal_aggfuncs.h
  *	  Temporal aggregate functions
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -16,14 +16,6 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
-
-typedef struct AggregateState
-{
-	int 		size;
-	void		*extra;
-	size_t		extrasize;
-	Temporal 	*values[];
-} AggregateState;
 
 /*****************************************************************************/
 
@@ -108,10 +100,10 @@ extern Datum tfloat_tsum_transfn(PG_FUNCTION_ARGS);
 extern Datum tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
 extern Datum temporal_tcount_transfn(PG_FUNCTION_ARGS);
 extern Datum temporal_tcount_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_combinefn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_transfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
 extern Datum temporal_tagg_finalfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tavg_finalfn(PG_FUNCTION_ARGS);
+extern Datum tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmin_transfn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmin_combinefn(PG_FUNCTION_ARGS);
 extern Datum ttext_tmax_transfn(PG_FUNCTION_ARGS);

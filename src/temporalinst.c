@@ -3,9 +3,9 @@
  * temporalinst.c
  *	  Basic functions for temporal instants.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -96,7 +96,6 @@ temporalinst_bbox(void *box, TemporalInst *inst)
 {
 	Datum value = temporalinst_value(inst);
 	temporalinst_make_bbox(box, value, inst->t, inst->valuetypid);
-	return;
 }
 
 /* Construct a temporal instant value */
@@ -172,6 +171,18 @@ temporalinst_copy(TemporalInst *inst)
 	return result;
 }
 
+/* Set the value and the timestamp of an existing temporal instant.
+ * This function only works for for base types passed by value.
+ * This should be ensured by the calling function! */
+void
+temporalinst_set(TemporalInst *inst, Datum value, TimestampTz t)
+{
+	inst->t = t;
+	Datum *value_ptr = temporalinst_value_ptr(inst);
+	*value_ptr = value;
+
+}
+
 /*****************************************************************************
  * Intput/output functions
  *****************************************************************************/
@@ -182,7 +193,7 @@ temporalinst_copy(TemporalInst *inst)
 char *
 temporalinst_to_string(TemporalInst *inst, char *(*value_out)(Oid, Datum))
 {
-	char *t = call_output(TIMESTAMPTZOID, inst->t);
+	char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 	char *value = value_out(inst->valuetypid, temporalinst_value(inst));
 	char *result;
 	if (inst->valuetypid == TEXTOID)
@@ -206,7 +217,7 @@ temporalinst_to_string(TemporalInst *inst, char *(*value_out)(Oid, Datum))
 void
 temporalinst_write(TemporalInst *inst, StringInfo buf)
 {
-	bytea *bt = call_send(TIMESTAMPTZOID, inst->t);
+	bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 	bytea *bv = call_send(inst->valuetypid, temporalinst_value(inst));
 	pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
 	pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
@@ -375,6 +386,22 @@ temporalinst_instants_array(TemporalInst *inst)
 	return temporalarr_to_array((Temporal **)(&inst), 1);
 }
 
+/* Shift the time span of a temporal value by an interval */
+
+TemporalInst *
+temporalinst_shift(TemporalInst *inst, Interval *interval)
+{
+	TemporalInst *result = temporalinst_copy(inst);
+	result->t = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+	return result;
+}
+
+/*****************************************************************************
+ * Ever/always comparison operators
+ *****************************************************************************/
+
 /* Is the temporal value ever equal to the value? */
 
 bool
@@ -391,16 +418,38 @@ temporalinst_always_eq(TemporalInst *inst, Datum value)
 	return datum_eq(temporalinst_value(inst), value, inst->valuetypid);
 }
 
-/* Shift the time span of a temporal value by an interval */
+/*****************************************************************************/
 
-TemporalInst *
-temporalinst_shift(TemporalInst *inst, Interval *interval)
+/* Is the temporal value ever less than the value? */
+
+bool
+temporalinst_ever_lt(TemporalInst *inst, Datum value)
 {
-	TemporalInst *result = temporalinst_copy(inst);
-	result->t = DatumGetTimestampTz(
-		DirectFunctionCall2(timestamptz_pl_interval,
-		TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
-	return result;
+	return datum_lt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporalinst_ever_le(TemporalInst *inst, Datum value)
+{
+	return datum_le(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporalinst_always_lt(TemporalInst *inst, Datum value)
+{
+	return datum_lt(temporalinst_value(inst), value, inst->valuetypid);
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporalinst_always_le(TemporalInst *inst, Datum value)
+{
+	return datum_le(temporalinst_value(inst), value, inst->valuetypid);
 }
 
 /*****************************************************************************
@@ -488,13 +537,11 @@ TemporalInst *
 tnumberinst_at_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
 	Datum d = temporalinst_value(inst);
-	bool contains = false;
+	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
+		 TYPECACHE_RANGE_INFO);
 	for (int i = 0; i < count; i++)
 	{
-		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
-			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, normranges[i], d);
-		if (contains) 
+		if (range_contains_elem_internal(typcache, normranges[i], d))
 			return temporalinst_copy(inst);
 	}
 	return NULL;
@@ -507,13 +554,11 @@ TemporalInst *
 tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count)
 {
 	Datum d = temporalinst_value(inst);
-	bool contains = false;
+	TypeCacheEntry *typcache = lookup_type_cache(normranges[0]->rangetypid,
+		 TYPECACHE_RANGE_INFO);
 	for (int i = 0; i < count; i++)
 	{
-		TypeCacheEntry *typcache = lookup_type_cache(normranges[i]->rangetypid, 
-			TYPECACHE_RANGE_INFO);
-		contains = range_contains_elem_internal(typcache, normranges[i], d);
-		if (contains)
+		if (range_contains_elem_internal(typcache, normranges[i], d))
 			return NULL;
 	}
 	return temporalinst_copy(inst);
@@ -676,6 +721,11 @@ temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 bool
 temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 {
+	/* If flags are not equal */
+	if (inst1->flags != inst2->flags) 
+		return false;
+
+	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	return datum_eq(value1, value2, inst1->valuetypid) && 
@@ -688,16 +738,24 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
+	/* Compare values */
 	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
 		return -1;
 	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2), 
 		inst1->valuetypid))
 		return 1;
+	/* Compare timestamps */
 	if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
 		return -1;
 	if (timestamp_cmp_internal(inst1->t, inst2->t) > 0)
 		return 1;
+	/* Compare flags */
+	if (inst1->flags < inst2->flags)
+		return -1;
+	if (inst1->flags > inst2->flags)
+		return 1;
+	/* The two values are equal */
 	return 0;
 }
 
@@ -731,7 +789,7 @@ temporalinst_hash(TemporalInst *inst)
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
 #endif
 	/* Apply the hash function according to the timestamp */
-	time_hash = DatumGetUInt32(call_function1(hashint8, inst->t));
+	time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 
 	/* Merge hashes of value and timestamp */
 	result = value_hash;

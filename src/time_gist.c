@@ -4,9 +4,9 @@
  *	R-tree GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_gist.c.
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -27,18 +27,9 @@
 /*****************************************************************************/
 
 /*
- * Minimum accepted ratio of split for items of the same class.  If the items
- * are of different classes, we will separate along those lines regardless of
- * the ratio.
+ * Minimum accepted ratio of split.
  */
 #define LIMIT_RATIO  0.3
-
-/* place on left or right side of split? */
-typedef enum
-{
-	SPLIT_LEFT = 0,				/* makes initialization to SPLIT_LEFT easier */
-	SPLIT_RIGHT
-} SplitLR;
 
 /*
  * Context for gist_period_consider_split.
@@ -92,11 +83,6 @@ typedef struct
 		v->spl_right[v->spl_nright++] = (off);	\
 	} while (0)
 
-/* Copy a Period datum (hardwires typbyval and typlen for periods...) */
-#define periodCopy(r) \
-	((Period *) DatumGetPointer(datumCopy(PointerGetDatum(r), \
-											 false, 24)))
-
 /*****************************************************************************
  * STATIC FUNCTIONS
  *****************************************************************************/
@@ -115,9 +101,9 @@ gist_period_fallafter_split(GistEntryVector *entryvec,
 				maxoff,
 				split_idx;
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	/* Split entries before this to left page, after to right: */
-	split_idx = (maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber;
+	split_idx = (OffsetNumber) ((maxoff - FirstOffsetNumber) / 2 + FirstOffsetNumber);
 
 	v->spl_nleft = 0;
 	v->spl_nright = 0;
@@ -179,7 +165,7 @@ gist_period_consider_split(ConsiderSplitContext *context,
 		 * values) and minimal ratio secondarily.  The subtype_diff is
 		 * used for overlap measure. 
 		 */
-		overlap = period_to_secs(left_upper->val, right_lower->val);
+		overlap = (float4) period_to_secs(left_upper->val, right_lower->val);
 
 		/* If there is no previous selection, select this split */
 		if (context->first)
@@ -275,7 +261,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 
 	memset(&context, 0, sizeof(ConsiderSplitContext));
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nentries = context.entries_count = maxoff - FirstOffsetNumber + 1;
 	context.first = true;
 
@@ -295,9 +281,9 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 	}
 	memcpy(by_upper, by_lower, nentries * sizeof(Period *));
 	/* Sort the arrays */
-	qsort(by_lower, nentries, sizeof(Period *), 
+	qsort(by_lower, (size_t) nentries, sizeof(Period *),
 		(qsort_comparator) period_cmp_lower);
-	qsort(by_upper, nentries, sizeof(Period *), 
+	qsort(by_upper, (size_t) nentries, sizeof(Period *),
 		(qsort_comparator) period_cmp_upper);
 
 	/*----------
@@ -509,7 +495,7 @@ gist_period_double_sorting_split(GistEntryVector *entryvec,
 		 * Sort "common entries" by calculated deltas in order to distribute
 		 * the most ambiguous entries first.
 		 */
-		qsort(common_entries, common_entries_count, sizeof(CommonEntry),
+		qsort(common_entries, (size_t) common_entries_count, sizeof(CommonEntry),
 			  common_entry_cmp);
 
 		/*
@@ -627,10 +613,10 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid 		subtype = PG_GETARG_OID(3);
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
-				periodfree = false,
 				result;
 	Period	   *key = DatumGetPeriod(entry->key),
-			   *period;
+			   *period,
+			   p;
 	
 	/* Determine whether the operator is exact */
 	*recheck = index_period_bbox_recheck(strategy);
@@ -640,8 +626,8 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		/* Since function gist_period_consistent is strict, query is not NULL */
 		TimestampTz query;
 		query = PG_GETARG_TIMESTAMPTZ(1);
-		period = period_make(query, query, true, true);
-		periodfree = true;
+		period_set(&p, query, query, true, true);
+		period = &p;
 	}
 	else if (subtype == type_oid(T_TIMESTAMPSET))
 	{
@@ -672,10 +658,7 @@ gist_period_consistent(PG_FUNCTION_ARGS)
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
 		result = index_internal_consistent_period(key, period, strategy);
-	
-	if (periodfree)
-		pfree(period);
-	
+
 	PG_RETURN_BOOL(result);
 	
 }
@@ -812,7 +795,7 @@ gist_period_penalty(PG_FUNCTION_ARGS)
 	if (period_cmp_bounds(new->upper, orig->upper, false, false, 
 			new->upper_inc, orig->upper_inc) > 0)
 		diff += period_to_secs(new->upper, orig->upper);
-	*penalty = diff;
+	*penalty = (float4) diff;
 
 	PG_RETURN_POINTER(penalty);
 }
@@ -828,10 +811,10 @@ gist_period_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
-	int			nbytes;
+	size_t			nbytes;
 	OffsetNumber maxoff;
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nbytes = (maxoff + 1) * sizeof(OffsetNumber);
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
 	v->spl_right = (OffsetNumber *) palloc(nbytes);

@@ -4,9 +4,9 @@
  *	  R-tree GiST index for temporal integers and temporal floats
  *
  * These functions are based on those in the file gistproc.c.
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -115,7 +115,7 @@ adjustBox(TBOX *b, const TBOX *addon)
 
 PG_FUNCTION_INFO_V1(gist_tbox_union);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -142,7 +142,7 @@ gist_tbox_union(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(gist_tbox_penalty);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
@@ -168,9 +168,9 @@ tbox_fallbackSplit(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	OffsetNumber i, maxoff;
 	TBOX *unionL = NULL, *unionR = NULL;
-	int nbytes;
+	size_t nbytes;
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 
 	nbytes = (maxoff + 2) * sizeof(OffsetNumber);
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
@@ -345,7 +345,7 @@ g_tbox_consider_split(ConsiderSplitContext *context, int dimNum,
 		else
 			range = (double) (context->boundingBox.tmax - context->boundingBox.tmin);
 
-		overlap = (leftUpper - rightLower) / range;
+		overlap = (float4) ((leftUpper - rightLower) / range);
 
 		/* If there is no previous selection, select this */
 		if (context->first)
@@ -446,7 +446,7 @@ common_entry_cmp(const void *i1, const void *i2)
 
 PG_FUNCTION_INFO_V1(gist_tbox_picksplit);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
@@ -466,7 +466,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 
 	memset(&context, 0, sizeof(ConsiderSplitContext));
 
-	maxoff = entryvec->n - 1;
+	maxoff = (OffsetNumber) (entryvec->n - 1);
 	nentries = context.entriesCount = maxoff - FirstOffsetNumber + 1;
 
 	/* Allocate arrays for intervals along axes */
@@ -518,9 +518,9 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 		 */
 		memcpy(intervalsUpper, intervalsLower,
 			   sizeof(SplitInterval) * nentries);
-		qsort(intervalsLower, nentries, sizeof(SplitInterval),
+		qsort(intervalsLower, (size_t) nentries, sizeof(SplitInterval),
 			  interval_cmp_lower);
-		qsort(intervalsUpper, nentries, sizeof(SplitInterval),
+		qsort(intervalsUpper, (size_t) nentries, sizeof(SplitInterval),
 			  interval_cmp_upper);
 
 		/*----
@@ -743,7 +743,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 		 * Calculate minimum number of entries that must be placed in both
 		 * groups, to reach LIMIT_RATIO.
 		 */
-		int			m = ceil(LIMIT_RATIO * (double) nentries);
+		int			m = (int) ceil(LIMIT_RATIO * (double) nentries);
 
 		/*
 		 * Calculate delta between penalties of join "common entries" to
@@ -760,7 +760,7 @@ gist_tbox_picksplit(PG_FUNCTION_ARGS)
 		 * Sort "common entries" by calculated deltas in order to distribute
 		 * the most ambiguous entries first.
 		 */
-		qsort(commonEntries, commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
+		qsort(commonEntries, (size_t) commonEntriesCount, sizeof(CommonEntry), common_entry_cmp);
 
 		/*
 		 * Distribute "common entries" between groups.
@@ -1020,7 +1020,7 @@ gist_tnumber_compress(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(gist_tbox_same);
 
-Datum
+PGDLLEXPORT Datum
 gist_tbox_same(PG_FUNCTION_ARGS)
 {
 	TBOX *b1 = PG_GETARG_TBOX_P(0);

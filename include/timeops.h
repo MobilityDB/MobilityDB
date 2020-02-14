@@ -3,9 +3,9 @@
  * timeops.h
  *	  Operators for time types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -62,12 +62,9 @@ extern Datum contained_periodset_periodset(PG_FUNCTION_ARGS);
 
 /* overlaps? */
 
-extern Datum overlaps_timestampset_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum overlaps_period_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_timestampset(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_period(PG_FUNCTION_ARGS);
-extern Datum overlaps_periodset_timestamp(PG_FUNCTION_ARGS);
 extern Datum overlaps_periodset_timestampset(PG_FUNCTION_ARGS);
 extern Datum overlaps_periodset_period(PG_FUNCTION_ARGS);
 extern Datum overlaps_period_periodset(PG_FUNCTION_ARGS);

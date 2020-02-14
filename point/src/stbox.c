@@ -3,9 +3,9 @@
  * stbox.c
  *	  Basic functions for STBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -24,7 +24,7 @@
 #define MAXSTBOXLEN		256
 
 /*****************************************************************************
- * Miscellaneus functions
+ * Miscellaneous functions
  *****************************************************************************/
 
 STBOX *
@@ -44,14 +44,6 @@ stbox_copy(const STBOX *box)
 	STBOX *result = palloc0(sizeof(STBOX));
 	memcpy(result, box, sizeof(STBOX));
 	return result;
-}
-
-void
-stbox_to_period_internal(Period *period, const STBOX *box)
-{
-	assert(MOBDB_FLAGS_GET_T(box->flags));
-	period_set(period, (TimestampTz) box->tmin, (TimestampTz) box->tmin, true, true);
-	return;
 }
 
 /*****************************************************************************
@@ -84,7 +76,7 @@ stbox_in(PG_FUNCTION_ARGS)
 static char *
 stbox_to_string(const STBOX *box)
 {
-	static int size = MAXSTBOXLEN + 1;
+	static size_t size = MAXSTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *) palloc(size);
 	char *boxtype = MOBDB_FLAGS_GET_GEODETIC(box->flags) ? "GEODSTBOX" : "STBOX";
@@ -92,8 +84,8 @@ stbox_to_string(const STBOX *box)
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
-		strtmin = call_output(TIMESTAMPTZOID, box->tmin);
-		strtmax = call_output(TIMESTAMPTZOID, box->tmax);
+		strtmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+		strtmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
 	}
 	if (MOBDB_FLAGS_GET_X(box->flags))
 	{
@@ -574,6 +566,56 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+/* Intersection of two boxex*/
+
+PG_FUNCTION_INFO_V1(stbox_intersection);
+
+PGDLLEXPORT Datum
+stbox_intersection(PG_FUNCTION_ARGS)
+{
+	STBOX *box1 = PG_GETARG_STBOX_P(0);
+	STBOX *box2 = PG_GETARG_STBOX_P(1);
+	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot intersection geodetic and non geodetic boxes");
+
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
+	/* If there is no common dimension */
+	if ((! hasx && ! hast) ||
+		/* If they do no intersect in one common dimension */
+		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
+				  box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
+		(hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
+		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+		PG_RETURN_NULL();
+
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	if (hasx)
+	{
+		result->xmin = Max(box1->xmin, box2->xmin);
+		result->xmax = Min(box1->xmax, box2->xmax);
+		result->ymin = Max(box1->ymin, box2->ymin);
+		result->ymax = Min(box1->ymax, box2->ymax);
+		if (hasz)
+		{
+			result->zmin = Max(box1->zmin, box2->zmin);
+			result->zmax = Min(box1->zmax, box2->zmax);
+		}
+	}
+	if (hast)
+	{
+		result->tmin = Max(box1->tmin, box2->tmin);
+		result->tmax = Min(box1->tmax, box2->tmax);
+	}
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 
@@ -635,6 +677,11 @@ stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 		if (box1->tmax > box2->tmax)
 			return 1;
 	}
+	/* Finally compare the flags */
+	if (box1->flags < box2->flags)
+		return -1;
+	if (box1->flags > box2->flags)
+		return 1;
 	/* The two boxes are equal */
 	return 0;
 }
@@ -703,7 +750,8 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 	if (box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
 		box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
 		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
-		box1->zmax != box2->zmax || box1->tmax != box2->tmax)
+		box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
+		box1->flags != box2->flags )
 		return false;
 	/* The two boxes are equal */
 	return true;

@@ -3,15 +3,17 @@
  * tpoint_spatialfuncs.h
  *	  Spatial functions for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
 #ifndef __TPOINT_SPATIALFUNCS_H__
 #define __TPOINT_SPATIALFUNCS_H__
+
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <postgres.h>
 #include <liblwgeom.h>
@@ -20,28 +22,32 @@
 
 /*****************************************************************************/
 
+/* Parameter tests */
+
+extern void ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_srid_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
+extern void ensure_same_dimensionality_tpoint(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_dimensionality_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
+extern void ensure_has_Z_tpoint(Temporal *temp);
+extern void ensure_point_type(GSERIALIZED *gs);
+extern void ensure_non_empty(GSERIALIZED *gs);
+extern void ensure_has_Z(GSERIALIZED *gs);
+extern void ensure_has_M(GSERIALIZED *gs);
+extern void ensure_has_not_M(GSERIALIZED *gs);
+
+/* Utility functions */
+
 extern POINT2D gs_get_point2d(GSERIALIZED *gs);
 extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
-extern POINT3DM gs_get_point3dm(GSERIALIZED *gs);
-extern POINT4D gs_get_point4d(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern void tpoint_same_srid(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_same_srid(Temporal *temp, GSERIALIZED *gs);
-extern void tpoint_same_dimensionality(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_same_dimensionality(Temporal *temp, GSERIALIZED *gs);
-extern void tpoint_check_Z_dimension(Temporal *temp1, Temporal *temp2);
-extern void tpoint_gs_check_Z_dimension(Temporal *temp, GSERIALIZED *gs);
-extern void gserialized_check_point(GSERIALIZED *gs);
-extern void gserialized_check_M_dimension(GSERIALIZED *gs);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 /* Functions for spatial reference systems */
 
 extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_transform(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
 extern int tpoint_srid_internal(Temporal *t);
@@ -53,7 +59,6 @@ extern Datum tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
 extern Datum tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
 extern TemporalInst *tgeogpointinst_to_tgeompointinst(TemporalInst *inst);
-extern TemporalI *tgeogpointi_to_tgeompointi(TemporalI *ti);
 extern TemporalSeq *tgeogpointseq_to_tgeompointseq(TemporalSeq *seq);
 extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
 
@@ -61,6 +66,7 @@ extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
 
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
+extern Datum tpoint_trajectory_internal(Temporal *temp);
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
 extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
 extern Datum tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first);
@@ -93,16 +99,16 @@ extern TemporalSeq **tpointseq_at_geometry2(TemporalSeq *seq, Datum geo, int *co
 
 /* Nearest approach functions */
 
-extern Datum NAI_geometry_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum NAD_geometry_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum shortestline_geometry_tpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /* Functions converting a temporal point to/from a PostGIS trajectory */

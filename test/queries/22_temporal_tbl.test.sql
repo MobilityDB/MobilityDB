@@ -156,7 +156,7 @@ SELECT period(temp) FROM tbl_ttext;
 
 SELECT DISTINCT getValue(inst) FROM tbl_tboolinst;
 SELECT MAX(getValue(inst)) FROM tbl_tintinst;
-SELECT MAX(getValue(inst)) FROM tbl_tfloatinst;
+SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloatinst;
 SELECT MAX(getValue(inst)) FROM tbl_ttextinst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
@@ -164,25 +164,25 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tfloat;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
 
-SELECT MAX(upper(valueRange(temp))) FROM tbl_tint;
-SELECT MAX(upper(valueRange(temp))) FROM tbl_tfloat;
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tint;
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tfloat;
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
 SELECT MAX(startValue(temp)) FROM tbl_tint;
-SELECT MAX(startValue(temp)) FROM tbl_tfloat;
+SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(startValue(temp)) FROM tbl_ttext;
 
 SELECT DISTINCT endValue(temp) FROM tbl_tbool;
 SELECT MAX(endValue(temp)) FROM tbl_tint;
-SELECT MAX(endValue(temp)) FROM tbl_tfloat;
+SELECT round(MAX(endValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(endValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(minValue(temp)) FROM tbl_tint;
-SELECT MAX(minValue(temp)) FROM tbl_tfloat;
+SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(maxValue(temp)) FROM tbl_tint;
-SELECT MAX(maxValue(temp)) FROM tbl_tfloat;
+SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tboolinst;
@@ -305,6 +305,15 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tint;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tfloat;
 SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
 
+SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval; 
+SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+
+-------------------------------------------------------------------------------
+-- Ever/always comparison functions
+-------------------------------------------------------------------------------
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tint WHERE temp ?= startValue(temp);
 SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?= startValue(temp);
@@ -315,10 +324,51 @@ SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %= i;
 SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %= f;
 SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
-SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval; 
-SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
+
+-------------------------------------------------------------------------------
+-- Restriction functions
+-------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tbool 
 WHERE atValue(temp, true) IS NOT NULL;
@@ -515,11 +565,11 @@ WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_ttext, tbl_periodset
 WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
 
-SELECT sum(integral(temp)) FROM tbl_tint;
-SELECT sum(integral(temp)) FROM tbl_tfloat;
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
 
-SELECT sum(twAvg(temp)) FROM tbl_tint;
-SELECT sum(twAvg(temp)) FROM tbl_tfloat;
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tint;
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing

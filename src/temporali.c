@@ -3,9 +3,9 @@
  * temporali.c
  *	  Basic functions for temporal instant sets.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -79,7 +79,6 @@ temporali_bbox(void *box, TemporalI *ti)
 	void *box1 = temporali_bbox_ptr(ti);
 	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	memcpy(box, box1, bboxsize);
-	return;
 }
 
 /* Construct a TemporalI from an array of TemporalInst */
@@ -106,8 +105,8 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 	{
 		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, instants[i - 1]->t);
-			char *t2 = call_output(TIMESTAMPTZOID, instants[i]->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i - 1]->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i]->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -180,8 +179,8 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
 		{
-			char *t1 = call_output(TIMESTAMPTZOID, inst1->t);
-			char *t2 = call_output(TIMESTAMPTZOID, inst->t);
+			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
@@ -296,34 +295,6 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos)
 	return false;
 }
 
-bool 
-temporalinstarr_find_timestamp(TemporalInst **instants, int from, int count, 
-	TimestampTz t, int *pos) 
-{
-	int first = from, last = count - 1;
-	int middle = 0; /* make compiler quiet */
-	TemporalInst *inst = NULL; /* make compiler quiet */
-	while (first <= last) 
-	{
-		middle = (first + last)/2;
-		inst = instants[middle];
-		int cmp = timestamp_cmp_internal(inst->t, t);
-		if (cmp == 0)
-		{
-			*pos = middle;
-			return true;
-		}
-		if (cmp > 0)
-			last = middle - 1;
-		else
-			first = middle + 1;	
-	}
-	if (timestamp_cmp_internal(t, inst->t) > 0)
-		middle++;
-	*pos = middle;
-	return false;
-}
-
 /*****************************************************************************
  * Intersection functions
  *****************************************************************************/
@@ -410,7 +381,7 @@ intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 char*
 temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum))
 {
-	char** strings = palloc((int) (sizeof(char *)) * ti->count);
+	char** strings = palloc(sizeof(char *) * ti->count);
 	size_t outlen = 0;
 
 	for (int i = 0; i < ti->count; i++)
@@ -442,7 +413,7 @@ temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum))
 void
 temporali_write(TemporalI *ti, StringInfo buf)
 {
-	pq_sendint(buf, ti->count, 4);
+	pq_sendint(buf, (uint32) ti->count, 4);
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
@@ -754,6 +725,31 @@ temporali_timestamps(TemporalI *ti)
 	return result;
 }
 
+/* Shift the time span of a temporal value by an interval */
+
+TemporalI *
+temporali_shift(TemporalI *ti, Interval *interval)
+{
+   	TemporalI *result = temporali_copy(ti);
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
+		inst->t = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+	}
+	/* Recompute the bounding box */
+	void *bbox = temporali_bbox_ptr(result); 
+	temporali_make_bbox(bbox, instants, ti->count);
+	pfree(instants);
+	return result;
+}
+
+/*****************************************************************************
+ * Ever/always comparison operators
+ *****************************************************************************/
+
 /* Is the temporal value ever equal to the value? */
 
 bool
@@ -807,25 +803,106 @@ temporali_always_eq(TemporalI *ti, Datum value)
 	return true;
 }
 
-/* Shift the time span of a temporal value by an interval */
+/*****************************************************************************/
 
-TemporalI *
-temporali_shift(TemporalI *ti, Interval *interval)
+/* Is the temporal value ever less than to the value? */
+
+bool
+temporali_ever_lt(TemporalI *ti, Datum value)
 {
-   	TemporalI *result = temporali_copy(ti);
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
-	for (int i = 0; i < ti->count; i++)
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
 	{
-		TemporalInst *inst = instants[i] = temporali_inst_n(result, i);
-		inst->t = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(inst->t), PointerGetDatum(interval)));
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d <= box.xmin)
+			return false;
 	}
-	/* Recompute the bounding box */
-    void *bbox = temporali_bbox_ptr(result); 
-    temporali_make_bbox(bbox, instants, ti->count);
-    pfree(instants);
-	return result;
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (datum_lt(valueinst, value, ti->valuetypid))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value ever less than or equal to the value? */
+
+bool
+temporali_ever_le(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d < box.xmin)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (datum_le(valueinst, value, ti->valuetypid))
+			return true;
+	}
+	return false;
+}
+
+/* Is the temporal value always less than the value? */
+
+bool
+temporali_always_lt(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d <= box.xmax)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (! datum_lt(valueinst, value, ti->valuetypid))
+			return false;
+	}
+	return true;
+}
+
+/* Is the temporal value always less than or equal to the value? */
+
+bool
+temporali_always_le(TemporalI *ti, Datum value)
+{
+	/* Bounding box test */
+	if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
+	{
+		TBOX box;
+		memset(&box, 0, sizeof(TBOX));
+		temporali_bbox(&box, ti);
+		double d = datum_double(value, ti->valuetypid);
+		if (d < box.xmax)
+			return false;
+	}
+
+	for (int i = 0; i < ti->count; i++) 
+	{
+		Datum valueinst = temporalinst_value(temporali_inst_n(ti, i));
+		if (! datum_le(valueinst, value, ti->valuetypid))
+			return false;
+	}
+	return true;
 }
 
 /*****************************************************************************
@@ -1582,16 +1659,13 @@ temporali_intersects_periodset(TemporalI *ti, PeriodSet *ps)
  *****************************************************************************/
 
 double
-temporali_twavg(TemporalI *ti)
+tnumberi_twavg(TemporalI *ti)
 {
 	double result = 0.0;
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		if (ti->valuetypid == INT4OID)
-			result += (double)DatumGetInt32(temporalinst_value(inst));
-		else
-			result += DatumGetFloat8(temporalinst_value(inst));
+		result += datum_double(temporalinst_value(inst), inst->valuetypid);
 	}
 	return result / ti->count;
 }
@@ -1608,21 +1682,22 @@ temporali_twavg(TemporalI *ti)
 bool
 temporali_eq(TemporalI *ti1, TemporalI *ti2)
 {
-	/* If number of sequences are not equal */
-	if (ti1->count != ti2->count)
+	/* If number of sequences or flags are not equal */
+	if (ti1->count != ti2->count || ti1->flags != ti2->flags)
 		return false;
+
 	/* If bounding boxes are not equal */
 	void *box1 = temporali_bbox_ptr(ti1);
 	void *box2 = temporali_bbox_ptr(ti2);
-	if (!temporal_bbox_eq(ti1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(ti1->valuetypid, box1, box2))
 		return false;
 	
-	/* We need to compare the composing instants */
+	/* Compare the composing instants */
 	for (int i = 0; i < ti1->count; i++)
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);
 		TemporalInst *inst2 = temporali_inst_n(ti2, i);
-		if (!temporalinst_eq(inst1, inst2))
+		if (! temporalinst_eq(inst1, inst2))
 			return false;
 	}
 	return true;
@@ -1640,7 +1715,6 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 	int result = temporal_bbox_cmp(ti1->valuetypid, box1, box2);
 	if (result)
 		return result;
-
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)
@@ -1656,8 +1730,13 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		return -1;
 	else if (ti2->count < ti1->count) /* ti2 has less instants than ti1 */
 		return 1;
-	else
-		return 0;
+	/* Compare flags */
+	if (ti1->flags < ti2->flags)
+		return -1;
+	if (ti1->flags > ti2->flags)
+		return 1;
+	/* The two values are equal */
+	return 0;
 }
 
 /*****************************************************************************

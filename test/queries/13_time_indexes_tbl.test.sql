@@ -5,13 +5,12 @@ ANALYZE tbl_period_big;
 ANALYZE tbl_periodset_big;
 
 DROP INDEX IF EXISTS tbl_timestampset_big_gist_idx;
-DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_period_big_gist_idx;
-DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_periodset_big_gist_idx;
+
+DROP INDEX IF EXISTS tbl_timestampset_big_spgist_idx;
 DROP INDEX IF EXISTS tbl_periodset_big_spgist_idx;
+DROP INDEX IF EXISTS tbl_period_big_spgist_idx;
 
 -------------------------------------------------------------------------------
 

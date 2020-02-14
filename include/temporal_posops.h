@@ -3,9 +3,9 @@
  * temporal_posops.h
  *	  Relative position operators for temporal types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -37,49 +37,11 @@ extern Datum overbefore_period_temporal(PG_FUNCTION_ARGS);
 extern Datum after_period_temporal(PG_FUNCTION_ARGS);
 extern Datum overafter_period_temporal(PG_FUNCTION_ARGS);
 
-extern Datum before_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum overbefore_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum after_periodset_temporal(PG_FUNCTION_ARGS);
-extern Datum overafter_periodset_temporal(PG_FUNCTION_ARGS);
-
-extern Datum left_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum overleft_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum right_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum overright_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum before_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum overbefore_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum after_tbox_temporal(PG_FUNCTION_ARGS);
-extern Datum overafter_tbox_temporal(PG_FUNCTION_ARGS);
-
-extern Datum left_temporal_datum(PG_FUNCTION_ARGS);
-extern Datum overleft_temporal_datum(PG_FUNCTION_ARGS);
-extern Datum overright_temporal_datum(PG_FUNCTION_ARGS);
-extern Datum right_temporal_datum(PG_FUNCTION_ARGS);
-
-extern Datum before_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum overbefore_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum after_temporal_timestamp(PG_FUNCTION_ARGS);
-extern Datum overafter_temporal_timestamp(PG_FUNCTION_ARGS);
-
-extern Datum before_temporal_timestampset(PG_FUNCTION_ARGS);
-extern Datum overbefore_temporal_timestampset(PG_FUNCTION_ARGS);
-extern Datum after_temporal_timestampset(PG_FUNCTION_ARGS);
-extern Datum overafter_temporal_timestampset(PG_FUNCTION_ARGS);
-
 extern Datum before_temporal_period(PG_FUNCTION_ARGS);
 extern Datum overbefore_temporal_period(PG_FUNCTION_ARGS);
 extern Datum after_temporal_period(PG_FUNCTION_ARGS);
 extern Datum overafter_temporal_period(PG_FUNCTION_ARGS);
 
-extern Datum before_temporal_periodset(PG_FUNCTION_ARGS);
-extern Datum overbefore_temporal_periodset(PG_FUNCTION_ARGS);
-extern Datum after_temporal_periodset(PG_FUNCTION_ARGS);
-extern Datum overafter_temporal_periodset(PG_FUNCTION_ARGS);
-
-extern Datum left_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum overleft_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum overright_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum right_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum before_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum overbefore_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum after_temporal_temporal(PG_FUNCTION_ARGS);

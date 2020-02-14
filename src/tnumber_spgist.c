@@ -64,9 +64,9 @@
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-----------------------------------------------------------------------------
@@ -356,10 +356,10 @@ spgist_tnumber_picksplit(PG_FUNCTION_ARGS)
 		highTs[i] = (double) box->tmax;
 	}
 
-	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 

@@ -3,15 +3,17 @@
  * tpoint.h
  *	  Functions for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
 #ifndef __TPOINT_H__
 #define __TPOINT_H__
+
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
@@ -98,15 +100,16 @@ extern Datum tpoint_in(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
-extern Datum tpoint_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
+
 extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
+
 extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_values_internal(Temporal *temp);
-
-extern bool tpointinst_ever_eq(TemporalInst *inst, GSERIALIZED *value);
 
 extern Datum tgeompointi_values(TemporalI *ti);
 extern Datum tgeogpointi_values(TemporalI *ti);
@@ -118,7 +121,6 @@ extern Datum tpoint_at_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_value(PG_FUNCTION_ARGS);
 extern Datum tpoint_at_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_values(PG_FUNCTION_ARGS);
-extern Datum tpoints_at_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

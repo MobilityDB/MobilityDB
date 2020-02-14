@@ -590,10 +590,10 @@ SELECT MAX(getValue(inst)) FROM tbl_tintinst;
   97
 (1 row)
 
-SELECT MAX(getValue(inst)) FROM tbl_tfloatinst;
-       max        
-------------------
- 99.5110547081567
+SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloatinst;
+   round   
+-----------
+ 99.511055
 (1 row)
 
 SELECT MAX(getValue(inst)) FROM tbl_ttextinst;
@@ -626,16 +626,16 @@ SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_ttext;
   54
 (1 row)
 
-SELECT MAX(upper(valueRange(temp))) FROM tbl_tint;
- max 
------
- 100
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tint;
+   round    
+------------
+ 100.000000
 (1 row)
 
-SELECT MAX(upper(valueRange(temp))) FROM tbl_tfloat;
-       max       
------------------
- 99.917602237314
+SELECT round(MAX(upper(valueRange(temp)))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.917602
 (1 row)
 
 SELECT DISTINCT startValue(temp) FROM tbl_tbool;
@@ -652,10 +652,10 @@ SELECT MAX(startValue(temp)) FROM tbl_tint;
   99
 (1 row)
 
-SELECT MAX(startValue(temp)) FROM tbl_tfloat;
-       max        
-------------------
- 99.3932684287429
+SELECT round(MAX(startValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
 (1 row)
 
 SELECT MAX(startValue(temp)) FROM tbl_ttext;
@@ -678,10 +678,10 @@ SELECT MAX(endValue(temp)) FROM tbl_tint;
   96
 (1 row)
 
-SELECT MAX(endValue(temp)) FROM tbl_tfloat;
-       max        
-------------------
- 99.3932684287429
+SELECT round(MAX(endValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
 (1 row)
 
 SELECT MAX(endValue(temp)) FROM tbl_ttext;
@@ -696,10 +696,10 @@ SELECT MAX(minValue(temp)) FROM tbl_tint;
   96
 (1 row)
 
-SELECT MAX(minValue(temp)) FROM tbl_tfloat;
-       max        
-------------------
- 99.3932684287429
+SELECT round(MAX(minValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.393268
 (1 row)
 
 SELECT MAX(minValue(temp)) FROM tbl_ttext;
@@ -714,10 +714,10 @@ SELECT MAX(maxValue(temp)) FROM tbl_tint;
   99
 (1 row)
 
-SELECT MAX(maxValue(temp)) FROM tbl_tfloat;
-       max       
------------------
- 99.917602237314
+SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
+   round   
+-----------
+ 99.917602
 (1 row)
 
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
@@ -1302,6 +1302,30 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_ttext;
   59
 (1 row)
 
+SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
+SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+ count 
+-------
+  9504
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tbool WHERE temp ?= startValue(temp);
  count 
 -------
@@ -1350,28 +1374,196 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %= t;
      1
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tbool, tbl_interval;
+SELECT COUNT(*) FROM tbl_tbool WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    62
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tint, tbl_interval;
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    64
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_tfloat, tbl_interval;
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    72
 (1 row)
 
-SELECT COUNT(shift(temp, i)) FROM tbl_ttext, tbl_interval;
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<> startValue(temp);
  count 
 -------
-  9504
+    64
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tbool WHERE temp %<> true;
+ count 
+-------
+    20
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<> i;
+ count 
+-------
+  8862
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<> f;
+ count 
+-------
+  6094
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<> t;
+ count 
+-------
+  9489
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?< startValue(temp);
+ count 
+-------
+    55
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?< startValue(temp);
+ count 
+-------
+    51
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?< startValue(temp);
+ count 
+-------
+    54
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %< i;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %< f;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %< t;
+ count 
+-------
+  2276
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?<= startValue(temp);
+ count 
+-------
+    93
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?<= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %<= i;
+ count 
+-------
+  2268
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %<= f;
+ count 
+-------
+  2196
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %<= t;
+ count 
+-------
+  2278
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?> startValue(temp);
+ count 
+-------
+    45
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?> startValue(temp);
+ count 
+-------
+    55
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?> startValue(temp);
+ count 
+-------
+    48
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %> i;
+ count 
+-------
+  2685
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %> f;
+ count 
+-------
+  2821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %> t;
+ count 
+-------
+  2968
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat WHERE temp ?>= startValue(temp);
+ count 
+-------
+    94
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext WHERE temp ?>= startValue(temp);
+ count 
+-------
+    96
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp %>= i;
+ count 
+-------
+  2784
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp %>= f;
+ count 
+-------
+  2821
+(1 row)
+
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp %>= t;
+ count 
+-------
+  2970
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool 
@@ -1974,28 +2166,28 @@ WHERE intersectsPeriodSet(temp, ps) IS NOT NULL;
   9504
 (1 row)
 
-SELECT sum(integral(temp)) FROM tbl_tint;
-      sum      
----------------
- 8155740000000
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tint;
+        round         
+----------------------
+ 8155740000000.000000
 (1 row)
 
-SELECT sum(integral(temp)) FROM tbl_tfloat;
-       sum        
-------------------
- 10401464944413.9
+SELECT round(sum(integral(temp))::numeric, 6) FROM tbl_tfloat;
+         round         
+-----------------------
+ 10401464944413.900000
 (1 row)
 
-SELECT sum(twAvg(temp)) FROM tbl_tint;
-       sum        
-------------------
- 4949.83480918998
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tint;
+    round    
+-------------
+ 4949.834809
 (1 row)
 
-SELECT sum(twAvg(temp)) FROM tbl_tfloat;
-       sum        
-------------------
- 5093.16648109912
+SELECT round(sum(twAvg(temp))::numeric, 6) FROM tbl_tfloat;
+    round    
+-------------
+ 5093.166481
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool t2

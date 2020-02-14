@@ -3,9 +3,9 @@
  * temporal_gist.c
  *	Quad-tree SP-GiST index for temporal boolean and temporal text types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -19,10 +19,6 @@
 /*****************************************************************************/
 
 extern Datum gist_temporal_consistent(PG_FUNCTION_ARGS);
-extern Datum gist_temporalinst_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporali_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporalseq_compress(PG_FUNCTION_ARGS);
-extern Datum gist_temporals_compress(PG_FUNCTION_ARGS);
 extern Datum gist_temporal_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/

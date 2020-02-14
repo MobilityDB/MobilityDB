@@ -4,9 +4,9 @@
  *	Quad-tree SP-GiST index for time types.
  *
  * These functions are based on those in the file rangetypes_spgist.c.
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-----------------------------------------------------------------------------
@@ -163,8 +163,8 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 		period_deserialize(DatumGetPeriod(in->datums[i]),
 						  &lowerBounds[i], &upperBounds[i]);
 
-	qsort(lowerBounds, in->nTuples, sizeof(PeriodBound), period_bound_cmp);
-	qsort(upperBounds, in->nTuples, sizeof(PeriodBound), period_bound_cmp);
+	qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
+	qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
 
 	median = in->nTuples / 2;
 

@@ -26,7 +26,7 @@
  </inlinemediaobject>
 ">
 
-		]>
+]>
 <book lang="en">
 	<bookinfo>
 		<title>MobilityDB Manual</title>
@@ -39,9 +39,9 @@
 			</affiliation>
 		</author>
 
-		<pubdate>18.11.2019</pubdate>
+		<pubdate>07.01.2020</pubdate>
 		<abstract>
-			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>.</para>
+			<para>MobilityDB is an extension to the PostgreSQL object-relational database system and its spatial extension PostGIS. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/ULB-CoDE-WIT/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/ULB-CoDE-WIT/python-mobilityDB">Github</ulink>.</para>
 
 			<para>
 				<inlinemediaobject>
@@ -172,7 +172,7 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 				<programlisting>
 {timestampset, period, periodset} @&gt; time
 				</programlisting>
-			Furthermore, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
+			In the following, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
 			</para>
 
 			<sect2>
@@ -306,7 +306,7 @@ SELECT numTimestamps(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-
 					</listitem>
 
 					<listitem>
-						<para><varname>startTimestamp</varname>: Start timestamp</para>
+						<para>Start timestamp</para>
 						<para><varname>startTimestamp({timestampset, periodset}): timestamptz</varname></para>
 						<programlisting>
 SELECT startTimestamp(periodset '{[2012-01-01, 2012-01-03), (2012-01-03, 2012-01-05)}');
@@ -1175,6 +1175,14 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 			</listitem>
 
 			<listitem>
+				<para><varname>tdiscseq</varname> represents any temporal type with sequence duration and a discrete base type,</para>
+			</listitem>
+
+			<listitem>
+				<para><varname>tcontseq</varname> represents any temporal type with sequence duration and a continuous base type,</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>ttypes</varname> represents any temporal type with sequence set duration,</para>
 			</listitem>
 
@@ -1224,28 +1232,28 @@ SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:
 			</programlisting>
 		</para>
 			
-		<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying, respectively, the <varname>?=</varname> (ever equals) or <varname>%=</varname> (always equals) operators to the temporal value obtained from the corresponding temporal operation. Examples of the ever equals and always equals operators are given next.
+		<para>Another common requirement is to determine whether the operands ever or always satisfy a condition with respect to an operation. These can be obtained by applying the ever/always comparison operators. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Examples of ever and always comparison operators are given next.
 			<programlisting>
--- Is the left operand ever less than the right one ?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
--- true
 -- Does the operands ever intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 	geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
--- true
--- Is the left operand always less than the right one ?
-SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
-	tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
 -- Does the operands always intersect?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
 	geometry 'Polygon((0 0,0 2,4 2,4 0,0 0))') %= true;
 -- true
-				</programlisting>
-			For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.</para>
+-- Is the left operand ever less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+	tfloat '[3@2001-01-01, 1@2001-01-03)') ?= true;
+-- true
+-- Is the left operand always less than the right one ?
+SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
+	tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
+-- true
+			</programlisting>
+		For efficiency reasons, some common operations with the ever or the always semantics are natively provided. For example, the <varname>intersects</varname> function determines whether there is an instant at which the two arguments spatially intersect.</para>
 
-			<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
+		<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
 
 		<sect1 id ="input_output_temporal_tyes">
 			<title>Input/Output of Temporal Types</title>
@@ -1466,7 +1474,7 @@ SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
 	Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 
 	tgeompoint 'Point(1 1 1)@2000-01-06'));
 -- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02], 
-    [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+	[POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
 				</programlisting>
 				</listitem>
 
@@ -1522,7 +1530,8 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			<itemizedlist>
 				<listitem>
 					<para>Constructor for temporal types of sequence duration</para>
-					<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
+					<para><varname>tdiscseq(ttypeinst[], boolean = true, boolean = true}): tdiscseq</varname></para>
+					<para><varname>tcontseq(ttypeinst[], boolean = true, boolean = true, linear = true}): tcontseq</varname></para>
 					<programlisting>
 SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
 	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -1701,10 +1710,19 @@ SELECT valueRange(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 
 				<listitem>
 					<para>Time</para>
+					<para><varname>getTimestamp(ttypeinst): timestamptz</varname></para>
+					<programlisting>
+SELECT getTimestamp(tint '1@2012-01-01');
+-- "2012-01-01"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Time</para>
 					<para><varname>getTime(ttype): periodset</varname></para>
 					<programlisting>
 SELECT getTime(tint '[1@2012-01-01, 1@2012-01-15)');
--- "{[2012-01-01 ,2012-01-15)}"
+-- "{[2012-01-01, 2012-01-15)}"
 					</programlisting>
 				</listitem>
 
@@ -1941,7 +1959,7 @@ SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)
 
 		<sect1>
 			<title>Spatial Functions</title>
-			<para>In the following functions we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
+			<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
 			<itemizedlist>
 				<listitem>
@@ -1956,7 +1974,7 @@ SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
 				</listitem>
 
 				<listitem>
-					<para>Extended Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
+					<para>Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
 					<para><varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
 					<programlisting>
 SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
@@ -2001,7 +2019,7 @@ SELECT asBinary(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem>
-					<para>Extended Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
 					<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
 					<programlisting>
 SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
@@ -2010,7 +2028,7 @@ SELECT asEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
 				</listitem>
 
 				<listitem>
-					<para>Hexadecimal Extended Well-Known Binary (WKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
+					<para>Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding. If no encoding is specified, then NDR is used. &Z_support; &geography_support;</para>
 					<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
 					<programlisting>
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 2 3)@2012-01-01');
@@ -2030,7 +2048,7 @@ SELECT asEWKT(fromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
 				</listitem>
 
 				<listitem>
-					<para>Input temporal point from Extended Well-Known Binary (WKB) representation. &Z_support; &geography_support;</para>
+					<para>Input temporal point from Extended Well-Known Binary (EWKB) representation. &Z_support; &geography_support;</para>
 					<para><varname>fromEWKB(bytea): tpoint</varname></para>
 					<programlisting>
 SELECT asEWKT(fromEWKB(bytea 
@@ -2122,7 +2140,7 @@ SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000
 				</listitem>
 
 				<listitem>
-					<para>Construct the bounding box from a geometry/geography and a timestap or a period &Z_support; &geography_support;</para>
+					<para>Construct the bounding box from a geometry/geography and a timestamp or a period &Z_support; &geography_support;</para>
 					<para><varname>stbox(geo, {timestamp, period}): stbox</varname></para>
 					<programlisting>
 SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, 2012-01-05]');
@@ -2646,21 +2664,6 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ?=
 				</listitem>
 
 				<listitem>
-					<para>Is always equal to the value?</para>
-					<para><varname>ttype %= base: bool</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
--- true
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
--- true
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
-	geometry 'Point(1 1)';
--- true
-					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				</listitem>
-
-				<listitem>
 					<para>Is ever different from the value?</para>
 					<para><varname>ttype ?&lt;&gt; base: bool</varname></para>
 					<programlisting>
@@ -2669,20 +2672,6 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?&lt;&gt; 2;
 SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' ?&lt;&gt; 2;
 -- true
 SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' ?&lt;&gt; 
-	geometry 'Point(1 1)';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Is always different to the value?</para>
-					<para><varname>ttype @&lt;&gt; base: bool</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' @&lt;&gt; 2;
--- false
-SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' @&lt;&gt; 2;
--- true
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' @&lt;&gt;
 	geometry 'Point(1 1)';
 -- true
 					</programlisting>
@@ -2724,6 +2713,35 @@ SELECT tint '[1@2012-01-01, 1@2012-01-05)' ?&lt;= tfloat '{2@2012-01-03, 3@2012-
 SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03), 
 	[BBB@2012-01-04, BBB@2012-01-05)}';
 -- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is always equal to the value?</para>
+					<para><varname>ttype %= base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
+-- true
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
+-- true
+SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %= 
+	geometry 'Point(1 1)';
+-- true
+					</programlisting>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+				</listitem>
+
+				<listitem>
+					<para>Is always different to the value?</para>
+					<para><varname>ttype @&lt;&gt; base: bool</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %&lt;&gt; 2;
+-- false
+SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' %&lt;&gt; 2;
+-- true
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' %&lt;&gt;
+	geometry 'Point(1 1)';
+-- true
 					</programlisting>
 				</listitem>
 
@@ -2889,11 +2907,16 @@ SELECT tfloat '[1@2012-01-01, 3@2012-01-03)' * '[3@2012-01-01, 1@2012-01-03)'
 				<listitem>
 					<para>Division</para>
 					<para><varname>{number, tnumber} / {number, tnumber}: tnumber</varname></para>
+					<para>The function will raise an error if the denominator will ever be equal to zero during the common timespan of the arguments.</para>
 					<programlisting>
 SELECT 2 / tfloat '[1@2012-01-01, 3@2012-01-04)';
 -- "[2@2012-01-01, 1@2012-01-02 12:00:00+00, 0.666666666666667@2012-01-04)"
 SELECT tfloat '[1@2012-01-01, 5@2012-01-05)' / '[5@2012-01-01, 1@2012-01-05)'
 -- "{[0.2@2012-01-01, 1@2012-01-03,2012-01-03, 5@2012-01-03,2012-01-05)}"
+select 2 / tfloat '[-1@2000-01-01, 1@2000-01-02]'
+-- ERROR:  Division by zero
+select tfloat '[-1@2000-01-04, 1@2000-01-05]' / tfloat '[-1@2000-01-01, 1@2000-01-05]'
+-- "[-2@2000-01-04, 1@2000-01-05]"
 					</programlisting>
 				</listitem>
 
@@ -3236,7 +3259,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 				<listitem>
 					<para>Does the bounding boxes overlap?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} &amp;&amp;</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' &amp;&amp; 3;
 -- true
@@ -3250,7 +3273,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&amp; tint '[2@2012-01-03, 2@201
 				<listitem>
 					<para>Does the first bounding box contains the second one?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} @&gt;</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' @&gt; timestamptz '2012-01-03';
 -- true
@@ -3264,7 +3287,7 @@ SELECT ttext '[A@2012-01-01, B@2012-01-06]' @&gt; ttext '[C@2012-01-03, D@2012-0
 				<listitem>
 					<para>Is the first bounding box contained in the second one?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} &lt;@</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@
 	box(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
@@ -3279,7 +3302,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-0
 				<listitem>
 					<para>Are the bounding boxes equal?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} ~=</varname></para>
-					<para><varname>    {base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  
 	tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
@@ -3594,7 +3617,7 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 						</programlisting>
 					</listitem>
 				</itemizedlist>
-			</sect2>       
+			</sect2>
 
 			<sect2>
 				<title>Temporal Spatial Relationships</title>
@@ -3611,7 +3634,7 @@ SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 					</listitem>
 
 					<listitem>
-						<para>Temporal covers</para>
+						<para>Temporal covers &geography_support;</para>
 						<para><varname>tcovers({geo, tpoint}, {geo, tpoint}): tbool</varname></para>
 						<programlisting>
 SELECT tcovers(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
@@ -3621,7 +3644,7 @@ SELECT tcovers(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 					</listitem>
 
 					<listitem>
-						<para>Temporal covered by</para>
+						<para>Temporal covered by &geography_support;</para>
 						<para><varname>tcoveredby({geo, tpoint}, {geo, tpoint}): tbool</varname></para>
 						<programlisting>
 SELECT tcoveredby(tgeompoint '[Point(1 1)@2012-01-02, Point(3 3)@2012-01-04)',
@@ -3651,7 +3674,7 @@ SELECT tequals(geometry 'Point(1 1)',
 					</listitem>
 
 					<listitem>
-						<para>Temporal intersects &Z_support;</para>
+						<para>Temporal intersects &Z_support; &geography_support;</para>
 					<para><varname>tintersects({geo, tpoint}, {geo, tpoint}): tbool</varname></para>
 						<programlisting>
 SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
@@ -3682,12 +3705,15 @@ SELECT twithin(geometry 'Point(1 1)',
 					</listitem>
 
 					<listitem>
-						<para>Temporal distance within</para>
+						<para>Temporal distance within &Z_support; &geography_support;</para>
 						<para><varname>tdwithin({geo, tpoint}, {geo, tpoint}, double): tbool</varname></para>
 						<programlisting>
 SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);
 -- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04)}"
+SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]', 
+	tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
+-- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}"
 						</programlisting>
 					</listitem>
 
@@ -4115,10 +4141,10 @@ docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/post
 				In the above commands
 				<itemizedlist>
 					<listitem><para><varname>docker pull</varname> downloads the Docker image of <varname>mobilitydb</varname>. If the image has been downloaded before, this checks whether a more recent image has been published in the docker repository, and downloads it. It is better to call this command every time, to ensures that you have the latest most up-to-date version of this image.</para></listitem>
-                                        
+
 					<listitem><para><varname>docker volume create mobilitydb_data</varname> creates a volume container on the host, that we will use to persist the PostgreSQL database files outside of the MobilityDB container. You need to run this command only once, during the first use of the image</para>
 					</listitem>
-                                        
+
 					<listitem><para><varname>docker run --name=mobilitydb</varname> tells Docker our new container will be named <varname>mobilitydb</varname>.</para></listitem>
 
 					<listitem><para><varname>-d</varname> runs the container in the background (detached mode).</para></listitem>
@@ -4128,7 +4154,7 @@ docker run --name "mobilitydb" -d -p 25432:5432 -v mobilitydb_data:/var/lib/post
 
 					<listitem><para><varname>-v mobilitydb_data:/var/lib/postgresql</varname> tells the container filesystem to mount the <varname>mobilitydb_data</varname> volume that we have just created to the path /var/lib/postgresql. This means that any database objects that the container saves or creates (by default in <varname>/var/lib/postgresql</varname>) will instead be persisted in the <varname>mobilitydb_data</varname> directory, which is stored in the host. This options ensures that your data will not be lost when the container is removed. </para>
 					</listitem>
-                                        
+
 					<listitem><para><varname>codewit/mobilitydb</varname> tells Docker to pull the docker image with that name from Docker Hub.</para>
 					</listitem>
 				</itemizedlist>
@@ -4149,20 +4175,24 @@ docker exec -t -i mobilitydb psql -h localhost -p 5432 -d mobilitydb -U docker
 			</para>
 
 			<para>
-			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to know the IP address used by docker container with the following command.
-				<programlisting>
-docker-machine ip
-192.168.99.101
-				</programlisting>
-
-				Notice that the address obtained in your computer may be different from the one above. Use this as the host address, and 5432 as the port in the pgAdmin connection configurations. the remaining configurations remain the same as in the first option.   
+			In order to launch <varname>pgAdmin</varname>, there are two options to create a connection. The first option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port is 25432. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. 
 			</para>
 
-			<figure id="pgAdmin" float="1"><title>Configuration of a connection to the docker image in pgAdmin.</title>
+			<figure id="pgAdmin" float="start"><title>Configuration of a connection to the docker image in pgAdmin.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='50' fileref='images/pgAdmin.png' /></imageobject>
 				</mediaobject>
 			</figure>
+
+			<para>
+			The second option is to know the IP address used by docker container with the following command.
+				<programlisting>
+docker-machine ip
+192.168.99.101
+				</programlisting>
+				Notice that the address obtained in your computer may be different from the one above. Now we can launch <varname>pgAdmin</varname> and establish a new connection to the docker container. This is done as shown in <xref linkend="pgAdmin" />. The second option is to set the host to the localhost (127.0.0.1), and the port to the mapped one on the host, as per the <varname>docker run</varname> command. In this example the port would be 25432.
+			</para>
+
 			<para>
 			Now you can use pgAdmin to query the mobilitydb database, as will be further explained in the following sections. Here are few more docker commands that you will eventually need:
 			<programlisting>
@@ -4402,8 +4432,8 @@ DECLARE
 BEGIN
 	IF NOT EXISTS
 		(SELECT 1
-		 FROM   information_schema.tables 
-		 WHERE  table_name = lower(TableName)) 
+		 FROM information_schema.tables 
+		 WHERE table_name = lower(TableName)) 
 	THEN
 		RAISE EXCEPTION 'Table % does not exist', TableName;
 	END IF;
@@ -4416,7 +4446,7 @@ BEGIN
 		PartitionName = TableName || '_' || to_char(d, 'YYYY_MM_DD');
 		IF NOT EXISTS
 			(SELECT 1
-			 FROM   information_schema.tables 
+			 FROM information_schema.tables 
 			 WHERE  table_name = lower(PartitionName))
 		THEN
 			EXECUTE format('CREATE TABLE %s PARTITION OF %s FOR VALUES IN (''%s'');', 
@@ -4537,7 +4567,7 @@ SELECT extent(Trip) from Trips
 				</programlisting>
 			</para>
 
-			<figure id="berlinmod_trips" float="1"><title>Visualization of the trajectories of the trips in QGIS.</title>
+			<figure id="berlinmod_trips" float="start"><title>Visualization of the trajectories of the trips in QGIS.</title>
 				<mediaobject>
 					<imageobject><imagedata scalefit="1" fileref='images/berlinmod_trips.png' /></imageobject>
 				</mediaobject>
@@ -4602,7 +4632,7 @@ FROM histogram;
 				The result of the above query is given in <xref linkend="histogram_length" />. 
 			</para>
 
-			<figure id="histogram_length" float="1"><title>Result of the query building an histogram of trip lengths.</title>
+			<figure id="histogram_length" float="start"><title>Result of the query building an histogram of trip lengths.</title>
 				<mediaobject>
 					<imageobject><imagedata scale='80' fileref='images/histogram_length.png' /></imageobject>
 				</mediaobject>
@@ -4799,7 +4829,7 @@ ORDER BY T1.CarId, T2.CarId, Position;
 						</programlisting>
 						<para>The query performs for each pair of trips <varname>T1</varname> and <varname>T2</varname> of distinct cars a bounding box comparison with the <varname>&amp;&amp;</varname> operator using the spatio-temporal index on the <varname>Trips</varname> table, where the bounding box of <varname>T2</varname> is expanded by 10 m. Then, the <varname>period</varname> expression computes the periods during which the cars were within 10 m. from each other and the <varname>atPeriodSet</varname> function projects the trips to those periods. Notice that the expression <varname>tdwithin(T1.Trip, T2.Trip, 10.0)</varname> is conceptually equivalent to <varname>dwithin(T1.Trip, T2.Trip) #&lt;= 10.0</varname>. However, in this case the spatio-temporal index cannot be used for filtering values.</para>
 					</listitem>
-				</orderedlist>            
+				</orderedlist>
 			</sect2>
 
 			<sect2>
@@ -4915,699 +4945,6 @@ WHERE S1.SumDist &lt;= ALL (
 					</listitem>
 				</orderedlist>
 			</sect2>
-		</sect1>
-	</chapter>
-
-	<chapter id ="importing">
-		<title>Importing Data in MobilityDB</title>
-		<para>In this chapter, we show how to import mobility data of various format into MobilityDB. In particular, we describe how to import General Transit Feed Specification (GTFS), Google Location History, and GPX data.</para>
-
-		<sect1 id ="loading_gtfs">
-			<title>Loading GTFS Data</title>
-				<para>The General Transit Feed Specification (GTFS) defines a common format for public transportation schedules and associated geographic information. GTFS-realtime is used to specify real-time transit data. Many transportation agencies around the world publish their data in GTFS and GTFS-realtime format and make them publicly available. A well-known repository containing such data is  <ulink url="https://transitfeeds.com">OpenMobilityData</ulink>.</para>
-
-				<para>In this section, we illustrate how to load GTFS data in MobilityDB. For this, we first need to import the GTFS data into PostgreSQL and then transform this data so that it can be loaded into MobilityDB. The data used in this tutorial is obtained from <ulink url="https://www.stib-mivb.be">STIB-MIVB</ulink>, the Brussels public transportation company and is available as a <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file. You must be aware that GTFS data is typically of big size. In order to reduce the size of the dataset, this file only contains schedules for one week and five transportation lines, whereas typical GTFS data published by STIB-MIVB contains schedules for one month and 99 transportation lines. In the reduced dataset used in this tutorial the final table containing the GTFS data in MobilityDB format has almost 10,000 trips and its size is 241 MB. Furtheremore, we need several temporary tables to transform GTFS format into MobilityDB and these tables are also big, the largest one has almost 6 million rows and its size is 621 MB.</para>
-
-				<para>Several tools can be used to import GTFS data into PostgreSQL. For example, one publicly available in Github can be found <ulink url="https://github.com/fitnr/gtfs-sql-importer">here</ulink>. These tools load GTFS data into PostgreSQL tables, allowing one to perform multiple imports of data provided by the same agency covering different time frames, perform various complex tasks including data validation, and take into account variations of the format provided by different agencies, updates of route information among multiple imports, etc. For the purpose of this tutorial we do a simple import and transformation using only SQL. This is enough for loading the data set we are using but a much more robust solution should be used in an operational environment, if only for coping with the considerable size of typical GTFS data, which would require parallelization of this task.</para>
-
-			<sect2>
-				<title>Loading GTFS Data in PostgreSQL</title>
-
-				<para>The <ulink url="https://docs.mobilitydb.com/data/gtfs_data.zip">ZIP</ulink> file with the data for this tutorial contains a set of CSV files (with extension <varname>.txt</varname>) as follows:
-					<itemizedlist>
-						<listitem>
-							<para><varname>agency.txt</varname> contains the description of the transportation agencies provinding the services (a single one in our case).</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>calendar.txt</varname> contains service patterns that operate recurrently such as, for example, every weekday.</para>
-						</listitem>
-
-						<listitem>
-							<para><varname>calendar_dates.txt</varname> define exceptions to the default service patterns defined in <varname>calendar.txt</varname>. There are two types of exceptions: 1 means that the service has been added for the specified date, and 2 means that the service has been removed for the specified date.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>route_types.txt</varname> contains transportation types used on routes, such as bus, metro, tramway, etc.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>routes.txt</varname> contains transit routes. A route is a group of trips that are displayed to riders as a single service.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>shapes.txt</varname> contains the vehicle travel paths, which are used to generate the corresponding geometry.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>stop_times.txt</varname> contains times at which a vehicle arrives at and departs from stops for each trip.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>translations.txt</varname> contains the translation of the route information in French and Dutch. This file is not used in this tutorial.</para>
-						</listitem>
-						
-						<listitem>
-							<para><varname>trips.txt</varname> contains trips for each route. A trip is a sequence of two or more stops that occur during a specific time period.</para>
-						</listitem>
-						
-					</itemizedlist>
-				</para>
-
-				<para>
-				We decompress the file with the data into a directory. This can be done using the command. 
-					<programlisting>
-unzip gtfs_data.zip
-					</programlisting>
-				We suppose in the following that the directory used is as follows <varname>/home/gtfs_tutorial/</varname>.
-				</para>
-
-				<para>We create the tables to be loaded with the data in the CSV files as follows.
-					<programlisting>
-CREATE TABLE agency (
-  agency_id text DEFAULT '',
-  agency_name text DEFAULT NULL,
-  agency_url text DEFAULT NULL,
-  agency_timezone text DEFAULT NULL,
-  agency_lang text DEFAULT NULL,
-  agency_phone text DEFAULT NULL,
-  CONSTRAINT agency_pkey PRIMARY KEY (agency_id)
-);
-
-CREATE TABLE calendar (
-  service_id text,
-  monday int NOT NULL,
-  tuesday int NOT NULL,
-  wednesday int NOT NULL,
-  thursday int NOT NULL,
-  friday int NOT NULL,
-  saturday int NOT NULL,
-  sunday int NOT NULL,
-  start_date date NOT NULL,
-  end_date date NOT NULL,
-  CONSTRAINT calendar_pkey PRIMARY KEY (service_id)
-);
-CREATE INDEX calendar_service_id ON calendar (service_id);
-
-CREATE TABLE exception_types (
-  exception_type int PRIMARY KEY,
-  description text
-);
-
-CREATE TABLE calendar_dates (
-  service_id text,
-  date date NOT NULL,
-  exception_type int REFERENCES exception_types(exception_type)
-);
-CREATE INDEX calendar_dates_dateidx ON calendar_dates (date);
-
-CREATE TABLE route_types (
-  route_type int PRIMARY KEY,
-  description text
-);
-
-CREATE TABLE routes (
-  route_id text,
-  route_short_name text DEFAULT '',
-  route_long_name text DEFAULT '',
-  route_desc text DEFAULT '',
-  route_type int REFERENCES route_types(route_type),
-  route_url text,
-  route_color text,
-  route_text_color text,
-  CONSTRAINT routes_pkey PRIMARY KEY (route_id)
-);
-
-CREATE TABLE shapes (
-  shape_id text NOT NULL,
-  shape_pt_lat double precision NOT NULL,
-  shape_pt_lon double precision NOT NULL,
-  shape_pt_sequence int NOT NULL
-);
-CREATE INDEX shapes_shape_key ON shapes (shape_id);
-
--- Create a table to store the shape geometries
-CREATE TABLE shape_geoms (
-  shape_id text NOT NULL,
-  shape_geom geometry('LINESTRING', 4326),
-  CONSTRAINT shape_geom_pkey PRIMARY KEY (shape_id)
-);
-CREATE INDEX shape_geoms_key ON shapes (shape_id);
-
-CREATE TABLE location_types (
-  location_type int PRIMARY KEY,
-  description text
-);
-
-CREATE TABLE stops (
-  stop_id text,
-  stop_code text,
-  stop_name text DEFAULT NULL,
-  stop_desc text DEFAULT NULL,
-  stop_lat double precision,
-  stop_lon double precision,
-  zone_id text,
-  stop_url text,
-  location_type integer  REFERENCES location_types(location_type),
-  parent_station integer,
-  stop_geom geometry('POINT', 4326),
-  platform_code text DEFAULT NULL,
-  CONSTRAINT stops_pkey PRIMARY KEY (stop_id)
-);
-
-CREATE TABLE pickup_dropoff_types (
-  type_id int PRIMARY KEY,
-  description text
-);
-
-CREATE TABLE stop_times (
-  trip_id text NOT NULL,
-  -- Check that casting to time interval works.
-  arrival_time interval CHECK (arrival_time::interval = arrival_time::interval),
-  departure_time interval CHECK (departure_time::interval = departure_time::interval),
-  stop_id text,
-  stop_sequence int NOT NULL,
-  pickup_type int REFERENCES pickup_dropoff_types(type_id),
-  drop_off_type int REFERENCES pickup_dropoff_types(type_id),
-  CONSTRAINT stop_times_pkey PRIMARY KEY (trip_id, stop_sequence)
-);
-CREATE INDEX stop_times_key ON stop_times (trip_id, stop_id);
-CREATE INDEX arr_time_index ON stop_times (arrival_time);
-CREATE INDEX dep_time_index ON stop_times (departure_time);
-
-CREATE TABLE trips (
-  route_id text NOT NULL,
-  service_id text NOT NULL,
-  trip_id text NOT NULL,
-  trip_headsign text,
-  direction_id int,
-  block_id text,
-  shape_id text,
-  CONSTRAINT trips_pkey PRIMARY KEY (trip_id)
-);
-CREATE INDEX trips_trip_id ON trips (trip_id);
-
-INSERT INTO exception_types (exception_type, description) VALUES 
-  (1, 'service has been added'),
-  (2, 'service has been removed');
-
-INSERT INTO location_types(location_type, description) VALUES 
-  (0,'stop'),
-  (1,'station'),
-  (2,'station entrance');
-
-INSERT INTO pickup_dropoff_types (type_id, description) VALUES
-  (0,'Regularly Scheduled'),
-  (1,'Not available'),
-  (2,'Phone arrangement only'),
-  (3,'Driver arrangement only');
-					</programlisting>
-				We created one table for each CSV file. In addition, we created a table <varname>shape_geoms</varname> in order to assemble all segments composing a route into a single geometry and auxiliary tables <varname>exception_types</varname>, <varname>location_types</varname>, and <varname>pickup_dropoff_types</varname> containing acceptable values for some columns in the CSV files.
-				</para>
-
-				<para>
-				We can load the CSV files into the corresponding tables as follows.
-					<programlisting>
-COPY calendar(service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,
-	start_date,end_date) FROM '/home/gtfs_tutorial/calendar.txt' DELIMITER ',' CSV HEADER;
-COPY calendar_dates(service_id,date,exception_type) 
-	FROM '/home/gtfs_tutorial/calendar_dates.txt' DELIMITER ',' CSV HEADER;
-COPY stop_times(trip_id,arrival_time,departure_time,stop_id,stop_sequence,
-	pickup_type,drop_off_type) FROM '/home/gtfs_tutorial/stop_times.txt' DELIMITER ',' 
-	CSV HEADER;
-COPY trips(route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id) 
-	FROM '/home/gtfs_tutorial/trips.txt' DELIMITER ',' CSV HEADER;
-COPY agency(agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone)
-	FROM '/home/gtfs_tutorial/agency.txt' DELIMITER ',' CSV HEADER;
-COPY route_types(route_type,description)
-	FROM '/home/gtfs_tutorial/route_types.txt' DELIMITER ',' CSV HEADER;
-COPY routes(route_id,route_short_name,route_long_name,route_desc,route_type,route_url,
-	route_color,route_text_color) FROM '/home/gtfs_tutorial/routes.txt' DELIMITER ',' 
-	CSV HEADER;
-COPY shapes(shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence)
-	FROM '/home/gtfs_tutorial/shapes.txt' DELIMITER ',' CSV HEADER;
-COPY stops(stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,
-	location_type,parent_station) FROM '/home/gtfs_tutorial/stops.txt' DELIMITER ',' 
-	CSV HEADER;
-					</programlisting>
-				Finally, we create the geometries for routes and stops as follows.
-					<programlisting>
-INSERT INTO shape_geoms 
-SELECT shape_id, ST_MakeLine(array_agg(
-	ST_SetSRID(ST_MakePoint(shape_pt_lon, shape_pt_lat),4326) ORDER BY shape_pt_sequence))
-FROM shapes
-GROUP BY shape_id;
-
-UPDATE stops
-SET stop_geom = ST_SetSRID(ST_MakePoint(stop_lon, stop_lat),4326);
-					</programlisting>
-					The visualization of the routes and stops in QGIS is given in <xref linkend="stib" />. In the figure, red lines correspond to the trajectories of vehicles, while orange points correspond to the location of stops.
-				</para>
-
-				<figure id="stib" float="1"><title>Visualization of the routes and stops for the GTFS data from Brussels.</title>
-					<mediaobject>
-						<imageobject><imagedata scale='35' fileref='images/stib.png' /></imageobject>
-					</mediaobject>
-				</figure>
-			</sect2>
-
-			<sect2>
-				<title>Transforming GTFS Data for MobilityDB</title>
-				<para>
-				We start by creating a table that contains couples of <varname>service_id</varname> and <varname>date</varname> defining the dates at which a  service is provided.
-					<programlisting>
-DROP TABLE IF EXISTS service_dates;
-CREATE TABLE service_dates AS (
-	SELECT service_id, date_trunc('day', d)::date AS date 
-	FROM calendar c, generate_series(start_date, end_date, '1 day'::interval) AS d
-	WHERE (
-		(monday = 1 AND extract(isodow FROM d) = 1) OR
-		(tuesday = 1 AND extract(isodow FROM d) = 2) OR
-		(wednesday = 1 AND extract(isodow FROM d) = 3) OR
-		(thursday = 1 AND extract(isodow FROM d) = 4) OR
-		(friday = 1 AND extract(isodow FROM d) = 5) OR
-		(saturday = 1 AND extract(isodow FROM d) = 6) OR
-		(sunday = 1 AND extract(isodow FROM d) = 7) 
-	)
-	EXCEPT
-	SELECT service_id, date 
-	FROM calendar_dates WHERE exception_type = 2
-	UNION
-	SELECT c.service_id, date
-	FROM calendar c JOIN calendar_dates d ON c.service_id = d.service_id 
-	WHERE exception_type = 1 AND start_date &lt;= date AND date &lt;= end_date
-);
-					</programlisting>
-				This table transforms the service patterns in the <varname>calendar</varname> table valid between a <varname>start_date</varname> and an <varname>end_date</varname> taking into account the week days, and then remove the exceptions of type 2 and add the exceptions of type 1 that are specified in table <varname>calendar_dates</varname>.
-				</para>
-
-				<para>
-				We now create a table <varname>trip_stops</varname> that determines the stops for each trip.
-					<programlisting>
-DROP TABLE IF EXISTS trip_stops;
-CREATE TABLE trip_stops
-(
-  trip_id text,
-  stop_sequence integer,
-  no_stops integer,
-  route_id text,
-  service_id text,
-  shape_id text,
-  stop_id text,
-  arrival_time interval,
-  perc float
-);
-
-INSERT INTO trip_stops (trip_id, stop_sequence, no_stops, route_id, service_id,
-	shape_id, stop_id, arrival_time)
-SELECT t.trip_id, stop_sequence, MAX(stop_sequence) OVER (PARTITION BY t.trip_id),
-	route_id, service_id, shape_id, stop_id, arrival_time
-FROM trips t JOIN stop_times s ON t.trip_id = s.trip_id;
-
-UPDATE trip_stops t
-SET perc = CASE 
-	WHEN stop_sequence =  1 then 0.0 
-	WHEN stop_sequence =  no_stops then 1.0
-	ELSE ST_LineLocatePoint(g.the_geom, s.the_geom)
-END
-FROM shape_geoms g, stops s
-WHERE t.shape_id = g.shape_id AND t.stop_id = s.stop_id;
-					</programlisting>
-				We perform a join between <varname>trips</varname> and <varname>stop_times</varname> and determines the number of stops in a trip. Then, we compute the relative location of a stop within a trip using the function <varname>ST_LineLocatePoint</varname>.
-				</para>
-
-				<para>
-				We now create a table <varname>trip_segs</varname> that defines the segments between two consecutive stops of a trip.
-					<programlisting>
-DROP TABLE IF EXISTS trip_segs;
-CREATE TABLE trip_segs (
-	trip_id text,
-	route_id text, 
-	service_id text, 
-	stop1_sequence integer, 
-	stop2_sequence integer,
-	no_stops integer,
-	shape_id text, 
-	stop1_arrival_time interval,
-	stop2_arrival_time interval,
-	perc1 float,
-	perc2 float,
-	seg_geom geometry,
-	seg_length float,
-	no_points integer,
-	PRIMARY KEY (trip_id, stop1_sequence)
-);
-
-INSERT INTO trip_segs (trip_id, route_id, service_id, stop1_sequence, stop2_sequence,	
-	no_stops, shape_id, stop1_arrival_time, stop2_arrival_time, perc1, perc2)
-WITH temp AS (
-	SELECT trip_id, route_id, service_id, stop_sequence, 
-		LEAD(stop_sequence) OVER w AS stop_sequence2,
-		MAX(stop_sequence) OVER (PARTITION BY trip_id),
-		shape_id, arrival_time, LEAD(arrival_time) OVER w, perc, LEAD(perc) OVER w
-	FROM trip_stops WINDOW w AS (PARTITION BY trip_id ORDER BY stop_sequence)
-)
-SELECT * FROM temp WHERE stop_sequence2 IS NOT null;
-
-UPDATE trip_segs t
-SET seg_geom = ST_LineSubstring(g.the_geom, perc1, perc2)
-FROM shape_geoms g
-WHERE t.shape_id = g.shape_id;
-
-UPDATE trip_segs
-SET seg_length = ST_Length(seg_geom), no_points = ST_NumPoints(seg_geom);
-					</programlisting>
-				We use twice the <varname>LEAD</varname> window function for obtaning the next stop and the next percentage of a given stop and the <varname>MAX</varname> window function for obtaining the total number of stops in a trip. Then, we generate the geometry of the segment betwen two stops using the function <varname>ST_LineSubstring</varname> and compute the length and the number of points in the segment with functions <varname>ST_Length</varname> and <varname>ST_NumPoints</varname>.
-				</para>
-
-				<para>
-				The geometry of a segment is a linestring containing multiple points. From the previous table we know at which time the trip arrived at the first point and at the last point of the segment. To determine at which time the trip arrived at the intermediate points of the segments, we create a table <varname>trip_points</varname> that contains all the points composing the geometry of a segment.
-					<programlisting>
-DROP TABLE IF EXISTS trip_points;
-CREATE TABLE trip_points (
-	trip_id text, 
-	route_id text,
-	service_id text, 
-	stop1_sequence integer, 
-	point_sequence integer,
-	point_geom geometry,
-	point_arrival_time interval,
-	PRIMARY KEY (trip_id, stop1_sequence, point_sequence)
-);
-
-INSERT INTO trip_points (trip_id, route_id, service_id, stop1_sequence, 
-	point_sequence, point_geom, point_arrival_time)
-WITH temp1 AS (	
-	SELECT trip_id, route_id, service_id, stop1_sequence, stop2_sequence, 
-		no_stops, stop1_arrival_time, stop2_arrival_time, seg_length, 
-		(dp).path[1] AS point_sequence, no_points, (dp).geom as point_geom
-	FROM trip_segs, ST_DumpPoints(seg_geom) AS dp
-),
-temp2 AS (
-	SELECT trip_id, route_id, service_id, stop1_sequence, stop1_arrival_time, 
-		stop2_arrival_time, seg_length, point_sequence, no_points, point_geom
-	FROM temp1 
-	WHERE point_sequence &lt;&gt; no_points OR stop2_sequence = no_stops
-),
-temp3 AS (
-	SELECT trip_id, route_id, service_id, stop1_sequence, stop1_arrival_time,
-		stop2_arrival_time, point_sequence, no_points, point_geom, 
-		ST_Length(ST_MakeLine(array_agg(point_geom) OVER w)) / seg_length AS perc
-	FROM temp2 WINDOW w AS (PARTITION BY trip_id, service_id, stop1_sequence 
-		ORDER BY point_sequence)
-)
-SELECT trip_id, route_id, service_id, stop1_sequence, point_sequence, point_geom, 
-	CASE
-	WHEN point_sequence = 1 then stop1_arrival_time
-	WHEN point_sequence = no_points then stop2_arrival_time
-	ELSE stop1_arrival_time + ((stop2_arrival_time - stop1_arrival_time) * perc)
-	END AS point_arrival_time
-FROM temp3;
-					</programlisting>
-				In the temporary table <varname>temp1</varname> we use the function <varname>ST_DumpPoints</varname> to obtain the points composing the geometry of a segment. Nevertheless, this table contains duplicate points, that is, the last point of a segment is equal to the first point of the next one. In the temporary table <varname>temp2</varname> we filter out the last point of a segment unless it is the last segment of the trip. In the temporary table <varname>temp3</varname> we compute in the attribute <varname>perc</varname> the relative position of a point within a trip segment with window functions. For this we use the function <varname>ST_MakeLine</varname> to construct the subsegment from the first point of the segment to the current one, determine the length of the subsegment with function <varname>ST_Length</varname> and divide this length by the overall segment length. Finally, in the outer query we use the computed percentage to determine the arrival time to that point.
-				</para>
-
-				<para>
-				Our last temporary table <varname>trips_input</varname> contains the data in the format that can be used for creating the MobilityDB trips.
-					<programlisting>
-DROP TABLE IF EXISTS trips_input;
-CREATE TABLE trips_input (
-	trip_id text, 
-	route_id text,
-	service_id text,
-	date date,
-	point_geom geometry,
-	t timestamptz
-);
-
-INSERT INTO trips_input
-SELECT trip_id, route_id, t.service_id, date, point_geom, date + point_arrival_time AS t
-FROM trip_points t JOIN 
-	( SELECT service_id, MIN(date) AS date FROM service_dates GROUP BY service_id) s 
-	ON t.service_id = s.service_id;
-					</programlisting>
-				In the inner query of the <varname>INSERT</varname> statement, we select the first date of a service in the <varname>service_dates</varname> table and then we join the resulting table with the <varname>trip_points</varname> table to compute the arrival time at each point composing the trips. Notice that we filter the first date of each trip for optimization purposes because in the next step below we use the <varname>shift</varname> function to compute the trips to all other dates. Alternatively, we could join the two tables but this will be considerably slower for big GTFS files. 
-				</para>
-
-				<para>
-				Finally, table <varname>trips_mdb</varname> contains the MobilityDB trips.
-					<programlisting>
-DROP TABLE IF EXISTS trips_mdb;
-CREATE TABLE trips_mdb (
-	trip_id text NOT NULL,
-	route_id text NOT NULL,
-	date date NOT NULL,
-	trip tgeompoint,
-	PRIMARY KEY (trip_id, date)
-);
-
-INSERT INTO trips_mdb(trip_id, route_id, date, trip)
-SELECT trip_id, route_id, date, tgeompointseq(array_agg(tgeompointinst(point_geom, t) 
-	ORDER BY T))
-FROM trips_input
-GROUP BY trip_id, route_id, date;
-
-INSERT INTO trips_mdb(trip_id, service_id, route_id, date, trip)
-SELECT trip_id, route_id, t.service_id, d.date, 
-	shift(trip, make_interval(days => d.date - t.date))
-FROM trips_mdb t JOIN service_dates d ON t.service_id = d.service_id AND t.date &lt;&gt; d.date;
-					</programlisting>
-				In the first <varname>INSERT</varname> statement we group the rows in the <varname>trips_input</varname> table by <varname>trip_id</varname> and <varname>date</varname> while keeping the <varname>route_id</varname> atribute, use the <varname>array_agg</varname> function to construct an array containing the temporal points composing the trip ordered by time, and compute the trip from this array using the function <varname>tgeompointseq</varname>. As explained above, table <varname>trips_input</varname> only contains the first date of a trip. In the second <varname>INSERT</varname> statement we add the trips for all the other dates with the function <varname>shift</varname>. 
-				</para>
-			</sect2>
-		</sect1>
-
-		<sect1 id ="location_history">
-			<title>Loading Google Location History Data</title>
-				<para>By activating the Location History in your Google account, you let Google track where you go with every mobile device. You can view and manage your Location History information through Google Maps Timeline. The data is provided in JSON format. An example of such a file is as follows.
-					<programlisting>
-{
-  "locations" : [ {
-    "timestampMs" : "1525373187756",
-    "latitudeE7" : 508402936,
-    "longitudeE7" : 43413790,
-    "accuracy" : 26,
-    "activity" : [ {
-      "timestampMs" : "1525373185830",
-      "activity" : [ {
-        "type" : "STILL",
-        "confidence" : 44
-      }, {
-        "type" : "IN_VEHICLE",
-        "confidence" : 16
-      }, {
-        "type" : "IN_ROAD_VEHICLE",
-        "confidence" : 16
-      }, {
-        "type" : "UNKNOWN",
-        "confidence" : 12
-      }, {
-        "type" : "IN_RAIL_VEHICLE",
-        "confidence" : 12
-...
-					</programlisting>
-				</para>
-				
-				<para>If we want to load location information into MobilityDB we only need the fields <varname>longitudeE7</varname>, <varname>latitudeE7</varname>, and <varname>timestampMs</varname>. To convert the original JSON file into a CSV file containing only these fields we can use <ulink url="https://stedolan.github.io/jq/">jq</ulink>, a command-line JSON processor. The following command
-					<programlisting>
-cat location_history.json | jq -r ".locations[] | {latitudeE7, longitudeE7, timestampMs} 
-| [.latitudeE7, .longitudeE7, .timestampMs] | @csv" > location_history.csv
-					</programlisting>
-				produces a CSV file of the following format
-					<programlisting>
-508402936,43413790,"1525373187756"
-508402171,43413455,"1525373176729"
-508399229,43413304,"1525373143463"
-508377525,43411499,"1525373113741"
-508374906,43412597,"1525373082542"
-508370337,43418136,"1525373052593"
-...
-					</programlisting>
-					The above command works well for files of moderate size since by default jq loads the whole input text in memory. For very large files you may consider the <varname>--stream</varname> option of jq, which parses input texts in a streaming fashion.
-				</para>
-
-				<para>Now we can import the generated CSV file into PostgreSQL as follows.
-					<programlisting>
-DROP TABLE IF EXISTS location_history;
-CREATE TABLE location_history (
-	latitudeE7 float, 
-	longitudeE7 float, 
-	timestampMs bigint,
-	date date
-);
-
-COPY location_history(latitudeE7, longitudeE7, timestampMs) FROM 
-	'/home/location_history/location_history.csv' DELIMITER ',' CSV;
-
-UPDATE location_history
-SET date = date(to_timestamp(timestampMs / 1000.0)::timestamptz);
-					</programlisting>
-				Notice that we added an attribute <varname>date</varname> to the table so we can split the full location history, which can comprise data for several years, by date. Since the timestamps are encoded in milliseconds since 1/1/1970, we divide them by 1,000 and apply the functions <varname>to_timestamp</varname> and <varname>date</varname> to obtain corresponding date. 
-				</para>
-
-				<para>
-				We can now transform this data into MobilityDB trips as follows.
-					<programlisting>
-DROP TABLE IF EXISTS locations_mdb;
-CREATE TABLE locations_mdb (
-	date date NOT NULL,
-	trip tgeompoint,
-	trajectory geometry,
-	PRIMARY KEY (date)
-);
-
-INSERT INTO locations_mdb(date, trip)
-SELECT date, tgeompointseq(array_agg(tgeompointinst(
-	ST_SetSRID(ST_Point(longitudeE7/1e7, latitudeE7/1e7),4326),
-	to_timestamp(timestampMs / 1000.0)::timestamptz) ORDER BY timestampMs))
-FROM location_history
-GROUP BY date;
-
-UPDATE locations_mdb
-SET trajectory = trajectory(trip);
-					</programlisting>
-				We convert the longitude and latitude values into standard coordinates values by dividing them by 10<superscript>7</superscript>. These can be converted into PostGIS points in the WGS84 coordinate system with the functions <varname>ST_Point</varname> and <varname>ST_SetSRID</varname>. Also, we convert the timestamp values in miliseconds to <varname>timestamptz</varname> values. We can now apply the function
-				<varname>tgeompointinst</varname> to create a <varname>tgeompoint</varname> of instant duration from the point and the timestamp, collect all temporal points of a day into an array with the function <varname>array_agg</varname>, and finally, create a temporal point containing all the locations of a day using function <varname>tgeompointseq</varname>. We added to the table a <varname>trajectory</varname> attribute to visualize the location history in QGIS is given in <xref linkend="location_history_fig" />.
-				</para>
-
-
-				<figure id="location_history_fig" float="1"><title>Visualization in QGIS of the Google location history loaded into MobilityDB.</title>
-					<mediaobject>
-						<imageobject><imagedata fileref='images/location_history.png' /></imageobject>
-					</mediaobject>
-				</figure>
-
-		</sect1>
-
-		<sect1 id ="loading_gpx">
-			<title>Loading GPX Data</title>
-
-			<para>
-			GPX, or GPS Exchange Format, is an XML data format for GPS data. Location data (and optionally elevation, time, and other information) is stored in tags and can be interchanged between GPS devices and software. Conceptually, a GPX file contains tracks, which are a record of where a moving object has been, and routes, which are suggestions about where it might go in the future. Furthermore, both tracks and routes and composed by points. The following is a truncated (for brevity) example GPX file.
-				<programlisting>
-&lt;?xml version='1.0' encoding='UTF-8' standalone='yes' ?&gt;
-&lt;gpx version="1.1" 
-	xmlns="http://www.topografix.com/GPX/1/1" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://www.topografix.com/GPX/1/1 
-	http://www.topografix.com/GPX/1/1/gpx.xsd" 
-	creator="Example creator"&gt;
- 	&lt;metadata&gt;
-		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
-		&lt;author&gt;Example creator&lt;/author&gt;
-		&lt;link href="https://..." /&gt;
-		&lt;time&gt;2014-12-14T14:32:04.650Z&lt;/time&gt;
-	&lt;/metadata&gt;
-	&lt;trk&gt;
-		&lt;name&gt;Dec 14, 2014 4:32:04 PM&lt;/name&gt;
-		&lt;trkseg&gt;
-			&lt;trkpt lat="30.16398" lon="31.467701"&gt;
-				&lt;ele&gt;76&lt;/ele&gt;
-				&lt;time&gt;2014-12-14T14:32:10.339Z&lt;/time&gt;
-			&lt;/trkpt&gt;
-			&lt;trkpt lat="30.16394" lon="31.467333"&gt;
-				&lt;ele&gt;73&lt;/ele&gt;
-				&lt;time&gt;2014-12-14T14:32:16.00Z&lt;/time&gt;
-			&lt;/trkpt&gt;
-			&lt;trkpt lat="30.16408" lon="31.467218"&gt;
-				&lt;ele&gt;74&lt;/ele&gt;
-				&lt;time&gt;2014-12-14T14:32:19.00Z&lt;/time&gt;
-			&lt;/trkpt&gt;
-			[...]
-		&lt;/trkseg&gt;
-		&lt;trkseg&gt;
-			[...]
-		&lt;/trkseg&gt;
-		[...]
-	&lt;/trk&gt;
-	&lt;trk&gt;
-		[...]
-	&lt;/trk&gt;
-	[...]
-&lt;gpx&gt;
-				</programlisting>
-			</para>
-
-			<para>
-			The following Python program called <varname>gpx_to_csv.py</varname> uses <varname>expat</varname>, a stream-oriented XML parser library, to convert the above GPX file in CSV format.
-				<programlisting>
-import sys
-import xml.parsers.expat
-
-stack = []
-def start_element(name, attrs):
-	stack.append(name)
-	if name == 'gpx' :
-		print("lon,lat,time")
-	if name == 'trkpt' :
-		print("{},{},".format(attrs['lon'], attrs['lat']), end="")
-
-def end_element(name):
-	stack.pop()
-
-def char_data(data):
-	if stack[-1] == "time" and stack[-2] == "trkpt" :
-		print(data)
-
-p = xml.parsers.expat.ParserCreate()
-
-p.StartElementHandler = start_element
-p.EndElementHandler = end_element
-p.CharacterDataHandler = char_data
-
-p.ParseFile(sys.stdin.buffer)
-				</programlisting>
-			</para>
-
-			<para>
-			This Python program can be executed as follows.
-				<programlisting>
-python3 gpx_to_csv.py &lt; example.gpx &gt; example.csv
-				</programlisting>
-			The resulting CSV file is given next.
-				<programlisting>
-lon,lat,time
-31.46032,30.037502,2015-02-09T08:10:16.00Z
-31.460901,30.039026,2015-02-09T08:10:31.00Z
-31.461981,30.039816,2015-02-09T08:10:57.00Z
-31.461996,30.039801,2015-02-09T08:10:58.00Z
-...
-				</programlisting>
-			The above CSV file can be loaded into MobilityDB as follows.
-				<programlisting>
-DROP TABLE IF EXISTS trips_input;
-CREATE TABLE trips_input (
-	date date,
-	lon float, 
-	lat float, 
-	time timestamptz
-);
-
-COPY trips_input(lon, lat, time) FROM 
-	'/home/gpx_data/example.csv' DELIMITER ',' CSV HEADER;
-
-UPDATE trips_input
-SET date = date(time);
-
-DROP TABLE IF EXISTS trips_mdb;
-CREATE TABLE trips_mdb (
-	date date NOT NULL,
-	trip tgeompoint,
-	trajectory geometry,
-	PRIMARY KEY (date)
-);
-
-INSERT INTO trips_mdb(date, trip)
-SELECT date, tgeompointseq(array_agg(tgeompointinst(
-	ST_SetSRID(ST_Point(lon, lat),4326), time) ORDER BY time))
-FROM trips_input
-GROUP BY date;
-
-UPDATE trips_mdb
-SET trajectory = trajectory(trip);
-				</programlisting>
-			</para>
-
 		</sect1>
 	</chapter>
 
@@ -6892,16 +6229,6 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Is continuous in the value dimension?</para>
-						<para><varname>isContinuousInValue(tfloats): boolean</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Is continuous in the time dimension?</para>
-						<para><varname>isContinuousInTime(ttypes): boolean</varname></para>
-					</listitem>
-
-					<listitem>
 						<para>Time-weighted average</para>
 						<para><varname>twAvg(tnumber): float</varname></para>
 					</listitem>
@@ -6918,7 +6245,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Extended Well-Known Text (WKT) representation</para>
+						<para>Extended Well-Known Text (EWKT) representation</para>
 						<para><varname>asEWKT({tpoint, tpoint[], geo[]}): {text, text[]}</varname></para>
 					</listitem>
 
@@ -6933,12 +6260,12 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Extended Well-Known Binary (WKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para>Extended Well-Known Binary (EWKB) representation using either little-endian (NDR) or big-endian (XDR) encoding.</para>
 						<para><varname>asEWKB(tpoint, text default 'NDR'): bytea</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Hexadecimal Extended Well-Known Binary (WKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding.</para>
+						<para>Hexadecimal Extended Well-Known Binary (EWKB) representation (as text) using either little-endian (NDR) or big-endian (XDR) encoding.</para>
 						<para><varname>asHexEWKB(tpoint, text default 'NDR'): text</varname></para>
 					</listitem>
 
@@ -6948,7 +6275,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Input temporal point from Extended Well-Known Binary (WKB) representation.</para>
+						<para>Input temporal point from Extended Well-Known Binary (EWKB) representation.</para>
 						<para><varname>fromEWKB(bytea): tpoint</varname></para>
 					</listitem>
 
@@ -6988,7 +6315,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Construct the bounding box from a geometry/geography and a timestap or a period</para>
+						<para>Construct the bounding box from a geometry/geography and a timestamp or a period</para>
 						<para><varname>stbox(geo, {timestamp, period}): stbox</varname></para>
 					</listitem>
 
@@ -7202,13 +6529,33 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Is always equal to the value?</para>
-						<para><varname>ttype %= base: bool</varname></para>
+						<para>Is ever different from the value?</para>
+						<para><varname>ttype ?&lt;&gt; base: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is ever different from the value?</para>
-						<para><varname>ttype ?&lt;&gt; base: bool</varname></para>
+						<para>Is ever less than the value?</para>
+						<para><varname>tnumber ?&lt; number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever greater than the value?</para>
+						<para><varname>tnumber ?&gt; number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever less than or equal to the value?</para>
+						<para><varname>tnumber ?&lt;= number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is ever greater than or equal to the value?</para>
+						<para><varname>tnumber ?&gt;= number: bool</varname></para>
+					</listitem>
+
+					<listitem>
+						<para>Is always equal to the value?</para>
+						<para><varname>ttype %= base: bool</varname></para>
 					</listitem>
 
 					<listitem>
@@ -7217,42 +6564,22 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 					</listitem>
 
 					<listitem>
-						<para>Ever less than</para>
-						<para><varname>tnumber ?&lt; number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever greater than</para>
-						<para><varname>tnumber ?&gt; number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever less than or equal to</para>
-						<para><varname>tnumber ?&lt;= number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Ever greater than or equal to</para>
-						<para><varname>tnumber ?&gt;= number: bool</varname></para>
-					</listitem>
-
-					<listitem>
-						<para>Always less than</para>
+						<para>Is always less than the value?</para>
 						<para><varname>tnumber %&lt; number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always greater than</para>
+						<para>Is always greater than the value?</para>
 						<para><varname>tnumber %&gt; number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always less than or equal to</para>
+						<para>Is always less than or equal to the value?</para>
 						<para><varname>tnumber %&lt;= number: bool</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Always greater than or equal to</para>
+						<para>Is always greater than or equal to the value?</para>
 						<para><varname>tnumber %&gt;= number: bool</varname></para>
 					</listitem>
 				</itemizedlist>
@@ -7594,7 +6921,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 							<para><varname>relate({geo, tgeompoint}, {geo, tgeompoint}, text): boolean</varname></para>
 						</listitem>
 					</itemizedlist>
-				</sect3>       
+				</sect3>
 
 				<sect3>
 					<title>Temporal Spatial Relationships</title>

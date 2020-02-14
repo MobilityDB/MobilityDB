@@ -9,15 +9,15 @@
  * - B-tree comparison operators: <, <=, >, >=
  * - Bounding box operators: &&, @>, <@, ~=
  * - Relative position operators: <<#, &<#, #>>, #>>
- * - Ever/always equal operators: ?=, %= // TODO
+ * - Ever/always comparison operators: !=, %=, !<>, %<>,  !<, %<, ...// TODO
  *
  * Due to implicit casting, a condition such as tbool <<# timestamptz will be
  * transformed into tbool <<# period. This allows to reduce the number of 
  * cases for the operator definitions, indexes, selectivity, etc. 
  * 
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -153,10 +153,12 @@ convert_to_scalar_mobdb(Oid valuetypid, Datum value, double *scaledvalue,
 			*scaledlobound = convert_timevalue_to_scalar_mobdb(boundstypid, lobound);
 			*scaledhibound = convert_timevalue_to_scalar_mobdb(boundstypid, hibound);
 			return true;
+
+		default:
+			/* Don't know how to convert */
+			*scaledvalue = *scaledlobound = *scaledhibound = 0;
+			return false;
 	}
-	/* Don't know how to convert */
-	*scaledvalue = *scaledlobound = *scaledhibound = 0;
-	return false;
 }
 
 /*****************************************************************************
@@ -648,7 +650,7 @@ ineq_histogram_selectivity_mobdb(PlannerInfo *root,
 				 * values to a uniform comparison scale, and do a linear
 				 * interpolation within this bin.
 				 */
-				if (convert_to_scalar_mobdb(constval, consttype, &val,
+				if (convert_to_scalar_mobdb(consttype, constval, &val,
 									  sslot.values[i - 1], sslot.values[i],
 									  vardata->vartype,
 									  &low, &high))
@@ -1224,8 +1226,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
 		iseq = (cachedOp == LE_OP) ? true : ! period->lower_inc;
-		selec = scalarineqsel(root, operator, false, iseq, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, false, iseq, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == AFTER_OP || cachedOp == GT_OP || cachedOp == GE_OP)
 	{
@@ -1234,9 +1236,9 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->upper_inc ? 
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		iseq = (cachedOp == LE_OP) ? true : ! period->upper_inc;
-		selec = scalarineqsel(root, operator, true, iseq, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		iseq = (cachedOp == GE_OP) ? true : ! period->upper_inc;
+		selec = scalarineqsel(root, operator, true, iseq, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERBEFORE_OP)
 	{
@@ -1245,8 +1247,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->upper_inc ? 
 			oper_oid(LE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(LT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, operator, false, period->upper_inc, vardata, 
-			period->upper, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, false, period->upper_inc, vardata,
+			TimestampTzGetDatum(period->upper), TIMESTAMPTZOID);
 	}
 	else if (cachedOp == OVERAFTER_OP)
 	{
@@ -1255,8 +1257,8 @@ temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 		operator = period->lower_inc ? 
 			oper_oid(GE_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ) :
 			oper_oid(GT_OP, T_TIMESTAMPTZ, T_TIMESTAMPTZ);
-		selec = scalarineqsel(root, operator, true, period->lower_inc, vardata, 
-			period->lower, TIMESTAMPTZOID);
+		selec = scalarineqsel(root, operator, true, period->lower_inc, vardata,
+			TimestampTzGetDatum(period->lower), TIMESTAMPTZOID);
 	}
 	else /* Unknown operator */
 	{
@@ -1273,8 +1275,7 @@ Selectivity
 temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp)
 {
-	double selec = 0.0;
-	Oid operator = oper_oid(cachedOp, T_PERIOD, T_PERIOD);
+	double selec;
 
 	/*
 	 * There is no ~= operator for time types and thus it is necessary to
@@ -1282,7 +1283,7 @@ temporals_sel(PlannerInfo *root, VariableStatData *vardata,
 	 */
 	if (cachedOp == SAME_OP)
 	{
-		operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+		Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 		selec = var_eq_const(vardata, operator, PeriodGetDatum(period), 
 			false, false, false);
 	}
@@ -1328,7 +1329,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 	VariableStatData vardata;
 	Node *other;
 	bool varonleft;
-	Selectivity selec = DEFAULT_TEMP_SELECTIVITY;
+	Selectivity selec;
 	CachedOp cachedOp;
 	Period constperiod;
 
@@ -1392,7 +1393,7 @@ temporal_sel(PG_FUNCTION_ARGS)
 		PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
 
 	/* Get the duration of the temporal column */
-	int duration = TYPMOD_GET_DURATION(vardata.atttypmod);
+	int16 duration = TYPMOD_GET_DURATION(vardata.atttypmod);
 	ensure_valid_duration_all(duration);
 
 	/* Dispatch based on duration */

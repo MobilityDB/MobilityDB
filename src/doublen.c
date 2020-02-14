@@ -13,9 +13,9 @@
  * average from the doubleN values.
  * from the doubleN values.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -61,7 +61,7 @@ PGDLLEXPORT Datum
 double2_recv(PG_FUNCTION_ARGS) 
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double2* result = palloc(sizeof(double2));
+	double2 *result = palloc(sizeof(double2));
 	const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
 	memcpy(result, bytes, sizeof(double2));
 	PG_RETURN_POINTER(result);
@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(double2_send);
 PGDLLEXPORT Datum
 double2_send(PG_FUNCTION_ARGS) 
 {
-	double2* d = (double2*) PG_GETARG_POINTER(0);
+	double2 *d = (double2 *) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 	pq_sendbytes(&buf, (void *) d, sizeof(double2));
@@ -121,16 +121,6 @@ bool
 double2_eq(double2 *d1, double2 *d2)
 {
 	return (d1->a == d2->a && d1->b == d2->b);
-}
-
-/* Comparator */
-int
-double2_cmp(double2 *d1, double2 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-		cmp = float8_cmp_internal(d1->b, d2->b);
-	return cmp;
 }
 
 /*****************************************************************************
@@ -231,21 +221,6 @@ double3_eq(double3 *d1, double3 *d2)
 	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
-/* Comparator */
-
-int
-double3_cmp(double3 *d1, double3 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-	{
-		cmp = float8_cmp_internal(d1->b, d2->b);
-		if (cmp == 0)
-			cmp = float8_cmp_internal(d1->c, d2->c);
-	}
-	return cmp;
-}
-
 /*****************************************************************************
  * Input/Output functions
  *****************************************************************************/
@@ -280,7 +255,7 @@ PGDLLEXPORT Datum
 double4_recv(PG_FUNCTION_ARGS) 
 {
 	StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
-	double4* result = palloc(sizeof(double4));
+	double4 *result = palloc(sizeof(double4));
 	const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
 	memcpy(result, bytes, sizeof(double4));
 	PG_RETURN_POINTER(result);
@@ -291,7 +266,7 @@ PG_FUNCTION_INFO_V1(double4_send);
 PGDLLEXPORT Datum
 double4_send(PG_FUNCTION_ARGS) 
 {
-	double4* d = (double4*) PG_GETARG_POINTER(0);
+	double4 *d = (double4 *) PG_GETARG_POINTER(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
 	pq_sendbytes(&buf, (void *) d, sizeof(double4));
@@ -346,25 +321,6 @@ double4_eq(double4 *d1, double4 *d2)
 {
 	return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c && 
 		d1->d == d2->d);
-}
-
-/* Comparator */
-
-int
-double4_cmp(double4 *d1, double4 *d2)
-{
-	int cmp = float8_cmp_internal(d1->a, d2->a);
-	if (cmp == 0)
-	{
-		cmp = float8_cmp_internal(d1->b, d2->b);
-		if (cmp == 0)
-		{
-			cmp = float8_cmp_internal(d1->c, d2->c);
-			if (cmp == 0)
-				cmp = float8_cmp_internal(d1->d, d2->d);
-		}
-	}
-	return cmp;
 }
 
 /*****************************************************************************/

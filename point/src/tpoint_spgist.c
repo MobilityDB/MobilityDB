@@ -63,7 +63,7 @@
  * except the root.  For the root node, we are setting the boundaries
  * that we don't yet have as infinity.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
  * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
@@ -111,7 +111,7 @@ compareDoubles(const void *a, const void *b)
 /*
  * Calculate the octant
  *
- * The octant is 8 bit unsigned integer with 8 least bits in use.
+ * The octant is 8 bit unsigned integer with all bits in use.
  * This function accepts 2 STBOX as input.  All 8 bits are set by comparing a 
  * corner of the box. This makes 256 octants in total.
  */
@@ -178,7 +178,7 @@ initCubeSTbox(void)
  * Calculate the next traversal value
  *
  * All centroids are bounded by CubeSTbox, but SP-GiST only keeps
- * boxes.  When we are traversing the tree, we must calculate CubeSTbox,
+ * boxes. When we are traversing the tree, we must calculate CubeSTbox,
  * using centroid and octant.
  */
 static CubeSTbox *
@@ -468,14 +468,14 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
 		highTs[i] = (double) box->tmax;
 	}
 
-	qsort(lowXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highXs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowYs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highYs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowZs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highZs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowTs, in->nTuples, sizeof(double), compareDoubles);
-	qsort(highTs, in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
@@ -598,7 +598,7 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 
 	for (octant = 0; octant < in->nNodes; octant++)
 	{
-		CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, octant);
+		CubeSTbox *next_cube_stbox = nextCubeSTbox(cube_stbox, centroid, (uint8) octant);
 		bool flag = true;
 		for (i = 0; i < in->nkeys; i++)
 		{

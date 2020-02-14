@@ -14,9 +14,9 @@
  * come from different tuples. In theory, the standard scalar selectivity
  * functions could be used with the combined histogram.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -104,8 +104,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(lowers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
-		qsort(uppers, non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(lowers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
+		qsort(uppers, (size_t) non_null_cnt, sizeof(PeriodBound), period_bound_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -158,7 +158,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/*
 		 * Ascending sort of period lengths for further filling of histogram
 		 */
-		qsort(lengths, non_null_cnt, sizeof(float8), float8_qsort_cmp);
+		qsort(lengths, (size_t) non_null_cnt, sizeof(float8), float8_qsort_cmp);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)
@@ -269,7 +269,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 			/* Adjust the size */
 			total_width += VARSIZE(ts);
 		}
-		else if (timetype == T_PERIODSET)
+		else
 		{
 			PeriodSet *ps= DatumGetPeriodSet(value);
 			period = periodset_bbox(ps);
@@ -291,11 +291,11 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 	{
 		stats->stats_valid = true;
 		/* Do the simple null-frac and width stats */
-		stats->stanullfrac = (double) null_cnt / (double) samplerows;
-		stats->stawidth = total_width / (double) non_null_cnt;
+		stats->stanullfrac = (float4) ((double) null_cnt / (double) samplerows);
+		stats->stawidth = (int32) (total_width / (double) non_null_cnt);
 
 		/* Estimate that non-null values are unique */
-		stats->stadistinct = -1.0 * (1.0 - stats->stanullfrac);
+		stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
 		period_compute_stats1(stats, non_null_cnt, &slot_idx,
 			lowers, uppers, lengths);

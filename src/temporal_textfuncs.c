@@ -3,9 +3,9 @@
  * temporal_textfuncs.c
  *	Text functions (textcat, lower, upper).
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -98,7 +98,7 @@ PGDLLEXPORT Datum
 temporal_upper(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID, false);
+	Temporal *result = tfunc1_temporal(temp, &datum_upper, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -109,7 +109,7 @@ PGDLLEXPORT Datum
 temporal_lower(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID, false);
+	Temporal *result = tfunc1_temporal(temp, &datum_lower, TEXTOID);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }

@@ -3,9 +3,9 @@
  * tpoint_spatialrels.h
  *	  Spatial relationships for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -37,7 +37,6 @@ extern Datum geom_relate_pattern(Datum geom1, Datum geom2, Datum pattern);
 
 extern Datum geog_covers(Datum geog1, Datum geog2);
 extern Datum geog_coveredby(Datum geog1, Datum geog2);
-extern Datum geog_disjoint(Datum geog1, Datum geog2);
 extern Datum geog_intersects(Datum geog1, Datum geog2);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 

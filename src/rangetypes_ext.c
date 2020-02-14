@@ -3,9 +3,9 @@
  * rangetypes_ext.c
  *	  Extension of operators for range types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -79,7 +79,7 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
 		rangetypid = type_oid(T_INTRANGE);
 	else if (basetypid == FLOAT8OID)
 		rangetypid = type_oid(T_FLOATRANGE);
-	else if (basetypid == TIMESTAMPTZOID)
+	else
 		rangetypid = TSTZRANGEOID;
 	
 	TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);

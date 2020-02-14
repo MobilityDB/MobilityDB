@@ -3,9 +3,9 @@
  * temporal_selfuncs.h
  * 	Selectivity functions for the temporal types
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Mahmoud Sakr, Mohamed Bakli
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -35,11 +35,6 @@
 extern Selectivity scalarineqsel(PlannerInfo *root, Oid operator, 
 	bool isgt, bool iseq, VariableStatData *vardata, Datum constval, 
 	Oid consttype);
-extern Selectivity temporal_bbox_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, CachedOp cachedOp);
-extern Selectivity temporal_position_sel(PlannerInfo *root, VariableStatData *vardata,
-	Period *period, bool isgt, bool iseq, CachedOp operator);
-
 extern Selectivity temporalinst_sel(PlannerInfo *root, VariableStatData *vardata,
 	Period *period, CachedOp cachedOp);
 extern Selectivity temporals_sel(PlannerInfo *root, VariableStatData *vardata,

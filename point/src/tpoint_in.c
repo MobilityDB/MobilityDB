@@ -3,9 +3,9 @@
  * tpoint_in.c
  *	  Input of temporal points in WKT, EWKT and MF-JSON format
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -35,7 +35,7 @@ static char*
 text2cstring(const text *textptr)
 {
 	size_t size = VARSIZE_ANY_EXHDR(textptr);
-	char *str = lwalloc(size + 1);
+	char *str = palloc(size + 1);
 	memcpy(str, VARDATA(textptr), size);
 	str[size]='\0';
 	return str;
@@ -70,7 +70,7 @@ findMemberByName(json_object *poObj, const char *pszName )
 					it.val = (json_object*)it.entry->v, it.entry) : 0);
 				it.entry = it.entry->next)
 		{
-			if (strcasecmp((char *)it.key, pszName) == 0)
+			if (strcasecmp(it.key, pszName) == 0)
 				return it.val;
 		}
 	}
@@ -273,14 +273,14 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	if (lowerinc == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'lower_inc' in MFJSON string")));
-	bool lower_inc = json_object_get_boolean(lowerinc);
+	bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
 	json_object *upperinc = NULL;
 	upperinc = findMemberByName(mfjson, "upper_inc");
 	if (upperinc == NULL)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 			errmsg("Unable to find 'upper_inc' in MFJSON string")));
-	bool upper_inc = json_object_get_boolean(upperinc);
+	bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 	/* Construct the temporal point */
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
@@ -342,14 +342,14 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		if (lowerinc == NULL)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Unable to find 'lower_inc' in MFJSON string")));
-		bool lower_inc = json_object_get_boolean(lowerinc);
+		bool lower_inc = (bool) json_object_get_boolean(lowerinc);
 
 		json_object *upperinc = NULL;
 		upperinc = findMemberByName(seqvalue, "upper_inc");
 		if (upperinc == NULL)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
 				errmsg("Unable to find 'upper_inc' in MFJSON string")));
-		bool upper_inc = json_object_get_boolean(upperinc);
+		bool upper_inc = (bool) json_object_get_boolean(upperinc);
 
 		/* Construct the temporal point */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
@@ -523,14 +523,14 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 */
 typedef struct
 {
-	const uint8_t *wkb; /* Points to start of WKB */
-	size_t wkb_size; /* Expected size of WKB */
-	bool swap_bytes; /* Do an endian flip? */
-	uint8_t duration; /* Current duration we are handling */
-	int32_t srid;    /* Current SRID we are handling */
-	bool has_z; /* Z? */
-	bool has_srid; /* SRID? */
-	bool linear; /* Linear Interpolation? */
+	const uint8_t *wkb;	/* Points to start of WKB */
+	size_t wkb_size; 	/* Expected size of WKB */
+	bool swap_bytes; 	/* Do an endian flip? */
+	uint8_t duration;	/* Current duration we are handling */
+	int32_t srid;		/* Current SRID we are handling */
+	bool has_z; 		/* Z? */
+	bool has_srid; 		/* SRID? */
+	bool linear; 		/* Linear Interpolation? */
 	const uint8_t *pos; /* Current parse position */
 } wkb_parse_state;
 
@@ -654,7 +654,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 		if (wkb_type & WKB_LINEAR_INTERP) s->linear = true;
 	}
 	/* Mask off the flags */
-	wkb_type = wkb_type & 0x0F;
+	wkb_type = wkb_type & (uint8_t) 0x0F;
 
 	switch (wkb_type)
 	{
@@ -674,7 +674,6 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 			elog(ERROR, "Unknown WKB duration (%d)!", wkb_type);
 			break;
 	}
-	return;
 }
 
 /**
@@ -783,7 +782,6 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 		*upper_inc = true;
 	else
 		*upper_inc = false;
-	return;
 }
 
 static TemporalSeq * 
@@ -794,7 +792,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 	/* Get the number of instants. */
 	int count = integer_from_wkb_state(s);
 	/* Get the period bounds */
-	uint8_t wkb_bounds = byte_from_wkb_state(s);
+	uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
 	bool lower_inc, upper_inc;
 	tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
 	/* Does the data we want to read exist? */
@@ -851,14 +849,14 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
 	{
-		/* Get the number of instants. */
+		/* Get the number of instants */
 		int countinst = integer_from_wkb_state(s);
 		/* Get the period bounds */
-		uint8_t wkb_bounds = byte_from_wkb_state(s);
+		uint8_t wkb_bounds = (uint8_t) byte_from_wkb_state(s);
 		bool lower_inc, upper_inc;
 		tpoint_bounds_from_wkb_state(wkb_bounds, &lower_inc, &upper_inc);
 		/* Does the data we want to read exist? */
-		size_t size = count * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
+		size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
 		wkb_parse_state_check(s, size);
 		/* Parse the instants */
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst);
@@ -892,9 +890,9 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = temporalseq_from_temporalinstarr(instants, count, 
+		sequences[i] = temporalseq_from_temporalinstarr(instants, countinst,
 			lower_inc, upper_inc, s->linear, true); 
-		for (int j = 0; j < count; j++)
+		for (int j = 0; j < countinst; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
@@ -916,24 +914,24 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 
 	/* Check the endianness of our input  */
 	s->swap_bytes = false;
-	if (getMachineEndian() == NDR) /* Machine arch is little */
+	if (getMachineEndian() == NDR)	/* Machine arch is little */
 	{
-		if (! wkb_little_endian)    /* Data is big! */
+		if (! wkb_little_endian)	/* Data is big! */
 			s->swap_bytes = true;
 	}
-	else                              /* Machine arch is big */
+	else							/* Machine arch is big */
 	{
-		if (wkb_little_endian)      /* Data is little! */
+		if (wkb_little_endian)		/* Data is little! */
 			s->swap_bytes = true;
 	}
 
-	/* Read the temporal flag */
-	uint8_t wkb_type = byte_from_wkb_state(s);
+	/* Read the temporal and interpolation flags */
+	uint8_t wkb_type = (uint8_t) byte_from_wkb_state(s);
 	tpoint_type_from_wkb_state(s, wkb_type);
 
 	/* Read the SRID, if necessary */
 	if (s->has_srid)
-		s->srid = (integer_from_wkb_state(s));
+		s->srid = integer_from_wkb_state(s);
 
 	ensure_valid_duration(s->duration);
 	if (s->duration == TEMPORALINST)
@@ -952,7 +950,7 @@ PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
 PGDLLEXPORT Datum
 tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {
-	bytea *bytea_wkb = (bytea *) PG_GETARG_BYTEA_P(0);
+	bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
 	uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
 
 	/* Initialize the state appropriately */

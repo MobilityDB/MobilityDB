@@ -13,9 +13,9 @@
  * arguments: only the value dimension, only the time dimension, or both
  * the value and the time dimensions.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -233,7 +233,6 @@ temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid)
 		valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinst_make_stbox((STBOX *)box, value, t);
 #endif
-	return;
 }
 
 /* Transform an array of temporal instant to a period */
@@ -243,7 +242,6 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 	bool lower_inc, bool upper_inc) 
 {
 	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
-	return;
 }
 
 /* Expand the first box with the second one */
@@ -273,7 +271,6 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 		temporalinst_make_bbox(&box1, value, instants[i]->t, valuetypid);
 		tbox_expand(box, &box1);
 	}
-	return;
 }
 
 /* Make the bounding box a temporal instant set from its values */
@@ -293,13 +290,12 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
 void
 temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
-	bool lower_inc, bool upper_inc) 
+	bool lower_inc, bool upper_inc)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
@@ -318,7 +314,6 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
 #endif
-	return;
 }
 
 /* Transform an array of temporal sequence to a period */
@@ -329,7 +324,6 @@ temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int c
 	Period *first = &sequences[0]->period;
 	Period *last = &sequences[count - 1]->period;
 	period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
-	return;
 }
 
 /* Transform an array of tnumber period to a box */
@@ -343,12 +337,11 @@ tnumberseqarr_to_tbox_internal(TBOX *box, TemporalSeq **sequences, int count)
 		TBOX *box1 = temporalseq_bbox_ptr(sequences[i]);
 		tbox_expand(box, box1);
 	}
-	return;
 }
 
 /* Make the bounding box a temporal sequence from its values */
 void
-temporals_make_bbox(void *box, TemporalSeq **sequences, int count) 
+temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(sequences[0]->valuetypid);
@@ -362,7 +355,52 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 		sequences[0]->valuetypid == type_oid(T_GEOGRAPHY)) 
 		tpointseqarr_to_stbox((STBOX *)box, sequences, count);
 #endif
-	return;
+}
+
+/*****************************************************************************
+ * Shift the bounding box of a Temporal with an Interval
+ *****************************************************************************/
+
+void 
+shift_bbox(void *box, Oid valuetypid, Interval *interval)
+{
+	ensure_temporal_base_type(valuetypid);
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+	{
+        Period *period = (Period *)box;
+		period->lower = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->lower), PointerGetDatum(interval)));
+		period->upper = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(period->upper), PointerGetDatum(interval)));
+		return;
+	}
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+	{
+		TBOX *tbox = (TBOX *)box;
+		tbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
+		tbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#ifdef WITH_POSTGIS
+	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+		valuetypid == type_oid(T_GEOMETRY))
+	{
+		STBOX *stbox = (STBOX *)box;
+		stbox->tmin = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
+		stbox->tmax = DatumGetTimestampTz(
+			DirectFunctionCall2(timestamptz_pl_interval,
+			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
+		return;
+	}
+#endif
 }
 
 /*****************************************************************************
@@ -375,7 +413,6 @@ temporali_expand_period(Period *period, TemporalI *ti, TemporalInst *inst)
 {
 	TemporalInst *inst1 = temporali_inst_n(ti, 0);
 	period_set(period, inst1->t, inst->t, true, true);
-	return;
 }
 
 static void
@@ -383,7 +420,6 @@ temporalseq_expand_period(Period *period, TemporalSeq *seq, TemporalInst *inst)
 {
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
-	return;
 }
 
 static void
@@ -392,7 +428,6 @@ temporals_expand_period(Period *period, TemporalS *ts, TemporalInst *inst)
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
-	return;
 }
 
 static void
@@ -403,7 +438,6 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 	memset(&box1, 0, sizeof(TBOX));
 	temporalinst_bbox(&box1, inst);
 	tbox_expand(box, &box1);
-	return;
 }
 
 bool 
@@ -501,7 +535,6 @@ number_to_box(TBOX *box, Datum value, Oid valuetypid)
 		box->xmin = box->xmax = DatumGetFloat8(value);
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 /* Transform an integer to a box */
@@ -512,7 +545,6 @@ int_to_tbox_internal(TBOX *box, int i)
 	box->xmin = box->xmax = (double)i;
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(int_to_tbox);
@@ -534,7 +566,6 @@ float_to_tbox_internal(TBOX *box, double d)
 	box->xmin = box->xmax = d;
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(float_to_tbox);
@@ -580,7 +611,6 @@ range_to_tbox_internal(TBOX *box, RangeType *range)
 	}
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 /* Transform an integer range to a box */
@@ -592,7 +622,6 @@ intrange_to_tbox_internal(TBOX *box, RangeType *range)
 	box->xmax = (double)(DatumGetInt32(upper_datum(range)));
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(intrange_to_tbox);
@@ -615,7 +644,6 @@ floatrange_to_tbox_internal(TBOX *box, RangeType *range)
 	box->xmax = DatumGetFloat8(upper_datum(range));
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_T(box->flags, false);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(floatrange_to_tbox);
@@ -637,7 +665,6 @@ timestamp_to_tbox_internal(TBOX *box, TimestampTz t)
 	box->tmin = box->tmax = t;
 	MOBDB_FLAGS_SET_X(box->flags, false);
 	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_tbox);
@@ -661,7 +688,6 @@ timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts)
 	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_X(box->flags, false);
 	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_tbox);
@@ -685,7 +711,6 @@ period_to_tbox_internal(TBOX *box, Period *p)
 	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_X(box->flags, false);
 	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(period_to_tbox);
@@ -709,7 +734,6 @@ periodset_to_tbox_internal(TBOX *box, PeriodSet *ps)
 	box->tmax = p->upper;
 	MOBDB_FLAGS_SET_X(box->flags, false);
 	MOBDB_FLAGS_SET_T(box->flags, true);
-	return;
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_tbox);

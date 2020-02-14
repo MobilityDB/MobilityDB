@@ -3,9 +3,9 @@
  * temporal_waggfuncs.c
  *	  Window temporal aggregate functions
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -165,8 +165,7 @@ tstepws_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tstepwseq_extend(&result[k], seq, interval);
-		k += countstep;
+		k += tstepwseq_extend(&result[k], seq, interval);
 	}
 	return k;
 }
@@ -181,8 +180,7 @@ tlinears_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool mi
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tlinearseq_extend(&result[k], seq, interval, min);
-		k += countstep;
+		k += tlinearseq_extend(&result[k], seq, interval, min);
 	}
 	return k;
 }
@@ -293,8 +291,7 @@ temporals_transform_wcount(TemporalSeq **result, TemporalS *ts, Interval *interv
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = temporalseq_transform_wcount(&result[k], seq, interval);
-		k += countstep;
+		k += temporalseq_transform_wcount(&result[k], seq, interval);
 	}
 	return k;
 }
@@ -435,8 +432,7 @@ tints_transform_wavg(TemporalSeq **result, TemporalS *ts, Interval *interval)
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		int countstep = tintseq_transform_wavg(&result[k], seq, interval);
-		k += countstep;
+		k += tintseq_transform_wavg(&result[k], seq, interval);
 	}
 	return k;
 }

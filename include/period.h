@@ -3,9 +3,9 @@
  * period.h
  *	  Basic routines for timestamptz periods
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -37,8 +37,8 @@ extern Datum period_constructor4(PG_FUNCTION_ARGS);
 
 /* Casting */
 extern Datum timestamp_to_period(PG_FUNCTION_ARGS);
-extern Datum period_to_range(PG_FUNCTION_ARGS);
-extern Datum range_to_period(PG_FUNCTION_ARGS);
+extern Datum period_to_tstzrange(PG_FUNCTION_ARGS);
+extern Datum tstzrange_to_period(PG_FUNCTION_ARGS);
 
 /* period -> timestamptz */
 extern Datum period_lower(PG_FUNCTION_ARGS);
@@ -72,7 +72,6 @@ extern bool period_ne_internal(Period *p1, Period *p2);
 extern int period_cmp_internal(Period *p1, Period *p2);
 extern bool period_lt_internal(Period *p1, Period *p2);
 extern bool period_le_internal(Period *p1, Period *p2);
-extern bool period_eq_internal(Period *p1, Period *p2);
 extern bool period_ge_internal(Period *p1, Period *p2);
 extern bool period_gt_internal(Period *p1, Period *p2);
 

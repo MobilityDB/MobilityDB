@@ -3,9 +3,9 @@
  * tpoint_parser.c
  *	  Functions for parsing temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -15,6 +15,7 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "tpoint.h"
+#include "tpoint_spatialfuncs.h"
 #include "temporal_parser.h"
 #include "stbox.h"
 
@@ -249,10 +250,9 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	Datum geo = basetype_parse(str, basetype); 
 	GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
 	int geo_srid = gserialized_get_srid(gs);
-	if ((gserialized_get_type(gs) != POINTTYPE) || gserialized_is_empty(gs) ||
-		FLAGS_GET_M(gs->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
-			errmsg("Only non-empty point geometries without M dimension accepted")));
+	ensure_point_type(gs);
+	ensure_non_empty(gs);
+	ensure_has_not_M(gs);
 	if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
@@ -294,7 +294,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 	 * to call this function in the dispatch function tpoint_parse */
 	p_obrace(str);
 
-	//FIXME: parsing twice
+	/* First parsing */
 	char *bak = *str;
 	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
@@ -343,8 +343,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	else if (p_oparen(str))
 		lower_inc = false;
 
-	// FIXME: I pre-parse to have the count, then re-parse. This is the only
-	// approach I see at the moment which is both correct and simple
+	/* First parsing */
 	char *bak = *str;
 	TemporalInst *inst = tpointinst_parse(str, basetype, false, tpoint_srid);
 	int count = 1;
@@ -400,7 +399,7 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 	 * to call this function in the dispatch function tpoint_parse */
 	p_obrace(str);
 
-	//FIXME: parsing twice
+	/* First parsing */
 	char *bak = *str;
 	TemporalSeq *seq = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	int count = 1;
@@ -470,7 +469,7 @@ tpoint_parse(char **str, Oid basetype)
 	 * the srid_is_latlong function is not exported by PostGIS
 	if (basetype == type_oid(T_GEOGRAPHY))
 		srid_is_latlong(fcinfo, tpoint_srid);
-     */	
+	 */	
 
 	bool linear = linear_interpolation(basetype);
 	/* Starts with "Interp=Stepwise" */

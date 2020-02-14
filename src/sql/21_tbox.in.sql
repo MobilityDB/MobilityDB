@@ -3,9 +3,9 @@
  * tbox.sql
  *	  Basic functions for TBOX bounding box.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -81,7 +81,22 @@ CREATE FUNCTION Tmin(tbox)
 CREATE FUNCTION Tmax(tbox)
 	RETURNS timestamptz
 	AS 'MODULE_PATHNAME', 'tbox_tmax'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+CREATE FUNCTION tbox_intersection(tbox, tbox)
+	RETURNS tbox
+AS 'MODULE_PATHNAME', 'tbox_intersection'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+	PROCEDURE = tbox_intersection,
+	LEFTARG = tbox, RIGHTARG = tbox,
+	COMMUTATOR = *
+);
 
 /*****************************************************************************
  * Comparison

@@ -3,9 +3,9 @@
  * rangetypes_ext.h
  *	  Extension of operators for range types.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -47,11 +47,8 @@ extern Datum elem_right_range(PG_FUNCTION_ARGS);
 extern Datum elem_overright_range(PG_FUNCTION_ARGS);
 extern Datum elem_adjacent_range(PG_FUNCTION_ARGS);
 
-extern bool elem_left_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 extern bool elem_overleft_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
-extern bool elem_right_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 extern bool elem_overright_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
-extern bool elem_adjacent_range_internal(TypeCacheEntry *typcache, Datum r, RangeType *val);
 
 /*****************************************************************************/
 

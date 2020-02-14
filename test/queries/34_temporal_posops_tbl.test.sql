@@ -1,15 +1,13 @@
 ﻿-------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_tbool_gist_idx;
-DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_tint_gist_idx;
-DROP INDEX IF EXISTS tbl_tint_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
-DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
-
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
+
+DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
 DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
 
 -------------------------------------------------------------------------------
@@ -20,8 +18,9 @@ CREATE TABLE test_relativeposops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint,
-	spgistidx bigint );
+	gistidx bigint
+	, spgistidx bigint
+);
 
 -------------------------------------------------------------------------------
 -- Left
@@ -1502,6 +1501,8 @@ DROP INDEX IF EXISTS tbl_tint_gist_idx;
 DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 
+-------------------------------------------------------------------------------
+
 CREATE INDEX tbl_tbool_spgist_idx ON tbl_tbool USING SPGIST(temp);
 CREATE INDEX tbl_tint_spgist_idx ON tbl_tint USING SPGIST(temp);
 CREATE INDEX tbl_tfloat_spgist_idx ON tbl_tfloat USING SPGIST(temp);
@@ -2366,14 +2367,17 @@ WHERE op = '#&>' and leftarg = 'ttext' and rightarg = 'ttext';
 
 -------------------------------------------------------------------------------
 
-SELECT * FROM test_relativeposops
-WHERE noidx <> gistidx or noidx <> spgistidx or gistidx <> spgistidx
-ORDER BY op, leftarg, rightarg;
-
 DROP INDEX tbl_tbool_spgist_idx;
 DROP INDEX tbl_tint_spgist_idx;
 DROP INDEX tbl_tfloat_spgist_idx;
 DROP INDEX tbl_ttext_spgist_idx;
+
+-------------------------------------------------------------------------------
+
+SELECT * FROM test_relativeposops
+WHERE noidx <> gistidx 
+OR noidx <> spgistidx OR gistidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_relativeposops;
 

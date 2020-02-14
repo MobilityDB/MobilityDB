@@ -4,9 +4,9 @@
  *		R-tree GiST index for temporal types where only the time dimension is
  *		taken into account, e.g., tbool and ttext.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -33,10 +33,10 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid 		subtype = PG_GETARG_OID(3);
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4),
-				periodfree = false,
 				result;
 	Period	   *key = DatumGetPeriod(entry->key),
-			   *period;
+			   *period,
+			   p;
 	
 	/* Determine whether the operator is exact */
 	*recheck = index_period_bbox_recheck(strategy);
@@ -52,9 +52,8 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 		Temporal *query = PG_GETARG_TEMPORAL(1);
 		if (query == NULL)
 			PG_RETURN_BOOL(false);
-		period = palloc(sizeof(Period));
+		period = &p;
 		temporal_bbox(period, query);
-		periodfree = true;
 		PG_FREE_IF_COPY(query, 1);
 	}
 	else
@@ -64,9 +63,6 @@ gist_temporal_consistent(PG_FUNCTION_ARGS)
 		result = index_leaf_consistent_time(key, period, strategy);
 	else
 		result = index_internal_consistent_period(key, period, strategy);
-	
-	if (periodfree)
-		pfree(period);
 
 	PG_RETURN_BOOL(result);
 }

@@ -3,15 +3,17 @@
  * tpoint_boxops.h
  *	  Bounding box operators for temporal points.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse, 
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse, 
  * 		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
 
 #ifndef __TPOINT_BOXOPS_H__
 #define __TPOINT_BOXOPS_H__
+
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
@@ -26,13 +28,11 @@ extern Datum contains_stbox_stbox(PG_FUNCTION_ARGS);
 extern Datum contained_stbox_stbox(PG_FUNCTION_ARGS);
 extern Datum overlaps_stbox_stbox(PG_FUNCTION_ARGS);
 extern Datum same_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum distance_stbox_stbox(PG_FUNCTION_ARGS);
 
 extern bool contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 extern bool same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern double distance_stbox_stbox_internal(STBOX *box1, STBOX *box2);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 

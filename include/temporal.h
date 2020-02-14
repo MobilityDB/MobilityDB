@@ -3,9 +3,9 @@
  * temporal.h
  *	Basic functions for temporal types of any duration.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -45,14 +45,14 @@
 #define TEMPORALSEQ			3
 #define TEMPORALS			4
 
-#define TYPMOD_GET_DURATION(typmod) ((typmod == -1) ? (0) : (typmod & 0x0000000F))
+#define TYPMOD_GET_DURATION(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /* Structure for the type array */
 
 struct temporal_duration_struct
 {
-	char *typename;
-	int type;
+	char *durationName;
+	int16 duration;
 };
 
 #define DURATION_STRUCT_ARRAY_LEN \
@@ -76,13 +76,13 @@ struct temporal_duration_struct
  * Macros for manipulating the 'flags' element
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_LINEAR(flags) 		((flags) & 0x01)
+#define MOBDB_FLAGS_GET_LINEAR(flags) 		((bool) ((flags) & 0x01))
 /* The following flag is only used for TemporalInst */
-#define MOBDB_FLAGS_GET_BYVAL(flags) 			(((flags) & 0x02)>>1)
-#define MOBDB_FLAGS_GET_X(flags)			 	(((flags) & 0x04)>>2)
-#define MOBDB_FLAGS_GET_Z(flags) 				(((flags) & 0x08)>>3)
-#define MOBDB_FLAGS_GET_T(flags) 				(((flags) & 0x10)>>4)
-#define MOBDB_FLAGS_GET_GEODETIC(flags) 		(((flags) & 0x20)>>5)
+#define MOBDB_FLAGS_GET_BYVAL(flags) 		((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_X(flags)			((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_Z(flags) 			((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_T(flags) 			((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_GEODETIC(flags) 	((bool) (((flags) & 0x20)>>5))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
 	((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
@@ -147,7 +147,7 @@ typedef struct
 	int16		duration;		/* duration */
 	int16		flags;			/* flags */
 	Oid 		valuetypid;		/* base type's OID  (4 bytes) */
-	TimestampTz t;				/* time span */
+	TimestampTz t;				/* timestamp (8 bytes) */
 	/* variable-length data follows */
 } TemporalInst;
 
@@ -292,8 +292,8 @@ extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool linear_interpolation(Oid type);
 
-extern const char *temporal_duration_name(uint8_t type);
-extern bool temporal_duration_from_string(const char *str, uint8_t *type);
+extern const char *temporal_duration_name(int16 duration);
+extern bool temporal_duration_from_string(const char *str, int16 *duration);
 
 /* Catalog functions */
 
@@ -310,7 +310,7 @@ extern bool temporal_type_oid(Oid temptypid);
 
 extern bool type_has_precomputed_trajectory(Oid valuetypid);
 
-/* Assertion tests */
+/* Parameter tests */
 
 extern void ensure_valid_duration(int16 type);
 extern void ensure_valid_duration_all(int16 type);
@@ -333,10 +333,11 @@ extern void temporal_write(Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
 
-extern Datum temporal_make_temporalinst(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporali(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporalseq(PG_FUNCTION_ARGS);
-extern Datum temporal_make_temporals(PG_FUNCTION_ARGS);
+extern Datum temporalinst_constructor(PG_FUNCTION_ARGS);
+extern Datum temporali_constructor(PG_FUNCTION_ARGS);
+extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
+extern Datum temporalseq_constructor(PG_FUNCTION_ARGS);
+extern Datum temporals_constructor(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 
@@ -359,7 +360,6 @@ extern Datum temporal_start_value(PG_FUNCTION_ARGS);
 extern Datum temporal_end_value(PG_FUNCTION_ARGS);
 extern Datum temporal_min_value(PG_FUNCTION_ARGS);
 extern Datum temporal_max_value(PG_FUNCTION_ARGS);
-extern Datum temporal_time(PG_FUNCTION_ARGS);
 extern Datum temporal_num_instants(PG_FUNCTION_ARGS);
 extern Datum temporal_start_instant(PG_FUNCTION_ARGS);
 extern Datum temporal_end_instant(PG_FUNCTION_ARGS);
@@ -369,15 +369,29 @@ extern Datum temporal_num_timestamps(PG_FUNCTION_ARGS);
 extern Datum temporal_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
-extern Datum temporal_get_values_internal(Temporal *temp);
+extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_le(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_ever_ge(PG_FUNCTION_ARGS);
+
+extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ne(PG_FUNCTION_ARGS);
+extern Datum temporal_always_lt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_le(PG_FUNCTION_ARGS);
+extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
+extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
+
+extern PeriodSet *temporal_get_time_internal(Temporal *temp);
 extern Datum tfloat_ranges(Temporal *temp);
 extern Datum temporal_min_value_internal(Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
 extern RangeType *tnumber_value_range_internal(Temporal *temp);
+extern bool temporal_ever_eq_internal(Temporal *temp, Datum value);
+extern bool temporal_always_eq_internal(Temporal *temp, Datum value);
 
 /* Restriction functions */
 
@@ -408,6 +422,7 @@ extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
  
 extern Temporal *temporal_at_min_internal(Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
+extern Temporal *temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps);
 extern void temporal_period(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void temporal_bbox(void *box, const Temporal *temp);

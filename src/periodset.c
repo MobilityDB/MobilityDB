@@ -3,9 +3,9 @@
  * periodset.c
  *	Basic functions for set of periods.
  *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
+ * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2019, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *****************************************************************************/
@@ -119,7 +119,6 @@ periodset_from_periodarr_internal(Period **periods, int count, bool normalize)
 		newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc);
 	offsets[newcount] = pos;
 	memcpy(((char *) result) + pdata + pos, &bbox, sizeof(Period));
-	pos += double_pad(sizeof(Period));
 	/* Normalize */
 	if (normalize && count > 1)
 	{
@@ -200,7 +199,7 @@ periodset_in(PG_FUNCTION_ARGS)
 char *
 periodset_to_string(PeriodSet *ps)
 {
-	char **strings = palloc((int) (sizeof(char *) * ps->count));
+	char **strings = palloc(sizeof(char *) * ps->count);
 	size_t outlen = 0;
 
 	for (int i = 0; i < ps->count; i++)
@@ -250,7 +249,7 @@ periodset_send(PG_FUNCTION_ARGS)
 	PeriodSet *ps = PG_GETARG_PERIODSET(0);
 	StringInfoData buf;
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, ps->count, 4);
+	pq_sendint(&buf, (uint32) ps->count, 4);
 	for (int i = 0; i < ps->count; i++)
 	{
 		Period *p = periodset_per_n(ps, i);
