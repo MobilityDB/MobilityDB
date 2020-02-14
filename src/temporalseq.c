@@ -508,7 +508,6 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	}
 	/*
 	 * Precompute the bounding box
-	 * TODO Maybe create a bbox_join
 	 */
 	if (bboxsize != 0)
 	{
