@@ -672,17 +672,21 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	}
 
 	/* Restrict to the buffered geometry */
-	TemporalInst *instants[2];
 	Datum geo_buffer = call_function2(buffer, geo, dist);
 	int count1;
 	TemporalSeq **atbuffer = tpointseq_at_geometry2(seq, geo_buffer, &count1);
 	Datum datum_true = BoolGetDatum(true);
 	Datum datum_false = BoolGetDatum(false);
+	/* We create two temporal instants with arbitrary values that are set in
+	 * the for loop to avoid creating and freeing the instants each time a
+	 * segment of the result is computed */
+	TemporalInst *instants[2];
+	instants[0] = temporalinst_make(datum_false, seq->period.lower, BOOLOID);
+	instants[1] = temporalinst_make(datum_false, seq->period.upper, BOOLOID);
 	if (atbuffer == NULL)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		instants[0] = temporalinst_make(datum_false, seq->period.lower, BOOLOID);
-		instants[1] = temporalinst_make(datum_false, seq->period.upper, BOOLOID);
+		/*  The two instant values created above are the ones needed here */
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			seq->period.lower_inc, seq->period.upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
@@ -704,8 +708,8 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	if (minus == NULL)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		instants[0] = temporalinst_make(datum_true, seq->period.lower, BOOLOID);
-		instants[1] = temporalinst_make(datum_true,	seq->period.upper, BOOLOID);
+		temporalinst_set(instants[0], datum_true, seq->period.lower);
+		temporalinst_set(instants[1], datum_true, seq->period.upper);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			seq->period.lower_inc, seq->period.upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
@@ -731,25 +735,24 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 		if (truevalue)
 		{
 			p1 = periodset_per_n(ps, j);
-			instants[0] = temporalinst_make(datum_true, p1->lower, BOOLOID);
-			instants[1] = temporalinst_make(datum_true, p1->upper, BOOLOID);
+			temporalinst_set(instants[0], datum_true, p1->lower);
+			temporalinst_set(instants[1], datum_true, p1->upper);
 			result[i] = temporalseq_from_temporalinstarr(instants, 2,
 				p1->lower_inc, p1->upper_inc, false, false);
-			pfree(instants[0]); pfree(instants[1]);
 			j++;
 		}
 		else
 		{
 			p2 = periodset_per_n(minus, k);
-			instants[0] = temporalinst_make(datum_false, p2->lower, BOOLOID);
-			instants[1] = temporalinst_make(datum_false, p2->upper, BOOLOID);
+			temporalinst_set(instants[0], datum_false, p2->lower);
+			temporalinst_set(instants[1], datum_false, p2->upper);
 			result[i] = temporalseq_from_temporalinstarr(instants, 2,
 				p2->lower_inc, p2->upper_inc, false, false);
-			pfree(instants[0]); pfree(instants[1]);
 			k++;
 		}
 		truevalue = ! truevalue;
 	}
+	pfree(instants[0]); pfree(instants[1]);
 	pfree(ps); pfree(minus);
 	return result;
 }

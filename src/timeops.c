@@ -576,18 +576,13 @@ overlaps_period_timestampset(PG_FUNCTION_ARGS)
 bool
 overlaps_period_period_internal(Period *p1, Period *p2)
 {
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) >= 0 &&
-		period_cmp_bounds(p1->lower, p2->upper, true, false,
-			p1->lower_inc, p2->upper_inc) <= 0)
+	int c1 = timestamp_cmp_internal(p1->lower, p2->upper);
+	int c2 = timestamp_cmp_internal(p2->lower, p1->upper);
+	if (
+		(c1 < 0 || (c1 == 0 && p1->lower_inc && p2->upper_inc)) &&
+		(c2 < 0 || (c2 == 0 && p2->lower_inc && p1->upper_inc))
+	)
 		return true;
-
-	if (period_cmp_bounds(p2->lower, p1->lower, true, true,
-			p2->lower_inc, p1->lower_inc) >= 0 &&
-		period_cmp_bounds(p2->lower, p1->upper, true, false,
-			p2->lower_inc, p1->upper_inc) <= 0)
-		return true;
-
 	return false;
 }
 
@@ -3049,39 +3044,16 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 Period *
 intersection_period_period_internal(Period *p1, Period *p2)
 {
-	TimestampTz lower;
-	TimestampTz upper;
-	bool lower_inc;
-	bool upper_inc;
-
 	/* Bounding box test */
 	if (!overlaps_period_period_internal(p1, p2))
 		return NULL;
 
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-		p1->lower_inc, p2->lower_inc) >= 0)
-	{
-		lower = p1->lower;
-		lower_inc = p1->lower_inc;
-	}
-	else
-	{
-		lower = p2->lower;
-		lower_inc = p2->lower_inc;
-	}
-
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false,
-		p1->upper_inc, p2->upper_inc) <= 0)
-	{
-		upper = p1->upper;
-		upper_inc = p1->upper_inc;
-	}
-	else
-	{
-		upper = p2->upper;
-		upper_inc = p2->upper_inc;
-	}
-
+	TimestampTz lower = Max(p1->lower, p2->lower);
+	TimestampTz upper = Min(p1->upper, p2->upper);
+	bool lower_inc = timestamp_cmp_internal(p1->lower, p2->lower) == 0 ? p1->lower_inc && p2->lower_inc :
+		( timestamp_cmp_internal(lower, p1->lower) == 0 ? p1->lower_inc : p2->lower_inc );
+	bool upper_inc = timestamp_cmp_internal(p1->upper, p2->upper) == 0 ? p1->upper_inc && p2->upper_inc :
+		( timestamp_cmp_internal(upper, p1->upper) == 0 ? p1->upper_inc : p2->upper_inc );
 	return period_make(lower, upper, lower_inc, upper_inc);
 }
 
