@@ -149,15 +149,14 @@ contains_period_timestampset(PG_FUNCTION_ARGS)
 bool
 contains_period_period_internal(Period *p1, Period *p2)
 {
-	/* We must have lower1 <= lower2 and upper1 >= upper2 */
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) > 0)
-		return false;
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false,
-			p1->upper_inc, p2->upper_inc) < 0)
-		return false;
-
-	return true;
+	int c1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int c2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	if (
+		(c1 < 0 || (c1 == 0 && (p1->lower_inc || ! p2->lower_inc))) &&
+		(c2 > 0 || (c2 == 0 && (p1->upper_inc || ! p2->upper_inc)))
+	)
+		return true;
+	return false;
 }
 
 PG_FUNCTION_INFO_V1(contains_period_period);
@@ -719,11 +718,20 @@ before_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/* OLD VERSION
 bool
 before_timestamp_period_internal(TimestampTz t, Period *p)
 {
 	return (period_cmp_bounds(t, p->lower, false, true,
 		true, p->lower_inc) < 0);
+}
+*/
+
+bool
+before_timestamp_period_internal(TimestampTz t, Period *p)
+{
+	int cmp = timestamp_cmp_internal(t, p->lower);
+	return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_period);
@@ -740,8 +748,7 @@ bool
 before_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(t, p->lower, false, true,
-		true, p->lower_inc) < 0);
+	return before_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_periodset);
@@ -1016,11 +1023,19 @@ after_timestamp_timestampset(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/*
 bool
 after_timestamp_period_internal(TimestampTz t, Period *p)
 {
 	return (period_cmp_bounds(t, p->upper, true, false,
 		true, p->upper_inc) > 0);
+}
+*/
+bool
+after_timestamp_period_internal(TimestampTz t, Period *p)
+{
+	int cmp = timestamp_cmp_internal(t, p->upper);
+	return (cmp > 0 || (cmp == 0 && ! p->upper_inc));
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_period);

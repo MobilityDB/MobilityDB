@@ -1375,16 +1375,13 @@ temporalinst_timestamp(PG_FUNCTION_ARGS)
 }
 
 /* Get the precomputed bounding box of a Temporal (if any) 
-   Notice that TemporalInst do not have precomputed bonding box */
+   Since TemporalInst do not have precomputed bonding box it returns NULL */
 
-TBOX * 
+void *
 temporal_bbox_ptr(const Temporal *temp)
 {
 	TBOX *result = NULL;
-	if (temp->duration == TEMPORALINST) 
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Temporal instants do not have bounding box")));
-	else if (temp->duration == TEMPORALI) 
+	if (temp->duration == TEMPORALI)
 		result = temporali_bbox_ptr((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 
 		result = temporalseq_bbox_ptr((TemporalSeq *)temp);
@@ -1433,7 +1430,7 @@ tnumber_value_range_internal(Temporal *temp)
 	}
 	else 
 	{
-		TBOX *box = temporal_bbox_ptr(temp);
+		TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
 		Datum min = 0, max = 0;
 		ensure_numeric_base_type(temp->valuetypid);
 		if (temp->valuetypid == INT4OID)

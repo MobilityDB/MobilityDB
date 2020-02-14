@@ -1344,7 +1344,7 @@ overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
 }
-	
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);

@@ -425,6 +425,7 @@ extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz 
 extern Temporal *temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps);
 extern void temporal_period(Period *p, Temporal *temp);
 extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
+extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(void *box, const Temporal *temp);
 
 /* Comparison functions */
