@@ -3654,8 +3654,6 @@ minus_period_periodset_internal1(Period **result, Period *p, PeriodSet *ps,
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		/* If the remaining periods are to the left of the current period */
-		// if (period_cmp_bounds(curr->upper, p1->lower, false, true,
-		//		curr->upper_inc, p1->lower_inc) < 0)
 		int cmp = timestamp_cmp_internal(curr->upper, p1->lower);
 		if (cmp < 0 || (cmp == 0 && curr->upper_inc && ! p1->lower_inc))
 		{
