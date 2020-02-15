@@ -3749,8 +3749,10 @@ temporalseq_minus_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		/* If the remaining periods are to the left of the current period */
-		if (period_cmp_bounds(curr->period.upper, p1->lower, false, true,
-				curr->period.upper_inc, p1->lower_inc) < 0)
+		// if (period_cmp_bounds(curr->period.upper, p1->lower, false, true,
+		//		curr->period.upper_inc, p1->lower_inc) < 0)
+		int cmp = timestamp_cmp_internal(curr->period.upper, p1->lower);
+		if (cmp < 0 || (cmp == 0 && curr->period.upper_inc && ! p1->lower_inc))
 		{
 			result[k++] = curr;
 			break;
