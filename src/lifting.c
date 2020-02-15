@@ -3280,9 +3280,9 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			/* If either the start values are equal or the end values are equal and
 			 * both have linear interpolation compute the function at the start
 			 * instant, at an intermediate point, and at the end instant */
-		else if (datum_eq(startvalue1, startvalue2, start1->valuetypid) ||
+		else if (datum_eq2(startvalue1, startvalue2, start1->valuetypid, start2->valuetypid) ||
 				 (linear1 && linear2 &&
-				  datum_eq(endvalue1, endvalue2, start1->valuetypid)))
+				  datum_eq2(endvalue1, endvalue2, start1->valuetypid, start2->valuetypid)))
 		{
 			/* Compute the function at the start instant */
 			if (lower_inc)
