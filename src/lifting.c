@@ -587,6 +587,9 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 	for (int i = 1; i < seq->count; i++)
 	{
 		/* Each iteration of the loop adds between one and three sequences */
+		startresult = invert ?
+			func(value, value1, datumtypid, inst1->valuetypid) :
+			func(value1, value, inst1->valuetypid, datumtypid);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		Datum value2 = temporalinst_value(inst2);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -3260,6 +3263,8 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		/* The remaining of the loop adds between one and three sequences */
 		Datum endvalue1 = temporalinst_value(end1);
 		Datum endvalue2 = temporalinst_value(end2);
+		startresult = func(startvalue1, startvalue2, start1->valuetypid,
+			start2->valuetypid);
 
 		/* If both segments are constant compute the function at the start and
 		 * end instants */
