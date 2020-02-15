@@ -50,6 +50,10 @@ extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
+extern int tpointinst_srid(TemporalInst *inst);
+extern int tpointi_srid(TemporalI *ti);
+extern int tpointseq_srid(TemporalSeq *seq);
+extern int tpoints_srid(TemporalS *ts);
 extern int tpoint_srid_internal(Temporal *t);
 extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 

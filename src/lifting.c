@@ -546,140 +546,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value,
  *****************************************************************************/
 
 static int
-tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalInst *start,
-	TemporalInst *end, bool lower_inc, bool upper_inc, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert)
-{
-	Datum startvalue = temporalinst_value(start);
-	Datum endvalue = temporalinst_value(end);
-	Datum startresult = invert ?
-		func(value, startvalue, datumtypid, start->valuetypid) :
-		func(startvalue, value, start->valuetypid, datumtypid);
-	TemporalInst *instants[2];
-	
-	/* If both segments are constant compute the function at the start and 
-	 * end instants */
-	if (datum_eq(startvalue, endvalue, start->valuetypid))
-	{
-		instants[0] = temporalinst_make(startresult, start->t, valuetypid);
-		instants[1] = temporalinst_make(startresult, end->t, valuetypid);
-		/* Result has stepwise interpolation */
-		result[0] = temporalseq_from_temporalinstarr(instants, 2, 
-			lower_inc, upper_inc, false, false);
-		FREE_DATUM(startresult, valuetypid);
-		pfree(instants[0]); pfree(instants[1]);
-		return 1;
-	}
-	
-	/* If either the start or the end value is equal to the value compute
-	 * the function at the start, at the middle, and at the end instants */	
-	if (datum_eq2(startvalue, value, start->valuetypid, datumtypid) ||
-		datum_eq2(endvalue, value, start->valuetypid, datumtypid))
-	{
-		int k = 0;
-		/* Compute the function at the start instant */
-		if (lower_inc)
-		{
-			instants[0] = temporalinst_make(startresult, start->t, valuetypid);
-			/* Result has stepwise interpolation */
-			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
-				true, true, false, false);
-			pfree(instants[0]);
-		}
-		/* Find the middle time between start and the end instant and compute
-		 * the function at that point */
-		TimestampTz inttime = start->t + ((end->t - start->t)/2);
-		/* Linear interpolation */
-		Datum intvalue = temporalseq_value_at_timestamp1(start, end, true, inttime);
-		Datum intresult = invert ?
-			func(value, intvalue, datumtypid, start->valuetypid) :
-			func(intvalue, value, start->valuetypid, datumtypid);
-		instants[0] = temporalinst_make(intresult, start->t, valuetypid);
-		instants[1] = temporalinst_make(intresult, end->t, valuetypid);
-		/* Result has stepwise interpolation */
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
-			false, false, false, false);			
-		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(intvalue, start->valuetypid); FREE_DATUM(intresult, valuetypid);
-		/* Compute the function at the end instant */
-		if (upper_inc)
-		{
-			Datum endresult = invert ?
-				func(value, endvalue, datumtypid, start->valuetypid) :
-				func(endvalue, value, start->valuetypid, datumtypid);
-			instants[0] = temporalinst_make(endresult, end->t, valuetypid);
-			/* Result has stepwise interpolation */
-			result[k++] = temporalseq_from_temporalinstarr(instants, 1,
-				true, true, false, false);
-			pfree(instants[0]);
-			FREE_DATUM(endresult, valuetypid); 
-		}
-		FREE_DATUM(startresult, valuetypid); 
-		return k;
-	}
-	
-	/* Determine whether there is a crossing */
-	TimestampTz crosstime;
-	bool hascross = tlinearseq_timestamp_at_value(start, end, value, 
-		datumtypid, &crosstime);
-
-	/* If there is no crossing compute the function at the start and 
-	 * end instants */
-	if (!hascross)
-	{
-		/* Compute the function at the start and end instants */
-		instants[0] = temporalinst_make(startresult, start->t, valuetypid);
-		instants[1] = temporalinst_make(startresult, end->t, valuetypid);
-		/* Result has stepwise interpolation */
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
-			lower_inc, upper_inc, false, false);
-		FREE_DATUM(startresult, valuetypid); 
-		pfree(instants[0]); pfree(instants[1]); 
-		return 1;
-	}
-
-	/* Since there is a crossing in the middle compute the function at the
-	 * start instant, at the crossing, and at the end instant */
-	instants[0] = temporalinst_make(startresult, start->t, valuetypid);
-	instants[1] = temporalinst_make(startresult, crosstime, valuetypid);
-	/* Result has stepwise interpolation */
-	result[0] = temporalseq_from_temporalinstarr(instants, 2, 
-		lower_inc, false, false, false);
-	FREE_DATUM(startresult, valuetypid);
-	pfree(instants[0]); pfree(instants[1]); 
-	/* Compute the function at the crossing. Due to floating point precision 
-	 * we cannot compute the function at the crosstime as follows
-			startresult = temporalseq_value_at_timestamp1(start, end, true, crosstime);
-	   Since this function is (currently) called only for tfloat then we 
-	   assume startresult = value */
-	Datum value2 = func(value, value, datumtypid, datumtypid);
-	instants[0] = temporalinst_make(value2, crosstime, valuetypid);
-	/* Result has stepwise interpolation */
-	result[1] = temporalseq_from_temporalinstarr(instants, 1, 
-		true, true, false, false);
-	FREE_DATUM(value2, valuetypid);
-	pfree(instants[0]); 
-	/* Find the middle time between start and the end instant and compute
-	 * the function at that point */
-	TimestampTz inttime = crosstime + ((end->t - crosstime)/2);
-	/* Linear interpolation */
-	startresult = temporalseq_value_at_timestamp1(start, end, true, inttime);
-	value2 = invert ?
-		func(value, startresult, datumtypid, start->valuetypid) :
-		func(startresult, value, start->valuetypid, datumtypid);
-	instants[0] = temporalinst_make(value2, crosstime, valuetypid);
-	instants[1] = temporalinst_make(value2, end->t, valuetypid);
-	/* Result has stepwise interpolation */
-	result[2] = temporalseq_from_temporalinstarr(instants, 2, 
-		false, upper_inc, false, false);
-	pfree(instants[0]); pfree(instants[1]);
-	FREE_DATUM(startresult, valuetypid); FREE_DATUM(value2, valuetypid); 
-	return 3;
-}
-
-static int
-tfunc4_temporalseq_base_cross2(TemporalSeq **result, TemporalSeq *seq,
+tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 	Datum value, Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
 	Oid valuetypid, bool invert)
 {
@@ -700,15 +567,137 @@ tfunc4_temporalseq_base_cross2(TemporalSeq **result, TemporalSeq *seq,
 
 	int k = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	Datum value1 = temporalinst_value(inst1);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 1; i < seq->count; i++)
 	{
+		/* Each iteration of the loop adds between one and three sequences */
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
+		Datum value2 = temporalinst_value(inst2);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		/* The next step adds between one and three sequences */
-		k += tfunc4_temporalseq_base_cross1(&result[k], inst1, inst2, 
-			lower_inc, upper_inc, value, func, datumtypid, valuetypid, invert);
+		Datum startresult = invert ?
+			func(value, value1, datumtypid, inst1->valuetypid) :
+			func(value1, value, inst1->valuetypid, datumtypid);
+		TemporalInst *instants[2];
+
+		/* If both segments are constant compute the function at the inst1 and
+		 * inst2 instants */
+		if (datum_eq(value1, value2, inst1->valuetypid))
+		{
+			instants[0] = temporalinst_make(startresult, inst1->t, valuetypid);
+			instants[1] = temporalinst_make(startresult, inst2->t, valuetypid);
+			/* Result has stepwise interpolation */
+			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				lower_inc, upper_inc, false, false);
+			FREE_DATUM(startresult, valuetypid);
+			pfree(instants[0]); pfree(instants[1]);
+		}
+			/* If either the inst1 or the inst2 value is equal to the value compute
+			 * the function at the inst1, at the middle, and at the inst2 instants */
+		else if (datum_eq2(value1, value, inst1->valuetypid, datumtypid) ||
+				 datum_eq2(value2, value, inst1->valuetypid, datumtypid))
+		{
+			/* Compute the function at the inst1 instant */
+			if (lower_inc)
+			{
+				instants[0] = temporalinst_make(startresult, inst1->t, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+					true, true, false, false);
+				pfree(instants[0]);
+			}
+			/* Find the middle time between inst1 and the inst2 instant and compute
+			 * the function at that point */
+			TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
+			/* Linear interpolation */
+			Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, true, inttime);
+			Datum intresult = invert ?
+				func(value, intvalue, datumtypid, inst1->valuetypid) :
+				func(intvalue, value, inst1->valuetypid, datumtypid);
+			instants[0] = temporalinst_make(intresult, inst1->t, valuetypid);
+			instants[1] = temporalinst_make(intresult, inst2->t, valuetypid);
+			/* Result has stepwise interpolation */
+			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				false, false, false, false);
+			pfree(instants[0]); pfree(instants[1]);
+			FREE_DATUM(intvalue, inst1->valuetypid); FREE_DATUM(intresult, valuetypid);
+			/* Compute the function at the inst2 instant */
+			if (upper_inc)
+			{
+				Datum endresult = invert ?
+					func(value, value2, datumtypid, inst1->valuetypid) :
+					func(value2, value, inst1->valuetypid, datumtypid);
+				instants[0] = temporalinst_make(endresult, inst2->t, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+					true, true, false, false);
+				pfree(instants[0]);
+				FREE_DATUM(endresult, valuetypid);
+			}
+			FREE_DATUM(startresult, valuetypid);
+		}
+		else
+		{
+			/* Determine whether there is a crossing */
+			TimestampTz crosstime;
+			bool hascross = tlinearseq_timestamp_at_value(inst1, inst2, value,
+				datumtypid, &crosstime);
+
+			/* If there is no crossing compute the function at the inst1 and
+			 * inst2 instants */
+			if (!hascross)
+			{
+				/* Compute the function at the inst1 and inst2 instants */
+				instants[0] = temporalinst_make(startresult, inst1->t, valuetypid);
+				instants[1] = temporalinst_make(startresult, inst2->t, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					lower_inc, upper_inc, false, false);
+				FREE_DATUM(startresult, valuetypid);
+				pfree(instants[0]); pfree(instants[1]);
+			}
+			else
+			{
+				/* Since there is a crossing in the middle compute the function at the
+				 * inst1 instant, at the crossing, and at the inst2 instant */
+				instants[0] = temporalinst_make(startresult, inst1->t, valuetypid);
+				instants[1] = temporalinst_make(startresult, crosstime, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					lower_inc, false, false, false);
+				FREE_DATUM(startresult, valuetypid);
+				pfree(instants[0]); pfree(instants[1]);
+				/* Compute the function at the crossing. Due to floating point precision
+				 * we cannot compute the function at the crosstime as follows
+						startresult = temporalseq_value_at_timestamp1(inst1, inst2, true, crosstime);
+				   Since this function is (currently) called only for tfloat then we
+				   assume startresult = value */
+				Datum value2 = func(value, value, datumtypid, datumtypid);
+				instants[0] = temporalinst_make(value2, crosstime, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+					true, true, false, false);
+				FREE_DATUM(value2, valuetypid);
+				pfree(instants[0]);
+				/* Find the middle time between inst1 and the inst2 instant and compute
+				 * the function at that point */
+				TimestampTz inttime = crosstime + ((inst2->t - crosstime)/2);
+				/* Linear interpolation */
+				startresult = temporalseq_value_at_timestamp1(inst1, inst2, true, inttime);
+				value2 = invert ?
+					func(value, startresult, datumtypid, inst1->valuetypid) :
+					func(startresult, value, inst1->valuetypid, datumtypid);
+				instants[0] = temporalinst_make(value2, crosstime, valuetypid);
+				instants[1] = temporalinst_make(value2, inst2->t, valuetypid);
+				/* Result has stepwise interpolation */
+				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					false, upper_inc, false, false);
+				pfree(instants[0]); pfree(instants[1]);
+				FREE_DATUM(startresult, valuetypid); FREE_DATUM(value2, valuetypid);
+			}
+		}
 		inst1 = inst2;
+		value1 = value2;
 		lower_inc = true;
 	}	
 	return k;
@@ -720,7 +709,7 @@ tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value,
 	Oid valuetypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * 3);
-	int count = tfunc4_temporalseq_base_cross2(sequences, seq, value, 
+	int count = tfunc4_temporalseq_base_cross1(sequences, seq, value, 
 		func, datumtypid, valuetypid, invert);
 	/* Result has stepwise interpolation */
 	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
@@ -743,7 +732,7 @@ tfunc4_temporals_base_cross(TemporalS *ts, Datum value,
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		k += tfunc4_temporalseq_base_cross2(&sequences[k], seq, value,
+		k += tfunc4_temporalseq_base_cross1(&sequences[k], seq, value,
 			func, datumtypid, valuetypid, invert);
 	}
 	/* Result has stepwise interpolation */
@@ -1003,7 +992,7 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		&seq2->period);
 	if (inter == NULL)
 		return NULL;
-	
+
 	/* If the two sequences intersect at an instant */
 	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
 	{
@@ -1052,6 +1041,8 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalInst *prev1, *prev2;
 	Datum inter1, inter2, value;
 	TimestampTz intertime;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count &&
 		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
 		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
@@ -1078,10 +1069,10 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		if (interpoint != NULL && k > 0 && 
 			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
-			inter1 = temporalseq_value_at_timestamp1(prev1, inst1, 
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), intertime);
-			inter2 = temporalseq_value_at_timestamp1(prev2, inst2, 
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), intertime);
+			inter1 = temporalseq_value_at_timestamp1(prev1, inst1,
+				linear1, intertime);
+			inter2 = temporalseq_value_at_timestamp1(prev2, inst2,
+				linear2, intertime);
 			value = func(inter1, inter2);
 			instants[k++] = temporalinst_make(value, intertime, valuetypid);
 			FREE_DATUM(inter1, seq1->valuetypid); FREE_DATUM(inter2, seq2->valuetypid);
@@ -2166,6 +2157,8 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalInst *prev1, *prev2;
 	Datum inter1, inter2, value;
 	TimestampTz intertime;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count &&
 		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
 		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
@@ -2193,9 +2186,9 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
 			inter1 = temporalseq_value_at_timestamp1(prev1, inst1, 
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), intertime);
+				linear1, intertime);
 			inter2 = temporalseq_value_at_timestamp1(prev2, inst2, 
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), intertime);
+				linear2, intertime);
 			value = func(inter1, inter2, seq1->valuetypid, seq2->valuetypid);
 			instants[k++] = temporalinst_make(value, intertime, valuetypid);
 			FREE_DATUM(inter1, seq1->valuetypid); FREE_DATUM(inter2, seq2->valuetypid);
@@ -2621,6 +2614,8 @@ sync_tfunc2_temporalseq_temporalseq_cross2(TemporalSeq **result, TemporalSeq *se
 		j = temporalseq_find_timestamp(seq2, inter->lower) + 1;
 	}
 	bool lower_inc = inter->lower_inc;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
@@ -2633,23 +2628,20 @@ sync_tfunc2_temporalseq_temporalseq_cross2(TemporalSeq **result, TemporalSeq *se
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
 		/* The next step adds between one and three sequences */
 		k += sync_tfunc2_temporalseq_temporalseq_cross1(&result[k], 
-			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
-			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags), 
+			start1, end1, linear1, start2, end2, linear2,
 			lower_inc, upper_inc, func, valuetypid);
 		start1 = end1;
 		start2 = end2;
@@ -3018,6 +3010,8 @@ sync_tfunc3_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		j = temporalseq_find_timestamp(seq2, inter->lower) + 1;
 	}
 	bool lower_inc = inter->lower_inc;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
@@ -3030,23 +3024,20 @@ sync_tfunc3_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
 		/* The next step adds between one and three sequences */
 		k += sync_tfunc3_temporalseq_temporalseq_cross1(&result[k],
-			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags), 
-			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),
+			start1, end1, linear1, start2, end2, linear2,
 			lower_inc, upper_inc, param, func, valuetypid);
 		start1 = end1;
 		start2 = end2;
@@ -3432,6 +3423,8 @@ sync_tfunc4_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		j = temporalseq_find_timestamp(seq2, inter->lower) + 1;
 	}
 	bool lower_inc = inter->lower_inc;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
@@ -3444,23 +3437,20 @@ sync_tfunc4_temporalseq_temporalseq_cross2(TemporalSeq **result,
 		else if (cmp < 0)
 		{
 			i++;
-			end2 = temporalseq_at_timestamp1(start2, end2, end1->t,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+			end2 = temporalseq_at_timestamp1(start2, end2, end1->t, linear2);
 			tofree[l++] = end2;
 		}
 		else
 		{
 			j++;
-			end1 = temporalseq_at_timestamp1(start1, end1, end2->t,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+			end1 = temporalseq_at_timestamp1(start1, end1, end2->t, linear1);
 			tofree[l++] = end1;
 		}
 		bool upper_inc = (timestamp_cmp_internal(end1->t, inter->upper) == 0) ? 
 			inter->upper_inc : false;
 		/* The next step adds between one and three sequences */
 		k += sync_tfunc4_temporalseq_temporalseq_cross1(&result[k], 
-			start1, end1, MOBDB_FLAGS_GET_LINEAR(seq1->flags),
-			start2, end2, MOBDB_FLAGS_GET_LINEAR(seq2->flags),
+			start1, end1, linear1, start2, end2, linear2,
 			lower_inc, upper_inc, func, valuetypid);
 		start1 = end1;
 		start2 = end2;

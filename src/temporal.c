@@ -1380,7 +1380,7 @@ temporalinst_timestamp(PG_FUNCTION_ARGS)
 void *
 temporal_bbox_ptr(const Temporal *temp)
 {
-	TBOX *result = NULL;
+	void *result = NULL;
 	if (temp->duration == TEMPORALI)
 		result = temporali_bbox_ptr((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 

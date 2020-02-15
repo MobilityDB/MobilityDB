@@ -669,7 +669,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 	{
 		hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
 		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
-		srid = tpoint_srid_internal((Temporal *) instants[0]);
+		srid = tpointinst_srid(instants[0]);
 	}
 #endif
 	for (int i = 1; i < count; i++)
@@ -684,7 +684,7 @@ temporalseq_from_temporalinstarr(TemporalInst **instants, int count,
 #ifdef WITH_POSTGIS
 		if (isgeo)
 		{
-			if (tpoint_srid_internal((Temporal *)instants[i]) != srid)
+			if (tpointinst_srid(instants[i]) != srid)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same SRID")));
 			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
@@ -817,8 +817,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		isgeo = true;
-		if (tpoint_srid_internal((Temporal *)inst) != 
-			tpoint_srid_internal((Temporal *)seq))
+		if (tpointinst_srid(inst) != tpointseq_srid(seq))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same SRID")));
 		if (MOBDB_FLAGS_GET_Z(inst->flags) != MOBDB_FLAGS_GET_Z(seq->flags))

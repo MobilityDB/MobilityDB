@@ -998,7 +998,7 @@ tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
 	buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
-		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)inst), buf, variant);
+		buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
 	/* Set the coordinates */
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
 	{
@@ -1026,7 +1026,7 @@ tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
 	buf = tpoint_wkb_type((Temporal *)ti, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
-		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ti), buf, variant);
+		buf = integer_to_wkb_buf(tpointi_srid(ti), buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(ti->count, buf, variant);
 	/* Set the TemporalInst array */
@@ -1082,7 +1082,7 @@ tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 	buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
-		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)seq), buf, variant);
+		buf = integer_to_wkb_buf(tpointseq_srid(seq), buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(seq->count, buf, variant);
 	/* Set the period bounds */
@@ -1119,7 +1119,7 @@ tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
 	buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
 	/* Set the optional SRID for extended variant */
 	if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
-		buf = integer_to_wkb_buf(tpoint_srid_internal((Temporal *)ts), buf, variant);
+		buf = integer_to_wkb_buf(tpoints_srid(ts), buf, variant);
 	/* Set the count */
 	buf = integer_to_wkb_buf(ts->count, buf, variant);
 	/* Set the sequences */

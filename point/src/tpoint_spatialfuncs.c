@@ -258,14 +258,14 @@ geom_to_geog(Datum value)
 
 /* Get the spatial reference system identifier (SRID) of a temporal point */
 
-static int
+int
 tpointinst_srid(TemporalInst *inst)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
 	return gserialized_get_srid(gs);
 }
 
-static int
+int
 tpointi_srid(TemporalI *ti)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
@@ -273,7 +273,7 @@ tpointi_srid(TemporalI *ti)
 	return gserialized_get_srid(gs);
 }
 
-static int
+int
 tpointseq_srid(TemporalSeq *seq)
 {
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
@@ -281,7 +281,7 @@ tpointseq_srid(TemporalSeq *seq)
 	return gserialized_get_srid(gs);
 }
 
-static int
+int
 tpoints_srid(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
