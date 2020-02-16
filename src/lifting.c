@@ -2478,11 +2478,11 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	Datum startvalue1 = temporalinst_value(start1);
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum startresult = func(startvalue1, startvalue2);
 	/* We create two temporal instants with arbitrary values that are set in
 	 * the for loop to avoid creating and freeing the instants each time a
 	 * segment of the result is computed */
 	TemporalInst *instants[2];
+	Datum startresult = func(startvalue1, startvalue2);
 	instants[0] = temporalinst_make(startresult, start1->t, valuetypid);
 	instants[1] = temporalinst_copy(instants[0]);
 	while (i < seq1->count && j < seq2->count)
@@ -2511,13 +2511,14 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 		/* The remaining of the loop adds between one and three sequences */
 		Datum endvalue1 = temporalinst_value(end1);
 		Datum endvalue2 = temporalinst_value(end2);
+		startresult = func(startvalue1, startvalue2);
 
 		/* If both segments are constant compute the function at the start and
 		 * end instants */
 		if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
 			datum_eq(startvalue2, endvalue2, start2->valuetypid))
 		{
-			/* The first instant value created above is the one needed here */
+			temporalinst_set(instants[0], startresult, start1->t);
 			temporalinst_set(instants[1], startresult, end1->t);
 			/* Result has stepwise interpolation */
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
@@ -2848,11 +2849,11 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	Datum startvalue1 = temporalinst_value(start1);
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum startresult = func(startvalue1, startvalue2, param);
 	/* We create two temporal instants with arbitrary values that are set in
 	 * the for loop to avoid creating and freeing the instants each time a
 	 * segment of the result is computed */
 	TemporalInst *instants[2];
+	Datum startresult = func(startvalue1, startvalue2, param);
 	instants[0] = temporalinst_make(startresult, start1->t, valuetypid);
 	instants[1] = temporalinst_copy(instants[0]);
 	while (i < seq1->count && j < seq2->count)
@@ -2881,13 +2882,14 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		/* The remaining of the loop adds between one and three sequences */
 		Datum endvalue1 = temporalinst_value(end1);
 		Datum endvalue2 = temporalinst_value(end2);
+		startresult = func(startvalue1, startvalue2, param);
 
 		/* If both segments are constant compute the function at the start and
 		 * end instants */
 		if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
 			datum_eq(startvalue2, endvalue2, start2->valuetypid))
 		{
-			/* The first instant value created above is the one needed here */
+			temporalinst_set(instants[0], startresult, start1->t);
 			temporalinst_set(instants[1], startresult, end1->t);
 			/* Result has stepwise interpolation */
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
@@ -3229,12 +3231,12 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	Datum startvalue1 = temporalinst_value(start1);
 	Datum startvalue2 = temporalinst_value(start2);
-	Datum startresult = func(startvalue1, startvalue2, start1->valuetypid,
-		start2->valuetypid);
 	/* We create two temporal instants with arbitrary values that are set in
 	 * the for loop to avoid creating and freeing the instants each time a
 	 * segment of the result is computed */
 	TemporalInst *instants[2];
+	Datum startresult = func(startvalue1, startvalue2, start1->valuetypid,
+		start2->valuetypid);
 	instants[0] = temporalinst_make(startresult, start1->t, valuetypid);
 	instants[1] = temporalinst_copy(instants[0]);
 	while (i < seq1->count && j < seq2->count)
@@ -3271,7 +3273,7 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
 			datum_eq(startvalue2, endvalue2, start2->valuetypid))
 		{
-			/* The first instant value created above is the one needed here */
+			temporalinst_set(instants[0], startresult, start1->t);
 			temporalinst_set(instants[1], startresult, end1->t);
 			/* Result has stepwise interpolation */
 			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
