@@ -13,6 +13,8 @@
 #ifndef __TPOINT_SPATIALFUNCS_H__
 #define __TPOINT_SPATIALFUNCS_H__
 
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
@@ -48,6 +50,10 @@ extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
+extern int tpointinst_srid(TemporalInst *inst);
+extern int tpointi_srid(TemporalI *ti);
+extern int tpointseq_srid(TemporalSeq *seq);
+extern int tpoints_srid(TemporalS *ts);
 extern int tpoint_srid_internal(Temporal *t);
 extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 
@@ -67,6 +73,7 @@ extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 extern Datum tpoint_trajectory_internal(Temporal *temp);
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
 extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
+extern Datum tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
 extern Datum geogpoint_trajectory(Datum value1, Datum value2);

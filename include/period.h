@@ -82,9 +82,7 @@ extern bool period_gt_internal(Period *p1, Period *p2);
 extern void period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper);
 extern int period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, 
 	bool lower2, bool inclusive1, bool inclusive2);
-extern bool period_bounds_adjacent(TimestampTz t1, TimestampTz t2, 
-	bool inclusive1, bool inclusive2);
-extern Period *period_make(TimestampTz lower, TimestampTz upper, 
+extern Period *period_make(TimestampTz lower, TimestampTz upper,
 	bool lower_inc, bool upper_inc);
 extern void period_set(Period *p, TimestampTz lower, TimestampTz upper, 
 	bool lower_inc, bool upper_inc);

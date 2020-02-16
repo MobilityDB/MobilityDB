@@ -15,6 +15,9 @@
 
 #include "projection_gk.h"
 
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+
+#include <liblwgeom.h>
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "postgis.h"

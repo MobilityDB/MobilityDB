@@ -179,16 +179,14 @@ compare_mcvs(const void *a, const void *b)
  * Comparison function for sorting RangeBounds.
  */
 static int
-range_bound_qsort_cmp(const void *a1, const void *a2)
+range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
 {
-	RangeBound *r1 = (RangeBound *) a1;
-	RangeBound *r2 = (RangeBound *) a2;
-	return period_cmp_bounds(DatumGetTimestampTz(r1->val),
-							 DatumGetTimestampTz(r2->val),
-							 r1->lower, r2->lower,
-							 r1->inclusive, r2->inclusive);
-}
+	RangeBound *b1 = (RangeBound *) a1;
+	RangeBound *b2 = (RangeBound *) a2;
+	TypeCacheEntry *typcache = (TypeCacheEntry *) arg;
 
+	return range_cmp_bounds(typcache, b1, b2);
+}
 
 /*
  * Analyze the list of common values in the sample and decide how many are
@@ -944,8 +942,10 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		/* Generate a bounds histogram slot entry */
 
 		/* Sort bound values */
-		qsort(lowers, (size_t) non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
-		qsort(uppers, (size_t) non_null_cnt, sizeof(RangeBound), range_bound_qsort_cmp);
+		qsort_arg(lowers, (size_t) non_null_cnt, sizeof(RangeBound),
+			range_bound_qsort_cmp, typcache);
+		qsort_arg(uppers, (size_t) non_null_cnt, sizeof(RangeBound),
+			range_bound_qsort_cmp, typcache);
 
 		num_hist = non_null_cnt;
 		if (num_hist > num_bins)

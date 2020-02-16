@@ -149,15 +149,14 @@ contains_period_timestampset(PG_FUNCTION_ARGS)
 bool
 contains_period_period_internal(Period *p1, Period *p2)
 {
-	/* We must have lower1 <= lower2 and upper1 >= upper2 */
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) > 0)
-		return false;
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false,
-			p1->upper_inc, p2->upper_inc) < 0)
-		return false;
-
-	return true;
+	int c1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int c2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	if (
+		(c1 < 0 || (c1 == 0 && (p1->lower_inc || ! p2->lower_inc))) &&
+		(c2 > 0 || (c2 == 0 && (p1->upper_inc || ! p2->upper_inc)))
+	)
+		return true;
+	return false;
 }
 
 PG_FUNCTION_INFO_V1(contains_period_period);
@@ -576,18 +575,13 @@ overlaps_period_timestampset(PG_FUNCTION_ARGS)
 bool
 overlaps_period_period_internal(Period *p1, Period *p2)
 {
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) >= 0 &&
-		period_cmp_bounds(p1->lower, p2->upper, true, false,
-			p1->lower_inc, p2->upper_inc) <= 0)
+	int c1 = timestamp_cmp_internal(p1->lower, p2->upper);
+	int c2 = timestamp_cmp_internal(p2->lower, p1->upper);
+	if (
+		(c1 < 0 || (c1 == 0 && p1->lower_inc && p2->upper_inc)) &&
+		(c2 < 0 || (c2 == 0 && p2->lower_inc && p1->upper_inc))
+	)
 		return true;
-
-	if (period_cmp_bounds(p2->lower, p1->lower, true, true,
-			p2->lower_inc, p1->lower_inc) >= 0 &&
-		period_cmp_bounds(p2->lower, p1->upper, true, false,
-			p2->lower_inc, p1->upper_inc) <= 0)
-		return true;
-
 	return false;
 }
 
@@ -727,8 +721,8 @@ before_timestamp_timestampset(PG_FUNCTION_ARGS)
 bool
 before_timestamp_period_internal(TimestampTz t, Period *p)
 {
-	return (period_cmp_bounds(t, p->lower, false, true,
-		true, p->lower_inc) < 0);
+	int cmp = timestamp_cmp_internal(t, p->lower);
+	return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_period);
@@ -745,8 +739,7 @@ bool
 before_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(t, p->lower, false, true,
-		true, p->lower_inc) < 0);
+	return before_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(before_timestamp_periodset);
@@ -825,8 +818,7 @@ before_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, 0);
 	TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-	return (period_cmp_bounds(p->lower, t, true, false,
-		p->lower_inc, true) > 0);
+	return before_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(before_timestampset_periodset);
@@ -845,9 +837,11 @@ before_timestampset_periodset(PG_FUNCTION_ARGS)
 bool
 before_period_timestamp_internal(Period *p, TimestampTz t)
 {
-	return (period_cmp_bounds(p->upper, t, false, true,
-		p->upper_inc, true) < 0);
+
+	int cmp = timestamp_cmp_internal(p->upper, t);
+	return (cmp < 0 || (cmp == 0 && ! p->upper_inc));
 }
+
 
 PG_FUNCTION_INFO_V1(before_period_timestamp);
 
@@ -881,8 +875,8 @@ before_period_timestampset(PG_FUNCTION_ARGS)
 bool
 before_period_period_internal(Period *p1, Period *p2)
 {
-	return (period_cmp_bounds(p1->upper, p2->lower, false, true,
-		p1->upper_inc, p2->lower_inc) < 0);
+	int cmp = timestamp_cmp_internal(p1->upper, p2->lower);
+	return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || ! p2->lower_inc)));
 }
 
 PG_FUNCTION_INFO_V1(before_period_period);
@@ -899,8 +893,7 @@ bool
 before_period_periodset_internal(Period *p, PeriodSet *ps)
 {
 	Period *p1 = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p->upper, p1->lower, false, true,
-		p->upper_inc, p1->lower_inc) < 0);
+	return before_period_period_internal(p, p1);
 }
 
 PG_FUNCTION_INFO_V1(before_period_periodset);
@@ -919,8 +912,7 @@ bool
 before_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p->upper, t, false, true,
-		p->upper_inc, true) < 0);
+	return before_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_timestamp);
@@ -940,8 +932,7 @@ before_periodset_timestampset_internal(PeriodSet *ps, TimestampSet *ts)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
 	TimestampTz t = timestampset_time_n(ts, 0);
-	return (period_cmp_bounds(p->upper, t, false, true,
-		p->upper_inc, true) < 0);
+	return before_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_timestampset);
@@ -961,8 +952,7 @@ bool
 before_periodset_period_internal(PeriodSet *ps, Period *p)
 {
 	Period *p1 = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p1->upper, p->lower, false, true,
-		p1->upper_inc, p->lower_inc) < 0);
+	return before_period_period_internal(p1, p);
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_period);
@@ -982,8 +972,7 @@ before_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	Period *p1 = periodset_per_n(ps1, ps1->count - 1);
 	Period *p2 = periodset_per_n(ps2, 0);
-	return (period_cmp_bounds(p1->upper, p2->lower, false, true,
-		p1->upper_inc, p2->lower_inc) < 0);
+	return before_period_period_internal(p1, p2);
 }
 
 PG_FUNCTION_INFO_V1(before_periodset_periodset);
@@ -1024,8 +1013,8 @@ after_timestamp_timestampset(PG_FUNCTION_ARGS)
 bool
 after_timestamp_period_internal(TimestampTz t, Period *p)
 {
-	return (period_cmp_bounds(t, p->upper, true, false,
-		true, p->upper_inc) > 0);
+	int cmp = timestamp_cmp_internal(t, p->upper);
+	return (cmp > 0 || (cmp == 0 && ! p->upper_inc));
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_period);
@@ -1042,8 +1031,7 @@ bool
 after_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(t, p->upper, true, false,
-		true, p->upper_inc) > 0);
+	return after_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(after_timestamp_periodset);
@@ -1124,8 +1112,7 @@ after_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
 	TimestampTz t = timestampset_time_n(ts, 0);
-	return (period_cmp_bounds(p->upper, t, false, true,
-		p->upper_inc, true) < 0);
+	return after_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(after_timestampset_periodset);
@@ -1144,8 +1131,8 @@ after_timestampset_periodset(PG_FUNCTION_ARGS)
 bool
 after_period_timestamp_internal(Period *p, TimestampTz t)
 {
-	return (period_cmp_bounds(p->lower, t, true, false,
-		p->lower_inc, true) > 0);
+	int cmp = timestamp_cmp_internal(t, p->lower);
+	return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
 }
 
 PG_FUNCTION_INFO_V1(after_period_timestamp);
@@ -1180,8 +1167,8 @@ after_period_timestampset(PG_FUNCTION_ARGS)
 bool
 after_period_period_internal(Period *p1, Period *p2)
 {
-	return (period_cmp_bounds(p1->lower, p2->upper, true, false,
-		p1->lower_inc, p2->upper_inc) > 0);
+	int cmp = timestamp_cmp_internal(p2->upper, p1->lower);
+	return (cmp < 0 || (cmp == 0 && (! p2->upper_inc || ! p1->lower_inc)));
 }
 
 PG_FUNCTION_INFO_V1(after_period_period);
@@ -1198,8 +1185,7 @@ bool
 after_period_periodset_internal(Period *p, PeriodSet *ps)
 {
 	Period *p1 = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p->lower, p1->upper, true, false,
-		p->lower_inc, p1->upper_inc) > 0);
+	return after_period_period_internal(p, p1);
 }
 
 PG_FUNCTION_INFO_V1(after_period_periodset);
@@ -1218,8 +1204,7 @@ bool
 after_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 {
 	Period *p = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p->lower, t, true, false,
-		p->lower_inc, true) > 0);
+	return after_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_timestamp);
@@ -1239,8 +1224,7 @@ after_periodset_timestampset_internal(PeriodSet *ps, TimestampSet *ts)
 {
 	Period *p = periodset_per_n(ps, 0);
 	TimestampTz t = timestampset_time_n(ts, ts->count - 1);
-	return (period_cmp_bounds(p->lower, t, true, false,
-		p->lower_inc, true) > 0);
+	return after_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_timestampset);
@@ -1260,8 +1244,7 @@ bool
 after_periodset_period_internal(PeriodSet *ps, Period *p)
 {
 	Period *p1 = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p1->lower, p->upper, true, false,
-		p1->lower_inc, p->upper_inc) > 0);
+	return after_period_period_internal(p1, p);
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_period);
@@ -1281,8 +1264,7 @@ after_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	Period *p1 = periodset_per_n(ps1, 0);
 	Period *p2 = periodset_per_n(ps2, ps2->count - 1);
-	return (period_cmp_bounds(p1->lower, p2->upper, true, false,
-		p1->lower_inc, p2->upper_inc) > 0);
+	return after_period_period_internal(p1, p2);
 }
 
 PG_FUNCTION_INFO_V1(after_periodset_periodset);
@@ -1323,8 +1305,8 @@ overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 bool
 overbefore_timestamp_period_internal(TimestampTz t, Period *p)
 {
-	return (period_cmp_bounds(t, p->upper, false, false,
-			true, p->upper_inc) <= 0);
+	int cmp = timestamp_cmp_internal(t, p->upper);
+	return (cmp < 0 || (cmp == 0 && p->upper_inc));
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestamp_period);
@@ -1341,8 +1323,7 @@ bool
 overbefore_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(t, p->upper, false, false,
-			true, p->upper_inc) <= 0);
+	return overbefore_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_timestamp_periodset);
@@ -1440,8 +1421,7 @@ overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 bool
 overbefore_period_timestamp_internal(Period *p, TimestampTz t)
 {
-	return (period_cmp_bounds(p->upper, t, false, false,
-			p->upper_inc, true) <= 0);
+	return timestamp_cmp_internal(p->upper, t) <= 0;
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_timestamp);
@@ -1476,8 +1456,8 @@ overbefore_period_timestampset(PG_FUNCTION_ARGS)
 bool
 overbefore_period_period_internal(Period *p1, Period *p2)
 {
-	return (period_cmp_bounds(p1->upper, p2->upper, false, false,
-			p1->upper_inc, p2->upper_inc) <= 0);
+	int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
+	return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || p2->upper_inc)));
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_period);
@@ -1494,8 +1474,7 @@ bool
 overbefore_period_periodset_internal(Period *p, PeriodSet *ps)
 {
 	Period *p1 = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p->upper, p1->upper, false, false,
-			p->upper_inc, p1->upper_inc) <= 0);
+	return overbefore_period_period_internal(p, p1);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_period_periodset);
@@ -1515,8 +1494,7 @@ bool
 overbefore_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 {
 	Period *p = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p->upper, t, false, false,
-			p->upper_inc, true) <= 0);
+	return overbefore_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_timestamp);
@@ -1556,8 +1534,7 @@ bool
 overbefore_periodset_period_internal(PeriodSet *ps, Period *p)
 {
 	Period *p1 = periodset_per_n(ps, ps->count - 1);
-	return (period_cmp_bounds(p1->upper, p->upper, false, false,
-			p1->upper_inc, p->upper_inc) <= 0);
+	return overbefore_period_period_internal(p1, p);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_period);
@@ -1577,8 +1554,7 @@ overbefore_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	Period *p1 = periodset_per_n(ps1, ps1->count - 1);
 	Period *p2 = periodset_per_n(ps2, ps2->count - 1);
-	return (period_cmp_bounds(p1->upper, p2->upper, false, false,
-			p1->upper_inc, p2->upper_inc) <= 0);
+	return overbefore_period_period_internal(p1, p2);
 }
 
 PG_FUNCTION_INFO_V1(overbefore_periodset_periodset);
@@ -1619,8 +1595,8 @@ overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 bool
 overafter_timestamp_period_internal(TimestampTz t, Period *p)
 {
-	return (period_cmp_bounds(t, p->lower, true, true,
-			true, p->lower_inc) >= 0);
+	int cmp = timestamp_cmp_internal(p->lower, t);
+	return (cmp < 0 || (cmp == 0 && p->lower_inc));
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestamp_period);
@@ -1637,8 +1613,7 @@ bool
 overafter_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 {
 	Period *p = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(t, p->lower, true, true,
-			true, p->lower_inc) >= 0);
+	return overafter_timestamp_period_internal(t, p);
 }
 
 PG_FUNCTION_INFO_V1(overafter_timestamp_periodset);
@@ -1736,8 +1711,7 @@ overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 bool
 overafter_period_timestamp_internal(Period *p, TimestampTz t)
 {
-	return (period_cmp_bounds(p->lower, t, true, true,
-			p->lower_inc, true) >= 0);
+	return (timestamp_cmp_internal(t, p->lower) <= 0);
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_timestamp);
@@ -1772,8 +1746,8 @@ overafter_period_timestampset(PG_FUNCTION_ARGS)
 bool
 overafter_period_period_internal(Period *p1, Period *p2)
 {
-	return (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) >= 0);
+	int cmp = timestamp_cmp_internal(p2->lower, p1->lower);
+	return (cmp < 0 || (cmp == 0 && (! p1->lower_inc || p2->lower_inc)));
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_period);
@@ -1790,8 +1764,7 @@ bool
 overafter_period_periodset_internal(Period *p, PeriodSet *ps)
 {
 	Period *p1 = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p->lower, p1->lower, true, true,
-			p->lower_inc, p1->lower_inc) >= 0);
+	return overafter_period_period_internal(p, p1);
 }
 
 PG_FUNCTION_INFO_V1(overafter_period_periodset);
@@ -1810,8 +1783,7 @@ bool
 overafter_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 {
 	Period *p = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p->lower, t, true, true,
-			p->lower_inc, true) >= 0);
+	return overafter_period_timestamp_internal(p, t);
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_timestamp);
@@ -1851,8 +1823,7 @@ bool
 overafter_periodset_period_internal(PeriodSet *ps, Period *p)
 {
 	Period *p1 = periodset_per_n(ps, 0);
-	return (period_cmp_bounds(p1->lower, p->lower, true, true,
-			p1->lower_inc, p->lower_inc) >= 0);
+	return overafter_period_period_internal(p1, p);
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_period);
@@ -1872,8 +1843,7 @@ overafter_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 {
 	Period *p1 = periodset_per_n(ps1, 0);
 	Period *p2 = periodset_per_n(ps2, 0);
-	return (period_cmp_bounds(p1->lower, p2->lower, true, true,
-			p1->lower_inc, p2->lower_inc) >= 0);
+	return overafter_period_period_internal(p1, p2);
 }
 
 PG_FUNCTION_INFO_V1(overafter_periodset_periodset);
@@ -1896,13 +1866,11 @@ bool
 adjacent_timestamp_period_internal(TimestampTz t, Period *p)
 {
 	/*
-	 * Two periods A..B and C..D are adjacent if and only if
-	 * B is adjacent to C, or D is adjacent to A.
+	 * A timestamp A and a period C..D are adjacent if and only if
+	 * A is adjacent to C, or D is adjacent to A.
 	 */
-	return (period_bounds_adjacent(t, p->lower,
-				true, p->lower_inc) ||
-			period_bounds_adjacent(p->upper, t,
-				p->upper_inc, true));
+	return (timestamp_cmp_internal(t, p->lower) == 0 && ! p->lower_inc) ||
+		(timestamp_cmp_internal(p->upper, t) == 0 && ! p->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestamp_period);
@@ -1924,10 +1892,8 @@ adjacent_timestamp_periodset_internal(TimestampTz t, PeriodSet *ps)
 	 */
 	Period *p1 = periodset_per_n(ps, 0);
 	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	return (period_bounds_adjacent(t, p1->lower,
-				true, p1->lower_inc) ||
-			period_bounds_adjacent(p2->upper, t,
-				p2->upper_inc, true));
+	return (timestamp_cmp_internal(t, p1->lower) == 0 && ! p1->lower_inc) ||
+		   (timestamp_cmp_internal(p2->upper, t) == 0 && ! p2->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestamp_periodset);
@@ -1951,10 +1917,8 @@ adjacent_timestampset_period_internal(TimestampSet *ts, Period *p)
 	 */
 	TimestampTz t1 = timestampset_time_n(ts, 0);
 	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-	return (period_bounds_adjacent(p->upper, t1,
-				p->upper_inc, true) ||
-			period_bounds_adjacent(t2, p->lower,
-				true, p->lower_inc));
+	return (timestamp_cmp_internal(t2, p->lower) == 0 && ! p->lower_inc) ||
+		   (timestamp_cmp_internal(p->upper, t1) == 0 && ! p->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestampset_period);
@@ -1980,10 +1944,8 @@ adjacent_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
 	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
 	Period *p1 = periodset_per_n(ps, 0);
 	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	return (period_bounds_adjacent(p2->upper, t1,
-				p2->upper_inc, true) ||
-			period_bounds_adjacent(t2, p1->lower,
-				true, p2->lower_inc));
+	return (timestamp_cmp_internal(t2, p1->lower) == 0 && ! p1->lower_inc) ||
+		   (timestamp_cmp_internal(p2->upper, t1) == 0 && ! p2->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_timestampset_periodset);
@@ -2006,10 +1968,8 @@ adjacent_period_timestamp_internal(Period *p, TimestampTz t)
 	 * A periods A..B and a timestamptz C are adjacent if and only if
 	 * B is adjacent to C, or C is adjacent to A.
 	 */
-	return (period_bounds_adjacent(p->upper, t,
-				p->upper_inc, true) ||
-			period_bounds_adjacent(t, p->lower,
-				true, p->lower_inc));
+	return (timestamp_cmp_internal(t, p->lower) == 0 && ! p->lower_inc) ||
+		   (timestamp_cmp_internal(p->upper, t) == 0 && ! p->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_timestamp);
@@ -2031,10 +1991,8 @@ adjacent_period_timestampset_internal(Period *p, TimestampSet *ts)
 	 */
 	TimestampTz t1 = timestampset_time_n(ts, 0);
 	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-	return (period_bounds_adjacent(p->upper, t1,
-				p->upper_inc, true) ||
-			period_bounds_adjacent(t2, p->lower,
-				true, p->lower_inc));
+	return (timestamp_cmp_internal(t2, p->lower) == 0 && ! p->lower_inc) ||
+		   (timestamp_cmp_internal(p->upper, t1) == 0 && ! p->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_timestampset);
@@ -2056,10 +2014,8 @@ adjacent_period_period_internal(Period *p1, Period *p2)
 	 * Two periods A..B and C..D are adjacent if and only if
 	 * B is adjacent to C, or D is adjacent to A.
 	 */
-	return (period_bounds_adjacent(p1->upper, p2->lower,
-				p1->upper_inc, p2->lower_inc) ||
-			period_bounds_adjacent(p2->upper, p1->lower,
-				p2->upper_inc, p1->lower_inc));
+	return (timestamp_cmp_internal(p1->upper, p2->lower) == 0 && p1->upper_inc != p2->lower_inc) ||
+		   (timestamp_cmp_internal(p2->upper, p1->lower) == 0 && p2->upper_inc != p1->lower_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_period);
@@ -2081,10 +2037,8 @@ adjacent_period_periodset_internal(Period *p, PeriodSet *ps)
 	 * Two periods A..B and C..D are adjacent if and only if
 	 * B is adjacent to C, or D is adjacent to A.
 	 */
-	return (period_bounds_adjacent(p2->upper, p->lower,
-				p2->upper_inc, p->lower_inc) ||
-			period_bounds_adjacent(p->upper, p1->lower,
-				p->upper_inc, p1->lower_inc));
+	return (timestamp_cmp_internal(p2->upper, p->lower) == 0 && p2->upper_inc != p->lower_inc) ||
+		   (timestamp_cmp_internal(p->upper, p1->lower) == 0 && p->upper_inc != p1->lower_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_period_periodset);
@@ -2108,10 +2062,8 @@ adjacent_periodset_timestamp_internal(PeriodSet *ps, TimestampTz t)
 	 */
 	Period *p1 = periodset_per_n(ps, 0);
 	Period *p2 = periodset_per_n(ps, ps->count - 1);
-	return (period_bounds_adjacent(t, p1->lower,
-				true, p1->lower_inc) ||
-			period_bounds_adjacent(p2->upper, t,
-				p2->upper_inc, true));
+	return (timestamp_cmp_internal(t, p1->lower) == 0 && ! p1->lower_inc) ||
+		(timestamp_cmp_internal(p2->upper, t) == 0 && ! p2->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestamp);
@@ -2137,10 +2089,8 @@ adjacent_periodset_timestampset_internal(PeriodSet *ps, TimestampSet *ts)
 	Period *p2 = periodset_per_n(ps, ps->count - 1);
 	TimestampTz t1 = timestampset_time_n(ts, 0);
 	TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
-	return (period_bounds_adjacent(t2, p1->lower,
-				true, p1->lower_inc) ||
-			period_bounds_adjacent(p2->upper, t1,
-				p2->upper_inc, true));
+	return (timestamp_cmp_internal(t2, p1->lower) == 0 && ! p1->lower_inc) ||
+		   (timestamp_cmp_internal(p2->upper, t1) == 0 && ! p2->upper_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_timestampset);
@@ -2165,10 +2115,8 @@ adjacent_periodset_period_internal(PeriodSet *ps, Period *p)
 	 * Two periods A..B and C..D are adjacent if and only if
 	 * B is adjacent to C, or D is adjacent to A.
 	 */
-	return (period_bounds_adjacent(p->upper, p1->lower,
-				p->upper_inc, p1->lower_inc) ||
-			period_bounds_adjacent(p2->upper, p->lower,
-				p2->upper_inc, p->lower_inc));
+	return (timestamp_cmp_internal(p->upper, p1->lower) == 0 && p->upper_inc != p1->lower_inc) ||
+		   (timestamp_cmp_internal(p2->upper, p->lower) == 0 && p2->upper_inc != p->lower_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_period);
@@ -2194,10 +2142,8 @@ adjacent_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 	 * Two periods A..B and C..D are adjacent if and only if
 	 * B is adjacent to C, or D is adjacent to A.
 	 */
-	return (period_bounds_adjacent(endps1->upper, startps2->lower,
-				endps1->upper_inc, startps2->lower_inc) ||
-			period_bounds_adjacent(endps2->upper, startps1->lower,
-				endps2->upper_inc, startps1->lower_inc));
+	return (timestamp_cmp_internal(endps1->upper, startps2->lower) == 0 && endps1->upper_inc != startps2->lower_inc) ||
+		(timestamp_cmp_internal(endps2->upper, startps1 ->lower) == 0 && endps2->upper_inc != startps1 ->lower_inc);
 }
 
 PG_FUNCTION_INFO_V1(adjacent_periodset_periodset);
@@ -2435,8 +2381,8 @@ union_period_period_internal(Period *p1, Period *p2)
 		return result;
 	}
 
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-		p1->lower_inc, p2->lower_inc) < 0)
+	int cmp = timestamp_cmp_internal(p1->lower, p2->lower);
+	if (cmp < 0 || (cmp == 0 && p1->lower_inc && ! p2->lower_inc))
 	{
 		lower = p1->lower;
 		lower_inc = p1->lower_inc;
@@ -2447,8 +2393,8 @@ union_period_period_internal(Period *p1, Period *p2)
 		lower_inc = p2->lower_inc;
 	}
 
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false,
-		p1->upper_inc, p2->upper_inc) > 0)
+	cmp = timestamp_cmp_internal(p1->upper, p2->upper);
+	if (cmp > 0 || (cmp == 0 && p1->upper_inc && ! p2->upper_inc))
 	{
 		upper = p1->upper;
 		upper_inc = p1->upper_inc;
@@ -2539,8 +2485,8 @@ union_period_periodset_internal(Period *p, PeriodSet *ps)
 		/* Compute the union of p with the overlapping periods */
 		TimestampTz lower, upper;
 		bool lower_inc, upper_inc;
-		if (period_cmp_bounds(p->lower, p1->lower, true, true,
-			p->lower_inc, p1->lower_inc) < 0)
+		int cmp = timestamp_cmp_internal(p->lower, p1->lower);
+		if (cmp < 0 || (cmp == 0 && p->lower_inc && ! p1->lower_inc))
 		{
 			lower = p->lower;
 			lower_inc = p->lower_inc;
@@ -2550,8 +2496,8 @@ union_period_periodset_internal(Period *p, PeriodSet *ps)
 			lower = p1->lower;
 			lower_inc = p1->lower_inc;
 		}
-		if (period_cmp_bounds(p->upper, p2->upper, false, false,
-			p->upper_inc, p2->upper_inc) > 0)
+		cmp = timestamp_cmp_internal(p->upper, p2->upper);
+		if (cmp > 0 || (cmp == 0 && p->upper_inc && ! p2->upper_inc))
 		{
 			upper = p->upper;
 			upper_inc = p->upper_inc;
@@ -2724,8 +2670,8 @@ union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 			/* Compute the union of the overlapping periods */
 			TimestampTz lower, upper;
 			bool lower_inc, upper_inc;
-			if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-				p1->lower_inc, p2->lower_inc) < 0)
+			int cmp = timestamp_cmp_internal(p1->lower, p2->lower);
+			if (cmp < 0 || (cmp == 0 && p1->lower_inc && ! p2->lower_inc))
 			{
 				lower = p1->lower;
 				lower_inc = p1->lower_inc;
@@ -2735,8 +2681,8 @@ union_periodset_periodset_internal(PeriodSet *ps1, PeriodSet *ps2)
 				lower = p2->lower;
 				lower_inc = p2->lower_inc;
 			}
-			if (period_cmp_bounds(q1->upper, q2->upper, false, false,
-				q1->upper_inc, q2->upper_inc) > 0)
+			cmp = timestamp_cmp_internal(q1->upper, q2->upper);
+			if (cmp > 0 || (cmp == 0 && q1->upper_inc && ! q2->upper_inc))
 			{
 				upper = q1->upper;
 				upper_inc = q1->upper_inc;
@@ -3049,39 +2995,16 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 Period *
 intersection_period_period_internal(Period *p1, Period *p2)
 {
-	TimestampTz lower;
-	TimestampTz upper;
-	bool lower_inc;
-	bool upper_inc;
-
 	/* Bounding box test */
 	if (!overlaps_period_period_internal(p1, p2))
 		return NULL;
 
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true,
-		p1->lower_inc, p2->lower_inc) >= 0)
-	{
-		lower = p1->lower;
-		lower_inc = p1->lower_inc;
-	}
-	else
-	{
-		lower = p2->lower;
-		lower_inc = p2->lower_inc;
-	}
-
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false,
-		p1->upper_inc, p2->upper_inc) <= 0)
-	{
-		upper = p1->upper;
-		upper_inc = p1->upper_inc;
-	}
-	else
-	{
-		upper = p2->upper;
-		upper_inc = p2->upper_inc;
-	}
-
+	TimestampTz lower = Max(p1->lower, p2->lower);
+	TimestampTz upper = Min(p1->upper, p2->upper);
+	bool lower_inc = timestamp_cmp_internal(p1->lower, p2->lower) == 0 ? p1->lower_inc && p2->lower_inc :
+		( timestamp_cmp_internal(lower, p1->lower) == 0 ? p1->lower_inc : p2->lower_inc );
+	bool upper_inc = timestamp_cmp_internal(p1->upper, p2->upper) == 0 ? p1->upper_inc && p2->upper_inc :
+		( timestamp_cmp_internal(upper, p1->upper) == 0 ? p1->upper_inc : p2->upper_inc );
 	return period_make(lower, upper, lower_inc, upper_inc);
 }
 
@@ -3731,8 +3654,8 @@ minus_period_periodset_internal1(Period **result, Period *p, PeriodSet *ps,
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		/* If the remaining periods are to the left of the current period */
-		if (period_cmp_bounds(curr->upper, p1->lower, false, true,
-				curr->upper_inc, p1->lower_inc) < 0)
+		int cmp = timestamp_cmp_internal(curr->upper, p1->lower);
+		if (cmp < 0 || (cmp == 0 && curr->upper_inc && ! p1->lower_inc))
 		{
 			result[k++] = curr;
 			break;

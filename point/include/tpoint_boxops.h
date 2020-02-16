@@ -13,6 +13,8 @@
 #ifndef __TPOINT_BOXOPS_H__
 #define __TPOINT_BOXOPS_H__
 
+#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
@@ -34,6 +36,7 @@ extern bool same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
+extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t);
 extern void tpointinstarr_to_stbox(STBOX *box, TemporalInst **inst, int count);
 extern void tpointseqarr_to_stbox(STBOX *box, TemporalSeq **seq, int count);

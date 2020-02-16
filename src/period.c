@@ -129,30 +129,6 @@ period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, bool lower2,
 }
 
 /*
- * Check if two bounds A and B are "adjacent", where A is an upper bound and B
- * is a lower bound. For the bounds to be adjacent, each timestamp must
- * satisfy strictly one of the bounds: there are no values which satisfy both
- * bounds (i.e. less than A and greater than B); and there are no values which
- * satisfy neither bound (i.e. greater than A and less than B).
- *
- * If A == B, the periods are adjacent only if the bounds have different
- * inclusive flags (i.e., exactly one of the periods includes the common
- * boundary point).
- */
-
-bool
-period_bounds_adjacent(TimestampTz t1, TimestampTz t2, bool inclusive1, bool inclusive2)
-{
-	int			cmp;
-
-	cmp = timestamp_cmp_internal(t1, t2);
-	if (cmp == 0)
-		return inclusive1 != inclusive2;
-	else 
-		return false;
-}
-
-/*
  * Compare periods by lower bound.
  */
 int

@@ -246,7 +246,7 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 
 /* Expand the first box with the second one */
 
-static void
+void
 tbox_expand(TBOX *box1, const TBOX *box2)
 {
 	box1->xmin = Min(box1->xmin, box2->xmin);
@@ -1392,7 +1392,7 @@ overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
 }
-	
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);

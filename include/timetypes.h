@@ -50,7 +50,7 @@ typedef struct
 typedef struct 
 {
 	int32 vl_len_;				/* varlena header (do not touch directly!) */
-	int32 count;				/* number of Period elements */
+	int32 count;				/* number of TimestampTz elements */
  	/* variable-length data follows */
 } TimestampSet;
 

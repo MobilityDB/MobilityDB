@@ -32,9 +32,10 @@
 #include "tpoint_analyze.h"
 
 #include <assert.h>
+#include <float.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
-#include <float.h>
+#include <utils/lsyscache.h>
 
 #include "period.h"
 #include "time_analyze.h"
@@ -45,6 +46,7 @@
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
+
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c
@@ -163,10 +165,10 @@ nd_box_init(ND_BOX *a)
 * the mins to the largest.
 */
 int
-nd_box_init_bounds(ND_BOX *a, int ndims)
+nd_box_init_bounds(ND_BOX *a)
 {
 	int d;
-	for (d = 0; d < ndims; d++)
+	for (d = 0; d < ND_DIMS; d++)
 	{
 		a->min[d] = FLT_MAX;
 		a->max[d] = -1 * FLT_MAX;
@@ -191,10 +193,10 @@ total_double(const double *vals, int nvals)
 
 /** Expand the bounds of target to include source */
 int
-nd_box_merge(const ND_BOX *source, ND_BOX *target, int ndims)
+nd_box_merge(const ND_BOX *source, ND_BOX *target)
 {
 	int d;
-	for (d = 0; d < ndims; d++)
+	for (d = 0; d < ND_DIMS; d++)
 	{
 		target->min[d] = Min(target->min[d], source->min[d]);
 		target->max[d] = Max(target->max[d], source->max[d]);
@@ -500,6 +502,25 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
 }
 
 /**
+* Given that geodetic boxes are X/Y/Z regardless of the
+* underlying geometry dimensionality and other boxes
+* are guided by HAS_Z/HAS_M in their dimesionality,
+* we have a little utility function to make it easy.
+*/
+static int
+gbox_ndims(const GBOX* gbox)
+{
+	int dims = 2;
+	if ( FLAGS_GET_GEODETIC(gbox->flags) )
+		return 3;
+	if ( FLAGS_GET_Z(gbox->flags) )
+		dims++;
+	if ( FLAGS_GET_M(gbox->flags) )
+		dims++;
+	return dims;
+}
+
+/**
  * The gserialized_analyze_nd sets this function as a
  * callback on the stats object when called by the ANALYZE
  * command. ANALYZE then gathers the requisite number of
@@ -519,42 +540,158 @@ nd_box_array_distribution(const ND_BOX **nd_boxes, int num_boxes, const ND_BOX *
  */
 
 void
-gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
-	double notnull_cnt, const ND_BOX **sample_boxes, ND_BOX *sum, 
-	ND_BOX *sample_extent, int *slot_idx, int ndims)
+gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+	int sample_rows, double total_rows, int mode)
 {
 	MemoryContext old_context;
-	int d, i;						/* Counters */
-	int histogram_features = 0;		/* # rows that actually got counted in the histogram */
+	int d, i;                          /* Counters */
+	int notnull_cnt = 0;               /* # not null rows in the sample */
+	int null_cnt = 0;                  /* # null rows in the sample */
+	int histogram_features = 0;        /* # rows that actually got counted in the histogram */
 
-	ND_STATS *nd_stats;				/* Our histogram */
-	size_t	nd_stats_size;		   /* Size to allocate */
+	ND_STATS *nd_stats;                /* Our histogram */
+	size_t    nd_stats_size;           /* Size to allocate */
 
-	double total_sample_volume = 0;	/* Area/volume coverage of the sample */
-	double total_cell_count = 0;	/* # of cells in histogram affected by sample */
+	double total_width = 0;            /* # of bytes used by sample */
+	double total_sample_volume = 0;    /* Area/volume coverage of the sample */
+	double total_cell_count = 0;       /* # of cells in histogram affected by sample */
 
-	ND_BOX avg;						/* Avg of extents of sample boxes */
-	ND_BOX stddev;					/* StdDev of extents of sample boxes */
+	ND_BOX sum;                        /* Sum of extents of sample boxes */
+	ND_BOX avg;                        /* Avg of extents of sample boxes */
+	ND_BOX stddev;                     /* StdDev of extents of sample boxes */
 
-	int	histo_size[ND_DIMS];		/* histogram nrows, ncols, etc */
-	ND_BOX histo_extent;			/* Spatial extent of the histogram */
-	ND_BOX histo_extent_new;		/* Temporary variable */
-	int	histo_cells_target;		 	/* Number of cells we will shoot for, given the stats target */
-	int	histo_cells;				/* Number of cells in the histogram */
-	int	histo_cells_new;			/* Temporary variable */
+	const ND_BOX **sample_boxes;       /* ND_BOXes for each of the sample features */
+	ND_BOX sample_extent;              /* Extent of the raw sample */
+	int    histo_size[ND_DIMS];        /* histogram nrows, ncols, etc */
+	ND_BOX histo_extent;               /* Spatial extent of the histogram */
+	ND_BOX histo_extent_new;           /* Temporary variable */
+	int    histo_cells_target;         /* Number of cells we will shoot for, given the stats target */
+	int    histo_cells;                /* Number of cells in the histogram */
+	int    histo_cells_new = 1;        /* Temporary variable */
 
-	int   histo_ndims = 0;			/* Dimensionality of the histogram */
+	int   ndims = 2;                    /* Dimensionality of the sample */
+	int   histo_ndims = 0;              /* Dimensionality of the histogram */
 	double sample_distribution[ND_DIMS]; /* How homogeneous is distribution of sample in each axis? */
-	double total_distribution;		/* Total of sample_distribution */
+	double total_distribution;           /* Total of sample_distribution */
 
-	int stats_slot;					/* What slot is this data going into? (2D vs ND) */
-	int stats_kind;					/* And this is what? (2D vs ND) */
+	int stats_slot;                     /* What slot is this data going into? (2D vs ND) */
+	int stats_kind;                     /* And this is what? (2D vs ND) */
 
-	/* Initialize boxes */
-	nd_box_init(&avg);
+	/* Initialize sum and stddev */
+	nd_box_init(&sum);
 	nd_box_init(&stddev);
+	nd_box_init(&avg);
 	nd_box_init(&histo_extent);
 	nd_box_init(&histo_extent_new);
+
+	/*
+	 * This is where gserialized_analyze_nd
+	 * should put its' custom parameters.
+	 */
+	/* void *mystats = stats->extra_data; */
+
+	/*
+	 * We might need less space, but don't think
+	 * its worth saving...
+	 */
+	sample_boxes = palloc(sizeof(ND_BOX*) * sample_rows);
+
+	/*
+	 * First scan:
+	 *  o read boxes
+	 *  o find dimensionality of the sample
+	 *  o find extent of the sample
+	 *  o count null-infinite/not-null values
+	 *  o compute total_width
+	 *  o compute total features's box area (for avgFeatureArea)
+	 *  o sum features box coordinates (for standard deviation)
+	 */
+	for ( i = 0; i < sample_rows; i++ )
+	{
+		Datum datum;
+		Temporal *temp;
+		GSERIALIZED *geom;
+		GBOX gbox;
+		ND_BOX *nd_box;
+		bool is_null;
+		bool is_copy;
+
+		datum = fetchfunc(stats, i, &is_null);
+
+		/* Skip all NULLs. */
+		if ( is_null )
+		{
+			null_cnt++;
+			continue;
+		}
+
+		/*
+		 * This changes wrt the original PostGIS function. We get a temporal
+		 * point while the original function gets a geometry.
+		 */
+		temp = DatumGetTemporal(datum);
+
+		/* TO VERIFY */
+		is_copy = VARATT_IS_EXTENDED(temp);
+
+		/* Get trajectory from temporal point */
+		geom = (GSERIALIZED *) DatumGetPointer(tpoint_values_internal(temp));
+
+		/* Read the bounds from the gserialized. */
+		if ( LW_FAILURE == gserialized_get_gbox_p(geom, &gbox) )
+		{
+			/* Skip empties too. */
+			continue;
+		}
+
+		/* If we're in 2D mode, zero out the higher dimensions for "safety" */
+		if ( mode == 2 )
+			gbox.zmin = gbox.zmax = gbox.mmin = gbox.mmax = 0.0;
+
+		/* Check bounds for validity (finite and not NaN) */
+		if ( ! gbox_is_valid(&gbox) )
+		{
+			continue;
+		}
+
+		/*
+		 * In N-D mode, set the ndims to the maximum dimensionality found
+		 * in the sample. Otherwise, leave at ndims == 2.
+		 */
+		if ( mode != 2 )
+			ndims = Max(gbox_ndims(&gbox), ndims);
+
+		/* Convert gbox to n-d box */
+		nd_box = palloc(sizeof(ND_BOX));
+		nd_box_from_gbox(&gbox, nd_box);
+
+		/* Cache n-d bounding box */
+		sample_boxes[notnull_cnt] = nd_box;
+
+		/* Initialize sample extent before merging first entry */
+		if ( ! notnull_cnt )
+			nd_box_init_bounds(&sample_extent);
+
+		/* Add current sample to overall sample extent */
+		nd_box_merge(nd_box, &sample_extent);
+
+		/* Add bounds coordinates to sums for stddev calculation */
+		for ( d = 0; d < ndims; d++ )
+		{
+			sum.min[d] += nd_box->min[d];
+			sum.max[d] += nd_box->max[d];
+		}
+
+		/* Increment our "good feature" count */
+		notnull_cnt++;
+
+		/* Free up memory if our sample geometry was copied */
+		if ( is_copy )
+			pfree(geom);
+
+		/* Give backend a chance of interrupting us */
+		vacuum_delay_point();
+	}
 
 	/*
 	 * We'll build a histogram having stats->attr->attstattarget cells
@@ -566,39 +703,31 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 */
 	histo_cells_target = (int)pow((double)(stats->attr->attstattarget), (double)ndims);
 	histo_cells_target = Min(histo_cells_target, ndims * 10000);
-	histo_cells_target = Min(histo_cells_target, total_rows/5);
-
-	/* If there's no useful features, we can't work out stats */
-	if (! notnull_cnt)
-	{
-		elog(NOTICE, "no non-null/empty features, unable to compute statistics");
-		stats->stats_valid = false;
-		return;
-	}
+	histo_cells_target = Min(histo_cells_target, (int)(total_rows/5));
 
 	/*
 	 * Second scan:
 	 *  o compute standard deviation
 	 */
-	for (d = 0; d < ndims; d++)
+	for ( d = 0; d < ndims; d++ )
 	{
 		/* Calculate average bounds values */
-		avg.min[d] = (float4) (sum->min[d] / notnull_cnt);
-		avg.max[d] = (float4) (sum->max[d] / notnull_cnt);
+		avg.min[d] = sum.min[d] / notnull_cnt;
+		avg.max[d] = sum.max[d] / notnull_cnt;
 
 		/* Calculate standard deviation for this dimension bounds */
-		for (i = 0; i < notnull_cnt; i++)
+		for ( i = 0; i < notnull_cnt; i++ )
 		{
 			const ND_BOX *ndb = sample_boxes[i];
 			stddev.min[d] += (ndb->min[d] - avg.min[d]) * (ndb->min[d] - avg.min[d]);
 			stddev.max[d] += (ndb->max[d] - avg.max[d]) * (ndb->max[d] - avg.max[d]);
 		}
-		stddev.min[d] = (float4) sqrt(stddev.min[d] / notnull_cnt);
-		stddev.max[d] = (float4) sqrt(stddev.max[d] / notnull_cnt);
+		stddev.min[d] = sqrtf(stddev.min[d] / notnull_cnt);
+		stddev.max[d] = sqrtf(stddev.max[d] / notnull_cnt);
 
 		/* Histogram bounds for this dimension bounds is avg +/- SDFACTOR * stdev */
-		histo_extent.min[d] = (float4) Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent->min[d]);
-		histo_extent.max[d] = (float4) Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent->max[d]);
+		histo_extent.min[d] = (float4) Max(avg.min[d] - SDFACTOR * stddev.min[d], sample_extent.min[d]);
+		histo_extent.max[d] = (float4) Min(avg.max[d] + SDFACTOR * stddev.max[d], sample_extent.max[d]);
 	}
 
 	/*
@@ -606,18 +735,18 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 *   o skip hard deviants
 	 *   o compute new histogram box
 	 */
-	nd_box_init_bounds(&histo_extent_new, ndims);
-	for (i = 0; i < notnull_cnt; i++)
+	nd_box_init_bounds(&histo_extent_new);
+	for ( i = 0; i < notnull_cnt; i++ )
 	{
 		const ND_BOX *ndb = sample_boxes[i];
 		/* Skip any hard deviants (boxes entirely outside our histo_extent */
-		if (! nd_box_intersects(&histo_extent, ndb, ndims))
+		if ( ! nd_box_intersects(&histo_extent, ndb, ndims) )
 		{
 			sample_boxes[i] = NULL;
 			continue;
 		}
 		/* Expand our new box to fit all the other features. */
-		nd_box_merge(ndb, &histo_extent_new, ndims);
+		nd_box_merge(ndb, &histo_extent_new);
 	}
 	/*
 	 * Expand the box slightly (1%) to avoid edge effects
@@ -638,7 +767,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 * more cells useful (to distinguish between dense places and
 	 * homogeneous places).
 	 */
-	nd_box_array_distribution(sample_boxes, (int) notnull_cnt, &histo_extent, ndims,
+	nd_box_array_distribution(sample_boxes, notnull_cnt, &histo_extent, ndims,
 							  sample_distribution);
 
 	/*
@@ -655,20 +784,22 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 * that have some interesting differences in data distribution.
 	 * Here we count up the number of interesting dimensions
 	 */
-	for (d = 0; d < ndims; d++)
+	for ( d = 0; d < ndims; d++ )
 	{
-		if (sample_distribution[d] > 0)
+		if ( sample_distribution[d] > 0 )
 			histo_ndims++;
 	}
 
-	if (histo_ndims == 0)
+	if ( histo_ndims == 0 )
 	{
 		/* Special case: all our dimensions had low variability! */
 		/* We just divide the cells up evenly */
 		histo_cells_new = 1;
-		for (d = 0; d < ndims; d++)
+		for ( d = 0; d < ndims; d++ )
 		{
-			histo_size[d] = 1 + (int)pow((double)histo_cells_target, 1/(double)ndims);
+			histo_size[d] = (int)pow((double)histo_cells_target, 1/(double)ndims);
+			if ( ! histo_size[d] )
+				histo_size[d] = 1;
 			histo_cells_new *= histo_size[d];
 		}
 	}
@@ -681,9 +812,9 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 		 */
 		total_distribution = total_double(sample_distribution, ndims); /* First get the total */
 		histo_cells_new = 1; /* For the number of cells in the final histogram */
-		for (d = 0; d < ndims; d++)
+		for ( d = 0; d < ndims; d++ )
 		{
-			if (sample_distribution[d] == 0) /* Uninteresting dimensions don't get any room */
+			if ( sample_distribution[d] == 0 ) /* Uninteresting dimensions don't get any room */
 			{
 				histo_size[d] = 1;
 			}
@@ -698,7 +829,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 				*/
 				histo_size[d] = (int)pow(histo_cells_target * histo_ndims * edge_ratio, 1/(double)histo_ndims);
 				/* If something goes awry, just give this dim one slot */
-				if (! histo_size[d])
+				if ( ! histo_size[d] )
 					histo_size[d] = 1;
 			}
 			histo_cells_new *= histo_size[d];
@@ -721,18 +852,18 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	nd_stats->ndims = ndims;
 	nd_stats->extent = histo_extent;
 	nd_stats->sample_features = sample_rows;
-	nd_stats->table_features = total_rows;
-	nd_stats->not_null_features = (float4) notnull_cnt;
+	nd_stats->table_features = (float4) total_rows;
+	nd_stats->not_null_features = notnull_cnt;
 	/* Copy in the histogram dimensions */
-	for (d = 0; d < ndims; d++)
+	for ( d = 0; d < ndims; d++ )
 		nd_stats->size[d] = histo_size[d];
 
 	/*
 	 * Fourth scan:
 	 *  o fill histogram values with the proportion of
-	 *	features' bbox overlaps: a feature's bvol
-	 *	can fully overlap (1) or partially overlap
-	 *	(fraction of 1) an histogram cell.
+	 *    features' bbox overlaps: a feature's bvol
+	 *    can fully overlap (1) or partially overlap
+	 *    (fraction of 1) an histogram cell.
 	 *
 	 * Note that we are filling each cell with the "portion of
 	 * the feature's box that overlaps the cell". So, if we sum
@@ -740,7 +871,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	 * histogram feature count.
 	 *
 	 */
-	for (i = 0; i < notnull_cnt; i++)
+	for ( i = 0; i < notnull_cnt; i++ )
 	{
 		const ND_BOX *nd_box;
 		ND_IBOX nd_ibox;
@@ -752,7 +883,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 		double cellsize[ND_DIMS] = {0.0, 0.0, 0.0, 0.0};
 
 		nd_box = sample_boxes[i];
-		if (! nd_box) continue; /* Skip Null'ed out hard deviants */
+		if ( ! nd_box ) continue; /* Skip Null'ed out hard deviants */
 
 		/* Give backend a chance of interrupting us */
 		vacuum_delay_point();
@@ -761,7 +892,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 		nd_box_overlap(nd_stats, nd_box, &nd_ibox);
 		memset(at, 0, sizeof(int)*ND_DIMS);
 
-		for (d = 0; d < nd_stats->ndims; d++)
+		for ( d = 0; d < nd_stats->ndims; d++ )
 		{
 			/* Initialize the starting values */
 			at[d] = nd_ibox.min[d];
@@ -785,7 +916,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			ND_BOX nd_cell = { {0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0} };
 			double ratio;
 			/* Create a box for this histogram cell */
-			for (d = 0; d < nd_stats->ndims; d++)
+			for ( d = 0; d < nd_stats->ndims; d++ )
 			{
 				nd_cell.min[d] = (float4) (min[d] + (at[d]+0) * cellsize[d]);
 				nd_cell.max[d] = (float4) (min[d] + (at[d]+1) * cellsize[d]);
@@ -800,7 +931,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 			nd_stats->value[nd_stats_value_index(nd_stats, at)] += ratio;
 			num_cells += ratio;
 		}
-		while (nd_increment(&nd_ibox, (int) nd_stats->ndims, at));
+		while ( nd_increment(&nd_ibox, (int) nd_stats->ndims, at) );
 
 		/* Keep track of overall number of overlaps counted */
 		total_cell_count += num_cells;
@@ -809,7 +940,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	}
 
 	/* Error out if we got no sample information */
-	if (! histogram_features)
+	if ( ! histogram_features )
 	{
 		elog(NOTICE, " no features lie in the stats histogram, invalid stats");
 		stats->stats_valid = false;
@@ -821,7 +952,7 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	nd_stats->cells_covered = (float4) total_cell_count;
 
 	/* Put this histogram data into the right slot/kind */
-	if (ndims == 2)
+	if ( mode == 2 )
 	{
 		stats_slot = STATISTIC_SLOT_2D;
 		stats_kind = STATISTIC_KIND_2D;
@@ -835,68 +966,39 @@ gserialized_compute_stats(VacAttrStats *stats, int sample_rows, int total_rows,
 	/* Write the statistics data */
 	stats->stakind[stats_slot] = (int16) stats_kind;
 	stats->staop[stats_slot] = InvalidOid;
-	stats->stanumbers[stats_slot] = (float4*) nd_stats;
+	stats->stanumbers[stats_slot] = (float4*)nd_stats;
 	stats->numnumbers[stats_slot] = (int) (nd_stats_size/sizeof(float4));
-
-	(*slot_idx)++;
+	stats->stanullfrac = (float4)null_cnt/sample_rows;
+	stats->stawidth = (int32) (total_width/notnull_cnt);
+	stats->stadistinct = -1.0f;
+	stats->stats_valid = true;
 }
 
 static void
 tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 	int sample_rows, double total_rows)
 {
-	int d, i;						/* Counters */
 	int notnull_cnt = 0;			/* # not null rows in the sample */
 	int null_cnt = 0;				/* # null rows in the sample */
-	int	slot_idx = 0;				/* slot for storing the statistics */
 	double total_width = 0;			/* # of bytes used by sample */
-	ND_BOX sum;						/* Sum of extents of sample boxes */
-	const ND_BOX **sample_boxes;	/* ND_BOXes for each of the sample features */
-	ND_BOX sample_extent;			/* Extent of the raw sample */
-	int   ndims = 2;				/* Dimensionality of the sample */
-	float8 *time_lengths;
-	PeriodBound *time_lowers,
-		   *time_uppers;
 
-	/* Initialize sum */
-	nd_box_init(&sum);
+	int slot_idx = 2;				/* Starting slot for storing temporal statistics */
+
+	PeriodBound *time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
+	PeriodBound *time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
+	float8 *time_lengths = (float8 *) palloc(sizeof(float8) * sample_rows);
 
 	/*
-	 * This is where gserialized_analyze_nd
-	 * should put its' custom parameters.
+	 * First scan for obtaining the number of nulls and not nulls, the total
+	 * width and the temporal extents
 	 */
-	/* void *mystats = stats->extra_data; */
-
-	/*
-	 * We might need less space, but don't think
-	 * its worth saving...
-	 */
-	sample_boxes = palloc(sizeof(ND_BOX *) * sample_rows);
-
-	time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
-	time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
-	time_lengths = (float8 *) palloc(sizeof(float8) * sample_rows);
-
-	/*
-	 * First scan:
-	 *  o read boxes
-	 *  o find dimensionality of the sample
-	 *  o find extent of the sample
-	 *  o count null-infinite/not-null values
-	 *  o compute total_width
-	 *  o compute total features's box area (for avgFeatureArea)
-	 *  o sum features box coordinates (for standard deviation)
-	 */
-	for (i = 0; i < sample_rows; i++)
+	for (int i = 0; i < sample_rows; i++)
 	{
 		Datum value;
 		Temporal *temp;
-		GSERIALIZED *traj;
 		Period period;
 		PeriodBound period_lower,
 				period_upper;
-		GBOX gbox;
-		ND_BOX *nd_box;
 		bool is_null;
 		bool is_copy;
 
@@ -918,8 +1020,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		/* How many bytes does this sample use? */
 		total_width += VARSIZE(temp);
 
-		/* Get trajectory and period from temporal point */
-		traj = (GSERIALIZED *) DatumGetPointer(tpoint_values_internal(temp));
+		/* Get period from temporal point */
 		temporal_period(&period, temp);
 
 		/* Remember time bounds and length for further usage in histograms */
@@ -929,57 +1030,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		time_lengths[notnull_cnt] = period_to_secs(period_upper.val, 
 			period_lower.val);
 
-		/* Read the bounds from the trajectory. */
-		if (LW_FAILURE == gserialized_get_gbox_p(traj, &gbox))
-		{
-			/* Skip empties too. */
-			continue;
-		}
-
-		/* Check bounds for validity (finite and not NaN) */
-		if (! gbox_is_valid(&gbox))
-		{
-			continue;
-		}
-
-		/* If we're in 2D/3D mode, zero out the higher dimensions for "safety" 
-		 * If we're in 3D mode set ndims to 3 */
-		if (! MOBDB_FLAGS_GET_Z(temp->flags))
-			gbox.zmin = gbox.zmax = gbox.mmin = gbox.mmax = 0.0;
-		else
-		{
-			gbox.mmin = gbox.mmax = 0.0;
-			ndims = 3;
-		}
-
-		/* Convert gbox to n-d box */
-		nd_box = palloc0(sizeof(ND_BOX));
-		nd_box_from_gbox(&gbox, nd_box);
-
-		/* Cache n-d bounding box */
-		sample_boxes[notnull_cnt] = nd_box;
-
-		/* Initialize sample extent before merging first entry */
-		if (! notnull_cnt)
-			nd_box_init_bounds(&sample_extent, ndims);
-
-		/* Add current sample to overall sample extent */
-		nd_box_merge(nd_box, &sample_extent, ndims);
-
-		/* Add bounds coordinates to sums for stddev calculation */
-		for (d = 0; d < ndims; d++)
-		{
-			sum.min[d] += nd_box->min[d];
-			sum.max[d] += nd_box->max[d];
-		}
-
 		/* Increment our "good feature" count */
 		notnull_cnt++;
 
 		/* Free up memory if our sample temporal point was copied */
 		if (is_copy)
 			pfree(temp);
-		pfree(traj);
 
 		/* Give backend a chance of interrupting us */
 		vacuum_delay_point();
@@ -998,11 +1054,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 		/* Compute statistics for spatial dimension */
 		/* 2D Mode */
-		gserialized_compute_stats(stats, sample_rows, (int) total_rows, notnull_cnt,
-			sample_boxes, &sum, &sample_extent, &slot_idx, 2);
+		gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 2);
 		/* ND Mode */
-		gserialized_compute_stats(stats, sample_rows, (int) total_rows, notnull_cnt,
-			sample_boxes, &sum, &sample_extent, &slot_idx, ndims);
+		gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 0);
 
 		/* Compute statistics for time dimension */
 		period_compute_stats1(stats, notnull_cnt, &slot_idx,

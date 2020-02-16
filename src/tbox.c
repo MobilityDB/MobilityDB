@@ -25,6 +25,27 @@
 #define MAXTBOXLEN		128
 
 /*****************************************************************************
+ * Miscellaneous functions
+ *****************************************************************************/
+
+TBOX *
+tbox_new(bool hasx, bool hast)
+{
+	TBOX *result = palloc0(sizeof(TBOX));
+	MOBDB_FLAGS_SET_X(result->flags, hasx);
+	MOBDB_FLAGS_SET_T(result->flags, hast);
+	return result;
+}
+
+TBOX *
+tbox_copy(const STBOX *box)
+{
+	TBOX *result = palloc0(sizeof(TBOX));
+	memcpy(result, box, sizeof(TBOX));
+	return result;
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -120,10 +141,8 @@ tbox_constructor(PG_FUNCTION_ARGS)
 		hast = true;
 	}
 
-	TBOX *result = palloc0(sizeof(TBOX));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, hast);
-	
+	TBOX *result = tbox_new(true, hast);
+
 	/* Process X min/max */
 	if (xmin > xmax)
 	{
@@ -158,10 +177,8 @@ tboxt_constructor(PG_FUNCTION_ARGS)
 	tmin = PG_GETARG_TIMESTAMPTZ(0);
 	tmax = PG_GETARG_TIMESTAMPTZ(1);
 
-	TBOX *result = palloc0(sizeof(TBOX));
-	MOBDB_FLAGS_SET_X(result->flags, false);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	
+	TBOX *result = tbox_new(false, true);
+
 	/* Process T min/max */
 	if (tmin > tmax)
 	{
@@ -260,6 +277,43 @@ tbox_to_period(PG_FUNCTION_ARGS)
 	if (!MOBDB_FLAGS_GET_T(box->flags))
 		PG_RETURN_NULL();
 	Period *result = period_make(box->tmin, box->tmax, true, true);
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Operators
+ *****************************************************************************/
+
+/* Intersection of two boxex*/
+
+PG_FUNCTION_INFO_V1(tbox_intersection);
+
+PGDLLEXPORT Datum
+tbox_intersection(PG_FUNCTION_ARGS)
+{
+	TBOX *box1 = PG_GETARG_TBOX_P(0);
+	TBOX *box2 = PG_GETARG_TBOX_P(1);
+
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	/* If there is no common dimension */
+	if ((! hasx && ! hast) ||
+		/* If they do no intersect in one common dimension */
+		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
+		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+		PG_RETURN_NULL();
+
+	TBOX *result = tbox_new(hasx, hast);
+	if (hasx)
+	{
+		result->xmin = Max(box1->xmin, box2->xmin);
+		result->xmax = Min(box1->xmax, box2->xmax);
+	}
+	if (hast)
+	{
+		result->tmin = Max(box1->tmin, box2->tmin);
+		result->tmax = Min(box1->tmax, box2->tmax);
+	}
 	PG_RETURN_POINTER(result);
 }
 
