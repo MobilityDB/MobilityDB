@@ -2046,7 +2046,7 @@ temporal_ever_eq(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_ever_eq_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2077,7 +2077,7 @@ temporal_always_eq(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_always_eq_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2092,7 +2092,7 @@ temporal_ever_ne(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_always_eq_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2107,7 +2107,7 @@ temporal_always_ne(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_ever_eq_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2140,7 +2140,7 @@ temporal_ever_lt(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_ever_lt_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2171,7 +2171,7 @@ temporal_always_lt(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_always_lt_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2202,7 +2202,7 @@ temporal_ever_le(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_ever_le_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2233,7 +2233,7 @@ temporal_always_le(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = temporal_always_le_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2248,7 +2248,7 @@ temporal_ever_gt(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_always_le_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2263,7 +2263,7 @@ temporal_always_gt(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_ever_le_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2278,7 +2278,7 @@ temporal_ever_ge(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_always_lt_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2293,7 +2293,7 @@ temporal_always_ge(PG_FUNCTION_ARGS)
 	Datum value = PG_GETARG_ANYDATUM(1);
 	bool result = ! temporal_ever_lt_internal(temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, temp->valuetypid);
+	DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
 	PG_RETURN_BOOL(result);
 }
 
@@ -2326,7 +2326,7 @@ temporal_at_value(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporals_at_value(
 			(TemporalS *)temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, valuetypid);
+	DATUM_FREE_IF_COPY(value, valuetypid, 1);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
@@ -2357,7 +2357,7 @@ temporal_minus_value(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporals_minus_value(
 			(TemporalS *)temp, value);
 	PG_FREE_IF_COPY(temp, 0);
-	FREE_DATUM(value, valuetypid);
+	DATUM_FREE_IF_COPY(value, valuetypid, 1);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);

@@ -3326,7 +3326,7 @@ temporalseq_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, t);
 	TemporalInst *result = temporalinst_make(value, t, inst1->valuetypid);
-	FREE_DATUM(value, inst1->valuetypid);
+	DATUM_FREE(value, inst1->valuetypid);
 	return result;
 }
 
