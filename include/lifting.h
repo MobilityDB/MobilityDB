@@ -38,42 +38,38 @@ TemporalS *tfunc2_temporals(TemporalS *ts, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid);
 Temporal *tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid valuetypid);
+
 TemporalInst *tfunc2_temporalinst_base(TemporalInst *inst, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert);
 TemporalI *tfunc2_temporali_base(TemporalI *ti, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert);
 TemporalSeq *tfunc2_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert);
 TemporalS *tfunc2_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert);
 Temporal *tfunc2_temporal_base(Temporal *temp, Datum d, 
-	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum), Oid restypid, bool invert);
 
 TemporalInst *tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param, 
-	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert);
 TemporalI *tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param, 
-	Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool invert);
-TemporalInst *tfunc4_temporalinst_base(TemporalInst *inst, Datum value,  
-	Datum (*func)(Datum, Datum, Oid, Oid), 
-	Oid datumtypid, Oid valuetypid, bool invert);
-TemporalI *tfunc4_temporali_base(TemporalI *ti, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert);
-TemporalSeq *tfunc4_temporalseq_base(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert);
-TemporalS *tfunc4_temporals_base(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert);
-Temporal *tfunc4_temporal_base(Temporal *temp, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool inverted);
-TemporalS *tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert);
-TemporalS *tfunc4_temporals_base_cross(TemporalS *ts, Datum value, 
-	Datum (*func)(Datum, Datum, Oid, Oid), Oid datumtypid, 
-	Oid valuetypid, bool invert);
+	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert);
+
+TemporalInst *tfunc4_temporalinst_base(TemporalInst *inst, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+TemporalI *tfunc4_temporali_base(TemporalI *ti, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+TemporalSeq *tfunc4_temporalseq_base(TemporalSeq *seq, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+TemporalS *tfunc4_temporals_base(TemporalS *ts, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+Temporal *tfunc4_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+
+TemporalS *tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
+TemporalS *tfunc4_temporals_base_cross(TemporalS *ts, Datum value, Oid valuetypid,
+	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert);
 
 TemporalInst *sync_tfunc2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum (*func)(Datum, Datum), Oid valuetypid);

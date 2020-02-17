@@ -167,7 +167,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -186,7 +186,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 			lower_inc, upper_inc, false, false);
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -214,7 +214,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(intvalue, inst1->valuetypid); FREE_DATUM(intvalue1, valuetypid);
+		DATUM_FREE(intvalue, inst1->valuetypid); DATUM_FREE(intvalue1, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -239,7 +239,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, false, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 	}
 	for (int i = 0; i < countinst; i++)
 	{
@@ -250,7 +250,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 			valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 1,
 			true, true, false, false);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 		pfree(instants[0]);
 		if (i < countinst - 1)
 		{
@@ -268,7 +268,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(intvalue));
-			FREE_DATUM(intvalue1, valuetypid);
+			DATUM_FREE(intvalue1, valuetypid);
 		}
 	}
 	if (after)
@@ -280,7 +280,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 			false, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 	}
 
 	for (int i = 0; i < countinst; i++)
@@ -432,7 +432,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 			lower_inc, upper_inc, false, false);
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -462,7 +462,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(intvalue, inst1->valuetypid); FREE_DATUM(intvalue1, valuetypid);
+		DATUM_FREE(intvalue, inst1->valuetypid); DATUM_FREE(intvalue1, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -487,7 +487,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 			lower_inc, false, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 	}
 	for (int i = 0; i < countinst; i++)
 	{
@@ -499,7 +499,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 			valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 1,
 			true, true, false, false);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 		pfree(instants[0]);
 		if (i < countinst - 1)
 		{
@@ -516,7 +516,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(intvalue));
-			FREE_DATUM(intvalue1, valuetypid);
+			DATUM_FREE(intvalue1, valuetypid);
 		}
 	}
 	if (after)
@@ -529,7 +529,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
 			false, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
-		FREE_DATUM(value, valuetypid);
+		DATUM_FREE(value, valuetypid);
 	}
 
 	for (int i = 0; i < countinst; i++)
