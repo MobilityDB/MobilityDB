@@ -5,7 +5,10 @@ WORKDIR /usr/local/src
 ADD . MobilityDB
 RUN apt-get update
 RUN apt-get remove -y postgresql-11-postgis-3 postgresql-11-postgis-3-scripts
-RUN apt-get install -y cmake build-essential postgresql-server-dev-11 libpq-dev liblwgeom-dev libproj-dev libjson-c-dev
+RUN apt-get install -y cmake build-essential libpq-dev liblwgeom-dev libproj-dev libjson-c-dev
+RUN rm -f /etc/apt/sources.list.d/pgdg.list
+RUN apt-get update
+RUN apt-get install -y postgresql-server-dev-11
 RUN mkdir /usr/local/src/MobilityDB/build
 RUN cd /usr/local/src/MobilityDB/build && \
 	cmake .. && \
