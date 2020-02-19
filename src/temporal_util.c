@@ -63,8 +63,7 @@ double_pad(size_t size)
 {
 	if (size % 8)
 		return size + (8 - size % 8);
-	else
-		return size;
+	return size;
 }
 
 /* 
