@@ -166,6 +166,10 @@ CREATE FUNCTION tbox_same(tbox, tbox)
 	RETURNS boolean
 	AS 'MODULE_PATHNAME', 'same_tbox_tbox'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_adjacent(tbox, tbox)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_tbox_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
 	PROCEDURE = tbox_contains,
@@ -189,6 +193,12 @@ CREATE OPERATOR ~= (
 	PROCEDURE = tbox_same,
 	LEFTARG = tbox, RIGHTARG = tbox,
 	COMMUTATOR = ~=,
+	RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = tbox_adjacent,
+	LEFTARG = tbox, RIGHTARG = tbox,
+	COMMUTATOR = -|-,
 	RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 

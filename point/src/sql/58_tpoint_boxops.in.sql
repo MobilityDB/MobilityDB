@@ -138,7 +138,7 @@ CREATE OPERATOR ~= (
 CREATE OPERATOR -|- (
 	PROCEDURE = stbox_adjacent,
 	LEFTARG = stbox, RIGHTARG = stbox,
-	COMMUTATOR = ~=,
+	COMMUTATOR = -|-,
 	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 

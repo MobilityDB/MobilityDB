@@ -189,7 +189,7 @@ temporal_bbox_size(Oid valuetypid)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
-		return sizeof(TBOX);
+		return sizeof(STBOX);
 #endif
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -212,7 +212,7 @@ temporal_bbox_eq(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2) == 0;
+		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -231,7 +231,7 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
+		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -424,13 +424,13 @@ shift_bbox(void *box, Oid valuetypid, Interval *interval)
 	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
 		valuetypid == type_oid(T_GEOMETRY))
 	{
-		TBOX *tbox = (TBOX *)box;
-		tbox->tmin = DatumGetTimestampTz(
+		STBOX *stbox = (STBOX *)box;
+		stbox->tmin = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
-		tbox->tmax = DatumGetTimestampTz(
+			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
+		stbox->tmax = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
+			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
 		return;
 	}
 #endif
