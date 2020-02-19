@@ -359,6 +359,55 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(same_stbox_stbox_internal(box1, box2));
 }
 
+/* adjacent? */
+
+bool
+adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+{
+	/* The boxes should have at least one common dimension XY(Z) or T  */
+	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
+		   (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
+	STBOX *inter = stbox_intersection_internal(box1, box2);
+	if (inter == NULL)
+		return false;
+	/* Boxes are adjacent if they share n dimensions and their intersection is
+	 * at most of n-1 dimensions */
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	if (!hasx && hast)
+		return inter->tmin == inter->tmax;
+	else if (hasx && !hast)
+	{
+		if (hasz)
+			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
+				inter->zmin == inter->zmax;
+		else
+			return inter->xmin == inter->xmax || inter->ymin == inter->ymax;
+	}
+	else
+	{
+		if (hasz)
+			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
+				   inter->zmin == inter->zmax || inter->tmin == inter->tmax;
+		else
+			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
+				   inter->tmin == inter->tmax;
+	}
+}
+
+PG_FUNCTION_INFO_V1(adjacent_stbox_stbox);
+
+PGDLLEXPORT Datum
+adjacent_stbox_stbox(PG_FUNCTION_ARGS)
+{
+	STBOX *box1 = PG_GETARG_STBOX_P(0);
+	STBOX *box2 = PG_GETARG_STBOX_P(1);
+	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "Cannot compare geodetic and non-geodetic boxes");
+	PG_RETURN_BOOL(adjacent_stbox_stbox_internal(box1, box2));
+}
+
 /*****************************************************************************/
 
 /* Functions computing the bounding box at the creation of a temporal point */

@@ -144,6 +144,39 @@ same_tbox_tbox(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(same_tbox_tbox_internal(box1, box2));
 }
 
+/* adjacent? */
+
+bool
+adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+{
+	/* The boxes should have at least one common dimension X or T  */
+	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
+		   (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
+	TBOX *inter = tbox_intersection_internal(box1, box2);
+	if (inter == NULL)
+		return false;
+	/* Boxes are adjacent if they share n dimensions and their intersection is
+	 * at most of n-1 dimensions */
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	if (!hasx && hast)
+		return inter->tmin == inter->tmax;
+	else if (hasx && !hast)
+		return inter->xmin == inter->xmax;
+	else
+		return inter->xmin == inter->xmax || inter->tmin == inter->tmax;
+}
+
+PG_FUNCTION_INFO_V1(adjacent_tbox_tbox);
+
+PGDLLEXPORT Datum
+adjacent_tbox_tbox(PG_FUNCTION_ARGS)
+{
+	TBOX *box1 = PG_GETARG_TBOX_P(0);
+	TBOX *box2 = PG_GETARG_TBOX_P(1);
+	PG_RETURN_BOOL(adjacent_tbox_tbox_internal(box1, box2));
+}
+
 /* Size of bounding box */
 
 size_t
@@ -156,7 +189,7 @@ temporal_bbox_size(Oid valuetypid)
 #ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY)) 
-		return sizeof(STBOX);
+		return sizeof(TBOX);
 #endif
 	/* Types without bounding box, for example, tdoubleN */
 	return 0;
@@ -179,7 +212,7 @@ temporal_bbox_eq(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2) == 0;
+		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2) == 0;
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -198,7 +231,7 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 #ifdef WITH_POSTGIS
 	else if (valuetypid == type_oid(T_GEOGRAPHY) || 
 		valuetypid == type_oid(T_GEOMETRY))
-		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
+		result = tbox_cmp_internal((TBOX *)box1, (TBOX *)box2);
 #endif
 	/* Types without bounding box, for example, doubleN */
 	return result;
@@ -391,13 +424,13 @@ shift_bbox(void *box, Oid valuetypid, Interval *interval)
 	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
 		valuetypid == type_oid(T_GEOMETRY))
 	{
-		STBOX *stbox = (STBOX *)box;
-		stbox->tmin = DatumGetTimestampTz(
+		TBOX *tbox = (TBOX *)box;
+		tbox->tmin = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
-		stbox->tmax = DatumGetTimestampTz(
+			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
+		tbox->tmax = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
+			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
 		return;
 	}
 #endif

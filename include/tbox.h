@@ -23,6 +23,8 @@ extern Datum tbox_in(PG_FUNCTION_ARGS);
 extern Datum tbox_out(PG_FUNCTION_ARGS);
 extern Datum tbox_constructor(PG_FUNCTION_ARGS);
 
+extern TBOX *tbox_intersection_internal(const TBOX *box1, const TBOX *box2);
+
 extern Datum tbox_lt(PG_FUNCTION_ARGS);
 extern Datum tbox_le(PG_FUNCTION_ARGS);
 extern Datum tbox_gt(PG_FUNCTION_ARGS);

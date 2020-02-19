@@ -37,6 +37,8 @@ extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+
 extern size_t temporal_bbox_size(Oid valuetypid);
 
 /* Comparison of bounding boxes of temporal types */

@@ -569,7 +569,45 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
  * Operators
  *****************************************************************************/
 
-/* Intersection of two boxex*/
+/* Intersection of two boxes */
+
+STBOX *
+stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
+{
+	assert(MOBDB_FLAGS_GET_GEODETIC(box1->flags) == MOBDB_FLAGS_GET_GEODETIC(box2->flags));
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
+	/* If there is no common dimension */
+	if ((! hasx && ! hast) ||
+		/* If they do no intersect in one common dimension */
+		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
+			box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
+		(hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
+		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+		return(NULL);
+
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	if (hasx)
+	{
+		result->xmin = Max(box1->xmin, box2->xmin);
+		result->xmax = Min(box1->xmax, box2->xmax);
+		result->ymin = Max(box1->ymin, box2->ymin);
+		result->ymax = Min(box1->ymax, box2->ymax);
+		if (hasz)
+			{
+			result->zmin = Max(box1->zmin, box2->zmin);
+			result->zmax = Min(box1->zmax, box2->zmax);
+			}
+	}
+	if (hast)
+	{
+		result->tmin = Max(box1->tmin, box2->tmin);
+		result->tmax = Min(box1->tmax, box2->tmax);
+	}
+	return(result);
+}
 
 PG_FUNCTION_INFO_V1(stbox_intersection);
 
@@ -580,38 +618,9 @@ stbox_intersection(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
 		elog(ERROR, "Cannot intersection geodetic and non geodetic boxes");
-
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
-	/* If there is no common dimension */
-	if ((! hasx && ! hast) ||
-		/* If they do no intersect in one common dimension */
-		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
-				  box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
-		(hasz && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
-		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+	STBOX *result = stbox_intersection_internal(box1, box2);
+	if (result == NULL)
 		PG_RETURN_NULL();
-
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
-	if (hasx)
-	{
-		result->xmin = Max(box1->xmin, box2->xmin);
-		result->xmax = Min(box1->xmax, box2->xmax);
-		result->ymin = Max(box1->ymin, box2->ymin);
-		result->ymax = Min(box1->ymax, box2->ymax);
-		if (hasz)
-		{
-			result->zmin = Max(box1->zmin, box2->zmin);
-			result->zmax = Min(box1->zmax, box2->zmax);
-		}
-	}
-	if (hast)
-	{
-		result->tmin = Max(box1->tmin, box2->tmin);
-		result->tmax = Min(box1->tmax, box2->tmax);
-	}
 	PG_RETURN_POINTER(result);
 }
 
