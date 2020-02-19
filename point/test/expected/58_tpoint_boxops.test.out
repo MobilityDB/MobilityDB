@@ -6600,3 +6600,9 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
    100
 (1 row)
 
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b -|- t2.b;
+ count 
+-------
+     0
+(1 row)
+

@@ -8470,3 +8470,33 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
  t
 (1 row)
 
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
+ count 
+-------
+    99
+(1 row)
+
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b -|- t2.b;
+ count 
+-------
+     0
+(1 row)
+

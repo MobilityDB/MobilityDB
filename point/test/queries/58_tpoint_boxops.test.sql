@@ -1310,5 +1310,6 @@ SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <@ t2.b;
 SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b -|- t2.b;
 
 -------------------------------------------------------------------------------
