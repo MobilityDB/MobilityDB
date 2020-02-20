@@ -1118,6 +1118,52 @@ same_bbox_temporal_temporal(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(result);
 }
 
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_period_temporal);
+
+PGDLLEXPORT Datum
+adjacent_bbox_period_temporal(PG_FUNCTION_ARGS)
+{
+	Period *p = PG_GETARG_PERIOD(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	Period p1;
+	temporal_period(&p1, temp);
+	bool result = adjacent_period_period_internal(p, &p1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
+
+PGDLLEXPORT Datum
+adjacent_bbox_temporal_period(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	Period p1;
+	temporal_period(&p1, temp);
+	bool result = adjacent_period_period_internal(&p1, p);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
+
+PGDLLEXPORT Datum
+adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	bool result = adjacent_period_period_internal(&p1, &p2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
+
 /*****************************************************************************
  * Bounding box operators for temporal number types
  *****************************************************************************/
@@ -1463,5 +1509,90 @@ same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_BOOL(result);
 }
-	
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
+
+PGDLLEXPORT Datum
+adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	RangeType *range = PG_GETARG_RANGE_P(1);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	range_to_tbox_internal(&box2, range);
+	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_FREE_IF_COPY(range, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_range_tnumber);
+
+PGDLLEXPORT Datum
+adjacent_bbox_range_tnumber(PG_FUNCTION_ARGS)
+{
+	RangeType *range = PG_GETARG_RANGE_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	range_to_tbox_internal(&box1, range);
+	temporal_bbox(&box2, temp);
+	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(range, 0);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
+
+PGDLLEXPORT Datum
+adjacent_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	bool result = adjacent_tbox_tbox_internal(box, &box1);
+	PG_FREE_IF_COPY(temp, 1);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
+
+PGDLLEXPORT Datum
+adjacent_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	TBOX *box = PG_GETARG_TBOX_P(1);
+	TBOX box1;
+	memset(&box1, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp);
+	bool result = adjacent_tbox_tbox_internal(&box1, box);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
+
+PGDLLEXPORT Datum
+adjacent_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	TBOX box1, box2;
+	memset(&box1, 0, sizeof(TBOX));
+	memset(&box2, 0, sizeof(TBOX));
+	temporal_bbox(&box1, temp1);
+	temporal_bbox(&box2, temp2);
+	bool result = adjacent_tbox_tbox_internal(&box1, &box2);
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_BOOL(result);
+}
 /*****************************************************************************/

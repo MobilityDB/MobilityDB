@@ -610,4 +610,114 @@ CREATE OPERATOR ~= (
 	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
+/*****************************************************************************
+ * Adjacent
+ *****************************************************************************/
+
+CREATE FUNCTION adjacent_bbox(geometry, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(stbox, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeompoint, geometry)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeompoint, stbox)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeompoint, tgeompoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = geometry, RIGHTARG = tgeompoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = stbox, RIGHTARG = tgeompoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeompoint, RIGHTARG = geometry,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeompoint, RIGHTARG = stbox,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION adjacent_bbox(geography, tgeogpoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(stbox, tgeogpoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeogpoint, geography)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeogpoint, stbox)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent_bbox(tgeogpoint, tgeogpoint)
+	RETURNS boolean
+	AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = geography, RIGHTARG = tgeogpoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = stbox, RIGHTARG = tgeogpoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeogpoint, RIGHTARG = geography,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeogpoint, RIGHTARG = stbox,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+CREATE OPERATOR -|- (
+	PROCEDURE = adjacent_bbox,
+	LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+	COMMUTATOR = -|-,
+	RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+
 /*****************************************************************************/
