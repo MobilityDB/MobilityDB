@@ -3399,20 +3399,24 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 			</itemizedlist>
 		</sect1>
 
-		<sect1 id="spatial_relationships_temporal_points">
-			<title>Spatial Relationships for Temporal Points</title>
+		<sect1 id="topological_relationships_temporal_points">
+			<title>Topological Relationships for Temporal Points</title>
 
-			<para>There are two versions of the spatial relationship functions such as <varname>ST_Intersects</varname> and <varname>ST_Relate</varname> generalized to the temporal point types.</para>
+			<para>The topological relationships such as <varname>ST_Intersects</varname> and <varname>ST_Relate</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point or a base type (that is, a geometry or a geography), but these functions do not allow a base type in both arguments. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to have a temporal geometry point (or a geometry) and a temporal geography point (or a geography) as arguments.</para>
 
+			<para>There are two versions of the temporal topological relationships:</para>
 			<itemizedlist>
 				<listitem>
-					<para>The first version applies the traditional spatial function to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname> or a <varname>text</varname>. Examples are the <varname>intersects</varname> and <varname>relate</varname> functions.</para>
+					<para>The first version applies the traditional topological function to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname> or a <varname>text</varname>. Examples are the <varname>intersects</varname> and <varname>relate</varname> functions.</para>
 				</listitem>
 
 				<listitem>
-					<para>The second version is defined with the temporal semantics, that is, the traditional spatial function is computed at each instant and results in a <varname>tbool</varname> or a <varname>ttext</varname>. Examples are the <varname>tintersects</varname> and <varname>trelate</varname> functions.</para>
+					<para>The second version is defined with the temporal semantics, that is, the traditional topological function is computed at each instant and results in a <varname>tbool</varname> or a <varname>ttext</varname>. Examples are the <varname>tintersects</varname> and <varname>trelate</varname> functions.</para>
 				</listitem>
 			</itemizedlist>
+
+			<para>All spatial relationships in the two versions are defined for temporal geometry points, while only four of them are defined for temporal geography points, namely, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname>, and <varname>dwithin</varname>, and the corresponding temporal versions.</para>
+
 			<para>The semantics conveyed by the first version of the relationships varies depending on the relationship and the type of the arguments. For example, the following query
 				<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -3448,7 +3452,7 @@ WHERE intersects(T.Trip, R.Geom)
 			which verifies whether a trip <varname>T</varname> (which is a temporal point) intersects a region <varname>R</varname> (which is a geometry), will benefit rom a spatio-temporal index on the column <varname>T.Trip</varname> since the <varname>intersects</varname> function will automatically perform the bounding box comparison <varname>T.Trip &amp;&amp; R.Geom</varname>. This is further explained later in this document.
 			</para>
 			
-			<para>Three spatial relationships available in PostGIS are not provided in the temporal version.
+			<para>Three topological relationships available in PostGIS are not provided in the temporal version.
 				<itemizedlist>
 					<listitem>
 						<para><varname>tcontainsproperly</varname> since it would always be equal to <varname>tcontains</varname>: <varname>ST_Contains</varname> returns true if and only if no points of B lie in the exterior of A, and at least one point of the interior of B lies in the interior of A. <varname>ST_ContainsProperly</varname> returns true if B intersects the interior of A but not the boundary (or exterior).</para>
@@ -3463,8 +3467,9 @@ WHERE intersects(T.Trip, R.Geom)
 					</listitem>
 				</itemizedlist>
 				</para>
-			
-			<para>All spatial relationships in the two versions are defined for temporal geometry points, while only four of them are defined for temporal geography points, namely, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname>, and <varname>dwithin</varname>, and the corresponding temporal versions. The arguments of these functions are either a temporal point or a base type (that is, a geometry or a geography), but these functions do not allow a base type in both arguments. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to have a temporal geometry point (or a geometry) and a temporal geography point (or a geography) as arguments.</para>
+
+			<para>Similarly, only a few temporal topological relationships are meaningful when the two arguments are temporal points. Therefore, the relationships supported for two temporal geometry points are <varname>tdisjoint</varname>, <varname>tequals</varname>, <varname>tintersects</varname>, <varname>tdwithin</varname>, and <varname>trelate</varname> (with 2 and 3 arguments), while only <varname>tintersects</varname> and <varname>tdwithin</varname> are supported for two temporal geography points.</para>
+
 		
 			<para>The <varname>relate</varname> and the <varname>trelate</varname> functions have two forms with either two or three arguments. The two-argument forms consider the spatial relationship between the interior, the boundary, and the exterior of the arguments and return a <varname>text</varname> or a <varname>ttext</varname> value representing the maximum intersection matrix pattern. This pattern is defined using the Dimensionally Extended 9 Intersection Model or DE-9IM (see the PostGIS documentation for more details). The three-argument forms determine whether the first two arguments satisfy the intersection matrix pattern given as third argument (a <varname>text</varname> value) and return a Boolean or a temporal Boolean.</para>
 
@@ -4003,7 +4008,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			</programlisting>
 		</para>
 				
-		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="spatial_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

@@ -4,12 +4,19 @@
  *	  Temporal spatial relationships for temporal points.
  *
  * These relationships are applied at each instant and result in a temporal
- * boolean/text. The following relationships are supported for geometries:
- *		tcontains, tcovers, tcoveredby, tdisjoint,
- *		tequals, tintersects, ttouches, twithin, tdwithin, and
- *		trelate (with 2 and 3 arguments)
- * The following relationships are supported for geographies
+ * Boolean.
+ * The following relationships are supported for a temporal geometry point
+ * and a geometry:
+ *		tcontains, tcovers, tcoveredby, tdisjoint, tequals, tintersects,
+ *		ttouches, twithin, tdwithin, and trelate (with 2 and 3 arguments)
+ * The following relationships are supported for two temporal geometry points:
+ *		tdisjoint, tequals, tintersects, tdwithin, and trelate (with 2 and 3
+ *    arguments)
+ * The following relationships are supported for a temporal geography point
+ * and a geography:
  *		tcovers, tcoveredby, tintersects, tdwithin
+ * The following relationships are supported for two temporal geography points:
+ *		tintersects, tdwithin
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -1465,24 +1472,6 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tcontains_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-tcontains_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_contains, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Temporal covers (for both geometry and geography)
  *****************************************************************************/
@@ -1543,30 +1532,6 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tcovers_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-tcovers_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Datum (*func)(Datum, Datum) = NULL;
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_covers;
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		func = &geog_covers;
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		func, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Temporal coveredby (for both geometry and geography)
  *****************************************************************************/
@@ -1624,30 +1589,6 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		func, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tcoveredby_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-tcoveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Datum (*func)(Datum, Datum) = NULL;
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_coveredby;
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
-		func = &geog_coveredby;
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		func, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -1929,24 +1870,6 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(ttouches_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-ttouches_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_touches, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
-	PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Temporal within
  *****************************************************************************/
@@ -1992,24 +1915,6 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 		&geom_within, BOOLOID, true);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
-	PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(twithin_tpoint_tpoint);
-
-PGDLLEXPORT Datum
-twithin_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_within, BOOLOID);
-	PG_FREE_IF_COPY(temp1, 0);
-	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
