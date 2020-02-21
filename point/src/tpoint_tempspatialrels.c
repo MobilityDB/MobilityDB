@@ -244,8 +244,8 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 	for (int i = 0; i < countinst; i++)
 	{
 		/* Compute the value at the intersection point */
-		Datum value = invert ? func(temporalinst_value(interinstants[i]), geo) :
-			func(geo, temporalinst_value(interinstants[i]));
+		Datum value = invert ? func(geo, temporalinst_value(interinstants[i])) :
+			func(temporalinst_value(interinstants[i]), geo);
 		instants[0] = temporalinst_make(value, (interinstants[i])->t,
 			valuetypid);
 		result[k++] = temporalseq_from_temporalinstarr(instants, 1,
@@ -407,8 +407,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	if (datum_point_eq(value1, value2) || ! linear)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		Datum value = invert ? func(value1, geo, param) :
-			func(geo, value1, param);
+		Datum value = invert ? func(geo, value1, param) :
+			func(value1, geo, param);
 		TemporalInst *inst = temporalinst_make(value, inst1->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
 			true, true, false, false);
@@ -424,8 +424,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
-		Datum value = invert ? func(value1, geo, param) :
-			func(geo, value1, param);
+		Datum value = invert ? func(geo, value1, param) :
+			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
 		result[0] = temporalseq_from_temporalinstarr(instants, 2,
