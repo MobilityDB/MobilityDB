@@ -3633,8 +3633,7 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 						<programlisting>
 SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01,f@2012-01-02], (t@2012-01-02,t@2012-01-03), 
-[f@2012-01-03,f@2012-01-04)}"
+-- "{[f@2012-01-01, f@2012-01-02], (t@2012-01-02, f@2012-01-03, f@2012-01-04)}"
 						</programlisting>
 					</listitem>
 
@@ -3652,9 +3651,9 @@ SELECT tcovers(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 						<para>Temporal covered by &geography_support;</para>
 						<para><varname>tcoveredby({geo, tpoint}, {geo, tpoint}): tbool</varname></para>
 						<programlisting>
-SELECT tcoveredby(tgeompoint '[Point(1 1)@2012-01-02, Point(3 3)@2012-01-04)',
-	tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
--- "{[t@2012-01-02, t@2012-01-03)}"
+SELECT tcoveredby(geometry 'Point(1 1)',
+	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
+-- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-04)}"
 						</programlisting>
 					</listitem>
 
@@ -3665,6 +3664,9 @@ SELECT tcoveredby(tgeompoint '[Point(1 1)@2012-01-02, Point(3 3)@2012-01-04)',
 SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-03], (t@2012-01-03, t@2012-01-04]}"
+SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
+	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
+-- "{[t@2012-01-01, f@2012-01-03], (t@2012-01-03, t@2012-01-05)}"
 						</programlisting>
 					</listitem>
 
@@ -3675,6 +3677,9 @@ SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tequals(geometry 'Point(1 1)',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
 -- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-04]}"
+SELECT tequals(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
+	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
+-- "{[f@2012-01-01, t@2012-01-03], (f@2012-01-03, f@2012-01-05)}"
 						</programlisting>
 					</listitem>
 
@@ -3686,6 +3691,9 @@ SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
 -- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, t@2012-01-03],
 	(f@2012-01-03, f@2012-01-04]}"
+SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
+	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
+-- "{[f@2012-01-01, t@2012-01-03], (f@2012-01-03, f@2012-01-05)}"
 						</programlisting>
 					</listitem>
 
