@@ -313,7 +313,7 @@ intersection_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
 		return false;
 	
 	*inter1 = inst1;
-	*inter2 = temporalinst_copy(inst1);
+	*inter2 = temporalinst_copy(inst);
 	return true;
 }
 

@@ -275,14 +275,14 @@ CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
 
 /*****************************************************************************/
 
-CREATE FUNCTION linestringM(tgeompoint, tfloat, boolean DEFAULT FALSE)
+CREATE FUNCTION geoMeasure(tgeompoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geometry
-AS 'MODULE_PATHNAME', 'tpoint_to_linestringm'
+AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION linestringM(tgeogpoint, tfloat, boolean DEFAULT FALSE)
+CREATE FUNCTION geoMeasure(tgeogpoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geography
-AS 'MODULE_PATHNAME', 'tpoint_to_linestringm'
+AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

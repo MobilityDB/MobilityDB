@@ -183,7 +183,7 @@ SELECT tstzrange '[2012-01-01 08:00:00, 2012-01-01 08:30:00)'::period;
 				<itemizedlist>
 					<listitem>
 						<para>Constructor for periods</para>
-						<para><varname>period(timestamptz, timestamptz, boolean = true, boolean = false): period</varname></para>
+						<para><varname>period(timestamptz, timestamptz, left_inc = true, right_inc = false): period</varname></para>
 						<programlisting>
 -- It is assumed that the lower bound is inclusive and the upper bound is exclusive.
 SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
@@ -1524,14 +1524,38 @@ SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 				</listitem>
 			</itemizedlist>
 
-			<para>The constructor functions of temporal sequence values have one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the last two arguments are not specified they are assumed to be true by default.
-			As can be seen below, the values in the array can be specified using either a literal constant or the constructor function.
+			<para>The constructor function for temporal sequence values depends on whether the base type is continuous or not. In both cases the constructor has one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the constructor function for temporal sequence values with continuous base type has an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.
 			</para>
 			<itemizedlist>
 				<listitem>
 					<para>Constructor for temporal types of sequence duration</para>
-					<para><varname>tdiscseq(ttypeinst[], boolean = true, boolean = true}): tdiscseq</varname></para>
-					<para><varname>tcontseq(ttypeinst[], boolean = true, boolean = true, linear = true}): tcontseq</varname></para>
+					<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
+					<para><varname>tcontseq(ttypeinst[], left_inc = true, right_inc = true, linear = true}): tcontseq</varname></para>
+				</listitem>
+				<programlisting>
+SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
+	true, true);
+SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'),
+	tintinst(2,'2001-01-01 08:10:00')], true, false);
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+	'1@2001-01-03 08:10:00'], true, false);
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+	'1@2001-01-03 08:10:00'], true, true, false);
+SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
+	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
+SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
+SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 0)@2001-01-03 08:05:00']);
+				</programlisting>
+			</itemizedlist>
+
+			<para>The constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of sequence set duration</para>
+					<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
 					<programlisting>
 SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
 	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
@@ -1547,29 +1571,6 @@ SELECT tgeompoints(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
 SELECT tgeogpoints(ARRAY[tgeogpointseq
 	'[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-01 08:05:00)',
 	'[Point(0 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-
-			<para>The constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Constructor for temporal types of sequence set duration</para>
-					<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
-					<programlisting>
-SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'], 
-	true, true);
-SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'), 
-	tintinst(2,'2001-01-01 08:10:00')], true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
-	'1@2001-01-03 08:10:00'], true, false);
-SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
-	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
-SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
-SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 0)@2001-01-03 08:05:00']);
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2280,6 +2281,52 @@ SELECT ST_CPAWithin(
 -- true
 					</programlisting>
 				</listitem>
+
+				<listitem>
+					<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
+					<para><varname>geoMeasure(geo, tfloat, segmentize = false): geo</varname></para>
+					<para>The last <varname>segmentize</varname> argument states whether a resulting Linestring M value is transformed into a MultiLinestring M, where each component is a segment of two points.</para>
+
+					<programlisting>
+SELECT st_astext(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01,
+	Point(2 2 2)@2000-01-02}', '{5@2000-01-01, 5@2000-01-02}'));
+-- "MULTIPOINT ZM (1 1 1 5,2 2 2 5)"
+SELECT st_astext(geoMeasure(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
+	[Point(1 1)@2000-01-03, Point(1 1)@2000-01-04]}',
+	'{[5@2000-01-01, 5@2000-01-02],[7@2000-01-03, 7@2000-01-04]}'));
+-- "GEOMETRYCOLLECTION M (LINESTRING M (1 1 5,2 2 5),POINT M (1 1 7))"
+SELECT st_astext(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01,
+	Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
+-- "MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))"
+					</programlisting>
+					<para>A typical visualization for mobility data is to show on a map the trajectory of the moving object using different colors according to the speed. <xref linkend="speed" /> shows the result of the query below using a color ramp in QGIS.</para>
+					<programlisting>
+WITH Temp(t) AS (
+	SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
+			Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
+)
+SELECT ST_AsText(geoMeasure(t,  round(speed(t) * 3600 * 24, 2), true))
+FROM Temp;
+-- "MULTILINESTRING M ((0 0 0.35,1 1 0.35),(1 1 0.47,2 0 0.47),(2 0 0.71,3 1 0.71),
+	(3 1 1.41,4 0 1.41))"
+					</programlisting>
+					<para>The following expression is used in QGIS to achieve this. The <varname>scale_linear</varname> function transforms the M value of each composing segment to the range [0, 1]. This value is then passed to the <varname>ramp_color</varname> function.</para>
+					<programlisting>
+ramp_color(
+	'RdYlBu',
+	scale_linear(
+		m(start_point(geometry_n($geometry,@geometry_part_num))),
+		0, 2, 0, 1
+	)
+)
+				</programlisting>
+					<figure id="speed" float="start"><title>Visualizing the speed of a moving object using a color ramp in QGIS.</title>
+						<mediaobject>
+							<imageobject><imagedata scale='30' fileref='images/speed.png' /></imageobject>
+						</mediaobject>
+					</figure>
+				</listitem>
+
 			</itemizedlist>
 		</sect1>
 
@@ -5529,7 +5576,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 				<itemizedlist>
 					<listitem>
 						<para>Constructor for periods</para>
-						<para><varname>period(timestamptz, timestamptz, boolean = true, boolean = false): period</varname></para>
+						<para><varname>period(timestamptz, timestamptz, left_inc = true, right_inc = false): period</varname></para>
 					</listitem>
 
 					<listitem>
@@ -6009,7 +6056,7 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 					<listitem>
 						<para>Constructor for temporal types of sequence duration</para>
-						<para><varname>ttypeseq(ttypeinst[], boolean = true, boolean = true}): ttypeseq</varname></para>
+						<para><varname>ttypeseq(ttypeinst[], left_inc = true, right_inc = true}): ttypeseq</varname></para>
 					</listitem>
 
 					<listitem>
