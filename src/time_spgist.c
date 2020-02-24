@@ -314,7 +314,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 				maxUpper = &upper;
 				break;
 
-			case RTSameStrategyNumber:
+			case RTEqualStrategyNumber:
 				/*
 				 * Equal period can be only in the same quadrant where
 				 * argument would be placed to.
