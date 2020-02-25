@@ -356,7 +356,7 @@ PeriodSet *
 temporalinst_get_time(TemporalInst *inst)
 {
 	Period *p = period_make(inst->t, inst->t, true, true);
-	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
+	PeriodSet *result = periodset_make_internal(&p, 1, false);
 	pfree(p);
 	return result;
 }

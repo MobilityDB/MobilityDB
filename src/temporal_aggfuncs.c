@@ -644,7 +644,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	{
 		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
-		result = temporalseq_from_temporalinstarr(&inst, 1,
+		result = temporalseq_make(&inst, 1,
 			true, true, false, false);
 		pfree(inst);
 		return result;
@@ -655,7 +655,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 		INT4OID); 
 	instants[1] = temporalinst_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
-	result = temporalseq_from_temporalinstarr(instants, 2,
+	result = temporalseq_make(instants, 2,
 		seq->period.lower_inc, seq->period.upper_inc, false, false);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
@@ -744,7 +744,7 @@ tnumberseq_transform_tavg(TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 
@@ -944,7 +944,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 			func(temporalinst_value(inst1), temporalinst_value(inst2)),
 			inst1->t, inst1->valuetypid);
 	}
-	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
+	sequences[k++] = temporalseq_make(instants, syncseq1->count, 
 		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
@@ -1805,7 +1805,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 		result = (Temporal *)temporali_from_temporalinstarr(
 			(TemporalInst **)values, state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
-		result = (Temporal *)temporals_from_temporalseqarr(
+		result = (Temporal *)temporals_make(
 			(TemporalSeq **)values, state->length,
 			MOBDB_FLAGS_GET_LINEAR(values[0]->flags), true);
 	pfree(values);
@@ -1914,14 +1914,14 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 			instants[j] = temporalinst_make(Float8GetDatum(value), inst->t,
 				FLOAT8OID);
 		}
-		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
+		newsequences[i] = temporalseq_make(instants, 
 			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count,
+	TemporalS *result = temporals_make(newsequences, count,
 		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)

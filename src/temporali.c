@@ -589,7 +589,7 @@ temporali_get_time(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		periods[i] = period_make(inst->t, inst->t, true, true);
 	}
-	PeriodSet *result = periodset_from_periodarr_internal(periods, ti->count, false);
+	PeriodSet *result = periodset_make_internal(periods, ti->count, false);
 	for (int i = 0; i < ti->count; i++)
 		pfree(periods[i]);
 	pfree(periods);

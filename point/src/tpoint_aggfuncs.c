@@ -112,7 +112,7 @@ tpointseq_transform_tcentroid(TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tpointinst_transform_tcentroid(inst);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
+	TemporalSeq *result = temporalseq_make(instants, 
 		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	
@@ -441,14 +441,14 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			instants[j] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
+		newsequences[i] = temporalseq_make(instants, 
 			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count, 
+	TemporalS *result = temporals_make(newsequences, count, 
 		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)

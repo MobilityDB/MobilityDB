@@ -171,7 +171,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, valuetypid);
@@ -189,7 +189,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		Datum value = invert ? func(geo, value1) : func(value1, geo);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 		pfree(instants[0]); pfree(instants[1]);
@@ -218,7 +218,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		TemporalInst *instants[2];
 		instants[0] = temporalinst_make(intvalue1, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(intvalue1, inst2->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(intvalue, inst1->valuetypid); DATUM_FREE(intvalue1, valuetypid);
@@ -243,7 +243,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t,
 			valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+		result[k++] = temporalseq_make(instants, 2,
 			lower_inc, false, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, valuetypid);
@@ -255,7 +255,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 			func(temporalinst_value(interinstants[i]), geo);
 		instants[0] = temporalinst_make(value, (interinstants[i])->t,
 			valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+		result[k++] = temporalseq_make(instants, 1,
 			true, true, false, false);
 		DATUM_FREE(value, valuetypid);
 		pfree(instants[0]);
@@ -271,7 +271,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 				func(intvalue, geo);
 			instants[0] = temporalinst_make(intvalue1, interinstants[i]->t, valuetypid);
 			instants[1] = temporalinst_make(intvalue1, interinstants[i + 1]->t, valuetypid);
-			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			result[k++] = temporalseq_make(instants, 2,
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(intvalue));
@@ -284,7 +284,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t,
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+		result[k++] = temporalseq_make(instants, 2,
 			false, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, valuetypid);
@@ -309,7 +309,7 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 			func(temporalinst_value(inst), geo);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *inst1 = temporalinst_make(value, inst->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
+		result[0] = temporalseq_make(&inst1, 1,
 			true, true, false, false);
 		pfree(inst1);
 		*count = 1;
@@ -353,7 +353,7 @@ tspatialrel_tpointseq_geo(TemporalSeq *seq, Datum geo,
 	int count;
 	TemporalSeq **sequences = tspatialrel_tpointseq_geo2(seq, geo,
 		func, valuetypid, &count, invert);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		false, true);
 
 	for (int i = 0; i < count; i++)
@@ -391,7 +391,7 @@ tspatialrel_tpoints_geo(TemporalS *ts, Datum geo,
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, totalseqs,
+	TemporalS *result = temporals_make(allsequences, totalseqs,
 		false, true);
 
 	for (int i = 0; i < totalseqs; i++)
@@ -417,7 +417,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		Datum value = invert ? func(geo, value1, param) :
 			func(value1, geo, param);
 		TemporalInst *inst = temporalinst_make(value, inst1->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
+		result[0] = temporalseq_make(&inst, 1,
 			true, true, false, false);
 		pfree(inst);
 		*count = 1;
@@ -435,7 +435,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 		pfree(instants[0]); pfree(instants[1]);
@@ -466,7 +466,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		TemporalInst *instants[2];
 		instants[0] = temporalinst_make(intvalue1, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(intvalue1, inst2->t, valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(intvalue, inst1->valuetypid); DATUM_FREE(intvalue1, valuetypid);
@@ -491,7 +491,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(value, (interinstants[0])->t, valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+		result[k++] = temporalseq_make(instants, 2,
 			lower_inc, false, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, valuetypid);
@@ -504,7 +504,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 			func(temporalinst_value(interinstants[i]), geo, param);
 		instants[0] = temporalinst_make(value, (interinstants[i])->t,
 			valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+		result[k++] = temporalseq_make(instants, 1,
 			true, true, false, false);
 		DATUM_FREE(value, valuetypid);
 		pfree(instants[0]);
@@ -519,7 +519,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 				func(intvalue, geo, param);
 			instants[0] = temporalinst_make(intvalue1, interinstants[i]->t, valuetypid);
 			instants[1] = temporalinst_make(intvalue1, interinstants[i + 1]->t, valuetypid);
-			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			result[k++] = temporalseq_make(instants, 2,
 				false, false, false, false);
 			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(intvalue));
@@ -533,7 +533,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		instants[0] = temporalinst_make(value, (interinstants[countinst - 1])->t,
 			valuetypid);
 		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+		result[k++] = temporalseq_make(instants, 2,
 			false, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		DATUM_FREE(value, valuetypid);
@@ -560,7 +560,7 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *inst1 = temporalinst_make(value, inst->t,
 			valuetypid);
-		result[0] = temporalseq_from_temporalinstarr(&inst1, 1,
+		result[0] = temporalseq_make(&inst1, 1,
 			true, true, false, false);
 		pfree(inst1);
 		*count = 1;
@@ -604,7 +604,7 @@ tspatialrel3_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum param,
 	int count;
 	TemporalSeq **sequences = tspatialrel3_tpointseq_geo2(seq, geo, param,
 		func, valuetypid, &count, invert);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		false, true);
 
 	for (int i = 0; i < count; i++)
@@ -642,7 +642,7 @@ tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, totalseqs,
+	TemporalS *result = temporals_make(allsequences, totalseqs,
 		false, true);
 
 	for (int i = 0; i < totalseqs; i++)
@@ -671,7 +671,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 		Datum dwithin = geom_dwithin2d(value, geo, dist);
 		TemporalInst *inst = temporalinst_make(dwithin, seq->period.lower,
 			BOOLOID);
-		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
+		result[0] = temporalseq_make(&inst, 1,
 			true, true, false, false);
 		pfree(inst);
 		*count = 1;
@@ -694,7 +694,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		/*  The two instant values created above are the ones needed here */
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			seq->period.lower_inc, seq->period.upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		*count = 1;
@@ -706,7 +706,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 	for (int i = 0; i < count1; i++)
 		periods[i] = &atbuffer[i]->period;
 	/* The period set must be normalized, i.e., last parameter must be true */
-	PeriodSet *ps = periodset_from_periodarr_internal(periods, count1, true);
+	PeriodSet *ps = periodset_make_internal(periods, count1, true);
 	for (int i = 0; i < count1; i++)
 		pfree(atbuffer[i]);
 	pfree(periods);
@@ -717,7 +717,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		temporalinst_set(instants[0], datum_true, seq->period.lower);
 		temporalinst_set(instants[1], datum_true, seq->period.upper);
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			seq->period.lower_inc, seq->period.upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		*count = 1;
@@ -744,7 +744,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 			p1 = periodset_per_n(ps, j);
 			temporalinst_set(instants[0], datum_true, p1->lower);
 			temporalinst_set(instants[1], datum_true, p1->upper);
-			result[i] = temporalseq_from_temporalinstarr(instants, 2,
+			result[i] = temporalseq_make(instants, 2,
 				p1->lower_inc, p1->upper_inc, false, false);
 			j++;
 		}
@@ -753,7 +753,7 @@ tdwithin_tpointseq_geo1(TemporalSeq *seq, Datum geo, Datum dist, int *count)
 			p2 = periodset_per_n(minus, k);
 			temporalinst_set(instants[0], datum_false, p2->lower);
 			temporalinst_set(instants[1], datum_false, p2->upper);
-			result[i] = temporalseq_from_temporalinstarr(instants, 2,
+			result[i] = temporalseq_make(instants, 2,
 				p2->lower_inc, p2->upper_inc, false, false);
 			k++;
 		}
@@ -769,7 +769,7 @@ tdwithin_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum dist)
 {
 	int count;
 	TemporalSeq **sequences = tdwithin_tpointseq_geo1(seq, geo, dist, &count);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		false, true);
 
 	for (int i = 0; i < count; i++)
@@ -804,7 +804,7 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, totalseqs,
+	TemporalS *result = temporals_make(allsequences, totalseqs,
 		false, true);
 
 	for (int i = 0; i < totalseqs; i++)
@@ -1118,7 +1118,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 		TemporalInst *inst = temporalinst_make(
 			func(temporalinst_value(inst1), temporalinst_value(inst2), d),
 			inst1->t, BOOLOID);
-		result[0] = temporalseq_from_temporalinstarr(&inst, 1,
+		result[0] = temporalseq_make(&inst, 1,
 			true, true, false, false);
 		pfree(inst);
 		return 1;
@@ -1158,7 +1158,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			Datum value = func(sv1, sv2, d);
 			temporalinst_set(instants[0], value, lower);
 			temporalinst_set(instants[1], value, upper);
-			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			result[k++] = temporalseq_make(instants, 2,
 				lower_inc, upper_inc, false, false);
 		}
 		/* Both segments have stepwise interpolation */
@@ -1167,13 +1167,13 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			Datum value = func(sv1, sv2, d);
 			temporalinst_set(instants[0], value, lower);
 			temporalinst_set(instants[1], value, upper);
-			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			result[k++] = temporalseq_make(instants, 2,
 				lower_inc, false, false, false);
 			if (upper_inc)
 			{
 				value = func(ev1, ev2, d);
 				temporalinst_set(instants[0], value, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				result[k++] = temporalseq_make(instants, 1,
 					true, true, false, false);
 			}
 		}
@@ -1193,7 +1193,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			{
 				temporalinst_set(instants[0], datum_false, lower);
 				temporalinst_set(instants[1], datum_false, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, upper_inc1, false, false);
 			}
 			/* A single instant is returned */
@@ -1203,17 +1203,17 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 				{
 					temporalinst_set(instants[0], datum_false, lower);
 					temporalinst_set(instants[1], datum_false, upper);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					result[k++] = temporalseq_make(instants, 2,
 						lower_inc, upper_inc1, false, false);
 				}
 				else if (t1 == lower) /* && lower_inc */
 				{
 					temporalinst_set(instants[0], datum_true, lower);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+					result[k++] = temporalseq_make(instants, 1,
 						true, true, false, false);
 					temporalinst_set(instants[0], datum_false, lower);
 					temporalinst_set(instants[1], datum_false, upper);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					result[k++] = temporalseq_make(instants, 2,
 						false, upper_inc1, false, false);
 				}
 				else if (t1 == upper) /* && upper_inc */
@@ -1221,21 +1221,21 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 					temporalinst_set(instants[0], datum_false, lower);
 					temporalinst_set(instants[1], upper_inc1 ? datum_true :
 						datum_false, upper);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					result[k++] = temporalseq_make(instants, 2,
 						lower_inc, upper_inc1, false, false);
 				}
 				else /* (t1 != lower && t1 != upper) */
 				{
 					temporalinst_set(instants[0], datum_false, lower);
 					temporalinst_set(instants[1], datum_false, t1);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					result[k++] = temporalseq_make(instants, 2,
 						lower_inc, false, false, false);
 					temporalinst_set(instants[0], datum_true, t1);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+					result[k++] = temporalseq_make(instants, 1,
 						true, true, false, false);
 					temporalinst_set(instants[0], datum_false, t1);
 					temporalinst_set(instants[1], datum_false, upper);
-					result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+					result[k++] = temporalseq_make(instants, 2,
 						false, upper_inc1, false, false);
 				}
 			}
@@ -1244,44 +1244,44 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			{
 				temporalinst_set(instants[0], datum_true, lower);
 				temporalinst_set(instants[1], datum_true, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, upper_inc1, false, false);
 			}
 			else if (lower != t1 && upper == t2)
 			{
 				temporalinst_set(instants[0], datum_false, lower);
 				temporalinst_set(instants[1], datum_false, t1);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
 				temporalinst_set(instants[0], datum_true, t1);
 				temporalinst_set(instants[1], datum_true, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					true, upper_inc1, false, false);
 			}
 			else if (lower == t1 && upper != t2)
 			{
 				temporalinst_set(instants[0], datum_true, lower);
 				temporalinst_set(instants[1], datum_true, t2);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
 				temporalinst_set(instants[0], datum_false, t2);
 				temporalinst_set(instants[1], datum_false, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					true, upper_inc1, false, false);
 			}
 			else
 			{
 				temporalinst_set(instants[0], datum_false, lower);
 				temporalinst_set(instants[1], datum_false, t1);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
 				temporalinst_set(instants[0], datum_true, t1);
 				temporalinst_set(instants[1], datum_true, t2);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					true, true, false, false);
 				temporalinst_set(instants[0], datum_false, t2);
 				temporalinst_set(instants[1], datum_false, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+				result[k++] = temporalseq_make(instants, 2,
 					false, upper_inc1, false, false);
 			}
 			/* Add extra final point if only one segment is linear */
@@ -1289,7 +1289,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			{
 				Datum value = func(ev1, ev2, d);
 				temporalinst_set(instants[0], value, upper);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				result[k++] = temporalseq_make(instants, 1,
 					true, true, false, false);
 			}
 		}
@@ -1309,7 +1309,7 @@ tdwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq1->count * 4);
 	int count = tdwithin_tpointseq_tpointseq2(sequences, seq1, seq2,
 		param, func);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		false, true);
 
 	for (int i = 0; i < count; i++)
@@ -1340,7 +1340,7 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 		k += tdwithin_tpointseq_tpointseq2(&sequences[k], seq1, seq2, d,
 			func);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
+	TemporalS *result = temporals_make(sequences, k,
 		false, true);
 
 	for (int i = 0; i < k; i++)

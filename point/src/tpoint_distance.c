@@ -131,7 +131,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	}
 	instants[k++] = temporalinst_make(func(point, temporalinst_value(inst1)),
 		inst1->t, FLOAT8OID); 
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k, 
+	TemporalSeq *result = temporalseq_make(instants, k, 
 		seq->period.lower_inc, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	
 	for (int i = 0; i < k; i++)
@@ -153,7 +153,7 @@ distance_tpoints_geo(TemporalS *ts, Datum point,
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = distance_tpointseq_geo(seq, point, func);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, ts->count, 
+	TemporalS *result = temporals_make(sequences, ts->count, 
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 	
 	for (int i = 0; i < ts->count; i++)

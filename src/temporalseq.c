@@ -651,7 +651,7 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
  * Depending on the value of the normalize argument, the resulting sequence
  * will be normalized. */
 TemporalSeq *
-temporalseq_from_temporalinstarr(TemporalInst **instants, int count, 
+temporalseq_make(TemporalInst **instants, int count, 
    bool lower_inc, bool upper_inc, bool linear, bool normalize)
 {
 	Oid valuetypid = instants[0]->valuetypid;
@@ -1091,9 +1091,9 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	{
 		TemporalInst *inst1 = temporalseq_at_timestamp(seq1, inter->lower);
 		TemporalInst *inst2 = temporalseq_at_timestamp(seq2, inter->lower);
-		*sync1 = temporalseq_from_temporalinstarr(&inst1, 1, true, true, 
+		*sync1 = temporalseq_make(&inst1, 1, true, true, 
 			linear1, false);
-		*sync2 = temporalseq_from_temporalinstarr(&inst2, 1, true, true, 
+		*sync2 = temporalseq_make(&inst2, 1, true, true, 
 			linear2, false);
 		pfree(inst1); pfree(inst2); pfree(inter);
 		return true;
@@ -1193,9 +1193,9 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			tofree[l++] = instants2[k - 1];
 		}
 	}
-	*sync1 = temporalseq_from_temporalinstarr(instants1, k, 
+	*sync1 = temporalseq_make(instants1, k, 
 		inter->lower_inc, inter->upper_inc, linear1, false);
-	*sync2 = temporalseq_from_temporalinstarr(instants2, k, 
+	*sync2 = temporalseq_make(instants2, k, 
 		inter->lower_inc, inter->upper_inc, linear2, false);
 	
 	for (i = 0; i < l; i++)
@@ -1462,7 +1462,7 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		instants[i] = temporalinst_read(buf, valuetypid);
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
+	TemporalSeq *result = temporalseq_make(instants, 
 		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
@@ -1522,7 +1522,7 @@ tfloatseq_to_tintseq(TemporalSeq *seq)
 TemporalSeq *
 temporalinst_to_temporalseq(TemporalInst *inst, bool linear)
 {
-	return temporalseq_from_temporalinstarr(&inst, 1, true, true, linear, false);
+	return temporalseq_make(&inst, 1, true, true, linear, false);
 }
 
 TemporalSeq *
@@ -1532,7 +1532,7 @@ temporali_to_temporalseq(TemporalI *ti, bool linear)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Cannot transform input to a temporal sequence")));
 	TemporalInst *inst = temporali_inst_n(ti, 0);
-	return temporalseq_from_temporalinstarr(&inst, 1, true, true, linear, false);
+	return temporalseq_make(&inst, 1, true, true, linear, false);
 }
 
 TemporalSeq *
@@ -1571,7 +1571,7 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 		instants[1] = temporalinst_make(value1, inst2->t, seq->valuetypid);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc && 
 			datum_eq(value1, value2, seq->valuetypid): false;
-		result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+		result[k++] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, true, false);
 		inst1 = inst2;
 		value1 = value2;
@@ -1583,7 +1583,7 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 		value1 = temporalinst_value(temporalseq_inst_n(seq, seq->count - 2));
 		value2 = temporalinst_value(inst2);
 		if (datum_ne(value1, value2, seq->valuetypid))
-			result[k++] = temporalseq_from_temporalinstarr(&inst2, 1,
+			result[k++] = temporalseq_make(&inst2, 1,
 				true, true, true, false);
 	}
 	return k;
@@ -1594,7 +1594,7 @@ tstepwseq_to_linear(TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
 	int count = tstepwseq_to_linear1(sequences, seq);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count, true, false);
+	TemporalS *result = temporals_make(sequences, count, true, false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -1712,7 +1712,7 @@ PeriodSet *
 temporalseq_get_time(TemporalSeq *seq)
 {
 	Period *p = &seq->period;
-	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
+	PeriodSet *result = periodset_make_internal(&p, 1, false);
 	return result;
 }
 
@@ -2329,7 +2329,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 		TemporalInst *instants[2];
 		instants[0] = inst1;
 		instants[1] = inst2;
-		TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 2,
+		TemporalSeq *result = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, linear, false);
 		return result;
 	}
@@ -2344,14 +2344,14 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 			TemporalInst *instants[2];
 			instants[0] = inst1;
 			instants[1] = temporalinst_make(value1, inst2->t, valuetypid);
-			result = temporalseq_from_temporalinstarr(instants, 2,
+			result = temporalseq_make(instants, 2,
 				lower_inc, false, linear, false);
 			pfree(instants[1]);
 		}
 		else if (upper_inc && datum_eq(value, value2, valuetypid))
 		{
 			/* <x@t1 value@t2] */
-			result = temporalseq_from_temporalinstarr(&inst2, 1,
+			result = temporalseq_make(&inst2, 1,
 				true, true, linear, false);
 		}
 		return result;
@@ -2362,14 +2362,14 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		if (!lower_inc)
 			return NULL;
-		return temporalseq_from_temporalinstarr(&inst1, 1,
+		return temporalseq_make(&inst1, 1,
 				true, true, linear, false);
 	}
 	if (datum_eq(value2, value, valuetypid))
 	{
 		if (!upper_inc)
 			return NULL;
-		return temporalseq_from_temporalinstarr(&inst2, 1, 
+		return temporalseq_make(&inst2, 1, 
 				true, true, linear, false);
 	}
 	
@@ -2379,7 +2379,7 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 		return NULL;
 	
 	TemporalInst *inst = temporalinst_make(value, t, valuetypid);
-	TemporalSeq *result = temporalseq_from_temporalinstarr(&inst, 1, 
+	TemporalSeq *result = temporalseq_make(&inst, 1, 
 		true, true, linear, false);
 	pfree(inst);
 	return result;
@@ -2445,7 +2445,7 @@ temporalseq_at_value(TemporalSeq *seq, Datum value)
 		return NULL;
 	}
 
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -2474,7 +2474,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 
 		instants[0] = inst1;
 		instants[1] = inst2;
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, true, false);
 		return 1;
 	}
@@ -2484,7 +2484,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	{
 		instants[0] = inst1;
 		instants[1] = inst2;
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			false, upper_inc, true, false);
 		return 1;
 	}
@@ -2492,7 +2492,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	{
 		instants[0] = inst1;
 		instants[1] = inst2;
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, false, true, false);
 		return 1;
 	}
@@ -2503,17 +2503,17 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	{
 		instants[0] = inst1;
 		instants[1] = inst2;
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, true, false);
 		return 1;
 	}
 	instants[0] = inst1;
 	instants[1] = temporalinst_make(value, t, valuetypid);
-	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+	result[0] = temporalseq_make(instants, 2,
 			lower_inc, false, true, false);
 	instants[0] = instants[1];
 	instants[1] = inst2;
-	result[1] = temporalseq_from_temporalinstarr(instants, 2,
+	result[1] = temporalseq_make(instants, 2,
 			false, upper_inc, true, false);
 	pfree(instants[0]);
 	return 2;
@@ -2572,7 +2572,7 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 					instants[j] = temporalinst_make(temporalinst_value(instants[j - 1]),
 						inst->t, valuetypid);
 					bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-					result[k++] = temporalseq_from_temporalinstarr(instants, j + 1,
+					result[k++] = temporalseq_make(instants, j + 1,
 						lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 					pfree(instants[j]);
 					j = 0;
@@ -2583,7 +2583,7 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 				instants[j++] = inst;
 		}
 		if (j > 0)
-			result[k++] = temporalseq_from_temporalinstarr(instants, j,
+			result[k++] = temporalseq_make(instants, j,
 				lower_inc, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(instants);
 	}
@@ -2621,7 +2621,7 @@ temporalseq_minus_value(TemporalSeq *seq, Datum value)
 	if (count == 0)
 		return NULL;
 	
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -2682,7 +2682,7 @@ temporalseq_at_values(TemporalSeq *seq, Datum *values, int count)
 		pfree(sequences);
 		return NULL;
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount,
+	TemporalS *result = temporals_make(sequences, newcount,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
@@ -2742,7 +2742,7 @@ temporalseq_minus_values(TemporalSeq *seq, Datum *values, int count)
 		pfree(sequences);
 		return NULL;
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount,
+	TemporalS *result = temporals_make(sequences, newcount,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
@@ -2770,7 +2770,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 		instants[0] = inst1;
 		instants[1] = linear ? inst2 : 
 			temporalinst_make(value1, inst2->t, valuetypid);
-		TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 2,
+		TemporalSeq *result = temporalseq_make(instants, 2,
 			lower_incl, upper_incl, linear, false);
 		return result;
 	}
@@ -2800,7 +2800,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 			linear, true, true, lowervalue);
 		/* We are sure that newseq is an instant sequence */
 		TemporalInst *inst = temporalseq_inst_n(newseq, 0);
-		result = temporalseq_from_temporalinstarr(&inst, 1,
+		result = temporalseq_make(&inst, 1,
 			true, true, linear, false);
 		pfree(newseq); 
 	}
@@ -2836,7 +2836,7 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 			upper_incl1 = (timestamp_cmp_internal(time1, inst1->t) == 0) ? 
 				upper_incl && lower_inc(intersect) : lower_inc(intersect);
 		}
-		result = temporalseq_from_temporalinstarr(instants, 2,
+		result = temporalseq_make(instants, 2,
 			lower_incl1, upper_incl1, linear, false);
 		pfree(newseq1); pfree(newseq2); 
 	}
@@ -2894,7 +2894,7 @@ tnumberseq_at_range(TemporalSeq *seq, RangeType *range)
 	if (count == 0)
 		return NULL;
 
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -2965,7 +2965,7 @@ tnumberseq_minus_range(TemporalSeq *seq, RangeType *range)
 		return NULL;
 	}
 
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3028,7 +3028,7 @@ tnumberseq_at_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 		pfree(sequences);
 		return NULL;
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount,
+	TemporalS *result = temporals_make(sequences, newcount,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
@@ -3092,7 +3092,7 @@ tnumberseq_minus_ranges(TemporalSeq *seq, RangeType **normranges, int count)
 	if (newcount == 0) 
 		return NULL;
 	
-	TemporalS *result = temporals_from_temporalseqarr(sequences, newcount,
+	TemporalS *result = temporals_make(sequences, newcount,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < newcount; i++)
 		pfree(sequences[i]);
@@ -3116,21 +3116,21 @@ temporalseq_at_minmax(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		if (datum_eq(value, value1, seq->valuetypid) &&
 			datum_eq(value, value2, seq->valuetypid))
 		{
-			result[0] = temporalseq_from_temporalinstarr(&inst1, 1, true, true, 
+			result[0] = temporalseq_make(&inst1, 1, true, true, 
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
-			result[1] = temporalseq_from_temporalinstarr(&inst2, 1, true, true, 
+			result[1] = temporalseq_make(&inst2, 1, true, true, 
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			count = 2;
 		}
 		else if (datum_eq(value, value1, seq->valuetypid))
 		{
-			result[0] = temporalseq_from_temporalinstarr(&inst1, 1, true, true, 
+			result[0] = temporalseq_make(&inst1, 1, true, true, 
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			count = 1;
 		}
 		else if (datum_eq(value, value2, seq->valuetypid))
 		{
-			result[0] = temporalseq_from_temporalinstarr(&inst2, 1, true, true, 
+			result[0] = temporalseq_make(&inst2, 1, true, true, 
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			count = 1;
 		}
@@ -3144,7 +3144,7 @@ temporalseq_at_min(TemporalSeq *seq)
 	Datum xmin = temporalseq_min_value(seq);
 	TemporalSeq *sequences[2];
 	int count = temporalseq_at_minmax(sequences, seq, xmin);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3168,7 +3168,7 @@ temporalseq_at_max(TemporalSeq *seq)
 	Datum xmax = temporalseq_max_value(seq);
 	TemporalSeq *sequences[2];
 	int count = temporalseq_at_minmax(sequences, seq, xmax);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3379,14 +3379,14 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 			if (linear)
 			{
 				instants[n] = inst1;
-				result[k++] = temporalseq_from_temporalinstarr(instants, n + 1, 
+				result[k++] = temporalseq_make(instants, n + 1, 
 					seq->period.lower_inc, false, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			}
 			else
 			{
 				instants[n] = temporalinst_make(temporalinst_value(instants[n - 1]), t,
 					inst1->valuetypid);
-				result[k++] = temporalseq_from_temporalinstarr(instants, n + 1, 
+				result[k++] = temporalseq_make(instants, n + 1, 
 					seq->period.lower_inc, false, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 				pfree(instants[n]);
 			}
@@ -3398,7 +3398,7 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 				temporalseq_at_timestamp1(inst1, inst2, t, true) :
 				temporalinst_make(temporalinst_value(inst1), t,
 					inst1->valuetypid);
-			result[k++] = temporalseq_from_temporalinstarr(instants, n + 2, 
+			result[k++] = temporalseq_make(instants, n + 2, 
 				seq->period.lower_inc, false, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			pfree(instants[n + 1]);
 		}
@@ -3412,7 +3412,7 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags));
 		for (int i = 1; i < seq->count - n; i++)
 			instants[i] = temporalseq_inst_n(seq, i + n);
-		result[k++] = temporalseq_from_temporalinstarr(instants, seq->count - n, 
+		result[k++] = temporalseq_make(instants, seq->count - n, 
 			false, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(instants[0]);
 	}
@@ -3430,7 +3430,7 @@ temporalseq_minus_timestamp(TemporalSeq *seq, TimestampTz t)
 	int count = temporalseq_minus_timestamp1((TemporalSeq **)sequences, seq, t);
 	if (count == 0)
 		return NULL;
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3537,7 +3537,7 @@ temporalseq_minus_timestampset(TemporalSeq *seq, TimestampSet *ts)
 	if (count == 0) 
 		return NULL;
 	
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	
 	for (int i = 0; i < count; i++)
@@ -3567,7 +3567,7 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
 	{
 		TemporalInst *inst = temporalseq_at_timestamp(seq, inter->lower);
-		TemporalSeq *result = temporalseq_from_temporalinstarr(&inst, 1,
+		TemporalSeq *result = temporalseq_make(&inst, 1,
 			true, true, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(inst); pfree(inter);
 		return result;		
@@ -3610,7 +3610,7 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 	}
 	/* Since by definition the sequence is normalized it is not necessary to
 	   normalize the projection of the sequence to the period */
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, k,
+	TemporalSeq *result = temporalseq_make(instants, k,
 		inter->lower_inc, inter->upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 
 	pfree(instants[0]); pfree(instants[k - 1]); pfree(instants); pfree(inter);
@@ -3655,7 +3655,7 @@ temporalseq_minus_period(TemporalSeq *seq, Period *p)
 	int count = temporalseq_minus_period1(sequences, seq, p);
 	if (count == 0)
 		return NULL;
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3722,7 +3722,7 @@ temporalseq_at_periodset(TemporalSeq *seq, PeriodSet *ps)
 	if (count == 0)
 		return NULL;
 	
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -3782,7 +3782,7 @@ temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 	/* Bounding box test */
 	Period *p = periodset_bbox(ps);
 	if (!overlaps_period_period_internal(&seq->period, p))
-		return temporals_from_temporalseqarr(&seq, 1,
+		return temporals_make(&seq, 1,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 
 	/* Instantaneous sequence */
@@ -3791,7 +3791,7 @@ temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		if (contains_periodset_timestamp_internal(ps, inst->t))
 			return NULL;
-		return temporals_from_temporalseqarr(&seq, 1,
+		return temporals_make(&seq, 1,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	}
 
@@ -3805,7 +3805,7 @@ temporalseq_minus_periodset(TemporalSeq *seq, PeriodSet *ps)
 		return NULL;
 	}
 
-	TemporalS *result =temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result =temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);

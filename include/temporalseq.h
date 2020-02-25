@@ -21,7 +21,7 @@
 /*****************************************************************************/
 
 extern TemporalInst *temporalseq_inst_n(TemporalSeq *seq, int index);
-extern TemporalSeq *temporalseq_from_temporalinstarr(TemporalInst **instants, 
+extern TemporalSeq *temporalseq_make(TemporalInst **instants, 
 	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TemporalSeq *temporalseq_copy(TemporalSeq *seq);
 extern int temporalseq_find_timestamp(TemporalSeq *seq, TimestampTz t);
