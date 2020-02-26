@@ -1802,7 +1802,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
-		result = (Temporal *)temporali_from_temporalinstarr(
+		result = (Temporal *)temporali_make(
 			(TemporalInst **)values, state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)temporals_make(
@@ -1889,7 +1889,7 @@ temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 		newinstants[i] = temporalinst_make(Float8GetDatum(tavg), inst->t,
 			FLOAT8OID);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(newinstants, count);
+	TemporalI *result = temporali_make(newinstants, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(newinstants[i]);

@@ -19,8 +19,8 @@ CREATE table test_timeops(
 	leftarg text, 
 	rightarg text, 
 	noidx bigint,
-	gistidx bigint
-	,spgistidx bigint 
+	gistidx bigint,
+	spgistidx bigint
 );
 
 -------------------------------------------------------------------------------

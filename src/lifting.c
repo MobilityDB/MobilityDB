@@ -94,7 +94,7 @@ tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tfunc1_temporalinst(inst, func, restypid);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -186,7 +186,7 @@ tfunc2_temporali(TemporalI *ti, Datum param,
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tfunc2_temporalinst(inst, param, func, restypid);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -288,7 +288,7 @@ tfunc2_temporali_base(TemporalI *ti, Datum value,
 		instants[i] = tfunc2_temporalinst_base(inst, value, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -385,7 +385,7 @@ tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param,
 		instants[i] = tfunc3_temporalinst_base(inst, value, param, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -462,7 +462,7 @@ tfunc4_temporali_base(TemporalI *ti, Datum value, Oid valuetypid,
 		instants[i] = tfunc4_temporalinst_base(inst, value, valuetypid, func,
 			restypid, invert);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -870,7 +870,7 @@ sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -911,7 +911,7 @@ sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (int i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -968,7 +968,7 @@ sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1424,7 +1424,7 @@ sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -1465,7 +1465,7 @@ sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (int i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -1522,7 +1522,7 @@ sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1984,7 +1984,7 @@ sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -2026,7 +2026,7 @@ sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 
 	for (int i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -2084,7 +2084,7 @@ sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti,
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
 	pfree(instants);

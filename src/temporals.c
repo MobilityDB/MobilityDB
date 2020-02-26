@@ -366,8 +366,8 @@ intersection_temporals_temporali(TemporalS *ts, TemporalI *ti,
 		return false;
 	}
 	
-	*inter1 = temporali_from_temporalinstarr(instants1, k);
-	*inter2 = temporali_from_temporalinstarr(instants2, k);	
+	*inter1 = temporali_make(instants1, k);
+	*inter2 = temporali_make(instants2, k);
 	for (i = 0; i < k; i++)
 		pfree(instants1[i]);
 	pfree(instants1); pfree(instants2); 
@@ -1937,7 +1937,7 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = temporali_make(instants, count);
 	for (i = 0; i < count; i++)
 		pfree(instants[i]);
 	pfree(instants);

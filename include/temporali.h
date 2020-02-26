@@ -22,7 +22,7 @@
 
 extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
 extern bool temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos);
-extern TemporalI *temporali_from_temporalinstarr(TemporalInst **instants,
+extern TemporalI *temporali_make(TemporalInst **instants,
 	int count);
 extern TemporalI *temporali_copy(TemporalI *ti);
 

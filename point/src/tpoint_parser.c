@@ -322,7 +322,7 @@ tpointi_parse(char **str, Oid basetype, int *tpoint_srid)
 		insts[i] = tpointinst_parse(str, basetype, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalI *result = temporali_from_temporalinstarr(insts, count);
+	TemporalI *result = temporali_make(insts, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);

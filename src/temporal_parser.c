@@ -354,7 +354,7 @@ timestampset_parse(char **str)
 		times[i] = timestamp_parse(str);
 	}
 	p_cbrace(str);
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, count);
+	TimestampSet *result = timestampset_make_internal(times, count);
 
 	pfree(times);
 
@@ -466,7 +466,7 @@ temporali_parse(char **str, Oid basetype)
 		instants[i] = temporalinst_parse(str, basetype, false, true);
 	}
 	p_cbrace(str);
-	TemporalI *result = temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = temporali_make(instants, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);

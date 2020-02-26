@@ -2173,7 +2173,7 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
 	TimestampSet *result;
 	int cmp = timestamp_cmp_internal(t1, t2);
 	if (cmp == 0)
-		result = timestampset_from_timestamparr_internal(&t1, 1);
+		result = timestampset_make_internal(&t1, 1);
 	else
 	{
 		TimestampTz *times = palloc(sizeof(TimestampTz) * 2);
@@ -2187,7 +2187,7 @@ union_timestamp_timestamp(PG_FUNCTION_ARGS)
 			times[0] = t2;
 			times[1] = t1;
 		}
-		result = timestampset_from_timestamparr_internal(times, 2);
+		result = timestampset_make_internal(times, 2);
 		pfree(times);
 	}
 	PG_RETURN_POINTER(result);
@@ -2216,7 +2216,7 @@ union_timestamp_timestampset_internal(TimestampTz t, TimestampSet *ts)
 	}
 	if (!found)
 		times[k++] = t;
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -2306,7 +2306,7 @@ union_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet *ts2)
 	while (j < ts2->count)
 		times[k++] = timestampset_time_n(ts2, j++);
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -2829,7 +2829,7 @@ intersection_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet 
 		return NULL;
 	}
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -2870,7 +2870,7 @@ intersection_timestampset_period_internal(TimestampSet *ts, Period *p)
 		pfree(times);
 		return NULL;
 	}
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -2939,7 +2939,7 @@ intersection_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
 		return NULL;
 	}
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 
 	pfree(times);
 
@@ -3263,7 +3263,7 @@ minus_timestampset_timestamp_internal(TimestampSet *ts, TimestampTz t)
 		return NULL;
 	}
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -3315,7 +3315,7 @@ minus_timestampset_timestampset_internal(TimestampSet *ts1, TimestampSet *ts2)
 		return NULL;
 	}
 	
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -3357,7 +3357,7 @@ minus_timestampset_period_internal(TimestampSet *ts, Period *p)
 		return NULL;
 	}
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }
@@ -3428,7 +3428,7 @@ minus_timestampset_periodset_internal(TimestampSet *ts, PeriodSet *ps)
 		return NULL;
 	}
 
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, k);
+	TimestampSet *result = timestampset_make_internal(times, k);
 	pfree(times);
 	return result;
 }

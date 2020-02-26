@@ -238,7 +238,7 @@ tgeompointi_transform_gk_internal(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);

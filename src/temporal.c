@@ -809,7 +809,7 @@ temporali_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 	
-	Temporal *result = (Temporal *)temporali_from_temporalinstarr(instants, count);
+	Temporal *result = (Temporal *)temporali_make(instants, count);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);

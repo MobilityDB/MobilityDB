@@ -1028,8 +1028,8 @@ intersection_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 		return false;
 	}
 	
-	*inter1 = temporali_from_temporalinstarr(instants1, k);
-	*inter2 = temporali_from_temporalinstarr(instants2, k);
+	*inter1 = temporali_make(instants1, k);
+	*inter2 = temporali_make(instants2, k);
 	
 	for (int i = 0; i < k; i++) 
 		pfree(instants1[i]);
@@ -3454,7 +3454,7 @@ temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts)
 	{
 		if (!contains_timestampset_timestamp_internal(ts, inst->t))
 			return NULL;
-		return temporali_from_temporalinstarr(&inst, 1);
+		return temporali_make(&inst, 1);
 	}
 
 	/* General case */
@@ -3476,7 +3476,7 @@ temporalseq_at_timestampset(TemporalSeq *seq, TimestampSet *ts)
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, k);
+	TemporalI *result = temporali_make(instants, k);
 	for (int i = 0; i < k; i++)
 		pfree(instants[i]);
 	pfree(instants);

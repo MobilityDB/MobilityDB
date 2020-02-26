@@ -975,7 +975,7 @@ tpointi_cumulative_length(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 1; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1242,11 +1242,11 @@ tgeompointi_twcentroid(TemporalI *ti)
 				inst->t, FLOAT8OID);
 
 	}
-	TemporalI *tix = temporali_from_temporalinstarr(instantsx, ti->count);
-	TemporalI *tiy = temporali_from_temporalinstarr(instantsy, ti->count);
+	TemporalI *tix = temporali_make(instantsx, ti->count);
+	TemporalI *tiy = temporali_make(instantsy, ti->count);
 	TemporalI *tiz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tiz = temporali_from_temporalinstarr(instantsz, ti->count);
+		tiz = temporali_make(instantsz, ti->count);
 	double avgx = tnumberi_twavg(tix);
 	double avgy = tnumberi_twavg(tiy);
 	double avgz;
@@ -1655,7 +1655,7 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	}
 	TemporalI *result = NULL;
 	if (k != 0)
-		result = temporali_from_temporalinstarr(instants, k);
+		result = temporali_make(instants, k);
 	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
@@ -1973,7 +1973,7 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	}
 	TemporalI *result = NULL;
 	if (k != 0)
-		result = temporali_from_temporalinstarr(instants, k);
+		result = temporali_make(instants, k);
 	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
@@ -3019,7 +3019,7 @@ geo_to_tpointi(GSERIALIZED *gs)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * npoints);
 	for (int i = 0; i < npoints; i++)
 		instants[i] = trajpoint_to_tpointinst((LWPOINT *)lwcoll->geoms[i]);
-	result = temporali_from_temporalinstarr(instants, npoints);
+	result = temporali_make(instants, npoints);
 	
 	lwgeom_free(lwgeom);
 	for (int i = 0; i < npoints; i++)
