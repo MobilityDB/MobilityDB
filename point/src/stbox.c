@@ -574,8 +574,8 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 STBOX *
 stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 {
-	assert(MOBDB_FLAGS_GET_GEODETIC(box1->flags) == MOBDB_FLAGS_GET_GEODETIC(box2->flags));
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+	assert(! hasx || MOBDB_FLAGS_GET_GEODETIC(box1->flags) == MOBDB_FLAGS_GET_GEODETIC(box2->flags));
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);

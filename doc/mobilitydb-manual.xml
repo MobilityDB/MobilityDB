@@ -507,6 +507,18 @@ SELECT period '[2011-01-01, 2011-01-05)' &amp;&amp; period '[2011-01-02, 2011-01
 					</listitem>
 
 					<listitem>
+						<para>Is adjacent to</para>
+						<para><varname>time -|- time</varname></para>
+						<para><varname>{number, range} -|- {number, range}</varname></para>
+						<programlisting>
+SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
+-- true
+SELECT floatrange '[15, 20)' -|- 20;
+-- true
+						</programlisting>
+					</listitem>
+
+					<listitem>
 						<para>Scritly left of</para>
 						<para><varname>{number, range} &lt;&lt; {number, range}</varname></para>
 						<programlisting>
@@ -582,18 +594,6 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 					</listitem>
 
 					<listitem>
-						<para>Is adjacent to</para>
-						<para><varname>time -|- time</varname></para>
-						<para><varname>{number, range} -|- {number, range}</varname></para>
-						<programlisting>
-SELECT period '[2011-01-01, 2011-01-05)' -|- timestampset '{2011-01-05, 2011-01-07}';
--- true
-SELECT floatrange '[15, 20)' -|- 20;
--- true
-						</programlisting>
-					</listitem>
-
-					<listitem>
 						<para>Union</para>
 						<para><varname>time + time</varname></para>
 						<programlisting>
@@ -647,7 +647,7 @@ CREATE TABLE reservation (ReservationID integer PRIMARY KEY, RoomID integer,
 CREATE INDEX reservation_during_idx ON reservation USING GIST(during);
 					</programlisting>
 			</para>
-			<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>.</para>
+			<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>.</para>
 			<para>In addition, B-tree indexes can be created for table columns of a time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of time types, with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 		</sect1>
 	</chapter>
@@ -3298,7 +3298,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 				</listitem>
 			</itemizedlist>
 
-			<para>Another set of operators consider the topological relationships between the bounding boxes. There are four topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), and same (<varname>~=</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), adjacent (<varname>-|-</varname>), and same (<varname>~=</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
 			<para>The topological operators for temporal alphanumeric types are given next.</para>
 
@@ -3337,12 +3337,27 @@ SELECT ttext '[A@2012-01-01, B@2012-01-06]' @&gt; ttext '[C@2012-01-03, D@2012-0
 					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@
-	box(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
+	tbox(floatrange '[1,4)', period '[2012-01-01, 2012-01-05)');
 -- true
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tint '[2@2012-01-03, 2@2012-01-05)';
 -- false
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-01-05}';
 -- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Are the bounding boxes adjacent?</para>
+					<para><varname>{base, numrange, time, tbox, ttype} -|-</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<programlisting>
+SELECT tint '[1@2012-01-01, 2@2012-01-04]' -|-
+	tbox(floatrange '[2,4)', period '[2012-01-01, 2012-01-05)');
+-- true
+SELECT tint '[1@2012-01-01, 1@2012-01-04)' -|- tint '[2@2012-01-03, 2@2012-01-05)';
+-- false
+SELECT tint '[1@2012-01-01, 1@2012-01-04)' -|- tfloat '{1@2012-01-03, 3@2012-01-05}';
+-- true
 					</programlisting>
 				</listitem>
 
@@ -3387,6 +3402,16 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' &amp;&amp;
 					<programlisting>
 SELECT tgeompoint 'Point(1 1)@2012-01-01' &lt;@
 	tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Are the bounding boxes adjacent?</para>
+					<para><varname>{geo, time, stbox, tpoint} -|- {geo, time, stbox, tpoint}: boolean</varname></para>
+					<programlisting>
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-02]' -|-
+	tgeompoint '[Point(2 2)@2012-01-01, Point(3 3)@2012-01-04)';
 -- true
 					</programlisting>
 				</listitem>
