@@ -50,70 +50,6 @@ geog_distance(Datum geog1, Datum geog2)
  
 /* Distance between temporal sequence point and a geometry/geography point */
 
-static int
-distance_tpointseq_geo1(TemporalInst **result,
-	TemporalInst *inst1, TemporalInst *inst2, bool linear, 
-	Datum point, Datum (*func)(Datum, Datum))
-{
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or stepwise interpolation */
-	if (datum_point_eq(value1, value2) || ! linear)
-	{
-		result[0] = temporalinst_make(func(point, value1),
-			inst1->t, FLOAT8OID); 
-		return 1;
-	}
-	double fraction;
-	ensure_point_base_type(inst1->valuetypid);
-	if (inst1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		/* The trajectory is a line */
-		Datum traj = geompoint_trajectory(value1, value2);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj, point));
-		pfree(DatumGetPointer(traj)); 
-	}
-	else
-	{
-		/* The trajectory is a line */
-		Datum traj = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_locate_point 
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
-		 * @extschema@._ST_BestSRID($1, $2)), 
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, traj, point);
-		Datum traj1 = call_function1(geometry_from_geography, traj);
-		Datum traj2 = call_function2(transform, traj1, bestsrid);
-		Datum point1 = call_function1(geometry_from_geography, point);
-		Datum point2 = call_function2(transform, point, bestsrid);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj2, point2));
-		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1)); 
-		pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(point1));
-		pfree(DatumGetPointer(point2));
-	}
-
-	if (fraction == 0 || fraction == 1)
-	{
-		result[0] = temporalinst_make(func(point, value1),
-			inst1->t, FLOAT8OID);
-		return 1;
-	}
-
-	TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
-	Datum value = temporalseq_value_at_timestamp1(inst1, inst2, linear, time);
-	result[0] = temporalinst_make(func(point, value1),
-		inst1->t, FLOAT8OID);
-	result[1] = temporalinst_make(func(point, value), time,
-		FLOAT8OID);
-	pfree(DatumGetPointer(value));
-	return 2;
-}
-
-/* Distance between temporal sequence point and a geometry/geography point */
-
 static TemporalSeq *
 distance_tpointseq_geo(TemporalSeq *seq, Datum point, 
 	Datum (*func)(Datum, Datum))
@@ -121,18 +57,80 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	int k = 0;
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count * 2);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	Datum value1 = temporalinst_value(inst1);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	for (int i = 1; i < seq->count; i++)
 	{
+		/* Each iteration of the loop adds between one and three points */
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
-        /* The next step adds between one and three sequences */
-		k += distance_tpointseq_geo1(&instants[k], inst1, inst2,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), point, func);
-		inst1 = inst2;
+		Datum value2 = temporalinst_value(inst2);
+
+		/* Constant segment or stepwise interpolation */
+		if (datum_point_eq(value1, value2) || ! linear)
+		{
+			instants[k++] = temporalinst_make(func(point, value1),
+				inst1->t, FLOAT8OID);
+		}
+		else
+		{
+			/* The trajectory is a line */
+			double fraction;
+			Datum traj, value;
+			ensure_point_base_type(inst1->valuetypid);
+			if (inst1->valuetypid == type_oid(T_GEOMETRY))
+			{
+				traj = geompoint_trajectory(value1, value2);
+				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+					traj, point));
+				if (fraction != 0 && fraction != 1)
+					value = call_function2(LWGEOM_line_interpolate_point, traj,
+						Float8GetDatum(fraction));
+				pfree(DatumGetPointer(traj));
+			}
+			else
+			{
+				traj = geogpoint_trajectory(value1, value2);
+				/* There is no function equivalent to LWGEOM_line_locate_point
+				 * for geographies. We do as the ST_Intersection function, e.g.
+				 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+				 * @extschema@._ST_BestSRID($1, $2)),
+				 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+				Datum bestsrid = call_function2(geography_bestsrid, traj, point);
+				Datum traj1 = call_function1(geometry_from_geography, traj);
+				Datum traj2 = call_function2(transform, traj1, bestsrid);
+				Datum point1 = call_function1(geometry_from_geography, point);
+				Datum point2 = call_function2(transform, point, bestsrid);
+				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+					traj2, point2));
+				if (fraction != 0 && fraction != 1)
+					value = call_function2(LWGEOM_line_interpolate_point, traj,
+						Float8GetDatum(fraction));
+				pfree(DatumGetPointer(traj));
+				pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
+				pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
+			}
+
+			if (fraction == 0 || fraction == 1)
+			{
+				instants[k++] = temporalinst_make(func(point, value1),
+					inst1->t, FLOAT8OID);
+			}
+			else
+			{
+				TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
+				instants[k++] = temporalinst_make(func(point, value1),
+					inst1->t, FLOAT8OID);
+				instants[k++] = temporalinst_make(func(point, value), time,
+					FLOAT8OID);
+				pfree(DatumGetPointer(value));
+			}
+		}
+		inst1 = inst2; value1 = value2;
 	}
-	instants[k++] = temporalinst_make(func(point, temporalinst_value(inst1)),
+	instants[k++] = temporalinst_make(func(point, value1),
 		inst1->t, FLOAT8OID); 
 	TemporalSeq *result = temporalseq_make(instants, k, 
-		seq->period.lower_inc, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		seq->period.lower_inc, seq->period.upper_inc, linear, true);
 	
 	for (int i = 0; i < k; i++)
 		pfree(instants[i]);

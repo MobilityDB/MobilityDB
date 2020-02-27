@@ -19,6 +19,7 @@
 #include "temporal_util.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"
+#include "tpoint_spatialfuncs.h"
 
 /* Buffer size for input and  of STBOX */
 #define MAXSTBOXLEN		256
@@ -58,10 +59,13 @@ stbox_copy(const STBOX *box)
  * 		STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
  * 		STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
  * 		STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
+ * 		SRID=xxxx;STBOX... (any of the above)
  * 		GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
  * 		GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
  * 		GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
- * where the commas are optional
+ * 		SRID=xxxx;GEODSTBOX... (any of the above)
+ * where the commas are optional and the SRID is optional. If the SRID is not
+ * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
  */
 PG_FUNCTION_INFO_V1(stbox_in);
 
@@ -79,6 +83,11 @@ stbox_to_string(const STBOX *box)
 	static size_t size = MAXSTBOXLEN + 1;
 	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
 	str = (char *) palloc(size);
+	char srid[20];
+	if (box->srid > 0)
+		sprintf(srid, "SRID=%d;", box->srid);
+	else
+		srid[0] = '\0';
 	char *boxtype = MOBDB_FLAGS_GET_GEODETIC(box->flags) ? "GEODSTBOX" : "STBOX";
 
 	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
@@ -92,32 +101,32 @@ stbox_to_string(const STBOX *box)
 		if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
 		{
 			if (MOBDB_FLAGS_GET_T(box->flags))
-				snprintf(str, size, "GEODSTBOX T((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
+				snprintf(str, size, "%s%s T((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))", srid, boxtype,
 					box->xmin, box->ymin, box->zmin, strtmin, 
 					box->xmax, box->ymax, box->zmax, strtmax);
 			else
-				snprintf(str, size, "GEODSTBOX((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
+				snprintf(str, size, "%s%s((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", srid, boxtype,
 					box->xmin, box->ymin, box->zmin, 
 					box->xmax, box->ymax, box->zmax);
 		}
 		else if (MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, size, "STBOX ZT((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))",
+			snprintf(str, size, "%s%s ZT((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))", srid, boxtype,
 				box->xmin, box->ymin, box->zmin, strtmin, 
 				box->xmax, box->ymax, box->zmax, strtmax);
 		else if (MOBDB_FLAGS_GET_Z(box->flags))
-			snprintf(str, size, "STBOX Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", 
+			snprintf(str, size, "%s%s Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", srid, boxtype,
 				box->xmin, box->ymin, box->zmin, 
 				box->xmax, box->ymax, box->zmax);
 		else if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, size, "STBOX T((%.8g,%.8g,%s),(%.8g,%.8g,%s))", 
+			snprintf(str, size, "%s%s T((%.8g,%.8g,%s),(%.8g,%.8g,%s))", srid, boxtype,
 				box->xmin, box->ymin, strtmin, box->xmax, box->ymax, strtmax);
 		else 
-			snprintf(str, size, "STBOX((%.8g,%.8g),(%.8g,%.8g))", 
+			snprintf(str, size, "%s%s((%.8g,%.8g),(%.8g,%.8g))", srid, boxtype,
 				box->xmin, box->ymin, box->xmax, box->ymax);
 	}
 	else
 		/* Missing spatial dimension */
-		snprintf(str, size, "%s T((,,%s),(,,%s))", boxtype, strtmin, strtmax);
+		snprintf(str, size, "%s%s T((,,%s),(,,%s))", srid, boxtype, strtmin, strtmax);
 	if (MOBDB_FLAGS_GET_T(box->flags))
 	{
 		pfree(strtmin);
@@ -148,28 +157,30 @@ PG_FUNCTION_INFO_V1(stbox_constructor);
 PGDLLEXPORT Datum
 stbox_constructor(PG_FUNCTION_ARGS)
 {
-	assert(PG_NARGS() == 2 || PG_NARGS() == 4 || 
-		PG_NARGS() == 6 || PG_NARGS() == 8);
+	assert(PG_NARGS() == 3 || PG_NARGS() == 5 || PG_NARGS() == 7 || PG_NARGS() == 9);
 	double xmin = 0, xmax = 0, ymin = 0, ymax = 0, /* keep compiler quiet */
 		zmin, zmax, tmp;
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false;
+	int srid;
 
-	if (PG_NARGS() == 2)
+	if (PG_NARGS() == 3)
 	{
 		tmin = PG_GETARG_TIMESTAMPTZ(0);
 		tmax = PG_GETARG_TIMESTAMPTZ(1);
+		srid = PG_GETARG_INT32(2);
 		hast = true;
 	}
-	if (PG_NARGS() == 4)
+	else if (PG_NARGS() == 5)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
 		xmax = PG_GETARG_FLOAT8(2);
 		ymax = PG_GETARG_FLOAT8(3);
+		srid = PG_GETARG_INT32(4);
 		hasx = true;
 	}
-	else if (PG_NARGS() == 6)
+	else if (PG_NARGS() == 7)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -177,9 +188,10 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		xmax = PG_GETARG_FLOAT8(3);
 		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
+		srid = PG_GETARG_INT32(6);
 		hasx = hasz = true;
 	}
-	else if (PG_NARGS() == 8)
+	else /* PG_NARGS() == 9 */
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -189,11 +201,12 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		ymax = PG_GETARG_FLOAT8(5);
 		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_TIMESTAMPTZ(7);
+		srid = PG_GETARG_INT32(8);
 		hasx = hasz = hast = true;
 	}
 
 	STBOX *result = stbox_new(hasx, hasz, hast, false);
-	
+	result->srid = srid;
 	/* Process X min/max */
 	if (hasx)
 	{
@@ -253,6 +266,7 @@ stboxt_constructor(PG_FUNCTION_ARGS)
 {
 	double xmin, xmax, ymin, ymax, tmp;
 	TimestampTz tmin, tmax, ttmp;
+	int srid;
 
 	xmin = PG_GETARG_FLOAT8(0);
 	ymin = PG_GETARG_FLOAT8(1);
@@ -260,9 +274,10 @@ stboxt_constructor(PG_FUNCTION_ARGS)
 	xmax = PG_GETARG_FLOAT8(3);
 	ymax = PG_GETARG_FLOAT8(4);
 	tmax = PG_GETARG_TIMESTAMPTZ(5);
+	srid = PG_GETARG_INT32(6);
 
 	STBOX *result = stbox_new(true, false, true, false);
-	
+	result->srid = srid;
 	/* Process X min/max */
 	if (xmin > xmax)
 	{
@@ -304,15 +319,17 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 	double xmin, xmax, ymin, ymax, zmin, zmax, tmp;
 	TimestampTz tmin, tmax, ttmp;
 	bool hasx = false, hasz = false, hast = false;
+	int srid;
 
-	assert(PG_NARGS() == 2 || PG_NARGS() == 6 || PG_NARGS() == 8);
-	if (PG_NARGS() == 2)
+	assert(PG_NARGS() == 3 || PG_NARGS() == 7 || PG_NARGS() == 9);
+	if (PG_NARGS() == 3)
 	{
 		tmin = PG_GETARG_TIMESTAMPTZ(0);
 		tmax = PG_GETARG_TIMESTAMPTZ(1);
+		srid = PG_GETARG_INT32(2);
 		hast = true;
 	}
-	else if (PG_NARGS() == 6)
+	else if (PG_NARGS() == 7)
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -320,9 +337,10 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		xmax = PG_GETARG_FLOAT8(3);
 		ymax = PG_GETARG_FLOAT8(4);
 		zmax = PG_GETARG_FLOAT8(5);
+		srid = PG_GETARG_INT32(6);
 		hasx = hasz = true;
 	}
-	else if (PG_NARGS() == 8)
+	else /* PG_NARGS() == 9) */
 	{
 		xmin = PG_GETARG_FLOAT8(0);
 		ymin = PG_GETARG_FLOAT8(1);
@@ -332,11 +350,12 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		ymax = PG_GETARG_FLOAT8(5);
 		zmax = PG_GETARG_FLOAT8(6);
 		tmax = PG_GETARG_TIMESTAMPTZ(7);
+		srid = PG_GETARG_INT32(8);
 		hasx = hasz = hast = true;
 	}
 
 	STBOX *result = stbox_new(hasx, hasz, hast, true);
-
+	result->srid = srid;
 	/* Process X min/max */
 	if (hasx)
 	{
@@ -494,6 +513,17 @@ stbox_tmax(PG_FUNCTION_ARGS)
 	PG_RETURN_TIMESTAMPTZ(box->tmax);
 }
 
+/* Get the SRID of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_srid);
+
+PGDLLEXPORT Datum
+stbox_srid(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	PG_RETURN_INT32(box->srid);
+}
+
 /*****************************************************************************
  * Casting
  *****************************************************************************/
@@ -562,6 +592,7 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 	{
 		result->zmin = result->zmax = 0;
 	}
+	result->srid = box->srid;
 	PG_RETURN_POINTER(result);
 }
 
@@ -616,8 +647,8 @@ stbox_intersection(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot intersection geodetic and non geodetic boxes");
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
 	STBOX *result = stbox_intersection_internal(box1, box2);
 	if (result == NULL)
 		PG_RETURN_NULL();

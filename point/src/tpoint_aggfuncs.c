@@ -178,6 +178,10 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+	// How to ensure this and display an error message if not ?
+	// ensure_same_srid_tpoint_stbox(temp, box);
+	// ensure_same_geodetic_tpoint_stbox(temp, box);
+
 	STBOX box1, *result = NULL;
 	memset(&box1, 0, sizeof(STBOX));
 
@@ -238,6 +242,9 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+	// How to ensure this and display an error message if not ?
+	// ensure_same_srid_stbox(box1, box2);
+	// ensure_same_geodetic_stbox(box1, box2);
 	STBOX *result;
 
 	if (!box2 && !box1)

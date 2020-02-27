@@ -80,8 +80,8 @@ CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz) AS IMPLICIT;
 CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset) AS IMPLICIT;
 CREATE CAST (period AS tbox) WITH FUNCTION tbox(period) AS IMPLICIT;
 CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset) AS IMPLICIT;
-CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);
-CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);
+CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint) AS IMPLICIT;
+CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat) AS IMPLICIT;
 -- We cannot make the castings from range to tbox implicit since this produces
 -- an ambiguity with the implicit castings to anyrange
 CREATE CAST (intrange AS tbox) WITH FUNCTION tbox(intrange);

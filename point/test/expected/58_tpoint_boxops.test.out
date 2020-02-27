@@ -215,9 +215,9 @@ SELECT expandSpatial(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.0
 (1 row)
 
 SELECT expandSpatial(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', 0.5);
-             expandspatial              
-----------------------------------------
- GEODSTBOX((0.5,1.5,2.5),(1.5,2.5,3.5))
+                  expandspatial                   
+--------------------------------------------------
+ SRID=4326;GEODSTBOX((0.5,1.5,2.5),(1.5,2.5,3.5))
 (1 row)
 
 SELECT expandTemporal(stbox 'STBOX T((1.0, 2.0, 2000-01-03), (1.0, 2.0, 2000-01-03))', '1 day');
@@ -233,9 +233,9 @@ SELECT expandTemporal(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.
 (1 row)
 
 SELECT expandTemporal(stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0, 3.0, 2000-01-04))', '1 day');
-                               expandtemporal                               
-----------------------------------------------------------------------------
- GEODSTBOX T((1,2,3,2000-01-03 00:00:00+00),(1,2,3,2000-01-05 00:00:00+00))
+                                    expandtemporal                                    
+--------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX T((1,2,3,2000-01-03 00:00:00+00),(1,2,3,2000-01-05 00:00:00+00))
 (1 row)
 
 /* Errors */
@@ -379,15 +379,15 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' ~= stbox 'STBOX Z((1.0,
 
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The boxes must be both planar or both geodetic
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' @> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The boxes must be both planar or both geodetic
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <@ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The boxes must be both planar or both geodetic
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' -|- stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The boxes must be both planar or both geodetic
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  Cannot compare geodetic and non-geodetic boxes
+ERROR:  The boxes must be both planar or both geodetic
 SELECT geometry 'Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------

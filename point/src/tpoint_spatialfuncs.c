@@ -33,6 +33,40 @@
  *****************************************************************************/
 
 void
+ensure_same_geodetic_stbox(STBOX *box1, STBOX *box2)
+{
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
+		MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "The boxes must be both planar or both geodetic");
+}
+
+void
+ensure_same_geodetic_tpoint_stbox(Temporal *temp, STBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(box->flags) &&
+		MOBDB_FLAGS_GET_GEODETIC(temp->flags) != MOBDB_FLAGS_GET_GEODETIC(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point and the box must be both planar or both geodetic")));
+}
+
+void
+ensure_same_srid_stbox(STBOX *box1, STBOX *box2)
+{
+	if (box1->srid != box2->srid)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The boxes must be in the same SRID")));
+}
+
+void
+ensure_same_srid_tpoint_stbox(Temporal *temp, STBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(box->flags) &&
+		tpoint_srid_internal(temp) != box->srid)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point and the box must be in the same SRID")));
+}
+
+void
 ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2)
 {
 	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))

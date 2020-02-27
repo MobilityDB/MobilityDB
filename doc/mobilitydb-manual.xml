@@ -922,7 +922,7 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
 				</programlisting>
 			</para>
 
-			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). Examples of input of <varname>stbox</varname> values are as follows:
+			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Examples of input of <varname>stbox</varname> values are as follows:
 				<programlisting>
 -- Only coordinate (X and Y) dimension
 SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
@@ -940,6 +940,9 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
 -- Only time dimension for geodetic box
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
+-- SRID is given
+SELECT stbox 'SRID=5676;STBOX T((1.0, 2.0, 2001-01-04), (1.0, 2.0, 2001-01-04))';
+SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 				</programlisting>
 			</para>
 		</sect1>
@@ -967,7 +970,7 @@ SELECT tboxt('2001-01-01', '2001-01-02');
 				</listitem>
 			</itemizedlist>
 
-			<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
+			<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes.
 			</para>
 
 			<itemizedlist>
@@ -1131,6 +1134,19 @@ SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 					<programlisting>
 SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-03"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>SRID</para>
+					<para><varname>srid(stbox): int</varname></para>
+					<programlisting>
+SELECT srid(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+-- 0
+SELECT srid(stbox 'SRID=5676;STBOX T((1.0, 2.0, 2000-01-01), (4.0, 5.0, 2000-01-02))');
+-- 5676
+SELECT srid(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
+-- 4326
 					</programlisting>
 				</listitem>
 			</itemizedlist>
