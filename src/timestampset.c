@@ -85,7 +85,7 @@ timestampset_make_internal(TimestampTz *times, int count)
 	/* Test the validity of the timestamps */
 	for (int i = 0; i < count - 1; i++)
 	{
-		if (timestamp_cmp_internal(times[i], times[i + 1]) >= 0)
+		if (times[i] >= times[i + 1])
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid value for timestamp set")));
 	}
@@ -513,7 +513,7 @@ timestampset_eq_internal(TimestampSet *ts1, TimestampSet *ts2)
 	{
 		TimestampTz t1 = timestampset_time_n(ts1, i);
 		TimestampTz t2 = timestampset_time_n(ts2, i);
-		if (timestamp_cmp_internal(t1, t2) != 0)
+		if (t1 != t2)
 			return false;
 	}
 	/* All timestamps of the two TimestampSet are equal */

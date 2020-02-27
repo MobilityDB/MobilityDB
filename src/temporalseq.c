@@ -574,8 +574,7 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 			temporalseq_inst_n(seq2, 1); 
 		Datum first2value = (seq2->count == 1) ? 0 : 
 			temporalinst_value(first2);
-		bool adjacent = 
-			timestamp_cmp_internal(seq1->period.upper, seq2->period.lower) == 0 && 
+		bool adjacent = seq1->period.upper == seq2->period.lower &&
 			(seq1->period.upper_inc || seq2->period.lower_inc);
 		/* If they are adjacent and not instantaneous */
 		if (adjacent && last2 != NULL && first2 != NULL && (
@@ -674,7 +673,7 @@ temporalseq_make(TemporalInst **instants, int count,
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
+		if (instants[i - 1]->t >= instants[i]->t)
 		{
 			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i - 1]->t));
 			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i]->t));
@@ -804,7 +803,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count - 1);
-	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+	if (inst1->t >= inst->t)
 		{
 			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
 			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
@@ -951,12 +950,10 @@ temporalseq_find_timestamp(TemporalSeq *seq, TimestampTz t)
 		TemporalInst *inst2 = temporalseq_inst_n(seq, middle + 1);
 		bool lower_inc = (middle == 0) ? seq->period.lower_inc : true;
 		bool upper_inc = (middle == seq->count - 2) ? seq->period.upper_inc : false;
-		if ((timestamp_cmp_internal(inst1->t, t) < 0 && 
-			timestamp_cmp_internal(t, inst2->t) < 0) ||
-			(lower_inc && timestamp_cmp_internal(inst1->t, t) == 0) ||
-			(upper_inc && timestamp_cmp_internal(inst2->t, t) == 0))
+		if ((inst1->t < t && t < inst2->t) ||
+			(lower_inc && inst1->t == t) || (upper_inc && inst2->t == t))
 			return middle;
-		if (timestamp_cmp_internal(t, inst1->t) <= 0)
+		if (t <= inst1->t)
 			last = middle - 1;
 		else
 			first = middle + 1;	
@@ -1019,7 +1016,7 @@ intersection_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 			instants1[k] = temporalseq_at_timestamp(seq, inst->t);
 			instants2[k++] = inst;
 		}
-		if (timestamp_cmp_internal(seq->period.upper, inst->t) < 0)
+		if (seq->period.upper < inst->t)
 			break;
 	}
 	if (k == 0)
@@ -1087,7 +1084,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	/* If the two sequences intersect at an instant */
-	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
+	if (inter->lower == inter->upper)
 	{
 		TemporalInst *inst1 = temporalseq_at_timestamp(seq1, inter->lower);
 		TemporalInst *inst2 = temporalseq_at_timestamp(seq2, inter->lower);
@@ -1112,12 +1109,12 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
 	TemporalInst *tofreeinst = NULL;
 	int i = 0, j = 0, k = 0, l = 0;
-	if (timestamp_cmp_internal(inst1->t, inter->lower) < 0)
+	if (inst1->t < inter->lower)
 	{
 		inst1 = tofreeinst = temporalseq_at_timestamp(seq1, inter->lower);
 		i = temporalseq_find_timestamp(seq1, inter->lower);
 	}
-	else if (timestamp_cmp_internal(inst2->t, inter->lower) < 0)
+	else if (inst2->t < inter->lower)
 	{
 		inst2 = tofreeinst = temporalseq_at_timestamp(seq2, inter->lower);
 		j = temporalseq_find_timestamp(seq2, inter->lower);
@@ -1129,8 +1126,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	if (tofreeinst != NULL)
 		tofree[l++] = tofreeinst;
 	while (i < seq1->count && j < seq2->count &&
-		(timestamp_cmp_internal(inst1->t, inter->upper) <= 0 ||
-		timestamp_cmp_internal(inst2->t, inter->upper) <= 0))
+		(inst1->t <= inter->upper || inst2->t <= inter->upper))
 	{
 		int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
 		if (cmp == 0)
@@ -2821,9 +2817,9 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 			/* Segment increasing in value */
 			instants[0] = temporalseq_inst_n(newseq1, 0);
 			instants[1] = temporalseq_inst_n(newseq2, 0);
-			lower_incl1 = (timestamp_cmp_internal(time1, inst1->t) == 0) ? 
+			lower_incl1 = (time1 == inst1->t) ?
 				lower_incl && lower_inc(intersect) : lower_inc(intersect);
-			upper_incl1 = (timestamp_cmp_internal(time2, inst2->t) == 0) ? 
+			upper_incl1 = (time2 == inst2->t) ?
 				upper_incl && upper_inc(intersect) : upper_inc(intersect);
 		}
 		else
@@ -2831,9 +2827,9 @@ tnumberseq_at_range1(TemporalInst *inst1, TemporalInst *inst2,
 			/* Segment decreasing in value */
 			instants[0] = temporalseq_inst_n(newseq2, 0);
 			instants[1] = temporalseq_inst_n(newseq1, 0);
-			lower_incl1 = (timestamp_cmp_internal(time2, inst1->t) == 0) ? 
+			lower_incl1 = (time2 == inst1->t) ?
 				lower_incl && upper_inc(intersect) : upper_inc(intersect);
-			upper_incl1 = (timestamp_cmp_internal(time1, inst1->t) == 0) ? 
+			upper_incl1 = (time1 == inst1->t) ?
 				upper_incl && lower_inc(intersect) : lower_inc(intersect);
 		}
 		result = temporalseq_make(instants, 2,
@@ -3198,12 +3194,11 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum value2 = temporalinst_value(inst2);
 	/* Constant segment or t is equal to lower bound or stepwise interpolation */
 	if (datum_eq(value1, value2, valuetypid) ||
-		timestamp_cmp_internal(inst1->t, t) == 0 ||
-		(! linear && timestamp_cmp_internal(t, inst2->t) < 0))
+		inst1->t == t || (! linear && t < inst2->t))
 		return temporalinst_value_copy(inst1);
 
 	/* t is equal to upper bound */
-	if (timestamp_cmp_internal(inst2->t, t) == 0)
+	if (inst2->t == t)
 		return temporalinst_value_copy(inst2);
 	
 	/* Interpolation for types with linear interpolation */
@@ -3368,13 +3363,13 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 	int n = temporalseq_find_timestamp(seq, t);
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0), *inst2;
 	/* Compute the first sequence until t */
-	if (n != 0 || timestamp_cmp_internal(inst1->t, t) < 0)
+	if (n != 0 || inst1->t < t)
 	{
 		for (int i = 0; i < n; i++)
 			instants[i] = temporalseq_inst_n(seq, i);
 		inst1 = temporalseq_inst_n(seq, n);
 		inst2 = temporalseq_inst_n(seq, n + 1);
-		if (timestamp_cmp_internal(inst1->t, t) == 0)
+		if (inst1->t == t)
 		{
 			if (linear)
 			{
@@ -3406,7 +3401,7 @@ temporalseq_minus_timestamp1(TemporalSeq **result, TemporalSeq *seq,
 	/* Compute the second sequence after t */
 	inst1 = temporalseq_inst_n(seq, n);
 	inst2 = temporalseq_inst_n(seq, n + 1);
-	if (timestamp_cmp_internal(t, inst2->t) < 0)
+	if (t < inst2->t)
 	{
 		instants[0] = temporalseq_at_timestamp1(inst1, inst2, t,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -3564,7 +3559,7 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 	/* General case */
 	Period *inter = intersection_period_period_internal(&seq->period, p);
 	/* Intersecting period is instantaneous */
-	if (timestamp_cmp_internal(inter->lower, inter->upper) == 0)
+	if (inter->lower == inter->upper)
 	{
 		TemporalInst *inst = temporalseq_at_timestamp(seq, inter->lower);
 		TemporalSeq *result = temporalseq_make(&inst, 1,
@@ -3587,15 +3582,13 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 	for (int i = n + 2; i < seq->count; i++)
 	{
 		/* If the end of the intersecting period is between inst1 and inst2 */
-		if (timestamp_cmp_internal(inst1->t, inter->upper) <= 0 &&
-			timestamp_cmp_internal(inter->upper, inst2->t) <= 0)
+		if (inst1->t <= inter->upper && inter->upper <= inst2->t)
 			break;
 
 		inst1 = inst2;
 		inst2 = temporalseq_inst_n(seq, i);
 		/* If the intersecting period contains inst1 */
-		if (timestamp_cmp_internal(inter->lower, inst1->t) <= 0 &&
-			timestamp_cmp_internal(inst1->t, inter->upper) <= 0)
+		if (inter->lower <= inst1->t && inst1->t <= inter->upper)
 			instants[k++] = inst1;
 	}
 	/* The last two values of sequences with stepwise interpolation and 
@@ -3695,7 +3688,7 @@ temporalseq_at_periodset1(TemporalSeq **result, TemporalSeq *seq, PeriodSet *ps)
 		TemporalSeq *seq1 = temporalseq_at_period(seq, p);
 		if (seq1 != NULL)
 			result[k++] = seq1;
-		if (timestamp_cmp_internal(seq->period.upper, p->upper) < 0)
+		if (seq->period.upper < p->upper)
 			break;
 	}
 	return k;

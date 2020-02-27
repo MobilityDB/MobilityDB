@@ -1786,10 +1786,8 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			/* Restriction at timestamp done to avoid floating point imprecision */
 			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
 			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
-			bool lower_inc1 = timestamp_cmp_internal(lower1, inst1->t) == 0 ?
-				lower_inc : true;
-			bool upper_inc1 = timestamp_cmp_internal(upper1, inst2->t) == 0 ?
-				upper_inc : true;
+			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
+			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
 			result[k++] = temporalseq_make(instants, 2,
 					lower_inc1, upper_inc1, linear, false);
 			pfree(instants[0]); pfree(instants[1]);
@@ -2733,7 +2731,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
-			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
+			if (temporalseq_end_timestamp(seq1) == t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
@@ -2760,7 +2758,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
-			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
+			if (temporalseq_end_timestamp(seq1) == t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);

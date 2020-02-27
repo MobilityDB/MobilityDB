@@ -627,8 +627,7 @@ period_eq_internal(Period *p1, Period *p2)
 	if (p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
 		return false;
 	
-	return timestamp_cmp_internal(p1->lower, p2->lower) == 0 && 
-		timestamp_cmp_internal(p1->upper, p2->upper) == 0;
+	return p1->lower == p2->lower && p1->upper == p2->upper;
 }
 
 PG_FUNCTION_INFO_V1(period_eq);

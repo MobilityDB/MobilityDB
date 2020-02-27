@@ -87,9 +87,9 @@ periodset_make_internal(Period **periods, int count, bool normalize)
 	/* Test the validity of the periods */
 	for (int i = 0; i < count - 1; i++)
 	{
-		if (timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower) > 0 ||
-			(timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower) == 0 &&
-			periods[i]->upper_inc && periods[i + 1]->lower_inc))
+		int cmp = timestamp_cmp_internal(periods[i]->upper, periods[i + 1]->lower);
+		if (cmp > 0 ||
+			(cmp == 0 && periods[i]->upper_inc && periods[i + 1]->lower_inc))
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
 				errmsg("Invalid value for period set")));
 	}
@@ -167,12 +167,12 @@ periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos)
 			*pos = middle;
 			return true;
 		}
-		if (timestamp_cmp_internal(t, p->lower) <= 0)
+		if (t <= p->lower)
 			last = middle - 1;
 		else
 			first = middle + 1;
 	}
-	if (timestamp_cmp_internal(t, p->upper) >= 0)
+	if (t >= p->upper)
 		middle++;
 	*pos = middle;
 	return false;
@@ -537,7 +537,7 @@ periodset_num_timestamps(PG_FUNCTION_ARGS)
 			d = p->upper;
 			start = !start;
 		}
-		if (timestamp_cmp_internal(prev, d) != 0)
+		if (prev != d)
 		{
 			result++;
 			prev = d;
@@ -627,7 +627,7 @@ periodset_timestamp_n(PG_FUNCTION_ARGS)
 			d = p->upper;
 			start = !start;
 		}
-		if (timestamp_cmp_internal(prev, d) != 0)
+		if (prev != d)
 		{
 			i++;
 			prev = d;
@@ -651,14 +651,14 @@ periodset_timestamps(PG_FUNCTION_ARGS)
 	Period *p = periodset_per_n(ps, 0);
 	times[0] = p->lower;
 	int k = 1;
-	if (timestamp_cmp_internal(p->lower, p->upper) != 0)
+	if (p->lower != p->upper)
 		times[k++] = p->upper;
 	for (int i = 1; i < ps->count; i++)
 	{
 		p = periodset_per_n(ps, i);
-		if (timestamp_cmp_internal(times[k - 1], p->lower) != 0)
+		if (times[k - 1] != p->lower)
 			times[k++] = p->lower;
-		if (timestamp_cmp_internal(times[k - 1], p->upper) != 0)
+		if (times[k - 1] != p->upper)
 			times[k++] = p->upper;
 	}
 	ArrayType *result = timestamparr_to_array(times, k);

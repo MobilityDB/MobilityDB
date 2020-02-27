@@ -101,8 +101,8 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 				LWGEOM_line_locate_point, line, inter));
 			TimestampTz time = inst1->t + (long) (duration * fraction);
 			/* If the point intersection is not at an exclusive bound */
-			if ((lower_inc || timestamp_cmp_internal(inst1->t, time) != 0) &&
-				(upper_inc || timestamp_cmp_internal(inst2->t, time) != 0))
+			if ((lower_inc || inst1->t != time) &&
+				(upper_inc || inst2->t != time))
 			{
 				instants[k++] = temporalinst_make(inter, time,
 					inst1->valuetypid);
@@ -115,8 +115,8 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 				LWGEOM_line_locate_point, line, point1));
 			TimestampTz time1 = inst1->t + (long) (duration * fraction1);
 			/* If the point intersection is not at an exclusive bound */
-			if ((lower_inc || timestamp_cmp_internal(inst1->t, time1) != 0) &&
-				(upper_inc || timestamp_cmp_internal(inst2->t, time1) != 0))
+			if ((lower_inc || inst1->t != time1) &&
+				(upper_inc || inst2->t != time1))
 			{
 				instants[k++] = temporalinst_make(point1, time1,
 					inst1->valuetypid);
@@ -129,9 +129,8 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
 			/* If the point intersection is not at an exclusive bound and
 			 * time2 != time1 (this last condition arrives when point1 is
 			 * at an epsilon distance from point2 */
-			if ((lower_inc || timestamp_cmp_internal(inst1->t, time2) != 0) &&
-				(upper_inc || timestamp_cmp_internal(inst2->t, time2) != 0) &&
-				timestamp_cmp_internal(time1, time2) != 0)
+			if ((lower_inc || inst1->t != time2) &&
+				(upper_inc || inst2->t != time2) && (time1 != time2))
 			{
 				instants[k++] = temporalinst_make(point2, time2,
 					inst1->valuetypid);

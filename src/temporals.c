@@ -106,8 +106,8 @@ temporals_make(TemporalSeq **sequences, int count,
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) > 0 ||
-		   (timestamp_cmp_internal(sequences[i - 1]->period.upper, sequences[i]->period.lower) == 0 &&
+		if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
+		   (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
 		   sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
 		{
 			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
@@ -286,12 +286,12 @@ temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos)
 			*pos = middle;
 			return true;
 		}
-		if (timestamp_cmp_internal(t, seq->period.lower) <= 0)
+		if (t <= seq->period.lower)
 			last = middle - 1;
 		else
 			first = middle + 1;
 	}
-	if (timestamp_cmp_internal(t, seq->period.upper) >= 0)
+	if (t >= seq->period.upper)
 		middle++;
 	*pos = middle;
 	return false;
@@ -351,11 +351,12 @@ intersection_temporals_temporali(TemporalS *ts, TemporalI *ti,
 			instants1[k] = temporalseq_at_timestamp(seq, inst->t);
 			instants2[k++] = inst;
 		}
-		if (timestamp_cmp_internal(seq->period.upper, inst->t) == 0)
+		int cmp = timestamp_cmp_internal(seq->period.upper, inst->t);
+		if (cmp == 0)
 		{
 			i++; j++;
 		}
-		else if (timestamp_cmp_internal(seq->period.upper, inst->t) < 0)
+		else if (cmp < 0)
 			i++; 
 		else 
 			j++;
@@ -406,9 +407,9 @@ intersection_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 		TemporalSeq *interseq =	temporalseq_at_period(seq1, &seq->period);
 		if (interseq != NULL)
 			sequences[k++] = interseq;
-		if (timestamp_cmp_internal(seq->period.upper, seq1->period.upper) < 0 ||
-			(timestamp_cmp_internal(seq->period.upper, seq1->period.upper) == 0 &&
-			(!seq->period.upper_inc || seq1->period.upper_inc)))
+		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
+		if (cmp < 0 ||
+			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
 	if (k == 0)
@@ -525,9 +526,9 @@ synchronize_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 			sequences1[k] = syncseq1;
 			sequences2[k++] = syncseq2;
 		}
-		if (timestamp_cmp_internal(seq->period.upper, seq1->period.upper) < 0 ||
-			(timestamp_cmp_internal(seq->period.upper, seq1->period.upper) == 0 &&
-			(!seq->period.upper_inc || seq1->period.upper_inc)))
+		int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
+		if (cmp < 0 ||
+			(cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
 			break;
 	}
 	if (k == 0)
@@ -1862,7 +1863,7 @@ temporals_minus_timestamp(TemporalS *ts, TimestampTz t)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		int count = temporalseq_minus_timestamp1(&sequences[k], seq, t);
 		k += count;
-		// if (timestamp_cmp_internal(t, seq->period.upper) < 0)
+		// if (t < seq->period.upper)
 		// 	break;
 	}
 	/* k is never equal to 0 since in that case it is a singleton sequence set 
@@ -1925,9 +1926,9 @@ temporals_at_timestampset(TemporalS *ts1, TimestampSet *ts2)
 		}
 		else
 		{
-			if (timestamp_cmp_internal(t, seq->period.lower) <= 0)
+			if (t <= seq->period.lower)
 				i++;
-			if (timestamp_cmp_internal(t, seq->period.upper) >= 0)
+			if (t >= seq->period.upper)
 				j++;
 		}
 	}
@@ -2022,9 +2023,8 @@ temporals_at_period(TemporalS *ts, Period *p)
 			TemporalSeq *newseq = temporalseq_at_period(seq, p);
 			sequences[k++] = tofree[l++] = newseq;
 		}
-		if (timestamp_cmp_internal(p->upper, seq->period.upper) < 0 ||
-			(timestamp_cmp_internal(p->upper, seq->period.upper) == 0 &&
-			 seq->period.upper_inc))
+		int cmp = timestamp_cmp_internal(p->upper, seq->period.upper);
+		if (cmp < 0 || (cmp == 0 && seq->period.upper_inc))
 			break;
 	}
 	if (k == 0)
@@ -2238,7 +2238,7 @@ temporals_intersects_period(TemporalS *ts, Period *p)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		if (overlaps_period_period_internal(&seq->period, p))
 			return true;
-		if (timestamp_cmp_internal(p->upper, seq->period.upper) < 0)
+		if (p->upper < seq->period.upper)
 			break;
 	}
 	return false;
