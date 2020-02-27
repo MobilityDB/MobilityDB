@@ -61,6 +61,7 @@ geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
 		box->zmin = gbox.zmin;
 		box->zmax = gbox.zmax;
 	}
+	box->srid = gserialized_get_srid(gs);
 	MOBDB_FLAGS_SET_X(box->flags, true);
 	MOBDB_FLAGS_SET_Z(box->flags, FLAGS_GET_Z(gs->flags));
 	MOBDB_FLAGS_SET_T(box->flags, false);

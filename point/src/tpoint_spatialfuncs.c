@@ -953,7 +953,7 @@ tpointseq_length(TemporalSeq *seq)
 	if (seq->valuetypid == type_oid(T_GEOMETRY))
 		/* The next function call works for 2D and 3D */
 		result = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
-	else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		result = DatumGetFloat8(call_function2(geography_length, traj,
 			BoolGetDatum(true)));
 	return result;

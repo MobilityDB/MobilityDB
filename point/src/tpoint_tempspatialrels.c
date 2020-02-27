@@ -842,7 +842,7 @@ tdwithin_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, Datum dist)
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpointseq_geo(seq,
 				PointerGetDatum(gs), dist);
-		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
+		else
 		{
 			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			Datum geom = call_function1(geometry_from_geography,
@@ -1374,7 +1374,7 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
 				geo, func, valuetypid, invert);
-		else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
+		else
 		{
 			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
 			Datum geom = call_function1(geometry_from_geography, geo);
