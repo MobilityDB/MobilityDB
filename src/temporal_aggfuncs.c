@@ -1883,7 +1883,7 @@ temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst = instants[i];
-		double2 *value = (double2 *)DatumGetPointer(temporalinst_value(inst));
+		double2 *value = (double2 *)DatumGetPointer(temporalinst_value_ptr(inst));
 		double tavg = value->a / value->b;
 		newinstants[i] = temporalinst_make(Float8GetDatum(tavg), inst->t,
 			FLOAT8OID);
@@ -1908,7 +1908,7 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 		for (int j = 0; j < seq->count; j++)
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			double2 *value2 = (double2 *)DatumGetPointer(temporalinst_value(inst));
+			double2 *value2 = (double2 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			double value = value2->a / value2->b;
 			instants[j] = temporalinst_make(Float8GetDatum(value), inst->t,
 				FLOAT8OID);

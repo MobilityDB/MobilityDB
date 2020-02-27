@@ -385,7 +385,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 			inst->valuetypid == type_oid(T_DOUBLE3));
 		if (inst->valuetypid == type_oid(T_DOUBLE4))
 		{
-			double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value(inst));
+			double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			assert(value4->d != 0);
 			double valuea = value4->a / value4->d;
 			double valueb = value4->b / value4->d;
@@ -395,7 +395,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 		}
 		else if (inst->valuetypid == type_oid(T_DOUBLE3))
 		{
-			double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value(inst));
+			double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			assert(value3->c != 0);
 			double valuea = value3->a / value3->c;
 			double valueb = value3->b / value3->c;
@@ -430,7 +430,7 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 				inst->valuetypid == type_oid(T_DOUBLE3));
 			if (inst->valuetypid == type_oid(T_DOUBLE4))
 			{
-				double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value(inst));
+				double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value4->a / value4->d;
 				double valueb = value4->b / value4->d;
 				double valuec = value4->c / value4->d;
@@ -439,7 +439,7 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			}
 			else if (inst->valuetypid == type_oid(T_DOUBLE3))
 			{
-				double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value(inst));
+				double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value3->a / value3->c;
 				double valueb = value3->b / value3->c;
 				value = call_function2(LWGEOM_makepoint, Float8GetDatum(valuea),

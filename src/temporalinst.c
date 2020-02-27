@@ -48,8 +48,8 @@
  
 /* Pointer to the value */
 
-static char * 
-temporalinst_data_ptr(TemporalInst *inst) 
+static char *
+temporalinst_data_ptr(TemporalInst *inst)
 {
 	return (char *)inst + double_pad(sizeof(TemporalInst));
 }
@@ -66,10 +66,10 @@ temporalinst_value_ptr(TemporalInst *inst)
 Datum
 temporalinst_value(TemporalInst *inst)
 {
-	char *value = temporalinst_data_ptr(inst);
+	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
 	if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-		return *(Datum *)value;
+		return *value;
 	/* For base types passed by reference */
 	return PointerGetDatum(value);
 }
@@ -77,10 +77,10 @@ temporalinst_value(TemporalInst *inst)
 Datum
 temporalinst_value_copy(TemporalInst *inst)
 {
-	char *value = temporalinst_data_ptr(inst);
+	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
 	if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-		return *(Datum *)value;
+		return *value;
 	/* For base types passed by reference */
 	int typlen = get_typlen_fast(inst->valuetypid);
 	size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
