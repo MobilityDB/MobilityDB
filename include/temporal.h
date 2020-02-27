@@ -125,8 +125,8 @@ typedef struct
 	double		zmax;			/* maximum z value */
 	TimestampTz	tmin;			/* minimum timestamp */
 	TimestampTz	tmax;			/* maximum timestamp */
-	int16		flags;			/* flags */
 	int32		srid;			/* SRID */
+	int16		flags;			/* flags */
 } STBOX;
 
 /* Temporal */
