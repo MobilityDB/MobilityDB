@@ -52,7 +52,8 @@ ensure_same_geodetic_tpoint_stbox(Temporal *temp, STBOX *box)
 void
 ensure_same_srid_stbox(STBOX *box1, STBOX *box2)
 {
-	if (box1->srid != box2->srid)
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
+		box1->srid != box2->srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("The boxes must be in the same SRID")));
 }
