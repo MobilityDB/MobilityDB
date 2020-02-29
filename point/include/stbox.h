@@ -15,7 +15,33 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
+
+/*****************************************************************************
+ * Struct definition
+ *****************************************************************************/
+
+typedef struct
+{
+	double		xmin;			/* minimum x value */
+	double		xmax;			/* maximum x value */
+	double		ymin;			/* minimum y value */
+	double		ymax;			/* maximum y value */
+	double		zmin;			/* minimum z value */
+	double		zmax;			/* maximum z value */
+	TimestampTz	tmin;			/* minimum timestamp */
+	TimestampTz	tmax;			/* maximum timestamp */
+	int32		srid;			/* SRID */
+	int16		flags;			/* flags */
+} STBOX;
+
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define DatumGetSTboxP(X)    ((STBOX *) DatumGetPointer(X))
+#define STboxPGetDatum(X)    PointerGetDatum(X)
+#define PG_GETARG_STBOX_P(n) DatumGetSTboxP(PG_GETARG_DATUM(n))
+#define PG_RETURN_STBOX_P(x) return STboxPGetDatum(x)
 
 /*****************************************************************************/
 

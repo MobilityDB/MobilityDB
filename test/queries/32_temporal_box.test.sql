@@ -9,19 +9,6 @@ SELECT count(*) FROM tbl_ttext WHERE temp::period IS NOT NULL;
 -- Tbox
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b = t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b < t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <= t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b > t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b >= t2.b;
-
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b @> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b -|- t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
-
 SELECT count(*) FROM tbl_int WHERE i::tbox IS NOT NULL;
 SELECT count(*) FROM tbl_float WHERE f::tbox IS NOT NULL;
 SELECT count(*) FROM tbl_intrange WHERE i::tbox IS NOT NULL;

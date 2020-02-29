@@ -14,20 +14,6 @@
  * Casting for tbox
  *****************************************************************************/
 
-CREATE FUNCTION floatrange(tbox)
-	RETURNS floatrange
-	AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-CREATE FUNCTION period(tbox)
-	RETURNS period
-	AS 'MODULE_PATHNAME', 'tbox_to_period'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE; 
-
-CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
-CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
-
-/*****************************************************************************/
-
 CREATE FUNCTION tbox(integer)
 	RETURNS tbox
 	AS 'MODULE_PATHNAME', 'int_to_tbox'
@@ -133,74 +119,6 @@ CREATE FUNCTION temporal_joinsel(internal, oid, internal, smallint, internal)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'temporal_joinsel'
 	LANGUAGE C IMMUTABLE STRICT;
-
-/*****************************************************************************/
-
-CREATE FUNCTION tnumber_sel(internal, oid, internal, integer)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tnumber_sel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
-	RETURNS float
-	AS 'MODULE_PATHNAME', 'tnumber_joinsel'
-	LANGUAGE C IMMUTABLE STRICT;
-
-/*****************************************************************************
- * tbox operators
- *****************************************************************************/
-
-CREATE FUNCTION tbox_contains(tbox, tbox)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contains_tbox_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_contained(tbox, tbox)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'contained_tbox_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_overlaps(tbox, tbox)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'overlaps_tbox_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_same(tbox, tbox)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'same_tbox_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_adjacent(tbox, tbox)
-	RETURNS boolean
-	AS 'MODULE_PATHNAME', 'adjacent_tbox_tbox'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR @> (
-	PROCEDURE = tbox_contains,
-	LEFTARG = tbox, RIGHTARG = tbox,
-	COMMUTATOR = <@,
-	RESTRICT = temporal_sel, JOIN = temporal_joinsel
-);
-CREATE OPERATOR <@ (
-	PROCEDURE = tbox_contained,
-	LEFTARG = tbox, RIGHTARG = tbox,
-	COMMUTATOR = @>,
-	RESTRICT = temporal_sel, JOIN = temporal_joinsel
-);
-CREATE OPERATOR && (
-	PROCEDURE = tbox_overlaps,
-	LEFTARG = tbox, RIGHTARG = tbox,
-	COMMUTATOR = &&,
-	RESTRICT = temporal_sel, JOIN = temporal_joinsel
-);
-CREATE OPERATOR ~= (
-	PROCEDURE = tbox_same,
-	LEFTARG = tbox, RIGHTARG = tbox,
-	COMMUTATOR = ~=,
-	RESTRICT = temporal_sel, JOIN = temporal_joinsel
-);
-CREATE OPERATOR -|- (
-	PROCEDURE = tbox_adjacent,
-	LEFTARG = tbox, RIGHTARG = tbox,
-	COMMUTATOR = -|-,
-	RESTRICT = temporal_sel, JOIN = temporal_joinsel
-);
 
 /*****************************************************************************
  * Temporal boolean

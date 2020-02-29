@@ -50,6 +50,34 @@ SELECT stboxt(6,5,'2001-01-04',3,2,'2001-01-01');
 SELECT geodstbox(8,7,6,'2001-01-05',4,3,2,'2001-01-01');
 
 -------------------------------------------------------------------------------
+-- Casting
+-------------------------------------------------------------------------------
+
+SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
+SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
+SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::period;
+SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::period;
+SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
+
+SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
+SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::box2d;
+SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::box2d;
+SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::box2d;
+SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box2d;
+
+SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box3d;
+SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::box3d;
+SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::box3d;
+SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::box3d;
+SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
+
+-------------------------------------------------------------------------------
+
+SELECT MAX(timespan(b::period)) FROM tbl_stbox;
+SELECT MAX(ST_XMax(b::box2d)) FROM tbl_stbox;
+SELECT MAX(ST_XMax(b::box3d)) FROM tbl_stbox;
+
+-------------------------------------------------------------------------------
 -- Accessor functions
 -------------------------------------------------------------------------------
 
@@ -103,29 +131,116 @@ SELECT srid(stbox 'SRID=4326;STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.
 SELECT srid(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 
 -------------------------------------------------------------------------------
--- Casting
--------------------------------------------------------------------------------
 
-SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
-SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
-SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::period;
-SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::period;
-SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
-
-SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
-SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::box2d;
-SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::box2d;
-SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::box2d;
-SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box2d;
-
-SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box3d;
-SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::box3d;
-SELECT stbox 'STBOX T((1.0, 2.0, 2000-01-01), (3.0, 4.0, 2000-01-02))'::box3d;
-SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))'::box3d;
-SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
+SELECT MIN(xmin(b)) FROM tbl_stbox;
+SELECT MAX(xmax(b)) FROM tbl_stbox;
+SELECT MIN(ymin(b)) FROM tbl_stbox;
+SELECT MAX(ymax(b)) FROM tbl_stbox;
+SELECT MIN(zmin(b)) FROM tbl_stbox;
+SELECT MAX(zmax(b)) FROM tbl_stbox;
+SELECT MIN(tmin(b)) FROM tbl_stbox;
+SELECT MAX(tmax(b)) FROM tbl_stbox;
 
 -------------------------------------------------------------------------------
--- Operators
+-- Topological operators
+-------------------------------------------------------------------------------
+
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' @> stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <@ stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' -|- stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'STBOX T((1.0, 2.0, 2000-01-01), (1.0, 2.0, 2000-01-01))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' ~= stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 3.0))';
+
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' @> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <@ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' -|- stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b && t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b @> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <@ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b ~= t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b -|- t2.b;
+
+-------------------------------------------------------------------------------
+-- Position operators
+-------------------------------------------------------------------------------
+
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' << stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &< stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' >> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' <<| stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' &<| stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' |>> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+SELECT stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))' |&> stbox 'STBOX T((-inf,-inf,2001-01-01),(inf,inf,2001-01-02))';
+
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+
+SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' <<# stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' &<# stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #>> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+SELECT stbox 'STBOX T((1.0, 1.0, 2001-01-01), (2.0, 2.0, 2001-01-02))' #&> stbox 'STBOX T((1.0, 2.0, 2001-01-01), (1.0, 2.0, 2001-01-01))';
+
+SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' <<# stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' &<# stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' #>> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0, 2001-01-01), (2.0, 2.0, 2.0, 2001-01-02))' #&> stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
+
+/* Errors */
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' << stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &< stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' >> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' <<| stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' &<| stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |>> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' |&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' <</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' &</ stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b << t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &< t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b >> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<| t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b |&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &</ t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b />> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b /&> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b <<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b &<# t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #>> t2.b;
+SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 where t1.b #&> t2.b;
+
+-------------------------------------------------------------------------------
+-- Set operators
 -------------------------------------------------------------------------------
 
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' * stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
@@ -176,6 +291,11 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' * stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-02-01), (4.0, 5.0, 6.0, 2001-02-02))';
 /* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' * stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
+
+-------------------------------------------------------------------------------
+
+SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
+SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 
 -------------------------------------------------------------------------------
 -- Comparison functions

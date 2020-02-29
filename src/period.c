@@ -624,10 +624,10 @@ period_timespan(PG_FUNCTION_ARGS)
 bool
 period_eq_internal(Period *p1, Period *p2)
 {
-	if (p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
+	if (p1->lower != p2->lower || p1->upper != p2->upper ||
+		p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
 		return false;
-	
-	return p1->lower == p2->lower && p1->upper == p2->upper;
+	return true;
 }
 
 PG_FUNCTION_INFO_V1(period_eq);

@@ -20,6 +20,7 @@
 #include <liblwgeom.h>
 
 #include "temporal.h"
+#include "stbox.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:
@@ -48,15 +49,6 @@
 
 #define TYPMOD_DEL_DURATION(typmod) (typmod = typmod >> 4 )
 #define TYPMOD_SET_DURATION(typmod, durtype) ((typmod) = typmod << 4 | durtype)
-
-/*****************************************************************************
- * STBOX macros
- *****************************************************************************/
-
-#define DatumGetSTboxP(X)    ((STBOX *) DatumGetPointer(X))
-#define STboxPGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_STBOX_P(n) DatumGetSTboxP(PG_GETARG_DATUM(n))
-#define PG_RETURN_STBOX_P(x) return STboxPGetDatum(x)
 
 /*****************************************************************************
  * Well-Known Binary (WKB)

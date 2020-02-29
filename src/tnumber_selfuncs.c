@@ -1083,7 +1083,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
 	}
 
 	/*
-	 * All the period operators are strict, so we can cope with a NULL constant
+	 * All the tbox operators are strict, so we can cope with a NULL constant
 	 * right away.
 	 */
 	if (((Const *) other)->constisnull)
