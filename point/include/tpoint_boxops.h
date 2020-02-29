@@ -92,6 +92,12 @@ extern Datum same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
+extern Datum adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+
 /*****************************************************************************/
 
 #endif
