@@ -418,7 +418,8 @@ stbox_to_period(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
-		PG_RETURN_NULL();
+		elog(ERROR, "Box does not have T dimension");
+
 	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
 }
@@ -432,7 +433,7 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
-		PG_RETURN_NULL();
+		elog(ERROR, "Box does not have XY(Z) dimensions");
 
 	/* Initialize existing dimensions */
 	GBOX *result = palloc0(sizeof(GBOX));
@@ -455,7 +456,7 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
-		PG_RETURN_NULL();
+		elog(ERROR, "Box does not have XY(Z) dimensions");
 
 	/* Initialize existing dimensions */
 	BOX3D *result = palloc0(sizeof(BOX3D));
@@ -795,8 +796,6 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = left_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -821,8 +820,6 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overleft_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -847,8 +844,6 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = right_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -873,8 +868,6 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overright_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -899,8 +892,6 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = below_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -925,8 +916,6 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overbelow_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -951,8 +940,6 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = above_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -977,8 +964,6 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overabove_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1003,8 +988,6 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		PG_RETURN_NULL();
 	bool result = front_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1029,8 +1012,6 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overfront_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1055,8 +1036,6 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		PG_RETURN_NULL();
 	bool result = back_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1081,8 +1060,6 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overback_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1105,8 +1082,6 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		PG_RETURN_NULL();
 	bool result = before_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1129,8 +1104,6 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overbefore_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1153,8 +1126,6 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		PG_RETURN_NULL();
 	bool result = after_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
@@ -1177,8 +1148,6 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		PG_RETURN_NULL();
 	bool result = overafter_stbox_stbox_internal(box1, box2);
 	PG_RETURN_BOOL(result);
 }
