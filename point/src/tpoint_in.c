@@ -240,7 +240,7 @@ tpointi_from_mfjson(json_object *mfjson)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
 		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
-	TemporalI *result = temporali_from_temporalinstarr(instants, numpoints);
+	TemporalI *result = temporali_make(instants, numpoints);
 
 	for (int i = 0; i < numpoints; i++)
 	{
@@ -286,7 +286,7 @@ tpointseq_from_mfjson(json_object *mfjson, bool linear)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 	for (int i = 0; i < numpoints; i++)
 		instants[i] = temporalinst_make(values[i], times[i], type_oid(T_GEOMETRY));
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, numpoints, 
+	TemporalSeq *result = temporalseq_make(instants, numpoints, 
 		lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < numpoints; i++)
@@ -355,7 +355,7 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * numpoints);
 		for (int j = 0; j < numpoints; j++)
 			instants[j] = temporalinst_make(values[j], times[j], type_oid(T_GEOMETRY));
-		sequences[i] = temporalseq_from_temporalinstarr(instants, numpoints, 
+		sequences[i] = temporalseq_make(instants, numpoints, 
 			lower_inc, upper_inc, linear, true);
 		for (int j = 0; j < numpoints; j++)
 		{
@@ -366,7 +366,7 @@ tpoints_from_mfjson(json_object *mfjson, bool linear)
 		pfree(values);
 		pfree(times);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, numseqs, 
+	TemporalS *result = temporals_make(sequences, numseqs, 
 		linear, true);
 	for (int i = 0; i < numseqs; i++)
 		pfree(sequences[i]);
@@ -764,7 +764,7 @@ tpointi_from_wkb_state(wkb_parse_state *s)
 		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, count); 
+	TemporalI *result = temporali_make(instants, count);
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -830,7 +830,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 		instants[i] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, count, 
+	TemporalSeq *result = temporalseq_make(instants, count, 
 		lower_inc, upper_inc, s->linear, true); 
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
@@ -890,13 +890,13 @@ tpoints_from_wkb_state(wkb_parse_state *s)
 			instants[j] = temporalinst_make(value, t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
-		sequences[i] = temporalseq_from_temporalinstarr(instants, countinst,
+		sequences[i] = temporalseq_make(instants, countinst,
 			lower_inc, upper_inc, s->linear, true); 
 		for (int j = 0; j < countinst; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count, 
+	TemporalS *result = temporals_make(sequences, count, 
 		s->linear, true); 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);

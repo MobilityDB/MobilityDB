@@ -84,7 +84,7 @@ temporali_bbox(void *box, TemporalI *ti)
 /* Construct a TemporalI from an array of TemporalInst */
 
 TemporalI *
-temporali_from_temporalinstarr(TemporalInst **instants, int count)
+temporali_make(TemporalInst **instants, int count)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants */
@@ -103,7 +103,7 @@ temporali_from_temporalinstarr(TemporalInst **instants, int count)
 #endif
 	for (int i = 1; i < count; i++)
 	{
-		if (timestamp_cmp_internal(instants[i - 1]->t, instants[i]->t) >= 0)
+		if (instants[i - 1]->t >= instants[i]->t)
 		{
 			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i - 1]->t));
 			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(instants[i]->t));
@@ -177,7 +177,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	Oid valuetypid = ti->valuetypid;
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
-	if (timestamp_cmp_internal(inst1->t, inst->t) >= 0)
+	if (inst1->t >= inst->t)
 		{
 			char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
 			char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
@@ -287,7 +287,7 @@ temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos)
 		else
 			first = middle + 1;
 	}
-	if (timestamp_cmp_internal(t, inst->t) > 0)
+	if (t > inst->t)
 		middle++;
 	*pos = middle;
 	return false;
@@ -345,13 +345,14 @@ intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 	{
 		TemporalInst *inst1 = temporali_inst_n(ti1, i);
 		TemporalInst *inst2 = temporali_inst_n(ti2, j);
-		if (timestamp_cmp_internal(inst1->t, inst2->t) == 0)
+		int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+		if (cmp == 0)
 		{
 			instants1[k] = inst1;
 			instants2[k++] = inst2;
 			i++; j++;
 		}
-		else if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
+		else if (cmp < 0)
 			i++; 
 		else 
 			j++;
@@ -362,8 +363,8 @@ intersection_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 		return false;
 	}
 	
-	*inter1 = temporali_from_temporalinstarr(instants1, k);
-	*inter2 = temporali_from_temporalinstarr(instants2, k);
+	*inter1 = temporali_make(instants1, k);
+	*inter2 = temporali_make(instants2, k);
 	
 	pfree(instants1); pfree(instants2); 
 
@@ -432,7 +433,7 @@ temporali_read(StringInfo buf, Oid valuetypid)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		instants[i] = temporalinst_read(buf, valuetypid);
-	TemporalI *result = temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = temporali_make(instants, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
@@ -454,7 +455,7 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	for (int i = 0; i < ti->count; i++)
 		instants[i] = temporali_inst_n(ti, i);
 	instants[ti->count] = inst;
-	return temporali_from_temporalinstarr(instants, ti->count + 1);
+	return temporali_make(instants, ti->count + 1);
 }
 */
 /*****************************************************************************
@@ -502,7 +503,7 @@ tfloati_to_tinti(TemporalI *ti)
 TemporalI *
 temporalinst_to_temporali(TemporalInst *inst)
 {
-	return temporali_from_temporalinstarr(&inst, 1);
+	return temporali_make(&inst, 1);
 }
 
 TemporalI *
@@ -513,7 +514,7 @@ temporalseq_to_temporali(TemporalSeq *seq)
 			errmsg("Cannot transform input to a temporal instant set")));
 
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	return temporali_from_temporalinstarr(&inst, 1);
+	return temporali_make(&inst, 1);
 }
 
 TemporalI *
@@ -533,7 +534,7 @@ temporals_to_temporali(TemporalS *ts)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		instants[i] = temporalseq_inst_n(seq, 0);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ts->count);
+	TemporalI *result = temporali_make(instants, ts->count);
 	pfree(instants);
 	return result;
 }
@@ -593,7 +594,7 @@ temporali_get_time(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		periods[i] = period_make(inst->t, inst->t, true, true);
 	}
-	PeriodSet *result = periodset_from_periodarr_internal(periods, ti->count, false);
+	PeriodSet *result = periodset_make_internal(periods, ti->count, false);
 	for (int i = 0; i < ti->count; i++)
 		pfree(periods[i]);
 	pfree(periods);
@@ -948,7 +949,7 @@ temporali_at_value(TemporalI *ti, Datum value)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -990,7 +991,7 @@ temporali_minus_value(TemporalI *ti, Datum value)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1030,7 +1031,7 @@ temporali_at_values(TemporalI *ti, Datum *values, int count)
 		}
 	}
 	TemporalI *result = (newcount == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, newcount);
+		temporali_make(instants, newcount);
 	pfree(instants);
 	return result;
 }
@@ -1073,7 +1074,7 @@ temporali_minus_values(TemporalI *ti, Datum *values, int count)
 			instants[newcount++] = inst;
 	}
 	TemporalI *result = (newcount == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, newcount);
+		temporali_make(instants, newcount);
 	pfree(instants);
 	return result;
 }
@@ -1112,7 +1113,7 @@ tnumberi_at_range(TemporalI *ti, RangeType *range)
 		return NULL;		
 	}
 	
-	TemporalI *result = temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = temporali_make(instants, count);
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1153,7 +1154,7 @@ tnumberi_minus_range(TemporalI *ti, RangeType *range)
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, newcount);
+	TemporalI *result = temporali_make(instants, newcount);
 	for (int i = 0; i < newcount; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1198,7 +1199,7 @@ tnumberi_at_ranges(TemporalI *ti, RangeType **normranges, int count)
 		return NULL;
 	}
 	
-	TemporalI *result = temporali_from_temporalinstarr(instants, newcount);
+	TemporalI *result = temporali_make(instants, newcount);
 	for (int i = 0; i < newcount; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1243,7 +1244,7 @@ tnumberi_minus_ranges(TemporalI *ti, RangeType **normranges, int count)
 		return NULL;
 	}
 
-	TemporalI *result = temporali_from_temporalinstarr(instants, newcount);
+	TemporalI *result = temporali_make(instants, newcount);
 	for (int i = 0; i < newcount; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -1354,11 +1355,11 @@ temporali_minus_timestamp(TemporalI *ti, TimestampTz t)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst= temporali_inst_n(ti, i);
-		if (timestamp_cmp_internal(inst->t, t) != 0)
+		if (inst->t != t)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1397,18 +1398,19 @@ temporali_at_timestampset(TemporalI *ti, TimestampSet *ts)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, j);
 		TimestampTz t = timestampset_time_n(ts, i);
-		if (timestamp_cmp_internal(t, inst->t) == 0)
+		int cmp = timestamp_cmp_internal(t, inst->t);
+		if (cmp == 0)
 		{
 			instants[count++] = inst;
 			i++;
 		}
-		if (timestamp_cmp_internal(t, inst->t) < 0)
+		else if (cmp < 0)
 			i++;
-		if (timestamp_cmp_internal(t, inst->t) > 0)
+		else
 			j++;
 	}	
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1447,16 +1449,15 @@ temporali_minus_timestampset(TemporalI *ti, TimestampSet *ts)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, j);
 		TimestampTz t = timestampset_time_n(ts, i);
-		if (timestamp_cmp_internal(t, inst->t) <= 0)
+		if (t <= inst->t)
 			i++;
-		else /* (timestamp_cmp_internal(t, inst->t) > 0) */
+		else /* t > inst->t */
 		{
 			instants[count++] = inst;
 			j++;
 		}
 	}
-	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = (count == 0) ? NULL : temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1486,7 +1487,7 @@ temporali_at_period(TemporalI *ti, Period *period)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1516,7 +1517,7 @@ temporali_minus_period(TemporalI *ti, Period *period)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL : 
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1559,7 +1560,7 @@ temporali_at_periodset(TemporalI *ti, PeriodSet *ps)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }
@@ -1602,7 +1603,7 @@ temporali_minus_periodset(TemporalI *ti, PeriodSet *ps)
 			instants[count++] = inst;
 	}
 	TemporalI *result = (count == 0) ? NULL :
-		temporali_from_temporalinstarr(instants, count);
+		temporali_make(instants, count);
 	pfree(instants);
 	return result;
 }

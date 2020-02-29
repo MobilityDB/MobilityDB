@@ -24,6 +24,10 @@
 
 /* Parameter tests */
 
+extern void ensure_same_geodetic_stbox(STBOX *box1, STBOX *box2);
+extern void ensure_same_geodetic_tpoint_stbox(Temporal *temp, STBOX *box);
+extern void ensure_same_srid_stbox(STBOX *box1, STBOX *box2);
+extern void ensure_same_srid_tpoint_stbox(Temporal *temp, STBOX *box);
 extern void ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2);
 extern void ensure_same_srid_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
 extern void ensure_same_dimensionality_tpoint(Temporal *temp1, Temporal *temp2);

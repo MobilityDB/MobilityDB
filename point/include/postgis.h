@@ -27,12 +27,15 @@
 			pfree(ptrsrc); \
 	} while (0)
 
+#include <liblwgeom.h>
+
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);
 extern int getSRIDbySRS(const char* srs);
 extern char *getSRSbySRID(int32_t srid, bool short_crs);
 extern int lwprint_double(double d, int maxdd, char* buf, size_t bufsize);
 extern char getMachineEndian(void);
+extern char lwpoint_same(const LWPOINT *p1, const LWPOINT *p2);
 
 extern Datum transform(PG_FUNCTION_ARGS);
 extern Datum buffer(PG_FUNCTION_ARGS);

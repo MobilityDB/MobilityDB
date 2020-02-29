@@ -228,7 +228,7 @@ intersection_temporal_temporal(Temporal *temp1, Temporal *temp2,
 
 bool
 synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
-	Temporal **synctemp1, Temporal **synctemp2,  bool crossings)
+	Temporal **sync1, Temporal **sync2,  bool crossings)
 {
 	bool result = false;
 	ensure_valid_duration(temp1->duration);
@@ -236,70 +236,70 @@ synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALINST) 
 		result = intersection_temporalinst_temporalinst(
 			(TemporalInst *)temp1, (TemporalInst *)temp2,
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALI) 
 		result = intersection_temporalinst_temporali(
 			(TemporalInst *)temp1, (TemporalI *)temp2, 
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALSEQ) 
 		result = intersection_temporalinst_temporalseq(
 			(TemporalInst *)temp1, (TemporalSeq *)temp2, 
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALINST && temp2->duration == TEMPORALS) 
 		result = intersection_temporalinst_temporals(
 			(TemporalInst *)temp1, (TemporalS *)temp2, 
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALINST) 
 		result = intersection_temporali_temporalinst(
 			(TemporalI *)temp1, (TemporalInst *)temp2,
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALI) 
 		result = intersection_temporali_temporali(
 			(TemporalI *)temp1, (TemporalI *)temp2,
-			(TemporalI **)synctemp1, (TemporalI **)synctemp2);
+			(TemporalI **)sync1, (TemporalI **)sync2);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALSEQ) 
 		result = intersection_temporali_temporalseq(
 			(TemporalI *)temp1, (TemporalSeq *)temp2,
-			(TemporalI **)synctemp1, (TemporalI **)synctemp2);
+			(TemporalI **)sync1, (TemporalI **)sync2);
 	else if (temp1->duration == TEMPORALI && temp2->duration == TEMPORALS) 
 		result = intersection_temporali_temporals(
 			(TemporalI *)temp1, (TemporalS *)temp2, 
-			(TemporalI **)synctemp1, (TemporalI **)synctemp2);
+			(TemporalI **)sync1, (TemporalI **)sync2);
 	
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALINST) 
 		result = intersection_temporalseq_temporalinst(
 			(TemporalSeq *)temp1, (TemporalInst *)temp2,
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALI) 
 		result = intersection_temporalseq_temporali(
 			(TemporalSeq *)temp1, (TemporalI *)temp2,
-			(TemporalI **)synctemp1, (TemporalI **)synctemp2);
+			(TemporalI **)sync1, (TemporalI **)sync2);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALSEQ) 
 		result = synchronize_temporalseq_temporalseq(
 			(TemporalSeq *)temp1, (TemporalSeq *)temp2,
-			(TemporalSeq **)synctemp1, (TemporalSeq **)synctemp2, crossings);
+			(TemporalSeq **)sync1, (TemporalSeq **)sync2, crossings);
 	else if (temp1->duration == TEMPORALSEQ && temp2->duration == TEMPORALS) 
 		result = synchronize_temporalseq_temporals(
 			(TemporalSeq *)temp1, (TemporalS *)temp2,
-			(TemporalS **)synctemp1, (TemporalS **)synctemp2, crossings);
+			(TemporalS **)sync1, (TemporalS **)sync2, crossings);
 	
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALINST) 
 		result = intersection_temporals_temporalinst(
 			(TemporalS *)temp1, (TemporalInst *)temp2,
-			(TemporalInst **)synctemp1, (TemporalInst **)synctemp2);
+			(TemporalInst **)sync1, (TemporalInst **)sync2);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALI) 
 		result = intersection_temporals_temporali(
 			(TemporalS *)temp1, (TemporalI *)temp2,
-			(TemporalI **)synctemp1, (TemporalI **)synctemp2);
+			(TemporalI **)sync1, (TemporalI **)sync2);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALSEQ) 
 		result = synchronize_temporals_temporalseq(
 			(TemporalS *)temp1, (TemporalSeq *)temp2,
-			(TemporalS **)synctemp1, (TemporalS **)synctemp2, crossings);
+			(TemporalS **)sync1, (TemporalS **)sync2, crossings);
 	else if (temp1->duration == TEMPORALS && temp2->duration == TEMPORALS) 
 		result = synchronize_temporals_temporals(
 			(TemporalS *)temp1, (TemporalS *)temp2,
-			(TemporalS **)synctemp1, (TemporalS **)synctemp2, crossings);
+			(TemporalS **)sync1, (TemporalS **)sync2, crossings);
 
 	return result;
 }
@@ -813,7 +813,7 @@ temporali_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 	
-	Temporal *result = (Temporal *)temporali_from_temporalinstarr(instants, count);
+	Temporal *result = (Temporal *)temporali_make(instants, count);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
@@ -850,7 +850,7 @@ tlinearseq_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants,
+	Temporal *result = (Temporal *)temporalseq_make(instants,
 		count, lower_inc, upper_inc, false, true);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
@@ -887,7 +887,7 @@ temporalseq_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	Temporal *result = (Temporal *)temporalseq_from_temporalinstarr(instants, 
+	Temporal *result = (Temporal *)temporalseq_make(instants, 
 		count, lower_inc, upper_inc, linear, true);
 	pfree(instants);
 	PG_FREE_IF_COPY(array, 0);
@@ -929,7 +929,7 @@ temporals_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	Temporal *result = (Temporal *)temporals_from_temporalseqarr(sequences, count,
+	Temporal *result = (Temporal *)temporals_make(sequences, count,
 		linear, true);
 	
 	pfree(sequences);

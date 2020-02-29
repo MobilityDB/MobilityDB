@@ -12,6 +12,8 @@ SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-0
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 
 SELECT stbox 'STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
+SELECT stbox 'SRID=4326;STBOX ZT((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
+SELECT stbox 'SRID=4326;GEODSTBOX T((5,6,7,2001-01-08), (1,2,3,2001-01-04))';
 
 /* Errors */
 SELECT stbox 'AAA(1, 2, 3)';
@@ -26,7 +28,9 @@ SELECT stbox 'stbox t((1, 2, 2001-01-03),()';
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1)'; 
 SELECT stbox 'stbox z((1, 2, 3),(1,2)'; 
 SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2)'; 
-SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)'; 
+SELECT stbox 'stbox t((1, 2, 2001-01-03),(1,2,2001-01-03)';
+SELECT stbox 'SRID=4326;STBOX T((,2001-01-08), (,2001-01-04))';
+SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01-04))';
 
 -------------------------------------------------------------------------------
 -- Constructors
@@ -93,6 +97,10 @@ SELECT xmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT ymax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT zmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT tmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
+
+SELECT srid(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT srid(stbox 'SRID=4326;STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT srid(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 
 -------------------------------------------------------------------------------
 -- Casting

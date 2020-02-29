@@ -656,7 +656,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 	{
 		TemporalInst *inst = temporalinst_make(Int32GetDatum(1), 
 			seq->period.lower, INT4OID); 
-		result = temporalseq_from_temporalinstarr(&inst, 1,
+		result = temporalseq_make(&inst, 1,
 			true, true, false, false);
 		pfree(inst);
 		return result;
@@ -667,7 +667,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 		INT4OID); 
 	instants[1] = temporalinst_make(Int32GetDatum(1), seq->period.upper,
 		INT4OID); 
-	result = temporalseq_from_temporalinstarr(instants, 2,
+	result = temporalseq_make(instants, 2,
 		seq->period.lower_inc, seq->period.upper_inc, false, false);
 	pfree(instants[0]); pfree(instants[1]); 
 	return result;
@@ -756,7 +756,7 @@ tnumberseq_transform_tavg(TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tnumberinst_transform_tavg(inst);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 
@@ -929,14 +929,14 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 
 	/* Compute the aggregation on the period before the 
 	 * intersection of the intervals */
-	if (timestamp_cmp_internal(lower1, lower) < 0 ||
-		(lower1_inc && !lower_inc && timestamp_cmp_internal(lower1, lower) == 0))
+	int cmp1 = timestamp_cmp_internal(lower1, lower);
+	int cmp2 = timestamp_cmp_internal(lower2, lower);
+	if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
 	{
 		period_set(&period, lower1, lower, lower1_inc, !lower_inc);
 		sequences[k++] = temporalseq_at_period(seq1, &period);
 	}
-	else if (timestamp_cmp_internal(lower2, lower) < 0 ||
-		(lower2_inc && !lower_inc && timestamp_cmp_internal(lower2, lower) == 0))
+	else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
 	{
 		period_set(&period, lower2, lower, lower2_inc, !lower_inc);
 		sequences[k++] = temporalseq_at_period(seq2, &period);
@@ -956,7 +956,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 			func(temporalinst_value(inst1), temporalinst_value(inst2)),
 			inst1->t, inst1->valuetypid);
 	}
-	sequences[k++] = temporalseq_from_temporalinstarr(instants, syncseq1->count, 
+	sequences[k++] = temporalseq_make(instants, syncseq1->count, 
 		lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), true);
 	for (int i = 0; i < syncseq1->count; i++)
 		pfree(instants[i]);
@@ -964,14 +964,14 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	
 	/* Compute the aggregation on the period after the intersection 
 	 * of the intervals */
-	if (timestamp_cmp_internal(upper, upper1) < 0 ||
-		(!upper_inc && upper1_inc && timestamp_cmp_internal(upper, upper1) == 0))
+	cmp1 = timestamp_cmp_internal(upper, upper1);
+	cmp2 = timestamp_cmp_internal(upper, upper2);
+	if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
 	{
 		period_set(&period, upper, upper1, !upper_inc, upper1_inc);
 		sequences[k++] = temporalseq_at_period(seq1, &period);
 	}
-	else if (timestamp_cmp_internal(upper, upper2) < 0 ||
-		(!upper_inc && upper2_inc && timestamp_cmp_internal(upper, upper2) == 0))
+	else if (cmp2 < 0 || (!upper_inc && upper2_inc && cmp2 == 0))
 	{
 		period_set(&period, upper, upper2, !upper_inc, upper2_inc);
 		sequences[k++] = temporalseq_at_period(seq2, &period);
@@ -1022,8 +1022,8 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 		int countstep = temporalseq_tagg1(&sequences[k], seq1, seq2, func, crossings);
 		k += countstep - 1;
 		/* If both upper bounds are equal */
-		if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0 &&
-			seq1->period.upper_inc == seq2->period.upper_inc)
+		int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
+		if (cmp == 0 && seq1->period.upper_inc == seq2->period.upper_inc)
 		{
 			k++; i++; j++;
 			if (i == count1 || j == count2)
@@ -1032,9 +1032,8 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 			seq2 = sequences2[j];
 		}
 		/* If upper bound of seq1 is less than or equal to the upper bound of seq2 */
-		else if (timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) < 0 ||
-			(!seq1->period.upper_inc && seq2->period.upper_inc &&
-			timestamp_cmp_internal(seq1->period.upper, seq2->period.upper) == 0))
+		else if (cmp < 0 ||
+			(!seq1->period.upper_inc && seq2->period.upper_inc && cmp == 0))
 		{
 			i++;
 			if (i == count1)
@@ -1814,10 +1813,10 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
-		result = (Temporal *)temporali_from_temporalinstarr(
+		result = (Temporal *)temporali_make(
 			(TemporalInst **)values, state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
-		result = (Temporal *)temporals_from_temporalseqarr(
+		result = (Temporal *)temporals_make(
 			(TemporalSeq **)values, state->length,
 			MOBDB_FLAGS_GET_LINEAR(values[0]->flags), true);
 	pfree(values);
@@ -1896,12 +1895,12 @@ temporalinst_tavg_finalfn(TemporalInst **instants, int count)
 	for (int i = 0; i < count; i++)
 	{
 		TemporalInst *inst = instants[i];
-		double2 *value = (double2 *)DatumGetPointer(temporalinst_value(inst));
+		double2 *value = (double2 *)DatumGetPointer(temporalinst_value_ptr(inst));
 		double tavg = value->a / value->b;
 		newinstants[i] = temporalinst_make(Float8GetDatum(tavg), inst->t,
 			FLOAT8OID);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(newinstants, count);
+	TemporalI *result = temporali_make(newinstants, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(newinstants[i]);
@@ -1921,19 +1920,19 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 		for (int j = 0; j < seq->count; j++)
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			double2 *value2 = (double2 *)DatumGetPointer(temporalinst_value(inst));
+			double2 *value2 = (double2 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			double value = value2->a / value2->b;
 			instants[j] = temporalinst_make(Float8GetDatum(value), inst->t,
 				FLOAT8OID);
 		}
-		newsequences[i] = temporalseq_from_temporalinstarr(instants, 
+		newsequences[i] = temporalseq_make(instants, 
 			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(newsequences, count,
+	TemporalS *result = temporals_make(newsequences, count,
 		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
 
 	for (int i = 0; i < count; i++)

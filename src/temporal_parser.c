@@ -354,7 +354,7 @@ timestampset_parse(char **str)
 		times[i] = timestamp_parse(str);
 	}
 	p_cbrace(str);
-	TimestampSet *result = timestampset_from_timestamparr_internal(times, count);
+	TimestampSet *result = timestampset_make_internal(times, count);
 
 	pfree(times);
 
@@ -390,7 +390,7 @@ periodset_parse(char **str)
 		periods[i] = period_parse(str, true);
 	}
 	p_cbrace(str);
-	PeriodSet *result = periodset_from_periodarr_internal(periods, count, true);
+	PeriodSet *result = periodset_make_internal(periods, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(periods[i]);
@@ -466,7 +466,7 @@ temporali_parse(char **str, Oid basetype)
 		instants[i] = temporalinst_parse(str, basetype, false, true);
 	}
 	p_cbrace(str);
-	TemporalI *result = temporali_from_temporalinstarr(instants, count);
+	TemporalI *result = temporali_make(instants, count);
 
 	for (int i = 0; i < count; i++)
 		pfree(instants[i]);
@@ -532,7 +532,7 @@ temporalseq_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 	if (! make)
 		return NULL;
 
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, 
+	TemporalSeq *result = temporalseq_make(instants, 
 		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
@@ -581,7 +581,7 @@ temporals_parse(char **str, Oid basetype, bool linear)
 		sequences[i] = temporalseq_parse(str, basetype, linear, false, true);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		linear, true);
 
 	for (int i = 0; i < count; i++)

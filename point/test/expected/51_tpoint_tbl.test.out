@@ -455,25 +455,25 @@ SELECT DISTINCT duration(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;
  max  
 ------
- 2101
+ 2103
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;
  max  
 ------
- 2069
+ 2074
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeompoint3D;
  max  
 ------
- 2588
+ 2590
 (1 row)
 
 SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint3D;
  max  
 ------
- 2642
+ 2647
 (1 row)
 
 SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint;
@@ -485,7 +485,7 @@ SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint;
 SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeogpoint;
  max 
 -----
- 132
+ 142
 (1 row)
 
 SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint3D;
@@ -497,7 +497,7 @@ SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeompoint3D;
 SELECT MAX(char_length(stbox(temp)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
- 132
+ 142
 (1 row)
 
 /* There is no st_memSize neither MAX for geography. */

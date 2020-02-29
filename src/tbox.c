@@ -284,24 +284,19 @@ tbox_to_period(PG_FUNCTION_ARGS)
  * Operators
  *****************************************************************************/
 
-/* Intersection of two boxex*/
+/* Intersection of two boxes */
 
-PG_FUNCTION_INFO_V1(tbox_intersection);
-
-PGDLLEXPORT Datum
-tbox_intersection(PG_FUNCTION_ARGS)
+TBOX *
+tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
 {
-	TBOX *box1 = PG_GETARG_TBOX_P(0);
-	TBOX *box2 = PG_GETARG_TBOX_P(1);
-
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	/* If there is no common dimension */
 	if ((! hasx && ! hast) ||
-		/* If they do no intersect in one common dimension */
-		(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
-		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-		PG_RETURN_NULL();
+	/* If they do no intersect in one common dimension */
+	(hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
+	(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+		return(NULL);
 
 	TBOX *result = tbox_new(hasx, hast);
 	if (hasx)
@@ -314,6 +309,19 @@ tbox_intersection(PG_FUNCTION_ARGS)
 		result->tmin = Max(box1->tmin, box2->tmin);
 		result->tmax = Min(box1->tmax, box2->tmax);
 	}
+	return(result);
+}
+
+PG_FUNCTION_INFO_V1(tbox_intersection);
+
+PGDLLEXPORT Datum
+tbox_intersection(PG_FUNCTION_ARGS)
+{
+	TBOX *box1 = PG_GETARG_TBOX_P(0);
+	TBOX *box2 = PG_GETARG_TBOX_P(1);
+	TBOX *result = tbox_intersection_internal(box1, box2);
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 

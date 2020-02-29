@@ -64,6 +64,12 @@ SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b <@ t2.b;
     99
 (1 row)
 
+SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b -|- t2.b;
+ count 
+-------
+     0
+(1 row)
+
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b ~= t2.b;
  count 
 -------

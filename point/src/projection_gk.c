@@ -238,7 +238,7 @@ tgeompointi_transform_gk_internal(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 
 	for (int i = 0; i < ti->count; i++)
 		pfree(instants[i]);
@@ -256,8 +256,8 @@ tgeompointseq_transform_gk_internal(TemporalSeq *seq)
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		instants[i] = tgeompointinst_transform_gk(inst);
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc, 
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
 	for (int i = 0; i < seq->count; i++)
@@ -280,15 +280,15 @@ tgeompoints_transform_gk_internal(TemporalS *ts)
 			TemporalInst *inst = temporalseq_inst_n(seq, j);
 			instants[j] = tgeompointinst_transform_gk(inst);
 		}
-		sequences[i] = temporalseq_from_temporalinstarr(instants,
+		sequences[i] = temporalseq_make(instants,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc, 
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		for (int j = 0; j < seq->count; j++)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences,
-		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
+	TemporalS *result = temporals_make(sequences, ts->count,
+		MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
 
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);

@@ -25,7 +25,7 @@
 /* General functions */
 
 extern TemporalSeq *temporals_seq_n(TemporalS *ts, int index);
-extern TemporalS *temporals_from_temporalseqarr(TemporalSeq **sequences, 
+extern TemporalS *temporals_make(TemporalSeq **sequences, 
 	int count, bool linear, bool normalize);
 extern TemporalS *temporals_copy(TemporalS *ts);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);

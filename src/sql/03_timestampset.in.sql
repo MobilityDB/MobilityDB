@@ -56,7 +56,7 @@ CREATE TYPE timestampset (
 
 CREATE FUNCTION timestampset(timestamptz[])
 	RETURNS timestampset
-	AS 'MODULE_PATHNAME', 'timestampset_from_timestamparr'
+	AS 'MODULE_PATHNAME', 'timestampset_make'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

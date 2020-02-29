@@ -454,7 +454,7 @@ CREATE OPERATOR / (
 
 /* tfloat round */
 
-CREATE FUNCTION round(tfloat, integer)
+CREATE FUNCTION round(tfloat, integer DEFAULT 0)
 	RETURNS tfloat
 	AS 'MODULE_PATHNAME', 'temporal_round'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

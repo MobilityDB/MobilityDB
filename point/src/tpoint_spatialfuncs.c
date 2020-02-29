@@ -33,6 +33,41 @@
  *****************************************************************************/
 
 void
+ensure_same_geodetic_stbox(STBOX *box1, STBOX *box2)
+{
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
+		MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
+		elog(ERROR, "The boxes must be both planar or both geodetic");
+}
+
+void
+ensure_same_geodetic_tpoint_stbox(Temporal *temp, STBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(box->flags) &&
+		MOBDB_FLAGS_GET_GEODETIC(temp->flags) != MOBDB_FLAGS_GET_GEODETIC(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point and the box must be both planar or both geodetic")));
+}
+
+void
+ensure_same_srid_stbox(STBOX *box1, STBOX *box2)
+{
+	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
+		box1->srid != box2->srid)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The boxes must be in the same SRID")));
+}
+
+void
+ensure_same_srid_tpoint_stbox(Temporal *temp, STBOX *box)
+{
+	if (MOBDB_FLAGS_GET_X(box->flags) &&
+		tpoint_srid_internal(temp) != box->srid)
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point and the box must be in the same SRID")));
+}
+
+void
 ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2)
 {
 	if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
@@ -261,7 +296,7 @@ geom_to_geog(Datum value)
 int
 tpointinst_srid(TemporalInst *inst)
 {
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 	return gserialized_get_srid(gs);
 }
 
@@ -269,7 +304,7 @@ int
 tpointi_srid(TemporalI *ti)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 	return gserialized_get_srid(gs);
 }
 
@@ -277,7 +312,7 @@ int
 tpointseq_srid(TemporalSeq *seq)
 {
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 	return gserialized_get_srid(gs);
 }
 
@@ -286,7 +321,7 @@ tpoints_srid(TemporalS *ts)
 {
 	TemporalSeq *seq = temporals_seq_n(ts, 0);
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 	return gserialized_get_srid(gs);
 }
 
@@ -328,7 +363,7 @@ static TemporalInst *
 tpointinst_set_srid(TemporalInst *inst, int32 srid)
 {
 	TemporalInst *result = temporalinst_copy(inst);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(result));
+	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(result));
 	gserialized_set_srid(gs, srid);
 	return result;
 }
@@ -340,7 +375,7 @@ tpointi_set_srid(TemporalI *ti, int32 srid)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(result, i);
-		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 		gserialized_set_srid(gs, srid);
 	}
 	return result;
@@ -353,7 +388,7 @@ tpointseq_set_srid(TemporalSeq *seq, int32 srid)
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(result, i);
-		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 		gserialized_set_srid(gs, srid);
 	}
 	return result;
@@ -369,7 +404,7 @@ tpoints_set_srid(TemporalS *ts, int32 srid)
 		for (int j = 0; j < seq->count; j++)
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value(inst));
+			GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 			gserialized_set_srid(gs, srid);
 		}
 	}
@@ -919,7 +954,7 @@ tpointseq_length(TemporalSeq *seq)
 	if (seq->valuetypid == type_oid(T_GEOMETRY))
 		/* The next function call works for 2D and 3D */
 		result = DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
-	else if (seq->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		result = DatumGetFloat8(call_function2(geography_length, traj,
 			BoolGetDatum(true)));
 	return result;
@@ -975,7 +1010,7 @@ tpointi_cumulative_length(TemporalI *ti)
 		TemporalInst *inst = temporali_inst_n(ti, i);
 		instants[i] = temporalinst_make(length, inst->t, FLOAT8OID);
 	}
-	TemporalI *result = temporali_from_temporalinstarr(instants, ti->count);
+	TemporalI *result = temporali_make(instants, ti->count);
 	for (int i = 1; i < ti->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -991,7 +1026,7 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = temporalinst_make(Float8GetDatum(0), inst->t,
 			FLOAT8OID);
-		TemporalSeq *result = temporalseq_from_temporalinstarr(&inst1, 1,
+		TemporalSeq *result = temporalseq_make(&inst1, 1,
 			true, true, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(inst1);
 		return result;
@@ -1040,7 +1075,7 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 			value1 = value2;
 		}
 	}
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants,
+	TemporalSeq *result = temporalseq_make(instants,
 		seq->count, seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		
@@ -1063,7 +1098,7 @@ tpoints_cumulative_length(TemporalS *ts)
 		TemporalInst *end = temporalseq_inst_n(sequences[i], seq->count - 1);
 		length += DatumGetFloat8(temporalinst_value(end));
 	}
-	TemporalS *result = temporals_from_temporalseqarr(sequences,
+	TemporalS *result = temporals_make(sequences,
 		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
 		
 	for (int i = 1; i < ts->count; i++)
@@ -1150,7 +1185,7 @@ tpointseq_speed(TemporalSeq *seq)
 			seq->period.upper, FLOAT8OID);
 	}
 	/* The resulting sequence has stepwise interpolation */
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, seq->count,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc, false, true);
 	for (int i = 0; i < seq->count - 1; i++)
 		pfree(instants[i]);
@@ -1175,7 +1210,7 @@ tpoints_speed(TemporalS *ts)
 		return NULL;
 	}
 	/* The resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k, false, true);
+	TemporalS *result = temporals_make(sequences, k, false, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -1242,11 +1277,11 @@ tgeompointi_twcentroid(TemporalI *ti)
 				inst->t, FLOAT8OID);
 
 	}
-	TemporalI *tix = temporali_from_temporalinstarr(instantsx, ti->count);
-	TemporalI *tiy = temporali_from_temporalinstarr(instantsy, ti->count);
+	TemporalI *tix = temporali_make(instantsx, ti->count);
+	TemporalI *tiy = temporali_make(instantsy, ti->count);
 	TemporalI *tiz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tiz = temporali_from_temporalinstarr(instantsz, ti->count);
+		tiz = temporali_make(instantsz, ti->count);
 	double avgx = tnumberi_twavg(tix);
 	double avgy = tnumberi_twavg(tiy);
 	double avgz;
@@ -1309,15 +1344,15 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 			instantsz[i] = temporalinst_make(Float8GetDatum(point.z),
 				inst->t, FLOAT8OID);
 	}
-	TemporalSeq *seqx = temporalseq_from_temporalinstarr(instantsx,
+	TemporalSeq *seqx = temporalseq_make(instantsx,
 		seq->count, seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	TemporalSeq *seqy = temporalseq_from_temporalinstarr(instantsy,
+	TemporalSeq *seqy = temporalseq_make(instantsy,
 		seq->count, seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	TemporalSeq *seqz;
 	if (hasz)
-		seqz = temporalseq_from_temporalinstarr(instantsz,
+		seqz = temporalseq_make(instantsz,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	double twavgx = tnumberseq_twavg(seqx);
@@ -1390,14 +1425,14 @@ tgeompoints_twcentroid(TemporalS *ts)
 				instantsz[j] = temporalinst_make(Float8GetDatum(point.z),
 					inst->t, FLOAT8OID);
 		}
-		sequencesx[i] = temporalseq_from_temporalinstarr(instantsx,
+		sequencesx[i] = temporalseq_make(instantsx,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-		sequencesy[i] = temporalseq_from_temporalinstarr(instantsy,
+		sequencesy[i] = temporalseq_make(instantsy,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		if (hasz)
-			sequencesz[i] = temporalseq_from_temporalinstarr(instantsz,
+			sequencesz[i] = temporalseq_make(instantsz,
 				seq->count, seq->period.lower_inc, seq->period.upper_inc,
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
@@ -1411,13 +1446,13 @@ tgeompoints_twcentroid(TemporalS *ts)
 		if (hasz)
 			pfree(instantsz);
 	}
-	TemporalS *tsx = temporals_from_temporalseqarr(sequencesx,
+	TemporalS *tsx = temporals_make(sequencesx,
 		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
-	TemporalS *tsy = temporals_from_temporalseqarr(sequencesy,
+	TemporalS *tsy = temporals_make(sequencesy,
 		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 	TemporalS *tsz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tsz = temporals_from_temporalseqarr(sequencesz,
+		tsz = temporals_make(sequencesz,
 		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 
 	double twavgx = tnumbers_twavg(tsx);
@@ -1533,7 +1568,7 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 				instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 				upper_inc = true;
 				/* Resulting sequence has stepwise interpolation */
-				result[l++] = temporalseq_from_temporalinstarr(instants, k,
+				result[l++] = temporalseq_make(instants, k,
 					lower_inc, upper_inc, false, true);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
@@ -1548,7 +1583,7 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 	{
 		instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 		/* Resulting sequence has stepwise interpolation */
-		result[l++] = temporalseq_from_temporalinstarr(instants, k,
+		result[l++] = temporalseq_make(instants, k,
 			lower_inc, upper_inc, false, true);
 	}
 
@@ -1569,7 +1604,7 @@ tpointseq_azimuth(TemporalSeq *seq)
 	}
 	
 	/* Resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		false, true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -1594,7 +1629,7 @@ tpoints_azimuth(TemporalS *ts)
 		return NULL;
 
 	/* Resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_from_temporalseqarr(sequences, k,
+	TemporalS *result = temporals_make(sequences, k,
 		false, true);
 
 	for (int i = 0; i < k; i++)
@@ -1656,7 +1691,7 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
 	}
 	TemporalI *result = NULL;
 	if (k != 0)
-		result = temporali_from_temporalinstarr(instants, k);
+		result = temporali_make(instants, k);
 	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
@@ -1688,7 +1723,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 		instants[1] = equal ? inst2 :
 			temporalinst_make(value1, inst2->t, inst1->valuetypid);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, linear, false);
 		*count = 1;
 		if (! equal)
@@ -1731,7 +1766,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			{
 				/* Restriction at timestamp done to avoid floating point imprecision */
 				instants[0] = temporalseq_at_timestamp1(inst1, inst2, t, linear);
-				result[k++] = temporalseq_from_temporalinstarr(instants, 1,
+				result[k++] = temporalseq_make(instants, 1,
 					true, true, linear, false);
 				pfree(instants[0]);
 			}
@@ -1753,11 +1788,9 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			/* Restriction at timestamp done to avoid floating point imprecision */
 			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
 			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
-			bool lower_inc1 = timestamp_cmp_internal(lower1, inst1->t) == 0 ?
-				lower_inc : true;
-			bool upper_inc1 = timestamp_cmp_internal(upper1, inst2->t) == 0 ?
-				upper_inc : true;
-			result[k++] = temporalseq_from_temporalinstarr(instants, 2,
+			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
+			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
+			result[k++] = temporalseq_make(instants, 2,
 					lower_inc1, upper_inc1, linear, false);
 			pfree(instants[0]); pfree(instants[1]);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
@@ -1843,7 +1876,7 @@ tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
 	for (int i = 0; i < count; i++)
@@ -1888,7 +1921,7 @@ tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 		if (sequences[i] != NULL)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, totalseqs,
+	TemporalS *result = temporals_make(allsequences, totalseqs,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 
 	for (int i = 0; i < totalseqs; i++)
@@ -1975,7 +2008,7 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
 	}
 	TemporalI *result = NULL;
 	if (k != 0)
-		result = temporali_from_temporalinstarr(instants, k);
+		result = temporali_make(instants, k);
 	/* We do not need to pfree the instants */
 	pfree(instants);
 	return result;
@@ -2006,7 +2039,7 @@ tpointseq_minus_geometry1(TemporalSeq *seq, Datum geom, int *count)
 	Period **periods = palloc(sizeof(Period) * countinter);
 	for (int i = 0; i < countinter; i++)
 		periods[i] = &sequences[i]->period;
-	PeriodSet *ps1 = periodset_from_periodarr_internal(periods, countinter, false);
+	PeriodSet *ps1 = periodset_make_internal(periods, countinter, false);
 	PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
 	pfree(ps1); pfree(periods);
 	if (ps2 == NULL)
@@ -2027,7 +2060,7 @@ tpointseq_minus_geometry(TemporalSeq *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TemporalS *result = temporals_from_temporalseqarr(sequences, count,
+	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
 	for (int i = 0; i < count; i++)
@@ -2082,7 +2115,7 @@ tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_from_temporalseqarr(allsequences, totalseqs,
+	TemporalS *result = temporals_make(allsequences, totalseqs,
 		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
 
 	for (int i = 0; i < totalseqs; i++)
@@ -2613,8 +2646,8 @@ static Datum
 shortestline_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
 {
 	LWGEOM *lwgeoms[2];
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst1));
-	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst2));
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst1));
+	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst2));
 	lwgeoms[0] = lwgeom_from_gserialized(gs1);
 	lwgeoms[1] = lwgeom_from_gserialized(gs2);
 	LWLINE *line = lwline_from_lwgeom_array(lwgeoms[0]->srid, 2, lwgeoms);
@@ -2701,7 +2734,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
-			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
+			if (temporalseq_end_timestamp(seq1) == t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
@@ -2728,7 +2761,7 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
-			if (timestamp_cmp_internal(temporalseq_end_timestamp(seq1), t) == 0)
+			if (temporalseq_end_timestamp(seq1) == t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);
@@ -2809,11 +2842,9 @@ static LWPOINT *
 point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 {
 	int32 srid = gserialized_get_srid(gs);
-	bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-	bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
 	double epoch = ((double)t / 1e6) + 946684800 ;
 	LWPOINT *result;
-	if (hasz)
+	if (FLAGS_GET_Z(gs->flags))
 	{
 		POINT3DZ point = gs_get_point3dz(gs);
 		result = lwpoint_make4d(srid, point.x, point.y, point.z, epoch);
@@ -2823,14 +2854,14 @@ point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 		POINT2D point = gs_get_point2d(gs);
 		result = lwpoint_make3dm(srid, point.x, point.y, epoch);
 	}
-	FLAGS_SET_GEODETIC(result->flags, geodetic);
+	FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 	return result;
 }
 
 static Datum
 tpointinst_to_geo(TemporalInst *inst)
 {
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
 	LWPOINT *point = point_to_trajpoint(gs, inst->t);
 	GSERIALIZED *result = geometry_serialize((LWGEOM *)point);
 	pfree(point);
@@ -2841,13 +2872,13 @@ static Datum
 tpointi_to_geo(TemporalI *ti)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
 	int32 srid = gserialized_get_srid(gs);
 	LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		inst = temporali_inst_n(ti, i);
-		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
 		points[i] = (LWGEOM *)point_to_trajpoint(gs, inst->t);
 	}
 	GSERIALIZED *result;
@@ -3023,7 +3054,7 @@ geo_to_tpointi(GSERIALIZED *gs)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * npoints);
 	for (int i = 0; i < npoints; i++)
 		instants[i] = trajpoint_to_tpointinst((LWPOINT *)lwcoll->geoms[i]);
-	result = temporali_from_temporalinstarr(instants, npoints);
+	result = temporali_make(instants, npoints);
 	
 	lwgeom_free(lwgeom);
 	for (int i = 0; i < npoints; i++)
@@ -3076,7 +3107,7 @@ geo_to_tpointseq(GSERIALIZED *gs)
 		lwpoint_free(lwpoint);
 	}
 	/* The resulting sequence assumes linear interpolation */
-	TemporalSeq *result = temporalseq_from_temporalinstarr(instants, npoints,
+	TemporalSeq *result = temporalseq_make(instants, npoints,
 		true, true, true, true);
 	for (int i = 0; i < npoints; i++)
 		pfree(instants[i]);
@@ -3113,7 +3144,7 @@ geo_to_tpoints(GSERIALIZED *gs)
 		{
 			TemporalInst *inst = geo_to_tpointinst(gs1);
 			/* The resulting sequence assumes linear interpolation */
-			sequences[i] = temporalseq_from_temporalinstarr(&inst, 1,
+			sequences[i] = temporalseq_make(&inst, 1,
 				true, true, true, false);
 			pfree(inst);
 		}
@@ -3122,7 +3153,7 @@ geo_to_tpoints(GSERIALIZED *gs)
 		pfree(gs1);
 	}
 	/* The resulting sequence set assumes linear interpolation */
-	result = temporals_from_temporalseqarr(sequences, ngeoms,
+	result = temporals_make(sequences, ngeoms,
 		true, false);
 	for (int i = 0; i < ngeoms; i++)
 		pfree(sequences[i]);
@@ -3164,13 +3195,11 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static LWPOINT *
-point_measure_to_linestringm(GSERIALIZED *gs, double measure)
+point_measure_to_geo_measure(GSERIALIZED *gs, double measure)
 {
 	int32 srid = gserialized_get_srid(gs);
-	bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-	bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
 	LWPOINT *result;
-	if (hasz)
+	if (FLAGS_GET_Z(gs->flags))
 	{
 		POINT3DZ point = gs_get_point3dz(gs);
 		result = lwpoint_make4d(srid, point.x, point.y, point.z, measure);
@@ -3180,33 +3209,33 @@ point_measure_to_linestringm(GSERIALIZED *gs, double measure)
 		POINT2D point = gs_get_point2d(gs);
 		result = lwpoint_make3dm(srid, point.x, point.y, measure);
 	}
-	FLAGS_SET_GEODETIC(result->flags, geodetic);
+	FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 	return result;
 }
 
 static Datum
-tpointinst_to_linestringm(TemporalInst *inst, TemporalInst *measure)
+tpointinst_to_geo_measure(TemporalInst *inst, TemporalInst *measure)
 {
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
-	LWPOINT *point = point_measure_to_linestringm(gs, DatumGetFloat8(temporalinst_value(measure)));
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	LWPOINT *point = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(measure)));
 	GSERIALIZED *result = geometry_serialize((LWGEOM *)point);
 	pfree(point);
 	return PointerGetDatum(result);
 }
 
 static Datum
-tpointi_to_linestringm(TemporalI *ti, TemporalI *measure)
+tpointi_to_geo_measure(TemporalI *ti, TemporalI *measure)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
 	int32 srid = gserialized_get_srid(gs);
 	LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
 	{
 		inst = temporali_inst_n(ti, i);
 		TemporalInst *m = temporali_inst_n(measure, i);
-		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
-		points[i] = (LWGEOM *)point_measure_to_linestringm(gs, DatumGetFloat8(temporalinst_value(m)));
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		points[i] = (LWGEOM *)point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
 	}
 	GSERIALIZED *result;
 	if (ti->count == 1)
@@ -3214,7 +3243,7 @@ tpointi_to_linestringm(TemporalI *ti, TemporalI *measure)
 	else
 	{
 		LWGEOM *mpoint = (LWGEOM *)lwcollection_construct(MULTIPOINTTYPE, srid,
-														  NULL, (uint32_t) ti->count, points);
+			NULL, (uint32_t) ti->count, points);
 		result = geometry_serialize(mpoint);
 		pfree(mpoint);
 	}
@@ -3226,34 +3255,44 @@ tpointi_to_linestringm(TemporalI *ti, TemporalI *measure)
 }
 
 static Datum
-tpointseq_to_linestringm(TemporalSeq *seq, TemporalSeq *measure)
+tpointseq_to_geo_measure(TemporalSeq *seq, TemporalSeq *measure)
 {
 	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
-	for (int i = 0; i < seq->count; i++)
+	/* Remove two consecutive points if they are equal */
+	TemporalInst *inst = temporalseq_inst_n(seq, 0);
+	TemporalInst *m = temporalseq_inst_n(measure, 0);
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	LWPOINT *value1 = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
+	points[0] = (LWGEOM *) value1;
+	int k = 1;
+	for (int i = 1; i < seq->count; i++)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		TemporalInst *m = temporalseq_inst_n(measure, i);
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
-		points[i] = (LWGEOM *) point_measure_to_linestringm(gs, DatumGetFloat8(temporalinst_value(m)));
+		inst = temporalseq_inst_n(seq, i);
+		m = temporalseq_inst_n(measure, i);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		LWPOINT *value2 = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
+		if (lwpoint_same(value1, value2) != LW_TRUE)
+			points[k++] = (LWGEOM *) value2;
+		value1 = value2;
 	}
 	GSERIALIZED *result;
 	/* Instantaneous sequence */
-	if (seq->count == 1)
+	if (k == 1)
 		result = geometry_serialize(points[0]);
 	else
 	{
 		LWGEOM *geom;
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				(uint32_t) seq->count, points);
+				(uint32_t) k, points);
 		else
 			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-				NULL, (uint32_t) seq->count, points);
+				NULL, (uint32_t) k, points);
 		result = geometry_serialize(geom);
 		pfree(geom);
 	}
 
-	for (int i = 0; i < seq->count; i++)
+	for (int i = 0; i < k; i++)
 		pfree(points[i]);
 	pfree(points);
 
@@ -3261,26 +3300,26 @@ tpointseq_to_linestringm(TemporalSeq *seq, TemporalSeq *measure)
 }
 
 static Datum
-tpointseq_to_linestringm_segmentize(TemporalSeq *seq, TemporalSeq *measure)
+tpointseq_to_geo_measure_segmentize(TemporalSeq *seq, TemporalSeq *measure)
 {
 	Datum *segments = palloc(sizeof(Datum) * (seq->count - 1));
 	LWGEOM *points[2];
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
 	double m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, 0)));
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
-	points[0] = (LWGEOM *) point_measure_to_linestringm(gs, m);
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	points[0] = (LWGEOM *) point_measure_to_geo_measure(gs, m);
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		inst = temporalseq_inst_n(seq, i + 1);
-		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value(inst));
-		points[1] = (LWGEOM *) point_measure_to_linestringm(gs, m);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		points[1] = (LWGEOM *) point_measure_to_geo_measure(gs, m);
 		LWGEOM *seg = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
 			2, points);
 		segments[i] = PointerGetDatum(geometry_serialize(seg));
 		// pfree(DatumGetPointer(points[0]));
 		// pfree(DatumGetPointer(points[1]));
 		m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, i + 1)));
-		points[0] =  (LWGEOM *) point_measure_to_linestringm(gs, m);
+		points[0] =  (LWGEOM *) point_measure_to_geo_measure(gs, m);
 		// pfree(seg);
 	}
 	// pfree(DatumGetPointer(points[0]));
@@ -3305,7 +3344,7 @@ tpointseq_to_linestringm_segmentize(TemporalSeq *seq, TemporalSeq *measure)
 }
 
 static Datum
-tpoints_to_linestringm(TemporalS *ts, TemporalS *measure, bool segmentize)
+tpoints_to_geo_measure(TemporalS *ts, TemporalS *measure, bool segmentize)
 {
 	Datum *geoms = palloc(sizeof(Datum) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -3313,8 +3352,8 @@ tpoints_to_linestringm(TemporalS *ts, TemporalS *measure, bool segmentize)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		TemporalSeq *m = temporals_seq_n(measure, i);
 		geoms[i] = segmentize ?
-			tpointseq_to_linestringm_segmentize(seq, m) :
-			tpointseq_to_linestringm(seq, m);
+			tpointseq_to_geo_measure_segmentize(seq, m) :
+			tpointseq_to_geo_measure(seq, m);
 	}
 	Datum result;
 	if (ts->count == 1)
@@ -3333,10 +3372,10 @@ tpoints_to_linestringm(TemporalS *ts, TemporalS *measure, bool segmentize)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_to_linestringm);
+PG_FUNCTION_INFO_V1(tpoint_to_geo_measure);
 
 PGDLLEXPORT Datum
-tpoint_to_linestringm(PG_FUNCTION_ARGS)
+tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 {
 	Temporal *tpoint = PG_GETARG_TEMPORAL(0);
 	Temporal *measure = PG_GETARG_TEMPORAL(1);
@@ -3356,19 +3395,19 @@ tpoint_to_linestringm(PG_FUNCTION_ARGS)
 	Temporal *result = NULL;
 	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
-		result = (Temporal *) tpointinst_to_linestringm(
+		result = (Temporal *) tpointinst_to_geo_measure(
 				(TemporalInst *) sync1, (TemporalInst *) sync2);
 	else if (sync1->duration == TEMPORALI)
-		result = (Temporal *) tpointi_to_linestringm(
+		result = (Temporal *) tpointi_to_geo_measure(
 				(TemporalI *) sync1, (TemporalI *) sync2);
 	else if (sync1->duration == TEMPORALSEQ)
 		result = segmentize ?
-			(Temporal *) tpointseq_to_linestringm_segmentize(
+			(Temporal *) tpointseq_to_geo_measure_segmentize(
 					(TemporalSeq *) sync1, (TemporalSeq *) sync2) :
-			(Temporal *) tpointseq_to_linestringm(
+			(Temporal *) tpointseq_to_geo_measure(
 				(TemporalSeq *) sync1, (TemporalSeq *) sync2);
 	else if (sync1->duration == TEMPORALS)
-		result = (Temporal *) tpoints_to_linestringm(
+		result = (Temporal *) tpoints_to_geo_measure(
 				(TemporalS *) sync1, (TemporalS *) sync2, segmentize);
 
 	pfree(sync1); pfree(sync2);

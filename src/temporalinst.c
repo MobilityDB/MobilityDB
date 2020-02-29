@@ -48,8 +48,8 @@
  
 /* Pointer to the value */
 
-static char * 
-temporalinst_data_ptr(TemporalInst *inst) 
+static char *
+temporalinst_data_ptr(TemporalInst *inst)
 {
 	return (char *)inst + double_pad(sizeof(TemporalInst));
 }
@@ -66,10 +66,10 @@ temporalinst_value_ptr(TemporalInst *inst)
 Datum
 temporalinst_value(TemporalInst *inst)
 {
-	char *value = temporalinst_data_ptr(inst);
+	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
 	if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-		return *(Datum *)value;
+		return *value;
 	/* For base types passed by reference */
 	return PointerGetDatum(value);
 }
@@ -77,10 +77,10 @@ temporalinst_value(TemporalInst *inst)
 Datum
 temporalinst_value_copy(TemporalInst *inst)
 {
-	char *value = temporalinst_data_ptr(inst);
+	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
 	if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
-		return *(Datum *)value;
+		return *value;
 	/* For base types passed by reference */
 	int typlen = get_typlen_fast(inst->valuetypid);
 	size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
@@ -159,7 +159,7 @@ temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
 	TemporalInst *instants[2];
 	instants[0] = inst1;
 	instants[1] = inst2;
-	return temporali_from_temporalinstarr(instants, 2);
+	return temporali_make(instants, 2);
 }
 
 /* Copy a temporal value */
@@ -257,7 +257,7 @@ intersection_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 	TemporalInst **inter1, TemporalInst **inter2)
 {
 	/* Test whether the two temporal values overlap on time */
-	if (timestamp_cmp_internal(inst1->t, inst2->t) != 0)
+	if (inst1->t != inst2->t)
 		return false;
 	*inter1 = temporalinst_copy(inst1);
 	*inter2 = temporalinst_copy(inst2);
@@ -360,7 +360,7 @@ PeriodSet *
 temporalinst_get_time(TemporalInst *inst)
 {
 	Period *p = period_make(inst->t, inst->t, true, true);
-	PeriodSet *result = periodset_from_periodarr_internal(&p, 1, false);
+	PeriodSet *result = periodset_make_internal(&p, 1, false);
 	pfree(p);
 	return result;
 }
@@ -577,7 +577,7 @@ tnumberinst_minus_ranges(TemporalInst *inst, RangeType **normranges, int count)
 TemporalInst *
 temporalinst_at_timestamp(TemporalInst *inst, TimestampTz t)
 {
-	if (timestamp_cmp_internal(t, inst->t) == 0)
+	if (t == inst->t)
 		return temporalinst_copy(inst);
 	return NULL;
 }
@@ -591,7 +591,7 @@ temporalinst_at_timestamp(TemporalInst *inst, TimestampTz t)
 bool
 temporalinst_value_at_timestamp(TemporalInst *inst, TimestampTz t, Datum *result)
 {
-	if (timestamp_cmp_internal(t, inst->t) != 0)
+	if (t != inst->t)
 		return false;
 	*result = temporalinst_value_copy(inst);
 	return true;
@@ -602,7 +602,7 @@ temporalinst_value_at_timestamp(TemporalInst *inst, TimestampTz t, Datum *result
 TemporalInst *
 temporalinst_minus_timestamp(TemporalInst *inst, TimestampTz t)
 {
-	if (timestamp_cmp_internal(t, inst->t) == 0)
+	if (t == inst->t)
 		return NULL;
 	return temporalinst_copy(inst);
 }
@@ -613,7 +613,7 @@ TemporalInst *
 temporalinst_at_timestampset(TemporalInst *inst, TimestampSet *ts)
 {
 	for (int i = 0; i < ts->count; i++)
-		if (timestamp_cmp_internal(inst->t, timestampset_time_n(ts, i)) == 0)
+		if (inst->t == timestampset_time_n(ts, i))
 			return temporalinst_copy(inst);
 	return NULL;
 }
@@ -624,7 +624,7 @@ TemporalInst *
 temporalinst_minus_timestampset(TemporalInst *inst, TimestampSet *ts)
 {
 	for (int i = 0; i < ts->count; i++)
-		if (timestamp_cmp_internal(inst->t, timestampset_time_n(ts, i)) == 0)
+		if (inst->t == timestampset_time_n(ts, i))
 			return NULL;
 	return temporalinst_copy(inst);
 }
@@ -680,7 +680,7 @@ temporalinst_minus_periodset(TemporalInst *inst, PeriodSet *ps)
 bool
 temporalinst_intersects_timestamp(TemporalInst *inst, TimestampTz t)
 {
-	return timestamp_cmp_internal(inst->t, t) == 0;
+	return (inst->t == t);
 }
 
 /* Does the temporal value intersects the timestamp set? */
@@ -689,7 +689,7 @@ bool
 temporalinst_intersects_timestampset(TemporalInst *inst, TimestampSet *ts)
 {
 	for (int i = 0; i < ts->count; i++)
-		if (timestamp_cmp_internal(inst->t, timestampset_time_n(ts, i)) == 0)
+		if (inst->t == timestampset_time_n(ts, i))
 			return true;
 	return false;
 }
@@ -732,8 +732,8 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	return datum_eq(value1, value2, inst1->valuetypid) && 
-		timestamp_cmp_internal(inst1->t, inst2->t) == 0;
+	return datum_eq(value1, value2, inst1->valuetypid) &&
+		(inst1->t == inst2->t);
 }
 
 /* 
@@ -750,9 +750,10 @@ temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 		inst1->valuetypid))
 		return 1;
 	/* Compare timestamps */
-	if (timestamp_cmp_internal(inst1->t, inst2->t) < 0)
+	int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
+	if (cmp < 0)
 		return -1;
-	if (timestamp_cmp_internal(inst1->t, inst2->t) > 0)
+	if (cmp > 0)
 		return 1;
 	/* Compare flags */
 	if (inst1->flags < inst2->flags)

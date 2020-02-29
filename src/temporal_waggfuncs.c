@@ -40,7 +40,7 @@ temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval
 	instants[0] = inst;
 	instants[1] = temporalinst_make(temporalinst_value(inst), 
 		upper, inst->valuetypid);
-	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+	result[0] = temporalseq_make(instants, 2,
 		true, true, linear, false);
 	pfree(instants[1]);
 	return 1;
@@ -77,7 +77,7 @@ tstepwseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 		instants[0] = inst1;
 		instants[1] = temporalinst_make(temporalinst_value(inst1), 
 			upper, inst1->valuetypid);
-		result[i] = temporalseq_from_temporalinstarr(instants, 2,
+		result[i] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(instants[1]);
 		inst1 = inst2;
@@ -110,7 +110,7 @@ tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bo
 				PointerGetDatum(interval)));
 			instants[0] = inst1;
 			instants[1] = temporalinst_make(value1, upper, inst1->valuetypid);
-			result[i] = temporalseq_from_temporalinstarr(instants, 2,
+			result[i] = temporalseq_make(instants, 2,
 				lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 			pfree(instants[1]);
 		}
@@ -131,7 +131,7 @@ tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bo
 				instants[0] = inst1;
 				instants[1] = temporalinst_make(value1, lower, inst1->valuetypid);
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
-				result[i] = temporalseq_from_temporalinstarr(instants, 3,
+				result[i] = temporalseq_make(instants, 3,
 					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 				pfree(instants[1]); pfree(instants[2]);
 			}
@@ -144,7 +144,7 @@ tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bo
 				instants[0] = inst1;
 				instants[1] = inst2;
 				instants[2] = temporalinst_make(value2, upper, inst1->valuetypid);
-				result[i] = temporalseq_from_temporalinstarr(instants, 3,
+				result[i] = temporalseq_make(instants, 3,
 					lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 				pfree(instants[2]);
 			}
@@ -240,7 +240,7 @@ temporalinst_transform_wcount(TemporalSeq **result, TemporalInst *inst,
 		PointerGetDatum(interval)));
 	instants[0] = temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 	instants[1] = temporalinst_make(Int32GetDatum(1), upper, INT4OID);
-	result[0] = temporalseq_from_temporalinstarr(instants, 2, true, true, 
+	result[0] = temporalseq_make(instants, 2, true, true, 
 		false, false);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
@@ -275,7 +275,7 @@ temporalseq_transform_wcount(TemporalSeq **result, TemporalSeq *seq, Interval *i
 			PointerGetDatum(interval)));
 		instants[0] = temporalinst_make(Int32GetDatum(1), inst1->t, INT4OID);
 		instants[1] = temporalinst_make(Int32GetDatum(1), upper, INT4OID);
-		result[i] = temporalseq_from_temporalinstarr(instants, 2,
+		result[i] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, false, false);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;
@@ -356,7 +356,7 @@ tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *i
 		inst->t, type_oid(T_DOUBLE2));
 	instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
 		upper, type_oid(T_DOUBLE2));
-	result[0] = temporalseq_from_temporalinstarr(instants, 2,
+	result[0] = temporalseq_make(instants, 2,
 		true, true, linear, false);
 	pfree(instants[0]);	pfree(instants[1]);
 	return 1;
@@ -395,7 +395,7 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 			inst->t, type_oid(T_DOUBLE2));
 		instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
 			upper, type_oid(T_DOUBLE2));
-		result[0] = temporalseq_from_temporalinstarr(instants, 2,
+		result[0] = temporalseq_make(instants, 2,
 			true, true, linear, false);
 		pfree(instants[0]);	pfree(instants[1]);
 		return 1;
@@ -416,7 +416,7 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 			type_oid(T_DOUBLE2));
 		instants[1] = temporalinst_make(PointerGetDatum(dvalue), upper,
 			type_oid(T_DOUBLE2));
-		result[i] = temporalseq_from_temporalinstarr(instants, 2,
+		result[i] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, linear, false);
 		pfree(instants[0]); pfree(instants[1]);
 		inst1 = inst2;

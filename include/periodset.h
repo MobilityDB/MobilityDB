@@ -23,7 +23,7 @@
 
 extern Period *periodset_per_n(PeriodSet *ps, int index);
 extern Period *periodset_bbox(PeriodSet *ps);
-extern PeriodSet *periodset_from_periodarr_internal(Period **periods, 
+extern PeriodSet *periodset_make_internal(Period **periods,
 	int count, bool normalize);
 extern PeriodSet *periodset_copy(PeriodSet *ps);
 extern bool periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos);
@@ -39,7 +39,7 @@ extern char *periodset_to_string(PeriodSet *ps);
 
 /* Constructor function */
 
-extern Datum periodset_from_periodarr(PG_FUNCTION_ARGS);
+extern Datum periodset_make(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 

@@ -315,9 +315,9 @@ adjust_stbox(STBOX *b, const STBOX *addon)
 		b->zmax = addon->zmax;
 	if (FLOAT8_GT(b->zmin, addon->zmin))
 		b->zmin = addon->zmin;
-	if (timestamp_cmp_internal(b->tmax, addon->tmax) < 0)
+	if (b->tmax < addon->tmax)
 		b->tmax = addon->tmax;
-	if (timestamp_cmp_internal(b->tmin, addon->tmin) > 0)
+	if (b->tmin > addon->tmin)
 		b->tmin = addon->tmin;
 }
 
@@ -360,11 +360,11 @@ rt_stbox_union(STBOX *n, const STBOX *a, const STBOX *b)
 	n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
 	n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
 	n->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-	n->tmax = timestamp_cmp_internal(a->tmax, b->tmax) > 0 ? a->tmax : b->tmax;
+	n->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
 	n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
 	n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
 	n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-	n->tmin = timestamp_cmp_internal(a->tmin, b->tmin) < 0 ? a->tmin : b->tmin;
+	n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
 }
 
 /*
@@ -382,8 +382,7 @@ size_stbox(const STBOX *box)
 	 * The less-than cases should not happen, but if they do, say "zero".
 	 */
 	if (FLOAT8_LE(box->xmax, box->xmin) || FLOAT8_LE(box->ymax, box->ymin) ||
-		FLOAT8_LE(box->zmax, box->zmin) ||
-		timestamp_cmp_internal(box->tmax, box->tmin) <= 0)
+		FLOAT8_LE(box->zmax, box->zmin) || box->tmax <= box->tmin)
 		return 0.0;
 	
 	/*
@@ -1130,7 +1129,7 @@ gist_tpoint_same(PG_FUNCTION_ARGS)
 				   FLOAT8_EQ(b1->xmax, b2->xmax) &&
 				   FLOAT8_EQ(b1->ymax, b2->ymax) &&
 				   FLOAT8_EQ(b1->zmax, b2->zmax) &&
-				   timestamp_cmp_internal(b1->tmax, b2->tmax) == 0);
+				   b1->tmax == b2->tmax);
 	else
 		*result = (b1 == NULL && b2 == NULL);
 	PG_RETURN_POINTER(result);
