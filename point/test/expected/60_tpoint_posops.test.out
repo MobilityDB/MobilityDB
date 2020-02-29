@@ -1,99 +1,36 @@
+/* Errors*/
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' << period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &< period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' >> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &<| period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' |>> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' |&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have XY dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &</ period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' />> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' /&> period '[2000-01-01,2000-01-02]'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have Z dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' <<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have T dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' &<# geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have T dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' #>> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have T dimension
 SELECT stbox 'STBOX ZT((1.0, 1.0, 1.0,  2001-01-02), (2.0, 2.0, 2.0, 2001-01-02))' #&> geometry 'Point(1 1)'::stbox;
- ?column? 
-----------
- 
-(1 row)
-
+ERROR:  The boxes must have T dimension
 SELECT geometry 'Point(1 1)' << tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------

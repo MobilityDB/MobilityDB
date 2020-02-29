@@ -418,7 +418,7 @@ stbox_to_period(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
-		elog(ERROR, "Box does not have T dimension");
+		elog(ERROR, "The box does not have T dimension");
 
 	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);
@@ -433,7 +433,7 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
-		elog(ERROR, "Box does not have XY(Z) dimensions");
+		elog(ERROR, "The box does not have XY(Z) dimensions");
 
 	/* Initialize existing dimensions */
 	GBOX *result = palloc0(sizeof(GBOX));
@@ -456,7 +456,7 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_X(box->flags))
-		elog(ERROR, "Box does not have XY(Z) dimensions");
+		elog(ERROR, "The box does not have XY(Z) dimensions");
 
 	/* Initialize existing dimensions */
 	BOX3D *result = palloc0(sizeof(BOX3D));
@@ -610,7 +610,7 @@ contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	if (!hasx && !hast)
-		elog(ERROR, "Boxes must have at least one common dimension");
+		elog(ERROR, "The boxes must have at least one common dimension");
 
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
 		box2->ymin < box1->ymin || box2->ymax > box1->ymax))
@@ -664,7 +664,7 @@ overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	if (!hasx && !hast)
-		elog(ERROR, "Boxes must have at least one common dimension");
+		elog(ERROR, "The boxes must have at least one common dimension");
 
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
 		box1->ymax < box2->ymin || box1->ymin > box2->ymax))
@@ -698,7 +698,7 @@ same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	if (!hasx && !hast)
-		elog(ERROR, "Boxes must have at least one common dimension");
+		elog(ERROR, "The boxes must have at least one common dimension");
 
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
 		box1->ymin != box2->ymin || box1->ymax != box2->ymax))
@@ -732,7 +732,7 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	if (!hasx && !hast)
-		elog(ERROR, "Boxes must have at least one common dimension");
+		elog(ERROR, "The boxes must have at least one common dimension");
 
 	STBOX *inter = stbox_intersection_internal(box1, box2);
 	if (inter == NULL)
@@ -782,7 +782,7 @@ bool
 left_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->xmax < box2->xmin);
 }
@@ -806,7 +806,7 @@ bool
 overleft_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->xmax <= box2->xmax);
 }
@@ -830,7 +830,7 @@ bool
 right_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->xmin > box2->xmax);
 }
@@ -854,7 +854,7 @@ bool
 overright_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->xmin >= box2->xmin);
 }
@@ -878,7 +878,7 @@ bool
 below_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->ymax < box2->ymin);
 }
@@ -902,7 +902,7 @@ bool
 overbelow_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->ymax <= box2->ymax);
 }
@@ -926,7 +926,7 @@ bool
 above_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->ymin > box2->ymax);
 }
@@ -950,7 +950,7 @@ bool
 overabove_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "Boxes must have XY dimension");
+		elog(ERROR, "The boxes must have XY dimension");
 
 	return (box1->ymin >= box2->ymin);
 }
@@ -974,7 +974,7 @@ bool
 front_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "Boxes must have Z dimension");
+		elog(ERROR, "The boxes must have Z dimension");
 
 	return (box1->zmax < box2->zmin);
 }
@@ -998,7 +998,7 @@ bool
 overfront_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "Boxes must have Z dimension");
+		elog(ERROR, "The boxes must have Z dimension");
 
 	return (box1->zmax <= box2->zmax);
 }
@@ -1022,7 +1022,7 @@ bool
 back_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "Boxes must have Z dimension");
+		elog(ERROR, "The boxes must have Z dimension");
 
 	return (box1->zmin > box2->zmax);
 }
@@ -1046,7 +1046,7 @@ bool
 overback_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "Boxes must have Z dimension");
+		elog(ERROR, "The boxes must have Z dimension");
 
 	return (box1->zmin >= box2->zmin);
 }
@@ -1070,7 +1070,7 @@ bool
 before_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "Boxes must have T dimension");
+		elog(ERROR, "The boxes must have T dimension");
 
 	return (box1->tmax < box2->tmin);
 }
@@ -1092,7 +1092,7 @@ bool
 overbefore_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "Boxes must have T dimension");
+		elog(ERROR, "The boxes must have T dimension");
 
 	return (box1->tmax <= box2->tmax);
 }
@@ -1114,7 +1114,7 @@ bool
 after_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "Boxes must have T dimension");
+		elog(ERROR, "The boxes must have T dimension");
 
 	return (box1->tmin > box2->tmax);
 }
@@ -1136,7 +1136,7 @@ bool
 overafter_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
 	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "Boxes must have T dimension");
+		elog(ERROR, "The boxes must have T dimension");
 
 	return (box1->tmin >= box2->tmin);
 }
@@ -1165,7 +1165,7 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2)
 	if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
 		MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags) ||
 		MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "Boxes must have the same dimensions");
+		elog(ERROR, "The boxes must have the same dimensions");
 	/* The union of boxes that do not intersect cannot be represented by a box */
 	if (! overlaps_stbox_stbox_internal(box1, box2))
 		elog(ERROR, "Result of box union would not be contiguous");
