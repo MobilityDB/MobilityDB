@@ -1151,6 +1151,259 @@ SELECT srid(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
 				</listitem>
 			</itemizedlist>
 		</sect1>
+
+		<sect1>
+			<title>Bounding Box Operators</title>
+			<para>These operators test whether the bounding boxes satisfy the predicate and result in a Boolean value.</para>
+
+			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for both <varname>tbox</varname> and <varname>stbox</varname> types. The operator raise an error if the boxes do not have both the required dimension.</para>
+
+			<para>The operators for the value dimension of the <varname>tbox</varname> type are given next.</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>Is the bounding box always strictly less than?</para>
+					<para><varname>tbox &lt;&lt; tbox: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;
+	tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';
+-- true
+SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;
+	tbox 'TBOX((,2012-01-03),(,2012-01-04))';
+-- ERROR:  Boxes must have X dimension
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box always strictly greater than?</para>
+					<para><varname>tbox &gt;&gt; tbox: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((3,2012-01-03),(4,2012-01-04))' &gt;&gt;
+	tbox 'TBOX((1,2012-01-01),(2,2012-01-02))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box never greater than?</para>
+					<para><varname>tbox &amp;&lt; tbox: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2012-01-01),(4,2012-01-04))' &amp;&lt;
+	tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box never less than?</para>
+					<para><varname>tbox &amp;&gt; tbox: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;
+	tbox 'TBOX((1,2012-01-01),(4,2012-01-04))';
+-- true
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+			<para>The operators for the value dimension of <varname>stbox</varname> types are given next.</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>Is the bouding box strictly to the left of?</para>
+					<para><varname>stbox &lt;&lt; stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt; stbox 'STBOX Z((3,3,3),(4,4,4))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bouding box strictly to the right of?</para>
+					<para><varname>{geo, tgeompoint} &gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend to the right of?</para>
+					<para><varname>stbox &amp;&lt; stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt; stbox 'STBOX Z((3,3,3),(4,4,4))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend to the left of?</para>
+					<para><varname>{geo, tgeompoint} &amp;&gt; {geo, tgeompoint}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bouding box strictly below?</para>
+					<para><varname>stbox &lt;&lt;| stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bouding box strictly above?</para>
+					<para><varname>{geo, tgeompoint} |&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend above?</para>
+					<para><varname>stbox &amp;&lt;| stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend below?</para>
+					<para><varname>stbox |&amp;&gt; stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bouding box strictly in front?</para>
+					<para><varname>stbox &lt;&lt;/ stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bouding box strictly back?</para>
+					<para><varname>{geo, tgeompoint} /&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend in front?</para>
+					<para><varname>stbox &amp;&lt;/ stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>The bouding box does not extend back?</para>
+					<para><varname>stbox /&amp;&gt; stbox: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
+-- true
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The operators for the time dimension of all the temporal types are as follows.</para>
+			<itemizedlist>
+				<listitem>
+					<para>Is the bounding box always before?</para>
+					<para><varname>{tbox, stbox} &lt;&lt;# {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;# tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box always after?</para>
+					<para><varname>{tbox, stbox} #&gt;&gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt; stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box never after?</para>
+					<para><varname>{tbox, stbox} &amp;&lt;# {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;# tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the bounding box never before?</para>
+					<para><varname>{tbox, stbox} #&amp;&gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt; stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))';
+-- true
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), adjacent (<varname>-|-</varname>), and same (<varname>~=</varname>). The operators verify the topological relationship taking into account the value and/or the time dimension depending on the whether they are present on the arguments.</para>
+
+			<para>The topological operators for temporal alphanumeric types are given next.</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>Does the bounding boxes overlap?</para>
+					<para><varname>{tbox, stbox} &amp;&amp; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' &amp;&amp; tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
+-- false
+SELECT stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))' &amp;&amp; stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Does the first bounding box contains the second one?</para>
+					<para><varname>{tbox, stbox} @&gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' @&gt; tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
+-- false
+SELECT stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))' @&gt; stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Is the first bounding box contained in the second one?</para>
+					<para><varname>{tbox, stbox} &lt;@ {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' &lt;@ tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
+-- false
+SELECT stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))' &lt;@ stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Are the bounding boxes adjacent?</para>
+					<para><varname>{tbox, stbox} -|- {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|- tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
+-- false
+SELECT stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))' -|- stbox 'STBOX((1,1,2001-01-01),(2,2,2001-01-02))';
+-- false
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
 	</chapter>
 
 	<chapter id="manipulating_temporal_types">
