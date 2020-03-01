@@ -240,11 +240,11 @@ SELECT expandTemporal(stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0,
 
 /* Errors */
 SELECT expandTemporal(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', '1 day');
-ERROR:  The box must have T dimension
+ERROR:  The box must have time dimension
 SELECT expandTemporal(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
-ERROR:  The box must have T dimension
+ERROR:  The box must have time dimension
 SELECT expandTemporal(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
-ERROR:  The box must have T dimension
+ERROR:  The box must have time dimension
 SELECT expandSpatial(tgeompoint 'Point(1 1)@2000-01-01', 0.5);
                                expandspatial                                
 ----------------------------------------------------------------------------

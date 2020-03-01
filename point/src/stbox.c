@@ -418,7 +418,7 @@ stbox_to_period(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	if (!MOBDB_FLAGS_GET_T(box->flags))
-		elog(ERROR, "The box does not have T dimension");
+		elog(ERROR, "The box does not have time dimension");
 
 	Period *result = period_make(box->tmin, box->tmax, true, true);
 	PG_RETURN_POINTER(result);

@@ -211,9 +211,9 @@ SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
 
 /* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
-ERROR:  The box does not have T dimension
+ERROR:  The box does not have time dimension
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
-ERROR:  The box does not have T dimension
+ERROR:  The box does not have time dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
     box2d     
 --------------

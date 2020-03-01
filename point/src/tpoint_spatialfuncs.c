@@ -139,7 +139,7 @@ ensure_has_T_stbox(const STBOX *box)
 {
 	if (! MOBDB_FLAGS_GET_T(box->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The box must have T dimension")));
+			errmsg("The box must have time dimension")));
 }
 
 void
