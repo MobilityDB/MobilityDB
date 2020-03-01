@@ -84,21 +84,21 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 void
-ensure_same_dimensions_stbox(const STBOX *box1, const STBOX *box2)
+ensure_same_dimensionality_stbox(const STBOX *box1, const STBOX *box2)
 {
 	if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
 		MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags) ||
 		MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The boxes must have the same dimensions")));
+			errmsg("The boxes must be of the same dimensionality")));
 }
 
 void
-ensure_same_dimensions_tpoint(const Temporal *temp1, const Temporal *temp2)
+ensure_same_dimensionality_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
 	if (MOBDB_FLAGS_GET_Z(temp1->flags) != MOBDB_FLAGS_GET_Z(temp2->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal points must have the same dimensions")));
+			errmsg("The temporal points must be of the same dimensionality")));
 }
 
 void
@@ -111,11 +111,11 @@ ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 void
-ensure_same_dimensions_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
+ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
 	if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal point and the geometry must have the same dimensions")));
+			errmsg("The temporal point and the geometry must be of the same dimensionality")));
 }
 
 void
@@ -1982,7 +1982,7 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2174,7 +2174,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -2501,7 +2501,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	TemporalInst *result = NULL;
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist != NULL)
@@ -2530,7 +2530,7 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2567,7 +2567,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2606,7 +2606,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist == NULL)
 	{
@@ -2634,7 +2634,7 @@ shortestline_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2661,7 +2661,7 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2828,7 +2828,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
 	/* Return NULL if the temporal points do not intersect in time */
 	if (!synchronize_temporal_temporal(temp1, temp2, &sync1, &sync2, true))

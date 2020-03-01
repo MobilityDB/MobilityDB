@@ -1000,45 +1000,45 @@ SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX T(( 
 
 /* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX T(( , , 2001-01-01), ( , , 2001-01-02))' + stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX ZT((11.0, 2.0, 3.0, 2001-01-01), (14.0, 5.0, 6.0, 2001-01-02))';
 ERROR:  Result of box union would not be contiguous
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02))' + stbox 'STBOX ZT((1.0, 12.0, 3.0, 2001-01-01), (4.0, 15.0, 6.0, 2001-01-02))';
@@ -1067,17 +1067,17 @@ SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODST
 
 /* Errors */
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' + stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' + stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))' + stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))' + stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-03))';
-ERROR:  The boxes must have the same dimensions
+ERROR:  The boxes must be of the same dimensionality
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  The boxes must be both planar or both geodetic
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' * stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';

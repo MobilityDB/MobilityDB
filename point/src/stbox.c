@@ -1121,7 +1121,7 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
-	ensure_same_dimensions_stbox(box1, box2);
+	ensure_same_dimensionality_stbox(box1, box2);
 	/* The union of boxes that do not intersect cannot be represented by a box */
 	if (! overlaps_stbox_stbox_internal(box1, box2))
 		elog(ERROR, "Result of box union would not be contiguous");

@@ -246,7 +246,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -296,7 +296,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -369,7 +369,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);

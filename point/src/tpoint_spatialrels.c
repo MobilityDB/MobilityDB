@@ -302,7 +302,7 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -324,7 +324,7 @@ contains_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -346,7 +346,7 @@ contains_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -374,7 +374,7 @@ containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -396,7 +396,7 @@ containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -418,7 +418,7 @@ containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -446,7 +446,7 @@ covers_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -474,7 +474,7 @@ covers_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -502,7 +502,7 @@ covers_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -538,7 +538,7 @@ coveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -566,7 +566,7 @@ coveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -594,7 +594,7 @@ coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -630,7 +630,7 @@ crosses_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -652,7 +652,7 @@ crosses_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -674,7 +674,7 @@ crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -702,7 +702,7 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -724,7 +724,7 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -746,7 +746,7 @@ disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -774,7 +774,7 @@ equals_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -796,7 +796,7 @@ equals_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -818,7 +818,7 @@ equals_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -846,7 +846,7 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -879,7 +879,7 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -912,7 +912,7 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -948,7 +948,7 @@ overlaps_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -970,7 +970,7 @@ overlaps_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -992,7 +992,7 @@ overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -1020,7 +1020,7 @@ touches_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1042,7 +1042,7 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1064,7 +1064,7 @@ touches_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -1092,7 +1092,7 @@ within_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1114,7 +1114,7 @@ within_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1136,7 +1136,7 @@ within_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -1165,7 +1165,7 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1199,7 +1199,7 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum dist = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1233,7 +1233,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum dist = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *sync1, *sync2;
 	/* Returns false if the temporal points do not intersect in time 
 	 * The last parameter crossing must be set to false */
@@ -1284,7 +1284,7 @@ relate_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1306,7 +1306,7 @@ relate_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1328,7 +1328,7 @@ relate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))
@@ -1357,7 +1357,7 @@ relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1380,7 +1380,7 @@ relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensions_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1403,7 +1403,7 @@ relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensions_tpoint(temp1, temp2);
+	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *inter1, *inter2;
 	/* Returns false if the temporal points do not intersect in time */
 	if (!intersection_temporal_temporal(temp1, temp2, &inter1, &inter2))

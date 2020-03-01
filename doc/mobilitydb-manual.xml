@@ -1094,7 +1094,7 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 			<itemizedlist>
 				<listitem>
 					<para>Minimum X value</para>
-					<para><varname>Xmin(tbox): float</varname>, <varname>Xmin(stbox): float</varname></para>
+					<para><varname>Xmin({tbox, stbox}): float</varname></para>
 					<programlisting>
 SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
 -- 1
@@ -1105,7 +1105,7 @@ SELECT Xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');
 
 				<listitem>
 					<para>Maximum X value</para>
-					<para><varname>Xmax(tbox): float</varname>, <varname>Xmax(stbox): float</varname></para>
+					<para><varname>Xmax({tbox, stbox}): float</varname></para>
 					<programlisting>
 SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');
 -- 3
@@ -1152,7 +1152,7 @@ SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');
 
 				<listitem>
 					<para>Minimum timestamp</para>
-					<para><varname>Tmin(tbox): timestamptz</varname>, <varname>Tmin(stbox): timestamptz</varname></para>
+					<para><varname>Tmin({tbox, stbox}): timestamptz</varname></para>
 					<programlisting>
 SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-01"
@@ -1161,7 +1161,7 @@ SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 
 				<listitem>
 					<para>Maximum timestamp</para>
-					<para><varname>Tmax(tbox): timestamptz</varname>, <varname>Tmax(stbox): timestamptz</varname></para>
+					<para><varname>Tmax({tbox, stbox}): timestamptz</varname></para>
 					<programlisting>
 SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-03"
@@ -1473,7 +1473,7 @@ SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
 -- "TBOX((1,2001-01-01),(4,2001-01-04))"
 SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +
 	stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';
--- ERROR:  Boxes must have the same dimensions
+-- ERROR:  Boxes must be of the same dimensionality
 					</programlisting>
 				</listitem>
 
