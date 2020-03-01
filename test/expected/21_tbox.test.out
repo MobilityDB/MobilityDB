@@ -271,15 +271,15 @@ SELECT tbox 'TBOX((1,2001-02-01),(2,2001-01-02))' ~= tbox 'TBOX((1,2001-01-01),(
 
 /* Errors */
 SELECT tbox 'TBOX((1),(2))' && tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have at least one common dimension
+ERROR:  The boxes must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' @> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have at least one common dimension
+ERROR:  The boxes must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' <@ tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have at least one common dimension
+ERROR:  The boxes must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' -|- tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have at least one common dimension
+ERROR:  The boxes must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' ~= tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have at least one common dimension
+ERROR:  The boxes must have at least one common dimension
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b && t2.b;
  count 
 -------
@@ -360,21 +360,21 @@ SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' #&> tbox 'TBOX((1,2001-01-01),
 
 /* Errors */
 SELECT tbox 'TBOX((1),(2))' << tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have X dimension
+ERROR:  The boxes must have X dimension
 SELECT tbox 'TBOX((1),(2))' &< tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have X dimension
+ERROR:  The boxes must have X dimension
 SELECT tbox 'TBOX((1),(2))' >> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have X dimension
+ERROR:  The boxes must have X dimension
 SELECT tbox 'TBOX((1),(2))' &> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have X dimension
+ERROR:  The boxes must have X dimension
 SELECT tbox 'TBOX((1),(2))' <<# tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have T dimension
+ERROR:  The boxes must have T dimension
 SELECT tbox 'TBOX((1),(2))' &<# tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have T dimension
+ERROR:  The boxes must have T dimension
 SELECT tbox 'TBOX((1),(2))' #>> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have T dimension
+ERROR:  The boxes must have T dimension
 SELECT tbox 'TBOX((1),(2))' #&> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  Boxes must have T dimension
+ERROR:  The boxes must have T dimension
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 where t1.b << t2.b;
  count 
 -------
@@ -430,11 +430,11 @@ SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))' + tbox 'TBOX((1.0, 2000
 (1 row)
 
 SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))' + tbox 'TBOX((1.0,), (2.0,))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))' + tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((1.0,), (2.0,))' + tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((1.0,), (2.0,))' + tbox 'TBOX((1.0,), (2.0,))';
     ?column?     
 -----------------
@@ -442,11 +442,11 @@ SELECT tbox 'TBOX((1.0,), (2.0,))' + tbox 'TBOX((1.0,), (2.0,))';
 (1 row)
 
 SELECT tbox 'TBOX((1.0,), (2.0,))' + tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))' + tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))' + tbox 'TBOX((1.0,), (2.0,))';
-ERROR:  Boxes must have the same dimensions
+ERROR:  The boxes must have the same dimensions
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))' + tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
                          ?column?                          
 -----------------------------------------------------------
