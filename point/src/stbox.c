@@ -1206,8 +1206,6 @@ stbox_union(PG_FUNCTION_ARGS)
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
 	STBOX *result = stbox_union_internal(box1, box2);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 

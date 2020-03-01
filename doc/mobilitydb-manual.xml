@@ -922,21 +922,21 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';
 				</programlisting>
 			</para>
 
-			<para>An <varname>stbox</varname> is composed of coordinate and/or time dimensions, where the coordinates may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Examples of input of <varname>stbox</varname> values are as follows:
+			<para>An <varname>stbox</varname> is composed of values and/or time dimensions, where the coordinates of the value dimension may be 2D or 3D. For each dimension, minimum and maximum values are given. The coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of the coordinates may be specified; if it is not the case, a value of 0 (unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for planar and geodetic boxes. Examples of input of <varname>stbox</varname> values are as follows:
 				<programlisting>
--- Only coordinate (X and Y) dimension
+-- Only value dimension with X and Y coordinates
 SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';
--- Only coordinate (X, Y and Z) dimension
+-- Only value dimension with X, Y, and Z coordinates
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
--- Both coordinate (X, Y) and time dimensions
+-- Both value (with X and Y coordinates) and time dimensions
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';
--- Both coordinate (X, Y, and Z) and time dimensions
+-- Both value (with X, Y, and Z coordinates) and time dimensions
 SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
 -- Only time dimension
 SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
--- Only geodetic coordinate (X, Y and Z) dimension
+-- Only value dimension with X, Y, and Z geodetic coordinates
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
---  Both geodetic coordinate (X, Y, and Z) and time dimensions
+-- Both value (with X, Y and Z geodetic coordinates) and time dimension
 SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, 2001-01-04))';
 -- Only time dimension for geodetic box
 SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
@@ -982,21 +982,21 @@ SELECT tboxt('2001-01-01', '2001-01-02');
 					<para><varname>stboxt(timestamptz, timestamptz, integer): stbox</varname></para>
 					<para><varname>stbox(float, float, timestamptz, float, float, timestamptz, integer): stbox</varname></para>
 					<programlisting>
--- Only X and Y coordinates
+-- Only value dimension with X and Y coordinates
 SELECT stbox(1.0, 2.0, 1.0, 2.0);
--- Only X, Y and Z coordinates
+-- Only value dimension with X, Y, and Z coordinates
 SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
--- Only X, Y and Z coordinates and SRID
+-- Only value dimension with X, Y, and Z coordinates and SRID
 SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
--- Both X and Y coordinates and time dimensions
+-- Both value (with X and Y coordinates) and time dimensions
 SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');
--- Both coordinate (X, Y, and Z) and time dimensions
+-- Both value (with X, Y, and Z coordinates) and time dimensions
 SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');
 -- Only time dimension
 SELECT stboxt('2001-01-03', '2001-01-03');
--- Only geodetic coordinate (X, Y and Z) dimension
+-- Only value dimension with X, Y, and Z geodetic coordinates
 SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);
---  Both geodetic coordinate (X, Y, and Z) and time dimensions
+--  Both value (with X, Y, and Z geodetic coordinates) and time dimensions
 SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');
 -- Only time dimension for geodetic box
 SELECT geodstboxt('2001-01-03', '2001-01-03');
@@ -1033,7 +1033,7 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::tbox;
 				</listitem>
 
 				<listitem>
-					<para>Converts an <varname>stbox</varname> to a <varname>period</varname></para>
+					<para>Converts an <varname>stbox</varname> to a another type</para>
 					<para><varname>stbox::period</varname>, <varname>stbox::box2d</varname>, <varname>stbox::box3d</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::period;
@@ -1158,7 +1158,7 @@ SELECT srid(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
 			<title>Bounding Box Operators</title>
 			<para>These operators test whether the bounding boxes satisfy the predicate and result in a Boolean value.</para>
 
-			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for both <varname>tbox</varname> and <varname>stbox</varname> types. The operator raise an error if the boxes do not have both the required dimension.</para>
+			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for both <varname>tbox</varname> and <varname>stbox</varname> types. The operator raise an error if the boxes do not have both the required dimension.</para>
 
 			<para>The operators for the value dimension of the <varname>tbox</varname> type are given next.</para>
 
