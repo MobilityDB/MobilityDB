@@ -55,7 +55,7 @@
 /* N-th TemporalInst of a TemporalI */
 
 TemporalInst *
-temporali_inst_n(TemporalI *ti, int index)
+temporali_inst_n(const TemporalI *ti, int index)
 {
 	return (TemporalInst *) (
 		(char *)(&ti->offsets[ti->count + 1]) + 	/* start of data */

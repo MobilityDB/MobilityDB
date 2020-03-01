@@ -24,20 +24,25 @@
 
 /* Parameter tests */
 
-extern void ensure_same_geodetic_stbox(STBOX *box1, STBOX *box2);
-extern void ensure_same_geodetic_tpoint_stbox(Temporal *temp, STBOX *box);
-extern void ensure_same_srid_stbox(STBOX *box1, STBOX *box2);
-extern void ensure_same_srid_tpoint_stbox(Temporal *temp, STBOX *box);
-extern void ensure_same_srid_tpoint(Temporal *temp1, Temporal *temp2);
-extern void ensure_same_srid_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
-extern void ensure_same_dimensionality_tpoint(Temporal *temp1, Temporal *temp2);
-extern void ensure_same_dimensionality_tpoint_gs(Temporal *temp, GSERIALIZED *gs);
-extern void ensure_has_Z_tpoint(Temporal *temp);
-extern void ensure_point_type(GSERIALIZED *gs);
-extern void ensure_non_empty(GSERIALIZED *gs);
-extern void ensure_has_Z(GSERIALIZED *gs);
-extern void ensure_has_M(GSERIALIZED *gs);
-extern void ensure_has_not_M(GSERIALIZED *gs);
+extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
+extern void ensure_same_dimensions_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_same_dimensions_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_dimensions_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
+extern void ensure_common_dimension_stbox(const STBOX *box1, const STBOX *box2);
+extern void ensure_has_X_stbox(const STBOX *box);
+extern void ensure_has_Z_stbox(const STBOX *box);
+extern void ensure_has_T_stbox(const STBOX *box);
+extern void ensure_has_Z_tpoint(const Temporal *temp);
+extern void ensure_has_Z_gs(const GSERIALIZED *gs);
+extern void ensure_has_M_gs(const GSERIALIZED *gs);
+extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
+extern void ensure_point_type(const GSERIALIZED *gs);
+extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Utility functions */
 
@@ -54,11 +59,11 @@ extern Datum tpoint_srid(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_srid(PG_FUNCTION_ARGS);
 
 extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
-extern int tpointinst_srid(TemporalInst *inst);
-extern int tpointi_srid(TemporalI *ti);
-extern int tpointseq_srid(TemporalSeq *seq);
-extern int tpoints_srid(TemporalS *ts);
-extern int tpoint_srid_internal(Temporal *t);
+extern int tpointinst_srid(const TemporalInst *inst);
+extern int tpointi_srid(const TemporalI *ti);
+extern int tpointseq_srid(const TemporalSeq *seq);
+extern int tpoints_srid(const TemporalS *ts);
+extern int tpoint_srid_internal(const Temporal *t);
 extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
 
 /* Cast functions */

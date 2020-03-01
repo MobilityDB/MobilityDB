@@ -61,7 +61,7 @@
 /* N-th TemporalInst of a TemporalSeq */
 
 TemporalInst *
-temporalseq_inst_n(TemporalSeq *seq, int index)
+temporalseq_inst_n(const TemporalSeq *seq, int index)
 {
 	return (TemporalInst *)(
 		(char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */

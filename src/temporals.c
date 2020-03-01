@@ -54,7 +54,7 @@
 /* N-th TemporalSeq of a TemporalS */
 
 TemporalSeq *
-temporals_seq_n(TemporalS *ts, int index)
+temporals_seq_n(const TemporalS *ts, int index)
 {
 	return (TemporalSeq *)(
 		(char *)(&ts->offsets[ts->count + 1]) + 	/* start of data */

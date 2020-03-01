@@ -49,7 +49,7 @@
 /* Pointer to the value */
 
 static char *
-temporalinst_data_ptr(TemporalInst *inst)
+temporalinst_data_ptr(const TemporalInst *inst)
 {
 	return (char *)inst + double_pad(sizeof(TemporalInst));
 }
@@ -57,14 +57,14 @@ temporalinst_data_ptr(TemporalInst *inst)
 /* Get pointer to value */
 
 Datum *
-temporalinst_value_ptr(TemporalInst *inst)
+temporalinst_value_ptr(const TemporalInst *inst)
 {
 	return (Datum *)temporalinst_data_ptr(inst);
 }
 
 /* Get value depending on whether it is passed by value or by reference */
 Datum
-temporalinst_value(TemporalInst *inst)
+temporalinst_value(const TemporalInst *inst)
 {
 	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
@@ -75,7 +75,7 @@ temporalinst_value(TemporalInst *inst)
 }
 
 Datum
-temporalinst_value_copy(TemporalInst *inst)
+temporalinst_value_copy(const TemporalInst *inst)
 {
 	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */

@@ -276,7 +276,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	int geo_srid = gserialized_get_srid(gs);
 	ensure_point_type(gs);
 	ensure_non_empty(gs);
-	ensure_has_not_M(gs);
+	ensure_has_not_M_gs(gs);
 	if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 

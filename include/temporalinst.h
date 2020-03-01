@@ -23,9 +23,9 @@
  
 extern TemporalInst *temporalinst_make(Datum value, TimestampTz t, Oid valuetypid);
 extern TemporalInst *temporalinst_copy(TemporalInst *inst);
-extern Datum* temporalinst_value_ptr(TemporalInst *inst);
-extern Datum temporalinst_value(TemporalInst *inst);
-extern Datum temporalinst_value_copy(TemporalInst *inst);
+extern Datum* temporalinst_value_ptr(const TemporalInst *inst);
+extern Datum temporalinst_value(const TemporalInst *inst);
+extern Datum temporalinst_value_copy(const TemporalInst *inst);
 extern void temporalinst_set(TemporalInst *inst, Datum value, TimestampTz t);
 
 /* Input/output functions */

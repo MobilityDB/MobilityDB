@@ -73,6 +73,16 @@ SELECT MIN(tmin(b)) FROM tbl_tbox;
 SELECT MAX(tmax(b)) FROM tbl_tbox;
 
 -------------------------------------------------------------------------------
+-- Expand functions
+-------------------------------------------------------------------------------
+
+SELECT expandValue(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', 2);
+SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 day');
+/* Errors */
+SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
+SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
+
+-------------------------------------------------------------------------------
 -- Topological operators
 -------------------------------------------------------------------------------
 

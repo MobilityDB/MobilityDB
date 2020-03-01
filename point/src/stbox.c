@@ -605,13 +605,13 @@ stbox_srid(PG_FUNCTION_ARGS)
 bool
 contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* The boxes should have at least one common dimension XY(Z) or T  */
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_common_dimension_stbox(box1, box2);
+
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	if (!hasx && !hast)
-		elog(ERROR, "The boxes must have at least one common dimension");
-
 	if (hasx && (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
 		box2->ymin < box1->ymin || box2->ymax > box1->ymax))
 			return false;
@@ -629,8 +629,6 @@ contains_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	PG_RETURN_BOOL(contains_stbox_stbox_internal(box1, box2));
 }
 
@@ -649,8 +647,6 @@ contained_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	PG_RETURN_BOOL(contained_stbox_stbox_internal(box1, box2));
 }
 
@@ -659,13 +655,13 @@ contained_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* The boxes should have at least one common dimension XY(Z) or T  */
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_common_dimension_stbox(box1, box2);
+
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	if (!hasx && !hast)
-		elog(ERROR, "The boxes must have at least one common dimension");
-
 	if (hasx && (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
 		box1->ymax < box2->ymin || box1->ymin > box2->ymax))
 		return false;
@@ -683,8 +679,6 @@ overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	PG_RETURN_BOOL(overlaps_stbox_stbox_internal(box1, box2));
 }
 
@@ -693,13 +687,13 @@ overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* The boxes should have at least one common dimension XY(Z) or T  */
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_common_dimension_stbox(box1, box2);
+
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	if (!hasx && !hast)
-		elog(ERROR, "The boxes must have at least one common dimension");
-
 	if (hasx && (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
 		box1->ymin != box2->ymin || box1->ymax != box2->ymax))
 		return false;
@@ -717,8 +711,6 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	PG_RETURN_BOOL(same_stbox_stbox_internal(box1, box2));
 }
 
@@ -727,13 +719,13 @@ same_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* The boxes should have at least one common dimension XY(Z) or T  */
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_common_dimension_stbox(box1, box2);
+
 	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	if (!hasx && !hast)
-		elog(ERROR, "The boxes must have at least one common dimension");
-
 	STBOX *inter = stbox_intersection_internal(box1, box2);
 	if (inter == NULL)
 		return false;
@@ -767,8 +759,6 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	PG_RETURN_BOOL(adjacent_stbox_stbox_internal(box1, box2));
 }
 
@@ -781,9 +771,10 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 left_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->xmax < box2->xmin);
 }
 
@@ -794,10 +785,7 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = left_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(left_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to right of? */
@@ -805,9 +793,10 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overleft_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->xmax <= box2->xmax);
 }
 
@@ -818,10 +807,7 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overleft_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overleft_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly right of? */
@@ -829,9 +815,10 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 right_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->xmin > box2->xmax);
 }
 
@@ -842,10 +829,7 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = right_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(right_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to left of? */
@@ -853,9 +837,10 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overright_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->xmin >= box2->xmin);
 }
 
@@ -866,10 +851,7 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overright_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overright_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly below of? */
@@ -877,9 +859,10 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 below_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->ymax < box2->ymin);
 }
 
@@ -890,10 +873,7 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = below_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(below_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend above of? */
@@ -901,9 +881,10 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbelow_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->ymax <= box2->ymax);
 }
 
@@ -914,10 +895,7 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overbelow_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overbelow_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly above of? */
@@ -925,9 +903,10 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 above_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->ymin > box2->ymax);
 }
 
@@ -938,10 +917,7 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = above_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(above_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend below of? */
@@ -949,9 +925,10 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overabove_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_X(box1->flags) || ! MOBDB_FLAGS_GET_X(box2->flags))
-		elog(ERROR, "The boxes must have XY dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_X_stbox(box1);
+	ensure_has_X_stbox(box2);
 	return (box1->ymin >= box2->ymin);
 }
 
@@ -962,10 +939,7 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overabove_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overabove_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly front of? */
@@ -973,9 +947,10 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 front_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "The boxes must have Z dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_Z_stbox(box1);
+	ensure_has_Z_stbox(box2);
 	return (box1->zmax < box2->zmin);
 }
 
@@ -986,10 +961,7 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = front_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(front_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to the back of? */
@@ -997,9 +969,10 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overfront_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "The boxes must have Z dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_Z_stbox(box1);
+	ensure_has_Z_stbox(box2);
 	return (box1->zmax <= box2->zmax);
 }
 
@@ -1010,10 +983,7 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overfront_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overfront_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly back of? */
@@ -1021,9 +991,10 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 back_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "The boxes must have Z dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_Z_stbox(box1);
+	ensure_has_Z_stbox(box2);
 	return (box1->zmin > box2->zmax);
 }
 
@@ -1034,10 +1005,7 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = back_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(back_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to the front of? */
@@ -1045,9 +1013,10 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overback_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_Z(box1->flags) || ! MOBDB_FLAGS_GET_Z(box2->flags))
-		elog(ERROR, "The boxes must have Z dimension");
-
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_has_Z_stbox(box1);
+	ensure_has_Z_stbox(box2);
 	return (box1->zmin >= box2->zmin);
 }
 
@@ -1058,10 +1027,7 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	bool result = overback_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overback_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly before of? */
@@ -1069,9 +1035,8 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 before_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "The boxes must have T dimension");
-
+	ensure_has_T_stbox(box1);
+	ensure_has_T_stbox(box2);
 	return (box1->tmax < box2->tmin);
 }
 
@@ -1082,8 +1047,7 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	bool result = before_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(before_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to the after of? */
@@ -1091,9 +1055,8 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbefore_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "The boxes must have T dimension");
-
+	ensure_has_T_stbox(box1);
+	ensure_has_T_stbox(box2);
 	return (box1->tmax <= box2->tmax);
 }
 
@@ -1104,8 +1067,7 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	bool result = overbefore_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overbefore_stbox_stbox_internal(box1, box2));
 }
 
 /* strictly after of? */
@@ -1113,9 +1075,8 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 after_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "The boxes must have T dimension");
-
+	ensure_has_T_stbox(box1);
+	ensure_has_T_stbox(box2);
 	return (box1->tmin > box2->tmax);
 }
 
@@ -1126,8 +1087,7 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	bool result = after_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(after_stbox_stbox_internal(box1, box2));
 }
 
 /* does not extend to the before of? */
@@ -1135,9 +1095,8 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overafter_stbox_stbox_internal(STBOX *box1, STBOX *box2)
 {
-	if (! MOBDB_FLAGS_GET_T(box1->flags) || ! MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "The boxes must have T dimension");
-
+	ensure_has_T_stbox(box1);
+	ensure_has_T_stbox(box2);
 	return (box1->tmin >= box2->tmin);
 }
 
@@ -1148,8 +1107,7 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	bool result = overafter_stbox_stbox_internal(box1, box2);
-	PG_RETURN_BOOL(result);
+	PG_RETURN_BOOL(overafter_stbox_stbox_internal(box1, box2));
 }
 
 /*****************************************************************************
@@ -1161,11 +1119,9 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
 STBOX *
 stbox_union_internal(const STBOX *box1, const STBOX *box2)
 {
-	/* Operations on boxes of different dimensionality */
-	if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
-		MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags) ||
-		MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
-		elog(ERROR, "The boxes must have the same dimensions");
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
+	ensure_same_dimensions_stbox(box1, box2);
 	/* The union of boxes that do not intersect cannot be represented by a box */
 	if (! overlaps_stbox_stbox_internal(box1, box2))
 		elog(ERROR, "Result of box union would not be contiguous");
@@ -1203,8 +1159,6 @@ stbox_union(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	STBOX *result = stbox_union_internal(box1, box2);
 	PG_RETURN_POINTER(result);
 }
@@ -1214,10 +1168,10 @@ stbox_union(PG_FUNCTION_ARGS)
 STBOX *
 stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 {
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	if (hasx && MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		elog(ERROR, "Cannot intersect planar and geodetic boxes");
+	ensure_same_geodetic_stbox(box1, box2);
+	ensure_same_srid_stbox(box1, box2);
 
+	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
 	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
 	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
@@ -1258,8 +1212,6 @@ stbox_intersection(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
 	STBOX *result = stbox_intersection_internal(box1, box2);
 	if (result == NULL)
 		PG_RETURN_NULL();

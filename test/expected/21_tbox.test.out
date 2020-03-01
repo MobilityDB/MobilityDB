@@ -239,6 +239,23 @@ SELECT MAX(tmax(b)) FROM tbl_tbox;
  2001-12-23 04:22:00+00
 (1 row)
 
+SELECT expandValue(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', 2);
+                         expandvalue                          
+--------------------------------------------------------------
+ TBOX((-1,2001-01-01 00:00:00+00),(4,2001-01-02 00:00:00+00))
+(1 row)
+
+SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 day');
+                       expandtemporal                        
+-------------------------------------------------------------
+ TBOX((1,2000-12-31 00:00:00+00),(2,2001-01-03 00:00:00+00))
+(1 row)
+
+/* Errors */
+SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
+ERROR:  The box must have value dimension
+SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
+ERROR:  The box must have time dimension
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' && tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
  ?column? 
 ----------

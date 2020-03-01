@@ -1003,6 +1003,35 @@ SELECT geodstboxt('2001-01-03', '2001-01-03');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
+
+			<para>Several functions expand the bounding boxes on the value and the time dimension. These functions raise an error if the corresponding dimension is not present.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Expand the value dimension of the bounding box by a float value</para>
+					<para><varname>expandValue(tbox, tbox): tbox</varname>, <varname>expandSpatial(stbox, stbox): stbox</varname></para>
+					<programlisting>
+SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);
+-- "TBOX((0,2012-01-01),(3,2012-01-03))"
+SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
+-- "STBOX ZT((0,0,0,2012-01-01),(3,3,3,2012-01-03))"
+SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
+-- The box must have value dimension
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Expand the temporal dimension of the bounding box by a time interval</para>
+					<para><varname>expandTemporal({tbox, stbox}, interval): {tbox, stbox}</varname></para>
+					<programlisting>
+SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval '1 day');
+-- "TBOX((1,2011-12-31),(2,2012-01-04))"
+SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))',
+	interval '1 day');
+-- "STBOX ZT((1,1,1,2011-12-31),(2,2,2,2012-01-04))"
+					</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect1>
 
 		<sect1>
@@ -1158,13 +1187,13 @@ SELECT srid(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
 			<title>Bounding Box Operators</title>
 			<para>These operators test whether the bounding boxes satisfy the predicate and result in a Boolean value.</para>
 
-			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for both <varname>tbox</varname> and <varname>stbox</varname> types. The operator raise an error if the boxes do not have both the required dimension.</para>
+			<para>A first set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for both <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if the boxes do not have both the required dimension.</para>
 
 			<para>The operators for the value dimension of the <varname>tbox</varname> type are given next.</para>
 
 			<itemizedlist>
 				<listitem>
-					<para>Is the bounding box always strictly less than?</para>
+					<para>Is the first bounding box always strictly less than the second one?</para>
 					<para><varname>tbox &lt;&lt; tbox: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;
@@ -1177,17 +1206,17 @@ SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box always strictly greater than?</para>
+					<para>Is the first bounding box always strictly greater than the second one?</para>
 					<para><varname>tbox &gt;&gt; tbox: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((3,2012-01-03),(4,2012-01-04))' &gt;&gt;
 	tbox 'TBOX((1,2012-01-01),(2,2012-01-02))';
--- false
+-- true
 					</programlisting>
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never greater than?</para>
+					<para>Is the first bounding box never greater than the second one?</para>
 					<para><varname>tbox &amp;&lt; tbox: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2012-01-01),(4,2012-01-04))' &amp;&lt;
@@ -1197,7 +1226,7 @@ SELECT tbox 'TBOX((1,2012-01-01),(4,2012-01-04))' &amp;&lt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never less than?</para>
+					<para>Is the first bounding box never less than the second one?</para>
 					<para><varname>tbox &amp;&gt; tbox: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;
@@ -1210,7 +1239,7 @@ SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;
 
 			<itemizedlist>
 				<listitem>
-					<para>Is the bouding box strictly to the left of?</para>
+					<para>Is the first bounding box strictly to the left of the second one?</para>
 					<para><varname>stbox &lt;&lt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt; stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1219,7 +1248,7 @@ SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt; stbox 'STBOX Z((3,3,3),(4,4,4))
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly to the right of?</para>
+					<para>Is the first bounding box strictly to the right of the second one?</para>
 					<para><varname>stbox &gt;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1228,7 +1257,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend to the right of?</para>
+					<para>The first bounding box does not extend to the right of the second one?</para>
 					<para><varname>stbox &amp;&lt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt; stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1237,7 +1266,7 @@ SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt; stbox 'STBOX Z((3,3,3),(4,4,4)
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend to the left of?</para>
+					<para>The first bounding box does not extend to the left of the second one?</para>
 					<para><varname>stbox &amp;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1246,7 +1275,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2)
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly below?</para>
+					<para>Is the first bounding box strictly below of the second one?</para>
 					<para><varname>stbox &lt;&lt;| stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1255,7 +1284,7 @@ SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4)
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly above?</para>
+					<para>Is the first bounding box strictly above of the second one?</para>
 					<para><varname>stbox |&gt;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1264,7 +1293,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2)
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend above?</para>
+					<para>The first bounding box does not extend above of the second one?</para>
 					<para><varname>stbox &amp;&lt;| stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1273,7 +1302,7 @@ SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),(4,4,4
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend below?</para>
+					<para>The first bounding box does not extend below of the second one?</para>
 					<para><varname>stbox |&amp;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1282,7 +1311,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly in front?</para>
+					<para>Is the first bounding box strictly in front of the second one?</para>
 					<para><varname>stbox &lt;&lt;/ stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1290,7 +1319,7 @@ SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4)
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly back?</para>
+					<para>Is the first bounding box strictly back of the second one?</para>
 					<para><varname>stbox /&gt;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1299,7 +1328,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),(2,2,2)
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend in front?</para>
+					<para>The first bounding box does not extend in front of the second one?</para>
 					<para><varname>stbox &amp;&lt;/ stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4))';
@@ -1308,7 +1337,7 @@ SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),(4,4,4
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend back?</para>
+					<para>The first bounding box does not extend back of the second one?</para>
 					<para><varname>stbox /&amp;&gt; stbox: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2))';
@@ -1320,7 +1349,7 @@ SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),(2,2,2
 			<para>The operators for the time dimension of the <varname>tbox</varname> and <varname>stbox</varname> types are as follows.</para>
 			<itemizedlist>
 				<listitem>
-					<para>Is the bounding box always before?</para>
+					<para>Is the first bounding box always before of the second one?</para>
 					<para><varname>{tbox, stbox} &lt;&lt;# {tbox, stbox}: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;#
@@ -1330,7 +1359,7 @@ SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;#
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box always after?</para>
+					<para>Is the first bounding box always after of the second one?</para>
 					<para><varname>{tbox, stbox} #&gt;&gt; {tbox, stbox}: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt;
@@ -1340,7 +1369,7 @@ SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never after?</para>
+					<para>Is the first bounding box never after of the second one?</para>
 					<para><varname>{tbox, stbox} &amp;&lt;# {tbox, stbox}: boolean</varname></para>
 					<programlisting>
 SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;#
@@ -1350,7 +1379,7 @@ SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;#
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never before?</para>
+					<para>Is the first bounding box never before of the second one?</para>
 					<para><varname>{tbox, stbox} #&amp;&gt; {tbox, stbox}: boolean</varname></para>
 					<programlisting>
 SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
@@ -3398,7 +3427,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 			<itemizedlist>
 				<listitem>
-					<para>Is the bounding box always strictly less than?</para>
+					<para>Is the first bounding box always strictly less than the second one?</para>
 					<para><varname>{base, numrange, ttype} &lt;&lt; {base, numrange, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;&lt; 2;
@@ -3409,7 +3438,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;&lt; tint '[2@2012-01-03, 2@2012-
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box always strictly greater than?</para>
+					<para>Is the first bounding box always strictly greater than the second one?</para>
 					<para><varname>{base, numrange, ttype} &gt;&gt; {base, numrange, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[4@2012-01-01, 4@2012-01-04)' &gt;&gt; intrange '[1,4)';
@@ -3420,7 +3449,7 @@ SELECT tint '[4@2012-01-01, 4@2012-01-04)' &gt;&gt; tfloat '[4@2012-01-01, 5@201
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never greater than?</para>
+					<para>Is the first bounding box never greater than the second one?</para>
 					<para><varname>{base, numrange, ttype} &amp;&lt; {base, numrange, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&lt; tfloat '{2@2012-01-03, 3@2012-01-05}';
@@ -3429,7 +3458,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&lt; tfloat '{2@2012-01-03, 3@20
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never less than?</para>
+					<para>Is the first bounding box never less than the second one?</para>
 					<para><varname>{base, numrange, ttype} &amp;&gt; {base, numrange, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&gt;
@@ -3442,7 +3471,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &amp;&gt;
 
 			<itemizedlist>
 				<listitem>
-					<para>Is the bouding box strictly to the left of?</para>
+					<para>Is the first bounding box strictly to the left of the second one?</para>
 					<para><varname>{geo, tgeompoint} &lt;&lt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;
@@ -3452,7 +3481,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly to the right of?</para>
+					<para>Is the first bounding box strictly to the right of the second one?</para>
 					<para><varname>{geo, tgeompoint} &gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &gt;&gt;
@@ -3462,7 +3491,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &gt;&gt;
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend to the right of?</para>
+					<para>The first bounding box does not extend to the right of the second one?</para>
 					<para><varname>{geo, tgeompoint} &amp;&lt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;
@@ -3472,7 +3501,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend to the left of?</para>
+					<para>The first bounding box does not extend to the left of the second one?</para>
 					<para><varname>{geo, tgeompoint} &amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&gt;
@@ -3482,7 +3511,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&gt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly below?</para>
+					<para>Is the first bounding box strictly below of the second one?</para>
 					<para><varname>{geo, tgeompoint} &lt;&lt;| {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;|
@@ -3492,7 +3521,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;|
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly above?</para>
+					<para>Is the first bounding box strictly above of the second one?</para>
 					<para><varname>{geo, tgeompoint} |&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' |&gt;&gt;
@@ -3502,7 +3531,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' |&gt;&gt;
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend above?</para>
+					<para>The first bounding box does not extend above of the second one?</para>
 					<para><varname>{geo, tgeompoint} &amp;&lt;| {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;|
@@ -3512,7 +3541,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;|
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend below?</para>
+					<para>The first bounding box does not extend below of the second one?</para>
 					<para><varname>{geo, tgeompoint} |&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0)@2001-01-01' |&amp;&gt;
@@ -3522,7 +3551,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' |&amp;&gt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly in front?</para>
+					<para>Is the first bounding box strictly in front of the second one?</para>
 					<para><varname>{geo, tgeompoint} &lt;&lt;/ {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &lt;&lt;/
@@ -3535,7 +3564,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;/
 				</listitem>
 
 				<listitem>
-					<para>Is the bouding box strictly back?</para>
+					<para>Is the first bounding box strictly back of the second one?</para>
 					<para><varname>{geo, tgeompoint} /&gt;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&gt;&gt;
@@ -3548,7 +3577,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' /&gt;&gt;
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend in front?</para>
+					<para>The first bounding box does not extend in front of the second one?</para>
 					<para><varname>{geo, tgeompoint} &amp;&lt;/ {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &amp;&lt;/
@@ -3558,7 +3587,7 @@ SELECT tgeompoint 'Point(0 0 0)@2001-01-01' &amp;&lt;/
 				</listitem>
 
 				<listitem>
-					<para>The bouding box does not extend back?</para>
+					<para>The first bounding box does not extend back of the second one?</para>
 					<para><varname>{geo, tgeompoint} /&amp;&gt; {geo, tgeompoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;
@@ -3571,7 +3600,7 @@ SELECT tgeompoint 'Point(0 0 0)@2001-01-01' /&amp;&gt;
 			<para>The operators for the time dimension of all the temporal types are as follows.</para>
 			<itemizedlist>
 				<listitem>
-					<para>Is the bounding box always before?</para>
+					<para>Is the first bounding box always before of the second one?</para>
 					<para><varname>{time, ttype} &lt;&lt;# {time, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tbool '[t@2012-01-01, t@2012-01-04)' &lt;&lt;# timestamptz '2012-01-03';
@@ -3585,7 +3614,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &lt;&lt;#
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box always after?</para>
+					<para>Is the first bounding box always after of the second one?</para>
 					<para><varname>{time, ttype} #&gt;&gt; {time, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tbool '[t@2012-01-03, t@2012-01-04)' #&gt;&gt; period '[2012-01-01, 2012-01-02)';
@@ -3599,7 +3628,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&gt;&gt;
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never after?</para>
+					<para>Is the first bounding box never after of the second one?</para>
 					<para><varname>{time, ttype} &amp;&lt;# {time, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tbool '[t@2012-01-01, t@2012-01-04)' &amp;&lt;# tbool '[f@2012-01-03, f@2012-01-05)';
@@ -3613,7 +3642,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' &amp;&lt;#
 				</listitem>
 
 				<listitem>
-					<para>Is the bounding box never before?</para>
+					<para>Is the first bounding box never before of the second one?</para>
 					<para><varname>{time, ttype} #&amp;&gt; {time, ttype}: boolean</varname></para>
 					<programlisting>
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' #&amp;&gt; tfloat '{2@2012-01-03, 3@2012-01-05}';
@@ -7115,102 +7144,102 @@ WHERE P.Hits = ( SELECT MAX(Hits) FROM PointCount );
 
 				<itemizedlist>
 					<listitem>
-						<para>Is the bounding box always strictly less than?</para>
+						<para>Is the first bounding box always strictly less than the second one?</para>
 						<para><varname>{base, numrange, tbox, ttype} &lt;&lt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box always strictly greater than?</para>
+						<para>Is the first bounding box always strictly greater than the second one?</para>
 						<para><varname>{base, numrange, tbox, ttype} &gt;&gt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box never greater than?</para>
+						<para>Is the first bounding box never greater than the second one?</para>
 						<para><varname>{base, numrange, tbox, ttype} &amp;&lt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box never less than?</para>
+						<para>Is the first bounding box never less than the second one?</para>
 						<para><varname>{base, numrange, tbox, ttype} &amp;&gt; {base, numrange, tbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly to the left of?</para>
+						<para>Is the first bounding box strictly to the left of the second one?</para>
 						<para><varname>{geo, tgeompoint} &lt;&lt; {geo, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly to the right of?</para>
+						<para>Is the first bounding box strictly to the right of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend to the right of?</para>
+						<para>The first bounding box does not extend to the right of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &amp;&lt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend to the left of?</para>
+						<para>The first bounding box does not extend to the left of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly below?</para>
+						<para>Is the first bounding box strictly below of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &lt;&lt;| {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly above?</para>
+						<para>Is the first bounding box strictly above of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} |&gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend above?</para>
+						<para>The first bounding box does not extend above of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &amp;&lt;| {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend below?</para>
+						<para>The first bounding box does not extend below of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} |&amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly in front?</para>
+						<para>Is the first bounding box strictly in front of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &lt;&lt;/ {geo, tgeompoint}: stbox, boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bouding box strictly back?</para>
+						<para>Is the first bounding box strictly back of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} /&gt;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend in front?</para>
+						<para>The first bounding box does not extend in front of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} &amp;&lt;/ {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>The bouding box does not extend back?</para>
+						<para>The first bounding box does not extend back of the second one?</para>
 						<para><varname>{geo, stbox, tgeompoint} /&amp;&gt; {geo, stbox, tgeompoint}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box always before?</para>
+						<para>Is the first bounding box always before of the second one?</para>
 						<para><varname>{time, tbox, stbox, ttype} &lt;&lt;# {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box always after?</para>
+						<para>Is the first bounding box always after of the second one?</para>
 						<para><varname>{time, tbox, stbox, ttype} #&gt;&gt; {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box never after?</para>
+						<para>Is the first bounding box never after of the second one?</para>
 						<para><varname>{time, tbox, stbox, ttype} &amp;&lt;# {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 
 					<listitem>
-						<para>Is the bounding box never before?</para>
+						<para>Is the first bounding box never before of the second one?</para>
 						<para><varname>{time, tbox, stbox, ttype} #&amp;&gt; {time, tbox, stbox, ttype}: boolean</varname></para>
 					</listitem>
 

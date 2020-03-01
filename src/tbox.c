@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <utils/timestamp.h>
+#include <utils/builtins.h>
 
 #include "period.h"
 #include "rangetypes_ext.h"
@@ -38,11 +39,27 @@ tbox_new(bool hasx, bool hast)
 }
 
 TBOX *
-tbox_copy(const STBOX *box)
+tbox_copy(const TBOX *box)
 {
 	TBOX *result = palloc0(sizeof(TBOX));
 	memcpy(result, box, sizeof(TBOX));
 	return result;
+}
+
+void
+ensure_has_X_tbox(const TBOX *box)
+{
+	if (! MOBDB_FLAGS_GET_X(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The box must have value dimension")));
+}
+
+void
+ensure_has_T_tbox(const TBOX *box)
+{
+	if (! MOBDB_FLAGS_GET_T(box->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The box must have time dimension")));
 }
 
 /*****************************************************************************
@@ -278,6 +295,60 @@ tbox_tmax(PG_FUNCTION_ARGS)
 	if (!MOBDB_FLAGS_GET_T(box->flags))
 		PG_RETURN_NULL();
 	PG_RETURN_TIMESTAMPTZ(box->tmax);
+}
+
+/*****************************************************************************
+ * Functions for expanding the bounding box
+ *****************************************************************************/
+
+/*
+ * Expand the box on the value dimension
+ */
+static TBOX *
+tbox_expand_value_internal(const TBOX *box, const double d)
+{
+	ensure_has_X_tbox(box);
+	TBOX *result = tbox_copy(box);
+	result->xmin = box->xmin - d;
+	result->xmax = box->xmax + d;
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tbox_expand_value);
+
+PGDLLEXPORT Datum
+tbox_expand_value(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	double d = PG_GETARG_FLOAT8(1);
+	PG_RETURN_POINTER(tbox_expand_value_internal(box, d));
+}
+
+/*****************************************************************************/
+
+/*
+ * Expand the box on the time dimension
+ */
+static TBOX *
+tbox_expand_temporal_internal(const TBOX *box, const Datum interval)
+{
+	ensure_has_T_tbox(box);
+	TBOX *result = tbox_copy(box);
+	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
+		TimestampTzGetDatum(box->tmin), interval));
+	result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
+		TimestampTzGetDatum(box->tmax), interval));
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tbox_expand_temporal);
+
+PGDLLEXPORT Datum
+tbox_expand_temporal(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	Datum interval = PG_GETARG_DATUM(1);
+	PG_RETURN_POINTER(tbox_expand_temporal_internal(box, interval));
 }
 
 /*****************************************************************************

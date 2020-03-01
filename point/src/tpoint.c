@@ -415,7 +415,7 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	ensure_point_type(gs);
 	ensure_non_empty(gs);
-	ensure_has_not_M(gs);
+	ensure_has_not_M_gs(gs);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(gs),
@@ -458,7 +458,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -506,7 +506,7 @@ tpoint_always_eq(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	/* The bounding box test is enough to test the predicate */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -563,7 +563,7 @@ teq_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_point_type(gs);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
 		&datum2_eq2, true);
@@ -581,7 +581,7 @@ teq_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
 		&datum2_eq2, false);
@@ -598,7 +598,7 @@ teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
+	ensure_same_dimensions_tpoint(temp1, temp2);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
 				  MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
@@ -624,7 +624,7 @@ tne_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_point_type(gs);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
 		&datum2_ne2, true);
@@ -642,7 +642,7 @@ tne_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
 	Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), datumtypid,
 		&datum2_ne2, false);
@@ -659,7 +659,7 @@ tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
+	ensure_same_dimensions_tpoint(temp1, temp2);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
 		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 	Temporal *result = linear ?
@@ -807,7 +807,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -861,7 +861,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_same_dimensions_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -938,7 +938,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
 		ensure_point_type(gs);
 		ensure_same_srid_tpoint_gs(temp, gs);
-		ensure_same_dimensionality_tpoint_gs(temp, gs);
+		ensure_same_dimensions_tpoint_gs(temp, gs);
 	}
 	
 	Oid valuetypid = temp->valuetypid;
@@ -992,7 +992,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
 		ensure_point_type(gs);
 		ensure_same_srid_tpoint_gs(temp, gs);
-		ensure_same_dimensionality_tpoint_gs(temp, gs);
+		ensure_same_dimensions_tpoint_gs(temp, gs);
 	}
 	
 	Oid valuetypid = temp->valuetypid;
