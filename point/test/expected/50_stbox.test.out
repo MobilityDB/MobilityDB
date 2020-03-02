@@ -81,6 +81,10 @@ SELECT stbox 'stbox((1, AA, 3))';
 ERROR:  Could not parse STBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox((1, AA, 3))';
                      ^
+SELECT stbox 'stbox((,),(,))';
+ERROR:  Could not parse STBOX
+LINE 1: SELECT stbox 'stbox((,),(,))';
+                     ^
 SELECT stbox 'stbox z((1, 2, AA))';
 ERROR:  Could not parse STBOX: Invalid input syntax for type double
 LINE 1: SELECT stbox 'stbox z((1, 2, AA))';

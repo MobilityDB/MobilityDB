@@ -20,6 +20,7 @@ SELECT stbox 'AAA(1, 2, 3)';
 SELECT stbox 'stbox(1, 2, 3)';
 SELECT stbox 'stbox((AA, 2, 3))';
 SELECT stbox 'stbox((1, AA, 3))';
+SELECT stbox 'stbox((,),(,))';
 SELECT stbox 'stbox z((1, 2, AA))';
 SELECT stbox 'stbox t((1, 2, AA))';
 SELECT stbox 'stbox((1, 2, 3))';
