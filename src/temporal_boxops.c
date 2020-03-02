@@ -193,10 +193,11 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 		tnumberinstarr_to_tbox((TBOX *)box, instants, count);
 	/* This code is currently not used since for temporal points the bounding
 	 * box is computed from the trajectory for efficiency reasons. It is left
-	 * here in case this is no longer the case */
+	 * here in case this is no longer the case
 	else if (instants[0]->valuetypid == type_oid(T_GEOGRAPHY) || 
 		instants[0]->valuetypid == type_oid(T_GEOMETRY)) 
 		tpointinstarr_to_stbox((STBOX *)box, instants, count);
+	 */
 }
 
 /* Transform an array of temporal sequence to a period */
