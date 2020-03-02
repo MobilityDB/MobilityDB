@@ -28,9 +28,7 @@
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
-#endif
 
 /*****************************************************************************
  * General functions
@@ -138,8 +136,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	SET_VARSIZE(result, size);
 	MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY) || 
+	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
@@ -147,7 +144,6 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
 	}
-#endif
 	return result;
 }
 
@@ -784,11 +780,9 @@ temporalinst_hash(TemporalInst *inst)
 		value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
 	else if (inst->valuetypid == TEXTOID)
 		value_hash = DatumGetUInt32(call_function1(hashtext, value));
-#ifdef WITH_POSTGIS
-	else if (inst->valuetypid == type_oid(T_GEOMETRY) || 
+	else if (inst->valuetypid == type_oid(T_GEOMETRY) ||
 		inst->valuetypid == type_oid(T_GEOGRAPHY))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-#endif
 	/* Apply the hash function according to the timestamp */
 	time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 

@@ -310,12 +310,9 @@ bool
 linear_interpolation(Oid type)
 {
 	if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) || 
-		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
+		type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
 		return true;
-#ifdef WITH_POSTGIS
-	if (type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY)) 
-		return true;
-#endif
 	return false;
 }
 
@@ -377,12 +374,10 @@ temporal_oid_from_base(Oid valuetypid)
 		result = type_oid(T_TFLOAT);
 	if (valuetypid == TEXTOID) 
 		result = type_oid(T_TTEXT);
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY)) 
+	if (valuetypid == type_oid(T_GEOMETRY))
 		result = type_oid(T_TGEOMPOINT);
 	if (valuetypid == type_oid(T_GEOGRAPHY)) 
 		result = type_oid(T_TGEOGPOINT);
-#endif			
 	return result;
 }
 
@@ -393,14 +388,10 @@ temporal_oid_from_base(Oid valuetypid)
 bool
 temporal_type_oid(Oid temptypid)
 {
-	if (temptypid == type_oid(T_TBOOL) ||
-		temptypid == type_oid(T_TINT) ||
-		temptypid == type_oid(T_TFLOAT) ||
-		temptypid == type_oid(T_TTEXT)
-#ifdef WITH_POSTGIS
-		|| temptypid == type_oid(T_TGEOMPOINT)
-		|| temptypid == type_oid(T_TGEOGPOINT)
-#endif
+	if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
+		temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
+		temptypid == type_oid(T_TGEOMPOINT) ||
+		temptypid == type_oid(T_TGEOGPOINT)
 		)
 		return true;
 	return false;
@@ -422,12 +413,10 @@ base_oid_from_temporal(Oid temptypid)
 		result = FLOAT8OID;
 	else if (temptypid == type_oid(T_TTEXT)) 
 		result = TEXTOID;
-#ifdef WITH_POSTGIS
-	else if (temptypid == type_oid(T_TGEOMPOINT)) 
+	else if (temptypid == type_oid(T_TGEOMPOINT))
 		result = type_oid(T_GEOMETRY);
 	else if (temptypid == type_oid(T_TGEOGPOINT)) 
 		result = type_oid(T_GEOGRAPHY);
-#endif
 	return result;
 }
 
@@ -438,11 +427,9 @@ base_oid_from_temporal(Oid temptypid)
 bool
 type_has_precomputed_trajectory(Oid valuetypid) 
 {
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY) || 
+	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 		return true;
-#endif
 	return false;
 } 
  
@@ -480,12 +467,9 @@ void
 ensure_temporal_base_type(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
-		valuetypid != FLOAT8OID && valuetypid != TEXTOID
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-#endif
-		)
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown base type: %d", valuetypid);
 }
 
@@ -494,26 +478,20 @@ ensure_temporal_base_type_all(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
-		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-		&& valuetypid != type_oid(T_DOUBLE3)
-		&& valuetypid != type_oid(T_DOUBLE4)
-#endif
-		)
+		valuetypid != TIMESTAMPTZOID && valuetypid != type_oid(T_DOUBLE2) &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY) &&
+		valuetypid != type_oid(T_DOUBLE3) &&
+		valuetypid != type_oid(T_DOUBLE4))
 		elog(ERROR, "unknown base type: %d", valuetypid);
 }
 
 void
 ensure_linear_interpolation(Oid valuetypid)
 {
-	if (valuetypid != FLOAT8OID
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-#endif
-		)
+	if (valuetypid != FLOAT8OID &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 }
 
@@ -521,14 +499,11 @@ void
 ensure_linear_interpolation_all(Oid valuetypid)
 {
 	if (valuetypid != FLOAT8OID &&
-		valuetypid !=  type_oid(T_DOUBLE2)
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-		&& valuetypid != type_oid(T_DOUBLE3)
-		&& valuetypid != type_oid(T_DOUBLE4)
-#endif
-		)
+		valuetypid !=  type_oid(T_DOUBLE2) &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY) &&
+		valuetypid != type_oid(T_DOUBLE3) &&
+		valuetypid != type_oid(T_DOUBLE4))
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 }
 
@@ -539,14 +514,12 @@ ensure_numeric_base_type(Oid valuetypid)
 		elog(ERROR, "unknown numeric base type: %d", valuetypid);
 }
 
-#ifdef WITH_POSTGIS
-void 
+void
 ensure_point_base_type(Oid valuetypid)
 {
 	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown point base type: %d", valuetypid);
 }
-#endif
 
 /*****************************************************************************
  * Utility functions

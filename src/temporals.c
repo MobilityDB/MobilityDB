@@ -27,10 +27,8 @@
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
-#endif
 
 /*****************************************************************************
  * General functions
@@ -92,7 +90,6 @@ temporals_make(TemporalSeq **sequences, int count,
 	assert(count > 0);
 	Oid valuetypid = sequences[0]->valuetypid;
 	/* Test the validity of the sequences */
-#ifdef WITH_POSTGIS
 	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY));
 	bool hasz = false, isgeodetic = false;
@@ -103,7 +100,6 @@ temporals_make(TemporalSeq **sequences, int count,
 		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags);
 		srid = tpointseq_srid(sequences[0]);
 	}
-#endif
 	for (int i = 1; i < count; i++)
 	{
 		if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
@@ -115,7 +111,6 @@ temporals_make(TemporalSeq **sequences, int count,
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-#ifdef WITH_POSTGIS
 		if (isgeo)
 		{
 			if (tpointseq_srid(sequences[i]) != srid)
@@ -125,7 +120,6 @@ temporals_make(TemporalSeq **sequences, int count,
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 		}
-#endif
 	}
 
 	TemporalSeq **newsequences = sequences;
@@ -152,13 +146,11 @@ temporals_make(TemporalSeq **sequences, int count,
 	result->valuetypid = valuetypid;
 	result->duration = TEMPORALS;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
-#ifdef WITH_POSTGIS
 	if (isgeo)
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
 	}
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;	
 	for (int i = 0; i < newcount; i++)
@@ -213,11 +205,9 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	result->valuetypid = ts->valuetypid;
 	result->duration = TEMPORALS;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(ts->flags));
-#ifdef WITH_POSTGIS
 	if (ts->valuetypid == type_oid(T_GEOMETRY) ||
 		ts->valuetypid == type_oid(T_GEOGRAPHY))
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ts->flags));
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;	
 	for (int i = 0; i < ts->count - 1; i++)

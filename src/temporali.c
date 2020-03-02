@@ -28,10 +28,8 @@
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
-#endif
 
 /*****************************************************************************
  * General functions
@@ -89,7 +87,6 @@ temporali_make(TemporalInst **instants, int count)
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants */
 	assert(count > 0);
-#ifdef WITH_POSTGIS
 	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY));
 	bool hasz = false, isgeodetic = false;
@@ -100,7 +97,6 @@ temporali_make(TemporalInst **instants, int count)
 		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
 		srid = tpointinst_srid(instants[0]);
 	}
-#endif
 	for (int i = 1; i < count; i++)
 	{
 		if (instants[i - 1]->t >= instants[i]->t)
@@ -110,7 +106,6 @@ temporali_make(TemporalInst **instants, int count)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-#ifdef WITH_POSTGIS
 		if (isgeo)
 		{
 			if (tpointinst_srid(instants[i]) != srid)
@@ -120,7 +115,6 @@ temporali_make(TemporalInst **instants, int count)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 		}
-#endif
 	}
 
 	/* Get the bounding box size */
@@ -140,13 +134,11 @@ temporali_make(TemporalInst **instants, int count)
 	result->duration = TEMPORALI;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, 
 		MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
-#ifdef WITH_POSTGIS
 	if (isgeo)
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
 	}
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < count; i++)
@@ -184,7 +176,6 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-#ifdef WITH_POSTGIS
 	bool isgeo = false, hasz;
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
@@ -198,7 +189,6 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
-#endif
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
@@ -217,10 +207,8 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	result->duration = TEMPORALI;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, 
 		MOBDB_FLAGS_GET_LINEAR(inst->flags));
-#ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)

@@ -49,13 +49,11 @@ typedef enum
 	T_TIMESTAMPTZ,
 	T_TINT,
 	T_TSTZRANGE,
-	T_TTEXT
-#ifdef WITH_POSTGIS
-	,T_GEOMETRY,
+	T_TTEXT,
+	T_GEOMETRY,
 	T_GEOGRAPHY,
 	T_TGEOMPOINT,
 	T_TGEOGPOINT,
-#endif
 } CachedType;
 
 /*

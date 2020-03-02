@@ -24,10 +24,8 @@
 #include "oidcache.h"
 #include "doublen.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
-#endif
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -43,9 +41,7 @@ void
 _PG_init(void)
 {
 	/* elog(WARNING, "This is MobilityDB."); */
-#ifdef WITH_POSTGIS
 	temporalgeom_init();
-#endif
 }
 
 /* Print messages while debugging */
@@ -83,11 +79,9 @@ get_typbyval_fast(Oid type)
 		result = true;
 	else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
 		result = false;
-#ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
 			 type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
 		result = false;
-#endif
 	return result;
 }
 
@@ -113,14 +107,12 @@ get_typlen_fast(Oid type)
 		result = 16;
 	else if (type == TEXTOID)
 		result = -1;
-#ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
 		result = -1;
 	else if (type == type_oid(T_DOUBLE3))
 		result = 24;
 	else if (type == type_oid(T_DOUBLE4))
 		result = 32;
-#endif
 	return result;
 }
 
@@ -566,14 +558,12 @@ datum_eq(Datum l, Datum r, Oid type)
 		result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
 	else if (type == type_oid(T_DOUBLE4))
 		result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
-#ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
 		//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
 		result = datum_point_eq(l, r);
 	else if (type == type_oid(T_GEOGRAPHY))
 		//	result = DatumGetBool(call_function2(geography_eq, l, r));
 		result = datum_point_eq(l, r);
-#endif
 	return result;
 }
 
@@ -596,12 +586,10 @@ datum_lt(Datum l, Datum r, Oid type)
 		result = DatumGetFloat8(l) < DatumGetFloat8(r);
 	else if (type == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-#ifdef WITH_POSTGIS
 	else if (type == type_oid(T_GEOMETRY))
 		result = DatumGetBool(call_function2(lwgeom_lt, l, r));
 	else if (type == type_oid(T_GEOGRAPHY))
 		result = DatumGetBool(call_function2(geography_lt, l, r));
-#endif
 	return result;
 }
 
@@ -647,14 +635,12 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 	else if (typel == TEXTOID && typer == TEXTOID)
 		result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
 		/* This function is never called with doubleN */
-#ifdef WITH_POSTGIS
 	else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
 		//	result = DatumGetBool(call_function2(lwgeom_eq, l, r));
 		result = datum_point_eq(l, r);
 	else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
 		//	result = DatumGetBool(call_function2(geography_eq, l, r));
 		result = datum_point_eq(l, r);
-#endif
 	return result;
 }
 

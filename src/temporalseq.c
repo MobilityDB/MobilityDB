@@ -29,12 +29,10 @@
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_distance.h"
-#endif
 
 /*****************************************************************************
  * General functions
@@ -152,7 +150,6 @@ double2_collinear(double2 *x1, double2 *x2, double2 *x3,
 	return result;
 }
 
-#ifdef WITH_POSTGIS
 static bool
 point_collinear(Datum value1, Datum value2, Datum value3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
@@ -300,7 +297,6 @@ double4_collinear(double4 *x1, double4 *x2, double4 *x3,
 		pfree(x1new);
 	return result;
 }
-#endif
 
 static bool
 datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
@@ -312,7 +308,6 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	if (valuetypid == type_oid(T_DOUBLE2))
 		return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2), 
 			DatumGetDouble2P(value3), t1, t2, t3);
-#ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
@@ -325,7 +320,6 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	if (valuetypid == type_oid(T_DOUBLE4))
 		return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2), 
 			DatumGetDouble4P(value3), t1, t2, t3);
-#endif
 	return false;
 }
 
@@ -348,7 +342,6 @@ temporalinst_collinear(TemporalInst *inst1, TemporalInst *inst2,
 		double2 *x3 = DatumGetDouble2P(temporalinst_value(inst3));
 		return double2_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
 	}
-#ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		Datum value1 = temporalinst_value(inst1);
@@ -371,7 +364,6 @@ temporalinst_collinear(TemporalInst *inst1, TemporalInst *inst2,
 		double4 *x3 = DatumGetDouble4P(temporalinst_value(inst3));
 		return double4_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
 	}
-#endif
 	return false;
 }
 
@@ -456,7 +448,6 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 
 	int count = count1 + (seq2->count - start2);
 
-#ifdef WITH_POSTGIS
 	bool trajectory = type_has_precomputed_trajectory(valuetypid);
 	Datum traj = 0; /* keep compiler quiet */
 	if (trajectory)
@@ -466,7 +457,6 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 		traj = tpointseq_trajectory_join(seq1, seq2, last, first);
 		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 	}
-#endif
 
 	/* Add the size of the struct and the offset array
 	 * Notice that the first offset is already declared in the struct */
@@ -480,14 +470,12 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	period_set(&result->period, seq1->period.lower, seq2->period.upper,
 		seq1->period.lower_inc, seq2->period.upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
-#ifdef WITH_POSTGIS
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
 	}
-#endif
 
 	/* Initialization of the variable-length part */
 	int k = 0;
@@ -521,14 +509,12 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 			memcpy(bbox, box1, bboxsize);
 			tbox_expand((TBOX *)bbox, (TBOX *)box2);
 		}
-#ifdef WITH_POSTGIS
 		else if (valuetypid == type_oid(T_GEOGRAPHY) ||
 				 valuetypid == type_oid(T_GEOMETRY))
 		{
 			memcpy(bbox, box1, bboxsize);
 			stbox_expand((STBOX *)bbox, (STBOX *)box2);
 		}
-#endif
 		result->offsets[k] = pos;
 		pos += double_pad(bboxsize);
 	}
@@ -659,7 +645,6 @@ temporalseq_make(TemporalInst **instants, int count,
 	if (count == 1 && (!lower_inc || !upper_inc))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Instant sequence must have inclusive bounds")));
-#ifdef WITH_POSTGIS
 	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY));
 	bool hasz = false, isgeodetic = false;
@@ -670,7 +655,6 @@ temporalseq_make(TemporalInst **instants, int count,
 		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
 		srid = tpointinst_srid(instants[0]);
 	}
-#endif
 	for (int i = 1; i < count; i++)
 	{
 		if (instants[i - 1]->t >= instants[i]->t)
@@ -680,7 +664,6 @@ temporalseq_make(TemporalInst **instants, int count,
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-#ifdef WITH_POSTGIS
 		if (isgeo)
 		{
 			if (tpointinst_srid(instants[i]) != srid)
@@ -690,7 +673,6 @@ temporalseq_make(TemporalInst **instants, int count,
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 		}
-#endif
 	}
 	if (!linear && count > 1 && !upper_inc &&
 		datum_ne(temporalinst_value(instants[count - 1]), 
@@ -710,7 +692,6 @@ temporalseq_make(TemporalInst **instants, int count,
 	for (int i = 0; i < newcount; i++)
 		memsize += double_pad(VARSIZE(newinstants[i]));
 	/* Precompute the trajectory */
-#ifdef WITH_POSTGIS
 	bool trajectory = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
@@ -724,8 +705,7 @@ temporalseq_make(TemporalInst **instants, int count,
 			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
 	}
-#endif
-	/* Add the size of the struct and the offset array 
+	/* Add the size of the struct and the offset array
 	 * Notice that the first offset is already declared in the struct */
 	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 1) * sizeof(size_t);
 	/* Create the TemporalSeq */
@@ -737,13 +717,11 @@ temporalseq_make(TemporalInst **instants, int count,
 	period_set(&result->period, newinstants[0]->t, newinstants[newcount - 1]->t,
 		lower_inc, upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
-#ifdef WITH_POSTGIS
 	if (isgeo)
 	{
 		MOBDB_FLAGS_SET_Z(result->flags, hasz);
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
 	}
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < newcount; i++)
@@ -763,7 +741,6 @@ temporalseq_make(TemporalInst **instants, int count,
 	if (bboxsize != 0)
 	{
 		void *bbox = ((char *) result) + pdata + pos;
-#ifdef WITH_POSTGIS
 		if (trajectory)
 		{
 			geo_to_stbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
@@ -772,13 +749,11 @@ temporalseq_make(TemporalInst **instants, int count,
 			MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
 		}
 		else
-#endif
-			temporalseq_make_bbox(bbox, newinstants, newcount, 
+			temporalseq_make_bbox(bbox, newinstants, newcount,
 				lower_inc, upper_inc);
 		result->offsets[newcount] = pos;
 		pos += double_pad(bboxsize);
 	}
-#ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
 		result->offsets[newcount + 1] = pos;
@@ -786,7 +761,6 @@ temporalseq_make(TemporalInst **instants, int count,
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
 	}
-#endif
 
 	if (normalize && count > 2)
 		pfree(newinstants);
@@ -810,7 +784,6 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
 		}
-#ifdef WITH_POSTGIS
 	bool isgeo = false;
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
@@ -823,7 +796,6 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
 	}
-#endif
 
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	/* Normalize the result */
@@ -864,7 +836,6 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq, i)));
 	memsize += double_pad(VARSIZE(inst));
 	/* Expand the trajectory */
-#ifdef WITH_POSTGIS
 	bool trajectory = false; /* keep compiler quiet */
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
@@ -877,8 +848,7 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 		}
 	}
-#endif
-	/* Add the size of the struct and the offset array 
+	/* Add the size of the struct and the offset array
 	 * Notice that the first offset is already declared in the struct */
 	size_t pdata = double_pad(sizeof(TemporalSeq)) + (newcount + 1) * sizeof(size_t);
 	/* Create the TemporalSeq */
@@ -890,10 +860,8 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	period_set(&result->period, seq->period.lower, inst->t, 
 		seq->period.lower_inc, true);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq->flags));
-#ifdef WITH_POSTGIS
 	if (isgeo)
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
-#endif
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < newcount - 1; i++)
@@ -914,7 +882,6 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 		temporalseq_expand_bbox(bbox, seq, inst);
 		result->offsets[newcount] = pos;
 	}
-#ifdef WITH_POSTGIS
 	if (isgeo && trajectory)
 	{
 		result->offsets[newcount + 1] = pos;
@@ -922,7 +889,6 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 			VARSIZE(DatumGetPointer(traj)));
 		pfree(DatumGetPointer(traj));
 	}
-#endif
 	return result;
 }
 
@@ -1244,7 +1210,6 @@ tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1,
 	return true;	
 }
 
-#ifdef WITH_POSTGIS
 bool
 tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
@@ -1344,7 +1309,6 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 
 	return true;
 }
-#endif
 
 bool
 temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
@@ -1355,7 +1319,6 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 	if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
 		(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
 		result = tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
-#ifdef WITH_POSTGIS
 	else if (start1->valuetypid == type_oid(T_GEOMETRY))
 		result = tpointseq_intersect_at_timestamp(start1, end1, linear1, start2, end2, linear2, inter);
 	else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
@@ -1383,7 +1346,6 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 		pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
 		pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
 	}
-#endif
 	return result;
 }
 
@@ -2233,7 +2195,6 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		fraction = dvalue1 < dvalue2 ?
 			partial / range : 1 - partial / range;
 	}
-#ifdef WITH_POSTGIS
 	else if (inst1->valuetypid == type_oid(T_GEOMETRY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
@@ -2298,7 +2259,6 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1)); 
 		pfree(DatumGetPointer(value2));
 	}
-#endif
 
 	if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
 		return false;
@@ -3221,7 +3181,6 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		dresult->b = start->b + (end->b - start->b) * ratio;
 		result = Double2PGetDatum(dresult);
 	}
-#ifdef WITH_POSTGIS
 	else if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		/* We are sure that the trajectory is a line */
@@ -3272,7 +3231,6 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		dresult->d = start->d + (end->d - start->d) * ratio;
 		result = Double4PGetDatum(dresult);
 	}
-#endif
 	return result;
 }
 
