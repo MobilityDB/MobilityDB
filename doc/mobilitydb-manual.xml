@@ -1518,6 +1518,9 @@ SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +
 SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +
 	stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';
 -- ERROR:  Boxes must be of the same dimensionality
+SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +
+	tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';
+-- ERROR:  Result of box union would not be contiguous
 					</programlisting>
 				</listitem>
 
