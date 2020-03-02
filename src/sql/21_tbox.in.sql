@@ -100,6 +100,23 @@ CREATE FUNCTION Tmax(tbox)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+CREATE FUNCTION expandValue(tbox, float)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME', 'tbox_expand_value'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandTemporal(tbox, interval)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME', 'tbox_expand_temporal'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setPrecision(tbox, int)
+	RETURNS tbox
+	AS 'MODULE_PATHNAME', 'tbox_set_precision'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Selectivity functions
  *****************************************************************************/
 
@@ -112,19 +129,6 @@ CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
 	RETURNS float
 	AS 'MODULE_PATHNAME', 'tnumber_joinsel'
 	LANGUAGE C IMMUTABLE STRICT;
-
-/*****************************************************************************
- * Expand functions
- *****************************************************************************/
-
-CREATE FUNCTION expandValue(tbox, float)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'tbox_expand_value'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION expandTemporal(tbox, interval)
-	RETURNS tbox
-	AS 'MODULE_PATHNAME', 'tbox_expand_temporal'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Topological operators

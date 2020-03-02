@@ -21,6 +21,7 @@
 #include "temporal.h"
 #include "temporal_parser.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
 
 /* Buffer size for input and output of TBOX */
 #define MAXTBOXLEN		128
@@ -375,6 +376,22 @@ tbox_expand_temporal(PG_FUNCTION_ARGS)
 	TBOX *box = PG_GETARG_TBOX_P(0);
 	Datum interval = PG_GETARG_DATUM(1);
 	PG_RETURN_POINTER(tbox_expand_temporal_internal(box, interval));
+}
+
+/* Set precision of the value */
+
+PG_FUNCTION_INFO_V1(tbox_set_precision);
+
+PGDLLEXPORT Datum
+tbox_set_precision(PG_FUNCTION_ARGS)
+{
+	TBOX *box = PG_GETARG_TBOX_P(0);
+	Datum size = PG_GETARG_DATUM(1);
+	ensure_has_X_tbox(box);
+	TBOX *result = tbox_copy(box);
+	result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), size));
+	result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

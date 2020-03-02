@@ -1003,35 +1003,6 @@ SELECT geodstboxt('2001-01-03', '2001-01-03');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
-
-			<para>Several functions expand the bounding boxes on the value and the time dimension. These functions raise an error if the corresponding dimension is not present.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Expand the value dimension of the bounding box by a float value</para>
-					<para><varname>expandValue(tbox, tbox): tbox</varname>, <varname>expandSpatial(stbox, stbox): stbox</varname></para>
-					<programlisting>
-SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);
--- "TBOX((0,2012-01-01),(3,2012-01-03))"
-SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
--- "STBOX ZT((0,0,0,2012-01-01),(3,3,3,2012-01-03))"
-SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
--- The box must have value dimension
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Expand the temporal dimension of the bounding box by a time interval</para>
-					<para><varname>expandTemporal({tbox, stbox}, interval): {tbox, stbox}</varname></para>
-					<programlisting>
-SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval '1 day');
--- "TBOX((1,2011-12-31),(2,2012-01-04))"
-SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))',
-	interval '1 day');
--- "STBOX ZT((1,1,1,2011-12-31),(2,2,2,2012-01-04))"
-					</programlisting>
-				</listitem>
-			</itemizedlist>
 		</sect1>
 
 		<sect1>
@@ -1167,17 +1138,90 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 -- "2001-01-03"
 					</programlisting>
 				</listitem>
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id ="modification_box_tyes">
+			<title>Modification of Box Types</title>
+
+			<para>The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Expand the value dimension of the bounding box by a float value</para>
+					<para><varname>expandValue(tbox, float): tbox</varname>, <varname>expandSpatial(stbox, float): stbox</varname></para>
+					<programlisting>
+SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);
+-- "TBOX((0,2012-01-01),(3,2012-01-03))"
+SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))', 1);
+-- "STBOX ZT((0,0,0,2012-01-01),(3,3,3,2012-01-03))"
+SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);
+-- The box must have value dimension
+					</programlisting>
+				</listitem>
 
 				<listitem>
-					<para>SRID</para>
-					<para><varname>srid(stbox): int</varname></para>
+					<para>Expand the temporal dimension of the bounding box by a time interval</para>
+					<para><varname>expandTemporal({tbox, stbox}, interval): {tbox, stbox}</varname></para>
 					<programlisting>
-SELECT srid(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
+SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval '1 day');
+-- "TBOX((1,2011-12-31),(2,2012-01-04))"
+SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))',
+	interval '1 day');
+-- "STBOX ZT((1,1,1,2011-12-31),(2,2,2,2012-01-04))"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Round the value or the coordinates to a number of decimal places</para>
+					<para><varname>setPrecision({tbox, stbox}, int): {tbox, stbox}</varname></para>
+					<programlisting>
+SELECT setPrecision(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, 2000-01-02))', 2);
+-- "TBOX((1.12,2000-01-01),(2.12,2000-01-02))"
+SELECT setPrecision(stbox 'STBOX T((1.12345, 1.12345, 2000-01-01),
+	(2.12345, 2.12345, 2000-01-02))', 2);
+-- "STBOX T((1.12,1.12,2000-01-01),(2.12,2.12,2000-01-02))"
+					</programlisting>
+				</listitem>
+
+			</itemizedlist>
+		</sect1>
+
+		<sect1 id ="srid_box_tyes">
+			<title>Spatial Reference System Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para>SRID</para>
+					<para><varname>SRID(stbox): int</varname></para>
+					<programlisting>
+SELECT SRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))');
 -- 0
-SELECT srid(stbox 'SRID=5676;STBOX T((1.0, 2.0, 2000-01-01), (4.0, 5.0, 2000-01-02))');
+SELECT SRID(stbox 'SRID=5676;STBOX T((1.0, 2.0, 2000-01-01), (4.0, 5.0, 2000-01-02))');
 -- 5676
-SELECT srid(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
+SELECT SRID(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');
 -- 4326
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Set the spatial reference identifier</para>
+					<para><varname>setSRID(stbox): stbox</varname></para>
+					<programlisting>
+SELECT setSRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01),
+	(4.0, 5.0, 6.0, 2000-01-02))', 5676);
+-- "SRID=5676;STBOX ZT((1,2,3,2000-01-01),(4,5,6,2000-01-02))"
+					</programlisting>
+					</listitem>
+
+				<listitem>
+					<para>Transform to a different spatial reference</para>
+					<para><varname>transform(stbox, integer): stbox</varname></para>
+					<programlisting>
+SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
+	(6.575317, 51.553167, 2000-01-02))', 3812);
+-- "SRID=3812;STBOX T((502773.429980817,511805.120401577,2000-01-01),
+	(803028.908264815,751590.742628986,2000-01-02))"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -2425,7 +2469,7 @@ SELECT SRID(tgeompoint 'Point(0 0)@2012-01-01');
 
 				<listitem>
 					<para>Set the spatial reference identifier &Z_support; &geography_support;</para>
-					<para><varname>setSRID(tpoint): integer</varname></para>
+					<para><varname>setSRID(tpoint): tpoint</varname></para>
 					<programlisting>
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)', 4326));
 -- "SRID=4326;[POINT(0 0)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-02 00:00:00+00)"

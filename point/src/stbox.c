@@ -688,10 +688,10 @@ stbox_transform(PG_FUNCTION_ARGS)
 
 /* Set precision of the coordinates */
 
-PG_FUNCTION_INFO_V1(stbox_setprecision);
+PG_FUNCTION_INFO_V1(stbox_set_precision);
 
 PGDLLEXPORT Datum
-stbox_setprecision(PG_FUNCTION_ARGS)
+stbox_set_precision(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Datum size = PG_GETARG_DATUM(1);

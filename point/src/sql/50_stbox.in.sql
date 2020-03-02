@@ -163,9 +163,9 @@ CREATE FUNCTION transform(stbox, srid integer)
 	RETURNS stbox
 	AS 'MODULE_PATHNAME', 'stbox_transform'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setprecision(stbox, int)
+CREATE FUNCTION setPrecision(stbox, int)
 	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'stbox_setprecision'
+	AS 'MODULE_PATHNAME', 'stbox_set_precision'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

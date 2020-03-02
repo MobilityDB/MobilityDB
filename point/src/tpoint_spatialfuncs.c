@@ -274,7 +274,7 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 static Datum
-datum_setprecision(Datum value, Datum size)
+datum_set_precision(Datum value, Datum size)
 {
 	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
 	int srid = gserialized_get_srid(gs);
@@ -565,14 +565,14 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
  * Set precision of the coordinates.
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_setprecision);
+PG_FUNCTION_INFO_V1(tpoint_set_precision);
 
 PGDLLEXPORT Datum
-tpoint_setprecision(PG_FUNCTION_ARGS)
+tpoint_set_precision(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum size = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal(temp, size, &datum_setprecision,
+	Temporal *result = tfunc2_temporal(temp, size, &datum_set_precision,
 		temp->valuetypid);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
