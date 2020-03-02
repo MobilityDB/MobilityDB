@@ -155,6 +155,18 @@ CREATE FUNCTION srid(stbox)
 	RETURNS int
 	AS 'MODULE_PATHNAME', 'stbox_srid'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setSRID(stbox, srid integer)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_set_srid'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION transform(stbox, srid integer)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_transform'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setprecision(stbox, int)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'stbox_setprecision'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Selectively functions for operators

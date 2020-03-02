@@ -562,7 +562,7 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Set precision function.
+ * Set precision of the coordinates.
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_setprecision);

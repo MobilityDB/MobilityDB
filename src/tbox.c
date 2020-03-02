@@ -106,31 +106,39 @@ char *
 tbox_to_string(const TBOX *box)
 {
 	static size_t size = MAXTBOXLEN + 1;
-	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
-	str = (char *) palloc(size);
-	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
-	if (MOBDB_FLAGS_GET_T(box->flags))
+	char *str = (char *) palloc(size);
+	char *xmin = NULL, *xmax = NULL, *tmin = NULL, *tmax = NULL;
+	bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box->flags);
+	assert(hasx || hast);
+	if (hasx)
 	{
-		strtmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-		strtmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+		xmin = call_output(FLOAT8OID, Float8GetDatum(box->xmin));
+		xmax = call_output(FLOAT8OID, Float8GetDatum(box->xmax));
 	}
-	if (MOBDB_FLAGS_GET_X(box->flags))
+	if (hast)
 	{
-		if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, size, "TBOX((%.8g,%s),(%.8g,%s))", 
-				box->xmin, strtmin, box->xmax, strtmax);
+		tmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+		tmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+	}
+	if (hasx)
+	{
+		if (hast)
+			snprintf(str, size, "TBOX((%s,%s),(%s,%s))", xmin, tmin,
+				xmax, tmax);
 		else 
-			snprintf(str, size, "TBOX((%.8g,),(%.8g,))", 
-				box->xmin,box->xmax);
+			snprintf(str, size, "TBOX((%s,),(%s,))", xmin, xmax);
 	}
 	else
 		/* Missing X dimension */
-		snprintf(str, size, "TBOX((,%s),(,%s))", 
-			strtmin, strtmax);
-	if (MOBDB_FLAGS_GET_T(box->flags))
+		snprintf(str, size, "TBOX((,%s),(,%s))", tmin, tmax);
+	if (hasx)
 	{
-		pfree(strtmin);
-		pfree(strtmax);
+		pfree(xmin); pfree(xmax);
+	}
+	if (hast)
+	{
+		pfree(tmin); pfree(tmax);
 	}
 	return str;
 }

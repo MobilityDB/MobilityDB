@@ -17,6 +17,7 @@
 
 #include "period.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"
 #include "tpoint_spatialfuncs.h"
@@ -81,56 +82,77 @@ static char *
 stbox_to_string(const STBOX *box)
 {
 	static size_t size = MAXSTBOXLEN + 1;
-	char *str = NULL, *strtmin = NULL, *strtmax = NULL;
+	char *str, *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL,
+		*zmin = NULL, *zmax = NULL, *tmin = NULL, *tmax = NULL;
+	bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+	bool hast = MOBDB_FLAGS_GET_T(box->flags);
+	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+
 	str = (char *) palloc(size);
 	char srid[20];
 	if (box->srid > 0)
 		sprintf(srid, "SRID=%d;", box->srid);
 	else
 		srid[0] = '\0';
-	char *boxtype = MOBDB_FLAGS_GET_GEODETIC(box->flags) ? "GEODSTBOX" : "STBOX";
-
-	assert(MOBDB_FLAGS_GET_X(box->flags) || MOBDB_FLAGS_GET_T(box->flags));
-	if (MOBDB_FLAGS_GET_T(box->flags))
+	char *boxtype = geodetic ? "GEODSTBOX" : "STBOX";
+	assert(hasx || hast);
+	if (hasx)
 	{
-		strtmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
-		strtmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
-	}
-	if (MOBDB_FLAGS_GET_X(box->flags))
-	{
-		if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+		xmin = call_output(FLOAT8OID, Float8GetDatum(box->xmin));
+		xmax = call_output(FLOAT8OID, Float8GetDatum(box->xmax));
+		ymin = call_output(FLOAT8OID, Float8GetDatum(box->ymin));
+		ymax = call_output(FLOAT8OID, Float8GetDatum(box->ymax));
+		if (geodetic || hasz)
 		{
-			if (MOBDB_FLAGS_GET_T(box->flags))
-				snprintf(str, size, "%s%s T((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))", srid, boxtype,
-					box->xmin, box->ymin, box->zmin, strtmin, 
-					box->xmax, box->ymax, box->zmax, strtmax);
-			else
-				snprintf(str, size, "%s%s((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", srid, boxtype,
-					box->xmin, box->ymin, box->zmin, 
-					box->xmax, box->ymax, box->zmax);
+			zmin = call_output(FLOAT8OID, Float8GetDatum(box->zmin));
+			zmax = call_output(FLOAT8OID, Float8GetDatum(box->zmax));
 		}
-		else if (MOBDB_FLAGS_GET_Z(box->flags) && MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, size, "%s%s ZT((%.8g,%.8g,%.8g,%s),(%.8g,%.8g,%.8g,%s))", srid, boxtype,
-				box->xmin, box->ymin, box->zmin, strtmin, 
-				box->xmax, box->ymax, box->zmax, strtmax);
-		else if (MOBDB_FLAGS_GET_Z(box->flags))
-			snprintf(str, size, "%s%s Z((%.8g,%.8g,%.8g),(%.8g,%.8g,%.8g))", srid, boxtype,
-				box->xmin, box->ymin, box->zmin, 
-				box->xmax, box->ymax, box->zmax);
-		else if (MOBDB_FLAGS_GET_T(box->flags))
-			snprintf(str, size, "%s%s T((%.8g,%.8g,%s),(%.8g,%.8g,%s))", srid, boxtype,
-				box->xmin, box->ymin, strtmin, box->xmax, box->ymax, strtmax);
+	}
+	if (hast)
+	{
+		tmin = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+		tmax = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+	}
+	if (hasx)
+	{
+		if (geodetic)
+		{
+			if (hast)
+				snprintf(str, size, "%s%s T((%s,%s,%s,%s),(%s,%s,%s,%s))",
+					srid, boxtype, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
+			else
+				snprintf(str, size, "%s%s((%s,%s,%s),(%s,%s,%s))",
+					srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
+		}
+		else if (hasz && hast)
+			snprintf(str, size, "%s%s ZT((%s,%s,%s,%s),(%s,%s,%s,%s))",
+				srid, boxtype, xmin, ymin, zmin, tmin, xmax, ymax, zmax, tmax);
+		else if (hasz)
+			snprintf(str, size, "%s%s Z((%s,%s,%s),(%s,%s,%s))",
+				srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
+		else if (hast)
+			snprintf(str, size, "%s%s T((%s,%s,%s),(%s,%s,%s))",
+				srid, boxtype, xmin, ymin, tmin, xmax, ymax, tmax);
 		else 
-			snprintf(str, size, "%s%s((%.8g,%.8g),(%.8g,%.8g))", srid, boxtype,
-				box->xmin, box->ymin, box->xmax, box->ymax);
+			snprintf(str, size, "%s%s((%s,%s),(%s,%s))",
+				srid, boxtype, xmin, ymin, xmax, ymax);
 	}
 	else
 		/* Missing spatial dimension */
-		snprintf(str, size, "%s%s T((,,%s),(,,%s))", srid, boxtype, strtmin, strtmax);
-	if (MOBDB_FLAGS_GET_T(box->flags))
+		snprintf(str, size, "%s%s T((,,%s),(,,%s))", srid, boxtype, tmin, tmax);
+	if (hasx)
 	{
-		pfree(strtmin);
-		pfree(strtmax);
+		pfree(xmin); pfree(xmax);
+		pfree(ymin); pfree(ymax);
+		if (hasz)
+		{
+			pfree(zmin); pfree(zmax);
+		}
+	}
+	if (hast)
+	{
+		pfree(tmin); pfree(tmax);
 	}
 	return str;
 }
@@ -594,6 +616,97 @@ stbox_srid(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	PG_RETURN_INT32(box->srid);
+}
+
+/* Set the SRID of an STBOX value */
+
+PG_FUNCTION_INFO_V1(stbox_set_srid);
+
+PGDLLEXPORT Datum
+stbox_set_srid(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	int32 srid = PG_GETARG_INT32(1);
+	STBOX *result = stbox_copy(box);
+	result->srid = srid;
+	PG_RETURN_POINTER(result);
+}
+
+/* Transform an STBOX value to another SRID */
+
+PG_FUNCTION_INFO_V1(stbox_transform);
+
+PGDLLEXPORT Datum
+stbox_transform(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	Datum srid = PG_GETARG_DATUM(1);
+	ensure_has_X_stbox(box);
+	STBOX *result = stbox_copy(box);
+	result->srid = DatumGetInt32(srid);
+	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+	LWPOINT *ptmin, *ptmax;
+	if (hasz)
+	{
+		ptmin = lwpoint_make3dz(box->srid, box->xmin, box->ymin, box->zmin);
+		ptmax = lwpoint_make3dz(box->srid, box->xmax, box->ymax, box->zmax);
+	}
+	else
+	{
+		ptmin = lwpoint_make2d(box->srid, box->xmin, box->ymin);
+		ptmax = lwpoint_make2d(box->srid, box->xmax, box->ymax);
+	}
+	Datum min = PointerGetDatum(geometry_serialize((LWGEOM *)ptmin));
+	Datum max = PointerGetDatum(geometry_serialize((LWGEOM *)ptmax));
+	Datum min1 = call_function2(transform, min, srid);
+	Datum max1 = call_function2(transform, max, srid);
+	if (hasz)
+	{
+		POINT3DZ ptmin1 = datum_get_point3dz(min1);
+		POINT3DZ ptmax1 = datum_get_point3dz(max1);
+		result->xmin = ptmin1.x;
+		result->ymin = ptmin1.y;
+		result->zmin = ptmin1.z;
+		result->xmax = ptmax1.x;
+		result->ymax = ptmax1.y;
+		result->zmax = ptmax1.z;
+	}
+	else
+	{
+		POINT2D ptmin1 = datum_get_point2d(min1);
+		POINT2D ptmax1 = datum_get_point2d(max1);
+		result->xmin = ptmin1.x;
+		result->ymin = ptmin1.y;
+		result->xmax = ptmax1.x;
+		result->ymax = ptmax1.y;
+	}
+	lwpoint_free(ptmin); lwpoint_free(ptmax);
+	pfree(DatumGetPointer(min)); pfree(DatumGetPointer(max));
+	pfree(DatumGetPointer(min1)); pfree(DatumGetPointer(max1));
+	PG_RETURN_POINTER(result);
+}
+
+/* Set precision of the coordinates */
+
+PG_FUNCTION_INFO_V1(stbox_setprecision);
+
+PGDLLEXPORT Datum
+stbox_setprecision(PG_FUNCTION_ARGS)
+{
+	STBOX *box = PG_GETARG_STBOX_P(0);
+	Datum size = PG_GETARG_DATUM(1);
+	ensure_has_X_stbox(box);
+	STBOX *result = stbox_copy(box);
+	result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), size));
+	result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
+	result->ymin = DatumGetFloat8(datum_round(Float8GetDatum(box->ymin), size));
+	result->ymax = DatumGetFloat8(datum_round(Float8GetDatum(box->ymax), size));
+	if (MOBDB_FLAGS_GET_Z(box->flags))
+	{
+		result->zmin = DatumGetFloat8(datum_round(Float8GetDatum(box->zmin), size));
+		result->zmax = DatumGetFloat8(datum_round(Float8GetDatum(box->zmax), size));
+	}
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
