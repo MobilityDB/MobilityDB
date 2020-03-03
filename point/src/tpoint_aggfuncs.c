@@ -226,6 +226,7 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 		result->zmax = Max(box->zmax, box1.zmax);
 		result->zmin = Min(box->zmin, box1.zmin);
 	}
+	result->srid = box->srid;
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
 	MOBDB_FLAGS_SET_T(result->flags, true);

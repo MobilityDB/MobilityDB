@@ -336,6 +336,7 @@ datumarr_to_array(Datum *values, int count, Oid type)
 	int16 elmlen;
 	bool elmbyval;
 	char elmalign;
+	assert(count > 0);
 	get_typlenbyvalalign(type, &elmlen, &elmbyval, &elmalign);
 	ArrayType *result = construct_array(values, count, type, elmlen, elmbyval, elmalign);
 	return result;
@@ -344,6 +345,7 @@ datumarr_to_array(Datum *values, int count, Oid type)
 ArrayType *
 timestamparr_to_array(TimestampTz *times, int count)
 {
+	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)times, count, TIMESTAMPTZOID, 8, true, 'd');
 	return result;
 }
@@ -351,6 +353,7 @@ timestamparr_to_array(TimestampTz *times, int count)
 ArrayType *
 periodarr_to_array(Period **periods, int count)
 {
+	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
 		sizeof(Period), false, 'd');
 	return result;
@@ -359,6 +362,7 @@ periodarr_to_array(Period **periods, int count)
 ArrayType *
 rangearr_to_array(RangeType **ranges, int count, Oid type)
 {
+	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)ranges, count, type, -1, false, 'd');
 	return result;
 }
@@ -366,6 +370,7 @@ rangearr_to_array(RangeType **ranges, int count, Oid type)
 ArrayType *
 textarr_to_array(text **textarr, int count)
 {
+	assert(count > 0);
 	ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1, false, 'i');
 	return result;
 }
@@ -390,7 +395,6 @@ stboxarr_to_array(STBOX *boxarr, int count)
 	pfree(boxptrs);
 	return result;
 }
-
 
 /*****************************************************************************
  * Sort functions 
