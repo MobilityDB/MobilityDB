@@ -72,6 +72,11 @@ CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset) AS IMPLICIT;
 CREATE CAST (tgeompoint AS stbox) WITH FUNCTION stbox(tgeompoint);
 CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
 
+CREATE FUNCTION stboxes(tgeompoint)
+	RETURNS stbox[]
+	AS 'MODULE_PATHNAME', 'tpoint_stboxes'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION expandSpatial(stbox, float)

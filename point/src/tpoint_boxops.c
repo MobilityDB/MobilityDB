@@ -292,6 +292,86 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
+ * Boxes functions
+ *****************************************************************************/
+
+int
+tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
+		tpointinst_make_stbox(&result[0], inst);
+		return 1;
+	}
+
+	/* Temporal sequence has at least 2 instants */
+	STBOX box;
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	for (int i = 0; i < seq->count - 1; i++)
+	{
+		tpointinst_make_stbox(&result[i], inst1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		tpointinst_make_stbox(&box, inst2);
+		stbox_expand(&result[i], &box);
+		inst1 = inst2;
+	}
+	return seq->count - 1;
+}
+
+ArrayType *
+tpointseq_stboxes(TemporalSeq *seq)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	int count = seq->count - 1;
+	if (count == 0)
+		count = 1;
+	STBOX *boxes = palloc(sizeof(STBOX) * count);
+	tpointseq_stboxes1(boxes, seq);
+	ArrayType *result = stboxarr_to_array(boxes, count);
+	pfree(boxes);
+	return result;
+}
+
+ArrayType *
+tpoints_stboxes(TemporalS *ts)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
+	STBOX *boxes = palloc(sizeof(STBOX) * ts->totalcount);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		k += tpointseq_stboxes1(&boxes[k], seq);
+	}
+	ArrayType *result = stboxarr_to_array(boxes, k);
+	pfree(boxes);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_stboxes);
+
+PGDLLEXPORT Datum
+tpoint_stboxes(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ArrayType *result = NULL;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
+		;
+	else if (temp->duration == TEMPORALSEQ)
+		result = tpointseq_stboxes((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS)
+		result = tpoints_stboxes((TemporalS *)temp);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Expand the bounding box of a Temporal with a TemporalInst
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/

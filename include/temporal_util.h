@@ -57,7 +57,8 @@ extern ArrayType *periodarr_to_array(Period **periods, int count);
 extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);
 extern ArrayType *textarr_to_array(text **textarr, int count);
 extern ArrayType *temporalarr_to_array(Temporal **temporals, int count);
- 
+extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
+
 /* Sort functions */
 
 extern void datum_sort(Datum *values, int count, Oid valuetypid);

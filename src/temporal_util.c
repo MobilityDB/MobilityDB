@@ -379,6 +379,19 @@ temporalarr_to_array(Temporal **temporalarr, int count)
 	return result;
 }
 
+ArrayType *
+stboxarr_to_array(STBOX *boxarr, int count)
+{
+	assert(count > 0);
+	STBOX **boxptrs = palloc(sizeof(STBOX *) * count);
+	for (int i = 0; i < count; i++)
+		boxptrs[i] = &boxarr[i];
+	ArrayType *result = construct_array((Datum *)boxptrs, count, type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+	pfree(boxptrs);
+	return result;
+}
+
+
 /*****************************************************************************
  * Sort functions 
  *****************************************************************************/
