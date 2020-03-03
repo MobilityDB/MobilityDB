@@ -270,13 +270,11 @@ tpointinst_make_stbox(STBOX *box, TemporalInst *inst)
 void
 tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 {
-	Datum value = temporalinst_value(instants[0]);
 	tpointinst_make_stbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
 	{
 		STBOX box1;
 		memset(&box1, 0, sizeof(STBOX));
-		value = temporalinst_value(instants[i]);
 		tpointinst_make_stbox(&box1, instants[i]);
 		stbox_expand(box, &box1);
 	}
