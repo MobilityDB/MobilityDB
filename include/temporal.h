@@ -280,6 +280,8 @@ extern Oid range_oid_from_base(Oid valuetypid);
 extern Oid temporal_oid_from_base(Oid valuetypid);
 extern Oid base_oid_from_temporal(Oid temptypid);
 extern bool temporal_type_oid(Oid temptypid);
+extern bool tnumber_type_oid(Oid temptypid);
+extern bool tpoint_type_oid(Oid temptypid);
 
 /* Trajectory functions */
 

@@ -19,11 +19,11 @@
 
 /*****************************************************************************/
 
-extern Datum spgist_tnumber_config(PG_FUNCTION_ARGS);
-extern Datum spgist_tnumber_choose(PG_FUNCTION_ARGS);
-extern Datum spgist_tnumber_picksplit(PG_FUNCTION_ARGS);
-extern Datum spgist_tnumber_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum spgist_tnumber_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum spgist_tbox_config(PG_FUNCTION_ARGS);
+extern Datum spgist_tbox_choose(PG_FUNCTION_ARGS);
+extern Datum spgist_tbox_picksplit(PG_FUNCTION_ARGS);
+extern Datum spgist_tbox_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum spgist_tbox_leaf_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_tnumber_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/

@@ -387,10 +387,10 @@ overAfter8D(CubeSTbox *cube_stbox, STBOX *query)
  * SP-GiST config functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_config);
+PG_FUNCTION_INFO_V1(spgist_stbox_config);
 
 PGDLLEXPORT Datum
-spgist_tpoint_config(PG_FUNCTION_ARGS)
+spgist_stbox_config(PG_FUNCTION_ARGS)
 {
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -408,10 +408,10 @@ spgist_tpoint_config(PG_FUNCTION_ARGS)
  * SP-GiST choose functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_choose);
+PG_FUNCTION_INFO_V1(spgist_stbox_choose);
 
 PGDLLEXPORT Datum
-spgist_tpoint_choose(PG_FUNCTION_ARGS)
+spgist_stbox_choose(PG_FUNCTION_ARGS)
 {
 	spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
 	spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -435,10 +435,10 @@ spgist_tpoint_choose(PG_FUNCTION_ARGS)
  * point as the median of the coordinates of the boxes.
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_picksplit);
+PG_FUNCTION_INFO_V1(spgist_stbox_picksplit);
 
 PGDLLEXPORT Datum
-spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
+spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -524,10 +524,10 @@ spgist_tpoint_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions for temporal points
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_inner_consistent);
+PG_FUNCTION_INFO_V1(spgist_stbox_inner_consistent);
 
 PGDLLEXPORT Datum
-spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
+spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 {
 	spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
 	spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -577,7 +577,7 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
 				(GSERIALIZED*)PG_DETOAST_DATUM(in->scankeys[i].sk_argument));
 		else if (subtype == type_oid(T_STBOX))
 			memcpy(&queries[i], DatumGetSTboxP(in->scankeys[i].sk_argument), sizeof(STBOX));
-		else if (temporal_type_oid(subtype))
+		else if (tpoint_type_oid(subtype))
 			temporal_bbox(&queries[i],
 				DatumGetTemporal(in->scankeys[i].sk_argument));
 		else
@@ -698,10 +698,10 @@ spgist_tpoint_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_tpoint_leaf_consistent);
+PG_FUNCTION_INFO_V1(spgist_stbox_leaf_consistent);
 
 PGDLLEXPORT Datum
-spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
+spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 {
 	spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
 	spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -739,7 +739,7 @@ spgist_tpoint_leaf_consistent(PG_FUNCTION_ARGS)
 			memcpy(&query, box, sizeof(STBOX));
 			res = index_leaf_consistent_stbox(key, &query, strategy);
 		}
-		else if (temporal_type_oid(subtype))
+		else if (tpoint_type_oid(subtype))
 		{
 			temporal_bbox(&query,
 				DatumGetTemporal(in->scankeys[i].sk_argument));

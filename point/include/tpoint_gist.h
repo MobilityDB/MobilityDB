@@ -20,11 +20,11 @@
 
 /*****************************************************************************/
 
-extern Datum gist_tpoint_consistent(PG_FUNCTION_ARGS);
-extern Datum gist_tpoint_union(PG_FUNCTION_ARGS);
-extern Datum gist_tpoint_penalty(PG_FUNCTION_ARGS);
-extern Datum gist_tpoint_picksplit(PG_FUNCTION_ARGS);
-extern Datum gist_tpoint_same(PG_FUNCTION_ARGS);
+extern Datum gist_stbox_consistent(PG_FUNCTION_ARGS);
+extern Datum gist_stbox_union(PG_FUNCTION_ARGS);
+extern Datum gist_stbox_penalty(PG_FUNCTION_ARGS);
+extern Datum gist_stbox_picksplit(PG_FUNCTION_ARGS);
+extern Datum gist_stbox_same(PG_FUNCTION_ARGS);
 extern Datum gist_tpoint_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTPoint.c */

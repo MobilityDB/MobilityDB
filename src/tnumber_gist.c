@@ -969,7 +969,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		query = *box;
 	}
-	else if (temporal_type_oid(subtype))
+	else if (tnumber_type_oid(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)

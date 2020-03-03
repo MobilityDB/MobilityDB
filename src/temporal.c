@@ -397,7 +397,32 @@ temporal_type_oid(Oid temptypid)
 	return false;
 }
 
-/* 
+/*
+ * Is the Oid a temporal number type ?
+ * Function used in particular in the indexes.
+ */
+bool
+tnumber_type_oid(Oid temptypid)
+{
+	if (temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT))
+		return true;
+	return false;
+}
+
+/*
+ * Is the Oid a temporal point type ?
+ * Function used in particular in the indexes.
+ */
+bool
+tpoint_type_oid(Oid temptypid)
+{
+	if (temptypid == type_oid(T_TGEOMPOINT) ||
+		temptypid == type_oid(T_TGEOGPOINT))
+		return true;
+	return false;
+}
+
+/*
  * Obtain the Oid of the base type from the Oid of the temporal type  
  */
 Oid

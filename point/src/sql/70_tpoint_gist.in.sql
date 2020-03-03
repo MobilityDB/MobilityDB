@@ -10,33 +10,113 @@
  *
  *****************************************************************************/
 
+CREATE FUNCTION gist_stbox_consistent(internal, stbox, smallint, oid, internal)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gist_stbox_union(internal, internal)
+	RETURNS stbox
+	AS 'MODULE_PATHNAME', 'gist_stbox_union'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gist_stbox_penalty(internal, internal, internal)
+	RETURNS internal
+	AS 'MODULE_PATHNAME', 'gist_stbox_penalty'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gist_stbox_picksplit(internal, internal)
+	RETURNS internal
+	AS 'MODULE_PATHNAME', 'gist_stbox_picksplit'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gist_stbox_same(stbox, stbox, internal)
+	RETURNS internal
+	AS 'MODULE_PATHNAME', 'gist_stbox_same'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS gist_stbox_ops
+	DEFAULT FOR TYPE stbox USING gist AS
+	STORAGE stbox,
+	-- strictly left
+	OPERATOR	1		<< (stbox, stbox),
+	OPERATOR	1		<< (stbox, tgeompoint),
+	-- overlaps or left
+	OPERATOR	2		&< (stbox, stbox),
+	OPERATOR	2		&< (stbox, tgeompoint),
+	-- overlaps
+	OPERATOR	3		&& (stbox, stbox),
+	OPERATOR	3		&& (stbox, tgeompoint),
+	-- overlaps or right
+	OPERATOR	4		&> (stbox, stbox),
+	OPERATOR	4		&> (stbox, tgeompoint),
+  	-- strictly right
+	OPERATOR	5		>> (stbox, stbox),
+	OPERATOR	5		>> (stbox, tgeompoint),
+  	-- same
+	OPERATOR	6		~= (stbox, stbox),
+	OPERATOR	6		~= (stbox, tgeompoint),
+	-- contains
+	OPERATOR	7		@> (stbox, stbox),
+	OPERATOR	7		@> (stbox, tgeompoint),
+	-- contained by
+	OPERATOR	8		<@ (stbox, stbox),
+	OPERATOR	8		<@ (stbox, tgeompoint),
+	-- overlaps or below
+	OPERATOR	9		&<| (stbox, stbox),
+	OPERATOR	9		&<| (stbox, tgeompoint),
+	-- strictly below
+	OPERATOR	10		<<| (stbox, stbox),
+	OPERATOR	10		<<| (stbox, tgeompoint),
+	-- strictly above
+	OPERATOR	11		|>> (stbox, stbox),
+	OPERATOR	11		|>> (stbox, tgeompoint),
+	-- overlaps or above
+	OPERATOR	12		|&> (stbox, stbox),
+	OPERATOR	12		|&> (stbox, tgeompoint),
+	-- nearest approach distance
+--	OPERATOR	25		|=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
+--	OPERATOR	25		|=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+	-- overlaps or before
+	OPERATOR	28		&<# (stbox, stbox),
+	OPERATOR	28		&<# (stbox, tgeompoint),
+	-- strictly before
+	OPERATOR	29		<<# (stbox, stbox),
+	OPERATOR	29		<<# (stbox, tgeompoint),
+	-- strictly after
+	OPERATOR	30		#>> (stbox, stbox),
+	OPERATOR	30		#>> (stbox, tgeompoint),
+	-- overlaps or after
+	OPERATOR	31		#&> (stbox, stbox),
+	OPERATOR	31		#&> (stbox, tgeompoint),
+	-- overlaps or front
+	OPERATOR	32		&</ (stbox, stbox),
+	OPERATOR	32		&</ (stbox, tgeompoint),
+	-- strictly front
+	OPERATOR	33		<</ (stbox, stbox),
+	OPERATOR	33		<</ (stbox, tgeompoint),
+	-- strictly back
+	OPERATOR	34		/>> (stbox, stbox),
+	OPERATOR	34		/>> (stbox, tgeompoint),
+	-- overlaps or back
+	OPERATOR	35		/&> (stbox, stbox),
+	OPERATOR	35		/&> (stbox, tgeompoint),
+	-- functions
+	FUNCTION	1	gist_stbox_consistent(internal, stbox, smallint, oid, internal),
+	FUNCTION	2	gist_stbox_union(internal, internal),
+	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
+	FUNCTION	6	gist_stbox_picksplit(internal, internal),
+	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
+
+/******************************************************************************/
+
 CREATE FUNCTION gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_tpoint_consistent'
+	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal)
 	RETURNS bool
-	AS 'MODULE_PATHNAME', 'gist_tpoint_consistent'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tpoint_union(internal, internal)
-	RETURNS stbox
-	AS 'MODULE_PATHNAME', 'gist_tpoint_union'
+	AS 'MODULE_PATHNAME', 'gist_stbox_consistent'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tpoint_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME', 'gist_tpoint_compress'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tpoint_penalty(internal, internal, internal)
-	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tpoint_penalty'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tpoint_picksplit(internal, internal)
-	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tpoint_picksplit'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION gist_tpoint_same(stbox, stbox, internal)
-	RETURNS internal
-	AS 'MODULE_PATHNAME', 'gist_tpoint_same'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS gist_tgeompoint_ops
@@ -120,11 +200,11 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
 	FUNCTION	1	gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal),
-	FUNCTION	2	gist_tpoint_union(internal, internal),
+	FUNCTION	2	gist_stbox_union(internal, internal),
 	FUNCTION	3	gist_tpoint_compress(internal),
-	FUNCTION	5	gist_tpoint_penalty(internal, internal, internal),
-	FUNCTION	6	gist_tpoint_picksplit(internal, internal),
-	FUNCTION	7	gist_tpoint_same(stbox, stbox, internal);
+	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
+	FUNCTION	6	gist_stbox_picksplit(internal, internal),
+	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
 	
 CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	DEFAULT FOR TYPE tgeogpoint USING gist AS
@@ -163,10 +243,10 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	OPERATOR	31		#&> (tgeogpoint, tgeogpoint),
 	-- functions
 	FUNCTION	1	gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal),
-	FUNCTION	2	gist_tpoint_union(internal, internal),
+	FUNCTION	2	gist_stbox_union(internal, internal),
 	FUNCTION	3	gist_tpoint_compress(internal),
-	FUNCTION	5	gist_tpoint_penalty(internal, internal, internal),
-	FUNCTION	6	gist_tpoint_picksplit(internal, internal),
-	FUNCTION	7	gist_tpoint_same(stbox, stbox, internal);
+	FUNCTION	5	gist_stbox_penalty(internal, internal, internal),
+	FUNCTION	6	gist_stbox_picksplit(internal, internal),
+	FUNCTION	7	gist_stbox_same(stbox, stbox, internal);
 	
 /******************************************************************************/

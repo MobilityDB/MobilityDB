@@ -73,6 +73,71 @@ CREATE OPERATOR CLASS gist_tbool_ops
 
 /******************************************************************************/
 
+CREATE FUNCTION gist_tbox_consistent(internal, tbox, smallint, oid, internal)
+	RETURNS bool
+	AS 'MODULE_PATHNAME', 'gist_tnumber_consistent'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS gist_tbox_ops
+	DEFAULT FOR TYPE tbox USING gist AS
+	STORAGE tbox,
+	-- strictly left
+	OPERATOR	1		<< (tbox, tbox),
+	OPERATOR	1		<< (tbox, tint),
+	OPERATOR	1		<< (tbox, tfloat),
+ 	-- overlaps or left
+	OPERATOR	2		&< (tbox, tbox),
+	OPERATOR	2		&< (tbox, tint),
+	OPERATOR	2		&< (tbox, tfloat),
+	-- overlaps
+	OPERATOR	3		&& (tbox, tbox),
+	OPERATOR	3		&& (tbox, tint),
+	OPERATOR	3		&& (tbox, tfloat),
+	-- overlaps or right
+	OPERATOR	4		&> (tbox, tbox),
+	OPERATOR	4		&> (tbox, tint),
+	OPERATOR	4		&> (tbox, tfloat),
+	-- strictly right
+	OPERATOR	5		>> (tbox, tbox),
+	OPERATOR	5		>> (tbox, tint),
+	OPERATOR	5		>> (tbox, tfloat),
+  	-- same
+	OPERATOR	6		~= (tbox, tbox),
+	OPERATOR	6		~= (tbox, tint),
+	OPERATOR	6		~= (tbox, tfloat),
+	-- contains
+	OPERATOR	7		@> (tbox, tbox),
+	OPERATOR	7		@> (tbox, tint),
+	OPERATOR	7		@> (tbox, tfloat),
+	-- contained by
+	OPERATOR	8		<@ (tbox, tbox),
+	OPERATOR	8		<@ (tbox, tint),
+	OPERATOR	8		<@ (tbox, tfloat),
+	-- overlaps or before
+	OPERATOR	28		&<# (tbox, tbox),
+	OPERATOR	28		&<# (tbox, tint),
+	OPERATOR	28		&<# (tbox, tfloat),
+	-- strictly before
+	OPERATOR	29		<<# (tbox, tbox),
+	OPERATOR	29		<<# (tbox, tint),
+	OPERATOR	29		<<# (tbox, tfloat),
+	-- strictly after
+	OPERATOR	30		#>> (tbox, tbox),
+	OPERATOR	30		#>> (tbox, tint),
+	OPERATOR	30		#>> (tbox, tfloat),
+	-- overlaps or after
+	OPERATOR	31		#&> (tbox, tbox),
+	OPERATOR	31		#&> (tbox, tint),
+	OPERATOR	31		#&> (tbox, tfloat),
+	-- functions
+	FUNCTION	1	gist_tbox_consistent(internal, tbox, smallint, oid, internal),
+	FUNCTION	2	gist_tbox_union(internal, internal),
+	FUNCTION	5	gist_tbox_penalty(internal, internal, internal),
+	FUNCTION	6	gist_tbox_picksplit(internal, internal),
+	FUNCTION	7	gist_tbox_same(tbox, tbox, internal);
+
+/******************************************************************************/
+
 CREATE FUNCTION gist_tint_consistent(internal, tint, smallint, oid, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME', 'gist_tnumber_consistent'
