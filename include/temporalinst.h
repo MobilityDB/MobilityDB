@@ -59,7 +59,6 @@ extern TemporalInst *temporals_to_temporalinst(TemporalS *ts);
 extern ArrayType *temporalinst_values(TemporalInst *inst);
 extern ArrayType *tfloatinst_ranges(TemporalInst *inst);
 extern PeriodSet *temporalinst_get_time(TemporalInst *inst);
-extern void temporalinst_bbox(void *box, TemporalInst *inst);
 extern void temporalinst_period(Period *p, TemporalInst *inst);
 extern ArrayType *temporalinst_timestamps(TemporalInst *inst);
 extern ArrayType *temporalinst_instants_array(TemporalInst *inst);

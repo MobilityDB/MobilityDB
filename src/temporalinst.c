@@ -87,15 +87,6 @@ temporalinst_value_copy(const TemporalInst *inst)
 	return PointerGetDatum(result);
 }
 
-/* Get the bounding box of a TemporalInst */
-
-void
-temporalinst_bbox(void *box, TemporalInst *inst) 
-{
-	Datum value = temporalinst_value(inst);
-	temporalinst_make_bbox(box, value, inst->t, inst->valuetypid);
-}
-
 /* Construct a temporal instant value */
  
 TemporalInst *

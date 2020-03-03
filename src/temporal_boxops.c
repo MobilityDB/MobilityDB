@@ -102,24 +102,24 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 /* Make the bounding box a temporal instant from its values */
 
 void
-temporalinst_make_bbox(void *box, Datum value, TimestampTz t, Oid valuetypid) 
+temporalinst_make_bbox(void *box, TemporalInst *inst)
 {
 	/* Only external types have bounding box */
-	ensure_temporal_base_type(valuetypid);
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-		period_set((Period *)box, t, t, true, true);
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID) 
+	ensure_temporal_base_type(inst->valuetypid);
+	if (inst->valuetypid == BOOLOID || inst->valuetypid == TEXTOID)
+		period_set((Period *)box, inst->t, inst->t, true, true);
+	else if (inst->valuetypid == INT4OID || inst->valuetypid == FLOAT8OID)
 	{
-		double dvalue = datum_double(value, valuetypid);
+		double dvalue = datum_double(temporalinst_value(inst), inst->valuetypid);
 		TBOX *result = (TBOX *)box;
 		result->xmin = result->xmax = dvalue;
-		result->tmin = result->tmax = t;
+		result->tmin = result->tmax = inst->t;
 		MOBDB_FLAGS_SET_X(result->flags, true);
 		MOBDB_FLAGS_SET_T(result->flags, true);
 	}
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY)) 
-		tpointinst_make_stbox((STBOX *)box, value, t);
+	else if (inst->valuetypid == type_oid(T_GEOGRAPHY) ||
+		inst->valuetypid == type_oid(T_GEOMETRY))
+		tpointinst_make_stbox((STBOX *)box, inst);
 }
 
 /* Transform an array of temporal instant to a period */
@@ -147,15 +147,12 @@ tbox_expand(TBOX *box1, const TBOX *box2)
 static void
 tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count) 
 {
-	Oid valuetypid = instants[0]->valuetypid;
-	Datum value = temporalinst_value(instants[0]);
-	temporalinst_make_bbox(box, value, instants[0]->t, valuetypid);
+	temporalinst_make_bbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
 	{
 		TBOX box1;
 		memset(&box1, 0, sizeof(TBOX));
-		value = temporalinst_value(instants[i]);
-		temporalinst_make_bbox(&box1, value, instants[i]->t, valuetypid);
+		temporalinst_make_bbox(&box1, instants[i]);
 		tbox_expand(box, &box1);
 	}
 }
@@ -316,7 +313,7 @@ tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
 	temporal_bbox(box, temp);
 	TBOX box1;
 	memset(&box1, 0, sizeof(TBOX));
-	temporalinst_bbox(&box1, inst);
+	temporalinst_make_bbox(&box1, inst);
 	tbox_expand(box, &box1);
 }
 

@@ -29,6 +29,7 @@
 #include "periodset.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
+#include "temporal_boxops.h"
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_spatialfuncs.h"
@@ -256,11 +257,12 @@ stbox_expand(STBOX *box1, const STBOX *box2)
 }
 
 void
-tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t)
+tpointinst_make_stbox(STBOX *box, TemporalInst *inst)
 {
+	Datum value = temporalinst_value(inst);
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
 	assert(geo_to_stbox_internal(box, gs));
-	box->tmin = box->tmax = t;
+	box->tmin = box->tmax = inst->t;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
@@ -269,13 +271,13 @@ void
 tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 {
 	Datum value = temporalinst_value(instants[0]);
-	tpointinst_make_stbox(box, value, instants[0]->t);
+	tpointinst_make_stbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
 	{
 		STBOX box1;
 		memset(&box1, 0, sizeof(STBOX));
 		value = temporalinst_value(instants[i]);
-		tpointinst_make_stbox(&box1, value, instants[i]->t);
+		tpointinst_make_stbox(&box1, instants[i]);
 		stbox_expand(box, &box1);
 	}
 }
@@ -302,7 +304,7 @@ tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
 	temporal_bbox(box, temp);
 	STBOX box1;
 	memset(&box1, 0, sizeof(STBOX));
-	temporalinst_bbox(&box1, inst);
+	temporalinst_make_bbox(&box1, inst);
 	stbox_expand(box, &box1);
 }
 

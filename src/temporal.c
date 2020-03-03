@@ -1393,7 +1393,7 @@ temporal_bbox(void *box, const Temporal *temp)
 {
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		temporalinst_bbox(box, (TemporalInst *)temp);
+		temporalinst_make_bbox(box, (TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
 		temporali_bbox(box, (TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 
