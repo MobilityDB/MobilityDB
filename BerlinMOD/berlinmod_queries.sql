@@ -113,9 +113,7 @@ LOOP
 	SELECT DISTINCT L.Licence, I.InstantId, I.Instant AS Instant,
 		valueAtTimestamp(T.Trip, I.Instant) AS Pos
 	FROM Trips T, Licences1 L, Instants1 I
-	WHERE T.CarId = L.CarId 
-	-- AND valueAtTimestamp(T.Trip, I.Instant) IS NOT NULL
-	AND T.Trip @> I.Instant IS NOT NULL
+	WHERE T.CarId = L.CarId AND T.Trip @> I.Instant
 	ORDER BY L.Licence, I.InstantId
 	INTO J;
 

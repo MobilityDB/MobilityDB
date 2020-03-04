@@ -434,7 +434,7 @@ static int
 range_sort_cmp(RangeType **l, RangeType **r)
 {
 	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
-										RangeTypePGetDatum(*r)));
+		RangeTypePGetDatum(*r)));
 }
 
 static int
@@ -459,7 +459,7 @@ void
 datum_sort(Datum *values, int count, Oid type)
 {
 	qsort_arg(values, (size_t) count, sizeof(Datum),
-			  (qsort_arg_comparator) &datum_sort_cmp, &type);
+		  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
@@ -532,7 +532,7 @@ timestamp_remove_duplicates(TimestampTz *values, int count)
 
 /*****************************************************************************
  * Text functions
- * Function copied from PostgreSQL since they are not exported
+ * Function copied from PostgreSQL since it is not exported
  *****************************************************************************/
 
 int
