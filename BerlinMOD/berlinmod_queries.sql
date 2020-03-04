@@ -122,7 +122,7 @@ LOOP
 	WITH Temp AS (
 		SELECT DISTINCT T.CarId, I.InstantId, I.Instant, valueAtTimestamp(T.Trip, I.Instant) AS Pos
 		FROM Trips T, Instants1 I
-		WHERE T.Trip @> I.Instant AND valueAtTimestamp(T.Trip, I.Instant) IS NOT NULL )
+		WHERE T.Trip @> I.Instant )
 	SELECT L.Licence, T.InstantId, T.Instant, T.Pos
 	FROM Temp T, Licences1 L
 	WHERE T.CarId = L.CarId 
@@ -153,7 +153,7 @@ LOOP
 	EXPLAIN (ANALYZE, FORMAT JSON)
 	SELECT DISTINCT P.PointId, P.geom, C.Licence
 	FROM Trips T, Cars C, Points P
-	WHERE T.CarId = C.CarId -- AND T.Trip && P.geom
+	WHERE T.CarId = C.CarId
 	AND st_intersects(trajectory(T.Trip), P.geom) 
 	ORDER BY P.PointId, C.Licence
 	INTO J;
@@ -191,13 +191,13 @@ LOOP
 
 	EXPLAIN (ANALYZE, FORMAT JSON)
 	WITH Temp1(Licence1, Trajs) AS (
-		SELECT L1.Licence, st_collect(trajectory(T1.Trip))
+		SELECT L1.Licence, ST_Collect(trajectory(T1.Trip))
 		FROM Trips T1, Licences1 L1
 		WHERE T1.CarId = L1.CarId
 		GROUP BY L1.Licence
 	),
 	Temp2(Licence2, Trajs) AS (
-		SELECT L2.Licence, st_collect(trajectory(T2.Trip))
+		SELECT L2.Licence, ST_Collect(trajectory(T2.Trip))
 		FROM Trips T2, Licences2 L2
 		WHERE T2.CarId = L2.CarId
 		GROUP BY L2.Licence
