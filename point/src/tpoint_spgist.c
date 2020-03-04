@@ -709,9 +709,7 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 	bool res = true;
 	int i;
 
-	/* Since stbox does not distinguish between inclusive and exclusive
-	 * bounds and since all temporal types are implicitly casted to
-	 * stbox, it is not necessary to recheck, i.e. the index is exact */
+	/* Initialize the value to do not recheck, will be updated below */
 	out->recheck = false;
 
 	/* leafDatum is what it is... */
@@ -724,12 +722,8 @@ spgist_stbox_leaf_consistent(PG_FUNCTION_ARGS)
 		Oid subtype = in->scankeys[i].sk_subtype;
 		STBOX query;
 
-		/*
-		 * If the operator class would take into account temporal types it
-		 * is necessary to update the recheck flag according to the strategy
-		 * using the following statement
-		 * 	out->recheck |= index_tpoint_recheck(strategy);
-		 */
+		/* Update the recheck flag according to the strategy */
+		out->recheck |= index_tpoint_recheck(strategy);
 
 		if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 		{

@@ -208,16 +208,13 @@ gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy
  *****************************************************************************/
 
 /*
- * Determine whether a recheck is necessary depending on the strategy.
- * This function is currently not used as stbox does not distinguish between
- * inclusive and exclusive bounds and since all temporal types are implicitly
- * casted to stbox
-
+ * Determine whether a recheck is necessary depending on the strategy
+ */
 bool
 index_tpoint_recheck(StrategyNumber strategy)
 {
-	/ * These operators are based on bounding boxes and do not consider
-	 * inclusive or exclusive bounds * /
+	/* These operators are based on bounding boxes and do not consider
+	 * inclusive or exclusive bounds */
 	switch (strategy)
 	{
 		case RTLeftStrategyNumber:
@@ -237,7 +234,6 @@ index_tpoint_recheck(StrategyNumber strategy)
 			return true;
 	}
 }
-*/
 
 PG_FUNCTION_INFO_V1(gist_stbox_consistent);
 
@@ -247,19 +243,12 @@ gist_stbox_consistent(PG_FUNCTION_ARGS)
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 	Oid subtype = PG_GETARG_OID(3);
-	bool *recheck = (bool *) PG_GETARG_POINTER(4),
-		result;
+	bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
 	STBOX *key = (STBOX *)DatumGetPointer(entry->key), 
 		query;
 	
-	/*
-	 * Since stbox does not distinguish between inclusive and exclusive bounds
-	 * and since all temporal types are implicitly casted to stbox, it is not
-	 * necessary to recheck, i.e. the index is exact. If this is no longer
-	 * the case, the following statement should be used
-	 * 		*recheck = index_tpoint_recheck(strategy);
-	 */
-	*recheck = false;
+	/* Determine whether the index is lossy depending on the strategy */
+	*recheck = index_tpoint_recheck(strategy);
 	
 	if (key == NULL)
 		PG_RETURN_BOOL(false);

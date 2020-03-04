@@ -28,7 +28,7 @@ extern Datum gist_stbox_same(PG_FUNCTION_ARGS);
 extern Datum gist_tpoint_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by IndexSpgistTPoint.c */
-// extern bool index_tpoint_recheck(StrategyNumber strategy);
+extern bool index_tpoint_recheck(StrategyNumber strategy);
 extern bool index_leaf_consistent_stbox(STBOX *key, STBOX *query,
 	StrategyNumber strategy);
 
