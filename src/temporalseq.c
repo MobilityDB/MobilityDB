@@ -3097,13 +3097,14 @@ temporalseq_at_minmax(TemporalSeq **result, TemporalSeq *seq, Datum value)
 TemporalS *
 temporalseq_at_min(TemporalSeq *seq)
 {
-	Datum xmin = temporalseq_min_value(seq);
-	TemporalSeq *sequences[2];
-	int count = temporalseq_at_minmax(sequences, seq, xmin);
+	Datum min = temporalseq_min_value(seq);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = temporalseq_at_minmax(sequences, seq, min);
 	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -3112,8 +3113,8 @@ temporalseq_at_min(TemporalSeq *seq)
 TemporalS *
 temporalseq_minus_min(TemporalSeq *seq)
 {
-	Datum xmin = temporalseq_min_value(seq);
-	return temporalseq_minus_value(seq, xmin);
+	Datum min = temporalseq_min_value(seq);
+	return temporalseq_minus_value(seq, min);
 }
 
 /* Restriction to the maximum value */
@@ -3121,13 +3122,14 @@ temporalseq_minus_min(TemporalSeq *seq)
 TemporalS *
 temporalseq_at_max(TemporalSeq *seq)
 {
-	Datum xmax = temporalseq_max_value(seq);
-	TemporalSeq *sequences[2];
-	int count = temporalseq_at_minmax(sequences, seq, xmax);
+	Datum max = temporalseq_max_value(seq);
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
+	int count = temporalseq_at_minmax(sequences, seq, max);
 	TemporalS *result = temporals_make(sequences, count,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
  
@@ -3136,8 +3138,8 @@ temporalseq_at_max(TemporalSeq *seq)
 TemporalS *
 temporalseq_minus_max(TemporalSeq *seq)
 {
-	Datum xmax = temporalseq_max_value(seq);
-	return temporalseq_minus_value(seq, xmax);
+	Datum max = temporalseq_max_value(seq);
+	return temporalseq_minus_value(seq, max);
 }
 
 /*
