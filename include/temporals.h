@@ -82,7 +82,7 @@ extern TemporalS *tstepws_to_linear(TemporalS *ts);
 extern Datum *temporals_values1(TemporalS *ts, int *count);
 extern ArrayType *temporals_values(TemporalS *ts);
 extern ArrayType *tfloats_ranges(TemporalS *ts);
-extern void *temporals_bbox_ptr(TemporalS *ts);
+extern void *temporals_bbox_ptr(const TemporalS *ts);
 extern void temporals_bbox(void *box, TemporalS *ts);
 extern Datum temporals_min_value(TemporalS *ts);
 extern Datum temporals_max_value(TemporalS *ts);

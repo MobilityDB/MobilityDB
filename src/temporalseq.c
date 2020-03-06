@@ -69,7 +69,7 @@ temporalseq_inst_n(const TemporalSeq *seq, int index)
 /* Pointer to the bounding box of a TemporalSeq */
 
 void * 
-temporalseq_bbox_ptr(TemporalSeq *seq) 
+temporalseq_bbox_ptr(const TemporalSeq *seq)
 {
 	return (char *)(&seq->offsets[seq->count + 2]) +  	/* start of data */
 		seq->offsets[seq->count];						/* offset */

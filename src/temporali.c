@@ -63,7 +63,7 @@ temporali_inst_n(const TemporalI *ti, int index)
 /* Pointer to the bounding box of a TemporalI */
 
 void * 
-temporali_bbox_ptr(TemporalI *ti) 
+temporali_bbox_ptr(const TemporalI *ti)
 {
 	return (char *)(&ti->offsets[ti->count + 1]) +  /* start of data */
 		ti->offsets[ti->count];						/* offset */

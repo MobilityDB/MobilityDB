@@ -82,7 +82,7 @@ extern Datum *temporalseq_values1(TemporalSeq *seq, int *count);
 extern ArrayType *temporalseq_values(TemporalSeq *seq);
 extern int tfloatseq_ranges1(RangeType **result, TemporalSeq *seq);
 extern PeriodSet *temporalseq_get_time(TemporalSeq *seq);
-extern void *temporalseq_bbox_ptr(TemporalSeq *seq);
+extern void *temporalseq_bbox_ptr(const TemporalSeq *seq);
 extern void temporalseq_bbox(void *box, TemporalSeq *seq);
 extern RangeType *tfloatseq_range(TemporalSeq *seq);
 extern ArrayType *tfloatseq_ranges(TemporalSeq *seq);

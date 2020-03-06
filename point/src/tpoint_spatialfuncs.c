@@ -346,26 +346,22 @@ tpointinst_srid(const TemporalInst *inst)
 int
 tpointi_srid(const TemporalI *ti)
 {
-	TemporalInst *inst = temporali_inst_n(ti, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
-	return gserialized_get_srid(gs);
+	STBOX *box = temporali_bbox_ptr(ti);
+	return box->srid;
 }
 
 int
 tpointseq_srid(const TemporalSeq *seq)
 {
-	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
-	return gserialized_get_srid(gs);
+	STBOX *box = temporalseq_bbox_ptr(seq);
+	return box->srid;
 }
 
 int
 tpoints_srid(const TemporalS *ts)
 {
-	TemporalSeq *seq = temporals_seq_n(ts, 0);
-	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
-	return gserialized_get_srid(gs);
+	STBOX *box = temporals_bbox_ptr(ts);
+	return box->srid;
 }
 
 int
@@ -373,7 +369,7 @@ tpoint_srid_internal(const Temporal *temp)
 {
 	int result = 0;
 	ensure_valid_duration(temp->duration);
-	ensure_point_base_type(temp->valuetypid) ;
+	ensure_point_base_type(temp->valuetypid);
 	if (temp->duration == TEMPORALINST)
 		result = tpointinst_srid((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
@@ -421,6 +417,8 @@ tpointi_set_srid(TemporalI *ti, int32 srid)
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 		gserialized_set_srid(gs, srid);
 	}
+	STBOX *box = temporali_bbox_ptr(result);
+	box->srid = srid;
 	return result;
 }
 
@@ -434,6 +432,8 @@ tpointseq_set_srid(TemporalSeq *seq, int32 srid)
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(temporalinst_value_ptr(inst));
 		gserialized_set_srid(gs, srid);
 	}
+	STBOX *box = temporalseq_bbox_ptr(result);
+	box->srid = srid;
 	return result;
 }
 
@@ -451,6 +451,8 @@ tpoints_set_srid(TemporalS *ts, int32 srid)
 			gserialized_set_srid(gs, srid);
 		}
 	}
+	STBOX *box = temporals_bbox_ptr(result);
+	box->srid = srid;
 	return result;
 }
 

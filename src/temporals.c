@@ -62,7 +62,7 @@ temporals_seq_n(const TemporalS *ts, int index)
 /* Pointer to the bounding box of a TemporalS */
 
 void *
-temporals_bbox_ptr(TemporalS *ts) 
+temporals_bbox_ptr(const TemporalS *ts)
 {
 	return (char *)(&ts->offsets[ts->count + 1]) +  /* start of data */
 		ts->offsets[ts->count];						/* offset */
