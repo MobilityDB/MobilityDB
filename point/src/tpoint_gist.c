@@ -66,6 +66,9 @@ index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
 		case RTSameStrategyNumber:
 			retval = same_stbox_stbox_internal(key, query);
 			break;
+		case RTAdjacentStrategyNumber:
+			retval = adjacent_stbox_stbox_internal(key, query);
+			break;
 		case RTLeftStrategyNumber:
 			retval = left_stbox_stbox_internal(key, query);
 			break;
@@ -147,6 +150,10 @@ gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy
 		case RTSameStrategyNumber:
 			retval = contains_stbox_stbox_internal(key, query);
 			break;
+		case RTAdjacentStrategyNumber:
+			if (adjacent_stbox_stbox_internal(key, query))
+				return true;
+			return overlaps_stbox_stbox_internal(key, query);
 		case RTLeftStrategyNumber:
 			retval = !overright_stbox_stbox_internal(key, query);
 			break;

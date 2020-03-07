@@ -233,9 +233,9 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	OPERATOR	8		<@ (tgeogpoint, stbox),  
 	OPERATOR	8		<@ (tgeogpoint, tgeogpoint),  
 	-- adjacent
-	OPERATOR	17		-|- (tgeogpoint, geometry),
+	OPERATOR	17		-|- (tgeogpoint, geography),
 	OPERATOR	17		-|- (tgeogpoint, stbox),
-	OPERATOR	17		-|- (tgeogpoint, tgeompoint),
+	OPERATOR	17		-|- (tgeogpoint, tgeogpoint),
 	-- distance
 --	OPERATOR	25		<-> (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
 --	OPERATOR	25		<-> (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,

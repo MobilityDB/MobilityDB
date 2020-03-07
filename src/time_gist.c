@@ -543,6 +543,8 @@ index_leaf_consistent_time(Period *key, Period *query, StrategyNumber strategy)
 		case RTEqualStrategyNumber:
 		case RTSameStrategyNumber:
 			return period_eq_internal(key, query);
+		case RTAdjacentStrategyNumber:
+			return adjacent_period_period_internal(key, query);
 		case RTBeforeStrategyNumber:
 			return before_period_period_internal(key, query);
 		case RTOverBeforeStrategyNumber:
@@ -572,6 +574,9 @@ index_internal_consistent_period(Period *key, Period *query, StrategyNumber stra
 		case RTEqualStrategyNumber:
 		case RTSameStrategyNumber:
 			return contains_period_period_internal(key, query);
+		case RTAdjacentStrategyNumber:
+			return adjacent_period_period_internal(key, query) ||
+				overlaps_period_period_internal(key, query);
 		case RTBeforeStrategyNumber:
 			return !overafter_period_period_internal(key, query);
 		case RTOverBeforeStrategyNumber:
