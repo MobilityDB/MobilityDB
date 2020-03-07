@@ -70,6 +70,9 @@ CREATE OPERATOR CLASS gist_stbox_ops
 	-- overlaps or above
 	OPERATOR	12		|&> (stbox, stbox),
 	OPERATOR	12		|&> (stbox, tgeompoint),
+	-- adjacent
+	OPERATOR	17		-|- (stbox, stbox),
+	OPERATOR	17		-|- (stbox, tgeompoint),
 	-- nearest approach distance
 --	OPERATOR	25		|=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
 --	OPERATOR	25		|=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
@@ -170,6 +173,10 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
 	OPERATOR	12		|&> (tgeompoint, geometry),  
 	OPERATOR	12		|&> (tgeompoint, stbox),  
 	OPERATOR	12		|&> (tgeompoint, tgeompoint),  
+	-- adjacent
+	OPERATOR	17		-|- (tgeompoint, geometry),
+	OPERATOR	17		-|- (tgeompoint, stbox),
+	OPERATOR	17		-|- (tgeompoint, tgeompoint),
 	-- nearest approach distance
 	OPERATOR	25		|=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
 --	OPERATOR	25		|=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
@@ -225,6 +232,10 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
 	OPERATOR	8		<@ (tgeogpoint, geography),  
 	OPERATOR	8		<@ (tgeogpoint, stbox),  
 	OPERATOR	8		<@ (tgeogpoint, tgeogpoint),  
+	-- adjacent
+	OPERATOR	17		-|- (tgeogpoint, geometry),
+	OPERATOR	17		-|- (tgeogpoint, stbox),
+	OPERATOR	17		-|- (tgeogpoint, tgeompoint),
 	-- distance
 --	OPERATOR	25		<-> (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
 --	OPERATOR	25		<-> (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
