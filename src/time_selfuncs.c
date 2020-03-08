@@ -290,9 +290,7 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 	while (lower < upper)
 	{
 		middle = (lower + upper + 1) / 2;
-		cmp = period_cmp_bounds(hist[middle].val, value->val,
-								hist[middle].lower, value->lower,
-								hist[middle].inclusive, value->inclusive);
+		cmp = period_cmp_bounds(&hist[middle], value);
 
 		if (cmp < 0 || (equal && cmp == 0))
 			lower = middle;
@@ -308,7 +306,7 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist,
 static float8
 get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
 {
-	return period_to_secs(bound2->val, bound1->val);
+	return period_to_secs(bound2->t, bound1->t);
 }
 
 /*
@@ -669,9 +667,7 @@ calc_period_hist_selectivity_contained(PeriodBound *lower, PeriodBound *upper,
 		 * of the constant period, if this is the final bin, containing the
 		 * constant lower bound.
 		 */
-		if (period_cmp_bounds(hist_lower[i].val, lower->val,
-							  hist_lower[i].lower, lower->lower,
-							  hist_lower[i].inclusive, lower->inclusive) < 0)
+		if (period_cmp_bounds(&hist_lower[i], lower) < 0)
 		{
 			dist = get_period_distance(lower, upper);
 

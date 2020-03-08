@@ -564,10 +564,10 @@ interval_cmp_upper(const void *i1, const void *i2)
  * Replace negative (or NaN) value with zero.
  */
 static inline float
-non_negative(float val)
+non_negative(float value)
 {
-	if (FLOAT8_GE(val, 0.0f))
-		return val;
+	if (FLOAT8_GE(value, 0.0f))
+		return value;
 	else
 		return 0.0f;
 }

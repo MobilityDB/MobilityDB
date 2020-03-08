@@ -192,9 +192,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 			 * will have an even smaller lower bound, and thus can't
 			 * match.
 			 */
-			if (period_cmp_bounds(centroidLower.val, minLower->val, 
-					centroidLower.lower, minLower->lower,
-					centroidLower.inclusive, minLower->inclusive) <= 0)
+			if (period_cmp_bounds(&centroidLower, minLower) <= 0)
 				which &= (1 << 1) | (1 << 2);
 		}
 		if (maxLower)
@@ -210,9 +208,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 			 */
 			int			cmp;
 
-			cmp = period_cmp_bounds(centroidLower.val, maxLower->val, 
-				centroidLower.lower, maxLower->lower, 
-				centroidLower.inclusive, maxLower->inclusive);
+			cmp = period_cmp_bounds(&centroidLower, maxLower);
 			if (cmp > 0 || (!inclusive && cmp == 0))
 				which &= (1 << 3) | (1 << 4);
 		}
@@ -224,9 +220,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 			 * will have an even smaller upper bound, and thus can't
 			 * match.
 			 */
-			if (period_cmp_bounds(centroidUpper.val, minUpper->val, 
-					centroidUpper.lower, minUpper->lower,
-					centroidUpper.inclusive, minUpper->inclusive) <= 0)
+			if (period_cmp_bounds(&centroidUpper, minUpper) <= 0)
 				which &= (1 << 1) | (1 << 4);
 		}
 		if (maxUpper)
@@ -242,9 +236,7 @@ spgist_temporal_inner_consistent(PG_FUNCTION_ARGS)
 			 */
 			int			cmp;
 
-			cmp = period_cmp_bounds(centroidUpper.val, maxUpper->val, 
-					centroidUpper.lower, maxUpper->lower, 
-					centroidUpper.inclusive, maxUpper->inclusive);
+			cmp = period_cmp_bounds(&centroidUpper, maxUpper);
 			if (cmp > 0 || (!inclusive && cmp == 0))
 				which &= (1 << 2) | (1 << 3);
 		}

@@ -35,7 +35,7 @@ typedef struct
 /* Internal representation of either bound of a period (not what's on disk) */
 typedef struct
 {
-	TimestampTz val;			/* the bound value */
+	TimestampTz t;			/* the bound value */
 	bool inclusive;				/* bound is inclusive (vs exclusive) */
 	bool lower;					/* this is the lower (vs upper) bound */
 } PeriodBound;

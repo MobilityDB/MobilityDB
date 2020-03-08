@@ -74,8 +74,8 @@ extern bool temporalinst_always_le(TemporalInst *inst, Datum value);
 
 /* Restriction Functions */
 
-extern TemporalInst *temporalinst_at_value(TemporalInst *inst, Datum val);
-extern TemporalInst *temporalinst_minus_value(TemporalInst *inst, Datum val);
+extern TemporalInst *temporalinst_at_value(TemporalInst *inst, Datum value);
+extern TemporalInst *temporalinst_minus_value(TemporalInst *inst, Datum value);
 extern TemporalInst *temporalinst_at_values(TemporalInst *inst, Datum *values, int count);
 extern TemporalInst *temporalinst_minus_values(TemporalInst *inst, Datum *values, int count);
 extern TemporalInst *tnumberinst_at_range(TemporalInst *inst, RangeType *range);

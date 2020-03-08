@@ -3589,14 +3589,18 @@ minus_period_timestampset(PG_FUNCTION_ARGS)
 static int
 minus_period_period_internal1(Period **result, Period *p1, Period *p2)
 {
-	int cmp_l1l2 = period_cmp_bounds(p1->lower, p2->lower, true, true,
-		p1->lower_inc, p2->lower_inc);
-	int cmp_l1u2 = period_cmp_bounds(p1->lower, p2->upper, true, false,
-		p1->lower_inc, p2->upper_inc);
-	int cmp_u1l2 = period_cmp_bounds(p1->upper, p2->lower, false, true,
-		p1->upper_inc, p2->lower_inc);
-	int cmp_u1u2 = period_cmp_bounds(p1->upper, p2->upper, false, false,
-		p1->upper_inc, p2->upper_inc);
+	PeriodBound	lower1,
+				lower2,
+				upper1,
+				upper2;
+
+	period_deserialize(p1, &lower1, &upper1);
+	period_deserialize(p2, &lower2, &upper2);
+
+	int cmp_l1l2 = period_cmp_bounds(&lower1, &lower2);
+	int cmp_l1u2 = period_cmp_bounds(&lower1, &upper2);
+	int cmp_u1l2 = period_cmp_bounds(&upper1, &lower2);
+	int cmp_u1u2 = period_cmp_bounds(&upper1, &upper2);
 
 	if (cmp_l1l2 >= 0 && cmp_u1u2 <= 0)
 		return 0;

@@ -1151,8 +1151,8 @@ temps_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		period_deserialize(&period, &period_lower, &period_upper);
 		time_lowers[non_null_cnt] = period_lower;
 		time_uppers[non_null_cnt] = period_upper;
-		time_lengths[non_null_cnt] = period_to_secs(period_upper.val, 
-			period_lower.val);
+		time_lengths[non_null_cnt] = period_to_secs(period_upper.t,
+			period_lower.t);
 
 		non_null_cnt++;
 	}
