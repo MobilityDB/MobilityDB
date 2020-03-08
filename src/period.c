@@ -258,7 +258,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
  * the intervening values into the result period.
  */
 Period *
-period_super_union(Period *p1, Period *p2)
+period_super_union_old(Period *p1, Period *p2)
 {
 	PeriodBound	lower1,
 				lower2,
@@ -288,6 +288,29 @@ period_super_union(Period *p1, Period *p2)
 
 	return period_make(result_lower->t, result_upper->t,
 		result_lower->inclusive, result_upper->inclusive);
+}
+
+Period *
+period_super_union(Period *p1, Period *p2)
+{
+	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
+	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
+
+	/* optimization to avoid constructing a new period */
+	if (lower1 && upper1)
+		/* p1 contains p2 */
+		return p1;
+	if (! lower1 && ! upper1)
+		/* p2 contains p1 */
+		return p2;
+
+	TimestampTz lower = lower1 ? p1->lower : p2->lower;
+	bool lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
+	TimestampTz upper = upper1 ? p1->upper : p2->upper;
+	bool upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
+	return period_make(lower, upper, lower_inc, upper_inc);
 }
  
 /*****************************************************************************

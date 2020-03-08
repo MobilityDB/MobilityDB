@@ -607,6 +607,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 			{
 				case RTOverlapStrategyNumber:
 				case RTContainedByStrategyNumber:
+				case RTAdjacentStrategyNumber:
 					flag = overlap8D(next_cube_stbox, &queries[i]);
 					break;
 				case RTContainsStrategyNumber:

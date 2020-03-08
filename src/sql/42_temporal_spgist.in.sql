@@ -67,8 +67,8 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 	OPERATOR	8		<@ (tbool, period),
 	OPERATOR	8		<@ (tbool, tbool),
 	-- adjacent
---	OPERATOR	17		-|- (tbool, period),
---	OPERATOR	17		-|- (tbool, tbool),
+	OPERATOR	17		-|- (tbool, period),
+	OPERATOR	17		-|- (tbool, tbool),
 	-- overlaps or before
 	OPERATOR	28		&<# (tbool, period),
 	OPERATOR	28		&<# (tbool, tbool),
@@ -126,9 +126,9 @@ CREATE OPERATOR CLASS spgist_tbox_ops
 	OPERATOR	8		<@ (tbox, tint),
 	OPERATOR	8		<@ (tbox, tfloat),
 	-- adjacent
---	OPERATOR	17		-|- (tbox, tbox),
---	OPERATOR	17		-|- (tbox, tint),
---	OPERATOR	17		-|- (tbox, tfloat),
+	OPERATOR	17		-|- (tbox, tbox),
+	OPERATOR	17		-|- (tbox, tint),
+	OPERATOR	17		-|- (tbox, tfloat),
 	-- overlaps or before
 	OPERATOR	28		&<# (tbox, tbox),
 	OPERATOR	28		&<# (tbox, tint),
@@ -197,10 +197,10 @@ CREATE OPERATOR CLASS spgist_tint_ops
 	OPERATOR	8		<@ (tint, tint),
 	OPERATOR	8		<@ (tint, tfloat),
 	-- adjacent
---	OPERATOR	17		-|- (tint, intrange),
---	OPERATOR	17		-|- (tint, tbox),
---	OPERATOR	17		-|- (tint, tint),
---	OPERATOR	17		-|- (tint, tfloat),
+	OPERATOR	17		-|- (tint, intrange),
+	OPERATOR	17		-|- (tint, tbox),
+	OPERATOR	17		-|- (tint, tint),
+	OPERATOR	17		-|- (tint, tfloat),
 	-- overlaps or before
 	OPERATOR	28		&<# (tint, tbox),
 	OPERATOR	28		&<# (tint, tint),
@@ -270,10 +270,10 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	8		<@ (tfloat, tint),
 	OPERATOR	8		<@ (tfloat, tfloat),
 	-- adjacent
---	OPERATOR	17		-|- (tfloat, floatrange),
---	OPERATOR	17		-|- (tfloat, tbox),
---	OPERATOR	17		-|- (tfloat, tint),
---	OPERATOR	17		-|- (tfloat, tfloat),
+	OPERATOR	17		-|- (tfloat, floatrange),
+	OPERATOR	17		-|- (tfloat, tbox),
+	OPERATOR	17		-|- (tfloat, tint),
+	OPERATOR	17		-|- (tfloat, tfloat),
 	-- overlaps or before
 	OPERATOR	28		&<# (tfloat, tbox),
 	OPERATOR	28		&<# (tfloat, tint),
@@ -315,8 +315,8 @@ CREATE OPERATOR CLASS spgist_ttext_ops
 	OPERATOR	8		<@ (ttext, period),
 	OPERATOR	8		<@ (ttext, ttext),
 	-- adjacent
---	OPERATOR	17		-|- (ttext, period),
---	OPERATOR	17		-|- (ttext, ttext),
+	OPERATOR	17		-|- (ttext, period),
+	OPERATOR	17		-|- (ttext, ttext),
 	-- overlaps or before
 	OPERATOR	28		&<# (ttext, period),
 	OPERATOR	28		&<# (ttext, ttext),

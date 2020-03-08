@@ -198,26 +198,15 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /*
- * Check if two bounds A and B are "adjacent", where A is an upper bound and B
- * is a lower bound. For the bounds to be adjacent, each timestamp must
- * satisfy strictly one of the bounds: there are no timestamp which satisfy both
- * bounds (i.e. less than A and greater than B); and there are no timestamp which
- * satisfy neither bound (i.e. greater than A and less than B).
- *
- * If A == B, the ranges are adjacent only if the bounds have different
- * inclusive flags (i.e., exactly one of the ranges includes the common
- * boundary point).
- *
- * And if A > B then the ranges are not adjacent in this order.
+ * Check if two bounds A and B are adjacent, where A is an upper bound and B
+ * is a lower bound.
  */
 bool
-period_bounds_adjacent(PeriodBound boundA, PeriodBound boundB)
+period_bounds_adjacent(PeriodBound *boundA, PeriodBound *boundB)
 {
 	Assert(!boundA.lower && boundB.lower);
-	if (period_cmp_bounds(&boundA, &boundB) == 0)
-		return boundA.inclusive != boundB.inclusive;
-	else
-		return false;			/* bounds overlap */
+	return timestamp_cmp_internal(boundA->t, boundB->t) == 0 &&
+		boundA->inclusive != boundB->inclusive;
 }
 
 /*
@@ -266,7 +255,7 @@ adjacent_cmp_bounds(PeriodBound *arg, PeriodBound *centroid)
 		 * adjacent, to the centroid. Otherwise search right.
 		 *------
 		 */
-		if (cmp < 0 && ! period_bounds_adjacent(*arg, *centroid))
+		if (cmp < 0 && ! period_bounds_adjacent(arg, centroid))
 			return -1;
 		else
 			return 1;
