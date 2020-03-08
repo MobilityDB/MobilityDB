@@ -258,39 +258,6 @@ periodarr_normalize(Period **periods, int count, int *newcount)
  * the intervening values into the result period.
  */
 Period *
-period_super_union_old(Period *p1, Period *p2)
-{
-	PeriodBound	lower1,
-				lower2,
-				upper1,
-				upper2;
-	PeriodBound *result_lower;
-	PeriodBound *result_upper;
-
-	period_deserialize(p1, &lower1, &upper1);
-	period_deserialize(p2, &lower2, &upper2);
-
-	if (period_cmp_bounds(&lower1, &lower2) <= 0)
-		result_lower = &lower1;
-	else
-		result_lower = &lower2;
-
-	if (period_cmp_bounds(&upper1, &upper2) >= 0)
-		result_upper = &upper1;
-	else
-		result_upper = &upper2;
-
-	/* optimization to avoid constructing a new range */
-	if (result_lower == &lower1 && result_upper == &upper1)
-		return p1;
-	if (result_lower == &lower2 && result_upper == &upper2)
-		return p2;
-
-	return period_make(result_lower->t, result_upper->t,
-		result_lower->inclusive, result_upper->inclusive);
-}
-
-Period *
 period_super_union(Period *p1, Period *p2)
 {
 	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
