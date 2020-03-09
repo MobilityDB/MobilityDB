@@ -2687,7 +2687,7 @@ SELECT ST_CPAWithin(
 
 				<listitem>
 					<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
-					<para><varname>geoMeasure(geo, tfloat, segmentize = false): geo</varname></para>
+					<para><varname>geoMeasure(tpoint, tfloat, segmentize = false): geo</varname></para>
 					<para>The last <varname>segmentize</varname> argument states whether a resulting Linestring M value is transformed into a MultiLinestring M, where each component is a segment of two points.</para>
 
 					<programlisting>

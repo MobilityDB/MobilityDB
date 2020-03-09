@@ -218,8 +218,7 @@ stbox_parse(char **str)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
-	result->srid = srid;
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
 	if (hasx)
 	{
 		if (xmin > xmax)

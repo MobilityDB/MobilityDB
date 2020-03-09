@@ -30,13 +30,14 @@
  *****************************************************************************/
 
 STBOX *
-stbox_new(bool hasx, bool hasz, bool hast, bool geodetic)
+stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid)
 {
 	STBOX *result = palloc0(sizeof(STBOX));
 	MOBDB_FLAGS_SET_X(result->flags, hasx);
 	MOBDB_FLAGS_SET_Z(result->flags, hasz);
 	MOBDB_FLAGS_SET_T(result->flags, hast);
 	MOBDB_FLAGS_SET_GEODETIC(result->flags, geodetic);
+	result->srid = srid;
 	return result;
 }
 
@@ -227,8 +228,7 @@ stbox_constructor(PG_FUNCTION_ARGS)
 		hasx = hasz = hast = true;
 	}
 
-	STBOX *result = stbox_new(hasx, hasz, hast, false);
-	result->srid = srid;
+	STBOX *result = stbox_new(hasx, hasz, hast, false, srid);
 	/* Process X min/max */
 	if (hasx)
 	{
@@ -298,8 +298,7 @@ stboxt_constructor(PG_FUNCTION_ARGS)
 	tmax = PG_GETARG_TIMESTAMPTZ(5);
 	srid = PG_GETARG_INT32(6);
 
-	STBOX *result = stbox_new(true, false, true, false);
-	result->srid = srid;
+	STBOX *result = stbox_new(true, false, true, false, srid);
 	/* Process X min/max */
 	if (xmin > xmax)
 	{
@@ -376,8 +375,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 		hasx = hasz = hast = true;
 	}
 
-	STBOX *result = stbox_new(hasx, hasz, hast, true);
-	result->srid = srid;
+	STBOX *result = stbox_new(hasx, hasz, hast, true, srid);
 	/* Process X min/max */
 	if (hasx)
 	{
@@ -1244,7 +1242,7 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2)
 	bool hast = MOBDB_FLAGS_GET_T(box1->flags);
 	bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags);
 
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, box1->srid);
 	if (hasx)
 	{
 		result->xmin = Min(box1->xmin, box2->xmin);
@@ -1297,7 +1295,7 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
 		(hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
 		return(NULL);
 
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, box1->srid);
 	if (hasx)
 	{
 		result->xmin = Max(box1->xmin, box2->xmin);
