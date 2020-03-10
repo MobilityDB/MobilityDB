@@ -279,7 +279,23 @@ period_super_union(Period *p1, Period *p2)
 	bool upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
 	return period_make(lower, upper, lower_inc, upper_inc);
 }
- 
+
+/* Expand the first period with the second one */
+
+void
+period_expand(Period *p1, const Period *p2)
+{
+	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
+	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
+
+	p1->lower = lower1 ? p1->lower : p2->lower;
+	p1->lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
+	p1->upper = upper1 ? p1->upper : p2->upper;
+	p1->upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/

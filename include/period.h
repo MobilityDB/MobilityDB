@@ -88,6 +88,7 @@ extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_timespan_internal(Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(Period *p1, Period *p2);
+extern void period_expand(Period *p1, const Period *p2);
 
 extern int period_bound_qsort_cmp(const void *a1, const void *a2);
 

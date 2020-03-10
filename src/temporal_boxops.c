@@ -91,7 +91,21 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 		result = stbox_cmp_internal((STBOX *)box1, (STBOX *)box2);
 	/* Types without bounding box, for example, doubleN */
 	return result;
-} 
+}
+
+void
+temporal_bbox_expand(Oid valuetypid, void *box1, const void *box2)
+{
+	/* Only external types have bounding box */
+	ensure_temporal_base_type(valuetypid);
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		period_expand((Period *)box1, (Period *)box2);
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		tbox_expand((TBOX *)box1, (TBOX *)box2);
+	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+			 valuetypid == type_oid(T_GEOMETRY))
+		stbox_expand((STBOX *)box1, (STBOX *)box2);
+}
 
 /*****************************************************************************
  * Compute the bounding box at the creation of temporal values

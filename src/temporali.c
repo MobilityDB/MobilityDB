@@ -427,22 +427,6 @@ temporali_read(StringInfo buf, Oid valuetypid)
 }
 
 /*****************************************************************************
- * Append function
- *****************************************************************************/
-
- /* Append an instant to the end of a temporal */
-/*
-TemporalI *
-temporali_append_instant(TemporalI *ti, TemporalInst *inst)
-{
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * (ti->count + 1));
-	for (int i = 0; i < ti->count; i++)
-		instants[i] = temporali_inst_n(ti, i);
-	instants[ti->count] = inst;
-	return temporali_make(instants, ti->count + 1);
-}
-*/
-/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 

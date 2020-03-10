@@ -39,6 +39,7 @@ extern size_t temporal_bbox_size(Oid valuetypid);
 
 extern bool temporal_bbox_eq(Oid valuetypid, void *box1, void *box2);
 extern int temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2);
+extern void temporal_bbox_expand(Oid valuetypid, void *box1, const void *box2);
 
 /* Compute the bounding box at the creation of temporal values */
 

@@ -948,7 +948,9 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 	if (inst->duration != TEMPORALINST) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
-	assert(temp->valuetypid == inst->valuetypid);
+	if (temp->valuetypid != inst->valuetypid)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("Both arguments must be of the same base type")));
 
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
