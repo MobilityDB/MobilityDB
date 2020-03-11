@@ -13,6 +13,7 @@
 #include "stbox.h"
 
 #include <assert.h>
+#include <utils/builtins.h>
 #include <utils/timestamp.h>
 
 #include "period.h"
@@ -47,6 +48,35 @@ stbox_copy(const STBOX *box)
 	STBOX *result = palloc0(sizeof(STBOX));
 	memcpy(result, box, sizeof(STBOX));
 	return result;
+}
+
+/* Expand the first box with the second one */
+
+void
+stbox_expand(STBOX *box1, const STBOX *box2)
+{
+	box1->xmin = Min(box1->xmin, box2->xmin);
+	box1->xmax = Max(box1->xmax, box2->xmax);
+	box1->ymin = Min(box1->ymin, box2->ymin);
+	box1->ymax = Max(box1->ymax, box2->ymax);
+	box1->zmin = Min(box1->zmin, box2->zmin);
+	box1->zmax = Max(box1->zmax, box2->zmax);
+	box1->tmin = Min(box1->tmin, box2->tmin);
+	box1->tmax = Max(box1->tmax, box2->tmax);
+}
+
+/* Shift the bounding box with an interval */
+
+void
+stbox_shift(STBOX *box, const Interval *interval)
+{
+	box->tmin = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
+	box->tmax = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+	return;
 }
 
 /*****************************************************************************

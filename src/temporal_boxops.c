@@ -39,6 +39,9 @@
 #include "stbox.h"
 #include "tpoint_boxops.h"
 
+/*****************************************************************************
+ * Functions on generic bounding boxes of temporal types
+ *****************************************************************************/
 /* Size of bounding box */
 
 size_t
@@ -55,12 +58,10 @@ temporal_bbox_size(Oid valuetypid)
 	return 0;
 }
 
-/*****************************************************************************
- * Equality and comparison of bounding boxes of temporal types
- *****************************************************************************/
+/* Equality of bounding boxes */
 
 bool
-temporal_bbox_eq(Oid valuetypid, void *box1, void *box2) 
+temporal_bbox_eq(void *box1, void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
@@ -76,8 +77,10 @@ temporal_bbox_eq(Oid valuetypid, void *box1, void *box2)
 	return result;
 } 
 
+/* Comparison of bounding boxes */
+
 int
-temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2) 
+temporal_bbox_cmp(void *box1, void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
@@ -93,8 +96,10 @@ temporal_bbox_cmp(Oid valuetypid, void *box1, void *box2)
 	return result;
 }
 
+/* Expand the first bounding box with the second one */
+
 void
-temporal_bbox_expand(Oid valuetypid, void *box1, const void *box2)
+temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
@@ -103,8 +108,24 @@ temporal_bbox_expand(Oid valuetypid, void *box1, const void *box2)
 	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
 		tbox_expand((TBOX *)box1, (TBOX *)box2);
 	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-			 valuetypid == type_oid(T_GEOMETRY))
+		valuetypid == type_oid(T_GEOMETRY))
 		stbox_expand((STBOX *)box1, (STBOX *)box2);
+}
+
+/* Shift the bounding box with an interval */
+
+void
+temporal_bbox_shift(void *box, Interval *interval, Oid valuetypid)
+{
+	ensure_temporal_base_type(valuetypid);
+	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+		period_shift_internal((Period *)box, interval);
+	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		tbox_shift((TBOX *)box, interval);
+	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
+		valuetypid == type_oid(T_GEOMETRY))
+		stbox_shift((STBOX *)box, interval);
+	return;
 }
 
 /*****************************************************************************
@@ -145,16 +166,6 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
 }
 
-/* Expand the first box with the second one */
-
-void
-tbox_expand(TBOX *box1, const TBOX *box2)
-{
-	box1->xmin = Min(box1->xmin, box2->xmin);
-	box1->xmax = Max(box1->xmax, box2->xmax);
-	box1->tmin = Min(box1->tmin, box2->tmin);
-	box1->tmax = Max(box1->tmax, box2->tmax);
-}
 
 /* Transform an array of tnumber instant to a box */
 
@@ -251,160 +262,7 @@ temporals_make_bbox(void *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
- * Shift the bounding box of a Temporal with an Interval
- *****************************************************************************/
-
-void 
-shift_bbox(void *box, Oid valuetypid, Interval *interval)
-{
-	ensure_temporal_base_type(valuetypid);
-	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-	{
-        Period *period = (Period *)box;
-		period->lower = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(period->lower), PointerGetDatum(interval)));
-		period->upper = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(period->upper), PointerGetDatum(interval)));
-		return;
-	}
-	else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
-	{
-		TBOX *tbox = (TBOX *)box;
-		tbox->tmin = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(tbox->tmin), PointerGetDatum(interval)));
-		tbox->tmax = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(tbox->tmax), PointerGetDatum(interval)));
-		return;
-	}
-	else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-		valuetypid == type_oid(T_GEOMETRY))
-	{
-		STBOX *stbox = (STBOX *)box;
-		stbox->tmin = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(stbox->tmin), PointerGetDatum(interval)));
-		stbox->tmax = DatumGetTimestampTz(
-			DirectFunctionCall2(timestamptz_pl_interval,
-			TimestampTzGetDatum(stbox->tmax), PointerGetDatum(interval)));
-		return;
-	}
-}
-
-/*****************************************************************************
- * Expand the bounding box of a Temporal with a TemporalInst
- * The functions assume that the argument box is set to 0 before with palloc0
- *****************************************************************************/
-
-static void
-temporali_expand_period(Period *period, TemporalI *ti, TemporalInst *inst)
-{
-	TemporalInst *inst1 = temporali_inst_n(ti, 0);
-	period_set(period, inst1->t, inst->t, true, true);
-}
-
-static void
-temporalseq_expand_period(Period *period, TemporalSeq *seq, TemporalInst *inst)
-{
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
-}
-
-static void
-temporals_expand_period(Period *period, TemporalS *ts, TemporalInst *inst)
-{
-	TemporalSeq *seq = temporals_seq_n(ts, 0);
-	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-	period_set(period, inst1->t, inst->t, seq->period.lower_inc, true);
-}
-
-static void
-tnumber_expand_tbox(TBOX *box, Temporal *temp, TemporalInst *inst)
-{
-	temporal_bbox(box, temp);
-	TBOX box1;
-	memset(&box1, 0, sizeof(TBOX));
-	temporalinst_make_bbox(&box1, inst);
-	tbox_expand(box, &box1);
-}
-
-bool 
-temporali_expand_bbox(void *box, TemporalI *ti, TemporalInst *inst)
-{
-	ensure_temporal_base_type(ti->valuetypid);
-	bool result = false;
-	if (ti->valuetypid == BOOLOID || ti->valuetypid == TEXTOID)
-	{
-		temporali_expand_period((Period *)box, ti, inst);
-		result = true;
-	}
-	else if (ti->valuetypid == INT4OID || ti->valuetypid == FLOAT8OID)
-	{
-		tnumber_expand_tbox((TBOX *)box, (Temporal *)ti, inst);
-		result = true;
-	}
-	else if (ti->valuetypid == type_oid(T_GEOGRAPHY) ||
-		ti->valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpoint_expand_stbox((STBOX *)box, (Temporal *)ti, inst);
-		result = true;
-	}
-	return result;
-}
-
-bool 
-temporalseq_expand_bbox(void *box, TemporalSeq *seq, TemporalInst *inst)
-{
-	ensure_temporal_base_type(seq->valuetypid);
-	bool result = false;
-	if (seq->valuetypid == BOOLOID || seq->valuetypid == TEXTOID)
-	{
-		temporalseq_expand_period((Period *)box, seq, inst);
-		result = true;
-	}
-	if (seq->valuetypid == INT4OID || seq->valuetypid == FLOAT8OID)
-	{
-		tnumber_expand_tbox((TBOX *)box, (Temporal *)seq, inst);
-		result = true;
-	}
-	if (seq->valuetypid == type_oid(T_GEOGRAPHY) ||
-		seq->valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpoint_expand_stbox((STBOX *)box, (Temporal *)seq, inst);
-		result = true;
-	}
-	return result;
-}
-
-bool 
-temporals_expand_bbox(void *box, TemporalS *ts, TemporalInst *inst)
-{
-	ensure_temporal_base_type(ts->valuetypid);
-	bool result = false;
-	if (ts->valuetypid == BOOLOID || ts->valuetypid == TEXTOID)
-	{
-		temporals_expand_period((Period *)box, ts, inst);
-		result = true;
-	}
-	if (ts->valuetypid == INT4OID || ts->valuetypid == FLOAT8OID)
-	{
-		tnumber_expand_tbox((TBOX *)box, (Temporal *)ts, inst);
-		result = true;
-	}
-	if (ts->valuetypid == type_oid(T_GEOGRAPHY) ||
-		ts->valuetypid == type_oid(T_GEOMETRY)) 
-	{
-		tpoint_expand_stbox((STBOX *)box, (Temporal *)ts, inst);
-		result = true;
-	}
-	return result;
-}
-
-/*****************************************************************************
- * Transform a <Type> to a TBOX
+ * Transform a type to a TBOX
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
 

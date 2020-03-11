@@ -30,7 +30,7 @@
  * Miscellaneous functions
  *****************************************************************************/
 
-TBOX *
+static TBOX *
 tbox_new(bool hasx, bool hast)
 {
 	TBOX *result = palloc0(sizeof(TBOX));
@@ -39,12 +39,37 @@ tbox_new(bool hasx, bool hast)
 	return result;
 }
 
-TBOX *
+static TBOX *
 tbox_copy(const TBOX *box)
 {
 	TBOX *result = palloc0(sizeof(TBOX));
 	memcpy(result, box, sizeof(TBOX));
 	return result;
+}
+
+/* Expand the first box with the second one */
+
+void
+tbox_expand(TBOX *box1, const TBOX *box2)
+{
+	box1->xmin = Min(box1->xmin, box2->xmin);
+	box1->xmax = Max(box1->xmax, box2->xmax);
+	box1->tmin = Min(box1->tmin, box2->tmin);
+	box1->tmax = Max(box1->tmax, box2->tmax);
+}
+
+/* Shift the bounding box with an interval */
+
+void
+tbox_shift(TBOX *box, const Interval *interval)
+{
+	box->tmin = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmin), PointerGetDatum(interval)));
+	box->tmax = DatumGetTimestampTz(
+		DirectFunctionCall2(timestamptz_pl_interval,
+		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
+	return;
 }
 
 void

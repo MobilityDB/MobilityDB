@@ -3142,7 +3142,7 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	memset(&box2, 0, sizeof(bboxunion));
 	temporal_bbox(&box1, t1);
 	temporal_bbox(&box2, t2);
-	int result = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	int result = temporal_bbox_cmp(&box1, &box2, t1->valuetypid);
 	if (result)
 		return result;
 

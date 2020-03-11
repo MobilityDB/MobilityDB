@@ -53,6 +53,8 @@ extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_new(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid);
 extern STBOX *stbox_copy(const STBOX *box);
+extern void stbox_expand(STBOX *box1, const STBOX *box2);
+extern void stbox_shift(STBOX *box, const Interval *interval);
 extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
 extern int stbox_cmp_internal(const STBOX *box1, const STBOX *box2);
 

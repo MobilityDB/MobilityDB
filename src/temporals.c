@@ -227,9 +227,11 @@ temporals_append_instant(TemporalS *ts, TemporalInst *inst)
 	 */
 	if (bboxsize != 0) 
 	{
+		union bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
 		memcpy(bbox, temporals_bbox_ptr(ts), bboxsize);
-		temporals_expand_bbox(bbox, ts, inst);
+		temporalinst_make_bbox(&box, inst);
+		temporal_bbox_expand(bbox, &box, ts->valuetypid);
 		result->offsets[ts->count] = pos;
 	}
 	pfree(newseq);
@@ -1242,12 +1244,12 @@ temporals_shift(TemporalS *ts, Interval *interval)
 				TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
 		/* Shift bounding box */
 		void *bbox = temporalseq_bbox_ptr(seq); 
-		shift_bbox(bbox, seq->valuetypid, interval);
+		temporal_bbox_shift(bbox, interval, seq->valuetypid);
 	
 	}
 	/* Shift bounding box */
 	void *bbox = temporals_bbox_ptr(result); 
-	shift_bbox(bbox, ts->valuetypid, interval);
+	temporal_bbox_shift(bbox, interval, ts->valuetypid);
 	pfree(sequences);
 	pfree(instants);
 	return result;
@@ -2298,7 +2300,7 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 	/* If bounding boxes are not equal */
 	void *box1 = temporals_bbox_ptr(ts1);
 	void *box2 = temporals_bbox_ptr(ts2);
-	if (! temporal_bbox_eq(ts1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(box1, box2, ts1->valuetypid))
 		return false;
 
 	/* Compare the composing sequences */
@@ -2322,7 +2324,7 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 	/* Compare bounding boxes */
 	void *box1 = temporals_bbox_ptr(ts1);
 	void *box2 = temporals_bbox_ptr(ts2);
-	int result = temporal_bbox_cmp(ts1->valuetypid, box1, box2);
+	int result = temporal_bbox_cmp(box1, box2, ts1->valuetypid);
 	if (result)
 		return result;
 

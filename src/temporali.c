@@ -224,8 +224,11 @@ temporali_append_instant(TemporalI *ti, TemporalInst *inst)
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
+		union bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
-		temporali_expand_bbox(bbox, ti, inst);
+		memcpy(bbox, temporali_bbox_ptr(ti), bboxsize);
+		temporalinst_make_bbox(&box, inst);
+		temporal_bbox_expand(bbox, &box, ti->valuetypid);
 		result->offsets[ti->count + 1] = pos;
 	}
 	return result;
@@ -1660,7 +1663,7 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 	/* If bounding boxes are not equal */
 	void *box1 = temporali_bbox_ptr(ti1);
 	void *box2 = temporali_bbox_ptr(ti2);
-	if (! temporal_bbox_eq(ti1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(box1, box2, ti1->valuetypid))
 		return false;
 	
 	/* Compare the composing instants */
@@ -1683,7 +1686,7 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 	/* Compare bounding boxes */
 	void *box1 = temporali_bbox_ptr(ti1);
 	void *box2 = temporali_bbox_ptr(ti2);
-	int result = temporal_bbox_cmp(ti1->valuetypid, box1, box2);
+	int result = temporal_bbox_cmp(box1, box2, ti1->valuetypid);
 	if (result)
 		return result;
 	/* Compare composing instants */

@@ -34,6 +34,9 @@ typedef struct
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
+extern void tbox_expand(TBOX *box1, const TBOX *box2);
+extern void tbox_shift(TBOX *box, const Interval *interval);
+
 extern Datum tbox_in(PG_FUNCTION_ARGS);
 extern Datum tbox_out(PG_FUNCTION_ARGS);
 extern Datum tbox_constructor(PG_FUNCTION_ARGS);

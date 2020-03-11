@@ -878,8 +878,11 @@ temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst)
 	/* Expand the bounding box */
 	if (bboxsize != 0) 
 	{
+		union bboxunion box;
 		void *bbox = ((char *) result) + pdata + pos;
-		temporalseq_expand_bbox(bbox, seq, inst);
+		memcpy(bbox, temporalseq_bbox_ptr(seq), bboxsize);
+		temporalinst_make_bbox(&box, inst);
+		temporal_bbox_expand(bbox, &box, seq->valuetypid);
 		result->offsets[newcount] = pos;
 	}
 	if (isgeo && trajectory)
@@ -1821,7 +1824,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
 	/* Shift bounding box */
 	void *bbox = temporalseq_bbox_ptr(result); 
-	shift_bbox(bbox, seq->valuetypid, interval);
+	temporal_bbox_shift(bbox, interval, seq->valuetypid);
 	pfree(instants);
 	return result;
 }
@@ -3893,7 +3896,7 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 	/* If bounding boxes are not equal */
 	void *box1 = temporalseq_bbox_ptr(seq1);
 	void *box2 = temporalseq_bbox_ptr(seq2);
-	if (! temporal_bbox_eq(seq1->valuetypid, box1, box2))
+	if (! temporal_bbox_eq(box1, box2, seq1->valuetypid))
 		return false;
 	
 	/* Compare the composing instants */
@@ -3916,7 +3919,7 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 	/* Compare bounding boxes */
 	void *box1 = temporalseq_bbox_ptr(seq1);
 	void *box2 = temporalseq_bbox_ptr(seq2);
-	int result = temporal_bbox_cmp(seq1->valuetypid, box1, box2);
+	int result = temporal_bbox_cmp(box1, box2, seq1->valuetypid);
 	if (result)
 		return result;
 
