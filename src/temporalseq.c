@@ -499,21 +499,13 @@ temporalseq_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
 	 */
 	if (bboxsize != 0)
 	{
-		void *box1 = temporalseq_bbox_ptr(seq1);
-		void *box2 = temporalseq_bbox_ptr(seq2);
 		void *bbox = ((char *) result) + pdata + pos;
 		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
 			memcpy(bbox, &result->period, bboxsize);
-		else if (valuetypid == INT4OID || valuetypid == FLOAT8OID)
+		else
 		{
-			memcpy(bbox, box1, bboxsize);
-			tbox_expand((TBOX *)bbox, (TBOX *)box2);
-		}
-		else if (valuetypid == type_oid(T_GEOGRAPHY) ||
-				 valuetypid == type_oid(T_GEOMETRY))
-		{
-			memcpy(bbox, box1, bboxsize);
-			stbox_expand((STBOX *)bbox, (STBOX *)box2);
+			memcpy(bbox, temporalseq_bbox_ptr(seq1), bboxsize);
+			temporal_bbox_expand(bbox, temporalseq_bbox_ptr(seq2), valuetypid);
 		}
 		result->offsets[k] = pos;
 		pos += double_pad(bboxsize);
@@ -636,8 +628,8 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
  * Depending on the value of the normalize argument, the resulting sequence
  * will be normalized. */
 TemporalSeq *
-temporalseq_make(TemporalInst **instants, int count, 
-   bool lower_inc, bool upper_inc, bool linear, bool normalize)
+temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
+   bool upper_inc, bool linear, bool normalize)
 {
 	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants and the bounds */
