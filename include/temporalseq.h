@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 
-extern TemporalInst *temporalseq_inst_n(TemporalSeq *seq, int index);
+extern TemporalInst *temporalseq_inst_n(const TemporalSeq *seq, int index);
 extern TemporalSeq *temporalseq_make(TemporalInst **instants, 
 	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TemporalSeq *temporalseq_copy(TemporalSeq *seq);
@@ -63,7 +63,9 @@ extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 
 /* Append function */
 
-extern TemporalSeq *temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst);
+extern TemporalSeq *temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
+extern TemporalSeq *temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst);
+extern Temporal *temporalseq_append(TemporalSeq *seq1, TemporalSeq *seq2);
 
 /* Cast functions */
 
@@ -84,7 +86,7 @@ extern Datum *temporalseq_values1(TemporalSeq *seq, int *count);
 extern ArrayType *temporalseq_values(TemporalSeq *seq);
 extern int tfloatseq_ranges1(RangeType **result, TemporalSeq *seq);
 extern PeriodSet *temporalseq_get_time(TemporalSeq *seq);
-extern void *temporalseq_bbox_ptr(TemporalSeq *seq);
+extern void *temporalseq_bbox_ptr(const TemporalSeq *seq);
 extern void temporalseq_bbox(void *box, TemporalSeq *seq);
 extern RangeType *tfloatseq_range(TemporalSeq *seq);
 extern ArrayType *tfloatseq_ranges(TemporalSeq *seq);

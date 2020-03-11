@@ -22,7 +22,7 @@
 
 /*****************************************************************************/
 
-extern TemporalInst *temporali_inst_n(TemporalI *ti, int index);
+extern TemporalInst *temporali_inst_n(const TemporalI *ti, int index);
 extern bool temporali_find_timestamp(TemporalI *ti, TimestampTz t, int *pos);
 extern TemporalI *temporali_make(TemporalInst **instants,
 	int count);
@@ -43,9 +43,10 @@ extern char *temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum));
 extern void temporali_write(TemporalI *ti, StringInfo buf);
 extern TemporalI *temporali_read(StringInfo buf, Oid valuetypid);
 
-/* Append function */
+/* Append functions */
 
-extern TemporalI *temporali_append_instant(TemporalI *ti, TemporalInst *inst);
+extern TemporalI *temporali_append_instant(const TemporalI *ti, const TemporalInst *inst);
+extern TemporalI *temporali_append(const TemporalI *ti1, const TemporalI *ti2);
 
 /* Cast functions */
  
@@ -63,7 +64,7 @@ extern TemporalI *temporals_to_temporali(TemporalS *ts);
 extern ArrayType *temporali_values(TemporalI *ti);
 extern ArrayType *tfloati_ranges(TemporalI *ti);
 extern PeriodSet *temporali_get_time(TemporalI *ti);
-extern void *temporali_bbox_ptr(TemporalI *ti);
+extern void *temporali_bbox_ptr(const TemporalI *ti);
 extern void temporali_bbox(void *box, TemporalI *ti);
 extern Datum temporali_min_value(TemporalI *ti);
 extern Datum temporali_max_value(TemporalI *ti);

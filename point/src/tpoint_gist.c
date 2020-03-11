@@ -70,6 +70,9 @@ index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
 		case RTSameStrategyNumber:
 			retval = same_stbox_stbox_internal(key, query);
 			break;
+		case RTAdjacentStrategyNumber:
+			retval = adjacent_stbox_stbox_internal(key, query);
+			break;
 		case RTLeftStrategyNumber:
 			retval = left_stbox_stbox_internal(key, query);
 			break;
@@ -151,6 +154,10 @@ gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy
 		case RTSameStrategyNumber:
 			retval = contains_stbox_stbox_internal(key, query);
 			break;
+		case RTAdjacentStrategyNumber:
+			if (adjacent_stbox_stbox_internal(key, query))
+				return true;
+			return overlaps_stbox_stbox_internal(key, query);
 		case RTLeftStrategyNumber:
 			retval = !overright_stbox_stbox_internal(key, query);
 			break;
@@ -217,7 +224,7 @@ gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy
 bool
 index_tpoint_recheck(StrategyNumber strategy)
 {
-	/* These operators are based on bounding boxes and do not consider 
+	/* These operators are based on bounding boxes and do not consider
 	 * inclusive or exclusive bounds */
 	switch (strategy)
 	{
@@ -239,10 +246,10 @@ index_tpoint_recheck(StrategyNumber strategy)
 	}
 }
 
-PG_FUNCTION_INFO_V1(gist_tpoint_consistent);
+PG_FUNCTION_INFO_V1(gist_stbox_consistent);
 
 PGDLLEXPORT Datum
-gist_tpoint_consistent(PG_FUNCTION_ARGS)
+gist_stbox_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -263,7 +270,7 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 	 */
 	if (subtype == type_oid(T_GEOMETRY) || subtype == type_oid(T_GEOGRAPHY))
 	{
-		/* Since function gist_tpoint_consistent is strict, query is not NULL */
+		/* Since function gist_stbox_consistent is strict, query is not NULL */
 		if (!geo_to_stbox_internal(&query, PG_GETARG_GSERIALIZED_P(1)))
 			PG_RETURN_BOOL(false);										  
 	}
@@ -274,7 +281,7 @@ gist_tpoint_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		memcpy(&query, box, sizeof(STBOX));
 	}
-	else if (temporal_type_oid(subtype))
+	else if (tpoint_type_oid(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)
@@ -325,10 +332,10 @@ adjust_stbox(STBOX *b, const STBOX *addon)
  * The GiST Union method for STBOX
  * Returns the minimal bounding box that encloses all the entries in entryvec
  */
-PG_FUNCTION_INFO_V1(gist_tpoint_union);
+PG_FUNCTION_INFO_V1(gist_stbox_union);
 
 PGDLLEXPORT Datum
-gist_tpoint_union(PG_FUNCTION_ARGS)
+gist_stbox_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int	i;
@@ -414,10 +421,10 @@ stbox_penalty(const STBOX *original, const STBOX *new)
  * The GiST Penalty method for boxes (also used for points)
  * As in the R-tree paper, we use change in area as our penalty metric
  */
-PG_FUNCTION_INFO_V1(gist_tpoint_penalty);
+PG_FUNCTION_INFO_V1(gist_stbox_penalty);
 
 PGDLLEXPORT Datum
-gist_tpoint_penalty(PG_FUNCTION_ARGS)
+gist_stbox_penalty(PG_FUNCTION_ARGS)
 {
 	GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
 	GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -561,10 +568,10 @@ interval_cmp_upper(const void *i1, const void *i2)
  * Replace negative (or NaN) value with zero.
  */
 static inline float
-non_negative(float val)
+non_negative(float value)
 {
-	if (FLOAT8_GE(val, 0.0f))
-		return val;
+	if (FLOAT8_GE(value, 0.0f))
+		return value;
 	else
 		return 0.0f;
 }
@@ -724,10 +731,10 @@ common_entry_cmp(const void *i1, const void *i2)
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_tpoint_picksplit);
+PG_FUNCTION_INFO_V1(gist_stbox_picksplit);
 
 PGDLLEXPORT Datum
-gist_tpoint_picksplit(PG_FUNCTION_ARGS)
+gist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -1113,10 +1120,10 @@ gist_tpoint_picksplit(PG_FUNCTION_ARGS)
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to stbox_same().
  */
-PG_FUNCTION_INFO_V1(gist_tpoint_same);
+PG_FUNCTION_INFO_V1(gist_stbox_same);
 
 PGDLLEXPORT Datum
-gist_tpoint_same(PG_FUNCTION_ARGS)
+gist_stbox_same(PG_FUNCTION_ARGS)
 {
 	STBOX *b1 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
 	STBOX *b2 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(1));

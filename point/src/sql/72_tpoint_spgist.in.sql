@@ -12,23 +12,23 @@
 
 #if MOBDB_PGSQL_VERSION >= 110000
 
-CREATE FUNCTION spgist_tpoint_config(internal, internal)
+CREATE FUNCTION spgist_stbox_config(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tpoint_choose(internal, internal)
+CREATE FUNCTION spgist_stbox_choose(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tpoint_picksplit(internal, internal)
+CREATE FUNCTION spgist_stbox_picksplit(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tpoint_inner_consistent(internal, internal)
+CREATE FUNCTION spgist_stbox_inner_consistent(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tpoint_leaf_consistent(internal, internal)
+CREATE FUNCTION spgist_stbox_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -36,6 +36,80 @@ CREATE FUNCTION spgist_tpoint_compress(internal)
 	RETURNS internal
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS spgist_stbox_ops
+	DEFAULT FOR TYPE stbox USING spgist AS
+	-- strictly left
+	OPERATOR	1		<< (stbox, stbox),
+	OPERATOR	1		<< (stbox, tgeompoint),
+	-- overlaps or left
+	OPERATOR	2		&< (stbox, stbox),
+	OPERATOR	2		&< (stbox, tgeompoint),
+	-- overlaps
+	OPERATOR	3		&& (stbox, stbox),
+	OPERATOR	3		&& (stbox, tgeompoint),
+	-- overlaps or right
+	OPERATOR	4		&> (stbox, stbox),
+	OPERATOR	4		&> (stbox, tgeompoint),
+  	-- strictly right
+	OPERATOR	5		>> (stbox, stbox),
+	OPERATOR	5		>> (stbox, tgeompoint),
+  	-- same
+	OPERATOR	6		~= (stbox, stbox),
+	OPERATOR	6		~= (stbox, tgeompoint),
+	-- contains
+	OPERATOR	7		@> (stbox, stbox),
+	OPERATOR	7		@> (stbox, tgeompoint),
+	-- contained by
+	OPERATOR	8		<@ (stbox, stbox),
+	OPERATOR	8		<@ (stbox, tgeompoint),
+	-- overlaps or below
+	OPERATOR	9		&<| (stbox, stbox),
+	OPERATOR	9		&<| (stbox, tgeompoint),
+	-- strictly below
+	OPERATOR	10		<<| (stbox, stbox),
+	OPERATOR	10		<<| (stbox, tgeompoint),
+	-- strictly above
+	OPERATOR	11		|>> (stbox, stbox),
+	OPERATOR	11		|>> (stbox, tgeompoint),
+	-- overlaps or above
+	OPERATOR	12		|&> (stbox, stbox),
+	OPERATOR	12		|&> (stbox, tgeompoint),
+	-- adjacent
+	OPERATOR	17		-|- (stbox, stbox),
+	OPERATOR	17		-|- (stbox, tgeompoint),
+	-- overlaps or before
+	OPERATOR	28		&<# (stbox, stbox),
+	OPERATOR	28		&<# (stbox, tgeompoint),
+	-- strictly before
+	OPERATOR	29		<<# (stbox, stbox),
+	OPERATOR	29		<<# (stbox, tgeompoint),
+	-- strictly after
+	OPERATOR	30		#>> (stbox, stbox),
+	OPERATOR	30		#>> (stbox, tgeompoint),
+	-- overlaps or after
+	OPERATOR	31		#&> (stbox, stbox),
+	OPERATOR	31		#&> (stbox, tgeompoint),
+	-- overlaps or front
+	OPERATOR	32		&</ (stbox, stbox),
+	OPERATOR	32		&</ (stbox, tgeompoint),
+	-- strictly front
+	OPERATOR	33		<</ (stbox, stbox),
+	OPERATOR	33		<</ (stbox, tgeompoint),
+	-- strictly back
+	OPERATOR	34		/>> (stbox, stbox),
+	OPERATOR	34		/>> (stbox, tgeompoint),
+	-- overlaps or back
+	OPERATOR	35		/&> (stbox, stbox),
+	OPERATOR	35		/&> (stbox, tgeompoint),
+	-- functions
+	FUNCTION	1	spgist_stbox_config(internal, internal),
+	FUNCTION	2	spgist_stbox_choose(internal, internal),
+	FUNCTION	3	spgist_stbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_stbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_stbox_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
@@ -89,6 +163,10 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
 	OPERATOR	12		|&> (tgeompoint, geometry),  
 	OPERATOR	12		|&> (tgeompoint, stbox),  
 	OPERATOR	12		|&> (tgeompoint, tgeompoint),  
+	-- adjacent
+	OPERATOR	17		-|- (tgeompoint, geometry),
+	OPERATOR	17		-|- (tgeompoint, stbox),
+	OPERATOR	17		-|- (tgeompoint, tgeompoint),
 	-- overlaps or before
 	OPERATOR	28		&<# (tgeompoint, stbox),
 	OPERATOR	28		&<# (tgeompoint, tgeompoint),
@@ -114,11 +192,11 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
 	OPERATOR	35		/&> (tgeompoint, stbox),
 	OPERATOR	35		/&> (tgeompoint, tgeompoint),
 	-- functions
-	FUNCTION	1	spgist_tpoint_config(internal, internal),
-	FUNCTION	2	spgist_tpoint_choose(internal, internal),
-	FUNCTION	3	spgist_tpoint_picksplit(internal, internal),
-	FUNCTION	4	spgist_tpoint_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_stbox_config(internal, internal),
+	FUNCTION	2	spgist_stbox_choose(internal, internal),
+	FUNCTION	3	spgist_stbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_stbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_stbox_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tpoint_compress(internal);
 
 /******************************************************************************/
@@ -141,6 +219,10 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
 	OPERATOR	8		<@ (tgeogpoint, geography),  
 	OPERATOR	8		<@ (tgeogpoint, stbox),  
 	OPERATOR	8		<@ (tgeogpoint, tgeogpoint),  
+	-- adjacent
+	OPERATOR	17		-|- (tgeogpoint, geography),
+	OPERATOR	17		-|- (tgeogpoint, stbox),
+	OPERATOR	17		-|- (tgeogpoint, tgeogpoint),
 	-- distance
 --	OPERATOR	25		<-> (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
 --	OPERATOR	25		<-> (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
@@ -158,11 +240,11 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
 	OPERATOR	31		#&> (tgeogpoint, stbox),
 	OPERATOR	31		#&> (tgeogpoint, tgeogpoint),
 	-- functions
-	FUNCTION	1	spgist_tpoint_config(internal, internal),
-	FUNCTION	2	spgist_tpoint_choose(internal, internal),
-	FUNCTION	3	spgist_tpoint_picksplit(internal, internal),
-	FUNCTION	4	spgist_tpoint_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_tpoint_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_stbox_config(internal, internal),
+	FUNCTION	2	spgist_stbox_choose(internal, internal),
+	FUNCTION	3	spgist_stbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_stbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_stbox_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tpoint_compress(internal);
 #endif
 	

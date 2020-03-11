@@ -27,23 +27,23 @@ CREATE FUNCTION spgist_temporal_compress(internal)
 
 /******************************************************************************/
 
-CREATE FUNCTION spgist_tnumber_config(internal, internal)
+CREATE FUNCTION spgist_tbox_config(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tnumber_choose(internal, internal)
+CREATE FUNCTION spgist_tbox_choose(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tnumber_picksplit(internal, internal)
+CREATE FUNCTION spgist_tbox_picksplit(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tnumber_inner_consistent(internal, internal)
+CREATE FUNCTION spgist_tbox_inner_consistent(internal, internal)
 	RETURNS void
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spgist_tnumber_leaf_consistent(internal, internal)
+CREATE FUNCTION spgist_tbox_leaf_consistent(internal, internal)
 	RETURNS bool
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -68,6 +68,9 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 	-- contained by
 	OPERATOR	8		<@ (tbool, period),
 	OPERATOR	8		<@ (tbool, tbool),
+	-- adjacent
+	OPERATOR	17		-|- (tbool, period),
+	OPERATOR	17		-|- (tbool, tbool),
 	-- overlaps or before
 	OPERATOR	28		&<# (tbool, period),
 	OPERATOR	28		&<# (tbool, tbool),
@@ -87,6 +90,69 @@ CREATE OPERATOR CLASS spgist_tbool_ops
 	FUNCTION	4	spgist_temporal_inner_consistent(internal, internal),
 	FUNCTION	5	spgist_temporal_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_temporal_compress(internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS spgist_tbox_ops
+	DEFAULT FOR TYPE tbox USING spgist AS
+	-- strictly left
+	OPERATOR	1		<< (tbox, tbox),
+	OPERATOR	1		<< (tbox, tint),
+	OPERATOR	1		<< (tbox, tfloat),
+ 	-- overlaps or left
+	OPERATOR	2		&< (tbox, tbox),
+	OPERATOR	2		&< (tbox, tint),
+	OPERATOR	2		&< (tbox, tfloat),
+	-- overlaps
+	OPERATOR	3		&& (tbox, tbox),
+	OPERATOR	3		&& (tbox, tint),
+	OPERATOR	3		&& (tbox, tfloat),
+	-- overlaps or right
+	OPERATOR	4		&> (tbox, tbox),
+	OPERATOR	4		&> (tbox, tint),
+	OPERATOR	4		&> (tbox, tfloat),
+	-- strictly right
+	OPERATOR	5		>> (tbox, tbox),
+	OPERATOR	5		>> (tbox, tint),
+	OPERATOR	5		>> (tbox, tfloat),
+  	-- same
+	OPERATOR	6		~= (tbox, tbox),
+	OPERATOR	6		~= (tbox, tint),
+	OPERATOR	6		~= (tbox, tfloat),
+	-- contains
+	OPERATOR	7		@> (tbox, tbox),
+	OPERATOR	7		@> (tbox, tint),
+	OPERATOR	7		@> (tbox, tfloat),
+	-- contained by
+	OPERATOR	8		<@ (tbox, tbox),
+	OPERATOR	8		<@ (tbox, tint),
+	OPERATOR	8		<@ (tbox, tfloat),
+	-- adjacent
+	OPERATOR	17		-|- (tbox, tbox),
+	OPERATOR	17		-|- (tbox, tint),
+	OPERATOR	17		-|- (tbox, tfloat),
+	-- overlaps or before
+	OPERATOR	28		&<# (tbox, tbox),
+	OPERATOR	28		&<# (tbox, tint),
+	OPERATOR	28		&<# (tbox, tfloat),
+	-- strictly before
+	OPERATOR	29		<<# (tbox, tbox),
+	OPERATOR	29		<<# (tbox, tint),
+	OPERATOR	29		<<# (tbox, tfloat),
+	-- strictly after
+	OPERATOR	30		#>> (tbox, tbox),
+	OPERATOR	30		#>> (tbox, tint),
+	OPERATOR	30		#>> (tbox, tfloat),
+	-- overlaps or after
+	OPERATOR	31		#&> (tbox, tbox),
+	OPERATOR	31		#&> (tbox, tint),
+	OPERATOR	31		#&> (tbox, tfloat),
+	-- functions
+	FUNCTION	1	spgist_tbox_config(internal, internal),
+	FUNCTION	2	spgist_tbox_choose(internal, internal),
+	FUNCTION	3	spgist_tbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_tbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_tbox_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
@@ -132,6 +198,11 @@ CREATE OPERATOR CLASS spgist_tint_ops
 	OPERATOR	8		<@ (tint, tbox),
 	OPERATOR	8		<@ (tint, tint),
 	OPERATOR	8		<@ (tint, tfloat),
+	-- adjacent
+	OPERATOR	17		-|- (tint, intrange),
+	OPERATOR	17		-|- (tint, tbox),
+	OPERATOR	17		-|- (tint, tint),
+	OPERATOR	17		-|- (tint, tfloat),
 	-- overlaps or before
 	OPERATOR	28		&<# (tint, tbox),
 	OPERATOR	28		&<# (tint, tint),
@@ -149,11 +220,11 @@ CREATE OPERATOR CLASS spgist_tint_ops
 	OPERATOR	31		#&> (tint, tint),
 	OPERATOR	31		#&> (tint, tfloat),
 	-- functions
-	FUNCTION	1	spgist_tnumber_config(internal, internal),
-	FUNCTION	2	spgist_tnumber_choose(internal, internal),
-	FUNCTION	3	spgist_tnumber_picksplit(internal, internal),
-	FUNCTION	4	spgist_tnumber_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_tbox_config(internal, internal),
+	FUNCTION	2	spgist_tbox_choose(internal, internal),
+	FUNCTION	3	spgist_tbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_tbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_tbox_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tnumber_compress(internal);
 
 /******************************************************************************/
@@ -200,6 +271,11 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	8		<@ (tfloat, tbox),
 	OPERATOR	8		<@ (tfloat, tint),
 	OPERATOR	8		<@ (tfloat, tfloat),
+	-- adjacent
+	OPERATOR	17		-|- (tfloat, floatrange),
+	OPERATOR	17		-|- (tfloat, tbox),
+	OPERATOR	17		-|- (tfloat, tint),
+	OPERATOR	17		-|- (tfloat, tfloat),
 	-- overlaps or before
 	OPERATOR	28		&<# (tfloat, tbox),
 	OPERATOR	28		&<# (tfloat, tint),
@@ -217,11 +293,11 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
 	OPERATOR	31		#&> (tfloat, tint),
 	OPERATOR	31		#&> (tfloat, tfloat),
 	-- functions
-	FUNCTION	1	spgist_tnumber_config(internal, internal),
-	FUNCTION	2	spgist_tnumber_choose(internal, internal),
-	FUNCTION	3	spgist_tnumber_picksplit(internal, internal),
-	FUNCTION	4	spgist_tnumber_inner_consistent(internal, internal),
-	FUNCTION	5	spgist_tnumber_leaf_consistent(internal, internal),
+	FUNCTION	1	spgist_tbox_config(internal, internal),
+	FUNCTION	2	spgist_tbox_choose(internal, internal),
+	FUNCTION	3	spgist_tbox_picksplit(internal, internal),
+	FUNCTION	4	spgist_tbox_inner_consistent(internal, internal),
+	FUNCTION	5	spgist_tbox_leaf_consistent(internal, internal),
 	FUNCTION	6	spgist_tnumber_compress(internal);
 
 /******************************************************************************/
@@ -240,6 +316,9 @@ CREATE OPERATOR CLASS spgist_ttext_ops
 	-- contained by
 	OPERATOR	8		<@ (ttext, period),
 	OPERATOR	8		<@ (ttext, ttext),
+	-- adjacent
+	OPERATOR	17		-|- (ttext, period),
+	OPERATOR	17		-|- (ttext, ttext),
 	-- overlaps or before
 	OPERATOR	28		&<# (ttext, period),
 	OPERATOR	28		&<# (ttext, ttext),

@@ -29,6 +29,7 @@
 #include "periodset.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
+#include "temporal_boxops.h"
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_spatialfuncs.h"
@@ -41,7 +42,7 @@
 /* Transform a geometry/geography to a stbox */
 
 bool
-geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
+geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 {
 	GBOX gbox;
 	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
@@ -111,7 +112,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box */
 
 void
-timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
+timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 {
 	Period *p = timestampset_bbox(ts);
 	box->tmin = p->lower;
@@ -134,7 +135,7 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period to a box */
 
 void
-period_to_stbox_internal(STBOX *box, Period *p)
+period_to_stbox_internal(STBOX *box, const Period *p)
 {
 	box->tmin = p->lower;
 	box->tmax = p->upper;
@@ -155,7 +156,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box (internal function only) */
 
 void
-periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
+periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 {
 	Period *p = periodset_bbox(ps);
 	box->tmin = p->lower;
@@ -178,7 +179,7 @@ periodset_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a geometry/geography and a timestamptz to a stbox */
 
 bool
-geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED *gs, TimestampTz t)
+geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, TimestampTz t)
 {
 	if (!geo_to_stbox_internal(box, gs))
 		return false;
@@ -208,7 +209,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a geometry/geography and a period to a stbox */
 
 bool
-geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
+geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, const Period *p)
 {
 	if (!geo_to_stbox_internal(box, gs))
 		return false;
@@ -237,203 +238,16 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * STBOX bounding box operators
- * Functions copied/modified from PostGIS file g_box.c
+ * Functions computing the bounding box at the creation of a temporal point
  *****************************************************************************/
 
-/* contains? */
-
-bool
-contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box2->xmin < box1->xmin || box2->xmax > box1->xmax ||
-			box2->ymin < box1->ymin || box2->ymax > box1->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box2->zmin < box1->zmin || box2->zmax > box1->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box2->tmin < box1->tmin || box2->tmax > box1->tmax)
-			return false;
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(contains_stbox_stbox);
-
-PGDLLEXPORT Datum
-contains_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	PG_RETURN_BOOL(contains_stbox_stbox_internal(box1, box2));
-}
-
-/* contained? */
-
-bool
-contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	return contains_stbox_stbox_internal(box2, box1);
-}
-
-PG_FUNCTION_INFO_V1(contained_stbox_stbox);
-
-PGDLLEXPORT Datum
-contained_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	PG_RETURN_BOOL(contained_stbox_stbox_internal(box1, box2));
-}
-
-/* overlaps? */
-
-bool
-overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box1->xmax < box2->xmin || box1->xmin > box2->xmax ||
-			box1->ymax < box2->ymin || box1->ymin > box2->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box1->zmax < box2->zmin || box1->zmin > box2->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box1->tmax < box2->tmin || box1->tmin > box2->tmax)
-			return false;
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(overlaps_stbox_stbox);
-
-PGDLLEXPORT Datum
-overlaps_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	PG_RETURN_BOOL(overlaps_stbox_stbox_internal(box1, box2));
-}
-
-/* same? */
-
-bool
-same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		(MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) ) 
-		if (box1->xmin != box2->xmin || box1->xmax != box2->xmax ||
-			box1->ymin != box2->ymin || box1->ymax != box2->ymax)
-			return false;
-	if (MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags)) 
-		if (box1->zmin != box2->zmin || box1->zmax != box2->zmax)
-			return false;
-	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)) 
-		if (box1->tmin != box2->tmin || box1->tmax != box2->tmax)
-			return false;
-	return true;
-}
-
-PG_FUNCTION_INFO_V1(same_stbox_stbox);
-
-PGDLLEXPORT Datum
-same_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	PG_RETURN_BOOL(same_stbox_stbox_internal(box1, box2));
-}
-
-/* adjacent? */
-
-bool
-adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-	/* The boxes should have at least one common dimension XY(Z) or T  */
-	assert((MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags)) ||
-		   (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags)));
-	STBOX *inter = stbox_intersection_internal(box1, box2);
-	if (inter == NULL)
-		return false;
-	/* Boxes are adjacent if they share n dimensions and their intersection is
-	 * at most of n-1 dimensions */
-	bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-	bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-	bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-	if (!hasx && hast)
-		return inter->tmin == inter->tmax;
-	else if (hasx && !hast)
-	{
-		if (hasz)
-			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-				inter->zmin == inter->zmax;
-		else
-			return inter->xmin == inter->xmax || inter->ymin == inter->ymax;
-	}
-	else
-	{
-		if (hasz)
-			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-				   inter->zmin == inter->zmax || inter->tmin == inter->tmax;
-		else
-			return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-				   inter->tmin == inter->tmax;
-	}
-}
-
-PG_FUNCTION_INFO_V1(adjacent_stbox_stbox);
-
-PGDLLEXPORT Datum
-adjacent_stbox_stbox(PG_FUNCTION_ARGS)
-{
-	STBOX *box1 = PG_GETARG_STBOX_P(0);
-	STBOX *box2 = PG_GETARG_STBOX_P(1);
-	ensure_same_geodetic_stbox(box1, box2);
-	ensure_same_srid_stbox(box1, box2);
-	PG_RETURN_BOOL(adjacent_stbox_stbox_internal(box1, box2));
-}
-
-/*****************************************************************************/
-
-/* Functions computing the bounding box at the creation of a temporal point */
-
-/* Expand the first box with the second one */
-
 void
-stbox_expand(STBOX *box1, const STBOX *box2)
+tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
 {
-	box1->xmin = Min(box1->xmin, box2->xmin);
-	box1->xmax = Max(box1->xmax, box2->xmax);
-	box1->ymin = Min(box1->ymin, box2->ymin);
-	box1->ymax = Max(box1->ymax, box2->ymax);
-	box1->zmin = Min(box1->zmin, box2->zmin);
-	box1->zmax = Max(box1->zmax, box2->zmax);
-	box1->tmin = Min(box1->tmin, box2->tmin);
-	box1->tmax = Max(box1->tmax, box2->tmax);
-}
-
-void
-tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t)
-{
+	Datum value = temporalinst_value(inst);
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
 	assert(geo_to_stbox_internal(box, gs));
-	box->tmin = box->tmax = t;
+	box->tmin = box->tmax = inst->t;
 	MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
@@ -441,14 +255,12 @@ tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t)
 void
 tpointinstarr_to_stbox(STBOX *box, TemporalInst **instants, int count)
 {
-	Datum value = temporalinst_value(instants[0]);
-	tpointinst_make_stbox(box, value, instants[0]->t);
+	tpointinst_make_stbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
 	{
 		STBOX box1;
 		memset(&box1, 0, sizeof(STBOX));
-		value = temporalinst_value(instants[i]);
-		tpointinst_make_stbox(&box1, value, instants[i]->t);
+		tpointinst_make_stbox(&box1, instants[i]);
 		stbox_expand(box, &box1);
 	}
 }
@@ -465,18 +277,83 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
 }
 
 /*****************************************************************************
- * Expand the bounding box of a Temporal with a TemporalInst
- * The functions assume that the argument box is set to 0 before with palloc0
+ * Boxes functions
  *****************************************************************************/
 
-void
-tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
+int
+tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
 {
-	temporal_bbox(box, temp);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporalinst_bbox(&box1, inst);
-	stbox_expand(box, &box1);
+	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+	{
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
+		tpointinst_make_stbox(&result[0], inst);
+		return 1;
+	}
+
+	/* Temporal sequence has at least 2 instants */
+	STBOX box;
+	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	for (int i = 0; i < seq->count - 1; i++)
+	{
+		tpointinst_make_stbox(&result[i], inst1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		tpointinst_make_stbox(&box, inst2);
+		stbox_expand(&result[i], &box);
+		inst1 = inst2;
+	}
+	return seq->count - 1;
+}
+
+ArrayType *
+tpointseq_stboxes(TemporalSeq *seq)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	int count = seq->count - 1;
+	if (count == 0)
+		count = 1;
+	STBOX *boxes = palloc(sizeof(STBOX) * count);
+	tpointseq_stboxes1(boxes, seq);
+	ArrayType *result = stboxarr_to_array(boxes, count);
+	pfree(boxes);
+	return result;
+}
+
+ArrayType *
+tpoints_stboxes(TemporalS *ts)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
+	STBOX *boxes = palloc(sizeof(STBOX) * ts->totalcount);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		k += tpointseq_stboxes1(&boxes[k], seq);
+	}
+	ArrayType *result = stboxarr_to_array(boxes, k);
+	pfree(boxes);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_stboxes);
+
+PGDLLEXPORT Datum
+tpoint_stboxes(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	ArrayType *result = NULL;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI)
+		;
+	else if (temp->duration == TEMPORALSEQ)
+		result = tpointseq_stboxes((TemporalSeq *)temp);
+	else if (temp->duration == TEMPORALS)
+		result = tpoints_stboxes((TemporalS *)temp);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -489,6 +366,7 @@ tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
 static STBOX *
 stbox_expand_spatial_internal(STBOX *box, double d)
 {
+	ensure_has_X_stbox(box);
 	STBOX *result = stbox_copy(box);
 	result->xmin = box->xmin - d;
 	result->xmax = box->xmax + d;
@@ -539,6 +417,7 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
 static STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
+	ensure_has_T_stbox(box);
 	STBOX *result = stbox_copy(box);
 	result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval, 
 		TimestampTzGetDatum(box->tmin), interval));
@@ -554,10 +433,6 @@ stbox_expand_temporal(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_GETARG_STBOX_P(0);
 	Datum interval = PG_GETARG_DATUM(1);
-	if (! MOBDB_FLAGS_GET_T(box->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE), 
-			errmsg("The box must have T dimension")));
-
 	PG_RETURN_POINTER(stbox_expand_temporal_internal(box, interval));
 }
 

@@ -60,14 +60,14 @@ period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
 {
 	if (lower)
 	{
-		lower->val = p->lower;
+		lower->t = p->lower;
 		lower->inclusive = p->lower_inc;
 		lower->lower = true;
 	}
 
 	if (upper)
 	{
-		upper->val = p->upper;
+		upper->t = p->upper;
 		upper->inclusive = p->upper_inc;
 		upper->lower = false;
 	}
@@ -94,15 +94,13 @@ period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
  * identical: when both bounds are inclusive and hold the same value,
  * but one is an upper bound and the other a lower bound.
  */
-
 int
-period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, bool lower2, 
-	bool inclusive1, bool inclusive2)
+period_cmp_bounds(PeriodBound *b1, PeriodBound *b2)
 {
 	int32		result;
 
 	/* Compare the values */
-	result = timestamp_cmp_internal(t1, t2);
+	result = timestamp_cmp_internal(b1->t, b2->t);
 
 	/*
 	 * If the comparison is not equal and the bounds are both inclusive or 
@@ -111,45 +109,32 @@ period_cmp_bounds(TimestampTz t1, TimestampTz t2, bool lower1, bool lower2,
 	*/
 	if (result == 0)
 	{
-		if (!inclusive1 && !inclusive2)
+		if (! b1->inclusive && ! b2->inclusive)
 		{
 			/* both are exclusive */
-			if (lower1 == lower2)
+			if (b1->lower == b2->lower)
 				return 0;
 			else
-				return lower1 ? 1 : -1;
+				return b1->lower ? 1 : -1;
 		}
-		else if (!inclusive1)
-			return lower1 ? 1 : -1;
-		else if (!inclusive2)
-			return lower2 ? -1 : 1;
+		else if (! b1->inclusive)
+			return b1->lower ? 1 : -1;
+		else if (! b2->inclusive)
+			return b2->lower ? -1 : 1;
 	}	
 	
 	return result;
 }
 
 /*
- * Compare periods by lower bound.
+ * Comparison function for sorting PeriodBounds.
  */
 int
-period_cmp_lower(const void** a, const void** b)
+period_bound_qsort_cmp(const void *a1, const void *a2)
 {
-	Period *i1 = (Period *) *a;
-	Period *i2 = (Period *) *b;
-	return period_cmp_bounds(i1->lower, i2->lower, true, true, 
-		i1->lower_inc, i2->lower_inc);
-}
-
-/*
- * Compare periods by upper bound.
- */
-int
-period_cmp_upper(const void** a, const void** b)
-{
-	Period *i1 = (Period *) *a;
-	Period *i2 = (Period *) *b;
-	return period_cmp_bounds(i1->upper, i2->upper, false, false, 
-		i1->upper_inc, i2->upper_inc);
+	PeriodBound *b1 = (PeriodBound *) a1;
+	PeriodBound *b2 = (PeriodBound *) a2;
+	return period_cmp_bounds(b1, b2);
 }
 
 /*
@@ -275,45 +260,42 @@ periodarr_normalize(Period **periods, int count, int *newcount)
 Period *
 period_super_union(Period *p1, Period *p2)
 {
-	TimestampTz result_lower;
-	TimestampTz result_upper;
-	bool result_lower_inc;
-	bool result_upper_inc;
+	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
+	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
 
-	if (period_cmp_bounds(p1->lower, p2->lower, true, true, 
-		p1->lower_inc, p2->lower_inc) <= 0)
-	{
-		result_lower = p1->lower;
-		result_lower_inc = p1->lower_inc;
-	}
-	else
-	{
-		result_lower = p2->lower;
-		result_lower_inc = p2->lower_inc;
-	}
-
-	if (period_cmp_bounds(p1->upper, p2->upper, false, false, 
-		p1->upper_inc, p2->upper_inc) >= 0)
-	{
-		result_upper = p1->upper;
-		result_upper_inc = p1->upper_inc;
-	}
-	else
-	{
-		result_upper = p2->upper;
-		result_upper_inc = p2->upper_inc;
-	}
-
-	/* optimization to avoid constructing a new range */
-	if (result_lower == p1->lower && result_upper == p1->upper)
+	/* optimization to avoid constructing a new period */
+	if (lower1 && upper1)
+		/* p1 contains p2 */
 		return p1;
-	if (result_lower == p2->lower && result_upper == p2->upper)
+	if (! lower1 && ! upper1)
+		/* p2 contains p1 */
 		return p2;
-		
-	return period_make(result_lower, result_upper, 
-		result_lower_inc, result_upper_inc);
+
+	TimestampTz lower = lower1 ? p1->lower : p2->lower;
+	bool lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
+	TimestampTz upper = upper1 ? p1->upper : p2->upper;
+	bool upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
+	return period_make(lower, upper, lower_inc, upper_inc);
 }
- 
+
+/* Expand the first period with the second one */
+
+void
+period_expand(Period *p1, const Period *p2)
+{
+	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
+	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
+	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
+	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
+
+	p1->lower = lower1 ? p1->lower : p2->lower;
+	p1->lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
+	p1->upper = upper1 ? p1->upper : p2->upper;
+	p1->upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
+}
+
 /*****************************************************************************
  * Input/output functions
  *****************************************************************************/
@@ -628,10 +610,10 @@ period_timespan(PG_FUNCTION_ARGS)
 bool
 period_eq_internal(Period *p1, Period *p2)
 {
-	if (p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
+	if (p1->lower != p2->lower || p1->upper != p2->upper ||
+		p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
 		return false;
-	
-	return p1->lower == p2->lower && p1->upper == p2->upper;
+	return true;
 }
 
 PG_FUNCTION_INFO_V1(period_eq);

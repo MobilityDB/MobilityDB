@@ -75,19 +75,24 @@ spgist_period_config(PG_FUNCTION_ARGS)
 int16
 getQuadrant(Period *centroid, Period *tst)
 {
-	if (period_cmp_bounds(tst->lower, centroid->lower, true, true,
-		tst->lower_inc, centroid->lower_inc) >= 0)
+	PeriodBound	centroidLower,
+				centroidUpper,
+				lower,
+				upper;
+
+	period_deserialize(centroid, &centroidLower, &centroidUpper);
+	period_deserialize(tst, &lower, &upper);
+
+	if (period_cmp_bounds(&lower, &centroidLower) >= 0)
 	{
-		if (period_cmp_bounds(tst->upper, centroid->upper, false, false,
-				tst->upper_inc, centroid->upper_inc) >= 0)
+		if (period_cmp_bounds(&upper, &centroidUpper) >= 0)
 			return 1;
 		else
 			return 2;
 	}
 	else
 	{
-		if (period_cmp_bounds(tst->upper, centroid->upper, false, false,
-				tst->upper_inc, centroid->upper_inc) >= 0)
+		if (period_cmp_bounds(&upper, &centroidUpper) >= 0)
 			return 4;
 		else
 			return 3;
@@ -134,18 +139,6 @@ spgist_period_choose(PG_FUNCTION_ARGS)
  * point as the median of the coordinates of the time types.
  *****************************************************************************/
 
-/*
- * Bound comparison for sorting.
- */
-int
-period_bound_cmp(const void *a, const void *b)
-{
-	PeriodBound *ba = (PeriodBound *) a;
-	PeriodBound *bb = (PeriodBound *) b;
-	return period_cmp_bounds(ba->val, bb->val, ba->lower, bb->lower,
-		ba->inclusive, bb->inclusive);
-}
-
 PG_FUNCTION_INFO_V1(spgist_period_picksplit);
 
 PGDLLEXPORT Datum
@@ -165,13 +158,13 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
 		period_deserialize(DatumGetPeriod(in->datums[i]),
 						  &lowerBounds[i], &upperBounds[i]);
 
-	qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
-	qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_cmp);
+	qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
+	qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
 
 	median = in->nTuples / 2;
 
 	centroid = period_make(
-		lowerBounds[median].val, upperBounds[median].val, 
+		lowerBounds[median].t, upperBounds[median].t,
 		lowerBounds[median].inclusive, upperBounds[median].inclusive);
 
 	/* Fill the output */
@@ -206,6 +199,157 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions for temporal types
  *****************************************************************************/
 
+/*
+ * Check if two bounds A and B are adjacent, where A is an upper bound and B
+ * is a lower bound.
+ */
+bool
+period_bounds_adjacent(PeriodBound *boundA, PeriodBound *boundB)
+{
+	Assert(!boundA.lower && boundB.lower);
+	return timestamp_cmp_internal(boundA->t, boundB->t) == 0 &&
+		boundA->inclusive != boundB->inclusive;
+}
+
+/*
+ * adjacent_cmp_bounds
+ *
+ * Given an argument and centroid bound, this function determines if any
+ * bounds that are adjacent to the argument are smaller than, or greater than
+ * or equal to centroid. For brevity, we call the arg < centroid "left", and
+ * arg >= centroid case "right". This corresponds to how the quadrants are
+ * arranged, if you imagine that "left" is equivalent to "down" and "right"
+ * is equivalent to "up".
+ *
+ * For the "left" case, returns -1, and for the "right" case, returns 1.
+ */
+static int
+adjacent_cmp_bounds(PeriodBound *arg, PeriodBound *centroid)
+{
+	int			cmp;
+
+	Assert(arg->lower != centroid->lower);
+
+	cmp = period_cmp_bounds(arg, centroid);
+
+	if (centroid->lower)
+	{
+		/*------
+		 * The argument is an upper bound, we are searching for adjacent lower
+		 * bounds. A matching adjacent lower bound must be *larger* than the
+		 * argument, but only just.
+		 *
+		 * The following table illustrates the desired result with a fixed
+		 * argument bound, and different centroids. The CMP column shows
+		 * the value of 'cmp' variable, and ADJ shows whether the argument
+		 * and centroid are adjacent, per bounds_adjacent(). (N) means we
+		 * don't need to check for that case, because it's implied by CMP.
+		 * With the argument range [..., 500), the adjacent range we're
+		 * searching for is [500, ...):
+		 *
+		 *	ARGUMENT   CENTROID		CMP   ADJ
+		 *	[..., 500) [498, ...)	 >	  (N)	[500, ...) is to the right
+		 *	[..., 500) [499, ...)	 =	  (N)	[500, ...) is to the right
+		 *	[..., 500) [500, ...)	 <	   Y	[500, ...) is to the right
+		 *	[..., 500) [501, ...)	 <	   N	[500, ...) is to the left
+		 *
+		 * So, we must search left when the argument is smaller than, and not
+		 * adjacent, to the centroid. Otherwise search right.
+		 *------
+		 */
+		if (cmp < 0 && ! period_bounds_adjacent(arg, centroid))
+			return -1;
+		else
+			return 1;
+	}
+	else
+	{
+		/*------
+		 * The argument is a lower bound, we are searching for adjacent upper
+		 * bounds. A matching adjacent upper bound must be *smaller* than the
+		 * argument, but only just.
+		 *
+		 *	ARGUMENT   CENTROID		CMP   ADJ
+		 *	[500, ...) [..., 499)	 >	  (N)	[..., 500) is to the right
+		 *	[500, ...) [..., 500)	 >	  (Y)	[..., 500) is to the right
+		 *	[500, ...) [..., 501)	 =	  (N)	[..., 500) is to the left
+		 *	[500, ...) [..., 502)	 <	  (N)	[..., 500) is to the left
+		 *
+		 * We must search left when the argument is smaller than or equal to
+		 * the centroid. Otherwise search right. We don't need to check
+		 * whether the argument is adjacent with the centroid, because it
+		 * doesn't matter.
+		 *------
+		 */
+		if (cmp <= 0)
+			return -1;
+		else
+			return 1;
+	}
+}
+
+/*----------
+ * adjacent_inner_consistent
+ *
+ * Like adjacent_cmp_bounds, but also takes into account the previous
+ * level's centroid. We might've traversed left (or right) at the previous
+ * node, in search for ranges adjacent to the other bound, even though we
+ * already ruled out the possibility for any matches in that direction for
+ * this bound. By comparing the argument with the previous centroid, and
+ * the previous centroid with the current centroid, we can determine which
+ * direction we should've moved in at previous level, and which direction we
+ * actually moved.
+ *
+ * If there can be any matches to the left, returns -1. If to the right,
+ * returns 1. If there can be no matches below this centroid, because we
+ * already ruled them out at the previous level, returns 0.
+ *
+ * XXX: Comparing just the previous and current level isn't foolproof; we
+ * might still search some branches unnecessarily. For example, imagine that
+ * we are searching for value 15, and we traverse the following centroids
+ * (only considering one bound for the moment):
+ *
+ * Level 1: 20
+ * Level 2: 50
+ * Level 3: 25
+ *
+ * At this point, previous centroid is 50, current centroid is 25, and the
+ * target value is to the left. But because we already moved right from
+ * centroid 20 to 50 in the first level, there cannot be any values < 20 in
+ * the current branch. But we don't know that just by looking at the previous
+ * and current centroid, so we traverse left, unnecessarily. The reason we are
+ * down this branch is that we're searching for matches with the *other*
+ * bound. If we kept track of which bound we are searching for explicitly,
+ * instead of deducing that from the previous and current centroid, we could
+ * avoid some unnecessary work.
+ *----------
+ */
+static int
+adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
+	PeriodBound *prev)
+{
+	if (prev)
+	{
+		int			prevcmp;
+		int			cmp;
+
+		/*
+		 * Which direction were we supposed to traverse at previous level,
+		 * left or right?
+		 */
+		prevcmp = adjacent_cmp_bounds(arg, prev);
+
+		/* and which direction did we actually go? */
+		cmp = period_cmp_bounds(centroid, prev);
+
+		/* if the two don't agree, there's nothing to see here */
+		if ((prevcmp < 0 && cmp >= 0) || (prevcmp > 0 && cmp < 0))
+			return 0;
+	}
+
+	return adjacent_cmp_bounds(arg, centroid);
+}
+
 PG_FUNCTION_INFO_V1(spgist_period_inner_consistent);
 
 PGDLLEXPORT Datum
@@ -218,6 +362,13 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	Period 	   *centroid;
 	PeriodBound	centroidLower,
 				centroidUpper;
+
+	/*
+	 * For adjacent search we need also previous centroid (if any) to improve
+	 * the precision of the consistent check. In this case needPrevious flag
+	 * is set and centroid is passed into traversalValue.
+	 */
+	bool needPrevious = false;
 
 	if (in->allTheSame)
 	{
@@ -245,9 +396,14 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	for (i = 0; i < in->nkeys; i++)
 	{
 		StrategyNumber strategy = in->scankeys[i].sk_strategy;
+		Oid subtype = in->scankeys[i].sk_subtype;
 		PeriodBound	lower,
 					upper;
 		Period	   *query = NULL, period;
+
+		Period  *prevCentroid = NULL;
+		PeriodBound	prevLower,
+					prevUpper;
 
 		/* Restrictions on period bounds according to scan strategy */
 		PeriodBound *minLower = NULL,
@@ -257,23 +413,26 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 
 		/* Are the restrictions on period bounds inclusive? */
 		bool		inclusive = true;
+		int			cmp,
+					which1,
+					which2;
 
 		/*
 		 * Cast the query to Period for ease of the following operations.
 		 */
 		
-		if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
+		if (subtype == TIMESTAMPTZOID)
 		{
 			TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
 			period_set(&period, t, t, true, true);
 			query = &period;
 		}
-		else if (in->scankeys[i].sk_subtype == type_oid(T_TIMESTAMPSET))
+		else if (subtype == type_oid(T_TIMESTAMPSET))
 			query = timestampset_bbox(
 				DatumGetTimestampSet(in->scankeys[i].sk_argument));
-		else if (in->scankeys[i].sk_subtype == type_oid(T_PERIOD))
+		else if (subtype == type_oid(T_PERIOD))
 			query = DatumGetPeriod(in->scankeys[i].sk_argument);
-		else if (in->scankeys[i].sk_subtype == type_oid(T_PERIODSET))
+		else if (subtype == type_oid(T_PERIODSET))
 			query = periodset_bbox(
 				DatumGetPeriodSet(in->scankeys[i].sk_argument));
 		else
@@ -315,6 +474,58 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 				minLower = &lower;
 				maxUpper = &upper;
 				break;
+
+				case RTAdjacentStrategyNumber:
+					/*
+					 * Previously selected quadrant could exclude possibility
+					 * for lower or upper bounds to be adjacent. Deserialize
+					 * previous centroid range if present for checking this.
+					 */
+					if (in->traversalValue)
+					{
+						prevCentroid = DatumGetPeriod(in->traversalValue);
+						period_deserialize(prevCentroid, &prevLower,
+							&prevUpper);
+					}
+
+					/*
+					 * For a range's upper bound to be adjacent to the
+					 * argument's lower bound, it will be found along the line
+					 * adjacent to (and just below) Y=lower. Therefore, if the
+					 * argument's lower bound is less than the centroid's
+					 * upper bound, the line falls in quadrants 2 and 3; if
+					 * greater, the line falls in quadrants 1 and 4. (see
+					 * adjacent_cmp_bounds for description of edge cases).
+					 */
+					cmp = adjacent_inner_consistent(&lower, &centroidUpper,
+						prevCentroid ? &prevUpper : NULL);
+					if (cmp > 0)
+						which1 = (1 << 1) | (1 << 4);
+					else if (cmp < 0)
+						which1 = (1 << 2) | (1 << 3);
+					else
+						which1 = 0;
+
+					/*
+					 * Also search for ranges's adjacent to argument's upper
+					 * bound. They will be found along the line adjacent to
+					 * (and just right of) X=upper, which falls in quadrants 3
+					 * and 4, or 1 and 2.
+					 */
+					cmp = adjacent_inner_consistent(&upper, &centroidLower,
+						prevCentroid ? &prevLower : NULL);
+					if (cmp > 0)
+						which2 = (1 << 1) | (1 << 2);
+					else if (cmp < 0)
+						which2 = (1 << 3) | (1 << 4);
+					else
+						which2 = 0;
+
+					/* We must chase down ranges adjacent to either bound. */
+					which &= which1 | which2;
+
+					needPrevious = true;
+					break;
 
 			case RTEqualStrategyNumber:
 			case RTSameStrategyNumber:
@@ -375,9 +586,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			 * will have an even smaller lower bound, and thus can't
 			 * match.
 			 */
-			if (period_cmp_bounds(centroidLower.val, minLower->val,
-					centroidLower.lower, minLower->lower,
-					centroidLower.inclusive, minLower->inclusive) <= 0)
+			if (period_cmp_bounds(&centroidLower, minLower) <= 0)
 				which &= (1 << 1) | (1 << 2);
 		}
 		if (maxLower)
@@ -393,9 +602,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			 */
 			int			cmp;
 
-			cmp = period_cmp_bounds(centroidLower.val, maxLower->val,
-				centroidLower.lower, maxLower->lower,
-				centroidLower.inclusive, maxLower->inclusive);
+			cmp = period_cmp_bounds(&centroidLower, maxLower);
 			if (cmp > 0 || (!inclusive && cmp == 0))
 				which &= (1 << 3) | (1 << 4);
 		}
@@ -407,9 +614,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			 * will have an even smaller upper bound, and thus can't
 			 * match.
 			 */
-			if (period_cmp_bounds(centroidUpper.val, minUpper->val,
-					centroidUpper.lower, minUpper->lower,
-					centroidUpper.inclusive, minUpper->inclusive) <= 0)
+			if (period_cmp_bounds(&centroidUpper, minUpper) <= 0)
 				which &= (1 << 1) | (1 << 4);
 		}
 		if (maxUpper)
@@ -425,9 +630,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			 */
 			int			cmp;
 
-			cmp = period_cmp_bounds(centroidUpper.val, maxUpper->val,
-					centroidUpper.lower, maxUpper->lower,
-					centroidUpper.inclusive, maxUpper->inclusive);
+			cmp = period_cmp_bounds(&centroidUpper, maxUpper);
 			if (cmp > 0 || (!inclusive && cmp == 0))
 				which &= (1 << 2) | (1 << 3);
 		}

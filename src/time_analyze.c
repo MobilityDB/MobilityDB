@@ -61,18 +61,6 @@ float8_qsort_cmp(const void *a1, const void *a2)
 }
 
 /*
- * Comparison function for sorting PeriodBounds.
- */
-int
-period_bound_qsort_cmp(const void *a1, const void *a2)
-{
-	PeriodBound *b1 = (PeriodBound *) a1;
-	PeriodBound *b2 = (PeriodBound *) a2;
-	return period_cmp_bounds(b1->val, b2->val, b1->lower, b2->lower, 
-		b1->inclusive, b2->inclusive);
-}
-
-/*
  * Compute statistics for time dimension with periods.
  * This function function is called for all temporal types whose duration
  * is not TemporalInst
@@ -131,7 +119,7 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
 		for (i = 0; i < num_hist; i++)
 		{
 			bound_hist_values[i] =
-				PointerGetDatum(period_make(lowers[pos].val, uppers[pos].val,
+				PointerGetDatum(period_make(lowers[pos].t, uppers[pos].t,
 				lowers[pos].inclusive, uppers[pos].inclusive));
 			pos += delta;
 			posfrac += deltafrac;
@@ -282,7 +270,7 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
 		/* Remember bounds and length for further usage in histograms */
 		lowers[non_null_cnt] = lower;
 		uppers[non_null_cnt] = upper;
-		lengths[non_null_cnt] = period_to_secs(upper.val, lower.val);
+		lengths[non_null_cnt] = period_to_secs(upper.t, lower.t);
 		non_null_cnt++;
 	}
 

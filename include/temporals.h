@@ -24,9 +24,9 @@
 
 /* General functions */
 
-extern TemporalSeq *temporals_seq_n(TemporalS *ts, int index);
-extern TemporalS *temporals_make(TemporalSeq **sequences, 
-	int count, bool linear, bool normalize);
+extern TemporalSeq *temporals_seq_n(const TemporalS *ts, int index);
+extern TemporalS *temporals_make(TemporalSeq **sequences, int count,
+	bool normalize);
 extern TemporalS *temporals_copy(TemporalS *ts);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern double temporals_interval_double(TemporalS *ts);
@@ -63,9 +63,10 @@ extern char *temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum));
 extern void temporals_write(TemporalS *ts, StringInfo buf);
 extern TemporalS *temporals_read(StringInfo buf, Oid valuetypid);
 
-/* Append function */
+/* Append functions */
 
-extern TemporalS *temporals_append_instant(TemporalS *ts, TemporalInst *inst);
+extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);
+extern TemporalS *temporals_append(const TemporalS *ts1, const TemporalS *ts2);
 
 /* Cast functions */
 
@@ -84,7 +85,7 @@ extern TemporalS *tstepws_to_linear(TemporalS *ts);
 extern Datum *temporals_values1(TemporalS *ts, int *count);
 extern ArrayType *temporals_values(TemporalS *ts);
 extern ArrayType *tfloats_ranges(TemporalS *ts);
-extern void *temporals_bbox_ptr(TemporalS *ts);
+extern void *temporals_bbox_ptr(const TemporalS *ts);
 extern void temporals_bbox(void *box, TemporalS *ts);
 extern Datum temporals_min_value(TemporalS *ts);
 extern Datum temporals_max_value(TemporalS *ts);

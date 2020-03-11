@@ -38,12 +38,9 @@ extern bool adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
-extern void stbox_expand(STBOX *box1, const STBOX *box2);
-extern void tpointinst_make_stbox(STBOX *box, Datum value, TimestampTz t);
+extern void tpointinst_make_stbox(STBOX *box, const TemporalInst *inst);
 extern void tpointinstarr_to_stbox(STBOX *box, TemporalInst **inst, int count);
 extern void tpointseqarr_to_stbox(STBOX *box, TemporalSeq **seq, int count);
-
-extern void tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst);
 
 /* Functions for expanding the bounding box */
 
@@ -58,13 +55,13 @@ extern Datum geo_to_stbox(PG_FUNCTION_ARGS);
 extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
 extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
 
-extern bool geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs);
+extern bool geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs);
 extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
-extern void timestampset_to_stbox_internal(STBOX *box, TimestampSet *ps);
-extern void period_to_stbox_internal(STBOX *box, Period *p);
-extern void periodset_to_stbox_internal(STBOX *box, PeriodSet *ps);
-extern bool geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED* geom, TimestampTz t);
-extern bool geo_period_to_stbox_internal(STBOX *box, GSERIALIZED* geom, Period *p);
+extern void timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ps);
+extern void period_to_stbox_internal(STBOX *box, const Period *p);
+extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
+extern bool geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED* geom, TimestampTz t);
+extern bool geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED* geom, const Period *p);
 
 /*****************************************************************************/
 

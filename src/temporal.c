@@ -24,6 +24,7 @@
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 
+#include "timeops.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
@@ -310,12 +311,9 @@ bool
 linear_interpolation(Oid type)
 {
 	if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) || 
-		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+		type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
+		type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
 		return true;
-#ifdef WITH_POSTGIS
-	if (type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY)) 
-		return true;
-#endif
 	return false;
 }
 
@@ -381,12 +379,10 @@ temporal_oid_from_base(Oid valuetypid)
 		result = type_oid(T_TFLOAT);
 	if (valuetypid == TEXTOID) 
 		result = type_oid(T_TTEXT);
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY)) 
+	if (valuetypid == type_oid(T_GEOMETRY))
 		result = type_oid(T_TGEOMPOINT);
 	if (valuetypid == type_oid(T_GEOGRAPHY)) 
 		result = type_oid(T_TGEOGPOINT);
-#endif			
 	return result;
 }
 
@@ -397,20 +393,41 @@ temporal_oid_from_base(Oid valuetypid)
 bool
 temporal_type_oid(Oid temptypid)
 {
-	if (temptypid == type_oid(T_TBOOL) ||
-		temptypid == type_oid(T_TINT) ||
-		temptypid == type_oid(T_TFLOAT) ||
-		temptypid == type_oid(T_TTEXT)
-#ifdef WITH_POSTGIS
-		|| temptypid == type_oid(T_TGEOMPOINT)
-		|| temptypid == type_oid(T_TGEOGPOINT)
-#endif
+	if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
+		temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
+		temptypid == type_oid(T_TGEOMPOINT) ||
+		temptypid == type_oid(T_TGEOGPOINT)
 		)
 		return true;
 	return false;
 }
 
-/* 
+/*
+ * Is the Oid a temporal number type ?
+ * Function used in particular in the indexes.
+ */
+bool
+tnumber_type_oid(Oid temptypid)
+{
+	if (temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT))
+		return true;
+	return false;
+}
+
+/*
+ * Is the Oid a temporal point type ?
+ * Function used in particular in the indexes.
+ */
+bool
+tpoint_type_oid(Oid temptypid)
+{
+	if (temptypid == type_oid(T_TGEOMPOINT) ||
+		temptypid == type_oid(T_TGEOGPOINT))
+		return true;
+	return false;
+}
+
+/*
  * Obtain the Oid of the base type from the Oid of the temporal type  
  */
 Oid
@@ -426,12 +443,10 @@ base_oid_from_temporal(Oid temptypid)
 		result = FLOAT8OID;
 	else if (temptypid == type_oid(T_TTEXT)) 
 		result = TEXTOID;
-#ifdef WITH_POSTGIS
-	else if (temptypid == type_oid(T_TGEOMPOINT)) 
+	else if (temptypid == type_oid(T_TGEOMPOINT))
 		result = type_oid(T_GEOMETRY);
 	else if (temptypid == type_oid(T_TGEOGPOINT)) 
 		result = type_oid(T_GEOGRAPHY);
-#endif
 	return result;
 }
 
@@ -442,11 +457,9 @@ base_oid_from_temporal(Oid temptypid)
 bool
 type_has_precomputed_trajectory(Oid valuetypid) 
 {
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY) || 
+	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 		return true;
-#endif
 	return false;
 } 
  
@@ -484,12 +497,9 @@ void
 ensure_temporal_base_type(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
-		valuetypid != FLOAT8OID && valuetypid != TEXTOID
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-#endif
-		)
+		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown base type: %d", valuetypid);
 }
 
@@ -498,26 +508,20 @@ ensure_temporal_base_type_all(Oid valuetypid)
 {
 	if (valuetypid != BOOLOID && valuetypid != INT4OID && 
 		valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
-		valuetypid != TIMESTAMPTZOID && valuetypid !=  type_oid(T_DOUBLE2)
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-		&& valuetypid != type_oid(T_DOUBLE3)
-		&& valuetypid != type_oid(T_DOUBLE4)
-#endif
-		)
+		valuetypid != TIMESTAMPTZOID && valuetypid != type_oid(T_DOUBLE2) &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY) &&
+		valuetypid != type_oid(T_DOUBLE3) &&
+		valuetypid != type_oid(T_DOUBLE4))
 		elog(ERROR, "unknown base type: %d", valuetypid);
 }
 
 void
 ensure_linear_interpolation(Oid valuetypid)
 {
-	if (valuetypid != FLOAT8OID
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-#endif
-		)
+	if (valuetypid != FLOAT8OID &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 }
 
@@ -525,14 +529,11 @@ void
 ensure_linear_interpolation_all(Oid valuetypid)
 {
 	if (valuetypid != FLOAT8OID &&
-		valuetypid !=  type_oid(T_DOUBLE2)
-#ifdef WITH_POSTGIS
-		&& valuetypid != type_oid(T_GEOMETRY)
-		&& valuetypid != type_oid(T_GEOGRAPHY)
-		&& valuetypid != type_oid(T_DOUBLE3)
-		&& valuetypid != type_oid(T_DOUBLE4)
-#endif
-		)
+		valuetypid !=  type_oid(T_DOUBLE2) &&
+		valuetypid != type_oid(T_GEOMETRY) &&
+		valuetypid != type_oid(T_GEOGRAPHY) &&
+		valuetypid != type_oid(T_DOUBLE3) &&
+		valuetypid != type_oid(T_DOUBLE4))
 		elog(ERROR, "unknown base type with linear interpolation: %d", valuetypid);
 }
 
@@ -543,14 +544,50 @@ ensure_numeric_base_type(Oid valuetypid)
 		elog(ERROR, "unknown numeric base type: %d", valuetypid);
 }
 
-#ifdef WITH_POSTGIS
-void 
+void
 ensure_point_base_type(Oid valuetypid)
 {
 	if (valuetypid != type_oid(T_GEOMETRY) && valuetypid != type_oid(T_GEOGRAPHY))
 		elog(ERROR, "unknown point base type: %d", valuetypid);
 }
-#endif
+
+/*****************************************************************************/
+
+void
+ensure_same_duration(Temporal *temp1, Temporal *temp2)
+{
+	if (temp1->duration != temp2->duration)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same duration")));
+}
+
+void
+ensure_same_base_type(Temporal *temp1, Temporal *temp2)
+{
+	if (temp1->valuetypid != temp2->valuetypid)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same base type")));
+}
+
+void
+ensure_same_interpolation(Temporal *temp1, Temporal *temp2)
+{
+	if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same interpolation")));
+}
+
+void
+ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2)
+{
+	if (inst1->t >= inst2->t)
+	{
+		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
+}
 
 /*****************************************************************************
  * Utility functions
@@ -929,8 +966,7 @@ temporals_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	Temporal *result = (Temporal *)temporals_make(sequences, count,
-		linear, true);
+	Temporal *result = (Temporal *)temporals_make(sequences, count, true);
 	
 	pfree(sequences);
 	PG_FREE_IF_COPY(array, 0);
@@ -939,10 +975,10 @@ temporals_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Append function
+ * Tranformation functions
  ****************************************************************************/
 
- /* Append an instant to the end of a temporal */
+/* Append an instant to the end of a temporal */
 
 PG_FUNCTION_INFO_V1(temporal_append_instant);
 
@@ -954,7 +990,7 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 	if (inst->duration != TEMPORALINST) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
-	assert(temp->valuetypid == inst->valuetypid);
+	ensure_same_base_type(temp, (Temporal *)inst);
 
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
@@ -973,6 +1009,58 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(inst, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/* Append function */
+
+PG_FUNCTION_INFO_V1(temporal_append);
+
+PGDLLEXPORT Datum
+temporal_append(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_base_type(temp1, temp2);
+	ensure_same_duration(temp1, temp2);
+	ensure_same_interpolation(temp1, temp2);
+
+	bool overlap = false;
+	/* Test whether the bounding period of the two temporal values overlap */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	Period *inter = intersection_period_period_internal(&p1, &p2);
+	if (inter != NULL)
+	{
+		overlap = true;
+		if (inter->lower != inter->upper)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Both arguments cannot overlap on time")));
+		TemporalInst *inst1 = temporal_at_timestamp_internal(temp1, inter->lower);
+		TemporalInst *inst2 = temporal_at_timestamp_internal(temp2, inter->lower);
+		if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), temp1->valuetypid))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Both arguments have different value at their overlapping timestamp")));
+	}
+
+	Temporal *result = NULL;
+	ensure_valid_duration(temp1->duration);
+	if (temp1->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_append_instant(
+			(TemporalInst *)temp1, (TemporalInst *)temp2);
+	else if (temp1->duration == TEMPORALI)
+		result = (Temporal *)temporali_append(
+			(TemporalI *)temp1, (TemporalI *)temp2);
+	else if (temp1->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_append((TemporalSeq *)temp1,
+			(TemporalSeq *)temp2);
+	else if (temp1->duration == TEMPORALS)
+		result = (Temporal *)temporals_append((TemporalS *)temp1,
+			(TemporalS *)temp2);
+
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1399,7 +1487,7 @@ temporal_bbox(void *box, const Temporal *temp)
 {
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
-		temporalinst_bbox(box, (TemporalInst *)temp);
+		temporalinst_make_bbox(box, (TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
 		temporali_bbox(box, (TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ) 
@@ -3158,7 +3246,7 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 	memset(&box2, 0, sizeof(bboxunion));
 	temporal_bbox(&box1, t1);
 	temporal_bbox(&box2, t2);
-	int result = temporal_bbox_cmp(t1->valuetypid, &box1, &box2);
+	int result = temporal_bbox_cmp(&box1, &box2, t1->valuetypid);
 	if (result)
 		return result;
 

@@ -28,9 +28,7 @@
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
-#ifdef WITH_POSTGIS
 #include "tpoint.h"
-#endif
 
 /*****************************************************************************
  * General functions
@@ -49,7 +47,7 @@
 /* Pointer to the value */
 
 static char *
-temporalinst_data_ptr(TemporalInst *inst)
+temporalinst_data_ptr(const TemporalInst *inst)
 {
 	return (char *)inst + double_pad(sizeof(TemporalInst));
 }
@@ -57,14 +55,14 @@ temporalinst_data_ptr(TemporalInst *inst)
 /* Get pointer to value */
 
 Datum *
-temporalinst_value_ptr(TemporalInst *inst)
+temporalinst_value_ptr(const TemporalInst *inst)
 {
 	return (Datum *)temporalinst_data_ptr(inst);
 }
 
 /* Get value depending on whether it is passed by value or by reference */
 Datum
-temporalinst_value(TemporalInst *inst)
+temporalinst_value(const TemporalInst *inst)
 {
 	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
@@ -75,7 +73,7 @@ temporalinst_value(TemporalInst *inst)
 }
 
 Datum
-temporalinst_value_copy(TemporalInst *inst)
+temporalinst_value_copy(const TemporalInst *inst)
 {
 	Datum *value = temporalinst_value_ptr(inst);
 	/* For base types passed by value */
@@ -87,15 +85,6 @@ temporalinst_value_copy(TemporalInst *inst)
 	void *result = palloc0(value_size);
 	memcpy(result, value, value_size);
 	return PointerGetDatum(result);
-}
-
-/* Get the bounding box of a TemporalInst */
-
-void
-temporalinst_bbox(void *box, TemporalInst *inst) 
-{
-	Datum value = temporalinst_value(inst);
-	temporalinst_make_bbox(box, value, inst->t, inst->valuetypid);
 }
 
 /* Construct a temporal instant value */
@@ -138,8 +127,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	SET_VARSIZE(result, size);
 	MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
-#ifdef WITH_POSTGIS
-	if (valuetypid == type_oid(T_GEOMETRY) || 
+	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
@@ -147,7 +135,6 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 		MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
 		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
 	}
-#endif
 	return result;
 }
 
@@ -788,11 +775,9 @@ temporalinst_hash(TemporalInst *inst)
 		value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
 	else if (inst->valuetypid == TEXTOID)
 		value_hash = DatumGetUInt32(call_function1(hashtext, value));
-#ifdef WITH_POSTGIS
-	else if (inst->valuetypid == type_oid(T_GEOMETRY) || 
+	else if (inst->valuetypid == type_oid(T_GEOMETRY) ||
 		inst->valuetypid == type_oid(T_GEOGRAPHY))
 		value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-#endif
 	/* Apply the hash function according to the timestamp */
 	time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 

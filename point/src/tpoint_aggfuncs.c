@@ -226,6 +226,7 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 		result->zmax = Max(box->zmax, box1.zmax);
 		result->zmin = Min(box->zmin, box1.zmin);
 	}
+	result->srid = box->srid;
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
 	MOBDB_FLAGS_SET_T(result->flags, true);
@@ -455,8 +456,7 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(newsequences, count, 
-		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
+	TemporalS *result = temporals_make(newsequences, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

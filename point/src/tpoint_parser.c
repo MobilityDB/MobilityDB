@@ -218,8 +218,7 @@ stbox_parse(char **str)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Could not parse STBOX: Missing closing parenthesis")));
 	
-	STBOX *result = stbox_new(hasx, hasz, hast, geodetic);
-	result->srid = srid;
+	STBOX *result = stbox_new(hasx, hasz, hast, geodetic, srid);
 	if (hasx)
 	{
 		if (xmin > xmax)
@@ -276,7 +275,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, int *tpoint_srid)
 	int geo_srid = gserialized_get_srid(gs);
 	ensure_point_type(gs);
 	ensure_non_empty(gs);
-	ensure_has_not_M(gs);
+	ensure_has_not_M_gs(gs);
 	if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
 		ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION), 
 			errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)", 
@@ -451,8 +450,7 @@ tpoints_parse(char **str, Oid basetype, bool linear, int *tpoint_srid)
 		seqs[i] = tpointseq_parse(str, basetype, linear, false, tpoint_srid);
 	}
 	p_cbrace(str);
-	TemporalS *result = temporals_make(seqs, count, 
-		linear, true);
+	TemporalS *result = temporals_make(seqs, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(seqs[i]);

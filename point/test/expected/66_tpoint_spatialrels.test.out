@@ -6365,6 +6365,12 @@ SELECT dwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2
  t
 (1 row)
 
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', tgeompoint '{[Point(1 2)@2000-01-01, Point(2 3)@2000-01-02]}', 0.5);
+ dwithin 
+---------
+ f
+(1 row)
+
 /* Errors */
 SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
 ERROR:  The temporal point and the geometry must be in the same SRID

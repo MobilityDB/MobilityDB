@@ -1380,9 +1380,9 @@ ERROR:  All geometries composing a temporal point must be of the same SRID
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
-ERROR:  All geometries composing a temporal point must be of the same SRID
+ERROR:  The temporal points must be in the same SRID
 SELECT duration(tgeompoint 'Point(1 1)@2000-01-01');
  duration 
 ----------
@@ -1486,9 +1486,9 @@ SELECT stbox(tgeompoint 'Point(1 1)@2000-01-01');
 (1 row)
 
 SELECT stbox(tgeogpoint 'Point(1.5 1.5)@2000-01-01');
-                                                                     stbox                                                                      
-------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;GEODSTBOX T((0.99931473,0.026167978,0.026176948,2000-01-01 00:00:00+00),(0.99931479,0.026167979,0.026176948,2000-01-01 00:00:00+00))
+                                                                                          stbox                                                                                           
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;GEODSTBOX T((0.999314725399017,0.0261679776012897,0.0261769483078731,2000-01-01 00:00:00+00),(0.999314785003662,0.0261679794639349,0.0261769483078731,2000-01-01 00:00:00+00))
 (1 row)
 
 SELECT st_asewkt(getValue(tgeompoint 'Point(1 1)@2000-01-01'));

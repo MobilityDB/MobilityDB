@@ -415,7 +415,7 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	ensure_point_type(gs);
 	ensure_non_empty(gs);
-	ensure_has_not_M(gs);
+	ensure_has_not_M_gs(gs);
 	TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
 	Oid	valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
 	Temporal *result = (Temporal *)temporalinst_make(PointerGetDatum(gs),
@@ -870,8 +870,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1,
-				MOBDB_FLAGS_GET_LINEAR(temp->flags), false);
+			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -883,8 +882,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1,
-				MOBDB_FLAGS_GET_LINEAR(temp->flags), false);
+			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);

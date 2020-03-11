@@ -830,6 +830,9 @@ index_leaf_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy)
 		case RTSameStrategyNumber:
 			retval = same_tbox_tbox_internal(key, query);
 			break;
+		case RTAdjacentStrategyNumber:
+			retval = adjacent_tbox_tbox_internal(key, query);
+			break;
 		case RTLeftStrategyNumber:
 			retval = /* left_tbox_tbox_internal(key, query) */
 				(key->xmax <= query->xmin); 
@@ -888,6 +891,10 @@ gist_internal_consistent_tbox(TBOX *key, TBOX *query, StrategyNumber strategy)
 		case RTContainsStrategyNumber:
 		case RTSameStrategyNumber:
 			retval = contains_tbox_tbox_internal(key, query);
+			break;
+		case RTAdjacentStrategyNumber:
+			retval = adjacent_tbox_tbox_internal(key, query) ||
+				 overlaps_tbox_tbox_internal(key, query);
 			break;
 		case RTLeftStrategyNumber:
 			retval = !overright_tbox_tbox_internal(key, query);
@@ -980,7 +987,7 @@ gist_tnumber_consistent(PG_FUNCTION_ARGS)
 			PG_RETURN_BOOL(false);
 		query = *box;
 	}
-	else if (temporal_type_oid(subtype))
+	else if (tnumber_type_oid(subtype))
 	{
 		Temporal *temp = PG_GETARG_TEMPORAL(1);
 		if (temp == NULL)

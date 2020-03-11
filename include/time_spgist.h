@@ -26,7 +26,6 @@ extern Datum spgist_period_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_period_leaf_consistent(PG_FUNCTION_ARGS);
 
 extern int16 getQuadrant(Period *centroid, Period *tst);
-extern int period_bound_cmp(const void *a, const void *b);
 
 #endif
 
