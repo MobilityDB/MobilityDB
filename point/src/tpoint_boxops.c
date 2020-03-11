@@ -42,7 +42,7 @@
 /* Transform a geometry/geography to a stbox */
 
 bool
-geo_to_stbox_internal(STBOX *box, GSERIALIZED *gs)
+geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 {
 	GBOX gbox;
 	if (gserialized_get_gbox_p(gs, &gbox) == LW_FAILURE)
@@ -112,7 +112,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box */
 
 void
-timestampset_to_stbox_internal(STBOX *box, TimestampSet *ts)
+timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 {
 	Period *p = timestampset_bbox(ts);
 	box->tmin = p->lower;
@@ -135,7 +135,7 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period to a box */
 
 void
-period_to_stbox_internal(STBOX *box, Period *p)
+period_to_stbox_internal(STBOX *box, const Period *p)
 {
 	box->tmin = p->lower;
 	box->tmax = p->upper;
@@ -156,7 +156,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box (internal function only) */
 
 void
-periodset_to_stbox_internal(STBOX *box, PeriodSet *ps)
+periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 {
 	Period *p = periodset_bbox(ps);
 	box->tmin = p->lower;
@@ -179,7 +179,7 @@ periodset_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a geometry/geography and a timestamptz to a stbox */
 
 bool
-geo_timestamp_to_stbox_internal(STBOX *box, GSERIALIZED *gs, TimestampTz t)
+geo_timestamp_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, TimestampTz t)
 {
 	if (!geo_to_stbox_internal(box, gs))
 		return false;
@@ -209,7 +209,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
 /* Transform a geometry/geography and a period to a stbox */
 
 bool
-geo_period_to_stbox_internal(STBOX *box, GSERIALIZED *gs, Period *p)
+geo_period_to_stbox_internal(STBOX *box, const GSERIALIZED *gs, const Period *p)
 {
 	if (!geo_to_stbox_internal(box, gs))
 		return false;
@@ -242,7 +242,7 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 void
-tpointinst_make_stbox(STBOX *box, TemporalInst *inst)
+tpointinst_make_stbox(STBOX *box, const TemporalInst *inst)
 {
 	Datum value = temporalinst_value(inst);
 	GSERIALIZED *gs = (GSERIALIZED *)PointerGetDatum(value);
@@ -354,21 +354,6 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Expand the bounding box of a Temporal with a TemporalInst
- * The functions assume that the argument box is set to 0 before with palloc0
- *****************************************************************************/
-
-void
-tpoint_expand_stbox(STBOX *box, Temporal *temp, TemporalInst *inst)
-{
-	temporal_bbox(box, temp);
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	temporalinst_make_bbox(&box1, inst);
-	stbox_expand(box, &box1);
 }
 
 /*****************************************************************************

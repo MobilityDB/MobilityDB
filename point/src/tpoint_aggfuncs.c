@@ -456,8 +456,7 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(newsequences, count, 
-		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
+	TemporalS *result = temporals_make(newsequences, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

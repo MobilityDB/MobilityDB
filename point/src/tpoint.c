@@ -870,8 +870,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1,
-				MOBDB_FLAGS_GET_LINEAR(temp->flags), false);
+			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
@@ -883,8 +882,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	{
 		Temporal *result;
 		if (temp->duration == TEMPORALSEQ)
-			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1,
-				MOBDB_FLAGS_GET_LINEAR(temp->flags), false);
+			result = (Temporal *)temporals_make((TemporalSeq **)&temp, 1, false);
 		else
 			result = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);

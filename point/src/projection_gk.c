@@ -287,8 +287,7 @@ tgeompoints_transform_gk_internal(TemporalS *ts)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(sequences, ts->count,
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
+	TemporalS *result = temporals_make(sequences, ts->count, false);
 
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);

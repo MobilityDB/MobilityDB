@@ -717,7 +717,7 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 /* Get the precomputed trajectory of a tpointseq */
 
 Datum
-tpointseq_trajectory(TemporalSeq *seq)
+tpointseq_trajectory(const TemporalSeq *seq)
 {
 	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
 			seq->offsets[seq->count + 1];					/* offset */
@@ -727,7 +727,7 @@ tpointseq_trajectory(TemporalSeq *seq)
 /* Add or replace a point to the trajectory of a sequence */
 
 Datum
-tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
+tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst, bool replace)
 {
 	Datum traj = tpointseq_trajectory(seq);
 	Datum point = temporalinst_value(inst);
@@ -801,7 +801,7 @@ tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace)
 /* Join two trajectories */
 
 Datum 
-tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first)
+tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
 	int count1 = last ? seq1->count - 1 : seq1->count;
@@ -822,7 +822,7 @@ tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool 
 /* Copy the precomputed trajectory of a tpointseq */
 
 Datum
-tpointseq_trajectory_copy(TemporalSeq *seq)
+tpointseq_trajectory_copy(const TemporalSeq *seq)
 {
 	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
 			seq->offsets[seq->count + 1];					/* offset */
@@ -952,7 +952,7 @@ tpoints_trajectory(TemporalS *ts)
 /*****************************************************************************/
 
 Datum
-tpoint_trajectory_internal(Temporal *temp)
+tpoint_trajectory_internal(const Temporal *temp)
 {
 	Datum result = 0;
 	ensure_valid_duration(temp->duration);
@@ -1143,8 +1143,7 @@ tpoints_cumulative_length(TemporalS *ts)
 		TemporalInst *end = temporalseq_inst_n(sequences[i], seq->count - 1);
 		length += DatumGetFloat8(temporalinst_value(end));
 	}
-	TemporalS *result = temporals_make(sequences,
-		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), false);
+	TemporalS *result = temporals_make(sequences, ts->count, false);
 		
 	for (int i = 1; i < ts->count; i++)
 		pfree(sequences[i]);
@@ -1255,7 +1254,7 @@ tpoints_speed(TemporalS *ts)
 		return NULL;
 	}
 	/* The resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_make(sequences, k, false, true);
+	TemporalS *result = temporals_make(sequences, k, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -1491,14 +1490,11 @@ tgeompoints_twcentroid(TemporalS *ts)
 		if (hasz)
 			pfree(instantsz);
 	}
-	TemporalS *tsx = temporals_make(sequencesx,
-		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
-	TemporalS *tsy = temporals_make(sequencesy,
-		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+	TemporalS *tsx = temporals_make(sequencesx, ts->count, true);
+	TemporalS *tsy = temporals_make(sequencesy, ts->count, true);
 	TemporalS *tsz = NULL; /* keep compiler quiet */
 	if (hasz)
-		tsz = temporals_make(sequencesz,
-		ts->count, MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+		tsz = temporals_make(sequencesz, ts->count, true);
 
 	double twavgx = tnumbers_twavg(tsx);
 	double twavgy = tnumbers_twavg(tsy);
@@ -1649,8 +1645,7 @@ tpointseq_azimuth(TemporalSeq *seq)
 	}
 	
 	/* Resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_make(sequences, count,
-		false, true);
+	TemporalS *result = temporals_make(sequences, count, true);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
@@ -1674,8 +1669,7 @@ tpoints_azimuth(TemporalS *ts)
 		return NULL;
 
 	/* Resulting sequence set has stepwise interpolation */
-	TemporalS *result = temporals_make(sequences, k,
-		false, true);
+	TemporalS *result = temporals_make(sequences, k, true);
 
 	for (int i = 0; i < k; i++)
 		pfree(sequences[i]);
@@ -1920,8 +1914,7 @@ tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TemporalS *result = temporals_make(sequences, count,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+	TemporalS *result = temporals_make(sequences, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -1965,8 +1958,7 @@ tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 		if (sequences[i] != NULL)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_make(allsequences, totalseqs,
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+	TemporalS *result = temporals_make(allsequences, totalseqs, true);
 
 	for (int i = 0; i < totalseqs; i++)
 		pfree(allsequences[i]);
@@ -2103,8 +2095,7 @@ tpointseq_minus_geometry(TemporalSeq *seq, Datum geom)
 	if (sequences == NULL)
 		return NULL;
 
-	TemporalS *result = temporals_make(sequences, count,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+	TemporalS *result = temporals_make(sequences, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -2158,8 +2149,7 @@ tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 		if (countseqs[i] != 0)
 			pfree(sequences[i]);
 	}
-	TemporalS *result = temporals_make(allsequences, totalseqs,
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+	TemporalS *result = temporals_make(allsequences, totalseqs, true);
 
 	for (int i = 0; i < totalseqs; i++)
 		pfree(allsequences[i]);
@@ -3196,8 +3186,7 @@ geo_to_tpoints(GSERIALIZED *gs)
 		pfree(gs1);
 	}
 	/* The resulting sequence set assumes linear interpolation */
-	result = temporals_make(sequences, ngeoms,
-		true, false);
+	result = temporals_make(sequences, ngeoms, false);
 	for (int i = 0; i < ngeoms; i++)
 		pfree(sequences[i]);
 	pfree(sequences);

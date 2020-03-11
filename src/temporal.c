@@ -24,6 +24,7 @@
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 
+#include "timeops.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
@@ -546,6 +547,44 @@ ensure_point_base_type(Oid valuetypid)
 		elog(ERROR, "unknown point base type: %d", valuetypid);
 }
 
+/*****************************************************************************/
+
+void
+ensure_same_duration(Temporal *temp1, Temporal *temp2)
+{
+	if (temp1->duration != temp2->duration)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same duration")));
+}
+
+void
+ensure_same_base_type(Temporal *temp1, Temporal *temp2)
+{
+	if (temp1->valuetypid != temp2->valuetypid)
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same base type")));
+}
+
+void
+ensure_same_interpolation(Temporal *temp1, Temporal *temp2)
+{
+	if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+			errmsg("The temporal values must be of the same interpolation")));
+}
+
+void
+ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2)
+{
+	if (inst1->t >= inst2->t)
+	{
+		char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+		char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+			errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+	}
+}
+
 /*****************************************************************************
  * Utility functions
  *****************************************************************************/
@@ -923,8 +962,7 @@ temporals_constructor(PG_FUNCTION_ARGS)
 		}
 	}
 
-	Temporal *result = (Temporal *)temporals_make(sequences, count,
-		linear, true);
+	Temporal *result = (Temporal *)temporals_make(sequences, count, true);
 	
 	pfree(sequences);
 	PG_FREE_IF_COPY(array, 0);
@@ -933,10 +971,10 @@ temporals_constructor(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Append function
+ * Tranformation functions
  ****************************************************************************/
 
- /* Append an instant to the end of a temporal */
+/* Append an instant to the end of a temporal */
 
 PG_FUNCTION_INFO_V1(temporal_append_instant);
 
@@ -948,9 +986,7 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 	if (inst->duration != TEMPORALINST) 
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), 
 			errmsg("The second argument must be of instant duration")));
-	if (temp->valuetypid != inst->valuetypid)
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("Both arguments must be of the same base type")));
+	ensure_same_base_type(temp, (Temporal *)inst);
 
 	Temporal *result = NULL;
 	ensure_valid_duration(temp->duration);
@@ -969,6 +1005,58 @@ temporal_append_instant(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(inst, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/* Append function */
+
+PG_FUNCTION_INFO_V1(temporal_append);
+
+PGDLLEXPORT Datum
+temporal_append(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+	ensure_same_base_type(temp1, temp2);
+	ensure_same_duration(temp1, temp2);
+	ensure_same_interpolation(temp1, temp2);
+
+	bool overlap = false;
+	/* Test whether the bounding period of the two temporal values overlap */
+	Period p1, p2;
+	temporal_period(&p1, temp1);
+	temporal_period(&p2, temp2);
+	Period *inter = intersection_period_period_internal(&p1, &p2);
+	if (inter != NULL)
+	{
+		overlap = true;
+		if (inter->lower != inter->upper)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Both arguments cannot overlap on time")));
+		TemporalInst *inst1 = temporal_at_timestamp_internal(temp1, inter->lower);
+		TemporalInst *inst2 = temporal_at_timestamp_internal(temp2, inter->lower);
+		if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), temp1->valuetypid))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("Both arguments have different value at their overlapping timestamp")));
+	}
+
+	Temporal *result = NULL;
+	ensure_valid_duration(temp1->duration);
+	if (temp1->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_append_instant(
+			(TemporalInst *)temp1, (TemporalInst *)temp2);
+	else if (temp1->duration == TEMPORALI)
+		result = (Temporal *)temporali_append(
+			(TemporalI *)temp1, (TemporalI *)temp2);
+	else if (temp1->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_append((TemporalSeq *)temp1,
+			(TemporalSeq *)temp2);
+	else if (temp1->duration == TEMPORALS)
+		result = (Temporal *)temporals_append((TemporalS *)temp1,
+			(TemporalS *)temp2);
+
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_POINTER(result);
 }
 

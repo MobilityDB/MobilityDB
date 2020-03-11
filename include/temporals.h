@@ -23,8 +23,8 @@
 /* General functions */
 
 extern TemporalSeq *temporals_seq_n(const TemporalS *ts, int index);
-extern TemporalS *temporals_make(TemporalSeq **sequences, 
-	int count, bool linear, bool normalize);
+extern TemporalS *temporals_make(TemporalSeq **sequences, int count,
+	bool normalize);
 extern TemporalS *temporals_copy(TemporalS *ts);
 extern bool temporals_find_timestamp(TemporalS *ts, TimestampTz t, int *pos);
 extern double temporals_interval_double(TemporalS *ts);
@@ -61,9 +61,10 @@ extern char *temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum));
 extern void temporals_write(TemporalS *ts, StringInfo buf);
 extern TemporalS *temporals_read(StringInfo buf, Oid valuetypid);
 
-/* Append function */
+/* Append functions */
 
-extern TemporalS *temporals_append_instant(TemporalS *ts, TemporalInst *inst);
+extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);
+extern TemporalS *temporals_append(const TemporalS *ts1, const TemporalS *ts2);
 
 /* Cast functions */
 

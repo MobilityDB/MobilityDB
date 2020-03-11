@@ -151,8 +151,7 @@ distance_tpoints_geo(TemporalS *ts, Datum point,
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		sequences[i] = distance_tpointseq_geo(seq, point, func);
 	}
-	TemporalS *result = temporals_make(sequences, ts->count, 
-		MOBDB_FLAGS_GET_LINEAR(ts->flags), true);
+	TemporalS *result = temporals_make(sequences, ts->count, true);
 	
 	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);

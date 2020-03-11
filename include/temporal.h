@@ -299,6 +299,11 @@ extern void ensure_linear_interpolation_all(Oid valuetypid);
 extern void ensure_numeric_base_type(Oid type);
 extern void ensure_point_base_type(Oid type);
 
+extern void ensure_same_duration(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_base_type(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_interpolation(Temporal *temp1, Temporal *temp2);
+extern void ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2);
+
 /* Input/output functions */
 
 extern Datum temporal_in(PG_FUNCTION_ARGS); 

@@ -43,7 +43,7 @@
 /* Pointer to array of offsets of the TimestampSet */
 
 static size_t *
-timestampset_offsets_ptr(TimestampSet *ts)
+timestampset_offsets_ptr(const TimestampSet *ts)
 {
 	return (size_t *) (((char *)ts) + sizeof(TimestampSet));
 }
@@ -51,7 +51,7 @@ timestampset_offsets_ptr(TimestampSet *ts)
 /* Pointer to the first timestamp */
 
 static char * 
-timestampset_data_ptr(TimestampSet *ts)
+timestampset_data_ptr(const TimestampSet *ts)
 {
 	return (char *)ts + double_pad(sizeof(TimestampSet) + 
 		sizeof(size_t) * (ts->count + 1));
@@ -60,7 +60,7 @@ timestampset_data_ptr(TimestampSet *ts)
 /* N-th TimestampTz of a TimestampSet */
 
 TimestampTz
-timestampset_time_n(TimestampSet *ts, int index)
+timestampset_time_n(const TimestampSet *ts, int index)
 {
 	size_t *offsets = timestampset_offsets_ptr(ts);
 	TimestampTz *result = (TimestampTz *) (timestampset_data_ptr(ts) + offsets[index]);
@@ -70,7 +70,7 @@ timestampset_time_n(TimestampSet *ts, int index)
 /* Bounding box of a TimestampSet */
 
 Period *
-timestampset_bbox(TimestampSet *ts) 
+timestampset_bbox(const TimestampSet *ts)
 {
 	size_t *offsets = timestampset_offsets_ptr(ts);
 	return (Period *)(timestampset_data_ptr(ts) + offsets[ts->count]);

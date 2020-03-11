@@ -45,7 +45,7 @@
 /* Pointer to array of offsets of the PeriodSet */
 
 static size_t *
-periodset_offsets_ptr(PeriodSet *ps)
+periodset_offsets_ptr(const PeriodSet *ps)
 {
 	return (size_t *) (((char *)ps) + sizeof(PeriodSet));
 }
@@ -53,7 +53,7 @@ periodset_offsets_ptr(PeriodSet *ps)
 /* Pointer to the first period */
 
 static char * 
-periodset_data_ptr(PeriodSet *ps)
+periodset_data_ptr(const PeriodSet *ps)
 {
 	return (char *)ps + double_pad(sizeof(PeriodSet) + 
 		sizeof(size_t) * (ps->count + 1));
@@ -62,7 +62,7 @@ periodset_data_ptr(PeriodSet *ps)
 /* N-th Period of a PeriodSet */
 
 Period *
-periodset_per_n(PeriodSet *ps, int index)
+periodset_per_n(const PeriodSet *ps, int index)
 {
 	size_t *offsets = periodset_offsets_ptr(ps);
 	return (Period *) (periodset_data_ptr(ps) + offsets[index]);
@@ -71,7 +71,7 @@ periodset_per_n(PeriodSet *ps, int index)
 /* Bounding box of a PeriodSet */
 
 Period *
-periodset_bbox(PeriodSet *ps) 
+periodset_bbox(const PeriodSet *ps)
 {
 	size_t *offsets = periodset_offsets_ptr(ps);
 	assert(offsets[ps->count] != 0);

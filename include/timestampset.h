@@ -21,8 +21,8 @@
 
 /* assorted support functions */
 
-extern TimestampTz timestampset_time_n(TimestampSet *ts, int index);
-extern Period *timestampset_bbox(TimestampSet *ts);
+extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
+extern Period *timestampset_bbox(const TimestampSet *ts);
 extern TimestampSet *timestampset_make_internal(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(TimestampSet *ts);
 extern bool timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *pos);

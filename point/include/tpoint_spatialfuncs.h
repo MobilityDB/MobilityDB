@@ -79,16 +79,16 @@ extern TemporalS *tgeogpoints_to_tgeompoints(TemporalS *ts);
 
 extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
-extern Datum tpoint_trajectory_internal(Temporal *temp);
+extern Datum tpoint_trajectory_internal(const Temporal *temp);
 extern Datum tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear);
-extern Datum tpointseq_trajectory_append(TemporalSeq *seq, TemporalInst *inst, bool replace);
-extern Datum tpointseq_trajectory_join(TemporalSeq *seq1, TemporalSeq *seq2, bool last, bool first);
+extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst, bool replace);
+extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
 extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
-extern Datum tpointseq_trajectory(TemporalSeq *seq);
-extern Datum tpointseq_trajectory_copy(TemporalSeq *seq);
+extern Datum tpointseq_trajectory(const TemporalSeq *seq);
+extern Datum tpointseq_trajectory_copy(const TemporalSeq *seq);
 extern Datum tpoints_trajectory(TemporalS *ts);
 
 /* Length, speed, time-weighted centroid, and temporal azimuth functions */

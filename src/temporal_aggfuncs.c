@@ -1801,12 +1801,11 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
-		result = (Temporal *)temporali_make(
-			(TemporalInst **)values, state->length);
+		result = (Temporal *)temporali_make((TemporalInst **)values,
+			state->length);
 	else if (values[0]->duration == TEMPORALSEQ)
-		result = (Temporal *)temporals_make(
-			(TemporalSeq **)values, state->length,
-			MOBDB_FLAGS_GET_LINEAR(values[0]->flags), true);
+		result = (Temporal *)temporals_make((TemporalSeq **)values,
+			state->length, true);
 	pfree(values);
 	PG_RETURN_POINTER(result);
 }
@@ -1920,8 +1919,7 @@ temporalseq_tavg_finalfn(TemporalSeq **sequences, int count)
 			pfree(instants[j]);
 		pfree(instants);
 	}
-	TemporalS *result = temporals_make(newsequences, count,
-		MOBDB_FLAGS_GET_LINEAR(newsequences[0]->flags), true);
+	TemporalS *result = temporals_make(newsequences, count, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(newsequences[i]);

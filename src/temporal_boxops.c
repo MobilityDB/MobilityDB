@@ -137,7 +137,7 @@ temporal_bbox_shift(void *box, Interval *interval, Oid valuetypid)
 /* Make the bounding box a temporal instant from its values */
 
 void
-temporalinst_make_bbox(void *box, TemporalInst *inst)
+temporalinst_make_bbox(void *box, const TemporalInst *inst)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(inst->valuetypid);
@@ -160,7 +160,7 @@ temporalinst_make_bbox(void *box, TemporalInst *inst)
 /* Transform an array of temporal instant to a period */
 
 static void
-temporalinstarr_to_period(Period *period, TemporalInst **instants, int count, 
+temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 	bool lower_inc, bool upper_inc) 
 {
 	period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
@@ -170,7 +170,7 @@ temporalinstarr_to_period(Period *period, TemporalInst **instants, int count,
 /* Transform an array of tnumber instant to a box */
 
 static void
-tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count) 
+tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 {
 	temporalinst_make_bbox(box, instants[0]);
 	for (int i = 1; i < count; i++)
@@ -184,7 +184,7 @@ tnumberinstarr_to_tbox(TBOX *box, TemporalInst **instants, int count)
 
 /* Make the bounding box a temporal instant set from its values */
 void 
-temporali_make_bbox(void *box, TemporalInst **instants, int count) 
+temporali_make_bbox(void *box, TemporalInst **instants, int count)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(instants[0]->valuetypid);
@@ -201,7 +201,7 @@ temporali_make_bbox(void *box, TemporalInst **instants, int count)
 
 /* Make the bounding box a temporal sequence from its values */
 void
-temporalseq_make_bbox(void *box, TemporalInst **instants, int count, 
+temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 	bool lower_inc, bool upper_inc)
 {
 	/* Only external types have bounding box */
@@ -225,7 +225,7 @@ temporalseq_make_bbox(void *box, TemporalInst **instants, int count,
 /* Transform an array of temporal sequence to a period */
 
 static void
-temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int count) 
+temporalseqarr_to_period_internal(Period *period, TemporalSeq **sequences, int count)
 {
 	Period *first = &sequences[0]->period;
 	Period *last = &sequences[count - 1]->period;

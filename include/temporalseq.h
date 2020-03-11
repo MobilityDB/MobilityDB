@@ -61,7 +61,9 @@ extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 
 /* Append function */
 
-extern TemporalSeq *temporalseq_append_instant(TemporalSeq *seq, TemporalInst *inst);
+extern TemporalSeq *temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
+extern TemporalSeq *temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst);
+extern Temporal *temporalseq_append(TemporalSeq *seq1, TemporalSeq *seq2);
 
 /* Cast functions */
 

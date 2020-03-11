@@ -21,8 +21,8 @@
 
 /* Assorted support functions */
 
-extern Period *periodset_per_n(PeriodSet *ps, int index);
-extern Period *periodset_bbox(PeriodSet *ps);
+extern Period *periodset_per_n(const PeriodSet *ps, int index);
+extern Period *periodset_bbox(const PeriodSet *ps);
 extern PeriodSet *periodset_make_internal(Period **periods,
 	int count, bool normalize);
 extern PeriodSet *periodset_copy(PeriodSet *ps);

@@ -41,9 +41,10 @@ extern char *temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum));
 extern void temporali_write(TemporalI *ti, StringInfo buf);
 extern TemporalI *temporali_read(StringInfo buf, Oid valuetypid);
 
-/* Append function */
+/* Append functions */
 
-extern TemporalI *temporali_append_instant(TemporalI *ti, TemporalInst *inst);
+extern TemporalI *temporali_append_instant(const TemporalI *ti, const TemporalInst *inst);
+extern TemporalI *temporali_append(const TemporalI *ti1, const TemporalI *ti2);
 
 /* Cast functions */
  
