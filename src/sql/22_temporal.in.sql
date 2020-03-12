@@ -433,6 +433,24 @@ CREATE FUNCTION append(ttext, ttext)
 AS 'MODULE_PATHNAME', 'temporal_append'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION append(tbool[])
+	RETURNS tbool
+AS 'MODULE_PATHNAME', 'temporal_append_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION append(tint[])
+	RETURNS tint
+AS 'MODULE_PATHNAME', 'temporal_append_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION append(tfloat[])
+	RETURNS tfloat
+AS 'MODULE_PATHNAME', 'temporal_append_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION append(ttext[])
+	RETURNS ttext
+AS 'MODULE_PATHNAME', 'temporal_append_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/

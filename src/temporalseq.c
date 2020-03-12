@@ -888,14 +888,11 @@ temporalseq_append(TemporalSeq *seq1, TemporalSeq *seq2)
 		 ! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
-	bool isgeo = false, hasz = false;
 	if (seq1->valuetypid == type_oid(T_GEOMETRY) ||
 		seq1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		ensure_same_srid_tpoint((Temporal *)seq1, (Temporal *)seq2);
 		ensure_same_dimensionality_tpoint((Temporal *)seq1, (Temporal *)seq2);
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
 	}
 
 	if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)

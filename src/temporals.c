@@ -256,12 +256,9 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 		! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
-	bool isgeo = false, hasz;
 	if (ts1->valuetypid == type_oid(T_GEOMETRY) ||
 		ts1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ts1->flags);
 		ensure_same_srid_tpoint((Temporal *)ts1, (Temporal *)ts2);
 		ensure_same_dimensionality_tpoint((Temporal *)ts1, (Temporal *)ts2);
 	}
