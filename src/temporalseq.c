@@ -903,7 +903,7 @@ temporalseq_append(TemporalSeq *seq1, TemporalSeq *seq2)
 		return (Temporal *) temporalseq_join(seq1, seq2, true, false);
 	TemporalSeq *sequences[2];
 	sequences[0] = seq1;
-	sequences[0] = seq2;
+	sequences[1] = seq2;
 	/* result is a TemporalS */
 	return (Temporal *) temporals_make(sequences, 2, false);
 }
