@@ -259,7 +259,8 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 	if (inst1->t > inst2->t)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values cannot overlap on time")));
-	if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc &&
+	bool overlap = inst1->t == inst2->t && (seq1->period.upper_inc && seq2->period.lower_inc);
+	if (overlap &&
 		! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
@@ -270,7 +271,6 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 	TemporalSeq *newseq;
 	/* Join the last sequence for the first argument and the first sequence
 	 * of the second argument */
-	bool overlap = inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc;
 	if (overlap)
 	{
 		newseq = temporalseq_join(seq1, seq2, true, false);
@@ -347,13 +347,10 @@ temporals_append_array(TemporalS **ts, int count)
 {
 	Oid valuetypid = ts[0]->valuetypid;
 	int linear = MOBDB_FLAGS_GET_LINEAR(ts[0]->flags);
-	bool isgeo = false, hasz = false;
-	if (ts[0]->valuetypid == type_oid(T_GEOMETRY) ||
-		ts[0]->valuetypid == type_oid(T_GEOGRAPHY))
-	{
+	bool isgeo = false;
+	if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
 		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ts[0]->flags);
-	}
 	TemporalSeq *seq1 = temporals_seq_n(ts[0], ts[0]->count - 1);
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 	TemporalSeq *seq2;
@@ -375,13 +372,16 @@ temporals_append_array(TemporalS **ts, int count)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values cannot overlap on time")));
 		if (inst1->t == inst2->t &&
-			! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("The temporal values have different value at their overlapping instant")));
-		if (inst1->t != inst2->t)
-			totalcount += ts[i]->count;
+			(seq1->period.upper_inc || seq2->period.lower_inc))
+		{
+			if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+					errmsg("The temporal values have different value at their overlapping instant")));
+			else
+				totalcount += ts[i]->count - 1;
+		}
 		else
-			totalcount += ts[i]->count - 1;
+			totalcount += ts[i]->count;
 	}
 	TemporalSeq **sequences = palloc0(sizeof(TemporalSeq *) * totalcount);
 	TemporalSeq **tofree = palloc0(sizeof(TemporalSeq *) * count);
@@ -394,12 +394,9 @@ temporals_append_array(TemporalS **ts, int count)
 		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		seq2 = temporals_seq_n(ts[i], 0);
 		inst2 = temporalseq_inst_n(seq2, 0);
-		int start;
-		if (inst1->t != inst2->t)
-		{
-			start = 0;
-		}
-		else
+		int start = 0;
+		if (inst1->t == inst2->t &&
+			(seq1->period.upper_inc || seq2->period.lower_inc))
 		{
 			start = 1;
 			tofree[l++] = seq1 = temporalseq_join(seq1, seq2, true, false);
