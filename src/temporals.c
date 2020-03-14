@@ -407,7 +407,7 @@ temporals_append_array(TemporalS **ts, int count)
 		if (ts[i]->count != 1)
 		{
 			sequences[k++] = seq1;
-			for (int j = start; i < ts[i]->count - 1; j++)
+			for (int j = start; j < ts[i]->count - 1; j++)
 				sequences[k++] = temporals_seq_n(ts[i], j);
 			seq1 = temporals_seq_n(ts[i], ts[i]->count - 1);
 		}
