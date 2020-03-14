@@ -264,15 +264,6 @@ period_super_union(Period *p1, Period *p2)
 	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
 	bool lower1 = cmp1 < 0 || (cmp1 == 0 && (p1->lower_inc || ! p2->lower_inc));
 	bool upper1 = cmp2 > 0 || (cmp2 == 0 && (p1->upper_inc || ! p2->upper_inc));
-
-	/* optimization to avoid constructing a new period */
-	if (lower1 && upper1)
-		/* p1 contains p2 */
-		return p1;
-	if (! lower1 && ! upper1)
-		/* p2 contains p1 */
-		return p2;
-
 	TimestampTz lower = lower1 ? p1->lower : p2->lower;
 	bool lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
 	TimestampTz upper = upper1 ? p1->upper : p2->upper;
