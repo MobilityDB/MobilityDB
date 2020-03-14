@@ -947,7 +947,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 			</para>
 		</sect1>
 
-		<sect1>
+		<sect1 id="constructor_box_types">
 			<title>Constructor Functions</title>
 
 			<para>Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
@@ -1005,7 +1005,7 @@ SELECT geodstboxt('2001-01-03', '2001-01-03');
 			</itemizedlist>
 		</sect1>
 
-		<sect1>
+		<sect1 id="casting_box_types">
 			<title>Casting</title>
 	
 			<itemizedlist>
@@ -1059,7 +1059,7 @@ SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 			</itemizedlist>
 		</sect1>
 
-		<sect1>
+		<sect1 id="accessor_box_types">
 			<title>Accessor Functions</title>
 
 			<itemizedlist>
@@ -1142,7 +1142,7 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 		</sect1>
 
 		<sect1 id ="modification_box_tyes">
-			<title>Modification of Box Types</title>
+			<title>Modification Functions</title>
 
 			<para>The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
 			</para>
@@ -1224,10 +1224,10 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 	(803028.908264815,751590.742628986,2000-01-02))"
 					</programlisting>
 				</listitem>
-			</itemizedlist>
+			</itemizedlist>s
 		</sect1>
 
-		<sect1>
+		<sect1 id="operators_box_types">
 			<title>Bounding Box Operators</title>
 			<para>These operators test whether the bounding boxes satisfy the predicate and result in a Boolean value.</para>
 
@@ -1538,6 +1538,75 @@ SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(3,3,3,2001-01-02))' *
 				</listitem>
 			</itemizedlist>
 		</sect1>
+
+		<sect1 id="comparison_box_types">
+			<title>Comparison Operators</title>
+
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on bos types. These operators compare first the timestamps and if those are equal, compare the values.</para>
+
+			<itemizedlist>
+				<listitem>
+				<para>Equal</para>
+				<para><varname>{tbox, stbox} = {tbox, stbox}: boolean</varname></para>
+				<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Not equal</para>
+					<para><varname>{tbox, stbox} &lt;&gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Less than</para>
+					<para><varname>{tbox, stbox} &lt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;
+	tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Greater than</para>
+					<para><varname>{tbox, stbox} &gt; {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;
+	tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Less than or equal to</para>
+					<para><varname>{tbox, stbox} &lt;= {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Greater than or equal to</para>
+					<para><varname>{tbox, stbox} &gt;= {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=
+	tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'
+-- false
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
 	</chapter>
 
 	<chapter id="manipulating_temporal_types">
@@ -1658,7 +1727,7 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 
 		<para>We describe next the functions and operators for temporal types. For conciseness, in the examples we mostly use sequences composed of two instants.</para>
 
-		<sect1 id ="input_output_temporal_tyes">
+		<sect1 id="input_output_temporal_tyes">
 			<title>Input/Output of Temporal Types</title>
 			<para>A temporal instant value is a couple of the form <varname>v@t</varname>, where <varname>v</varname> is a value of the base type and <varname>t</varname> is a <varname>timestamptz</varname> value. A temporal sequence value is a set of values <varname>v1@t1,...,vn@tn</varname> delimited by a lower and an upper bounds that can be inclusive (represented by &lsquo;<varname>[</varname>' and &lsquo;<varname>]</varname>') or exclusive (represented by &lsquo;<varname>(</varname>' and &lsquo;<varname>)</varname>'). Examples of input of temporal unit values are as follows:
 				<programlisting>
@@ -1736,6 +1805,102 @@ ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 				</programlisting>
 			</para>
 		</sect1>
+
+		<sect1 id="constructor_temporal_tyes">
+			<title>Constructor Functions</title>
+
+			<para>Each temporal type has a constructor function with the same name as the type and with a suffix for the duration, where the suffix &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, and &lsquo;<varname>s</varname>&rsquo; correspond, respectively, to the durations instant, instant set, sequence, and sequence set. Using the constructor function is frequently more convenient than writing a literal constant.
+			</para>
+
+			<para>
+			The constructor functions for temporal instant values have one argument for the base type value and one argument for the <varname>timestamptz</varname> value.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of instant duration</para>
+					<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
+					<programlisting>
+SELECT tboolinst(true, '2001-01-01 08:00:00');
+SELECT tintinst(2, '2001-01-01 08:00:00');
+SELECT tfloatinst(2.0, '2001-01-01 08:00:00');
+SELECT ttextinst('AAA', '2001-01-01 08:00:00');
+SELECT tgeompointinst('Point(0 0)', '2001-01-01 08:00:00');
+SELECT tgeogpointinst('Point(1 1)', '2001-01-01 08:05:00');
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The constructor functions for temporal instant set values have a single argument, which is an array of values of the corresponding instant values.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of instant set duration</para>
+					<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
+					<programlisting>
+SELECT tbooli(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
+SELECT tinti(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
+SELECT tfloati(ARRAY[tfloat '1.0@2001-01-01 08:00:00)', '2.0@2001-01-01 08:05:00']);
+SELECT ttexti(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
+SELECT tgeompointi(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00']);
+SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
+	'Point(2 2)@2001-01-01 08:05:00']);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>The constructor function for temporal sequence values depends on whether the base type is continuous or not. In both cases the constructor has one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the constructor function for temporal sequence values with continuous base type has an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of sequence duration</para>
+					<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
+					<para><varname>tcontseq(ttypeinst[], left_inc = true, right_inc = true, linear = true}): tcontseq</varname></para>
+				</listitem>
+				<programlisting>
+SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
+	true, true);
+SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'),
+	tintinst(2,'2001-01-01 08:10:00')], true, false);
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+	'1@2001-01-03 08:10:00'], true, false);
+SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+	'1@2001-01-03 08:10:00'], true, true, false);
+SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
+	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
+SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
+SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
+	'Point(0 0)@2001-01-03 08:05:00']);
+				</programlisting>
+			</itemizedlist>
+
+			<para>The constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values.
+			</para>
+			<itemizedlist>
+				<listitem>
+					<para>Constructor for temporal types of sequence set duration</para>
+					<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
+					<programlisting>
+SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
+	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
+SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
+	2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
+SELECT tfloats(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
+	2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
+SELECT ttexts(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
+	'[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
+SELECT tgeompoints(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
+	Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
+	'[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
+SELECT tgeogpoints(ARRAY[tgeogpointseq
+	'[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-01 08:05:00)',
+	'[Point(0 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect1>
+
 
 		<sect1 id="casting_temporal_types">
 			<title>Casting</title>
@@ -1927,101 +2092,6 @@ SELECT append(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}
 					</programlisting>
 				</listitem>
 
-			</itemizedlist>
-		</sect1>
-
-		<sect1>
-			<title>Constructor Functions</title>
-
-			<para>Each temporal type has a constructor function with the same name as the type and with a suffix for the duration, where the suffix &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>i</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo;, and &lsquo;<varname>s</varname>&rsquo; correspond, respectively, to the durations instant, instant set, sequence, and sequence set. Using the constructor function is frequently more convenient than writing a literal constant. 
-			</para>
-
-			<para>
-			The constructor functions for temporal instant values have one argument for the base type value and one argument for the <varname>timestamptz</varname> value.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Constructor for temporal types of instant duration</para>
-					<para><varname>ttypeinst(base, timestamptz): ttypeinst</varname></para>
-					<programlisting>
-SELECT tboolinst(true, '2001-01-01 08:00:00');
-SELECT tintinst(2, '2001-01-01 08:00:00');
-SELECT tfloatinst(2.0, '2001-01-01 08:00:00');
-SELECT ttextinst('AAA', '2001-01-01 08:00:00');
-SELECT tgeompointinst('Point(0 0)', '2001-01-01 08:00:00');
-SELECT tgeogpointinst('Point(1 1)', '2001-01-01 08:05:00');
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-
-			<para>The constructor functions for temporal instant set values have a single argument, which is an array of values of the corresponding instant values.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Constructor for temporal types of instant set duration</para>
-					<para><varname>ttypei(ttypeinst[]]): ttypei</varname></para>
-					<programlisting>
-SELECT tbooli(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
-SELECT tinti(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
-SELECT tfloati(ARRAY[tfloat '1.0@2001-01-01 08:00:00)', '2.0@2001-01-01 08:05:00']);
-SELECT ttexti(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
-SELECT tgeompointi(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 1)@2001-01-01 08:05:00', 'Point(1 1)@2001-01-01 08:10:00']);
-SELECT tgeogpointi(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
-	'Point(2 2)@2001-01-01 08:05:00']);
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-
-			<para>The constructor function for temporal sequence values depends on whether the base type is continuous or not. In both cases the constructor has one argument for the array of values of the corresponding instant duration and two optional Boolean arguments stating, respectively, whether the left and right bounds are inclusive or exclusive. It the these arguments are not specified they are assumed to be true by default. In addition, the constructor function for temporal sequence values with continuous base type has an additional Boolean argument stating whether the interpolation is linear or not. It this argument is not specified it is assumed to be true by default.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Constructor for temporal types of sequence duration</para>
-					<para><varname>tdiscseq(ttypeinst[], left_inc = true, right_inc = true}): tdiscseq</varname></para>
-					<para><varname>tcontseq(ttypeinst[], left_inc = true, right_inc = true, linear = true}): tcontseq</varname></para>
-				</listitem>
-				<programlisting>
-SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
-	true, true);
-SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'),
-	tintinst(2,'2001-01-01 08:10:00')], true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
-	'1@2001-01-03 08:10:00'], true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
-	'1@2001-01-03 08:10:00'], true, true, false);
-SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
-	ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
-SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
-SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
-	'Point(0 0)@2001-01-03 08:05:00']);
-				</programlisting>
-			</itemizedlist>
-
-			<para>The constructor functions for temporal sequence set values have a single argument, which is an array of values of the corresponding sequence values.
-			</para>
-			<itemizedlist>
-				<listitem>
-					<para>Constructor for temporal types of sequence set duration</para>
-					<para><varname>ttypes(ttypeseq[]): ttypes</varname></para>
-					<programlisting>
-SELECT tbools(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
-	'[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
-SELECT tints(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
-	2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
-SELECT tfloats(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
-	2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT ttexts(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
-	'[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
-SELECT tgeompoints(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
-	Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
-	'[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
-SELECT tgeogpoints(ARRAY[tgeogpointseq
-	'[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-01 08:05:00)',
-	'[Point(0 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-					</programlisting>
-				</listitem>
 			</itemizedlist>
 		</sect1>
 
@@ -3057,7 +3127,7 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 		<sect1 id="operators_temporal_types">
 			<title>Comparison Operators</title>
 
-			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the values and if those are equal, compare the timestamps. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the duration. For temporal instant values, they compare first the timestamps and if those are equal, compare the values. For temporal instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for temporal sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
 
 			<para>The equality and inequality operators consider the normal forms of the temporal types and the equivalent representation for different durations as shown next.
 				<programlisting>
