@@ -1433,7 +1433,7 @@ SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
 				</listitem>
 			</itemizedlist>
 
-			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), adjacent (<varname>-|-</varname>), and same (<varname>~=</varname>). The operators verify the topological relationship taking into account the value and/or the time dimension for as many dimensions that are present on both arguments.</para>
+			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The operators verify the topological relationship taking into account the value and/or the time dimension for as many dimensions that are present on both arguments.</para>
 
 			<para>The topological operators for temporal alphanumeric types are given next.</para>
 
@@ -1478,19 +1478,6 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' &lt;@
 				</listitem>
 
 				<listitem>
-					<para>Are the bounding boxes adjacent? Two boxes are adjacent if they share <emphasis>n</emphasis> dimensions and their intersection is at most of <emphasis>n</emphasis>-1 dimensions.</para>
-					<para><varname>{tbox, stbox} -|- {tbox, stbox}: boolean</varname></para>
-					<programlisting>
-SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-
-	tbox 'TBOX((,2001-01-02),(,2001-01-03))';
--- true
-SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
-	stbox 'STBOX T((2,2,2001-01-03),(4,4,2001-01-04))';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
 					<para>Are the bounding boxes equal in common dimensions?</para>
 					<para><varname>{tbox, stbox} ~= {tbox, stbox}: boolean</varname></para>
 					<programlisting>
@@ -1503,6 +1490,18 @@ SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' ~=
 					</programlisting>
 				</listitem>
 
+				<listitem>
+					<para>Are the bounding boxes adjacent? Two boxes are adjacent if they share <emphasis>n</emphasis> dimensions and their intersection is at most of <emphasis>n</emphasis>-1 dimensions.</para>
+					<para><varname>{tbox, stbox} -|- {tbox, stbox}: boolean</varname></para>
+					<programlisting>
+SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-
+	tbox 'TBOX((,2001-01-02),(,2001-01-03))';
+-- true
+SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-
+	stbox 'STBOX T((2,2,2001-01-03),(4,4,2001-01-04))';
+-- true
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 
 			<para>Finally, the set operators for box types are union (<varname>+</varname>) and intersection (<varname>*</varname>). In the case of union, the operands must have exactly the same dimensions, otherwise an error is raided. Furthermore, if the operands do not overlap on all the dimensions and error is raised, since in this would result in a box with disjoint values, which cannot be represented.  The operator computes the union on all dimensions that are present in both arguments. In the case of intersection, the operands must have at least one common dimension, otherwise an error is raised. The operator computes the intersection on all dimensions that are present in both arguments.</para>
@@ -1607,6 +1606,18 @@ SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=
 			</itemizedlist>
 		</sect1>
 
+		<sect1 id ="indexing_box_types">
+			<title>Indexing of Box Types</title>
+			<para>GiST and SP-GiST indexes can be created for table columns of the <varname>tbox</varname> and <varname>stbox</varname> types. An example of creation of a GiST index in a column <varname>bbox</varname> of type <varname>stbox</varname> in a table <varname>Trips</varname> is as follows:
+					<programlisting>
+CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, bbox stbox);
+CREATE INDEX trips_bbox_idx ON Trips USING GIST(bbox);
+					</programlisting>
+			</para>
+			<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>,  <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, and <varname>#&amp;&gt;</varname>.</para>
+
+			<para>In addition, B-tree indexes can be created for table columns of a box type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of time types, with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+		</sect1>
 	</chapter>
 
 	<chapter id="manipulating_temporal_types">
@@ -3817,7 +3828,7 @@ SELECT tgeompoint 'Point(0 0)@2001-01-01' #&amp;&gt;
 				</listitem>
 			</itemizedlist>
 
-			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), adjacent (<varname>-|-</varname>), and same (<varname>~=</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+			<para>Another set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
 
 			<para>The topological operators for temporal alphanumeric types are given next.</para>
 
@@ -3866,6 +3877,17 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;@ tfloat '{2@2012-01-03, 3@2012-0
 				</listitem>
 
 				<listitem>
+					<para>Are the bounding boxes equal?</para>
+					<para><varname>{base, numrange, time, tbox, ttype} ~=</varname></para>
+					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
+					<programlisting>
+SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  
+	tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
 					<para>Are the bounding boxes adjacent?</para>
 					<para><varname>{base, numrange, time, tbox, ttype} -|-</varname></para>
 					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
@@ -3876,17 +3898,6 @@ SELECT tint '[1@2012-01-01, 2@2012-01-04]' -|-
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' -|- tint '[2@2012-01-03, 2@2012-01-05)';
 -- false
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' -|- tfloat '{1@2012-01-03, 3@2012-01-05}';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
-					<para>Are the bounding boxes equal?</para>
-					<para><varname>{base, numrange, time, tbox, ttype} ~=</varname></para>
-					<para><varname>	{base, numrange, time, tbox, ttype}: boolean</varname></para>
-					<programlisting>
-SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ~=  
-	tint '{4@2012-01-01, 3@2012-01-03, 1@2012-01-04}';
 -- true
 					</programlisting>
 				</listitem>
@@ -3926,21 +3937,21 @@ SELECT tgeompoint 'Point(1 1)@2012-01-01' &lt;@
 				</listitem>
 
 				<listitem>
-					<para>Are the bounding boxes adjacent?</para>
-					<para><varname>{geo, time, stbox, tpoint} -|- {geo, time, stbox, tpoint}: boolean</varname></para>
-					<programlisting>
-SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-02]' -|-
-	tgeompoint '[Point(2 2)@2012-01-01, Point(3 3)@2012-01-04)';
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem>
 					<para>Are the bounding boxes equal?</para>
 					<para><varname>{geo, time, stbox, tpoint} ~= {geo, time, stbox, tpoint}: boolean</varname></para>
 					<programlisting>
 SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ~=
 	tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-04)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Are the bounding boxes adjacent?</para>
+					<para><varname>{geo, time, stbox, tpoint} -|- {geo, time, stbox, tpoint}: boolean</varname></para>
+					<programlisting>
+SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(2 2)@2012-01-02]' -|-
+	tgeompoint '[Point(2 2)@2012-01-01, Point(3 3)@2012-01-04)';
 -- true
 					</programlisting>
 				</listitem>
@@ -4522,57 +4533,56 @@ SELECT mobdb_full_version();
 				</listitem>
 			</itemizedlist>
 		</sect1>
-	</chapter>
 
-	<chapter id="indexing_temporal_types">
-		<title>Indexing of Temporal Types</title>
-		<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and a TB-tree for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
-			<programlisting>
+		<sect1 id="indexing_temporal_types">
+			<title>Indexing of Temporal Types</title>
+			<para>GiST and SP-GiST indexes can be created for table columns of temporal types. The GiST index implements an R-tree for temporal alphanumeric types and a TB-tree for temporal point types. The SP-GiST index implements a Quad-tree for temporal alphanumeric types and an Oct-tree for temporal point types. Examples of index creation are as follows:
+				<programlisting>
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
-			</programlisting>
-		</para>
+				</programlisting>
+			</para>
 
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="temporal_types" />, these are
-			<itemizedlist>
-				<listitem>
-					<para>the period <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
-				</listitem>
+			<para>The GiST and SP-GiST indexes store the bounding box for the temporal types. As explained in <xref linkend="temporal_types" />, these are
+				<itemizedlist>
+					<listitem>
+						<para>the period <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types,</para>
+					</listitem>
 
-				<listitem>
-					<para>the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types,</para>
-				</listitem>
+					<listitem>
+						<para>the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types,</para>
+					</listitem>
 
-				<listitem>
-					<para>the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
-				</listitem>
-			</itemizedlist>
-		</para>
-			
-		<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="operators_temporal_types" /> for more information):
-			<itemizedlist>
-				<listitem>
-					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, which only consider the value dimension in temporal alphanumeric types,</para>
-				</listitem>
+					<listitem>
+						<para>the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
 
-				<listitem>
-					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, and <varname>/&amp;&gt;</varname>, which only consider the spatial dimension in temporal point types,</para>
-				</listitem>
+			<para>A GiST or SP-GiST index can accelerate queries involving the following operators (see <xref linkend="operators_temporal_types" /> for more information):
+				<itemizedlist>
+					<listitem>
+						<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, which only consider the value dimension in temporal alphanumeric types,</para>
+					</listitem>
 
-				<listitem>
-					<para><varname>&amp;&lt;#</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname>, which only consider the time dimension for all temporal types,</para>
-				</listitem>
+					<listitem>
+						<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, and <varname>/&amp;&gt;</varname>, which only consider the spatial dimension in temporal point types,</para>
+					</listitem>
 
-				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, and <varname>~=</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>period</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
-				</listitem>
-			</itemizedlist>
-		</para>
+					<listitem>
+						<para><varname>&amp;&lt;#</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname>, which only consider the time dimension for all temporal types,</para>
+					</listitem>
 
-		<para>In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
-			
-		<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/range and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
-			<programlisting>
+					<listitem>
+						<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, and <varname>~=</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument. These operators work on bounding boxes (that is, <varname>period</varname>, <varname>tbox</varname>, or <varname>stbox</varname>), not the entire values.</para>
+					</listitem>
+				</itemizedlist>
+			</para>
+
+			<para>In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
+
+			<para>For example, given the index defined above on the <varname>Department</varname> table and a query that involves a condition with the <varname>&amp;&amp;</varname> (overlaps) operator, if the right argument is a temporal float then both the value and the time dimensions are considered for filtering the tuples of the relation, while if the right argument is a float value, a float range, or a time type, then either the value or the time dimension will be used for filtering the tuples of the relation. Furthermore, a bounding box can be constructed from a value/range and/or a timestamp/period, which can be used for filtering the tuples of the relation. Examples of queries using the index on the <varname>Department</varname> table defined above are given next.
+				<programlisting>
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
@@ -4581,11 +4591,11 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp;
 	tbox(intrange '[1, 5)', period '[2012-04-01, 2012-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
 	tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
-			</programlisting>
-		</para>
+				</programlisting>
+			</para>
 
-		<para>Similarly, examples of queries using the index on the <varname>Trips</varname> table defined above are given next.
-			<programlisting>
+			<para>Similarly, examples of queries using the index on the <varname>Trips</varname> table defined above are given next.
+				<programlisting>
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
 SELECT * FROM Trips WHERE Trip &amp;&amp; period '[2001-01-01, 2001-01-05)';
@@ -4593,138 +4603,139 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 	stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', period '[2001-01-01, 2001-01-05]');
 SELECT * FROM Trips WHERE Trip &amp;&amp;
 	tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
-			</programlisting>
-		</para>
-				
-		<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+				</programlisting>
+			</para>
 
-		<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types" />, a bounding box comparison that make uses of the available indexes can be added in the <varname>WHERE</varname> clause of queries. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
-			<programlisting>
+			<para>Finally, B-tree indexes can be created for table columns of all temporal types. For this index type, the only useful operation is equality. There is a B-tree sort ordering defined for values of temporal types, with corresponding <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname> and operators, but the ordering is rather arbitrary and not usually useful in the real world. B-tree support for temporal types is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
+
+			<para>In order to speed up several of the functions in <xref linkend="manipulating_temporal_types" />, a bounding box comparison that make uses of the available indexes can be added in the <varname>WHERE</varname> clause of queries. For example, this would be typically the case for the functions that project the temporal types to the value/spatial and/or time dimensions. This will filter out the tuples with an index as shown in the following query.
+				<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
 -- Bouding box index filtering
 WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
-			</programlisting>
-		</para>
-				
-		<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
-			<programlisting>
+				</programlisting>
+			</para>
+
+			<para>In the case of temporal points, all spatial relationships with the &ldquo;ever&rdquo; semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, will automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+				<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 -- Bouding box index filtering
 WHERE intersects(T.Trip, R.Geom);
-			</programlisting>
-		</para>
-	</chapter>
-		
-	<chapter id="statistics_temporal_types">
-		<title>Statistics and Selectivity for Temporal Types</title>
-		<sect1>
-			<title>Statistics Collection for Temporal Types</title>
-			<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
-
-			<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, like <varname>float</varname>, the following statistics are collected:
-				<orderedlist numeration="arabic">
-					<listitem>
-						<para>fraction of null values,</para>
-					</listitem>
-					<listitem>
-						<para>average width, in bytes, of non-null values,</para>
-					</listitem>
-					<listitem>
-						<para>number of distinct non-null values,</para>
-					</listitem>
-					<listitem>
-						<para>array of most common values and array of their frequencies,</para>
-					</listitem>
-					<listitem>
-						<para>histogram of values, where the most common values are excluded,</para>
-					</listitem>
-					<listitem>
-						<para>correlation between physical and logical row ordering.</para>
-					</listitem>
-				</orderedlist>
-			</para>
-
-			<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
-				<orderedlist continuation="continues" numeration="arabic">
-					<listitem id="range_stat1">
-						<para>length histogram of non-empty ranges,</para>
-					</listitem>
-					<listitem id="range_stat2">
-						<para>histograms of lower and upper bounds.</para>
-					</listitem>
-				</orderedlist>
-			</para>
-
-			<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
-					<orderedlist continuation="continues" numeration="arabic">
-						<listitem id="geom_stat1">
-							<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
-						</listitem>
-						<listitem id="geom_stat2">
-							<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
-						</listitem>
-					</orderedlist>
-			</para>
-
-			<para>The statistics collected for the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the <varname>period</varname> statistics are collected.</para>
-
-			<para>The statistics collected for temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the value dimension and the time dimension independently. More precisely, the following statistics are collected for the time dimension:
-				<itemizedlist>
-					<listitem>
-						<para>For temporal instant values, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
-					</listitem>
-
-					<listitem>
-						<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
-					</listitem>
-				</itemizedlist>
-			</para>
-
-			<para>The following statistics are collected for the value dimension:
-				<itemizedlist>
-					<listitem>
-						<para>For temporal types with stepwise interpolation (that is, temporal types whose base type is <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
-							<itemizedlist>
-								<listitem>
-									<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
-								</listitem>
-			
-								<listitem>
-									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the values.</para>
-								</listitem>
-							</itemizedlist>
-						</para>
-					</listitem>
-
-					<listitem>
-						<para>For temporal float types (that is, <varname>tfloat</varname>):
-							<itemizedlist>
-								<listitem>
-									<para>For instant values, the statistics (4)&#x2013;(6) are collected for the values.</para>
-								</listitem>
-								<listitem>
-									<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
-								</listitem>
-							</itemizedlist>
-						</para>
-					</listitem>
-
-					<listitem>
-						<para>For temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
-					</listitem>
-				</itemizedlist>
+				</programlisting>
 			</para>
 		</sect1>
 
-		<sect1>
-			<title>Selectivity Estimation of Operators</title>
-			<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+		<sect1 id="statistics_temporal_types">
+			<title>Statistics and Selectivity for Temporal Types</title>
+			<sect2>
+				<title>Statistics Collection</title>
+				<para>The PostgreSQL planner relies on statistical information about the contents of tables in order to generate the most efficient execution plan for queries. These statistics include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column. For large tables, a random sample of the table contents is taken, rather than examining every row. This enables large tables to be analyzed in a small amount of time. The statistical information is gathered by the <varname>ANALYZE</varname> command and stored in the <varname>pg_statistic</varname> catalog table. Since different kinds of statistics may be appropriate for different kinds of data, the table only stores very general statistics (such as number of null values) in dedicated columns. Everything else is stored in five &ldquo;slots&rdquo;, which are couples of array columns that store the statistics for a column of an arbitrary type.</para>
 
-			<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+				<para>The statistics collected for time types and temporal types are based on those collected by PostgreSQL for scalar types and range types. For scalar types, like <varname>float</varname>, the following statistics are collected:
+					<orderedlist numeration="arabic">
+						<listitem>
+							<para>fraction of null values,</para>
+						</listitem>
+						<listitem>
+							<para>average width, in bytes, of non-null values,</para>
+						</listitem>
+						<listitem>
+							<para>number of distinct non-null values,</para>
+						</listitem>
+						<listitem>
+							<para>array of most common values and array of their frequencies,</para>
+						</listitem>
+						<listitem>
+							<para>histogram of values, where the most common values are excluded,</para>
+						</listitem>
+						<listitem>
+							<para>correlation between physical and logical row ordering.</para>
+						</listitem>
+					</orderedlist>
+				</para>
 
-			<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
+				<para>For range types, like <varname>tstzrange</varname>, three additional histograms are collected:
+					<orderedlist continuation="continues" numeration="arabic">
+						<listitem id="range_stat1">
+							<para>length histogram of non-empty ranges,</para>
+						</listitem>
+						<listitem id="range_stat2">
+							<para>histograms of lower and upper bounds.</para>
+						</listitem>
+					</orderedlist>
+				</para>
+
+				<para>For geometries, in addition to (1)&#x2013;(3), the following statistics are collected:
+						<orderedlist continuation="continues" numeration="arabic">
+							<listitem id="geom_stat1">
+								<para>number of dimensions of the values, N-dimensional bounding box, number of rows in the table, number of rows in the sample, number of non-null values,</para>
+							</listitem>
+							<listitem id="geom_stat2">
+								<para>N-dimensional histogram that divides the bounding box into a number of cells and keeps the proportion of values that intersects with each cell.</para>
+							</listitem>
+						</orderedlist>
+				</para>
+
+				<para>The statistics collected for the new time types <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> replicate those collected by PostgreSQL for the <varname>tstzrange</varname>. This is clear for the <varname>period</varname> type, which is equivalent to <varname>tszrange</varname>, excepted that periods cannot be empty. For the <varname>timestampset</varname> and the <varname>periodset</varname> types, a value is converted into its bounding box which is a <varname>period</varname>, then the <varname>period</varname> statistics are collected.</para>
+
+				<para>The statistics collected for temporal types depend on their duration and their base type. In addition to statistics (1)&#x2013;(3) that are collected for all temporal types, statistics are collected for the value dimension and the time dimension independently. More precisely, the following statistics are collected for the time dimension:
+					<itemizedlist>
+						<listitem>
+							<para>For temporal instant values, the statistics (4)&#x2013;(6) are collected for the timestamps.</para>
+						</listitem>
+
+						<listitem>
+							<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding box) periods.</para>
+						</listitem>
+					</itemizedlist>
+				</para>
+
+				<para>The following statistics are collected for the value dimension:
+					<itemizedlist>
+						<listitem>
+							<para>For temporal types with stepwise interpolation (that is, temporal types whose base type is <varname>tbool</varname>, <varname>ttext</varname>, or <varname>tint</varname>):
+								<itemizedlist>
+									<listitem>
+										<para>For the instant duration, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									</listitem>
+
+									<listitem>
+										<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the values.</para>
+									</listitem>
+								</itemizedlist>
+							</para>
+						</listitem>
+
+						<listitem>
+							<para>For temporal float types (that is, <varname>tfloat</varname>):
+								<itemizedlist>
+									<listitem>
+										<para>For instant values, the statistics (4)&#x2013;(6) are collected for the values.</para>
+									</listitem>
+									<listitem>
+										<para>For all other durations, the statistics (7)&#x2013;(8) are collected for the (bounding) value ranges.</para>
+									</listitem>
+								</itemizedlist>
+							</para>
+						</listitem>
+
+						<listitem>
+							<para>For temporal point types (that is, <varname>tgeompoint</varname> and <varname>tgeogpoint</varname>) the statistics (9)&#x2013;(10) are collected for the points.</para>
+						</listitem>
+					</itemizedlist>
+				</para>
+			</sect2>
+
+			<sect2>
+				<title>Selectivity Estimation of Operators</title>
+				<para>Boolean operators in PostgreSQL can be associated with two selectivity functions, which compute how likely a value of a given type will match a given criterion. These selectivity functions rely on the statistics collected. There are two types of selectivity functions. The restriction selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>column OP constant</varname>. The join selectivity functions try to estimate the percentage of the rows in a table that satisfy a <varname>WHERE</varname>-clause condition of the form <varname>table1.column1 OP table2.column2</varname>.</para>
+
+				<para>MobilityDB defines 23 classes of Boolean operators (such as <varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), each of which can have as left or right arguments a built-in type (such as <varname>int</varname>, <varname>timestamptz</varname>, etc.) or a new type (such as <varname>period</varname>, <varname>tintseq</varname>, etc.). As a consequence, there is a very high number of operators with different arguments to be considered for the selectivity functions. The approach taken was to group these combinations into classes corresponding to the value and temporal features. The classes correspond to the type of statistics collected as explained in the previous section.</para>
+
+				<para>Currently, only restriction selectivity functions are implemented for temporal types, while join selectivity functions give a default selectivity value depending on the operator. It is planned to implement joint selectivity functions in the future.</para>
+			</sect2>
 		</sect1>
 	</chapter>
 
