@@ -65,6 +65,7 @@ extern TemporalS *temporals_read(StringInfo buf, Oid valuetypid);
 
 extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);
 extern TemporalS *temporals_append(const TemporalS *ts1, const TemporalS *ts2);
+extern TemporalS *temporals_append_array(TemporalS **ts, int count);
 
 /* Cast functions */
 

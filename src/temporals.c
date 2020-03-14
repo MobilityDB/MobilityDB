@@ -114,10 +114,10 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 		{
 			if (tpointseq_srid(sequences[i]) != srid)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same SRID")));
+					errmsg("The geometries composing a temporal point must be of the same SRID")));
 			if (MOBDB_FLAGS_GET_Z(sequences[i]->flags) != hasz)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+					errmsg("The geometries composing a temporal point must be of the same dimensionality")));
 		}
 	}
 
@@ -183,7 +183,8 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 TemporalS *
 temporals_append_instant(const TemporalS *ts, const TemporalInst *inst)
 {
-	/* Add the instant to the last sequence */
+	/* Add the instant to the last sequence. The validity tests of both
+	 * temporal values is done in the temporalseq_append_instant function */
 	TemporalSeq *seq = temporals_seq_n(ts, ts->count - 1);
 	TemporalSeq *newseq = temporalseq_append_instant(seq, inst);
 	/* Add the size of the struct and the offset array
@@ -245,6 +246,12 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 	/* Test the validity of both temporal values */
 	assert(ts1->valuetypid == ts2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(ts1->flags) == MOBDB_FLAGS_GET_LINEAR(ts2->flags));
+	if (ts1->valuetypid == type_oid(T_GEOMETRY) ||
+		ts1->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		ensure_same_srid_tpoint((Temporal *)ts1, (Temporal *)ts2);
+		ensure_same_dimensionality_tpoint((Temporal *)ts1, (Temporal *)ts2);
+	}
 	TemporalSeq *seq1 = temporals_seq_n(ts1, ts1->count - 1);
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 	TemporalSeq *seq2 = temporals_seq_n(ts2, 0);
@@ -256,12 +263,6 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 		! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
-	if (ts1->valuetypid == type_oid(T_GEOMETRY) ||
-		ts1->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		ensure_same_srid_tpoint((Temporal *)ts1, (Temporal *)ts2);
-		ensure_same_dimensionality_tpoint((Temporal *)ts1, (Temporal *)ts2);
-	}
 
 	int start2 = 0;
 	int count = ts1->count + ts2->count;
@@ -336,6 +337,87 @@ temporals_append(const TemporalS *ts1, const TemporalS *ts2)
 	}
 	if (overlap)
 		pfree(newseq);
+	return result;
+}
+
+/* Append an array of temporal values */
+
+TemporalS *
+temporals_append_array(TemporalS **ts, int count)
+{
+	Oid valuetypid = ts[0]->valuetypid;
+	int linear = MOBDB_FLAGS_GET_LINEAR(ts[0]->flags);
+	bool isgeo = false, hasz = false;
+	if (ts[0]->valuetypid == type_oid(T_GEOMETRY) ||
+		ts[0]->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		isgeo = true;
+		hasz = MOBDB_FLAGS_GET_Z(ts[0]->flags);
+	}
+	TemporalSeq *seq1 = temporals_seq_n(ts[0], ts[0]->count - 1);
+	TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
+	TemporalSeq *seq2;
+	TemporalInst *inst2;
+	int totalcount = ts[0]->count;
+	for (int i = 1; i < count; i++)
+	{
+		/* Test the validity of consecutive temporal values */
+		assert(ts[i]->valuetypid == valuetypid);
+		assert(MOBDB_FLAGS_GET_LINEAR(ts[i]->flags) == linear);
+		if (isgeo)
+		{
+			ensure_same_srid_tpoint((Temporal *)ts[i - 1], (Temporal *)ts[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)ts[i - 1], (Temporal *)ts[i]);
+		}
+		seq2 = temporals_seq_n(ts[i], 0);
+		inst2 = temporalseq_inst_n(seq2, 0);
+		if (inst1->t > inst2->t)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values cannot overlap on time")));
+		if (inst1->t == inst2->t &&
+			! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values have different value at their overlapping instant")));
+		if (inst1->t != inst2->t)
+			totalcount += ts[i]->count;
+		else
+			totalcount += ts[i]->count - 1;
+	}
+	TemporalSeq **sequences = palloc0(sizeof(TemporalSeq *) * totalcount);
+	TemporalSeq **tofree = palloc0(sizeof(TemporalSeq *) * count);
+	int k = 0, l = 0;
+	for (int j = 0; j < ts[0]->count - 1; j++)
+		sequences[k++] = temporals_seq_n(ts[0], j);
+	seq1 = temporals_seq_n(ts[0], ts[0]->count - 1);
+	for (int i = 1; i < count; i++)
+	{
+		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
+		seq2 = temporals_seq_n(ts[i], 0);
+		inst2 = temporalseq_inst_n(seq2, 0);
+		int start;
+		if (inst1->t != inst2->t)
+		{
+			start = 0;
+		}
+		else
+		{
+			start = 1;
+			tofree[l++] = seq1 = temporalseq_join(seq1, seq2, true, false);
+		}
+		if (ts[i]->count != 1)
+		{
+			sequences[k++] = seq1;
+			for (int j = start; i < ts[i]->count - 1; j++)
+				sequences[k++] = temporals_seq_n(ts[i], j);
+			seq1 = temporals_seq_n(ts[i], ts[i]->count - 1);
+		}
+	}
+	sequences[k++] = seq1;
+	TemporalS *result = temporals_make(sequences, k, true);
+	pfree(sequences);
+	for (int i = 0; i < l; i++)
+		pfree(tofree[i]);
+	pfree(tofree);
 	return result;
 }
 

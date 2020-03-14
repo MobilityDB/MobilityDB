@@ -104,10 +104,10 @@ temporali_make(TemporalInst **instants, int count)
 		{
 			if (tpointinst_srid(instants[i]) != srid)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same SRID")));
+					errmsg("The geometries composing a temporal point must be of the same SRID")));
 			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
 				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+					errmsg("The geometries composing a temporal point must be of the same dimensionality")));
 		}
 	}
 
@@ -164,18 +164,13 @@ temporali_append_instant(const TemporalI *ti, const TemporalInst *inst)
 	/* Test the validity of the instant */
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = false, hasz = false;
+	bool isgeo = false;
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ti->flags);
-		if (tpointinst_srid(inst) != tpointi_srid(ti))
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("All geometries composing a temporal point must be of the same SRID")));
-		if (MOBDB_FLAGS_GET_Z(inst->flags) != hasz)
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+		ensure_same_srid_tpoint((Temporal *)ti, (Temporal *)inst);
+		ensure_same_dimensionality_tpoint((Temporal *)ti, (Temporal *)inst);
 	}
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(valuetypid);
@@ -196,7 +191,7 @@ temporali_append_instant(const TemporalI *ti, const TemporalInst *inst)
 	MOBDB_FLAGS_SET_LINEAR(result->flags, 
 		MOBDB_FLAGS_GET_LINEAR(inst->flags));
 	if (isgeo)
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti->flags));
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)
@@ -230,6 +225,14 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 	/* Test the validity of both temporal values */
 	assert(ti1->valuetypid == ti2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(ti1->flags) == MOBDB_FLAGS_GET_LINEAR(ti2->flags));
+	bool isgeo = false;
+	if (ti1->valuetypid == type_oid(T_GEOMETRY) ||
+		ti1->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
+		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
+		isgeo = true;
+	}
 	TemporalInst *inst1 = temporali_inst_n(ti1, ti1->count - 1);
 	TemporalInst *inst2 = temporali_inst_n(ti2, 0);
 	if (inst1->t > inst2->t)
@@ -239,15 +242,6 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 		! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
-	bool isgeo = false, hasz = false;
-	if (ti1->valuetypid == type_oid(T_GEOMETRY) ||
-		ti1->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
-		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ti1->flags);
-	}
 
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ti1->valuetypid);
@@ -271,7 +265,7 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(ti1->flags));
 	if (isgeo)
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti1->flags));
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	int k = 0;
@@ -330,6 +324,11 @@ temporali_append_array(TemporalI **tis, int count)
 		/* Test the validity of consecutive temporal values */
 		assert(tis[i]->valuetypid == valuetypid);
 		assert(MOBDB_FLAGS_GET_LINEAR(tis[i]->flags) == interpolation);
+		if (isgeo)
+		{
+			ensure_same_srid_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
+		}
 		inst1 = temporali_inst_n(tis[i - 1], tis[i - 1]->count - 1);
 		inst2 = temporali_inst_n(tis[i], 0);
 		if (inst1->t > inst2->t)
@@ -339,11 +338,6 @@ temporali_append_array(TemporalI **tis, int count)
 			! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values have different value at their overlapping instant")));
-		if (isgeo)
-		{
-			ensure_same_srid_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
-			ensure_same_dimensionality_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
-		}
 		start = inst1->t == inst2->t ? 1 : 0;
 		for (int j = start; j < tis[i]->count; j++)
 		{

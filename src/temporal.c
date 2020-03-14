@@ -1085,14 +1085,12 @@ temporal_append_array(PG_FUNCTION_ARGS)
 	else if (duration == TEMPORALI)
 		result = (Temporal *)temporali_append_array(
 			(TemporalI **)temporals, count);
-	/*
 	else if (duration == TEMPORALSEQ)
 		result = (Temporal *)temporalseq_append_array(
 			(TemporalSeq **)temporals, count);
 	else if (duration == TEMPORALS)
 		result = (Temporal *)temporals_append_array(
 			(TemporalS **)temporals, count);
-	*/
 
 	pfree(temporals);
 	PG_FREE_IF_COPY(array, 0);

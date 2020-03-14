@@ -143,6 +143,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 TemporalI *
 temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
 {
+	ensure_increasing_timestamps(inst1, inst2);
 	TemporalInst *instants[2];
 	instants[0] = inst1;
 	instants[1] = inst2;
@@ -725,18 +726,18 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
-	/* Compare values */
-	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2), 
-		inst1->valuetypid))
-		return -1;
-	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2), 
-		inst1->valuetypid))
-		return 1;
 	/* Compare timestamps */
 	int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
 	if (cmp < 0)
 		return -1;
 	if (cmp > 0)
+		return 1;
+	/* Compare values */
+	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2),
+		inst1->valuetypid))
+		return -1;
+	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2),
+		inst1->valuetypid))
 		return 1;
 	/* Compare flags */
 	if (inst1->flags < inst2->flags)
