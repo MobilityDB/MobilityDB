@@ -77,7 +77,7 @@ extern TemporalS *tfloats_to_tints(TemporalS *ts);
 extern TemporalS *temporalinst_to_temporals(TemporalInst *inst, bool linear);
 extern TemporalS *temporali_to_temporals(TemporalI *ti, bool linear);
 extern TemporalS *temporalseq_to_temporals(TemporalSeq *seq);
-extern TemporalS *tstepws_to_linear(TemporalS *ts);
+extern TemporalS *tsteps_to_linear(TemporalS *ts);
 
 /* Accessor functions */
 

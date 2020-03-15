@@ -1280,12 +1280,12 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result); 
 }
 
-/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+/* Transform a temporal value with continuous base type from step to linear interpolation */
 
-PG_FUNCTION_INFO_V1(tstepw_to_linear);
+PG_FUNCTION_INFO_V1(tstep_to_linear);
 
 PGDLLEXPORT Datum
-tstepw_to_linear(PG_FUNCTION_ARGS)
+tstep_to_linear(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
@@ -1298,9 +1298,9 @@ tstepw_to_linear(PG_FUNCTION_ARGS)
 
 	Temporal *result = NULL;
 	if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)tstepwseq_to_linear((TemporalSeq *)temp);
+		result = (Temporal *)tstepseq_to_linear((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-		result = (Temporal *)tstepws_to_linear((TemporalS *)temp);
+		result = (Temporal *)tsteps_to_linear((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
 }
@@ -1347,7 +1347,7 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 		if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
 			strcpy(str, "Linear");
 		else
-			strcpy(str, "Stepwise");
+			strcpy(str, "Step");
 	}
 	text *result = cstring_to_text(str);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1405,7 +1405,7 @@ temporal_get_values(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Ranges of a temporal float with either stepwise/linear interpolation */
+/* Ranges of a temporal float with either step/linear interpolation */
 
 Datum
 tfloat_ranges(Temporal *temp)

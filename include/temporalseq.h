@@ -76,8 +76,8 @@ extern TemporalSeq *tfloatseq_to_tintseq(TemporalSeq *seq);
 extern TemporalSeq *temporalinst_to_temporalseq(TemporalInst *inst, bool linear);
 extern TemporalSeq *temporali_to_temporalseq(TemporalI *ti, bool linear);
 extern TemporalSeq *temporals_to_temporalseq(TemporalS *ts);
-extern int tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq);
-extern TemporalS *tstepwseq_to_linear(TemporalSeq *seq);
+extern int tstepseq_to_linear1(TemporalSeq **result, TemporalSeq *seq);
+extern TemporalS *tstepseq_to_linear(TemporalSeq *seq);
 
 /* Accessor functions */
 

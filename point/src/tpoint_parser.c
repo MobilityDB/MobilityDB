@@ -404,8 +404,8 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, int *tpoint_sri
 	p_cbracket(str);
 	p_cparen(str);
 
-	TemporalSeq *result = temporalseq_make(insts, 
-		count, lower_inc, upper_inc, linear, true);
+	TemporalSeq *result = temporalseq_make(insts, count, lower_inc, upper_inc,
+		linear, true);
 
 	for (int i = 0; i < count; i++)
 		pfree(insts[i]);

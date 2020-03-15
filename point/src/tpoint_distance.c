@@ -65,7 +65,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		Datum value2 = temporalinst_value(inst2);
 
-		/* Constant segment or stepwise interpolation */
+		/* Constant segment or step interpolation */
 		if (datum_point_eq(value1, value2) || ! linear)
 		{
 			instants[k++] = temporalinst_make(func(point, value1),

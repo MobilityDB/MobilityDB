@@ -135,6 +135,21 @@ TemporalI *sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
 TemporalI *sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid);
+TemporalSeq *sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid,bool linear,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
+TemporalS *sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool linear,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
+TemporalS *sync_tfunc3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool linear,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
+TemporalS *sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool linear,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
+Temporal *sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
+	Datum param, Datum (*func)(Datum, Datum, Datum), Oid valuetypid, bool linear,
+	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *));
 
 TemporalInst *sync_tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2, 
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid valuetypid);

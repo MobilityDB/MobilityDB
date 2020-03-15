@@ -127,6 +127,8 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	SET_VARSIZE(result, size);
 	MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{

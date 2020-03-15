@@ -392,7 +392,7 @@ CREATE FUNCTION ttexts(ttext)
 
 CREATE FUNCTION toLinear(tfloat)
 	RETURNS tfloat
-	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	AS 'MODULE_PATHNAME', 'tstep_to_linear'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
