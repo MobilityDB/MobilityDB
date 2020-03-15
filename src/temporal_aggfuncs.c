@@ -1214,7 +1214,7 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
-	Period p1, *result = NULL;
+	Period p1, *result;
 
 	/* Can't do anything with null inputs */
 	if (!p && !temp)
@@ -1222,14 +1222,14 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
 	/* Null period and non-null temporal, return the bbox of the temporal */
 	if (!p)
 	{
-		result = palloc(sizeof(Period));
+		result = palloc0(sizeof(Period));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null period and null temporal, return the period */
 	if (!temp)
 	{
-		result = palloc(sizeof(Period));
+		result = palloc0(sizeof(Period));
 		memcpy(result, p, sizeof(Period));
 		PG_RETURN_POINTER(result);
 	}

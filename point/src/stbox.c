@@ -23,7 +23,7 @@
 #include "tpoint_parser.h"
 #include "tpoint_spatialfuncs.h"
 
-/* Buffer size for input and  of STBOX */
+/* Buffer size for input and output of STBOX */
 #define MAXSTBOXLEN		256
 
 /*****************************************************************************
