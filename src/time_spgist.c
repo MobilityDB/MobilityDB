@@ -639,12 +639,22 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 
 	/* We must descend into the quadrant(s) identified by 'which' */
 	out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+	if (needPrevious)
+		out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
 	out->nNodes = 0;
 
 	for (i = 1; i <= in->nNodes; i++)
 	{
 		if (which & (1 << i))
 		{
+			/* Save previous prefix if needed */
+			if (needPrevious)
+			{
+				/* We know that in->prefixDatum in this place is a period */
+				Datum previousCentroid = PointerGetDatum(period_copy(
+					(Period *) DatumGetPointer(in->prefixDatum)));
+				out->traversalValues[out->nNodes] = (void *) previousCentroid;
+			}
 			out->nodeNumbers[out->nNodes] = i - 1;
 			out->nNodes++;
 		}
