@@ -360,6 +360,7 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 	Period 	   *centroid;
 	PeriodBound	centroidLower,
 				centroidUpper;
+	MemoryContext oldCtx;
 
 	/*
 	 * For adjacent search we need also previous centroid (if any) to improve
@@ -643,6 +644,12 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 		out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
 	out->nNodes = 0;
 
+	/*
+	 * Elements of traversalValues should be allocated in
+	 * traversalMemoryContext
+	 */
+	oldCtx = MemoryContextSwitchTo(in->traversalMemoryContext);
+
 	for (i = 1; i <= in->nNodes; i++)
 	{
 		if (which & (1 << i))
@@ -659,6 +666,8 @@ spgist_period_inner_consistent(PG_FUNCTION_ARGS)
 			out->nNodes++;
 		}
 	}
+
+	MemoryContextSwitchTo(oldCtx);
 
 	PG_RETURN_VOID();
 }
