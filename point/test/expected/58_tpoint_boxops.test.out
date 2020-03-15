@@ -1890,6 +1890,12 @@ SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@20
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The boxes must be in the same SRID
+SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The boxes must be both planar or both geodetic
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT geometry 'Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------

@@ -73,14 +73,16 @@ SELECT MIN(tmin(b)) FROM tbl_tbox;
 SELECT MAX(tmax(b)) FROM tbl_tbox;
 
 -------------------------------------------------------------------------------
--- Expand functions
+-- Modification functions
 -------------------------------------------------------------------------------
 
 SELECT expandValue(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', 2);
 SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 day');
+SELECT setPrecision(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
 /* Errors */
 SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
+SELECT setPrecision(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 
 -------------------------------------------------------------------------------
 -- Topological operators
@@ -200,6 +202,8 @@ SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((1
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-03))', tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))'); 
 
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))'); 
+SELECT tbox_cmp('TBOX((1,),(2,))', 'TBOX((1,2001-01-01),(2,2001-01-02))');
+SELECT tbox_cmp('TBOX((1,2001-01-01),(2,2001-01-02))', 'TBOX((1,),(2,))');
 
 SELECT tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))' = floatrange '[1, 2]'::tbox; 
 
