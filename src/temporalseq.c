@@ -1526,9 +1526,10 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 TemporalSeq *
 tintseq_to_tfloatseq(TemporalSeq *seq)
 {
+	/* It is not necessary to set the linear flag to false since it is already
+	 * set by the fact that the input argument is a temporal integer */
 	TemporalSeq *result = temporalseq_copy(seq);
 	result->valuetypid = FLOAT8OID;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(result, i);
@@ -1547,9 +1548,10 @@ tfloatseq_to_tintseq(TemporalSeq *seq)
 	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+	/* It is not necessary to set the linear flag to false since it is already
+	 * set by the fact that the input argument has stepwise interpolation */
 	TemporalSeq *result = temporalseq_copy(seq);
 	result->valuetypid = INT4OID;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(result, i);
