@@ -1541,12 +1541,13 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		Datum value1, value2;
 		temporalseq_value_at_timestamp(seq1, inter->lower, &value1);
 		temporalseq_value_at_timestamp(seq2, inter->lower, &value2);
-		Datum value = func(value1, value2, param);
-		TemporalInst *inst = temporalinst_make(value, inter->lower, restypid);
+		Datum resvalue = func(value1, value2, param);
+		TemporalInst *inst = temporalinst_make(resvalue, inter->lower, restypid);
+		/* Result has step interpolation */
 		TemporalSeq *result = temporalseq_make(&inst, 1,
 			true, true, linear, false);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
-		DATUM_FREE(value, restypid); pfree(inst); pfree(inter);
+		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
 	}
 
@@ -1582,6 +1583,8 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 	TemporalInst *prev1, *prev2;
 	Datum inter1, inter2, value;
 	TimestampTz intertime;
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	while (i < seq1->count && j < seq2->count &&
 		(inst1->t <= inter->upper || inst2->t <= inter->upper))
 	{
@@ -1608,9 +1611,9 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 			interpoint(prev1, inst1, prev2, inst2, &intertime))
 		{
 			inter1 = temporalseq_value_at_timestamp1(prev1, inst1,
-				MOBDB_FLAGS_GET_LINEAR(seq1->flags), intertime);
+				linear1, intertime);
 			inter2 = temporalseq_value_at_timestamp1(prev2, inst2,
-				MOBDB_FLAGS_GET_LINEAR(seq2->flags), intertime);
+				linear2, intertime);
 			value = func(inter1, inter2, param);
 			instants[k++] = temporalinst_make(value, intertime, restypid);
 			DATUM_FREE(inter1, seq1->valuetypid); DATUM_FREE(inter2, seq2->valuetypid);
@@ -1625,11 +1628,7 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		inst1 = temporalseq_inst_n(seq1, i);
 		inst2 = temporalseq_inst_n(seq2, j);
 	}
-	if (k == 0)
-	{
-		pfree(instants);
-		return NULL;
-	}
+	/* We are sure that k != 0 due to the period intersection test above */
 	/* The last two values of sequences with step interpolation and
 	   exclusive upper bound must be equal */
 	if (!linear && !inter->upper_inc && k > 1)

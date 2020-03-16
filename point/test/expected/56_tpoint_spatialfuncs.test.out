@@ -445,6 +445,12 @@ SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1 1)@2001-01-01], [Point(1 1)@20
  POINT(1 1)
 (1 row)
 
+SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}'));
+      st_astext      
+---------------------
+ MULTIPOINT(1 1,2 2)
+(1 row)
+
 SELECT round(length(tgeompoint 'Point(1 1)@2000-01-01')::numeric, 6);
   round   
 ----------

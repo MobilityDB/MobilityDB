@@ -15,6 +15,7 @@ SELECT tgeompoint 'Point empty@2012-01-01 08:00:00';
 SELECT tgeogpoint 'Point empty@2012-01-01 08:00:00';
 SELECT tgeompoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
+SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
 
 -------------------------------------------------------------------------------
 
