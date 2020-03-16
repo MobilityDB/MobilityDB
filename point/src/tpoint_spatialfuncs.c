@@ -45,7 +45,7 @@ ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
 	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags) != MOBDB_FLAGS_GET_GEODETIC(temp2->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal point and the box must be both planar or both geodetic")));
+			errmsg("The temporal points must be both planar or both geodetic")));
 }
 
 void

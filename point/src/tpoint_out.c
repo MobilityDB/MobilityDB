@@ -1163,9 +1163,8 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 		return tpointi_to_wkb_buf((TemporalI *)temp, buf, variant);
 	else if (temp->duration == TEMPORALSEQ)
 		return tpointseq_to_wkb_buf((TemporalSeq *)temp, buf, variant);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		return tpoints_to_wkb_buf((TemporalS *)temp, buf, variant);
-	return NULL; /* make compiler quiet */
 }
 
 /**
