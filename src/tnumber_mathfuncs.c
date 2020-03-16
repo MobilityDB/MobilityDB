@@ -591,8 +591,8 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 	/* Test whether the denominator will ever be zero during the common timespan */
 	PeriodSet *ps = temporal_get_time_internal(temp1);
 	Temporal *projtemp2 = temporal_at_periodset_internal(temp2, ps);
-    if (projtemp2 == NULL)
-        PG_RETURN_NULL();
+	if (projtemp2 == NULL)
+		PG_RETURN_NULL();
 	if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("Division by zero")));
@@ -637,8 +637,7 @@ div_temporal_temporal(PG_FUNCTION_ARGS)
 	}
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
-	if (result == NULL)
-		PG_RETURN_NULL();
+	/* Result will never be null due to the denominator test above */
 	PG_RETURN_POINTER(result);
 }
 
