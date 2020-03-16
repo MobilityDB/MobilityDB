@@ -49,6 +49,10 @@ SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 ERROR:  Could not parse temporal value
 LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
+SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
+ERROR:  Only geometries without M dimension accepted
+LINE 1: SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
+                          ^
 SELECT asText(tgeompoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
                                                   astext                                                   
 -----------------------------------------------------------------------------------------------------------
