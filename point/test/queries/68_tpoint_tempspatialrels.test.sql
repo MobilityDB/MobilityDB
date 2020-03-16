@@ -1079,6 +1079,9 @@ SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2
 SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]}', 'T*****FF*');
 SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-02, Point(2 1)@2000-01-04]}', 'T*****FF*');
 SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-04]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(2 1)@2000-01-03]}', 'T*****FF*');
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(1 2)@2000-01-03)}', 'T*****FF*');
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03)}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(1 2)@2000-01-03]}', 'T*****FF*');
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02],[Point(1 1)@2000-01-05, Point(2 2)@2000-01-06]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-03, Point(1 2)@2000-01-04]}', 'T*****FF*');
 
 -- NULL
 SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]', 'T*****FF*');
