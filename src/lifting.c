@@ -1758,7 +1758,8 @@ sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 
 /*****************************************************************************/
 /* Dispatch function */
-
+/* This function is not currently used. It is left as comment in case
+ * it will be needed in the future
 Temporal *
 sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
@@ -1837,6 +1838,7 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
 
 	return result;
 }
+*/
 
 /*****************************************************************************
  * Functions that synchronize two temporal values and apply a function in
