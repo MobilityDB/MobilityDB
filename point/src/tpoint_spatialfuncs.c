@@ -3462,4 +3462,201 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
+/***********************************************************************
+ * Simple spatio-temporal Douglas-Peucker line simplification.
+ * No checks are done to avoid introduction of self-intersections.
+ * No topology relations are considered.
+ ***********************************************************************/
+
+static int
+int_cmp(const void *a, const void *b)
+{
+	/* casting pointer types */
+	const int *ia = (const int *)a;
+	const int *ib = (const int *)b;
+	/* returns negative if b > a and positive if a > b */
+	return *ia - *ib;
+}
+
+static void
+tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, int *split, double *dist)
+{
+	int k;
+	POINT2D pk, pa, pb;
+	double tmp, d;
+	*split = p1;
+	d = -1;
+	if (p1 + 1 < p2)
+	{
+		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
+		pa = datum_get_point2d(temporalinst_value(inst1));
+		pb = datum_get_point2d(temporalinst_value(inst2));
+		for (k = p1 + 1; k < p2; k++)
+		{
+			TemporalInst *inst = temporalseq_inst_n(seq, k);
+			pk = datum_get_point2d(temporalinst_value(inst));
+			/* distance computation */
+			tmp = distance2d_sqr_pt_seg(&pk, &pa, &pb);
+			if (tmp > d)
+			{
+				d = tmp;	/* record the maximum */
+				*split = k;
+			}
+		}
+		*dist = d;
+	}
+	else
+		*dist = -1;
+}
+
+TemporalSeq *
+tpointseq_simplify1(const TemporalSeq *seq, double epsilon, uint32_t minpts)
+{
+	static size_t stack_size = 256;
+	int *stack, *outlist; /* recursion stack */
+	int stack_static[stack_size];
+	int outlist_static[stack_size];
+	int sp = -1; /* recursion stack pointer */
+	int p1, split;
+	uint32_t outn = 0;
+	uint32_t i;
+	double dist;
+	double eps_sqr = epsilon * epsilon;
+
+	/* Do not try to simplify really short things */
+	if (seq->count < 3)
+		return temporalseq_copy(seq);
+
+	/* Only heap allocate book-keeping arrays if necessary */
+	if ((unsigned int) seq->count > stack_size)
+	{
+		stack = palloc(sizeof(int) * seq->count);
+		outlist = palloc(sizeof(int) * seq->count);
+	}
+	else
+	{
+		stack = stack_static;
+		outlist = outlist_static;
+	}
+
+	p1 = 0;
+	stack[++sp] = seq->count - 1;
+
+	/* Add first point to output list */
+	outlist[outn++] = 0;
+	do
+	{
+		tpointseq_dp_findsplit(seq, p1, stack[sp], &split, &dist);
+		if ((dist > eps_sqr) || ((outn + sp+1 < minpts) && (dist >= 0)))
+			stack[++sp] = split;
+		else
+		{
+			outlist[outn++] = stack[sp];
+			p1 = stack[sp--];
+		}
+	}
+	while (sp >= 0);
+
+	/* Put list of retained points into order */
+	qsort(outlist, outn, sizeof(int), int_cmp);
+	/* Create new TemporalSeq */
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * outn);
+	for (i = 0; i < outn; i++)
+		instants[i] = temporalseq_inst_n(seq, outlist[i]);
+	TemporalSeq *result = temporalseq_make(instants, outn,
+		seq->period.lower_inc, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+	pfree(instants);
+
+	/* Only free if arrays are on heap */
+	if (stack != stack_static)
+		pfree(stack);
+	if (outlist != outlist_static)
+		pfree(outlist);
+
+	return result;
+}
+
+TemporalSeq *
+tpointseq_simplify(const TemporalSeq *seq, double epsilon, int preserve_collapsed)
+{
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+		return preserve_collapsed ? temporalseq_copy(seq) : NULL;
+
+	TemporalSeq *result = tpointseq_simplify1(seq, epsilon, 2);
+	/* Invalid output */
+	if (result->count == 1 && !preserve_collapsed)
+	{
+		pfree(result);
+		return NULL;
+	}
+	/* Duped output, force collapse */
+	if (result->count == 2 && !preserve_collapsed)
+	{
+		Datum value1 = temporalinst_value(temporalseq_inst_n(result, 0));
+		Datum value2 = temporalinst_value(temporalseq_inst_n(result, 1));
+		if (datum_eq(value1, value2, seq->valuetypid))
+		{
+			pfree(result);
+			return NULL;
+		}
+	}
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_simplify2d);
+
+Datum
+tpoint_simplify2d(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	double dist = PG_GETARG_FLOAT8(1);
+	bool preserve_collapsed = false;
+	/* Handle optional argument to preserve collapsed features */
+	if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
+		preserve_collapsed = true;
+
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI ||
+		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+		result = temporal_copy(temp);
+	else // if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *) tpointseq_simplify((TemporalSeq *)temp, dist, preserve_collapsed);
+//	else /* temp->duration == TEMPORALS */
+//		result = (Temporal *) tpoints_simplify((TemporalS *)temp, dist, preserve_collapsed);
+	PG_FREE_IF_COPY(temp, 0);
+	if (result == NULL)
+		PG_RETURN_NULL();
+	PG_RETURN_POINTER(result);
+}
+
+/*
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 1));
+"LINESTRING(0 0,0 1)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 1.1));
+"LINESTRING(0 0,0 1)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 5));
+"LINESTRING(0 0,0 1)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 0.9));
+"LINESTRING(0 0,0 1,0 0)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 1));
+null
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 1.1));
+null
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 1.1));
+"LINESTRING(0 4,1 1,2 3,3 1,4 3,5 0,6 4)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 1.5));
+"LINESTRING(0 4,1 1,4 3,5 0,6 4)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 2));
+"LINESTRING(0 4,5 0,6 4)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 5));
+"LINESTRING(0 4,6 4)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4,0 4)', 5));
+"LINESTRING(0 4,5 0,0 4)"
+SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4,0 4)', 10));
+NULL
+*/
+
+/*****************************************************************************//*****************************************************************************/

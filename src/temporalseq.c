@@ -979,7 +979,7 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 /* Copy a temporal sequence */
 
 TemporalSeq *
-temporalseq_copy(TemporalSeq *seq)
+temporalseq_copy(const TemporalSeq *seq)
 {
 	TemporalSeq *result = palloc0(VARSIZE(seq));
 	memcpy(result, seq, VARSIZE(seq));
