@@ -3372,7 +3372,7 @@ tpointseq_to_geo_measure_segmentize(TemporalSeq *seq, TemporalSeq *measure)
 	Datum result;
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-		result = segments[0];
+		result = PointerGetDatum(geometry_serialize(points[0]));
 	else
 	{
 		ArrayType *array = datumarr_to_array(segments, seq->count - 1,
