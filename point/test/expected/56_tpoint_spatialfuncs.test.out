@@ -4710,6 +4710,12 @@ SELECT ST_AsText(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)
  MULTILINESTRING ZM ((1.5 1.5 1.5 946684800,2.5 2.5 2.5 946771200,1.5 1.5 1.5 946857600),(3.5 3.5 3.5 946944000,3.5 3.5 3.5 947030400))
 (1 row)
 
+SELECT ST_AsText(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]'::geometry);
+                 st_astext                  
+--------------------------------------------
+ MULTIPOINT M (0 0 946684800,1 1 946771200)
+(1 row)
+
 SELECT asText((tgeompoint 'Point(1 1)@2000-01-01'::geometry)::tgeompoint);
               astext               
 -----------------------------------
@@ -4914,5 +4920,17 @@ SELECT ST_AsText(geoMeasure(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2
                                                      st_astext                                                      
 --------------------------------------------------------------------------------------------------------------------
  GEOMETRYCOLLECTION ZM (LINESTRING ZM (1.5 1.5 1.5 5.5,2.5 2.5 2.5 7.5,1.5 1.5 1.5 5.5),POINT ZM (3.5 3.5 3.5 5.5))
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
+                    st_astext                    
+-------------------------------------------------
+ MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'));
+ st_astext 
+-----------
+ 
 (1 row)
 
