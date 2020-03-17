@@ -251,11 +251,19 @@ SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 da
  TBOX((1,2000-12-31 00:00:00+00),(2,2001-01-03 00:00:00+00))
 (1 row)
 
+SELECT setPrecision(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
+                           setprecision                            
+-------------------------------------------------------------------
+ TBOX((1.12,2001-01-01 00:00:00+00),(2.12,2001-01-02 00:00:00+00))
+(1 row)
+
 /* Errors */
 SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 ERROR:  The box must have value dimension
 SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
 ERROR:  The box must have time dimension
+SELECT setPrecision(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
+ERROR:  The box must have value dimension
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' && tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
  ?column? 
 ----------
@@ -609,6 +617,18 @@ SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((1
  tbox_cmp 
 ----------
         0
+(1 row)
+
+SELECT tbox_cmp('TBOX((1,),(2,))', 'TBOX((1,2001-01-01),(2,2001-01-02))');
+ tbox_cmp 
+----------
+       -1
+(1 row)
+
+SELECT tbox_cmp('TBOX((1,2001-01-01),(2,2001-01-02))', 'TBOX((1,),(2,))');
+ tbox_cmp 
+----------
+        1
 (1 row)
 
 SELECT tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))' = floatrange '[1, 2]'::tbox;

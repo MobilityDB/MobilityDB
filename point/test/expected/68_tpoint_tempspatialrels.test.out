@@ -2581,11 +2581,70 @@ SELECT tintersects(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 
-tgeompoint '[Point(1 2)@2000-01-01, Point(2 1)@2000-01-02]');
+SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                     tintersects                      
+------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                      tintersects                       
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                      tintersects                       
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                 tintersects                                                  
+--------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+                     tintersects                      
+------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
+                      tintersects                       
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+                      tintersects                       
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
+                                                 tintersects                                                  
+--------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(1 2)@2000-01-01, Point(2 1)@2000-01-02]');
                                                  tintersects                                                  
 --------------------------------------------------------------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, t@2000-01-01 12:00:00+00], (f@2000-01-01 12:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]');
+                      tintersects                       
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]');
+                      tintersects                       
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00]}
 (1 row)
 
 /* Errors */
@@ -3819,21 +3878,21 @@ SELECT tdwithin(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tdwithin(tgeompoint 'Interp=Stepwise;[Point(2 0)@2000-01-01, Point(2 2)@2000-01-05]', 
+SELECT tdwithin(tgeompoint 'Interp=Stepwise;[Point(2 0)@2000-01-01, Point(2 2)@2000-01-05]',
 	tgeompoint 'Interp=Stepwise;[Point(1 0)@2000-01-01, Point(2 0)@2000-01-05]', 1);
                         tdwithin                        
 --------------------------------------------------------
  {[t@2000-01-01 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]', 
+SELECT tdwithin(tgeompoint '[Point(0 0)@2000-01-01, Point(2 2)@2000-01-05]',
 	tgeompoint 'Interp=Stepwise;[Point(0 1)@2000-01-01, Point(2 0)@2000-01-05]', 1);
                                      tdwithin                                     
 ----------------------------------------------------------------------------------
  {[t@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]', 
+SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
 	tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
                                                                 tdwithin                                                                
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -4664,6 +4723,18 @@ SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeo
  {[f@2000-01-01 00:00:00+00, t@2000-01-01 12:00:00+00], (f@2000-01-01 12:00:00+00, f@2000-01-02 00:00:00+00]}
 (1 row)
 
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
 SELECT trelate(tgeompoint '{Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-04}', 'T*****FF*');
  trelate 
 ---------
@@ -4701,3 +4772,123 @@ SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 'T**
 ERROR:  The temporal point and the geometry must be of the same dimensionality
 SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
 ERROR:  The temporal points must be of the same dimensionality
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'T*****FF*');
+                       trelate                        
+------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
+                                                   trelate                                                    
+--------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
+                       trelate                        
+------------------------------------------------------
+ [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
+                                                   trelate                                                    
+--------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]', 'T*****FF*');
+          trelate           
+----------------------------
+ [f@2000-01-02 00:00:00+00]
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-02, Point(2 1)@2000-01-04]', 'T*****FF*');
+                       trelate                        
+------------------------------------------------------
+ [f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-02, Point(2 2)@2000-01-04]', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(2 1)@2000-01-03]', 'T*****FF*');
+                       trelate                        
+------------------------------------------------------
+ [f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)}', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]', 'T*****FF*');
+ trelate 
+---------
+ 
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02], [Point(1 1)@2000-01-05, Point(1 1)@2000-01-06]}', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-03, Point(2 1)@2000-01-04]', 'T*****FF*');
+ trelate 
+---------
+ 
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]}', 'T*****FF*');
+ trelate 
+---------
+ 
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-02, Point(2 1)@2000-01-04]}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-04]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(2 1)@2000-01-03]}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-03]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(1 2)@2000-01-03)}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00)}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03)}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(1 2)@2000-01-03]}', 'T*****FF*');
+                        trelate                         
+--------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00)}
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02],[Point(1 1)@2000-01-05, Point(2 2)@2000-01-06]}', tgeompoint 'Interp=Stepwise;{[Point(1 2)@2000-01-03, Point(1 2)@2000-01-04]}', 'T*****FF*');
+ trelate 
+---------
+ 
+(1 row)
+
+SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02)', tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-02, Point(2 1)@2000-01-03]', 'T*****FF*');
+ trelate 
+---------
+ 
+(1 row)
+

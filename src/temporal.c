@@ -1025,25 +1025,6 @@ temporal_append(PG_FUNCTION_ARGS)
 	ensure_same_duration(temp1, temp2);
 	ensure_same_interpolation(temp1, temp2);
 
-	bool overlap = false;
-	/* Test whether the bounding period of the two temporal values overlap */
-	Period p1, p2;
-	temporal_period(&p1, temp1);
-	temporal_period(&p2, temp2);
-	Period *inter = intersection_period_period_internal(&p1, &p2);
-	if (inter != NULL)
-	{
-		overlap = true;
-		if (inter->lower != inter->upper)
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Both arguments cannot overlap on time")));
-		TemporalInst *inst1 = temporal_at_timestamp_internal(temp1, inter->lower);
-		TemporalInst *inst2 = temporal_at_timestamp_internal(temp2, inter->lower);
-		if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), temp1->valuetypid))
-			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-				errmsg("Both arguments have different value at their overlapping timestamp")));
-	}
-
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
 	if (temp1->duration == TEMPORALINST)
@@ -1061,6 +1042,62 @@ temporal_append(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+/* Append function */
+
+PG_FUNCTION_INFO_V1(temporal_append_array);
+
+PGDLLEXPORT Datum
+temporal_append_array(PG_FUNCTION_ARGS)
+{
+	ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+	int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
+	if (count == 0)
+	{
+		PG_FREE_IF_COPY(array, 0);
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("A temporal value must have at least one temporal instant")));
+	}
+
+	Temporal **temporals = (Temporal **)temporalarr_extract(array, &count);
+	/* Ensure that all values are of the same duration and same interpolation  */
+	int duration = temporals[0]->duration;
+	bool interpolation = MOBDB_FLAGS_GET_LINEAR(temporals[0]->flags);
+	for (int i = 1; i < count; i++)
+	{
+		if (temporals[i]->duration != duration)
+		{
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Input values must be of the same duration")));
+		}
+		if (MOBDB_FLAGS_GET_LINEAR(temporals[i]->flags) != interpolation)
+		{
+			PG_FREE_IF_COPY(array, 0);
+			ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				errmsg("Input values must be of the same interpolation")));
+		}
+	}
+
+	Temporal *result = NULL;
+	ensure_valid_duration(duration);
+	if (duration == TEMPORALINST)
+		result = (Temporal *)temporali_make(
+			(TemporalInst **)temporals, count);
+	else if (duration == TEMPORALI)
+		result = (Temporal *)temporali_append_array(
+			(TemporalI **)temporals, count);
+	else if (duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_append_array(
+			(TemporalSeq **)temporals, count);
+	else if (duration == TEMPORALS)
+		result = (Temporal *)temporals_append_array(
+			(TemporalS **)temporals, count);
+
+	pfree(temporals);
+	PG_FREE_IF_COPY(array, 0);
 	PG_RETURN_POINTER(result);
 }
 
@@ -1247,12 +1284,12 @@ temporal_to_temporals(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result); 
 }
 
-/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+/* Transform a temporal value with continuous base type from step to linear interpolation */
 
-PG_FUNCTION_INFO_V1(tstepw_to_linear);
+PG_FUNCTION_INFO_V1(tstep_to_linear);
 
 PGDLLEXPORT Datum
-tstepw_to_linear(PG_FUNCTION_ARGS)
+tstep_to_linear(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	if (temp->duration != TEMPORALSEQ && temp->duration != TEMPORALS)
@@ -1265,9 +1302,9 @@ tstepw_to_linear(PG_FUNCTION_ARGS)
 
 	Temporal *result = NULL;
 	if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)tstepwseq_to_linear((TemporalSeq *)temp);
+		result = (Temporal *)tstepseq_to_linear((TemporalSeq *)temp);
 	else if (temp->duration == TEMPORALS) 
-		result = (Temporal *)tstepws_to_linear((TemporalS *)temp);
+		result = (Temporal *)tsteps_to_linear((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result); 
 }
@@ -1314,7 +1351,7 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 		if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
 			strcpy(str, "Linear");
 		else
-			strcpy(str, "Stepwise");
+			strcpy(str, "Step");
 	}
 	text *result = cstring_to_text(str);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1372,7 +1409,7 @@ temporal_get_values(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/* Ranges of a temporal float with either stepwise/linear interpolation */
+/* Ranges of a temporal float with either step/linear interpolation */
 
 Datum
 tfloat_ranges(Temporal *temp)

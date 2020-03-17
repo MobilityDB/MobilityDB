@@ -599,11 +599,8 @@ teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-				  MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_eq2, BOOLOID) :
-		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_eq2, BOOLOID, linear, NULL);
+	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
+		&datum2_eq2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -660,11 +657,8 @@ tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
-	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-		MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-	Temporal *result = linear ?
-		sync_tfunc4_temporal_temporal_cross(temp1, temp2, &datum2_ne2, BOOLOID) :
-		sync_tfunc4_temporal_temporal(temp1, temp2, &datum2_ne2, BOOLOID, linear, NULL);
+	Temporal *result = sync_tfunc4_temporal_temporal_cross(temp1, temp2,
+		&datum2_ne2, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)

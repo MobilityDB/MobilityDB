@@ -596,7 +596,7 @@ BEGIN
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tboolinst(val, t1);
 	end loop;
-	-- Sequences with stepwise interpolation and exclusive upper bound must have  
+	-- Sequences with step interpolation and exclusive upper bound must have  
 	-- the same value in the last two instants
 	t1 = t1 + random_minutes(1, maxminutes);
 	if card = 1 or upper_inc then
@@ -639,7 +639,7 @@ BEGIN
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tintinst(val, t1);
 	end loop;
-	-- Sequences with stepwise interpolation and exclusive upper bound must have  
+	-- Sequences with step interpolation and exclusive upper bound must have  
 	-- the same value in the last two instants
 	t1 = t1 + random_minutes(1, maxminutes);
 	if card = 1 or upper_inc then
@@ -717,7 +717,7 @@ BEGIN
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = ttextinst(val, t1);
 	end loop;
-	-- Sequences with stepwise interpolation and exclusive upper bound must have  
+	-- Sequences with step interpolation and exclusive upper bound must have  
 	-- the same value in the last two instants
 	t1 = t1 + random_minutes(1, maxminutes);
 	if card = 1 or upper_inc then
@@ -769,7 +769,7 @@ BEGIN
 			t1 = t1 + random_minutes(1, maxminutes);
 			instants[j] = tboolinst(val, t1);
 		end loop;
-		-- Sequences with stepwise interpolation and exclusive upper bound must have  
+		-- Sequences with step interpolation and exclusive upper bound must have  
 		-- the same value in the last two instants
 		t1 = t1 + random_minutes(1, maxminutes);
 		if cardseq = 1 or upper_inc then
@@ -822,7 +822,7 @@ BEGIN
 			t1 = t1 + random_minutes(1, maxminutes);
 			instants[j] = tintinst(val, t1);
 		end loop;
-		-- Sequences with stepwise interpolation and exclusive upper bound must have  
+		-- Sequences with step interpolation and exclusive upper bound must have  
 		-- the same value in the last two instants
 		t1 = t1 + random_minutes(1, maxminutes);
 		if cardseq = 1 or upper_inc then
@@ -918,7 +918,7 @@ BEGIN
 			t1 = t1 + random_minutes(1, maxminutes);
 			instants[j] = ttextinst(val, t1);
 		end loop;
-		-- Sequences with stepwise interpolation and exclusive upper bound must have  
+		-- Sequences with step interpolation and exclusive upper bound must have  
 		-- the same value in the last two instants
 		t1 = t1 + random_minutes(1, maxminutes);
 		if cardseq = 1 or upper_inc then

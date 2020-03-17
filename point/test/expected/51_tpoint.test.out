@@ -49,6 +49,10 @@ SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
 ERROR:  Could not parse temporal value
 LINE 1: SELECT tgeogpoint 'Point(1 1)@2000-01-01 00:00:00+01 ,';
                           ^
+SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
+ERROR:  Only geometries without M dimension accepted
+LINE 1: SELECT tgeogpoint 'Point M(1 1 1)@2000-01-01 00:00:00+01';
+                          ^
 SELECT asText(tgeompoint ' { Point(1 1)@2001-01-01 08:00:00 , Point(2 2)@2001-01-01 08:05:00 , Point(3 3)@2001-01-01 08:06:00 } ');
                                                   astext                                                   
 -----------------------------------------------------------------------------------------------------------
@@ -83,11 +87,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '{Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
@@ -146,11 +150,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point emp...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2...
                           ^
 SELECT tgeompoint '[Point(1 1)@2001-01-01 08:00:00,Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
@@ -209,11 +213,11 @@ ERROR:  Only non-empty geometries accepted
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00, Point(2...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]}';
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 LINE 1: SELECT tgeogpoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(...
                           ^
 SELECT tgeompoint '{[Point(1 1)@2001-01-01 08:00:00],[Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
@@ -1011,9 +1015,9 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 
 /* Errors */
 SELECT tgeompointi(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
-ERROR:  All geometries composing a temporal point must be of the same SRID
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompointi(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeompointseq(ARRAY[
 tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeompointinst(ST_Point(2,2), '2012-01-01 08:10:00'),
@@ -1036,9 +1040,9 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 08:20:00')
 
 /* Errors */
 SELECT tgeompointseq(ARRAY[tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'SRID=4326;Point(2 2)@2001-01-02']);
-ERROR:  All geometries composing a temporal point must be of the same SRID
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompointseq(ARRAY[tgeompoint 'Point(1 1)@2001-01-01', 'Point(2 2 2)@2001-01-02']);
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeompoints(ARRAY[
 tgeompointseq(ARRAY[
 tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
@@ -1073,9 +1077,9 @@ tgeogpointinst(ST_Point(1,1), '2012-01-01 09:20:00')
 
 /* Errors */
 SELECT tgeompoints(ARRAY[tgeompoint '[SRID=5676;Point(1 1)@2001-01-01]', '[SRID=4326;Point(2 2)@2001-01-02]']);
-ERROR:  All geometries composing a temporal point must be of the same SRID
+ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoints(ARRAY[tgeompoint '[Point(1 1)@2001-01-01]', '[Point(2 2 2)@2001-01-02]']);
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asewkt(tgeogpoint(tgeompoint 'Point(1 1)@2001-01-01'));
                    asewkt                    
 ---------------------------------------------
@@ -1370,19 +1374,218 @@ SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
  [POINT(1 1)@2000-01-01 00:00:00+00, POINT(3 3)@2000-01-03 00:00:00+00]
 (1 row)
 
+SELECT asText(appendInstant(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', 'Point(3 3)@2000-01-04'));
+                                                          astext                                                           
+---------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(3 3)@2000-01-04 00:00:00+00]
+(1 row)
+
 /* Errors */
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'Point(3 3 3)@2000-01-03'));
-ERROR:  All geometries composing a temporal point must be of the same dimensionality
+ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
-ERROR:  All geometries composing a temporal point must be of the same SRID
+ERROR:  The temporal points must be in the same SRID
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3)@2000-01-02'));
 ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-02 00:00:00+00
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Point(3 3 3)@2000-01-03'));
 ERROR:  The temporal points must be of the same dimensionality
 SELECT asText(appendInstant(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'SRID=5676;Point(3 3)@2000-01-03'));
 ERROR:  The temporal points must be in the same SRID
+SELECT asText(append(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02'));
+                                 astext                                 
+------------------------------------------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00, POINT(1 1)@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+                                                                                     astext                                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
+                                                                                     astext                                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]'));
+                                                                                     astext                                                                                      
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00, POINT(2 2)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00]
+(1 row)
+
+SELECT asText(append(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]'));
+                                                                                       astext                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(2 2)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT asText(append(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}'));
+                                                                                                                                                              astext                                                                                                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(1 1)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00, POINT(2 2)@2000-01-06 00:00:00+00, POINT(1 1)@2000-01-07 00:00:00+00], [POINT(1 1)@2000-01-08 00:00:00+00, POINT(1 1)@2000-01-09 00:00:00+00]}
+(1 row)
+
+SELECT asText(append(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}'));
+                                                                                                                                                               astext                                                                                                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 00:00:00+00, POINT(2 2)@2000-01-02 00:00:00+00, POINT(1 1)@2000-01-03 00:00:00+00], [POINT(1 1)@2000-01-04 00:00:00+00, POINT(1 1)@2000-01-05 00:00:00+00], [POINT(2 2)@2000-01-06 00:00:00+00, POINT(1 1)@2000-01-07 00:00:00+00], [POINT(1 1)@2000-01-08 00:00:00+00, POINT(1 1)@2000-01-09 00:00:00+00]}
+(1 row)
+
+SELECT asText(append(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint 'Point(1.5 1.5)@2000-01-02'));
+                                     astext                                     
+--------------------------------------------------------------------------------
+ {POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(1.5 1.5)@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(1.5 1.5)@2000-01-03, Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05}'));
+                                                                                               astext                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00, POINT(2.5 2.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05}'));
+                                                                                               astext                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00, POINT(2.5 2.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00}
+(1 row)
+
+SELECT asText(append(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(1.5 1.5)@2000-01-03, Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]'));
+                                                                                               astext                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00, POINT(2.5 2.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00]
+(1 row)
+
+SELECT asText(append(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint '[Point(2.5 2.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]'));
+                                                                                                 astext                                                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00], [POINT(2.5 2.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT asText(append(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(1.5 1.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]}', tgeogpoint '{[Point(1.5 1.5)@2000-01-05, Point(2.5 2.5)@2000-01-06, Point(1.5 1.5)@2000-01-07],[Point(1.5 1.5)@2000-01-08, Point(1.5 1.5)@2000-01-09]}'));
+                                                                                                                                                                                astext                                                                                                                                                                                 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00], [POINT(1.5 1.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00, POINT(2.5 2.5)@2000-01-06 00:00:00+00, POINT(1.5 1.5)@2000-01-07 00:00:00+00], [POINT(1.5 1.5)@2000-01-08 00:00:00+00, POINT(1.5 1.5)@2000-01-09 00:00:00+00]}
+(1 row)
+
+SELECT asText(append(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(1.5 1.5)@2000-01-04, Point(1.5 1.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5)@2000-01-06, Point(1.5 1.5)@2000-01-07],[Point(1.5 1.5)@2000-01-08, Point(1.5 1.5)@2000-01-09]}'));
+                                                                                                                                                                                 astext                                                                                                                                                                                  
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[POINT(1.5 1.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(1.5 1.5)@2000-01-03 00:00:00+00], [POINT(1.5 1.5)@2000-01-04 00:00:00+00, POINT(1.5 1.5)@2000-01-05 00:00:00+00], [POINT(2.5 2.5)@2000-01-06 00:00:00+00, POINT(1.5 1.5)@2000-01-07 00:00:00+00], [POINT(1.5 1.5)@2000-01-08 00:00:00+00, POINT(1.5 1.5)@2000-01-09 00:00:00+00]}
+(1 row)
+
+/* Errors */
+SELECT append(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
+ERROR:  The temporal values must be of the same duration
+SELECT append(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00
+SELECT append(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
+ERROR:  The temporal points must be in the same SRID
+SELECT append(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}');
+ERROR:  The temporal values cannot overlap on time
+SELECT append(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}');
+ERROR:  The temporal points must be in the same SRID
+SELECT append(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]');
+ERROR:  The temporal values cannot overlap on time
+SELECT append(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]');
+ERROR:  The temporal points must be in the same SRID
+SELECT append(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+ERROR:  The temporal values cannot overlap on time
+SELECT append(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}');
+ERROR:  The temporal points must be in the same SRID
+SELECT append(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}');
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(ARRAY[tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']);
+                                                                 append                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------
+ {0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 0101000000000000000000F03F000000000000F03F@2000-01-02 00:00:00+00}
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', '{Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}']);
+                                                                                                  append                                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00, 0101000000000000000000F03F000000000000F03F@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}', '{Point(3 3)@2000-01-03, Point(4 4)@2000-01-04}']);
+                                                                                                                                    append                                                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00, 010100000000000000000008400000000000000840@2000-01-03 00:00:00+00, 010100000000000000000010400000000000001040@2000-01-04 00:00:00+00}
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]']);
+                                                                                                  append                                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00, 0101000000000000000000F03F000000000000F03F@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]']);
+                                                                                                                                      append                                                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00], [010100000000000000000008400000000000000840@2000-01-03 00:00:00+00, 010100000000000000000010400000000000001040@2000-01-04 00:00:00+00]}
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}',
+	'{[Point(4 4)@2000-01-04, Point(5 5)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
+                                                                                                                                                                                                                                           append                                                                                                                                                                                                                                            
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00], [010100000000000000000008400000000000000840@2000-01-03 00:00:00+00, 010100000000000000000010400000000000001040@2000-01-04 00:00:00+00, 010100000000000000000014400000000000001440@2000-01-05 00:00:00+00], [010100000000000000000018400000000000001840@2000-01-06 00:00:00+00, 01010000000000000000001C400000000000001C40@2000-01-07 00:00:00+00]}
+(1 row)
+
+SELECT append(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}', '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
+                                                                                                   append                                                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0101000000000000000000F03F000000000000F03F@2000-01-01 00:00:00+00, 010100000000000000000000400000000000000040@2000-01-02 00:00:00+00, 0101000000000000000000F03F000000000000F03F@2000-01-03 00:00:00+00]}
+(1 row)
+
+/* Errors */
+SELECT append(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
+ERROR:  Input values must be of the same duration
+SELECT append(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-01']);
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-01 00:00:00+00, 2000-01-01 00:00:00+00
+SELECT append(ARRAY [tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'Point(1 1)@2000-01-02']);
+ERROR:  The temporal points must be in the same SRID
+SELECT append(ARRAY [tgeompoint 'Point(1 1)@2000-01-01', 'Point(1 1 1)@2000-01-02']);
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04}']);
+ERROR:  The temporal values cannot overlap on time
+SELECT append(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(ARRAY [tgeompoint 'SRID=5676;{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}']);
+ERROR:  The temporal points must be in the same SRID
+SELECT append(ARRAY [tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', '{Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05}']);
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]']);
+ERROR:  The temporal values cannot overlap on time
+SELECT append(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(2 2)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(ARRAY [tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05]']);
+ERROR:  The temporal points must be in the same SRID
+SELECT append(ARRAY [tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[Point(1 1 1)@2000-01-03, Point(2 2 2)@2000-01-04, Point(1 1 1)@2000-01-05]']);
+ERROR:  The temporal points must be of the same dimensionality
+SELECT append(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-04, Point(2 2)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+ERROR:  The temporal values cannot overlap on time
+SELECT append(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(2 2)@2000-01-05, Point(2 2)@2000-01-06, Point(1 1)@2000-01-07],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+ERROR:  The temporal values have different value at their overlapping instant
+SELECT append(ARRAY [tgeompoint 'SRID=5676;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1)@2000-01-05, Point(1 1)@2000-01-06],[Point(1 1)@2000-01-08, Point(1 1)@2000-01-09]}']);
+ERROR:  The temporal points must be in the same SRID
+SELECT append(ARRAY [tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(1 1)@2000-01-04, Point(1 1)@2000-01-05]}', '{[Point(1 1 1)@2000-01-05, Point(1 1 1)@2000-01-06],[Point(1 1 1)@2000-01-08, Point(1 1 1)@2000-01-09]}']);
+ERROR:  The temporal points must be of the same dimensionality
 SELECT duration(tgeompoint 'Point(1 1)@2000-01-01');
  duration 
 ----------

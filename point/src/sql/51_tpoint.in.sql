@@ -203,11 +203,11 @@ CREATE FUNCTION tgeogpoints(tgeogpoint)
 
 CREATE FUNCTION toLinear(tgeompoint)
 	RETURNS tgeompoint
-	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	AS 'MODULE_PATHNAME', 'tstep_to_linear'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION toLinear(tgeogpoint)
 	RETURNS tgeogpoint
-	AS 'MODULE_PATHNAME', 'tstepw_to_linear'
+	AS 'MODULE_PATHNAME', 'tstep_to_linear'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)
@@ -217,6 +217,24 @@ CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)
 CREATE FUNCTION appendInstant(tgeogpoint, tgeogpoint)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_append_instant'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION append(tgeompoint, tgeompoint)
+	RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'temporal_append'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION append(tgeogpoint, tgeogpoint)
+	RETURNS tgeogpoint
+	AS 'MODULE_PATHNAME', 'temporal_append'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION append(tgeompoint[])
+	RETURNS tgeompoint
+AS 'MODULE_PATHNAME', 'temporal_append_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION append(tgeogpoint[])
+	RETURNS tgeogpoint
+AS 'MODULE_PATHNAME', 'temporal_append_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

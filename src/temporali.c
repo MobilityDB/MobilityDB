@@ -84,35 +84,23 @@ temporali_bbox(void *box, TemporalI *ti)
 TemporalI *
 temporali_make(TemporalInst **instants, int count)
 {
-	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants */
 	assert(count > 0);
-	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY));
-	bool hasz = false, isgeodetic = false;
-	int srid;
-	if (isgeo)
-	{
-		hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
-		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
-		srid = tpointinst_srid(instants[0]);
-	}
+	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
+		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
 	for (int i = 1; i < count; i++)
 	{
 		ensure_increasing_timestamps(instants[i - 1], instants[i]);
 		if (isgeo)
 		{
-			if (tpointinst_srid(instants[i]) != srid)
-				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same SRID")));
-			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
-				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+			ensure_same_geodetic_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 		}
 	}
 
 	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t bboxsize = temporal_bbox_size(instants[0]->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
 	for (int i = 0; i < count; i++)
@@ -124,14 +112,16 @@ temporali_make(TemporalInst **instants, int count)
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = count;
-	result->valuetypid = valuetypid;
+	result->valuetypid = instants[0]->valuetypid;
 	result->duration = TEMPORALI;
 	MOBDB_FLAGS_SET_LINEAR(result->flags, 
 		MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
 	{
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
 	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
@@ -160,25 +150,20 @@ temporali_make(TemporalInst **instants, int count)
 TemporalI *
 temporali_append_instant(const TemporalI *ti, const TemporalInst *inst)
 {
-	Oid valuetypid = ti->valuetypid;
 	/* Test the validity of the instant */
+	assert(ti->valuetypid == inst->valuetypid);
+	assert(MOBDB_FLAGS_GET_GEODETIC(ti->flags) == MOBDB_FLAGS_GET_GEODETIC(inst->flags));
 	TemporalInst *inst1 = temporali_inst_n(ti, ti->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = false, hasz = false;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	bool isgeo = (ti->valuetypid == type_oid(T_GEOMETRY) ||
+		ti->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
 	{
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ti->flags);
-		if (tpointinst_srid(inst) != tpointi_srid(ti))
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("All geometries composing a temporal point must be of the same SRID")));
-		if (MOBDB_FLAGS_GET_Z(inst->flags) != hasz)
-			ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-				errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+		ensure_same_srid_tpoint((Temporal *)ti, (Temporal *)inst);
+		ensure_same_dimensionality_tpoint((Temporal *)ti, (Temporal *)inst);
 	}
 	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t bboxsize = temporal_bbox_size(ti->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
 	for (int i = 0; i < ti->count; i++)
@@ -191,12 +176,17 @@ temporali_append_instant(const TemporalI *ti, const TemporalInst *inst)
 	TemporalI *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = ti->count + 1;
-	result->valuetypid = valuetypid;
+	result->valuetypid = ti->valuetypid;
 	result->duration = TEMPORALI;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, 
+	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(inst->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+	{
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ti->flags));
+	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < ti->count; i++)
@@ -230,6 +220,14 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 	/* Test the validity of both temporal values */
 	assert(ti1->valuetypid == ti2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(ti1->flags) == MOBDB_FLAGS_GET_LINEAR(ti2->flags));
+	assert(MOBDB_FLAGS_GET_GEODETIC(ti1->flags) == MOBDB_FLAGS_GET_GEODETIC(ti2->flags));
+	bool isgeo = (ti1->valuetypid == type_oid(T_GEOMETRY) ||
+		ti1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
+		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
+	}
 	TemporalInst *inst1 = temporali_inst_n(ti1, ti1->count - 1);
 	TemporalInst *inst2 = temporali_inst_n(ti2, 0);
 	if (inst1->t > inst2->t)
@@ -239,15 +237,6 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 		! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values have different value at their overlapping instant")));
-	bool isgeo = false, hasz = false;
-	if (ti1->valuetypid == type_oid(T_GEOMETRY) ||
-		ti1->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
-		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(ti1->flags);
-	}
 
 	/* Get the bounding box size */
 	size_t bboxsize = temporal_bbox_size(ti1->valuetypid);
@@ -270,8 +259,13 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 	result->duration = TEMPORALI;
 	MOBDB_FLAGS_SET_LINEAR(result->flags,
 		MOBDB_FLAGS_GET_LINEAR(ti1->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
+	{
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(ti1->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(ti1->flags));
+	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	int k = 0;
@@ -299,6 +293,101 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 		temporal_bbox_expand(bbox, temporali_bbox_ptr(ti2), ti1->valuetypid);
 		result->offsets[ti1->count + ti2->count - start] = pos;
 	}
+	return result;
+}
+
+/* Append two temporal values */
+
+TemporalI *
+temporali_append_array(TemporalI **tis, int count)
+{
+	Oid valuetypid = tis[0]->valuetypid;
+	bool linear = MOBDB_FLAGS_GET_LINEAR(tis[0]->flags);
+	bool isgeo = (tis[0]->valuetypid == type_oid(T_GEOMETRY) ||
+		tis[0]->valuetypid == type_oid(T_GEOGRAPHY));
+	/* Get the bounding box size */
+	size_t bboxsize = temporal_bbox_size(tis[0]->valuetypid);
+	size_t memsize = double_pad(bboxsize);
+	/* Add the size of composing instants */
+	for (int i = 0; i < tis[0]->count; i++)
+		memsize += double_pad(VARSIZE(temporali_inst_n(tis[0], i)));
+	TemporalInst *inst1, *inst2;
+	int start;
+	int k = tis[0]->count;
+	for (int i = 1; i < count; i++)
+	{
+		/* Test the validity of consecutive temporal values */
+		assert(tis[i]->valuetypid == valuetypid);
+		assert(MOBDB_FLAGS_GET_LINEAR(tis[i]->flags) == linear);
+		if (isgeo)
+		{
+			ensure_same_srid_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
+			ensure_same_geodetic_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
+		}
+		inst1 = temporali_inst_n(tis[i - 1], tis[i - 1]->count - 1);
+		inst2 = temporali_inst_n(tis[i], 0);
+		if (inst1->t > inst2->t)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values cannot overlap on time")));
+		if (inst1->t == inst2->t &&
+			! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values have different value at their overlapping instant")));
+		start = inst1->t == inst2->t ? 1 : 0;
+		for (int j = start; j < tis[i]->count; j++)
+		{
+			memsize += double_pad(VARSIZE(temporali_inst_n(tis[i], j)));
+			k++;
+		}
+	}
+	/* Add the size of the struct and the offset array
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalI) + k * sizeof(size_t));
+	/* Create the TemporalI */
+	TemporalI *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = k;
+	result->valuetypid = valuetypid;
+	result->duration = TEMPORALI;
+	MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	if (isgeo)
+	{
+		MOBDB_FLAGS_SET_Z(result->flags,  MOBDB_FLAGS_GET_Z(tis[0]->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags,  MOBDB_FLAGS_GET_GEODETIC(tis[0]->flags));
+	}
+	/* Initialization of the variable-length part */
+	union bboxunion box;
+	if (bboxsize != 0)
+		memcpy((char *)&box, temporali_bbox_ptr(tis[0]), bboxsize);
+	size_t pos = 0;
+	k = 0;
+	for (int i = 0; i < count; i++)
+	{
+		start = 0;
+		inst2 = temporali_inst_n(tis[i], 0);
+		if (i > 0 && inst1->t == inst2->t)
+			start = 1;
+		for (int j = start; j < tis[i]->count; j++)
+		{
+			inst2 = temporali_inst_n(tis[i], j);
+			memcpy(((char *)result) + pdata + pos, inst2, VARSIZE(inst2));
+			result->offsets[k++] = pos;
+			pos += double_pad(VARSIZE(inst2));
+		}
+		/* Expand the bounding box */
+		if (bboxsize != 0)
+			temporal_bbox_expand(&box, temporali_bbox_ptr(tis[i]), valuetypid);
+		inst1 = temporali_inst_n(tis[i], tis[i]->count - 1);
+	}
+	if (bboxsize != 0)
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		memcpy((char *)bbox, &box, bboxsize);
+	}
+	result->offsets[k] = pos;
 	return result;
 }
 

@@ -127,6 +127,8 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	SET_VARSIZE(result, size);
 	MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear_interpolation(valuetypid));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
@@ -143,6 +145,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 TemporalI *
 temporalinst_append_instant(TemporalInst *inst1, TemporalInst *inst2)
 {
+	ensure_increasing_timestamps(inst1, inst2);
 	TemporalInst *instants[2];
 	instants[0] = inst1;
 	instants[1] = inst2;
@@ -729,18 +732,18 @@ temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 {
-	/* Compare values */
-	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2), 
-		inst1->valuetypid))
-		return -1;
-	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2), 
-		inst1->valuetypid))
-		return 1;
 	/* Compare timestamps */
 	int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
 	if (cmp < 0)
 		return -1;
 	if (cmp > 0)
+		return 1;
+	/* Compare values */
+	if (datum_lt(temporalinst_value(inst1), temporalinst_value(inst2),
+		inst1->valuetypid))
+		return -1;
+	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2),
+		inst1->valuetypid))
 		return 1;
 	/* Compare flags */
 	if (inst1->flags < inst2->flags)

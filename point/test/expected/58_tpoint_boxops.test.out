@@ -178,6 +178,24 @@ SELECT tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
  SRID=4326;GEODSTBOX T((0.997260928153992,0.0174497477710247,0.0174524057656527,2000-01-01 00:00:00+00),(0.999695420265198,0.0522642321884632,0.0523359562429438,2000-01-05 00:00:00+00))
 (1 row)
 
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01]');
+                                stboxes                                 
+------------------------------------------------------------------------
+ {"STBOX T((1,1,2000-01-01 00:00:00+00),(1,1,2000-01-01 00:00:00+00))"}
+(1 row)
+
+SELECT stboxes(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+                                                                   stboxes                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX T((1,1,2000-01-01 00:00:00+00),(2,2,2000-01-02 00:00:00+00))","STBOX T((1,1,2000-01-02 00:00:00+00),(2,2,2000-01-03 00:00:00+00))"}
+(1 row)
+
+SELECT stboxes(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+                                                                                                     stboxes                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"STBOX T((1,1,2000-01-01 00:00:00+00),(2,2,2000-01-02 00:00:00+00))","STBOX T((1,1,2000-01-02 00:00:00+00),(2,2,2000-01-03 00:00:00+00))","STBOX T((3,3,2000-01-04 00:00:00+00),(3,3,2000-01-05 00:00:00+00))"}
+(1 row)
+
 SELECT count(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
  count 
 -------
@@ -965,6 +983,9 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeogpoint '{[Poin
  f
 (1 row)
 
+/* Errors */
+SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
+ERROR:  The temporal point and the box must be both planar or both geodetic
 SELECT stbox 'STBOX Z((1.0, 2.0, 2.0), (1.0, 2.0, 2.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1890,6 +1911,12 @@ SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@20
 ERROR:  The temporal points must be in the same SRID
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
 ERROR:  The temporal points must be of the same dimensionality
+SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The boxes must be in the same SRID
+SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The boxes must be both planar or both geodetic
+SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
+ERROR:  The temporal point and the box must be in the same SRID
 SELECT geometry 'Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------

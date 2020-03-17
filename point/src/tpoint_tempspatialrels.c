@@ -149,7 +149,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
  * Generic functions to compute the temporal spatial relationship
  * between a geometry and a temporal sequence.
  * The potential crossings between the two are considered.
- * The resulting sequence (set) has stepwise interpolan since it is a
+ * The resulting sequence (set) has step interpolan since it is a
  * temporal Boolean or a temporal text (for trelate).
  * These functions are not available for geographies since it calls the
  * intersection function in PostGIS that is only available for geometries.
@@ -162,7 +162,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or stepwise interpolation */
+	/* Constant segment or step interpolation */
 	if (datum_point_eq(value1, value2) || ! linear)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -407,7 +407,7 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or stepwise interpolation */
+	/* Constant segment or step interpolation */
 	if (datum_point_eq(value1, value2) || ! linear)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
@@ -1154,7 +1154,7 @@ tdwithin_tpointseq_tpointseq2(TemporalSeq **result, TemporalSeq *seq1, TemporalS
 			result[k++] = temporalseq_make(instants, 2,
 				lower_inc, upper_inc, false, false);
 		}
-		/* Both segments have stepwise interpolation */
+		/* Both segments have step interpolation */
 		else if (! linear1 && ! linear2)
 		{
 			Datum value = func(sv1, sv2, d);

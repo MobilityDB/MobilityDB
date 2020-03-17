@@ -179,12 +179,8 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 	// How to ensure this and display an error message if not ?
-	// ensure_same_srid_tpoint_stbox(temp, box);
-	// ensure_same_geodetic_tpoint_stbox(temp, box);
 
-	STBOX box1, *result = NULL;
-	memset(&box1, 0, sizeof(STBOX));
-
+	STBOX *result;
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
 		PG_RETURN_NULL();
@@ -196,6 +192,8 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null box and null temporal, return the box */
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	if (!temp)
 	{
 		result = palloc0(sizeof(STBOX));
@@ -203,17 +201,11 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
+	/* Both box and temporal are not null */
+	ensure_same_srid_tpoint_stbox(temp, box);
+	ensure_same_dimensionality_tpoint_stbox(temp, box);
+	ensure_same_geodetic_tpoint_stbox(temp, box);
 	temporal_bbox(&box1, temp);
-	if (!MOBDB_FLAGS_GET_X(box->flags) || !MOBDB_FLAGS_GET_T(box->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Argument STBOX must have both X and T dimensions")));
-	if (MOBDB_FLAGS_GET_Z(box->flags) != MOBDB_FLAGS_GET_Z(box1.flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("One argument has Z dimension but the other does not")));
-	if (MOBDB_FLAGS_GET_GEODETIC(box->flags) != MOBDB_FLAGS_GET_GEODETIC(box1.flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("One argument has geodetic coordinates but the other does not")));
-
 	result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box->xmax, box1.xmax);
 	result->ymax = Max(box->ymax, box1.ymax);

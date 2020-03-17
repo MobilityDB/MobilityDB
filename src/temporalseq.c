@@ -391,17 +391,17 @@ temporalinstarr_normalize(TemporalInst **instants, bool linear, int count,
 		TemporalInst *inst3 = instants[i];
 		Datum value3 = temporalinst_value(inst3);
 		if (
-			/* stepwise sequences and 2 consecutive instants that have the same value 
+			/* step sequences and 2 consecutive instants that have the same value
 				... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
 			*/
 			(!linear && datum_eq(value1, value2, valuetypid))
 			||
-			/* 3 consecutive float/point instants that have the same value 
+			/* 3 consecutive linear instants that have the same value
 				... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
 			*/
 			(linear && datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
 			||
-			/* collinear float/point instants
+			/* collinear linear instants
 				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
 			*/
 			(linear && datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
@@ -470,6 +470,8 @@ temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bo
 	period_set(&result->period, seq1->period.lower, seq2->period.upper,
 		seq1->period.lower_inc, seq2->period.upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (valuetypid == type_oid(T_GEOMETRY) ||
 		valuetypid == type_oid(T_GEOGRAPHY))
 	{
@@ -556,7 +558,7 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 			(seq1->period.upper_inc || seq2->period.lower_inc);
 		/* If they are adjacent and not instantaneous */
 		if (adjacent && last2 != NULL && first2 != NULL && (
-			/* If stepwise and the last segment of the first sequence is constant 
+			/* If step and the last segment of the first sequence is constant
 			   ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ... 
 			   ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ... 
 			   ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ... 
@@ -583,7 +585,7 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 			seq1 = temporalseq_join(seq1, seq2, true, true);
 			isnew = true;
 		}
-		/* If stepwise sequences and the first one has an exclusive upper bound, 
+		/* If step sequences and the first one has an exclusive upper bound,
 		   by definition the first sequence has the last segment constant
 		   ..., 1@t1, 1@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 2@t2, 3@t3, ... 
 		   ..., 1@t1, 1@t2) [2@t2] -> ..., 1@t1, 2@t2]
@@ -631,38 +633,26 @@ TemporalSeq *
 temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
    bool upper_inc, bool linear, bool normalize)
 {
-	Oid valuetypid = instants[0]->valuetypid;
 	/* Test the validity of the instants and the bounds */
 	assert(count > 0);
 	if (count == 1 && (!lower_inc || !upper_inc))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Instant sequence must have inclusive bounds")));
-	bool isgeo = (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY));
-	bool hasz = false, isgeodetic = false;
-	int srid;
-	if (isgeo)
-	{
-		hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
-		isgeodetic = MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags);
-		srid = tpointinst_srid(instants[0]);
-	}
+	bool isgeo = (instants[0]->valuetypid == type_oid(T_GEOMETRY) ||
+		instants[0]->valuetypid == type_oid(T_GEOGRAPHY));
 	for (int i = 1; i < count; i++)
 	{
 		ensure_increasing_timestamps(instants[i - 1], instants[i]);
 		if (isgeo)
 		{
-			if (tpointinst_srid(instants[i]) != srid)
-				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same SRID")));
-			if (MOBDB_FLAGS_GET_Z(instants[i]->flags) != hasz)
-				ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
-					errmsg("All geometries composing a temporal point must be of the same dimensionality")));
+			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
+			ensure_same_geodetic_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 		}
 	}
 	if (!linear && count > 1 && !upper_inc &&
 		datum_ne(temporalinst_value(instants[count - 1]), 
-			temporalinst_value(instants[count - 2]), valuetypid))
+			temporalinst_value(instants[count - 2]), instants[0]->valuetypid))
 		ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION), 
 			errmsg("Invalid end value for temporal sequence")));
 
@@ -672,7 +662,7 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	if (normalize && count > 2)
 		newinstants = temporalinstarr_normalize(instants, linear, count, &newcount);
 	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t bboxsize = temporal_bbox_size(instants[0]->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
 	for (int i = 0; i < newcount; i++)
@@ -682,7 +672,7 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
 	{
-		trajectory = type_has_precomputed_trajectory(valuetypid);  
+		trajectory = type_has_precomputed_trajectory(instants[0]->valuetypid);
 		if (trajectory)
 		{
 			/* A trajectory is a geometry/geography, a point, a multipoint, 
@@ -698,15 +688,17 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
-	result->valuetypid = valuetypid;
+	result->valuetypid = instants[0]->valuetypid;
 	result->duration = TEMPORALSEQ;
 	period_set(&result->period, newinstants[0]->t, newinstants[newcount - 1]->t,
 		lower_inc, upper_inc);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
 	{
-		MOBDB_FLAGS_SET_Z(result->flags, hasz);
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
 	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
@@ -759,16 +751,15 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 TemporalSeq *
 temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 {
-	Oid valuetypid = seq->valuetypid;
-
 	/* Test the validity of the instant */
+	assert(seq->valuetypid == inst->valuetypid);
+	assert(MOBDB_FLAGS_GET_GEODETIC(seq->flags) == MOBDB_FLAGS_GET_GEODETIC(inst->flags));
 	TemporalInst *inst1 = temporalseq_inst_n(seq, seq->count - 1);
 	ensure_increasing_timestamps(inst1, inst);
-	bool isgeo = false;
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	bool isgeo = (seq->valuetypid == type_oid(T_GEOMETRY) ||
+		seq->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
 	{
-		isgeo = true;
 		ensure_same_srid_tpoint((Temporal *)seq, (Temporal *)inst);
 		ensure_same_dimensionality_tpoint((Temporal *)seq, (Temporal *)inst);
 	}
@@ -784,20 +775,20 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 		Datum value2 = temporalinst_value(inst2);
 		Datum value3 = temporalinst_value(inst);
 		if (
-			/* stepwise sequences and 2 consecutive instants that have the same value 
+			/* step sequences and 2 consecutive instants that have the same value
 				... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
 			*/
-			(! linear && datum_eq(value1, value2, valuetypid))
+			(! linear && datum_eq(value1, value2, seq->valuetypid))
 			||
 			/* 3 consecutive float/point instants that have the same value 
 				... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
 			*/
-			(datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
+			(datum_eq(value1, value2, seq->valuetypid) && datum_eq(value2, value3, seq->valuetypid))
 			||
 			/* collinear float/point instants that have the same duration
 				... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
 			*/
-			(linear && datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
+			(linear && datum_collinear(seq->valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
 			)
 		{
 			/* The new instant replaces the last instant of the sequence */
@@ -805,7 +796,7 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 		} 
 	}
 	/* Get the bounding box size */
-	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
 	size_t memsize = double_pad(bboxsize);
 	/* Add the size of composing instants */
 	for (int i = 0; i < newcount - 1; i++)
@@ -816,7 +807,7 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 	Datum traj = 0; /* keep compiler quiet */
 	if (isgeo)
 	{
-		trajectory = type_has_precomputed_trajectory(valuetypid);  
+		trajectory = type_has_precomputed_trajectory(seq->valuetypid);
 		if (trajectory)
 		{
 			bool replace = newcount != seq->count + 1;
@@ -831,13 +822,18 @@ temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst)
 	TemporalSeq *result = palloc0(pdata + memsize);
 	SET_VARSIZE(result, pdata + memsize);
 	result->count = newcount;
-	result->valuetypid = valuetypid;
+	result->valuetypid = seq->valuetypid;
 	result->duration = TEMPORALSEQ;
 	period_set(&result->period, seq->period.lower, inst->t, 
 		seq->period.lower_inc, true);
 	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
 	if (isgeo)
+	{
 		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq->flags));
+	}
 	/* Initialization of the variable-length part */
 	size_t pos = 0;
 	for (int i = 0; i < newcount - 1; i++)
@@ -879,33 +875,105 @@ temporalseq_append(TemporalSeq *seq1, TemporalSeq *seq2)
 	/* Test the validity of both temporal values */
 	assert(seq1->valuetypid == seq2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+	assert(MOBDB_FLAGS_GET_GEODETIC(seq1->flags) == MOBDB_FLAGS_GET_GEODETIC(seq2->flags));
+	bool isgeo = (seq1->valuetypid == type_oid(T_GEOMETRY) ||
+		seq1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		ensure_same_srid_tpoint((Temporal *)seq1, (Temporal *)seq2);
+		ensure_same_dimensionality_tpoint((Temporal *)seq1, (Temporal *)seq2);
+	}
 	TemporalInst *inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
 	if (inst1->t > inst2->t)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 			errmsg("The temporal values cannot overlap on time")));
-	if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc &&
-		 ! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
-		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-			errmsg("The temporal values have different value at their overlapping instant")));
-	bool isgeo = false, hasz = false;
-	if (seq1->valuetypid == type_oid(T_GEOMETRY) ||
-		seq1->valuetypid == type_oid(T_GEOGRAPHY))
+	if (inst1->t == inst2->t &&
+		(seq1->period.upper_inc || seq2->period.lower_inc))
 	{
-		ensure_same_srid_tpoint((Temporal *)seq1, (Temporal *)seq2);
-		ensure_same_dimensionality_tpoint((Temporal *)seq1, (Temporal *)seq2);
-		isgeo = true;
-		hasz = MOBDB_FLAGS_GET_Z(seq1->flags);
+		if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values have different value at their overlapping instant")));
+		else
+			/* Result is a TemporalSeq */
+			return (Temporal *) temporalseq_join(seq1, seq2, true, false);
 	}
+	else
+	{
+		TemporalSeq *sequences[2];
+		sequences[0] = seq1;
+		sequences[1] = seq2;
+		/* Result is a TemporalS */
+		return (Temporal *) temporals_make(sequences, 2, false);
+	}
+}
 
-	if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
-		/* result is a TemporalSeq */
-		return (Temporal *) temporalseq_join(seq1, seq2, true, false);
-	TemporalSeq *sequences[2];
-	sequences[0] = seq1;
-	sequences[0] = seq2;
-	/* result is a TemporalS */
-	return (Temporal *) temporals_make(sequences, 2, false);
+/* Append an array of temporal values */
+
+Temporal *
+temporalseq_append_array(TemporalSeq **seqs, int count)
+{
+	Oid valuetypid = seqs[0]->valuetypid;
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seqs[0]->flags);
+	bool isgeo = (seqs[0]->valuetypid == type_oid(T_GEOMETRY) ||
+		seqs[0]->valuetypid == type_oid(T_GEOGRAPHY));
+	/* Keep track of the number of instants in the resulting sequences */
+	int *countinst = palloc0(sizeof(int) * count);
+	countinst[0] = seqs[0]->count;
+	int k = 0;
+	for (int i = 1; i < count; i++)
+	{
+		/* Test the validity of consecutive temporal values */
+		assert(seqs[i]->valuetypid == valuetypid);
+		assert(MOBDB_FLAGS_GET_LINEAR(seqs[i]->flags) == linear);
+		if (isgeo)
+		{
+			ensure_same_srid_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
+			ensure_same_dimensionality_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
+			ensure_same_geodetic_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
+		}
+		TemporalInst *inst1 = temporalseq_inst_n(seqs[i - 1], seqs[i - 1]->count - 1);
+		TemporalInst *inst2 = temporalseq_inst_n(seqs[i], 0);
+		if (inst1->t > inst2->t)
+			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+				errmsg("The temporal values cannot overlap on time")));
+		if (inst1->t == inst2->t &&
+			(seqs[i - 1]->period.upper_inc || seqs[i]->period.lower_inc))
+		{
+			if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+					errmsg("The temporal values have different value at their overlapping instant")));
+			else
+				countinst[k] += seqs[i]->count - 1;
+		}
+		else
+			countinst[++k] = seqs[i]->count;
+	}
+	k++;
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * k);
+	int l = 0;
+	for (int i = 0; i < k; i++)
+	{
+		bool lowerinc = seqs[0]->period.lower_inc;
+		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst[i]);
+		int m = 0;
+		while (m < countinst[i])
+		{
+			int start = m == 0 ? 0 : 1;
+			for (int j = start; j < seqs[l]->count; j++)
+				instants[m++] = temporalseq_inst_n(seqs[l], j);
+			l++;
+		}
+		bool upperinc = seqs[l - 1]->period.upper_inc;
+		sequences[i] = temporalseq_make(instants, countinst[i],
+			lowerinc, upperinc, linear, true);
+		pfree(instants);
+	}
+	Temporal *result = (k == 1) ? (Temporal *)sequences[0] :
+		(Temporal *)temporals_make(sequences, k, true);
+	pfree(sequences);
+	pfree(countinst);
+	return result;
 }
 
 /* Copy a temporal sequence */
@@ -1149,7 +1217,7 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		inst2 = temporalseq_inst_n(seq2, j);
 	}
 	/* We are sure that k != 0 due to the period intersection test above */
-	/* The last two values of sequences with stepwise interpolation and 
+	/* The last two values of sequences with step interpolation and
 	   exclusive upper bound must be equal */
 	if (! inter->upper_inc && k > 1 && ! linear1)
 	{
@@ -1427,7 +1495,7 @@ temporalseq_write(TemporalSeq *seq, StringInfo buf)
 		temporalinst_write(inst, buf);
 	}
 }
- 
+
 /* Receive function */
 
 TemporalSeq *
@@ -1440,7 +1508,7 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
 		instants[i] = temporalinst_read(buf, valuetypid);
-	TemporalSeq *result = temporalseq_make(instants, 
+	TemporalSeq *result = temporalseq_make(instants,
 		count, lower_inc, upper_inc, linear, true);
 
 	for (int i = 0; i < count; i++)
@@ -1459,9 +1527,10 @@ temporalseq_read(StringInfo buf, Oid valuetypid)
 TemporalSeq *
 tintseq_to_tfloatseq(TemporalSeq *seq)
 {
+	/* It is not necessary to set the linear flag to false since it is already
+	 * set by the fact that the input argument is a temporal integer */
 	TemporalSeq *result = temporalseq_copy(seq);
 	result->valuetypid = FLOAT8OID;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(result, i);
@@ -1472,7 +1541,7 @@ tintseq_to_tfloatseq(TemporalSeq *seq)
 	return result;
 }
 
-/* Cast a temporal float with stepwise interpolation as a temporal integer */
+/* Cast a temporal float with step interpolation as a temporal integer */
 
 TemporalSeq *
 tfloatseq_to_tintseq(TemporalSeq *seq)
@@ -1480,9 +1549,10 @@ tfloatseq_to_tintseq(TemporalSeq *seq)
 	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+	/* It is not necessary to set the linear flag to false since it is already
+	 * set by the fact that the input argument has step interpolation */
 	TemporalSeq *result = temporalseq_copy(seq);
 	result->valuetypid = INT4OID;
-	MOBDB_FLAGS_SET_LINEAR(result->flags, false);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(result, i);
@@ -1522,10 +1592,10 @@ temporals_to_temporalseq(TemporalS *ts)
 	return temporalseq_copy(temporals_seq_n(ts, 0));
 }
 
-/* Transform a temporal value with continuous base type from stepwise to linear interpolation */
+/* Transform a temporal value with continuous base type from step to linear interpolation */
 
 int
-tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
+tstepseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 {
 	if (seq->count == 1)
 	{
@@ -1533,7 +1603,7 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 		MOBDB_FLAGS_SET_LINEAR(result[0]->flags, true);
 		return 1;
 	}
-	
+
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2;
@@ -1547,7 +1617,7 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 		TemporalInst *instants[2];
 		instants[0] = inst1;
 		instants[1] = temporalinst_make(value1, inst2->t, seq->valuetypid);
-		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc && 
+		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc &&
 			datum_eq(value1, value2, seq->valuetypid): false;
 		result[k++] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, true, false);
@@ -1568,10 +1638,10 @@ tstepwseq_to_linear1(TemporalSeq **result, TemporalSeq *seq)
 }
 
 TemporalS *
-tstepwseq_to_linear(TemporalSeq *seq)
+tstepseq_to_linear(TemporalSeq *seq)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count);
-	int count = tstepwseq_to_linear1(sequences, seq);
+	int count = tstepseq_to_linear1(sequences, seq);
 	TemporalS *result = temporals_make(sequences, count, false);
 	for (int i = 0; i < count; i++)
 		pfree(sequences[i]);
@@ -1580,16 +1650,16 @@ tstepwseq_to_linear(TemporalSeq *seq)
 }
 
 /*****************************************************************************
- * Accessor functions 
+ * Accessor functions
  *****************************************************************************/
 
-/* Values of a TemporalSeq with stepwise interpolation */
+/* Values of a TemporalSeq with step interpolation */
 
 Datum *
 temporalseq_values1(TemporalSeq *seq, int *count)
 {
 	Datum *result = palloc(sizeof(Datum *) * seq->count);
-	for (int i = 0; i < seq->count; i++) 
+	for (int i = 0; i < seq->count; i++)
 		result[i] = temporalinst_value(temporalseq_inst_n(seq, i));
 	datum_sort(result, seq->count, seq->valuetypid);
 	*count = datum_remove_duplicates(result, seq->count, seq->valuetypid);
@@ -1662,7 +1732,7 @@ tfloatseq_ranges1(RangeType **result, TemporalSeq *seq)
 		return 1;
 	}
 
-	/* Temporal float with stepwise interpolation */
+	/* Temporal float with step interpolation */
 	int count;
 	Datum *values = temporalseq_values1(seq, &count);
 	for (int i = 0; i < count; i++)
@@ -1720,7 +1790,7 @@ temporalseq_min_value(TemporalSeq *seq)
 }
 
 /* Maximum value */
- 
+
 Datum
 temporalseq_max_value(TemporalSeq *seq)
 {
@@ -1770,7 +1840,7 @@ temporalseq_instants(TemporalSeq *seq)
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 		result[i] = temporalseq_inst_n(seq, i);
-	return result;	
+	return result;
 }
 
 ArrayType *
@@ -1779,7 +1849,7 @@ temporalseq_instants_array(TemporalSeq *seq)
 	TemporalInst **instants = temporalseq_instants(seq);
 	ArrayType *result = temporalarr_to_array((Temporal **)instants, seq->count);
 	pfree(instants);
-	return result;	
+	return result;
 }
 
 /* Start timestamptz */
@@ -1804,18 +1874,18 @@ TimestampTz *
 temporalseq_timestamps1(TemporalSeq *seq)
 {
 	TimestampTz *result = palloc(sizeof(TimestampTz) * seq->count);
-	for (int i = 0; i < seq->count; i++) 
+	for (int i = 0; i < seq->count; i++)
 		result[i] = temporalseq_inst_n(seq, i)->t;
-	return result;	
+	return result;
 }
 
 ArrayType *
 temporalseq_timestamps(TemporalSeq *seq)
 {
-	TimestampTz *times = temporalseq_timestamps1(seq);	
+	TimestampTz *times = temporalseq_timestamps1(seq);
 	ArrayType *result = timestamparr_to_array(times, seq->count);
 	pfree(times);
-	return result;	
+	return result;
 }
 
 /* Shift the time span of a temporal value by an interval */
@@ -1840,7 +1910,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(seq->period.upper), PointerGetDatum(interval)));
 	/* Shift bounding box */
-	void *bbox = temporalseq_bbox_ptr(result); 
+	void *bbox = temporalseq_bbox_ptr(result);
 	temporal_bbox_shift(bbox, interval, seq->valuetypid);
 	pfree(instants);
 	return result;
@@ -1849,7 +1919,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 /*****************************************************************************
  * Ever/always comparison operators
  * The functions assume that the temporal value and the datum value are of
- * the same valuetypid. Ever/always equal are valid for all temporal types 
+ * the same valuetypid. Ever/always equal are valid for all temporal types
  * including temporal points. All the other comparisons are only valid for
  * temporal alphanumeric types.
  *****************************************************************************/
@@ -1857,7 +1927,7 @@ temporalseq_shift(TemporalSeq *seq, Interval *interval)
 /* Is the temporal value ever equal to the value? */
 
 static bool
-tlinearseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2, 
+tlinearseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2,
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -1896,7 +1966,7 @@ temporalseq_ever_eq(TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		for (int i = 0; i < seq->count; i++) 
+		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 			if (datum_eq(valueinst, value, seq->valuetypid))
@@ -1904,7 +1974,7 @@ temporalseq_ever_eq(TemporalSeq *seq, Datum value)
 		}
 		return false;
 	}
-	
+
 	/* Continuous base type */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	bool lower_inc = seq->period.lower_inc;
@@ -1942,7 +2012,7 @@ temporalseq_always_eq(TemporalSeq *seq, Datum value)
 	/* The following test assumes that the sequence is in normal form */
 	if (seq->count > 2)
 		return false;
-	for (int i = 0; i < seq->count; i++) 
+	for (int i = 0; i < seq->count; i++)
 	{
 		Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 		if (datum_ne(valueinst, value, seq->valuetypid))
@@ -2022,14 +2092,14 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		/* Maximum value may be non inclusive */ 
+		/* Maximum value may be non inclusive */
 		if (d < box.xmin)
 			return false;
 	}
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		for (int i = 0; i < seq->count; i++) 
+		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 			if (datum_lt(valueinst, value, seq->valuetypid))
@@ -2037,7 +2107,7 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		}
 		return false;
 	}
-	
+
 	/* Continuous base type */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
 	/* It is not necessary to take the bounds into account */
@@ -2071,7 +2141,7 @@ temporalseq_ever_le(TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		for (int i = 0; i < seq->count; i++) 
+		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 			if (datum_le(valueinst, value, seq->valuetypid))
@@ -2079,7 +2149,7 @@ temporalseq_ever_le(TemporalSeq *seq, Datum value)
 		}
 		return false;
 	}
-	
+
 	/* Continuous base type */
 	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
 	bool lower_inc = seq->period.lower_inc;
@@ -2108,14 +2178,14 @@ temporalseq_always_lt(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		/* Minimum value may be non inclusive */ 
+		/* Minimum value may be non inclusive */
 		if (d < box.xmax)
 			return false;
 	}
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		for (int i = 0; i < seq->count; i++) 
+		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 			if (! datum_lt(valueinst, value, seq->valuetypid))
@@ -2158,7 +2228,7 @@ temporalseq_always_le(TemporalSeq *seq, Datum value)
 
 	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
 	{
-		for (int i = 0; i < seq->count; i++) 
+		for (int i = 0; i < seq->count; i++)
 		{
 			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
 			if (! datum_le(valueinst, value, seq->valuetypid))
@@ -2181,17 +2251,17 @@ temporalseq_always_le(TemporalSeq *seq, Datum value)
 }
 
 /*****************************************************************************
- * Restriction Functions 
+ * Restriction Functions
  *****************************************************************************/
 
 /*
- * Timestamp at which a temporal segment with linear interpolation takes a 
+ * Timestamp at which a temporal segment with linear interpolation takes a
  * value. The function supposes that the value is between the range defined
- * by the values of inst1 and inst2 (both exclusive). 
+ * by the values of inst1 and inst2 (both exclusive).
  */
 
 bool
-tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2, 
+tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 	Datum value, Oid valuetypid, TimestampTz *t)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -2200,7 +2270,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 	double fraction = 0.0;
 	ensure_linear_interpolation(inst1->valuetypid);
 	if (inst1->valuetypid == FLOAT8OID)
-	{ 
+	{
 		double dvalue1 = DatumGetFloat8(value1);
 		double dvalue2 = DatumGetFloat8(value2);
 		double dvalue = datum_double(value, valuetypid);
@@ -2209,7 +2279,7 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		/* if value is to the left or to the right of the range */
 		if (dvalue < min || dvalue > max)
 			return false;
-		
+
 		double range = max - min;
 		double partial = dvalue - min;
 		fraction = dvalue1 < dvalue2 ?
@@ -2254,18 +2324,18 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 
 		/* We are sure that the trajectory is a line */
 		Datum line = geogpoint_trajectory(value1, value2);
-		bool inter = DatumGetFloat8(call_function4(geography_distance, line, 
+		bool inter = DatumGetFloat8(call_function4(geography_distance, line,
 			value, Float8GetDatum(0.0), BoolGetDatum(false))) < 0.00001;
 		if (!inter)
 		{
 			pfree(DatumGetPointer(line));
 			return false;
 		}
-		
-		/* There is no function equivalent to LWGEOM_line_locate_point 
+
+		/* There is no function equivalent to LWGEOM_line_locate_point
 		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1), 
-		 * @extschema@._ST_BestSRID($1, $2)), 
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+		 * @extschema@._ST_BestSRID($1, $2)),
 		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
 
 		Datum bestsrid = call_function2(geography_bestsrid, line, line);
@@ -2275,8 +2345,8 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 		value2 = call_function2(transform, value1, bestsrid);
 		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 			line2, value2));
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1)); 
-		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1)); 
+		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1));
 		pfree(DatumGetPointer(value2));
 	}
 
@@ -2285,18 +2355,18 @@ tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2,
 	*t = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 	return true;
 }
- 
+
 /* Restriction to a value for a segment */
 
 static TemporalSeq *
-temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2, 
+temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	bool linear, bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
-	
-	/* Constant segment (stepwise or linear interpolation) */
+
+	/* Constant segment (step or linear interpolation) */
 	if (datum_eq(value1, value2, valuetypid))
 	{
 		/* If not equal to value */
@@ -2345,28 +2415,28 @@ temporalseq_at_value1(TemporalInst *inst1, TemporalInst *inst2,
 	{
 		if (!upper_inc)
 			return NULL;
-		return temporalseq_make(&inst2, 1, 
+		return temporalseq_make(&inst2, 1,
 				true, true, linear, false);
 	}
-	
+
 	/* Continuous base type: Interpolation */
 	TimestampTz t;
 	if (!tlinearseq_timestamp_at_value(inst1, inst2, value, valuetypid, &t))
 		return NULL;
-	
+
 	TemporalInst *inst = temporalinst_make(value, t, valuetypid);
-	TemporalSeq *result = temporalseq_make(&inst, 1, 
+	TemporalSeq *result = temporalseq_make(&inst, 1,
 		true, true, linear, false);
 	pfree(inst);
 	return result;
 }
 
-/* 
+/*
    Restriction to a value.
    This function is called for each sequence of a TemporalS.
 */
 
-int 
+int
 temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 {
 	Oid valuetypid = seq->valuetypid;
@@ -2379,13 +2449,13 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 		temporalseq_bbox(&box1, seq);
 		number_to_box(&box2, value, valuetypid);
 		if (!contains_tbox_tbox_internal(&box1, &box2))
-			return 0;			
+			return 0;
 	}
 
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		if (datum_ne(temporalinst_value(inst), value, valuetypid))
 			return 0;
 		result[0] = temporalseq_copy(seq);
@@ -2400,9 +2470,9 @@ temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i);
 		bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-		TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2, 
+		TemporalSeq *seq1 = temporalseq_at_value1(inst1, inst2,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), lower_inc, upper_inc, value);
-		if (seq1 != NULL) 
+		if (seq1 != NULL)
 			result[k++] = seq1;
 		inst1 = inst2;
 		lower_inc = true;
@@ -2432,14 +2502,14 @@ temporalseq_at_value(TemporalSeq *seq, Datum value)
 
 static int
 tlinearseq_minus_value1(TemporalSeq **result,
-	TemporalInst *inst1, TemporalInst *inst2, 
+	TemporalInst *inst1, TemporalInst *inst2,
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
 	TemporalInst *instants[2];
-	
+
 	/* Constant segment */
 	if (datum_eq(value1, value2, valuetypid))
 	{
@@ -2471,7 +2541,7 @@ tlinearseq_minus_value1(TemporalSeq **result,
 			lower_inc, false, true, false);
 		return 1;
 	}
-	
+
 	/* Linear interpolation */
 	TimestampTz t;
 	if (!tlinearseq_timestamp_at_value(inst1, inst2, value, valuetypid, &t))
@@ -2494,9 +2564,9 @@ tlinearseq_minus_value1(TemporalSeq **result,
 	return 2;
 }
 
-/* 
+/*
    Restriction to the complement of a value.
-   This function is called for each sequence of a TemporalS. 
+   This function is called for each sequence of a TemporalS.
 */
 
 int
@@ -2521,9 +2591,9 @@ temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value)
 	/* Instantaneous sequence */
 	if (seq->count == 1)
 	{
-		TemporalInst *inst = temporalseq_inst_n(seq, 0); 
+		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		if (datum_eq(temporalinst_value(inst), value, valuetypid))
-			return 0;			
+			return 0;
 		result[0] = temporalseq_copy(seq);
 		return 1;
 	}
@@ -3169,7 +3239,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	Oid valuetypid = inst1->valuetypid;
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	/* Constant segment or t is equal to lower bound or stepwise interpolation */
+	/* Constant segment or t is equal to lower bound or step interpolation */
 	if (datum_eq(value1, value2, valuetypid) ||
 		inst1->t == t || (! linear && t < inst2->t))
 		return temporalinst_value_copy(inst1);
@@ -3564,7 +3634,7 @@ temporalseq_at_period(TemporalSeq *seq, Period *p)
 		if (inter->lower <= inst1->t && inst1->t <= inter->upper)
 			instants[k++] = inst1;
 	}
-	/* The last two values of sequences with stepwise interpolation and 
+	/* The last two values of sequences with step interpolation and
 	   exclusive upper bound must be equal */
 	if (MOBDB_FLAGS_GET_LINEAR(seq->flags) || inter->upper_inc)
 		instants[k++] = temporalseq_at_timestamp1(inst1, inst2, inter->upper,
@@ -3819,10 +3889,10 @@ temporalseq_intersects_periodset(TemporalSeq *seq, PeriodSet *ps)
  * Local aggregate functions 
  *****************************************************************************/
 
-/* Integral of the temporal numbers with stepwise interpolation */
+/* Integral of the temporal numbers with step interpolation */
 
 double
-tstepwseq_integral(TemporalSeq *seq)
+tstepseq_integral(TemporalSeq *seq)
 {
 	double result = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
@@ -3862,7 +3932,7 @@ tnumberseq_integral(TemporalSeq *seq)
 	if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
 		return tlinearseq_integral(seq);
 	else
-		return tstepwseq_integral(seq);
+		return tstepseq_integral(seq);
 }
 
 /* Time-weighted average of temporal numbers */

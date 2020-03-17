@@ -900,7 +900,7 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 	 * If the two sequences intersect there will be at most 3 sequences in the
 	 * result: one before the intersection, one for the intersection, and one 
 	 * after the intersection. This will be also the case for sequences with 
-	 * stepwise interploation (e.g., tint) that has the last value different 
+	 * step interploation (e.g., tint) that has the last value different
 	 * from the previous one as tint '[1@2000-01-03, 2@2000-01-04]' and 
 	 * tint '[3@2000-01-01, 4@2000-01-05]' whose result for sum would be the 
 	 * following three sequences
@@ -1226,7 +1226,7 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
 	Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
-	Period p1, *result = NULL;
+	Period p1, *result;
 
 	/* Can't do anything with null inputs */
 	if (!p && !temp)
@@ -1234,14 +1234,14 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
 	/* Null period and non-null temporal, return the bbox of the temporal */
 	if (!p)
 	{
-		result = palloc(sizeof(Period));
+		result = palloc0(sizeof(Period));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null period and null temporal, return the period */
 	if (!temp)
 	{
-		result = palloc(sizeof(Period));
+		result = palloc0(sizeof(Period));
 		memcpy(result, p, sizeof(Period));
 		PG_RETURN_POINTER(result);
 	}
