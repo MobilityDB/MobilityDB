@@ -220,7 +220,7 @@ interval_cmp_lower(const void *a, const void *b)
  * Compare PeriodBounds by upper bound.
  */
 static int
-interval_cmp_upper(const void *a, const void *b, void *arg)
+interval_cmp_upper(const void *a, const void *b)
 {
 	PeriodBounds *i1 = (PeriodBounds *) a;
 	PeriodBounds *i2 = (PeriodBounds *) b;
