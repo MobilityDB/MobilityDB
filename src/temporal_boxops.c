@@ -1284,7 +1284,11 @@ PGDLLEXPORT Datum
 adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	RangeType *range = PG_GETARG_RANGE_P(1);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(1);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(1);
+#endif
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
 	memset(&box2, 0, sizeof(TBOX));
@@ -1301,7 +1305,11 @@ PG_FUNCTION_INFO_V1(adjacent_bbox_range_tnumber);
 PGDLLEXPORT Datum
 adjacent_bbox_range_tnumber(PG_FUNCTION_ARGS)
 {
-	RangeType *range = PG_GETARG_RANGE_P(0);
+#if MOBDB_PGSQL_VERSION < 110000
+	RangeType  *range = PG_GETARG_RANGE(0);
+#else
+	RangeType  *range = PG_GETARG_RANGE_P(0);
+#endif
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	TBOX box1, box2;
 	memset(&box1, 0, sizeof(TBOX));
