@@ -15,6 +15,9 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#if MOBDB_PGSQL_VERSION < 110000
+#include <utils/timestamp.h>
+#endif
 
 /*****************************************************************************
  * Struct definition
