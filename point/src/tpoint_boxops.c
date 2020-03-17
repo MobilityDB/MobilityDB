@@ -351,8 +351,6 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALS)
 		result = tpoints_stboxes((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
