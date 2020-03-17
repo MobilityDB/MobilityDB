@@ -917,16 +917,12 @@ tgeompoints_trajectory(TemporalS *ts)
 	else if (l == 0)
 	{
 		/* Only lines */
-		if (k == 1)
-			result = PointerGetDatum(gserialized_copy(
-					(GSERIALIZED *)(DatumGetPointer(trajectories[0]))));
-		else
-		{
-			ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-			/* ST_linemerge is not used to avoid splitting lines at intersections */
-			result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-			pfree(array);
-		}
+		/* k > 1 since otherwise it is a singleton sequence set and this case
+		 * was taken care at the begining of the function */
+		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
+		/* ST_linemerge is not used to avoid splitting lines at intersections */
+		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
+		pfree(array);
 	}
 	else
 	{
@@ -2217,7 +2213,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 		result = (Temporal *)tpointseq_minus_geometry((TemporalSeq *)temp,
 			PointerGetDatum(gs));
 	else if (temp->duration == TEMPORALS)
-		result = (Temporal *)tpoints_minus_geometry((TemporalS *)temp, gs, &box2);
+			result = (Temporal *)tpoints_minus_geometry((TemporalS *)temp, gs, &box2);
 
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
