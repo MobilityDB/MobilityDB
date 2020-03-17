@@ -16,7 +16,7 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #if MOBDB_PGSQL_VERSION < 110000
-#include "datatype/timestamp.h"
+#include <datatype/timestamp.h>
 #endif
 
 /*****************************************************************************/
