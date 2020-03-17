@@ -518,8 +518,13 @@ period_sort_cmp(Period **l, Period **r)
 static int
 range_sort_cmp(RangeType **l, RangeType **r)
 {
+#if MOBDB_PGSQL_VERSION < 110000
+	return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
+		RangeTypeGetDatum(*r)));
+#else
 	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
 		RangeTypePGetDatum(*r)));
+#endif
 }
 
 static int
