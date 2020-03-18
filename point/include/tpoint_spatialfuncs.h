@@ -40,6 +40,7 @@ extern void ensure_has_X_stbox(const STBOX *box);
 extern void ensure_has_Z_stbox(const STBOX *box);
 extern void ensure_has_T_stbox(const STBOX *box);
 extern void ensure_has_Z_tpoint(const Temporal *temp);
+extern void ensure_has_not_Z_tpoint(const Temporal *temp);
 extern void ensure_has_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);

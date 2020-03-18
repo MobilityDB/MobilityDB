@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <float.h>
+#include <math.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
@@ -166,6 +167,14 @@ ensure_has_Z_tpoint(const Temporal *temp)
 	if (! MOBDB_FLAGS_GET_Z(temp->flags))
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 			errmsg("The temporal point must have Z dimension")));
+}
+
+void
+ensure_has_not_Z_tpoint(const Temporal *temp)
+{
+	if (MOBDB_FLAGS_GET_Z(temp->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("The temporal point cannot have Z dimension")));
 }
 
 void
@@ -498,7 +507,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 srid = PG_GETARG_INT32(1);
-	Temporal *result = tpoint_set_srid_internal(temp, srid) ;
+	Temporal *result = tpoint_set_srid_internal(temp, srid);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -1108,12 +1117,8 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-		{
-			if (MOBDB_FLAGS_GET_Z(seq->flags))
-				func = &geom_distance3d;
-			else
-				func = &geom_distance2d;
-		}
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
+				&geom_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1190,6 +1195,15 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
  * Speed functions
  *****************************************************************************/
 
+static double
+tpointinst_speed(TemporalInst *inst1, TemporalInst *inst2, Datum (*func)(Datum, Datum))
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	return datum_point_eq(value1, value2) ? 0 :
+		DatumGetFloat8(func(value1, value2)) / ((double)(inst2->t - inst1->t) / 1000000);
+}
+
 static TemporalSeq *
 tpointseq_speed(TemporalSeq *seq)
 {
@@ -1214,12 +1228,8 @@ tpointseq_speed(TemporalSeq *seq)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-		{
-			if (MOBDB_FLAGS_GET_Z(seq->flags))
-				func = &geom_distance3d;
-			else
-				func = &geom_distance2d;
-		}
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
+				&geom_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1307,7 +1317,7 @@ tgeompointi_twcentroid(TemporalI *ti)
 	int srid = tpointi_srid(ti);
 	TemporalInst **instantsx = palloc(sizeof(TemporalInst *) * ti->count);
 	TemporalInst **instantsy = palloc(sizeof(TemporalInst *) * ti->count);
-	TemporalInst **instantsz = NULL ; /* keep compiler quiet */
+	TemporalInst **instantsz = NULL; /* keep compiler quiet */
 	bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
 	if (hasz)
 		instantsz = palloc(sizeof(TemporalInst *) * ti->count);
@@ -2187,7 +2197,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	memset(&box2, 0, sizeof(STBOX));
 	if (!geo_to_stbox_internal(&box2, gs))
 	{
-		Temporal *copy = temporal_copy(temp) ;
+		Temporal *copy = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_POINTER(copy);
@@ -2195,7 +2205,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	temporal_bbox(&box1, temp);
 	if (!overlaps_stbox_stbox_internal(&box1, &box2))
 	{
-		Temporal *copy = temporal_copy(temp) ;
+		Temporal *copy = temporal_copy(temp);
 		PG_FREE_IF_COPY(temp, 0);
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_POINTER(copy);
@@ -2547,12 +2557,8 @@ NAD_geo_tpoint(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
+			&geom_distance2d;
 	else
 		func = &geog_distance;
 
@@ -2584,12 +2590,8 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
+			&geom_distance2d;
 	else
 		func = &geog_distance;
 
@@ -2847,14 +2849,11 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) && MOBDB_FLAGS_GET_Z(temp2->flags) ?
+			&geom_distance3d : &geom_distance2d;
 	else
 		func = &geog_distance;
+
 	Datum result = 0;
 	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
@@ -2889,7 +2888,7 @@ static LWPOINT *
 point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 {
 	int32 srid = gserialized_get_srid(gs);
-	double epoch = ((double)t / 1e6) + 946684800 ;
+	double epoch = ((double)t / 1e6) + 946684800;
 	LWPOINT *result;
 	if (FLAGS_GET_Z(gs->flags))
 	{
@@ -3468,18 +3467,174 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
  * No topology relations are considered.
  ***********************************************************************/
 
-static int
-int_cmp(const void *a, const void *b)
+/*-------------------------------------------------------------------------
+ * Determine the 3D hypotenuse.
+ *
+ * If required, x, y, and z are swapped to make x the larger number. The
+ * traditional formula of x^2+y^2+z^2 is rearranged to factor x outside the
+ * sqrt. This allows computation of the hypotenuse for significantly
+ * larger values, and with a higher precision than when using the naive
+ * formula.  In particular, this cannot overflow unless the final result
+ * would be out-of-range.
+ *
+ * sqrt( x^2 + y^2 + z^2 ) 	= sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
+ * 							= x * sqrt( 1 + y^2/x^2 + z^2/x^2)
+ * 					 		= x * sqrt( 1 + y/x * y/x + z/x * z/x)
+ *-----------------------------------------------------------------------
+ */
+double
+hypot3d(double x, double y, double z)
 {
-	/* casting pointer types */
-	const int *ia = (const int *)a;
-	const int *ib = (const int *)b;
-	/* returns negative if b > a and positive if a > b */
-	return *ia - *ib;
+	double		yx;
+	double		zx;
+	double		temp;
+
+	/* Handle INF and NaN properly */
+	if (isinf(x) || isinf(y)|| isinf(z))
+		return get_float8_infinity();
+
+	if (isnan(x) || isnan(y) || isnan(z))
+		return get_float8_nan();
+
+	/* Else, drop any minus signs */
+	x = fabs(x);
+	y = fabs(y);
+	z = fabs(z);
+
+	/* Swap x, y and z if needed to make x the larger one */
+	if (x < y)
+	{
+		temp = x;
+		x = y;
+		y = temp;
+	}
+	if (x < z)
+	{
+		temp = x;
+		x = z;
+		z = temp;
+	}
+	/*
+	 * If x is zero, the hypotenuse is computed with the 2D case.
+	 * This test saves a few cycles in such cases, but more importantly
+	 * it also protects against divide-by-zero errors, since now x >= y.
+	 */
+	if (x == 0)
+		return hypot(y, z);
+
+	/* Determine the hypotenuse */
+	yx = y / x;
+	zx = z / x;
+	return x * sqrt(1.0 + (yx * yx) + (zx * zx));
+}
+
+#define DOT(u,v)   ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
+
+POINT3DZ
+sub(POINT3DZ point1, POINT3DZ point2)
+{
+	POINT3DZ	   result;
+
+	result.x = point1.x - point2.x;
+	result.y = point1.y - point2.y;
+	result.z = point1.z - point2.z;
+	return result;
+}
+
+POINT3DZ
+cross(POINT3DZ point1, POINT3DZ point2)
+{
+	POINT3DZ	   result;
+
+    result.x = point1.y * point2.z - point1.z * point2.y;
+	result.y = point1.z * point2.x - point1.x * point2.z;
+	result.z = point1.x * point2.y - point1.y * point2.x;
+	return result;
+}
+
+/* 3D Distance between a 3D point and a 3D line segment
+ * See http://geomalgorithms.com/a02-_lines.html */
+double
+dist3d_pt_seg(POINT3DZ *point, POINT3DZ *A, POINT3DZ *B)
+{
+	POINT3DZ	v,
+				w0,
+				w1,
+				c;
+
+	v = sub(*B, *A);
+	w0 = sub(*point, *A);
+
+	if (DOT(w0, v) <= 0.0)
+		// Point is lagging behind start of the segment, so perpendicular distance is not viable.
+		// Use distance to start of segment instead.
+		return hypot3d(w0.x, w0.y, w0.z);
+
+	w1 = sub(*point, *B);
+
+	if (DOT(w1, v) >= 0.0)
+		// Point is advanced past the end of the segment, so perpendicular distance is not viable.
+		// Use distance to end of the segment instead.
+		return hypot3d(w1.x, w1.y, w1.z);
+
+	// Perpendicular distance of point to segment.
+	c = cross(v, w0);
+	return hypot3d(c.x, c.y, c.z) / hypot3d(v.x, v.y, v.z);
 }
 
 static void
-tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, int *split, double *dist)
+tpointseq_dp_findsplit3d(const TemporalSeq *seq, int p1, int p2, int *split,
+	double *dist2d, double *delta_speed)
+{
+	int k;
+	POINT2D pk, tmp_pk, pa, pb;
+	POINT3DZ p3k, p3a, p3b;
+	double tmp, d, speed_seg, speed_pt;
+	*split = p1;
+	d = -1;
+	if (p1 + 1 < p2)
+	{
+		Datum (*func)(Datum, Datum);
+		ensure_point_base_type(seq->valuetypid);
+		if (seq->valuetypid == type_oid(T_GEOMETRY))
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
+				&geom_distance2d;
+		else
+			func = &geog_distance;
+
+		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
+		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
+		pa = datum_get_point2d(temporalinst_value(inst1));
+		pb = datum_get_point2d(temporalinst_value(inst2));
+		speed_seg = tpointinst_speed(inst1, inst2, func);
+		p3a.x = pa.x; p3a.y = pa.y; p3a.z = speed_seg;
+		p3b.x = pb.x; p3b.y = pb.y; p3b.z = speed_seg;
+		for (k = p1 + 1; k < p2; k++)
+		{
+			inst2 = temporalseq_inst_n(seq, k);
+			tmp_pk = datum_get_point2d(temporalinst_value(inst2));
+			speed_pt = tpointinst_speed(inst1, inst2, func);
+			p3k.x = tmp_pk.x; p3k.y = tmp_pk.y; p3k.z = speed_pt;
+			/* 3D distance computation */
+			tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
+			if (tmp > d)
+			{
+				/* record the maximum */
+				d = tmp;
+				pk = tmp_pk;
+				*delta_speed = fabs(speed_seg - speed_pt);
+				*split = k;
+			}
+			inst1 = inst2;
+		}
+		*dist2d = distance2d_pt_seg(&pk, &pa, &pb);
+	}
+	else
+		*dist2d = -1;
+}
+
+static void
+tpointseq_dp_findsplit2d(const TemporalSeq *seq, int p1, int p2, int *split, double *dist)
 {
 	int k;
 	POINT2D pk, pa, pb;
@@ -3497,7 +3652,7 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, int *split, doubl
 			TemporalInst *inst = temporalseq_inst_n(seq, k);
 			pk = datum_get_point2d(temporalinst_value(inst));
 			/* distance computation */
-			tmp = distance2d_sqr_pt_seg(&pk, &pa, &pb);
+			tmp = distance2d_pt_seg(&pk, &pa, &pb);
 			if (tmp > d)
 			{
 				d = tmp;	/* record the maximum */
@@ -3510,8 +3665,20 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, int *split, doubl
 		*dist = -1;
 }
 
+/***********************************************************************/
+
+static int
+int_cmp(const void *a, const void *b)
+{
+	/* casting pointer types */
+	const int *ia = (const int *)a;
+	const int *ib = (const int *)b;
+	/* returns negative if b > a and positive if a > b */
+	return *ia - *ib;
+}
+
 TemporalSeq *
-tpointseq_simplify1(const TemporalSeq *seq, double epsilon, uint32_t minpts)
+tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, uint32_t minpts)
 {
 	static size_t stack_size = 256;
 	int *stack, *outlist; /* recursion stack */
@@ -3521,8 +3688,7 @@ tpointseq_simplify1(const TemporalSeq *seq, double epsilon, uint32_t minpts)
 	int p1, split;
 	uint32_t outn = 0;
 	uint32_t i;
-	double dist;
-	double eps_sqr = epsilon * epsilon;
+	double dist2d, delta_speed;
 
 	/* Do not try to simplify really short things */
 	if (seq->count < 3)
@@ -3547,8 +3713,22 @@ tpointseq_simplify1(const TemporalSeq *seq, double epsilon, uint32_t minpts)
 	outlist[outn++] = 0;
 	do
 	{
-		tpointseq_dp_findsplit(seq, p1, stack[sp], &split, &dist);
-		if ((dist > eps_sqr) || ((outn + sp+1 < minpts) && (dist >= 0)))
+		bool dosplit;
+		if (eps_speed >= 0)
+		{
+			/* Simplification with distance and delta speed */
+			tpointseq_dp_findsplit3d(seq, p1, stack[sp], &split, &dist2d, &delta_speed);
+			dosplit = (dist2d >= 0 &&
+				(dist2d > eps_dist || delta_speed > eps_speed || outn + sp + 1 < minpts));
+		}
+		else
+		{
+			/* Simplification only with distance */
+			tpointseq_dp_findsplit2d(seq, p1, stack[sp], &split, &dist2d);
+			dosplit = (dist2d > eps_dist || (outn + sp + 1 < minpts && dist2d >= 0));
+		}
+		tpointseq_dp_findsplit3d(seq, p1, stack[sp], &split, &dist2d, &delta_speed);
+		if (dosplit)
 			stack[++sp] = split;
 		else
 		{
@@ -3577,31 +3757,35 @@ tpointseq_simplify1(const TemporalSeq *seq, double epsilon, uint32_t minpts)
 	return result;
 }
 
-TemporalSeq *
-tpointseq_simplify(const TemporalSeq *seq, double epsilon, int preserve_collapsed)
+TemporalS *
+tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_t minpts)
 {
-	/* Instantaneous sequence */
-	if (seq->count == 1)
-		return preserve_collapsed ? temporalseq_copy(seq) : NULL;
-
-	TemporalSeq *result = tpointseq_simplify1(seq, epsilon, 2);
-	/* Invalid output */
-	if (result->count == 1 && !preserve_collapsed)
+	TemporalSeq *seq;
+	TemporalS *result;
+	/* Singleton sequence set */
+	if (ts->count == 1)
 	{
-		pfree(result);
-		return NULL;
-	}
-	/* Duped output, force collapse */
-	if (result->count == 2 && !preserve_collapsed)
-	{
-		Datum value1 = temporalinst_value(temporalseq_inst_n(result, 0));
-		Datum value2 = temporalinst_value(temporalseq_inst_n(result, 1));
-		if (datum_eq(value1, value2, seq->valuetypid))
-		{
-			pfree(result);
+		seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
+		if (seq == NULL)
 			return NULL;
-		}
+		result = temporals_make(&seq, 1, false);
+		pfree(seq);
+		return result;
 	}
+
+	/* General case */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		seq = tpointseq_simplify(temporals_seq_n(ts, i), eps_dist, eps_speed, minpts);
+		if (seq != NULL)
+			sequences[k++] = seq;
+	}
+	result = temporals_make(sequences, k, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -3611,52 +3795,25 @@ Datum
 tpoint_simplify2d(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	double dist = PG_GETARG_FLOAT8(1);
-	bool preserve_collapsed = false;
-	/* Handle optional argument to preserve collapsed features */
-	if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
-		preserve_collapsed = true;
+	double eps_dist = PG_GETARG_FLOAT8(1);
+	double eps_speed = PG_GETARG_FLOAT8(2);
+	ensure_has_not_Z_tpoint(temp);
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST || temp->duration == TEMPORALI ||
 		! MOBDB_FLAGS_GET_LINEAR(temp->flags))
 		result = temporal_copy(temp);
-	else // if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *) tpointseq_simplify((TemporalSeq *)temp, dist, preserve_collapsed);
-//	else /* temp->duration == TEMPORALS */
-//		result = (Temporal *) tpoints_simplify((TemporalS *)temp, dist, preserve_collapsed);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *) tpointseq_simplify((TemporalSeq *)temp,
+			eps_dist, eps_speed, 2);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *) tpoints_simplify((TemporalS *)temp,
+			eps_dist, eps_speed, 2);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
-
-/*
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 1));
-"LINESTRING(0 0,0 1)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 1.1));
-"LINESTRING(0 0,0 1)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1)', 5));
-"LINESTRING(0 0,0 1)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 0.9));
-"LINESTRING(0 0,0 1,0 0)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 1));
-null
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 0,0 1,0 0)', 1.1));
-null
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 1.1));
-"LINESTRING(0 4,1 1,2 3,3 1,4 3,5 0,6 4)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 1.5));
-"LINESTRING(0 4,1 1,4 3,5 0,6 4)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 2));
-"LINESTRING(0 4,5 0,6 4)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4)', 5));
-"LINESTRING(0 4,6 4)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4,0 4)', 5));
-"LINESTRING(0 4,5 0,0 4)"
-SELECT ST_AsText(ST_Simplify(geometry 'Linestring(0 4,1 1,2 3,3 1,4 3,5 0,6 4,0 4)', 10));
-NULL
-*/
 
 /*****************************************************************************//*****************************************************************************/
