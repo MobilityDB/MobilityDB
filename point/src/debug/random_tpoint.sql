@@ -2,9 +2,9 @@
 -- STBox Type
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_stbox(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float, 
-	lowt timestamptz, hight timestamptz, maxsize float, maxminutes int) 
+CREATE OR REPLACE FUNCTION random_stbox(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float,
+	lowt timestamptz, hight timestamptz, maxsize float, maxminutes int)
 	RETURNS stbox AS $$
 DECLARE
 	xmin float;
@@ -16,8 +16,8 @@ BEGIN
 	ymin = random_float(lowy, highy);
 	zmin = random_float(lowz, highz);
 	tmin = random_timestamptz(lowt, hight);
-	RETURN stbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize), 
-		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize), 
+	RETURN stbox(xmin, ymin, zmin, tmin, xmin + random_float(1, maxsize),
+		ymin + random_float(1, maxsize), zmin + random_float(1, maxsize),
 		tmin + random_minutes(1, maxminutes));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -51,8 +51,8 @@ $$ LANGUAGE 'plpgsql' STRICT;
 -- Geometry/Geography
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geompoint(lowx float, highx float, 
-	lowy float, highy float) 
+CREATE OR REPLACE FUNCTION random_geompoint(lowx float, highx float,
+	lowy float, highy float)
 	RETURNS geometry AS $$
 BEGIN
 	RETURN st_point(random_float(lowx, highx), random_float(lowy, highy));
@@ -68,8 +68,8 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geompoint3D(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float) 
+CREATE OR REPLACE FUNCTION random_geompoint3D(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float)
 	RETURNS geometry AS $$
 BEGIN
 	RETURN st_makepoint(random_float(lowx, highx), random_float(lowy, highy), random_float(lowz, highz));
@@ -85,8 +85,8 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogpoint(lowx float, highx float, 
-	lowy float, highy float) 
+CREATE OR REPLACE FUNCTION random_geogpoint(lowx float, highx float,
+	lowy float, highy float)
 	RETURNS geography AS $$
 BEGIN
 	RETURN st_setsrid(st_point(random_float(lowx, highx), random_float(lowy, highy)),4326);
@@ -102,8 +102,8 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogpoint3D(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float) 
+CREATE OR REPLACE FUNCTION random_geogpoint3D(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float)
 	RETURNS geography AS $$
 BEGIN
 	RETURN st_setsrid(st_makepoint(random_float(lowx, highx), random_float(lowy, highy), random_float(lowz, highz)),4326);
@@ -118,9 +118,9 @@ SELECT k, st_astext(random_geogpoint3D(0, 90, 0, 90, 0, 90))
 FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
-		
-CREATE OR REPLACE FUNCTION random_geomlinestring(lowx float, highx float, 
-		lowy float, highy float, maxvertices int) 
+
+CREATE OR REPLACE FUNCTION random_geomlinestring(lowx float, highx float,
+		lowy float, highy float, maxvertices int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -145,9 +145,9 @@ SELECT k, random_geomlinestring(0, 100, 0, 100, 10) AS g
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
-		
-CREATE OR REPLACE FUNCTION random_geomlinestring3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int) 
+
+CREATE OR REPLACE FUNCTION random_geomlinestring3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -172,9 +172,9 @@ SELECT k, random_geomlinestring3D(0, 100, 0, 100, 0, 100, 10) AS g
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
-		
-CREATE OR REPLACE FUNCTION random_geoglinestring(lowx float, highx float, 
-		lowy float, highy float, maxvertices int) 
+
+CREATE OR REPLACE FUNCTION random_geoglinestring(lowx float, highx float,
+		lowy float, highy float, maxvertices int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -196,9 +196,9 @@ SELECT k, random_geoglinestring(0, 80, 0, 80, 10) AS g
 FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
-		
-CREATE OR REPLACE FUNCTION random_geoglinestring3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int) 
+
+CREATE OR REPLACE FUNCTION random_geoglinestring3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -221,7 +221,7 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geompolygon(lowx float, highx float, 
+CREATE OR REPLACE FUNCTION random_geompolygon(lowx float, highx float,
 	lowy float, highy float, maxvertices int)
 	RETURNS geometry AS $$
 DECLARE
@@ -230,7 +230,7 @@ DECLARE
 	valid geometry;
 BEGIN
 	noVertices = random_int(3, maxvertices);
-	for i in 1..noVertices 
+	for i in 1..noVertices
 	loop
 		pointarr[i] = random_geompoint(lowx, highx, lowy, highy);
 	end loop;
@@ -251,7 +251,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geompolygon3D(lowx float, highx float, 
+CREATE OR REPLACE FUNCTION random_geompolygon3D(lowx float, highx float,
 	lowy float, highy float, lowz float, highz float, maxvertices int)
 	RETURNS geometry AS $$
 DECLARE
@@ -260,7 +260,7 @@ DECLARE
 	valid geometry;
 BEGIN
 	noVertices = random_int(3, maxvertices);
-	for i in 1..noVertices 
+	for i in 1..noVertices
 	loop
 		pointarr[i] = random_geompoint3D(lowx, highx, lowy, highy, lowz, highz);
 	end loop;
@@ -281,7 +281,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogpolygon(lowx float, highx float, 
+CREATE OR REPLACE FUNCTION random_geogpolygon(lowx float, highx float,
 	lowy float, highy float, maxvertices int)
 	RETURNS geography AS $$
 DECLARE
@@ -290,7 +290,7 @@ DECLARE
 	t timestamptz;
 BEGIN
 	noVertices = random_int(3, maxvertices);
-	for i in 1..noVertices 
+	for i in 1..noVertices
 	loop
 		pointarr[i] = random_geompoint(lowx, highx, lowy, highy);
 	end loop;
@@ -311,7 +311,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogpolygon3D(lowx float, highx float, 
+CREATE OR REPLACE FUNCTION random_geogpolygon3D(lowx float, highx float,
 	lowy float, highy float, lowz float, highz float, maxvertices int)
 	RETURNS geography AS $$
 DECLARE
@@ -320,7 +320,7 @@ DECLARE
 	t timestamptz;
 BEGIN
 	noVertices = random_int(3, maxvertices);
-	for i in 1..noVertices 
+	for i in 1..noVertices
 	loop
 		pointarr[i] = random_geompoint3D(lowx, highx, lowy, highy, lowz, highz);
 	end loop;
@@ -341,8 +341,8 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultipoint(lowx float, highx float, 
-		lowy float, highy float, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultipoint(lowx float, highx float,
+		lowy float, highy float, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -362,8 +362,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultipoint3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultipoint3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -383,8 +383,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultipoint(lowx float, highx float, 
-		lowy float, highy float, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultipoint(lowx float, highx float,
+		lowy float, highy float, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -404,8 +404,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultipoint3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultipoint3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -425,8 +425,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultilinestring(lowx float, highx float, 
-		lowy float, highy float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultilinestring(lowx float, highx float,
+		lowy float, highy float, maxvertices int, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -449,8 +449,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultilinestring3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultilinestring3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -473,8 +473,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultilinestring(lowx float, highx float, 
-		lowy float, highy float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultilinestring(lowx float, highx float,
+		lowy float, highy float, maxvertices int, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -497,8 +497,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultilinestring3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultilinestring3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -521,8 +521,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultipolygon(lowx float, highx float, 
-		lowy float, highy float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultipolygon(lowx float, highx float,
+		lowy float, highy float, maxvertices int, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -545,8 +545,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geommultipolygon3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geommultipolygon3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int)
 	RETURNS geometry AS $$
 DECLARE
 	result geometry[];
@@ -569,8 +569,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultipolygon(lowx float, highx float, 
-		lowy float, highy float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultipolygon(lowx float, highx float,
+		lowy float, highy float, maxvertices int, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -593,8 +593,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_geogmultipolygon3D(lowx float, highx float, 
-		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_geogmultipolygon3D(lowx float, highx float,
+		lowy float, highy float, lowz float, highz float, maxvertices int, maxcard int)
 	RETURNS geography AS $$
 DECLARE
 	result geometry[];
@@ -619,8 +619,8 @@ FROM generate_series (1, 15) AS k;
 -- Temporal Instant
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompointinst(lowx float, highx float, 
-	lowy float, highy float, lowtime timestamptz, hightime timestamptz) 
+CREATE OR REPLACE FUNCTION random_tgeompointinst(lowx float, highx float,
+	lowy float, highy float, lowtime timestamptz, hightime timestamptz)
 	RETURNS tgeompoint AS $$
 BEGIN
 	RETURN tgeompointinst(random_geompoint(lowx, highx, lowy, highy), random_timestamptz(lowtime, hightime));
@@ -633,8 +633,8 @@ FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompoint3Dinst(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float, lowtime timestamptz, hightime timestamptz) 
+CREATE OR REPLACE FUNCTION random_tgeompoint3Dinst(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float, lowtime timestamptz, hightime timestamptz)
 	RETURNS tgeompoint AS $$
 BEGIN
 	RETURN tgeompointinst(random_geompoint3D(lowx, highx, lowy, highy, lowz, highz), random_timestamptz(lowtime, hightime));
@@ -647,8 +647,8 @@ FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpointinst(lowx float, highx float, 
-	lowy float, highy float, lowtime timestamptz, hightime timestamptz) 
+CREATE OR REPLACE FUNCTION random_tgeogpointinst(lowx float, highx float,
+	lowy float, highy float, lowtime timestamptz, hightime timestamptz)
 	RETURNS tgeogpoint AS $$
 BEGIN
 	RETURN tgeogpointinst(random_geogpoint(lowx, highx, lowy, highy), random_timestamptz(lowtime, hightime));
@@ -661,8 +661,8 @@ FROM generate_series(1,10) k;
 */
 ------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpoint3Dinst(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float, lowtime timestamptz, hightime timestamptz) 
+CREATE OR REPLACE FUNCTION random_tgeogpoint3Dinst(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float, lowtime timestamptz, hightime timestamptz)
 	RETURNS tgeogpoint AS $$
 BEGIN
 	RETURN tgeogpointinst(random_geogpoint3D(lowx, highx, lowy, highy, lowz, highz), random_timestamptz(lowtime, hightime));
@@ -677,7 +677,7 @@ FROM generate_series(1,10) k;
 -- Temporal Instant Set
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompointi(lowx float, highx float, lowy float, highy float, 
+CREATE OR REPLACE FUNCTION random_tgeompointi(lowx float, highx float, lowy float, highy float,
 	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
@@ -687,7 +687,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		result[i] = tgeompointinst(random_geompoint(lowx, highx, lowy, highy), t);
 		t = t + random_minutes(1, maxminutes);
@@ -705,7 +705,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompoint3Di(lowx float, highx float, lowy float, highy float, 
+CREATE OR REPLACE FUNCTION random_tgeompoint3Di(lowx float, highx float, lowy float, highy float,
 	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
@@ -715,7 +715,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		result[i] = tgeompointinst(random_geompoint3D(lowx, highx, lowy, highy, lowz, highz), t);
 		t = t + random_minutes(1, maxminutes);
@@ -733,7 +733,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpointi(lowx float, highx float, lowy float, highy float, 
+CREATE OR REPLACE FUNCTION random_tgeogpointi(lowx float, highx float, lowy float, highy float,
 	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
@@ -743,7 +743,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		result[i] = tgeogpointinst(random_geogpoint(lowx, highx, lowy, highy), t);
 		t = t + random_minutes(1, maxminutes);
@@ -761,7 +761,7 @@ FROM generate_series(1,10) k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpoint3Di(lowx float, highx float, lowy float, highy float, 
+CREATE OR REPLACE FUNCTION random_tgeogpoint3Di(lowx float, highx float, lowy float, highy float,
 	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
@@ -771,7 +771,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		result[i] = tgeogpointinst(random_geogpoint3D(lowx, highx, lowy, highy, lowz, highz), t);
 		t = t + random_minutes(1, maxminutes);
@@ -791,8 +791,8 @@ FROM generate_series(1,10) k;
 -- Temporal Sequence
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompointseq(lowx float, highx float, lowy float, highy float, 
-	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeompointseq(lowx float, highx float, lowy float, highy float,
+	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
 	result tgeompoint[];
@@ -812,7 +812,7 @@ BEGIN
 		upper_inc = random() > 0.5;
 	end if;
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tgeompointinst(random_geompoint(lowx, highx, lowy, highy), t1);
@@ -828,10 +828,74 @@ FROM generate_series (1, 15) AS k;
 SELECT k, asText(random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10))
 FROM generate_series (1, 15) AS k;
 */
+
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompoint3Dseq(lowx float, highx float, lowy float, highy float, 
-	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int) 
+/* Alternative version where each composing point is obtained by adding to the
+previous one at most +- maxdist units in each dimension  */
+/*
+CREATE OR REPLACE FUNCTION random_tgeompointseq(lowx float, highx float, lowy float, highy float,
+	lowtime timestamptz, hightime timestamptz, maxdist float, maxminutes int, maxcard int)
+	RETURNS tgeompoint AS $$
+DECLARE
+	result tgeompoint[];
+	card int;
+	t1 timestamptz;
+	p1 geometry;
+	x1 float;
+	y1 float;
+	dist float;
+	v1 geometry;
+	v2 geometry;
+	lower_inc boolean;
+	upper_inc boolean;
+BEGIN
+	card = random_int(1, maxcard);
+	if card = 1 then
+		lower_inc = true;
+		upper_inc = true;
+	else
+		lower_inc = random() > 0.5;
+		upper_inc = random() > 0.5;
+	end if;
+	t1 = random_timestamptz(lowtime, hightime);
+	p1 = random_geompoint(lowx, highx, lowy, highy);
+	x1 = ST_X(p1);
+	y1 = ST_Y(p1);
+	for i in 1..card
+	loop
+		t1 = t1 + random_minutes(1, maxminutes);
+		dist = random_float(-1 * maxdist, maxdist);
+		if (x1 + dist >= lowx and x1 + dist <= highx) THEN
+			x1 = x1 + dist;
+		else
+			x1 = x1 - dist;
+		end if;
+		if (y1 + dist >= lowy and y1 + dist <= highy) THEN
+			y1 = y1 + dist;
+		else
+			y1 = y1 - dist;
+		end if;
+		p1 = ST_Point(x1,y1);
+		result[i] = tgeompointinst(p1, t1);
+	end loop;
+	RETURN tgeompointseq(result, lower_inc, upper_inc);
+END;
+$$ LANGUAGE 'plpgsql' STRICT;
+*/
+
+/*
+SELECT k, random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10) AS seq
+FROM generate_series (1, 15) AS k;
+
+SELECT k, asText(random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))
+FROM generate_series (1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION random_tgeompoint3Dseq(lowx float, highx float, lowy float, highy float,
+	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
 	result tgeompoint[];
@@ -851,7 +915,7 @@ BEGIN
 		upper_inc = random() > 0.5;
 	end if;
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tgeompointinst(random_geompoint3D(lowx, highx, lowy, highy, lowz, highz), t1);
@@ -869,8 +933,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpointseq(lowx float, highx float, lowy float, highy float, 
-	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeogpointseq(lowx float, highx float, lowy float, highy float,
+	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
 	result tgeogpoint[];
@@ -888,7 +952,7 @@ BEGIN
 		upper_inc = random() > 0.5;
 	end if;
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tgeogpointinst(random_geogpoint(lowx, highx, lowy, highy), t1);
@@ -906,8 +970,8 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpoint3Dseq(lowx float, highx float, lowy float, highy float, 
-	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeogpoint3Dseq(lowx float, highx float, lowy float, highy float,
+	lowz float, highz float, lowtime timestamptz, hightime timestamptz, maxminutes int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
 	result tgeogpoint[];
@@ -925,7 +989,7 @@ BEGIN
 		upper_inc = random() > 0.5;
 	end if;
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		t1 = t1 + random_minutes(1, maxminutes);
 		result[i] = tgeogpointinst(random_geogpoint3D(lowx, highx, lowy, highy, lowz, highz), t1);
@@ -945,9 +1009,9 @@ FROM generate_series (1, 15) AS k;
 -- Temporal Sequence Set
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompoints(lowx float, highx float, lowy float, highy float, 
-	lowtime timestamptz, hightime timestamptz, 
-	maxminutes int, maxcardseq int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeompoints(lowx float, highx float, lowy float, highy float,
+	lowtime timestamptz, hightime timestamptz,
+	maxminutes int, maxcardseq int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
 	result tgeompoint[];
@@ -960,7 +1024,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		cardseq = random_int(1, maxcardseq);
 		if cardseq = 1 then
@@ -992,9 +1056,9 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeompoint3Ds(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float, 
-	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcardseq int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeompoint3Ds(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float,
+	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcardseq int, maxcard int)
 	RETURNS tgeompoint AS $$
 DECLARE
 	result tgeompoint[];
@@ -1007,7 +1071,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		cardseq = random_int(1, maxcardseq);
 		if cardseq = 1 then
@@ -1037,7 +1101,7 @@ FROM generate_series (1, 15) AS k;
 SELECT k, asText(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, numSequences(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) 
+SELECT k, numSequences(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))
 FROM generate_series (1, 15) AS k;
 
 SELECT k, asText(endSequence(random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts
@@ -1045,9 +1109,9 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpoints(lowx float, highx float, lowy float, highy float, 
-	lowtime timestamptz, hightime timestamptz, 
-	maxminutes int, maxcardseq int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeogpoints(lowx float, highx float, lowy float, highy float,
+	lowtime timestamptz, hightime timestamptz,
+	maxminutes int, maxcardseq int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
 	result tgeogpoint[];
@@ -1060,7 +1124,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		cardseq = random_int(1, maxcardseq);
 		if cardseq = 1 then
@@ -1089,9 +1153,9 @@ FROM generate_series (1, 15) AS k;
 */
 -------------------------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION random_tgeogpoint3Ds(lowx float, highx float, 
-	lowy float, highy float, lowz float, highz float, 
-	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcardseq int, maxcard int) 
+CREATE OR REPLACE FUNCTION random_tgeogpoint3Ds(lowx float, highx float,
+	lowy float, highy float, lowz float, highz float,
+	lowtime timestamptz, hightime timestamptz, maxminutes int, maxcardseq int, maxcard int)
 	RETURNS tgeogpoint AS $$
 DECLARE
 	result tgeogpoint[];
@@ -1104,7 +1168,7 @@ DECLARE
 BEGIN
 	card = random_int(1, maxcard);
 	t1 = random_timestamptz(lowtime, hightime);
-	for i in 1..card 
+	for i in 1..card
 	loop
 		cardseq = random_int(1, maxcardseq);
 		if cardseq = 1 then
@@ -1134,7 +1198,7 @@ FROM generate_series (1, 15) AS k;
 SELECT k, asText(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) AS ts
 FROM generate_series (1, 15) AS k;
 
-SELECT k, numSequences(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10)) 
+SELECT k, numSequences(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))
 FROM generate_series (1, 15) AS k;
 
 SELECT k, asText(endSequence(random_tgeogpoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 10))) AS ts

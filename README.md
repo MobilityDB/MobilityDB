@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/ULB-CoDE-WIT/MobilityDB.svg?branch=master)](https://travis-ci.com/ULB-CoDE-WIT/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/ULB-CoDE-WIT/MobilityDB/badge.svg)](https://coveralls.io/github/ULB-CoDE-WIT/MobilityDB)
 
 MobilityDB
-=======
+==========
 
 <img src="doc/images/mobilitydb-logo.svg" width="200" alt="MobilityDB Logo" />
 
@@ -82,8 +82,14 @@ Please report any issues at the address
 
 https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 
-Manual
-------
+Documentation
+-------------
+
+Please notice that due to unexpected events the documentation is currently unavailable. We are working on a solution.
+
+You can generate the manual and the workshop from the sources.
+
+### Manual
 
 HTML: https://docs.mobilitydb.com/MobilityDB/master/
 
@@ -91,8 +97,7 @@ PDF: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.pdf
 
 EPUB: https://docs.mobilitydb.com/MobilityDB/master/mobilitydb.epub
 
-Workshop
---------
+### Workshop
 
 HTML: https://docs.mobilitydb.com/MobilityDB/master/workshop/
 
@@ -100,15 +105,14 @@ PDF: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.pdf
 
 EPUB: https://docs.mobilitydb.com/MobilityDB/master/workshop/workshop.epub
 
-Publications
-------------
+### Publications
+
 * Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial 2019. [Slides](https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf).
 * Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, [MobilityDB: A Mainstream Moving Object Database System](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19.pdf). In [Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019, p. 206-209](https://dl.acm.org/citation.cfm?id=3340991). ACM. [Best Demo Paper Award](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_BDPA.pdf). [Poster](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_Poster.pdf)
 * Alejandro A. Vaisman, Esteban Zimányi:
 [Mobility Data Warehouses](https://docs.mobilitydb.com/pub/MobilityDW_IJGI19.pdf). [ISPRS International Journal of Geo-Information, 8(4): 170, 2019](https://www.mdpi.com/2220-9964/8/4/170).
 
-Presentations
--------------
+### Presentations
 
 * [Extending PostgreSQL With Spatiotemporal Data Management](https://docs.mobilitydb.com/pub/MobilityDB-Russia-2020.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020, Moscow, Russia
 * [Road public transport in Moscow analysis: from PostGIS to MobilityDB](https://docs.mobilitydb.com/pub/MoscowPublicTransport_MobilityDB_en.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 4, 2020, Moscow, Russia,
@@ -117,8 +121,7 @@ Presentations
 * [MobilityDB: A PostgreSQL-PostGIS extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_FOSS4G_Brussels_2019.pdf), [FOSS4G Belgium](https://2019.foss4g.be/en/programme.php), 2019.
 * [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
 
-Forthcoming Presentations
--------------------------
+### Forthcoming Presentations
 
 * MobilityDB: A Spatiotemporal Data Management Extension of PostgreSQL and PostGIS, [Postgres Conference](https://postgresconf.org/conferences/2020/program/proposals/mobilitydb-extending-postgresql-to-manage-spatiotemporal-features), March 24, 2020, New York, USA
 * MobilityDB: Managing Mobility Data in PostgreSQL, Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark
