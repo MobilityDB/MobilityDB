@@ -1012,3 +1012,34 @@ SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'))
 
 -------------------------------------------------------------------------------
 
+-- Only distance specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4)));
+-- Both distance and delta speed specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 1 / 1e5)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e5)));
+
+-- Only distance specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
+	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
+	Point(4 3 4)@2000-01-05, Point(5 0 5)@2000-01-06, Point(6 4 6)@2000-01-07]', 1.5)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
+	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
+	Point(4 3 4)@2000-01-05, Point(5 0 5)@2000-01-06, Point(6 4 6)@2000-01-07]', 4)));
+-- Both distance and delta speed specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
+	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
+	Point(4 3 4)@2000-01-05, Point(5 0 5)@2000-01-06, Point(6 4 6)@2000-01-07]', 4, 1 / 1e5)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
+	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
+	Point(4 3 4)@2000-01-05, Point(5 0 5)@2000-01-06, Point(6 4 6)@2000-01-07]', 4, 3 / 1e5)));
+
+-------------------------------------------------------------------------------

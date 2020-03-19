@@ -3479,6 +3479,8 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
  * sqrt( x^2 + y^2 + z^2 ) 	= sqrt( x^2( 1 + y^2/x^2 + z^2/x^2) )
  * 							= x * sqrt( 1 + y^2/x^2 + z^2/x^2)
  * 					 		= x * sqrt( 1 + y/x * y/x + z/x * z/x)
+ *
+ * A similar solution is used for the 4D hypotenuse
  *-----------------------------------------------------------------------
  */
 double
@@ -3489,7 +3491,7 @@ hypot3d(double x, double y, double z)
 	double		temp;
 
 	/* Handle INF and NaN properly */
-	if (isinf(x) || isinf(y)|| isinf(z))
+	if (isinf(x) || isinf(y) || isinf(z))
 		return get_float8_infinity();
 
 	if (isnan(x) || isnan(y) || isnan(z))
@@ -3527,138 +3529,255 @@ hypot3d(double x, double y, double z)
 	return x * sqrt(1.0 + (yx * yx) + (zx * zx));
 }
 
-#define DOT(u,v)   ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
-
-POINT3DZ
-sub(POINT3DZ point1, POINT3DZ point2)
-{
-	POINT3DZ	   result;
-
-	result.x = point1.x - point2.x;
-	result.y = point1.y - point2.y;
-	result.z = point1.z - point2.z;
-	return result;
-}
-
-POINT3DZ
-cross(POINT3DZ point1, POINT3DZ point2)
-{
-	POINT3DZ	   result;
-
-    result.x = point1.y * point2.z - point1.z * point2.y;
-	result.y = point1.z * point2.x - point1.x * point2.z;
-	result.z = point1.x * point2.y - point1.y * point2.x;
-	return result;
-}
-
-/* 3D Distance between a 3D point and a 3D line segment
- * See http://geomalgorithms.com/a02-_lines.html */
 double
-dist3d_pt_seg(POINT3DZ *point, POINT3DZ *A, POINT3DZ *B)
+hypot4d(double x, double y, double z, double m)
 {
-	POINT3DZ	v,
-				w0,
-				w1,
-				c;
+	double		yx;
+	double		zx;
+	double		mx;
+	double		temp;
 
-	v = sub(*B, *A);
-	w0 = sub(*point, *A);
+	/* Handle INF and NaN properly */
+	if (isinf(x) || isinf(y) || isinf(z) || isinf(m))
+		return get_float8_infinity();
 
-	if (DOT(w0, v) <= 0.0)
-		// Point is lagging behind start of the segment, so perpendicular distance is not viable.
-		// Use distance to start of segment instead.
-		return hypot3d(w0.x, w0.y, w0.z);
+	if (isnan(x) || isnan(y) || isnan(z) || isnan(m))
+		return get_float8_nan();
 
-	w1 = sub(*point, *B);
+	/* Else, drop any minus signs */
+	x = fabs(x);
+	y = fabs(y);
+	z = fabs(z);
+	m = fabs(m);
 
-	if (DOT(w1, v) >= 0.0)
-		// Point is advanced past the end of the segment, so perpendicular distance is not viable.
-		// Use distance to end of the segment instead.
-		return hypot3d(w1.x, w1.y, w1.z);
+	/* Swap x, y, z, and m if needed to make x the larger one */
+	if (x < y)
+	{
+		temp = x;
+		x = y;
+		y = temp;
+	}
+	if (x < z)
+	{
+		temp = x;
+		x = z;
+		z = temp;
+	}
+	if (x < m)
+	{
+		temp = x;
+		x = m;
+		m = temp;
+	}
+	/*
+	 * If x is zero, the hypotenuse is computed with the 3D case.
+	 * This test saves a few cycles in such cases, but more importantly
+	 * it also protects against divide-by-zero errors, since now x >= y.
+	 */
+	if (x == 0)
+		return hypot3d(y, z, m);
 
-	// Perpendicular distance of point to segment.
-	c = cross(v, w0);
-	return hypot3d(c.x, c.y, c.z) / hypot3d(v.x, v.y, v.z);
+	/* Determine the hypotenuse */
+	yx = y / x;
+	zx = z / x;
+	mx = m / x;
+	return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
+}
+
+double
+dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
+{
+	double dx = p2->x - p1->x;
+	double dy = p2->y - p1->y;
+	return hypot(dx, dy);
+}
+
+double
+dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
+{
+	double dx = p2->x - p1->x;
+	double dy = p2->y - p1->y;
+	double dz = p2->z - p1->z;
+	return hypot3d(dx, dy, dz);
+}
+
+double
+dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
+{
+	double dx = p2->x - p1->x;
+	double dy = p2->y - p1->y;
+	double dz = p2->z - p1->z;
+	double dm = p2->m - p1->m;
+	return hypot4d(dx, dy, dz, dm);
+}
+
+/* Distance between a 2D/3D/4D point and a 2/3D/4D line segment
+ * Derived from PostGIS functions lw_dist2d_pt_seg in file measures.c
+ * and lw_dist3d_pt_seg in file measures3d.c
+ * See also http://geomalgorithms.com/a02-_lines.html */
+
+double
+dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
+{
+	POINT2D c;
+	double	r;
+	/* If start==end, then use pt distance */
+	if (A->x == B->x && A->y == B->y)
+		return dist2d_pt_pt(p, A);
+
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
+
+	if (r < 0)	/* If the first vertex A is closest to the point p */
+		return dist2d_pt_pt(p, A);
+	if (r > 1)	/* If the second vertex B is closest to the point p */
+		return dist2d_pt_pt(p, B);
+
+	/* else if the point p is closer to some point between a and b
+	then we find that point and send it to dist2d_pt_pt */
+	c.x = A->x + r * (B->x - A->x);
+	c.y = A->y + r * (B->y - A->y);
+
+	return dist2d_pt_pt(p, &c);
+}
+
+double
+dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
+{
+	POINT3DZ c;
+	double	r;
+	/* If start==end, then use pt distance */
+	if (A->x == B->x && A->y == B->y && A->z == B->z)
+		return dist3d_pt_pt(p, A);
+
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + (p->z-A->z) * (B->z-A->z) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + (B->z-A->z) * (B->z-A->z) );
+
+	if (r < 0)	/* If the first vertex A is closest to the point p */
+		return dist3d_pt_pt(p, A);
+	if (r > 1)	/* If the second vertex B is closest to the point p */
+		return dist3d_pt_pt(p, B);
+
+	/* else if the point p is closer to some point between a and b
+	then we find that point and send it to dist3d_pt_pt */
+	c.x = A->x + r * (B->x - A->x);
+	c.y = A->y + r * (B->y - A->y);
+	c.z = A->z + r * (B->z - A->z);
+
+	return dist3d_pt_pt(p, &c);
+}
+
+double
+dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
+{
+	POINT4D c;
+	double	r;
+	/* If start==end, then use pt distance */
+	if (A->x == B->x && A->y == B->y && A->z == B->z && A->m == B->m)
+		return dist4d_pt_pt(p, A);
+
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) + (p->z-A->z) * (B->z-A->z) + (p->m-A->m) * (B->m-A->m) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) + (B->z-A->z) * (B->z-A->z) + (B->m-A->m) * (B->m-A->m) );
+
+	if (r < 0)	/* If the first vertex A is closest to the point p */
+		return dist4d_pt_pt(p, A);
+	if (r > 1)	/* If the second vertex B is closest to the point p */
+		return dist4d_pt_pt(p, B);
+
+	/* else if the point p is closer to some point between a and b
+	then we find that point and send it to dist3d_pt_pt */
+	c.x = A->x + r * (B->x - A->x);
+	c.y = A->y + r * (B->y - A->y);
+	c.z = A->z + r * (B->z - A->z);
+	c.m = A->m + r * (B->m - A->m);
+
+	return dist4d_pt_pt(p, &c);
 }
 
 static void
-tpointseq_dp_findsplit3d(const TemporalSeq *seq, int p1, int p2, int *split,
-	double *dist2d, double *delta_speed)
+tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
+	int *split, double *dist, double *delta_speed)
 {
 	int k;
-	POINT2D pk, tmp_pk, pa, pb;
-	POINT3DZ p3k, p3a, p3b;
-	double tmp, d, speed_seg, speed_pt;
+	POINT2D p2k, p2k_tmp, p2a, p2b;
+	POINT3DZ p3k, p3k_tmp, p3a, p3b;
+	POINT4D p4k, p4a, p4b;
+	double d_tmp, d, speed_seg, speed_pt;
+	bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
 	*split = p1;
 	d = -1;
 	if (p1 + 1 < p2)
 	{
 		Datum (*func)(Datum, Datum);
-		ensure_point_base_type(seq->valuetypid);
-		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
-				&geom_distance2d;
-		else
-			func = &geog_distance;
-
+		if (withspeed)
+			func = hasz ? &geom_distance3d : &geom_distance2d;
 		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
-		pa = datum_get_point2d(temporalinst_value(inst1));
-		pb = datum_get_point2d(temporalinst_value(inst2));
-		speed_seg = tpointinst_speed(inst1, inst2, func);
-		p3a.x = pa.x; p3a.y = pa.y; p3a.z = speed_seg;
-		p3b.x = pb.x; p3b.y = pb.y; p3b.z = speed_seg;
+		if (withspeed)
+			speed_seg = tpointinst_speed(inst1, inst2, func);
+		if (hasz)
+		{
+			p3a = datum_get_point3dz(temporalinst_value(inst1));
+			p3b = datum_get_point3dz(temporalinst_value(inst2));
+			if (withspeed)
+			{
+				p4a.x = p3a.x; p4a.y = p3a.y; p4a.z = p3a.z; p4a.m = speed_seg;
+				p4b.x = p3b.x; p4b.y = p3b.y; p4b.z = p3b.z; p4b.m = speed_seg;
+			}
+		}
+		else
+		{
+			p2a = datum_get_point2d(temporalinst_value(inst1));
+			p2b = datum_get_point2d(temporalinst_value(inst2));
+			if (withspeed)
+			{
+				p3a.x = p2a.x; p3a.y = p2a.y; p3a.z = speed_seg;
+				p3b.x = p2b.x; p3b.y = p2b.y; p3b.z = speed_seg;
+			}
+		}
 		for (k = p1 + 1; k < p2; k++)
 		{
 			inst2 = temporalseq_inst_n(seq, k);
-			tmp_pk = datum_get_point2d(temporalinst_value(inst2));
-			speed_pt = tpointinst_speed(inst1, inst2, func);
-			p3k.x = tmp_pk.x; p3k.y = tmp_pk.y; p3k.z = speed_pt;
-			/* 3D distance computation */
-			tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
-			if (tmp > d)
+			if (withspeed)
+				speed_pt = tpointinst_speed(inst1, inst2, func);
+			if (hasz)
+			{
+				p3k_tmp = datum_get_point3dz(temporalinst_value(inst2));
+				if (withspeed)
+				{
+					p4k.x = p3k_tmp.x; p4k.y = p3k_tmp.y; p4k.z = p3k_tmp.z; p4k.m = speed_pt;
+					d_tmp = dist4d_pt_seg(&p4k, &p4a, &p4b);
+				}
+				else
+					d_tmp = dist3d_pt_seg(&p3k_tmp, &p3a, &p3b);
+			}
+			else
+			{
+				p2k_tmp = datum_get_point2d(temporalinst_value(inst2));
+				if (withspeed)
+				{
+					p3k.x = p2k_tmp.x; p3k.y = p2k_tmp.y; p3k.z = speed_pt;
+					d_tmp = dist3d_pt_seg(&p3k, &p3a, &p3b);
+				}
+				else
+					d_tmp = dist2d_pt_seg(&p2k_tmp, &p2a, &p2b);
+			}
+			if (d_tmp > d)
 			{
 				/* record the maximum */
-				d = tmp;
-				pk = tmp_pk;
-				*delta_speed = fabs(speed_seg - speed_pt);
+				d = d_tmp;
+				if (hasz)
+					p3k = p3k_tmp;
+				else
+					p2k = p2k_tmp;
+				if (withspeed)
+					*delta_speed = fabs(speed_seg - speed_pt);
 				*split = k;
 			}
 			inst1 = inst2;
 		}
-		*dist2d = distance2d_pt_seg(&pk, &pa, &pb);
-	}
-	else
-		*dist2d = -1;
-}
-
-static void
-tpointseq_dp_findsplit2d(const TemporalSeq *seq, int p1, int p2, int *split, double *dist)
-{
-	int k;
-	POINT2D pk, pa, pb;
-	double tmp, d;
-	*split = p1;
-	d = -1;
-	if (p1 + 1 < p2)
-	{
-		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
-		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
-		pa = datum_get_point2d(temporalinst_value(inst1));
-		pb = datum_get_point2d(temporalinst_value(inst2));
-		for (k = p1 + 1; k < p2; k++)
-		{
-			TemporalInst *inst = temporalseq_inst_n(seq, k);
-			pk = datum_get_point2d(temporalinst_value(inst));
-			/* distance computation */
-			tmp = distance2d_pt_seg(&pk, &pa, &pb);
-			if (tmp > d)
-			{
-				d = tmp;	/* record the maximum */
-				*split = k;
-			}
-		}
-		*dist = d;
+		*dist = hasz ? dist3d_pt_seg(&p3k, &p3a, &p3b) :
+				distance2d_pt_seg(&p2k, &p2a, &p2b);
 	}
 	else
 		*dist = -1;
@@ -3687,7 +3806,8 @@ tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, ui
 	int p1, split;
 	uint32_t outn = 0;
 	uint32_t i;
-	double dist2d, delta_speed;
+	double dist, delta_speed;
+	bool withspeed = eps_speed > 0;
 
 	/* Do not try to simplify really short things */
 	if (seq->count < 3)
@@ -3707,26 +3827,18 @@ tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, ui
 
 	p1 = 0;
 	stack[++sp] = seq->count - 1;
-
 	/* Add first point to output list */
 	outlist[outn++] = 0;
 	do
 	{
+		tpointseq_dp_findsplit(seq, p1, stack[sp], withspeed, &split, &dist, &delta_speed);
 		bool dosplit;
-		if (eps_speed >= 0)
-		{
-			/* Simplification with distance and delta speed */
-			tpointseq_dp_findsplit3d(seq, p1, stack[sp], &split, &dist2d, &delta_speed);
-			dosplit = (dist2d >= 0 &&
-				(dist2d > eps_dist || delta_speed > eps_speed || outn + sp + 1 < minpts));
-		}
+		if (withspeed)
+			dosplit = (dist >= 0 &&
+				(dist > eps_dist || delta_speed > eps_speed || outn + sp + 1 < minpts));
 		else
-		{
-			/* Simplification only with distance */
-			tpointseq_dp_findsplit2d(seq, p1, stack[sp], &split, &dist2d);
-			dosplit = (dist2d > eps_dist || (outn + sp + 1 < minpts && dist2d >= 0));
-		}
-		tpointseq_dp_findsplit3d(seq, p1, stack[sp], &split, &dist2d, &delta_speed);
+			dosplit = (dist >= 0 &&
+				(dist > eps_dist || outn + sp + 1 < minpts));
 		if (dosplit)
 			stack[++sp] = split;
 		else
@@ -3788,15 +3900,14 @@ tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_simplify2d);
+PG_FUNCTION_INFO_V1(tpoint_simplify);
 
 Datum
-tpoint_simplify2d(PG_FUNCTION_ARGS)
+tpoint_simplify(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	double eps_dist = PG_GETARG_FLOAT8(1);
 	double eps_speed = PG_GETARG_FLOAT8(2);
-	ensure_has_not_Z_tpoint(temp);
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);

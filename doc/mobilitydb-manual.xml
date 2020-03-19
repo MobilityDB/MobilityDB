@@ -2813,6 +2813,59 @@ SELECT ST_CPAWithin(
 				</listitem>
 
 				<listitem>
+					<para>Simplify a temporal point using a generalization of the Douglas-Peucker algorithm &Z_support;</para>
+					<para><varname>simplify(tpoint, float): tpoint</varname></para>
+					<para><varname>simplify(tpoint, float, float): tpoint</varname></para>
+					<para>The first version remove points that are less than the distance passed as second argument, which is specified in the units of the coordinate system. The second version remove points that are less than the distance passed as second argument provided that the speed difference between the point and the corresponding point in the simplified version is less than the speed passed as third argument, which is specified in units per second.</para>
+
+					<programlisting>
+-- Only distance specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
+-- "LINESTRING(0 4,1 1,4 3,5 0,6 4)"
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 2)));
+-- "LINESTRING(0 4,5 0,6 4)"
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4)));
+-- "LINESTRING(0 4,6 4)"
+
+-- Speed of the temporal point
+SELECT round(speed(tgeompoint '[Point(0 4)@2000-01-01, Point(1 1)@2000-01-02,
+Point(2 3)@2000-01-03, Point(3 1)@2000-01-04, Point(4 3)@2000-01-05,
+Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]') * 1e5, 2);
+-- "Interp=Stepwise;[3.66@2000-01-01, 2.59@2000-01-02, 3.66@2000-01-05,
+	4.77@2000-01-06, 4.77@2000-01-07]"
+
+-- Both distance and delta speed specified
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 1 / 1e5)));
+-- "LINESTRING(0 4,1 1,2 3,3 1,4 3,5 0,6 4)"
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 2 / 1e5)));
+-- "LINESTRING(0 4,1 1,5 0,6 4)"
+SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e5)));
+-- "LINESTRING(0 4,6 4)"
+					</programlisting>
+					<para>A typical use for the <varname>simplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes. For example, the reduction obtained by applying the <varname>simplify</varname> function to the BerlinMOD dataset used in <xref linkend="tutorial" /> is illustrated next.</para>
+					<programlisting>
+ALTER TABLE Trips ADD COLUMN SimpTrip tgeompoint;
+UPDATE Trips SET SimpTrip = simplify(Trip, 5, 5);
+SELECT min(numInstants(Trip)), max(numInstants(Trip)), avg(numInstants(Trip)::float),
+	min(numInstants(SimpTrip)), max(numInstants(SimpTrip)),avg(numInstants(SimpTrip)::float)
+FROM Trips;
+2 1389 191.461324429605 2 175 26.2253756260434
+					</programlisting>
+				</listitem>
+
+				<listitem>
 					<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 					<para><varname>geoMeasure(tpoint, tfloat, segmentize = false): geo</varname></para>
 					<para>The last <varname>segmentize</varname> argument states whether a resulting Linestring M value is transformed into a MultiLinestring M, where each component is a segment of two points.</para>
