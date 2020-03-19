@@ -1135,9 +1135,9 @@ tint_to_tfloat(PG_FUNCTION_ARGS)
 Temporal *
 tfloat_to_tint_internal(Temporal *temp)
 {
-	ensure_valid_duration(temp->flags);
 	Temporal *result;
-	if (temp->duration == TEMPORALINST) 
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfloatinst_to_tintinst((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
 		result = (Temporal *)tfloati_to_tinti((TemporalI *)temp);
@@ -2735,7 +2735,7 @@ Temporal *
 temporal_at_min_internal(Temporal *temp)
 {
 	Temporal *result;
-	ensure_valid_duration(temp->flags);
+	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
