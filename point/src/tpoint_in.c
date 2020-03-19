@@ -938,7 +938,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 		return (Temporal *)tpointi_from_wkb_state(s);
 	else if (s->duration == TEMPORALSEQ)
 		return (Temporal *)tpointseq_from_wkb_state(s);
-	else if (s->duration == TEMPORALS)
+	else /* s->duration == TEMPORALS */
 		return (Temporal *)tpoints_from_wkb_state(s);
 	return NULL; /* make compiler quiet */
 }

@@ -26,7 +26,7 @@ Temporal *
 tcomp_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
@@ -42,7 +42,7 @@ tcomp_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
 			/* Result is a TemporalSeq */
 			(Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 				value, valuetypid, func, BOOLOID, invert);
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
 			(Temporal *)tfunc4_temporals_base_cross((TemporalS *)temp,
 				value, valuetypid, func, BOOLOID, invert) :

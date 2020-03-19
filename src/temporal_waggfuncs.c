@@ -190,7 +190,7 @@ tlinears_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool mi
 static TemporalSeq **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
-	TemporalSeq **result = NULL;
+	TemporalSeq **result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 	{
@@ -213,7 +213,7 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 		else
 			*count = tlinearseq_extend(result, seq, interval, min);
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
@@ -302,7 +302,7 @@ static TemporalSeq **
 temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 {
 	ensure_valid_duration(temp->duration);
-	TemporalSeq **result = NULL;
+	TemporalSeq **result;
 	if (temp->duration == TEMPORALINST)
 	{
 		TemporalInst *inst = (TemporalInst *)temp;
@@ -321,7 +321,7 @@ temporal_transform_wcount(Temporal *temp, Interval *interval, int *count)
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
 		*count = temporalseq_transform_wcount(result, seq, interval);
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);
@@ -443,7 +443,7 @@ static TemporalSeq **
 tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 {
 	ensure_valid_duration(temp->duration);
-	TemporalSeq **result = NULL;
+	TemporalSeq **result;
 	if (temp->duration == TEMPORALINST)
 	{	
 		TemporalInst *inst = (TemporalInst *)temp;
@@ -462,7 +462,7 @@ tnumber_transform_wavg(Temporal *temp, Interval *interval, int *count)
 		result = palloc(sizeof(TemporalSeq *) * seq->count);
 		*count = tintseq_transform_wavg(result, seq, interval);
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		result = palloc(sizeof(TemporalSeq *) * ts->totalcount);

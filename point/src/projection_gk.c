@@ -314,14 +314,14 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	ensure_valid_duration(temp->duration);
-	Temporal *result = NULL;
+	Temporal *result;
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tgeompointinst_transform_gk((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
 		result = (Temporal *)tgeompointi_transform_gk_internal((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tgeompointseq_transform_gk_internal((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tgeompoints_transform_gk_internal((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

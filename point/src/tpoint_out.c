@@ -73,7 +73,7 @@ ewkt_out(Oid type, Datum value)
 static text *
 tpoint_as_text_internal(Temporal *temp)
 {
-	char *str = NULL;
+	char *str;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		str = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
@@ -81,7 +81,7 @@ tpoint_as_text_internal(Temporal *temp)
 		str = temporali_to_string((TemporalI *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALSEQ)
 		str = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		str = temporals_to_string((TemporalS *)temp, &wkt_out);
 	text *result = cstring_to_text(str);
 	pfree(str);
@@ -111,7 +111,7 @@ tpoint_as_ewkt_internal(Temporal *temp)
 			MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
 	else
 		str1[0] = '\0';
-	char *str2 = NULL;
+	char *str2;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		str2 = temporalinst_to_string((TemporalInst *)temp, &wkt_out);
@@ -119,7 +119,7 @@ tpoint_as_ewkt_internal(Temporal *temp)
 		str2 = temporali_to_string((TemporalI *)temp, &wkt_out);
 	else if (temp->duration == TEMPORALSEQ)
 		str2 = temporalseq_to_string((TemporalSeq *)temp, false, &wkt_out);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		str2 = temporals_to_string((TemporalS *)temp, &wkt_out);
 	char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
 	strcpy(str, str1);
@@ -650,7 +650,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 		bbox = &tmp;
 	}
 
-	char *mfjson = NULL;
+	char *mfjson;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		mfjson = tpointinst_as_mfjson((TemporalInst *)temp, precision, bbox, srs);
@@ -658,7 +658,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 		mfjson = tpointi_as_mfjson((TemporalI *)temp, precision, bbox, srs);
 	else if (temp->duration == TEMPORALSEQ)
 		mfjson = tpointseq_as_mfjson((TemporalSeq *)temp, precision, bbox, srs);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		mfjson = tpoints_as_mfjson((TemporalS *)temp, precision, bbox, srs);
 	text *result = cstring_to_text(mfjson);
 	PG_FREE_IF_COPY(temp, 0);
@@ -958,7 +958,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 		size = tpointi_to_wkb_size((TemporalI *)temp, variant);
 	else if (temp->duration == TEMPORALSEQ)
 		size = tpointseq_to_wkb_size((TemporalSeq *)temp, variant);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		size = tpoints_to_wkb_size((TemporalS *)temp, variant);
 	return size;
 }

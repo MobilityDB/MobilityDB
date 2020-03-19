@@ -190,7 +190,7 @@ PGDLLEXPORT Datum
 tnot_tbool(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tnot_tboolinst((TemporalInst *)temp);
@@ -198,7 +198,7 @@ tnot_tbool(PG_FUNCTION_ARGS)
 		result = (Temporal *)tnot_tbooli((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tnot_tboolseq((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tnot_tbools((TemporalS *)temp);	
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);

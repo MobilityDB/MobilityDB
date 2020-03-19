@@ -810,18 +810,14 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 static Temporal *
 tdwithin_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
-	Datum (*func)(Datum, Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_dwithin3d;
-		else
-			func = &geom_dwithin2d;
-	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_dwithin3d :
+			&geom_dwithin2d;
+	else
 		func = &geog_dwithin;
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
@@ -846,14 +842,14 @@ tdwithin_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, Datum dist)
 			pfree(seq1); pfree(DatumGetPointer(geom));
 		}
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tdwithin_tpoints_geo(ts,
 				PointerGetDatum(gs), dist);
-		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
+		else
 		{
 			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			Datum geom = call_function1(geometry_from_geography,
@@ -1351,7 +1347,7 @@ static Temporal *
 tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
@@ -1375,14 +1371,14 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 			pfree(seq1); pfree(DatumGetPointer(geom));
 		}
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		TemporalS *ts = (TemporalS *)temp;
 		/* Validity of temporal point has been already verified */
 		if (ts->valuetypid == type_oid(T_GEOMETRY))
 			result = (Temporal *)tspatialrel_tpoints_geo(ts,
 				geo, func, valuetypid, invert);
-		else if (ts->valuetypid == type_oid(T_GEOGRAPHY))
+		else
 		{
 			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
 			Datum geom = call_function1(geometry_from_geography, geo);
@@ -1398,7 +1394,7 @@ static Temporal *
 tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc3_temporalinst_base((TemporalInst *)temp,
@@ -1409,7 +1405,7 @@ tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tspatialrel3_tpointseq_geo((TemporalSeq *)temp,
 			geo, param, func, BOOLOID, invert);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tspatialrel3_tpoints_geo((TemporalS *)temp,
 			geo, param, func, BOOLOID, invert);
 	return result;
@@ -1486,7 +1482,7 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_covers;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
@@ -1510,11 +1506,11 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_covers;
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_covers;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
@@ -1542,11 +1538,11 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_coveredby;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
@@ -1570,11 +1566,11 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
 		func = &geom_coveredby;
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		func = &geog_coveredby;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
@@ -1735,15 +1731,11 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum) = 0;
+	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_intersects3d;
-		else
-			func = &geom_intersects2d;
-	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
+			&geom_intersects2d;
+	else
 		func = &geog_intersects;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
@@ -1767,15 +1759,11 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum) = 0;
+	Datum (*func)(Datum, Datum);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_intersects3d;
-		else
-			func = &geom_intersects2d;
-	}
-	else if (temp->valuetypid == type_oid(T_GEOGRAPHY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
+			&geom_intersects2d;
+	else
 		func = &geog_intersects;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
@@ -1793,16 +1781,12 @@ tintersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
-	Datum (*func)(Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			func = &geom_intersects3d;
-		else
-			func = &geom_intersects2d;
-	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_intersects3d :
+			&geom_intersects2d;
+	else
 		func = &geog_intersects;
 	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
 		func, BOOLOID);
@@ -1978,19 +1962,15 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum, Datum) = NULL;
+	Datum (*func)(Datum, Datum, Datum);
 	ensure_point_base_type(temp1->valuetypid);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			func = &geom_dwithin3d;
-		else
-			func = &geom_dwithin2d;
-	}
-	else if (temp1->valuetypid == type_oid(T_GEOGRAPHY))
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_dwithin3d :
+			&geom_dwithin2d;
+	else
 		func = &geog_dwithin;
 
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(sync1->duration);
 	if (sync1->duration == TEMPORALINST)
 		result = (Temporal *)sync_tfunc3_temporalinst_temporalinst(
@@ -2003,7 +1983,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 	else if (sync1->duration == TEMPORALSEQ)
 		result = (Temporal *)tdwithin_tpointseq_tpointseq(
 			(TemporalSeq *)sync1, (TemporalSeq *)sync2, dist, func);
-	else if (sync1->duration == TEMPORALS)
+	else /* sync1->duration == TEMPORALS */
 		result = (Temporal *)tdwithin_tpoints_tpoints(
 			(TemporalS *)sync1, (TemporalS *)sync2, dist, func);
 

@@ -348,7 +348,7 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 		;
 	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_stboxes((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = tpoints_stboxes((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
