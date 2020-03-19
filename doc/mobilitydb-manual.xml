@@ -2816,7 +2816,7 @@ SELECT ST_CPAWithin(
 					<para>Simplify a temporal point using a generalization of the Douglas-Peucker algorithm &Z_support;</para>
 					<para><varname>simplify(tpoint, float): tpoint</varname></para>
 					<para><varname>simplify(tpoint, float, float): tpoint</varname></para>
-					<para>The first version remove points that are less than the distance passed as second argument, which is specified in the units of the coordinate system. The second version remove points that are less than the distance passed as second argument provided that the speed difference between the point and the corresponding point in the simplified version is less than the speed passed as third argument, which is specified in units per second.</para>
+					<para>The first version remove points that are less than the distance passed as second argument, which is specified in the units of the coordinate system. The second version remove points that are less than the distance passed as second argument provided that the speed difference between the point and the corresponding point in the simplified version is less than the speed passed as third argument, which is specified in units per second. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal point is returned.</para>
 
 					<programlisting>
 -- Only distance specified

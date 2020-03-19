@@ -1027,6 +1027,16 @@ SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
 	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
 	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e5)));
 
+SELECT ST_AsText(trajectory(simplify(tgeompoint '{[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
+	Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]}', 4)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '{[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04],
+	[Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]}', 4)));
+SELECT ST_AsText(trajectory(simplify(tgeompoint '{[Point(0 4)@2000-01-01,
+	Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04],
+	[Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07],[Point(7 4)@2000-01-08]}', 4)));
+
 -- Only distance specified
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
 	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
@@ -1041,5 +1051,12 @@ SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4 0)@2000-01-01,
 	Point(1 1 1)@2000-01-02, Point(2 3 2)@2000-01-03, Point(3 1 3)@2000-01-04,
 	Point(4 3 4)@2000-01-05, Point(5 0 5)@2000-01-06, Point(6 4 6)@2000-01-07]', 4, 3 / 1e5)));
+
+-- No simplification, return a copy of the original temporal point
+SELECT asText(simplify(tgeompoint 'Point(0 4)@2000-01-01', 1.5));
+SELECT asText(simplify(tgeompoint '{Point(0 4)@2000-01-01, Point(1 1)@2000-01-02}', 1.5));
+SELECT asText(simplify(tgeompoint '[Point(0 4)@2000-01-01, Point(1 1)@2000-01-02]', 1.5));
+SELECT asText(simplify(tgeompoint 'Interp=Stepwise;[Point(0 4)@2000-01-01, Point(1 1)@2000-01-02, Point(2 3)@2000-01-03]', 1.5));
+
 
 -------------------------------------------------------------------------------

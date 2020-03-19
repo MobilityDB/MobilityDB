@@ -3877,8 +3877,6 @@ tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_
 	if (ts->count == 1)
 	{
 		seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
-		if (seq == NULL)
-			return NULL;
 		result = temporals_make(&seq, 1, false);
 		pfree(seq);
 		return result;
@@ -3886,15 +3884,10 @@ tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
-	int k = 0;
 	for (int i = 0; i < ts->count; i++)
-	{
-		seq = tpointseq_simplify(temporals_seq_n(ts, i), eps_dist, eps_speed, minpts);
-		if (seq != NULL)
-			sequences[k++] = seq;
-	}
-	result = temporals_make(sequences, k, true);
-	for (int i = 0; i < k; i++)
+		sequences[i] = tpointseq_simplify(temporals_seq_n(ts, i), eps_dist, eps_speed, minpts);
+	result = temporals_make(sequences, ts->count, true);
+	for (int i = 0; i < ts->count; i++)
 		pfree(sequences[i]);
 	pfree(sequences);
 	return result;
@@ -3921,8 +3914,6 @@ tpoint_simplify(PG_FUNCTION_ARGS)
 		result = (Temporal *) tpoints_simplify((TemporalS *)temp,
 			eps_dist, eps_speed, 2);
 	PG_FREE_IF_COPY(temp, 0);
-	if (result == NULL)
-		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
