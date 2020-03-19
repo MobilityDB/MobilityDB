@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <libpq/pqformat.h>
+#include <utils/lsyscache.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
@@ -167,6 +168,39 @@ temporals_make(TemporalSeq **sequences, int count, bool normalize)
 		pfree(newsequences);
 	}
 	return result;
+}
+
+/* Consruct a TemporalS from a base value and a timestamp set */
+
+TemporalS *
+temporals_from_base_internal(Datum value, Oid valuetypid, PeriodSet *ps, bool linear)
+{
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ps->count);
+	for (int i = 0; i < ps->count; i++)
+	{
+		Period *p = periodset_per_n(ps, i);
+		sequences[i] = temporalseq_from_base_internal(value, valuetypid, p, linear);
+	}
+	TemporalS *result = temporals_make(sequences, ps->count, false);
+	for (int i = 0; i < ps->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporals_from_base);
+
+PGDLLEXPORT Datum
+temporals_from_base(PG_FUNCTION_ARGS)
+{
+	Datum value = PG_GETARG_ANYDATUM(0);
+	PeriodSet *ps = PG_GETARG_PERIODSET(1);
+	bool linear = PG_GETARG_BOOL(2);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	TemporalS *result = temporals_from_base_internal(value, valuetypid, ps, linear);
+	DATUM_FREE_IF_COPY(value, valuetypid, 0);
+	PG_FREE_IF_COPY(ps, 1);
+	PG_RETURN_POINTER(result);
 }
 
 /* Append an TemporalInst to to the last sequence of a TemporalS */

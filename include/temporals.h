@@ -61,6 +61,12 @@ extern char *temporals_to_string(TemporalS *ts, char *(*value_out)(Oid, Datum));
 extern void temporals_write(TemporalS *ts, StringInfo buf);
 extern TemporalS *temporals_read(StringInfo buf, Oid valuetypid);
 
+/* Constructor functions */
+
+extern TemporalS *temporals_from_base_internal(Datum value, Oid valuetypid, PeriodSet *ps, bool linear);
+
+extern Datum temporals_from_base(PG_FUNCTION_ARGS);
+
 /* Append functions */
 
 extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);

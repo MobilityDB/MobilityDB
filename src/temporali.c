@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 
 #include "timetypes.h"
@@ -143,6 +144,35 @@ temporali_make(TemporalInst **instants, int count)
 		result->offsets[count] = pos;
 	}
 	return result;
+}
+
+/* Consruct a TemporalI from a base value and a timestamp set */
+
+TemporalI *
+temporali_from_base_internal(Datum value, Oid valuetypid, TimestampSet *ts)
+{
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ts->count);
+	for (int i = 0; i < ts->count; i++)
+		instants[i] = temporalinst_make(value, valuetypid, timestampset_time_n(ts, i));
+	TemporalI *result = temporali_make(instants, ts->count);
+	for (int i = 0; i < ts->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporali_from_base);
+
+PGDLLEXPORT Datum
+temporali_from_base(PG_FUNCTION_ARGS)
+{
+	Datum value = PG_GETARG_ANYDATUM(0);
+	TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	TemporalI *result = temporali_from_base_internal(value, valuetypid, ts);
+	DATUM_FREE_IF_COPY(value, valuetypid, 0);
+	PG_FREE_IF_COPY(ts, 1);
+	PG_RETURN_POINTER(result);
 }
 
 /* Append a TemporalInst to a TemporalI */

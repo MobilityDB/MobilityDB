@@ -41,6 +41,12 @@ extern char *temporali_to_string(TemporalI *ti, char *(*value_out)(Oid, Datum));
 extern void temporali_write(TemporalI *ti, StringInfo buf);
 extern TemporalI *temporali_read(StringInfo buf, Oid valuetypid);
 
+/* Constructor functions */
+
+extern TemporalI *temporali_from_base_internal(Datum value, Oid valuetypid, TimestampSet *ts);
+
+extern Datum temporali_from_base(PG_FUNCTION_ARGS);
+
 /* Append functions */
 
 extern TemporalI *temporali_append_instant(const TemporalI *ti, const TemporalInst *inst);

@@ -59,6 +59,12 @@ extern char *temporalseq_to_string(TemporalSeq *seq, bool component, char *(*val
 extern void temporalseq_write(TemporalSeq *seq, StringInfo buf);
 extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
 
+/* Constructor functions */
+
+extern TemporalSeq *temporalseq_from_base_internal(Datum value, Oid valuetypid, Period *p, bool linear);
+
+extern Datum temporalseq_from_base(PG_FUNCTION_ARGS);
+
 /* Append function */
 
 extern TemporalSeq *temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
