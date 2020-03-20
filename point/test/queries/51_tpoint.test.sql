@@ -369,12 +369,36 @@ SELECT asewkt(tgeogpoint(SequenceSet, Point) '{[Point(0 1 0)@2000-01-01, Point(1
 -------------------------------------------------------------------------------
 
 SELECT asewkt(tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
-SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
+-- NULL
+SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
 SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
 /* Errors */
 SELECT asewkt(tgeompointinst(geometry 'point empty', timestamptz '2000-01-01'));
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamptz '2000-01-01'));
+
+
+SELECT asewkt(tgeompointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asewkt(tgeogpointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+-- NULL
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+-- NULL
+SELECT asewkt(tgeompointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+SELECT asewkt(tgeogpointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+-- NULL
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
 
 -------------------------------------------------------------------------------
 

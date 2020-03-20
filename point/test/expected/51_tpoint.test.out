@@ -970,16 +970,16 @@ SELECT asewkt(tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
  POINT(1 1)@2012-01-01 08:00:00+00
 (1 row)
 
-SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
- asewkt 
---------
- 
-(1 row)
-
 SELECT asewkt(tgeogpointinst(ST_Point(1,1), '2012-01-01 08:00:00'));
                    asewkt                    
 ---------------------------------------------
  SRID=4326;POINT(1 1)@2012-01-01 08:00:00+00
+(1 row)
+
+SELECT asewkt(tgeompointinst(NULL, '2012-01-01 08:00:00'));
+ asewkt 
+--------
+ 
 (1 row)
 
 SELECT asewkt(tgeogpointinst(NULL, '2012-01-01 08:00:00'));
@@ -993,6 +993,102 @@ SELECT asewkt(tgeompointinst(geometry 'point empty', timestamptz '2000-01-01'));
 ERROR:  Only non-empty geometries accepted
 SELECT asewkt(tgeogpointinst(geography 'point empty', timestamptz '2000-01-01'));
 ERROR:  Only non-empty geometries accepted
+SELECT asewkt(tgeompointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+                                                  asewkt                                                   
+-----------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-02 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00}
+(1 row)
+
+SELECT asewkt(tgeogpointi(ST_Point(1,1), '{2012-01-01, 2012-01-02, 2012-01-03}'));
+                                                       asewkt                                                        
+---------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-02 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00}
+(1 row)
+
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asewkt(tgeompointi(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}'));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+                                 asewkt                                 
+------------------------------------------------------------------------
+ [POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
+(1 row)
+
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]'));
+                                      asewkt                                      
+----------------------------------------------------------------------------------
+ SRID=4326;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
+(1 row)
+
+SELECT asewkt(tgeompointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ Interp=Stepwise;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
+(1 row)
+
+SELECT asewkt(tgeogpointseq(ST_Point(1,1), '[2012-01-01, 2012-01-03]', false));
+                                              asewkt                                              
+--------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Stepwise;[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]
+(1 row)
+
+SELECT asewkt(tgeompointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asewkt(tgeogpointseq(NULL, period '[2012-01-01, 2012-01-03]'));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+                                  asewkt                                  
+--------------------------------------------------------------------------
+ {[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
+(1 row)
+
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}'));
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
+(1 row)
+
+SELECT asewkt(tgeompoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+                                          asewkt                                          
+------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
+(1 row)
+
+SELECT asewkt(tgeogpoints(ST_Point(1,1), '{[2012-01-01, 2012-01-03]}', false));
+                                               asewkt                                               
+----------------------------------------------------------------------------------------------------
+ SRID=4326,Interp=Stepwise;{[POINT(1 1)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-03 00:00:00+00]}
+(1 row)
+
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
+ asewkt 
+--------
+ 
+(1 row)
+
+SELECT asewkt(tgeompoints(NULL, '{[2012-01-01, 2012-01-03]}'));
+ asewkt 
+--------
+ 
+(1 row)
+
 SELECT asewkt(tgeompointi(ARRAY[
 tgeompointinst(ST_Point(1,1), '2012-01-01 08:00:00'),
 tgeompointinst(ST_Point(2,2), '2012-01-01 08:10:00'),

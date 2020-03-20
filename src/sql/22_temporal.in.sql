@@ -420,10 +420,10 @@ CREATE FUNCTION tints(integer, periodset)
 CREATE FUNCTION tfloati(float, timestampset)
 	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporali_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloatseq(float, period)
+CREATE FUNCTION tfloatseq(float, period, boolean DEFAULT true)
 	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporalseq_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloats(float, periodset)
+CREATE FUNCTION tfloats(float, periodset, boolean DEFAULT true)
 	RETURNS tfloat AS 'MODULE_PATHNAME', 'temporals_from_base'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

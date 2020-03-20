@@ -85,9 +85,7 @@ https://github.com/ULB-CoDE-WIT/MobilityDB/issues
 Documentation
 -------------
 
-Please notice that due to unexpected events the documentation is currently unavailable. We are working on a solution.
-
-You can generate the manual and the workshop from the sources.
+Please notice you can generate the manual and the workshop from the sources. A pregenerated version of them are available.
 
 ### Manual
 

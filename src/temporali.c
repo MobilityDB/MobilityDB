@@ -153,7 +153,7 @@ temporali_from_base_internal(Datum value, Oid valuetypid, TimestampSet *ts)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
-		instants[i] = temporalinst_make(value, valuetypid, timestampset_time_n(ts, i));
+		instants[i] = temporalinst_make(value, timestampset_time_n(ts, i), valuetypid);
 	TemporalI *result = temporali_make(instants, ts->count);
 	for (int i = 0; i < ts->count; i++)
 		pfree(instants[i]);
