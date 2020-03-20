@@ -967,8 +967,7 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 		if (inst1->t > inst2->t)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values cannot overlap on time")));
-		if (inst1->t == inst2->t &&
-			(seqs[i - 1]->period.upper_inc || seqs[i]->period.lower_inc))
+		if (inst1->t == inst2->t && seqs[i]->period.lower_inc)
 		{
 			if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid) &&
 				seqs[i - 1]->period.upper_inc && seqs[i]->period.lower_inc)
@@ -990,8 +989,9 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 		int m = 0;
 		while (m < countinst[i] && l < count)
 		{
+			int start = seqs[l]->period.lower_inc && ( m == 0 || ! seqs[l -1]->period.upper_inc ) ? 0 : 1;
 			int end = seqs[l]->period.upper_inc ? seqs[l]->count : seqs[l]->count - 1;
-			for (int j = 0; j < end; j++)
+			for (int j = start; j < end; j++)
 				instants[m++] = temporalseq_inst_n(seqs[l], j);
 			l++;
 		}
