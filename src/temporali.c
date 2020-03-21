@@ -1866,16 +1866,17 @@ temporali_eq(TemporalI *ti1, TemporalI *ti2)
 
 /* 
  * B-tree comparator
+ * This function supposes for optimization purposes that
+ * - a bounding box comparison has been done before in the calling function
+ *   and thus that the bounding boxes are equal
+ * - the flags of two TemporalI values of the same base type are equal.
+ * These hypothesis may change in the future and the function must be
+ * adapted accordingly.
  */
 int
 temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 {
-	/* Compare bounding boxes */
-	void *box1 = temporali_bbox_ptr(ti1);
-	void *box2 = temporali_bbox_ptr(ti2);
-	int result = temporal_bbox_cmp(box1, box2, ti1->valuetypid);
-	if (result)
-		return result;
+	int result;
 	/* Compare composing instants */
 	int count = Min(ti1->count, ti2->count);
 	for (int i = 0; i < count; i++)

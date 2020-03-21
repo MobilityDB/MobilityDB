@@ -4011,17 +4011,27 @@ temporalseq_eq(TemporalSeq *seq1, TemporalSeq *seq2)
 
 /*
  * B-tree comparator
+ * This function supposes for optimization purposes that
+ * - a bounding box comparison has been done before in the calling function
+ *   and thus that the bounding boxes are equal
+ * - the flags of two TemporalSeq values of the same base type only differ
+ *   on the linear interpolation flag.
+ * These hypothesis may change in the future and the function must be
+ * adapted accordingly.
  */
 int
 temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 {
-	/* Compare bounding boxes */
-	void *box1 = temporalseq_bbox_ptr(seq1);
-	void *box2 = temporalseq_bbox_ptr(seq2);
-	int result = temporal_bbox_cmp(box1, box2, seq1->valuetypid);
-	if (result)
-		return result;
-
+	/* Compare inclusive/exclusive bounds
+	 * These tests are redundant for temporal types whose bounding box is a
+	 * period, that is, tbool and ttext */
+	if ((seq1->period.lower_inc && ! seq2->period.lower_inc) ||
+		(! seq1->period.upper_inc && seq2->period.upper_inc))
+		return -1;
+	else if ((seq2->period.lower_inc && ! seq1->period.lower_inc) ||
+		(! seq2->period.upper_inc && seq1->period.upper_inc))
+		return 1;
+	int result;
 	/* Compare composing instants */
 	int count = Min(seq1->count, seq2->count);
 	for (int i = 0; i < count; i++)
@@ -4032,12 +4042,7 @@ temporalseq_cmp(TemporalSeq *seq1, TemporalSeq *seq2)
 		if (result) 
 			return result;
 	}
-	/* The first count instants of seq1 and seq2 are equal */
-	if (seq1->count < seq2->count) /* seq1 has less instants than seq2 */
-		return -1;
-	else if (seq2->count < seq1->count) /* seq2 has less instants than seq1 */
-		return 1;
-	/* Compare flags */
+	/* Compare flags  */
 	if (seq1->flags < seq2->flags)
 		return -1;
 	if (seq1->flags > seq2->flags)
@@ -4075,4 +4080,5 @@ temporalseq_hash(TemporalSeq *seq)
 	}
 	return result;
 }
+
 /*****************************************************************************/

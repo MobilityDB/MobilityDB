@@ -2507,33 +2507,42 @@ temporals_eq(TemporalS *ts1, TemporalS *ts2)
 
 /* 
  * B-tree comparator
- */
+ * This function supposes for optimization purposes that
+ * - a bounding box comparison has been done before in the calling function
+ *   and thus that the bounding boxes are equal
+ * - the flags of two TemporalSeq values of the same base type only differ
+ *   on the linear interpolation flag.
+ * These hypothesis may change in the future and the function must be
+ * adapted accordingly.
+ * */
 
 int
 temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 {
-	/* Compare bounding boxes */
-	void *box1 = temporals_bbox_ptr(ts1);
-	void *box2 = temporals_bbox_ptr(ts2);
-	int result = temporal_bbox_cmp(box1, box2, ts1->valuetypid);
-	if (result)
-		return result;
-
+	/* Compare inclusive/exclusive bounds
+	 * These tests are redundant for temporal types whose bounding box is a
+	 * period, that is, tbool and ttext */
+	TemporalSeq *first1 = temporals_seq_n(ts1, 0);
+	TemporalSeq *first2 = temporals_seq_n(ts2, 0);
+	TemporalSeq *last1 = temporals_seq_n(ts1, ts1->count - 1);
+	TemporalSeq *last2 = temporals_seq_n(ts2, ts2->count - 1);
+	if ((first1->period.lower_inc && ! first2->period.lower_inc) ||
+		(! last1->period.upper_inc && last2->period.upper_inc))
+		return -1;
+	else if ((first2->period.lower_inc && ! first1->period.lower_inc) ||
+		(! last2->period.upper_inc && last1->period.upper_inc))
+		return 1;
+	int result;
 	/* Compare composing instants */
 	int count = Min(ts1->count, ts2->count);
 	for (int i = 0; i < count; i++)
 	{
-		TemporalSeq *seq1 = temporals_seq_n(ts1, i);
-		TemporalSeq *seq2 = temporals_seq_n(ts2, i);
-		result = temporalseq_cmp(seq1, seq2);
+		first1 = temporals_seq_n(ts1, i);
+		first2 = temporals_seq_n(ts2, i);
+		result = temporalseq_cmp(first1, first2);
 		if (result) 
 			return result;
 	}
-	/* The first count sequences of ts1 and ts2 are equal */
-	if (ts1->count < ts2->count) /* ts1 has less sequences than ts2 */
-		return -1;
-	else if (ts2->count < ts1->count) /* ts2 has less sequences than ts1 */
-		return 1;
 	/* Compare flags */
 	if (ts1->flags < ts2->flags)
 		return -1;
