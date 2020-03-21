@@ -2543,12 +2543,9 @@ temporals_cmp(TemporalS *ts1, TemporalS *ts2)
 		if (result) 
 			return result;
 	}
-	/* Compare flags */
-	if (ts1->flags < ts2->flags)
-		return -1;
-	if (ts1->flags > ts2->flags)
-		return 1;
-	/* The two values are equal */
+	/* The two values are equal
+	 * It is not necessary to compare flags since all the sequences are
+	 * equal and thus their interpolation is also equal */
 	return 0;
 }
 

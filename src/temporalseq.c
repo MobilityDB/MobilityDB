@@ -2094,17 +2094,6 @@ tempcontseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
 		(! lower_inc && datum_eq(value1, value, valuetypid));
 }
 
-static bool
-tempcontseq_always_le1(Datum value1, Datum value2, Oid valuetypid, Datum value)
-{
-	/* Constant or increasing segment */
-	if (datum_eq(value1, value2, valuetypid) ||
-		datum_lt(value1, value2, valuetypid))
-		return datum_le(value2, value, valuetypid);
-	/* Decreasing segment */
-	return datum_le(value1, value, valuetypid);
-}
-
 /*****************************************************************************/
 
 /*
@@ -2121,7 +2110,7 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		/* Maximum value may be non inclusive */
+		/* Minimum value may be non inclusive */
 		if (d < box.xmin)
 			return false;
 	}
