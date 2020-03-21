@@ -690,7 +690,7 @@ temporals_transform_tcount(TemporalS *ts)
 static Temporal **
 temporal_transform_tcount(Temporal *temp, int *count)
 {
-	Temporal **result = NULL;
+	Temporal **result;
 	if (temp->duration == TEMPORALINST) 
 	{
 		result = palloc(sizeof(Temporal *));
@@ -708,7 +708,7 @@ temporal_transform_tcount(Temporal *temp, int *count)
 		result[0] = (Temporal *)temporalseq_transform_tcount((TemporalSeq *) temp);
 		*count = 1;
 	}
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		result = (Temporal **)temporals_transform_tcount((TemporalS *) temp);
 		*count = ((TemporalS *)temp)->count;
@@ -783,7 +783,7 @@ tnumbers_transform_tavg(TemporalS *ts)
 static Temporal **
 tnumber_transform_tavg(Temporal *temp, int *count)
 {
-	Temporal **result = NULL;
+	Temporal **result;
 	if (temp->duration == TEMPORALINST) 
 	{
 		result = palloc(sizeof(Temporal *));
@@ -801,7 +801,7 @@ tnumber_transform_tavg(Temporal *temp, int *count)
 		result[0] = (Temporal *)tnumberseq_transform_tavg((TemporalSeq *) temp);
 		*count = 1;
 	} 
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 	{
 		result = (Temporal **)tnumbers_transform_tavg((TemporalS *) temp);
 		*count = ((TemporalS *)temp)->count;
@@ -1172,7 +1172,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
 	ensure_valid_duration(temp->duration);
-	SkipList *result = NULL;
+	SkipList *result;
 	if (temp->duration == TEMPORALINST) 
 		result =  temporalinst_tagg_transfn(fcinfo, state, (TemporalInst *)temp, 
 			func);
@@ -1182,7 +1182,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 	else if (temp->duration == TEMPORALSEQ) 
 		result =  temporalseq_tagg_transfn(fcinfo, state, (TemporalSeq *)temp, 
 			func, crossings);
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = temporals_tagg_transfn(fcinfo, state, (TemporalS *)temp, 
 			func, crossings);
 	return result;

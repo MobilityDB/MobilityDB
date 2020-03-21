@@ -144,7 +144,7 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid restypid)
 Temporal *
 tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid restypid)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc1_temporalinst((TemporalInst *)temp,
@@ -155,7 +155,7 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid restypid)
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc1_temporalseq((TemporalSeq *)temp,
 			func, restypid);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tfunc1_temporals((TemporalS *)temp,
 			func, restypid);
 	return result;
@@ -236,7 +236,7 @@ Temporal *
 tfunc2_temporal(Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst((TemporalInst *)temp,
@@ -247,7 +247,7 @@ tfunc2_temporal(Temporal *temp, Datum param,
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq((TemporalSeq *)temp,
 			param, func, restypid);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tfunc2_temporals((TemporalS *)temp,
 			param, func, restypid);
 	return result;
@@ -335,7 +335,7 @@ Temporal *
 tfunc2_temporal_base(Temporal *temp, Datum d,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp, d,
@@ -346,7 +346,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc2_temporalseq_base((TemporalSeq *)temp, d,
 			func, restypid, invert);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tfunc2_temporals_base((TemporalS *)temp, d,
 			func, restypid, invert);
 	return result;
@@ -507,7 +507,7 @@ Temporal *
 tfunc4_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool inverted)
 {
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc4_temporalinst_base((TemporalInst *)temp,
@@ -518,7 +518,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tfunc4_temporalseq_base((TemporalSeq *)temp,
 			value, valuetypid, func, restypid, inverted);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tfunc4_temporals_base((TemporalS *)temp,
 			value, valuetypid, func, restypid, inverted);
 	return result;

@@ -256,16 +256,12 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
+			&geom_distance2d;
 	else
 		func = &geog_distance;
 
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
@@ -276,7 +272,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
 			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALS)
+	else
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
 			PointerGetDatum(gs), func);
 	PG_FREE_IF_COPY(gs, 0);
@@ -306,16 +302,12 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (FLAGS_GET_Z(gs->flags) && MOBDB_FLAGS_GET_Z(temp->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
+			&geom_distance2d;
 	else
 		func = &geog_distance;
 
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
 		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
@@ -326,7 +318,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
 			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALS)
+	else
 		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
 			PointerGetDatum(gs), func);
 
@@ -342,12 +334,8 @@ distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
 {
 	Datum (*func)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		if (MOBDB_FLAGS_GET_Z(temp1->flags))
-			func = &geom_distance3d;
-		else
-			func = &geom_distance2d;
-	}
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_distance3d :
+			&geom_distance2d;
 	else
 		func = &geog_distance;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 

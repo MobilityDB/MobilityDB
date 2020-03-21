@@ -286,3 +286,10 @@ AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+CREATE OR REPLACE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_simplify'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/

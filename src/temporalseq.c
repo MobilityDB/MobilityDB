@@ -16,6 +16,7 @@
 #include <access/hash.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 
 #include "timestampset.h"
@@ -746,6 +747,35 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	return result;
 }
 
+/* Consruct a TemporalSeq from a base value and a perio */
+
+TemporalSeq *
+temporalseq_from_base_internal(Datum value, Oid valuetypid, Period *p, bool linear)
+{
+	TemporalInst *instants[2];
+	instants[0] = temporalinst_make(value, p->lower, valuetypid);
+	instants[1] = temporalinst_make(value, p->upper, valuetypid);
+	TemporalSeq *result = temporalseq_make(instants, 2,
+		p->lower_inc, p->upper_inc, linear, false);
+	pfree(instants[0]); pfree(instants[1]);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(temporalseq_from_base);
+
+PGDLLEXPORT Datum
+temporalseq_from_base(PG_FUNCTION_ARGS)
+{
+	Datum value = PG_GETARG_ANYDATUM(0);
+	Period *p = PG_GETARG_PERIOD(1);
+	bool linear = PG_GETARG_BOOL(2);
+	Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	TemporalSeq *result = temporalseq_from_base_internal(value, valuetypid, p, linear);
+	DATUM_FREE_IF_COPY(value, valuetypid, 0);
+	PG_RETURN_POINTER(result);
+}
+
+
 /* Append a TemporalInst to a TemporalSeq */
 
 TemporalSeq *
@@ -937,10 +967,10 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 		if (inst1->t > inst2->t)
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values cannot overlap on time")));
-		if (inst1->t == inst2->t &&
-			(seqs[i - 1]->period.upper_inc || seqs[i]->period.lower_inc))
+		if (inst1->t == inst2->t && seqs[i]->period.lower_inc)
 		{
-			if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
+			if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid) &&
+				seqs[i - 1]->period.upper_inc && seqs[i]->period.lower_inc)
 				ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 					errmsg("The temporal values have different value at their overlapping instant")));
 			else
@@ -957,14 +987,17 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 		bool lowerinc = seqs[0]->period.lower_inc;
 		TemporalInst **instants = palloc(sizeof(TemporalInst *) * countinst[i]);
 		int m = 0;
-		while (m < countinst[i])
+		while (m < countinst[i] && l < count)
 		{
-			int start = m == 0 ? 0 : 1;
-			for (int j = start; j < seqs[l]->count; j++)
+			int start = seqs[l]->period.lower_inc && ( m == 0 || ! seqs[l -1]->period.upper_inc ) ? 0 : 1;
+			int end = seqs[l]->period.upper_inc ? seqs[l]->count : seqs[l]->count - 1;
+			for (int j = start; j < end; j++)
 				instants[m++] = temporalseq_inst_n(seqs[l], j);
 			l++;
 		}
 		bool upperinc = seqs[l - 1]->period.upper_inc;
+		if (! upperinc)
+			instants[m++] = temporalseq_inst_n(seqs[l - 1], seqs[l - 1]->count - 1);
 		sequences[i] = temporalseq_make(instants, countinst[i],
 			lowerinc, upperinc, linear, true);
 		pfree(instants);
@@ -979,7 +1012,7 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 /* Copy a temporal sequence */
 
 TemporalSeq *
-temporalseq_copy(TemporalSeq *seq)
+temporalseq_copy(const TemporalSeq *seq)
 {
 	TemporalSeq *result = palloc0(VARSIZE(seq));
 	memcpy(result, seq, VARSIZE(seq));

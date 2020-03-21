@@ -198,12 +198,45 @@ SELECT ttext(Sequence) '{[1@2000-01-01, 2@2000-01-02], [1@2000-01-03, 2@2000-01-
 -------------------------------------------------------------------------------
 
 SELECT tboolinst(TRUE, '2012-01-01 08:00:00');
-SELECT tboolinst(NULL, '2012-01-01 08:00:00');
 SELECT tintinst(1, '2012-01-01 08:00:00');
-SELECT tintinst(NULL, '2012-01-01 08:00:00');
 SELECT tfloatinst(1, '2012-01-01 08:00:00');
-SELECT tfloatinst(NULL, '2012-01-01 08:00:00');
 SELECT ttextinst('AAA', '2001-01-01 08:00:00');
+-- NULL
+SELECT tboolinst(NULL, '2012-01-01 08:00:00');
+SELECT tintinst(NULL, '2012-01-01 08:00:00');
+SELECT tfloatinst(NULL, '2012-01-01 08:00:00');
+
+SELECT tbooli(true, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tinti(1, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tfloati(1.5, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT ttexti('AAA', '{2012-01-01, 2012-01-02, 2012-01-03}');
+-- NULL
+SELECT tbooli(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tinti(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT tfloati(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}');
+SELECT ttexti(NULL, '{2012-01-01, 2012-01-02, 2012-01-03}');
+
+SELECT tboolseq(true, '[2012-01-01, 2012-01-03]');
+SELECT tintseq(1, '[2012-01-01, 2012-01-03]');
+SELECT tfloatseq(1.5, '[2012-01-01, 2012-01-03]');
+SELECT tfloatseq(1.5, '[2012-01-01, 2012-01-03]', false);
+SELECT ttextseq('AAA', period '[2012-01-01, 2012-01-03]');
+-- NULL
+SELECT tboolseq(NULL, period '[2012-01-01, 2012-01-03]');
+SELECT tintseq(NULL, period '[2012-01-01, 2012-01-03]');
+SELECT tfloatseq(NULL, period '[2012-01-01, 2012-01-03]');
+SELECT ttextseq(NULL, period '[2012-01-01, 2012-01-03]');
+
+SELECT tbools(true, '{[2012-01-01, 2012-01-03]}');
+SELECT tints(1, '{[2012-01-01, 2012-01-03]}');
+SELECT tfloats(1.5, '{[2012-01-01, 2012-01-03]}');
+SELECT tfloats(1.5, '{[2012-01-01, 2012-01-03]}', false);
+SELECT ttexts('AAA', '{[2012-01-01, 2012-01-03]}');
+-- NULL
+SELECT tbools(NULL, '{[2012-01-01, 2012-01-03]}');
+SELECT tints(NULL, '{[2012-01-01, 2012-01-03]}');
+SELECT tfloats(NULL, '{[2012-01-01, 2012-01-03]}');
+SELECT ttexts(NULL, '{[2012-01-01, 2012-01-03]}');
 
 -------------------------------------------------------------------------------
 

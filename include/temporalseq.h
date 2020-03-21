@@ -25,7 +25,7 @@
 extern TemporalInst *temporalseq_inst_n(const TemporalSeq *seq, int index);
 extern TemporalSeq *temporalseq_make(TemporalInst **instants, 
 	int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
-extern TemporalSeq *temporalseq_copy(TemporalSeq *seq);
+extern TemporalSeq *temporalseq_copy(const TemporalSeq *seq);
 extern int temporalseq_find_timestamp(TemporalSeq *seq, TimestampTz t);
 extern Datum temporalseq_value_at_timestamp1(TemporalInst *inst1, 
 	TemporalInst *inst2, bool linear, TimestampTz t);
@@ -60,6 +60,12 @@ extern bool temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalIns
 extern char *temporalseq_to_string(TemporalSeq *seq, bool component, char *(*value_out)(Oid, Datum));
 extern void temporalseq_write(TemporalSeq *seq, StringInfo buf);
 extern TemporalSeq *temporalseq_read(StringInfo buf, Oid valuetypid);
+
+/* Constructor functions */
+
+extern TemporalSeq *temporalseq_from_base_internal(Datum value, Oid valuetypid, Period *p, bool linear);
+
+extern Datum temporalseq_from_base(PG_FUNCTION_ARGS);
 
 /* Append function */
 

@@ -477,7 +477,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	}
 
-	bool result = false;
+	bool result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_ever_eq((TemporalInst *)temp, 
@@ -488,7 +488,7 @@ tpoint_ever_eq(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = temporalseq_ever_eq((TemporalSeq *)temp, 
 			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = temporals_ever_eq((TemporalS *)temp, 
 			PointerGetDatum(gs));
 
@@ -750,11 +750,11 @@ tgeogpointi_values(TemporalI *ti)
 Datum
 tpointi_values(TemporalI *ti)
 {
-	Datum result = 0;
+	Datum result;
 	ensure_point_base_type(ti->valuetypid);
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
 		result = tgeompointi_values(ti);
-	else if (ti->valuetypid == type_oid(T_GEOGRAPHY))
+	else
 		result = tgeogpointi_values(ti);
 	return result;
 }
@@ -762,7 +762,7 @@ tpointi_values(TemporalI *ti)
 Datum
 tpoint_values_internal(Temporal *temp)
 {
-	Datum result = 0;
+	Datum result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
@@ -770,7 +770,7 @@ tpoint_values_internal(Temporal *temp)
 		result = tpointi_values((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
-	else if (temp->duration == TEMPORALS)
+	else /* temp->duration == TEMPORALS */
 		result = tpoints_trajectory((TemporalS *)temp);
 	return result;
 }
@@ -820,7 +820,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_value((TemporalInst *)temp,
@@ -831,7 +831,7 @@ tpoint_at_value(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_value((TemporalSeq *)temp,
 			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_at_value((TemporalS *)temp,
 			PointerGetDatum(gs));
 
@@ -884,7 +884,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(result);
 	}
 
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_value((TemporalInst *)temp,
@@ -895,7 +895,7 @@ tpoint_minus_value(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_value((TemporalSeq *)temp,
 			PointerGetDatum(gs));
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_minus_value((TemporalS *)temp,
 			PointerGetDatum(gs));
 
@@ -936,7 +936,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	Oid valuetypid = temp->valuetypid;
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_at_values((TemporalInst *)temp, 
@@ -947,7 +947,7 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_at_values((TemporalSeq *)temp,
 			values, count1);
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_at_values((TemporalS *)temp,
 			values, count1);
 
@@ -990,7 +990,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	Oid valuetypid = temp->valuetypid;
 	datum_sort(values, count, valuetypid);
 	int count1 = datum_remove_duplicates(values, count, valuetypid);
-	Temporal *result = NULL;
+	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
 		result = (Temporal *)temporalinst_minus_values((TemporalInst *)temp,
@@ -1001,7 +1001,7 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ) 
 		result = (Temporal *)temporalseq_minus_values((TemporalSeq *)temp,
 			values, count1);
-	else if (temp->duration == TEMPORALS) 
+	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_minus_values((TemporalS *)temp,
 			values, count1);
 
