@@ -2659,6 +2659,12 @@ SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02
  {[f@2000-01-01 00:00:00+00, f@2000-01-01 12:00:00+00), (f@2000-01-01 12:00:00+00, f@2000-01-02 00:00:00+00]}
 (1 row)
 
+SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 1)@2000-01-02]', tgeompoint '[Point(3 3 1)@2000-01-01, Point(1 1 1)@2000-01-02]');
+                                                 tintersects                                                  
+--------------------------------------------------------------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00, t@2000-01-01 12:00:00+00], (f@2000-01-01 12:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID

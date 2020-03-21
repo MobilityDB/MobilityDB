@@ -582,6 +582,7 @@ SELECT tintersects(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2
 SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint 'Interp=Stepwise;[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]');
 SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 3 3)@2000-01-02]', tgeompoint '[Point(1 3 3)@2000-01-01, Point(1 1 1)@2000-01-02]');
 SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 1 3)@2000-01-02]', tgeompoint '[Point(1 1 3)@2000-01-01, Point(1 1 1)@2000-01-02]');
+SELECT tintersects(tgeompoint '[Point(1 1 1)@2000-01-01, Point(3 3 1)@2000-01-02]', tgeompoint '[Point(3 3 1)@2000-01-01, Point(1 1 1)@2000-01-02]');
 
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
