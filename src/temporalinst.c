@@ -707,23 +707,26 @@ temporalinst_intersects_periodset(TemporalInst *inst, PeriodSet *ps)
 /* 
  * Equality operator
  * The internal B-tree comparator is not used to increase efficiency
+ * This function supposes for optimization purposes that the flags of two
+ * TemporalInst values of the same base type are equal.
+ * This hypothesis may change in the future and the function must be
+ * adapted accordingly.
  */
 bool
 temporalinst_eq(TemporalInst *inst1, TemporalInst *inst2)
 {
-	/* If flags are not equal */
-	if (inst1->flags != inst2->flags) 
-		return false;
-
 	/* Compare values and timestamps */
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
-	return datum_eq(value1, value2, inst1->valuetypid) &&
-		(inst1->t == inst2->t);
+	return inst1->t == inst2->t && datum_eq(value1, value2, inst1->valuetypid);
 }
 
 /* 
  * B-tree comparator
+ * This function supposes for optimization purposes that the flags of two
+ * TemporalInst values of the same base type are equal.
+ * This hypothesis may change in the future and the function must be
+ * adapted accordingly.
  */
 int
 temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
@@ -740,11 +743,6 @@ temporalinst_cmp(TemporalInst *inst1, TemporalInst *inst2)
 		return -1;
 	if (datum_gt(temporalinst_value(inst1), temporalinst_value(inst2),
 		inst1->valuetypid))
-		return 1;
-	/* Compare flags */
-	if (inst1->flags < inst2->flags)
-		return -1;
-	if (inst1->flags > inst2->flags)
 		return 1;
 	/* The two values are equal */
 	return 0;
