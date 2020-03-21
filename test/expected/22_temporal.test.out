@@ -5118,6 +5118,12 @@ SELECT tfloat '{[1@2000-01-01, 1@2000-01-02]}' %= 2;
  f
 (1 row)
 
+SELECT ttext '{[AAA@2000-01-01, AAA@2000-01-02]}' %= 'AAA';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tint '1@2000-01-01' ?<> 1;
  ?column? 
 ----------

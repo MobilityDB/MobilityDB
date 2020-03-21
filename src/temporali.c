@@ -1887,16 +1887,6 @@ temporali_cmp(TemporalI *ti1, TemporalI *ti2)
 		if (result) 
 			return result;
 	}
-	/* The first count instants of ti1 and ti2 are equal */
-	if (ti1->count < ti2->count) /* ti1 has less instants than ti2 */
-		return -1;
-	else if (ti2->count < ti1->count) /* ti2 has less instants than ti1 */
-		return 1;
-	/* Compare flags */
-	if (ti1->flags < ti2->flags)
-		return -1;
-	if (ti1->flags > ti2->flags)
-		return 1;
 	/* The two values are equal */
 	return 0;
 }
