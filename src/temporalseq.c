@@ -324,50 +324,6 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	return false;
 }
 
-static bool
-temporalinst_collinear(TemporalInst *inst1, TemporalInst *inst2, 
-	TemporalInst *inst3)
-{
-	Oid valuetypid = inst1->valuetypid;
-	if (valuetypid == FLOAT8OID)
-	{
-		double x1 = DatumGetFloat8(temporalinst_value(inst1));
-		double x2 = DatumGetFloat8(temporalinst_value(inst2));
-		double x3 = DatumGetFloat8(temporalinst_value(inst3));
-		return float_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
-	}
-	if (valuetypid == type_oid(T_DOUBLE2))
-	{
-		double2 *x1 = DatumGetDouble2P(temporalinst_value(inst1));
-		double2 *x2 = DatumGetDouble2P(temporalinst_value(inst2));
-		double2 *x3 = DatumGetDouble2P(temporalinst_value(inst3));
-		return double2_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
-	}
-	if (valuetypid == type_oid(T_GEOMETRY))
-	{
-		Datum value1 = temporalinst_value(inst1);
-		Datum value2 = temporalinst_value(inst2);
-		Datum value3 = temporalinst_value(inst3);
-		return point_collinear(value1, value2, value3, 
-				inst1->t, inst2->t, inst3->t, MOBDB_FLAGS_GET_Z(inst1->flags));
-	}
-	if (valuetypid == type_oid(T_DOUBLE3))
-	{
-		double3 *x1 = DatumGetDouble3P(temporalinst_value(inst1));
-		double3 *x2 = DatumGetDouble3P(temporalinst_value(inst2));
-		double3 *x3 = DatumGetDouble3P(temporalinst_value(inst3));
-		return double3_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
-	}
-	if (valuetypid == type_oid(T_DOUBLE4))
-	{
-		double4 *x1 = DatumGetDouble4P(temporalinst_value(inst1));
-		double4 *x2 = DatumGetDouble4P(temporalinst_value(inst2));
-		double4 *x3 = DatumGetDouble4P(temporalinst_value(inst3));
-		return double4_collinear(x1, x2, x3, inst1->t, inst2->t, inst3->t);
-	}
-	return false;
-}
-
 /*
  * Normalize an array of instants.
  * The function assumes that there are at least 2 instants.
@@ -558,7 +514,8 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 		bool adjacent = seq1->period.upper == seq2->period.lower &&
 			(seq1->period.upper_inc || seq2->period.lower_inc);
 		/* If they are adjacent and not instantaneous */
-		if (adjacent && last2 != NULL && first2 != NULL && (
+		if (adjacent && last2 != NULL && first2 != NULL &&
+			(
 			/* If step and the last segment of the first sequence is constant
 			   ..., 1@t1, 1@t2) [1@t2, 1@t3, ... -> ..., 1@t1, 2@t3, ... 
 			   ..., 1@t1, 1@t2) [1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ... 
@@ -579,7 +536,8 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 			   ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ... 
 			*/
 			(datum_eq(last1value, first1value, valuetypid) && 
-			temporalinst_collinear(last2, first1, first2))
+			datum_collinear(valuetypid, last2value, first1value, first2value,
+				last2->t, first1->t, first2->t))
 			))
 		{
 			/* Remove the last and first instants of the sequences */
