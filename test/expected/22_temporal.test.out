@@ -2007,6 +2007,120 @@ SELECT duration(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@20
  SequenceSet
 (1 row)
 
+SELECT interpolation(tbool 't@2000-01-01');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tint '1@2000-01-01');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tfloat '1.5@2000-01-01');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ interpolation 
+---------------
+ Linear
+(1 row)
+
+SELECT interpolation(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ interpolation 
+---------------
+ Linear
+(1 row)
+
+SELECT interpolation(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(ttext 'AAA@2000-01-01');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+ interpolation 
+---------------
+ Discrete
+(1 row)
+
+SELECT interpolation(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
+SELECT interpolation(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+ interpolation 
+---------------
+ Stepwise
+(1 row)
+
 SELECT memSize(tbool 't@2000-01-01');
  memsize 
 ---------

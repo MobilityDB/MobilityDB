@@ -603,6 +603,26 @@ SELECT duration(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT duration(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT duration(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+SELECT interpolation(tbool 't@2000-01-01');
+SELECT interpolation(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT interpolation(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT interpolation(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT interpolation(tint '1@2000-01-01');
+SELECT interpolation(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT interpolation(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT interpolation(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT interpolation(tfloat '1.5@2000-01-01');
+SELECT interpolation(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT interpolation(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT interpolation(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT interpolation(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT interpolation(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT interpolation(ttext 'AAA@2000-01-01');
+SELECT interpolation(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT interpolation(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT interpolation(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+
 SELECT memSize(tbool 't@2000-01-01');
 SELECT memSize(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
 SELECT memSize(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');

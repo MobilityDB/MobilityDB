@@ -3302,9 +3302,7 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 		return -1;
 	else if (size1 > size2)
 		return 1;
-	else
-		return 0;
-	
+
 	/* Finally compare temporal type */
 	if (t1->duration < t2->duration)
 		return -1;

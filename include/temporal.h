@@ -31,7 +31,7 @@
 
 #define EPSILON					1.0E-06
 
-#define MOBDB_LIB_VERSION_STR "MobilityDB 1.0alpha1"
+#define MOBDB_LIB_VERSION_STR "MobilityDB 1.0beta1"
 #define MOBDB_PGSQL_VERSION 115
 #define MOBDB_PGSQL_VERSION_STR "PostgreSQL 11.5"
 #define MOBDB_POSTGIS_VERSION 25
