@@ -2053,16 +2053,6 @@ temporalseq_always_eq(TemporalSeq *seq, Datum value)
 /*****************************************************************************/
 
 static bool
-tempcontseq_ever_lt1(Datum value1, Datum value2, Oid valuetypid, Datum value)
-{
-	/* Constant or increasing segment */
-	if (datum_le(value1, value2, valuetypid))
-		return datum_lt(value1, value, valuetypid);
-	/* Decreasing segment */
-	return datum_lt(value2, value, valuetypid);
-}
-
-static bool
 tempcontseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
 	bool lower_inc, bool upper_inc, Datum value)
 {
@@ -2110,31 +2100,21 @@ temporalseq_ever_lt(TemporalSeq *seq, Datum value)
 		memset(&box, 0, sizeof(TBOX));
 		temporalseq_bbox(&box, seq);
 		double d = datum_double(value, seq->valuetypid);
-		/* Minimum value may be non inclusive */
-		if (d < box.xmin)
-			return false;
-	}
-
-	if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
-	{
-		for (int i = 0; i < seq->count; i++)
-		{
-			Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
-			if (datum_lt(valueinst, value, seq->valuetypid))
-				return true;
-		}
+		if (box.xmin < d)
+			return true;
+		/* It is not necessary to take the bounds into account */
 		return false;
 	}
 
-	/* Continuous base type */
-	Datum value1 = temporalinst_value(temporalseq_inst_n(seq, 0));
-	/* It is not necessary to take the bounds into account */
-	for (int i = 1; i < seq->count; i++)
+	/* We are sure that the type has stewpwise interpolation since
+	 * there are currenty no other continuous base type besides tfloat
+	 * to which the ever < comparison applies */
+	assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
+	for (int i = 0; i < seq->count; i++)
 	{
-		Datum value2 = temporalinst_value(temporalseq_inst_n(seq, i));
-		if (tempcontseq_ever_lt1(value1, value2, seq->valuetypid, value))
+		Datum valueinst = temporalinst_value(temporalseq_inst_n(seq, i));
+		if (datum_lt(valueinst, value, seq->valuetypid))
 			return true;
-		value1 = value2;
 	}
 	return false;
 }
