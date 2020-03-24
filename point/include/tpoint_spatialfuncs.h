@@ -67,7 +67,7 @@ extern int tpointi_srid(const TemporalI *ti);
 extern int tpointseq_srid(const TemporalSeq *seq);
 extern int tpoints_srid(const TemporalS *ts);
 extern int tpoint_srid_internal(const Temporal *t);
-extern TemporalInst *tgeompointinst_transform(TemporalInst *inst, Datum srid);
+extern TemporalInst *tpointinst_transform(TemporalInst *inst, Datum srid);
 
 /* Cast functions */
 

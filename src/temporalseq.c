@@ -1411,10 +1411,10 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 		TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
 		TemporalInst *start2geom1 = tgeogpointinst_to_tgeompointinst(start2);
 		TemporalInst *end2geom1 = tgeogpointinst_to_tgeompointinst(end2);
-		TemporalInst *start1geom2 = tgeompointinst_transform(start1, bestsrid);
-		TemporalInst *end1geom2 = tgeompointinst_transform(start1, bestsrid);
-		TemporalInst *start2geom2 = tgeompointinst_transform(start2, bestsrid);
-		TemporalInst *end2geom2 = tgeompointinst_transform(start2, bestsrid);
+		TemporalInst *start1geom2 = tpointinst_transform(start1, bestsrid);
+		TemporalInst *end1geom2 = tpointinst_transform(start1, bestsrid);
+		TemporalInst *start2geom2 = tpointinst_transform(start2, bestsrid);
+		TemporalInst *end2geom2 = tpointinst_transform(start2, bestsrid);
 		result = tpointseq_intersect_at_timestamp(start1geom2, end1geom2, linear1,
 			start2geom2, end2geom2, linear2, inter);
 		pfree(DatumGetPointer(line1)); pfree(DatumGetPointer(line2)); 
