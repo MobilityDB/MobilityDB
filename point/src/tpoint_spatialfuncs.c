@@ -409,27 +409,6 @@ geompoint_trajectory_lwline(Datum value1, Datum value2)
 
 /* Compute a trajectory from a set of points. The result is either a line or a
  * multipoint depending on whether the interpolation is step or linear */
-static Datum
-pointarr_make_trajectory(Datum *points, int count, bool linear)
-{
-	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(points[i]);
-		lwpoints[i] = lwgeom_from_gserialized(gs);
-	}
-	LWGEOM *geom;
-	if (linear)
-		geom = (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count, lwpoints);
-	else
-		geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
-			NULL, (uint32_t) count, lwpoints);
-	Datum result = PointerGetDatum(geometry_serialize(geom));
-	for (int i = 0; i < count; i++)
-		lwgeom_free(lwpoints[i]);
-	pfree(lwpoints); pfree(geom);
-	return result;
-}
 
 static Datum
 lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
@@ -441,6 +420,22 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 			NULL, (uint32_t) count, lwpoints);
 	Datum result = PointerGetDatum(geometry_serialize(lwgeom));
 	pfree(lwgeom);
+	return result;
+}
+
+static Datum
+pointarr_make_trajectory(Datum *points, int count, bool linear)
+{
+	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
+	for (int i = 0; i < count; i++)
+	{
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(points[i]);
+		lwpoints[i] = lwgeom_from_gserialized(gs);
+	}
+	Datum result = lwpointarr_make_trajectory(lwpoints, count, linear);
+	for (int i = 0; i < count; i++)
+		lwgeom_free(lwpoints[i]);
+	pfree(lwpoints);
 	return result;
 }
 
