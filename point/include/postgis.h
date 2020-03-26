@@ -16,18 +16,49 @@
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
+#include <liblwgeom.h>
+
+/* Definitions copied from gserialized_gist.h */
+
 /*
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
  * for more details.
  */
+
+
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
 	do { \
 		if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
 			pfree(ptrsrc); \
 	} while (0)
 
-#include <liblwgeom.h>
+/* Definitions copied from measures.h */
+
+#define DIST_MAX		-1
+#define DIST_MIN		1
+
+typedef struct
+{
+	double distance;	/*the distance between p1 and p2*/
+	POINT2D p1;
+	POINT2D p2;
+	int mode;	/*the direction of looking, if thedir = -1 then we look for maxdistance and if it is 1 then we look for mindistance*/
+	int twisted; /*To preserve the order of incoming points to match the first and second point in shortest and longest line*/
+	double tolerance; /*the tolerance for dwithin and dfullywithin*/
+} DISTPTS;
+
+extern int lw_dist2d_comp(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
+
+/* Definitions copied from #include liblwgeom_internal.h */
+/*
+extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
+extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
+extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
+extern void closest_point_on_segment(const POINT4D *R, const POINT4D *A, const POINT4D *B, POINT4D *ret);
+*/
+
+/* PostGIS functions called by MobilityDB  */
 
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);

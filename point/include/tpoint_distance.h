@@ -22,6 +22,8 @@
 extern Datum geom_distance2d(Datum geom1, Datum geom2);
 extern Datum geom_distance3d(Datum geom1, Datum geom2);
 extern Datum geog_distance(Datum geog1, Datum geog2);
+extern Datum pt_distance2d(Datum geom1, Datum geom2);
+extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
 extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);

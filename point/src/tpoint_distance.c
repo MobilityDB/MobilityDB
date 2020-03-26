@@ -46,6 +46,22 @@ geog_distance(Datum geog1, Datum geog2)
 		Float8GetDatum(0.0), BoolGetDatum(true));
 }
 
+Datum
+pt_distance2d(Datum geom1, Datum geom2)
+{
+	POINT2D p1 = datum_get_point2d(geom1);
+	POINT2D p2 = datum_get_point2d(geom2);
+	return Float8GetDatum(distance2d_pt_pt(&p1, &p2));
+}
+
+Datum
+pt_distance3d(Datum geom1, Datum geom2)
+{
+	POINT3DZ p1 = datum_get_point3dz(geom1);
+	POINT3DZ p2 = datum_get_point3dz(geom2);
+	return Float8GetDatum(distance3d_pt_pt((POINT3D*)&p1, (POINT3D*)&p2));
+}
+
 /*****************************************************************************/
  
 /* Distance between temporal sequence point and a geometry/geography point */
@@ -256,8 +272,8 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
-			&geom_distance2d;
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
+			&pt_distance2d;
 	else
 		func = &geog_distance;
 
@@ -302,8 +318,8 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
 	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_distance3d :
-			&geom_distance2d;
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
+			&pt_distance2d;
 	else
 		func = &geog_distance;
 
@@ -334,8 +350,8 @@ distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
 {
 	Datum (*func)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &geom_distance3d :
-			&geom_distance2d;
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ? &pt_distance3d :
+			&pt_distance2d;
 	else
 		func = &geog_distance;
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 

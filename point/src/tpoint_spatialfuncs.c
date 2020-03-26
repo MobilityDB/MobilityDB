@@ -275,6 +275,20 @@ datum_get_point3dz(Datum geom)
 
 }
 
+/* Get 3DZ point from a datum */
+
+POINT4D
+datum_get_point4d(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
+	POINT4D point = getPoint4d(lwpoint->point, 0);
+	lwgeom_free(lwgeom);
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+	return point;
+}
+
 /* Compare two points from serialized geometries */
 
 bool
@@ -356,6 +370,7 @@ geom_to_geog(Datum value)
 {
 	return call_function1(geography_from_geometry, value);
 }
+
 
 /*****************************************************************************
  * Trajectory functions.
@@ -764,6 +779,62 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
 }
+
+/*****************************************************************************
+ * Functions dispatched from temporalseq.c
+ *****************************************************************************/
+/*
+ * Value that the temporal point sequence takes at the timestamp.
+ * The function supposes that the timestamp t is between inst1->t and inst2->t
+ * (both inclusive). The function creates a new value that must be freed.
+ */
+Datum
+tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio)
+{
+	Datum result;
+	ensure_point_base_type(valuetypid);
+	if (valuetypid == type_oid(T_GEOMETRY))
+	{
+		/* We are sure that the trajectory is a line */
+		Datum line = geompoint_trajectory(value1, value2);
+		result = call_function2(LWGEOM_line_interpolate_point,
+			line, Float8GetDatum(ratio));
+		pfree(DatumGetPointer(line));
+		
+		/* ALTERNATIVE VERSION TO TEST
+		LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
+		POINTARRAY* pa = lwline_interpolate_points(lwline, ratio, 0);
+		LWGEOM *lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(
+			lwline->srid, pa));
+		result = PointerGetDatum(geometry_serialize(lwresult));
+		lwline_free(lwline);
+		lwgeom_free(lwresult);
+		 */
+	}
+	else
+	{
+		/* We are sure that the trajectory is a line */
+		Datum line = geogpoint_trajectory(value1, value2);
+		/* There is no function equivalent to LWGEOM_line_interpolate_point
+		 * for geographies. We do as the ST_Intersection function, e.g.
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+		 * @extschema@._ST_BestSRID($1, $2)),
+		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+		Datum bestsrid = call_function2(geography_bestsrid, line, line);
+		Datum line1 = call_function1(geometry_from_geography, line);
+		Datum line2 = call_function2(transform, line1, bestsrid);
+		Datum point = call_function2(LWGEOM_line_interpolate_point,
+			line2, Float8GetDatum(ratio));
+		Datum srid = call_function1(LWGEOM_get_srid, value1);
+		Datum point1 = call_function2(transform, point, srid);
+		result = call_function1(geography_from_geometry, point1);
+		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
+		/* Cannot pfree(DatumGetPointer(point1)); */
+	}
+	return result;
+}
+
 
 /*****************************************************************************
  * Functions for spatial reference systems
@@ -1296,8 +1367,8 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
-				&geom_distance2d;
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &pt_distance3d :
+				&pt_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1407,8 +1478,8 @@ tpointseq_speed(TemporalSeq *seq)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
-				&geom_distance2d;
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &pt_distance3d :
+				&pt_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1764,7 +1835,11 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
 {
-	return call_function2(LWGEOM_azimuth, geom1, geom2);
+	POINT2D p1 = datum_get_point2d(geom1);
+	POINT2D p2 = datum_get_point2d(geom2);
+	double result;
+	azimuth_pt_pt(&p1, &p2, &result);
+	return Float8GetDatum(result);
 }
 
 static Datum
@@ -2490,8 +2565,83 @@ NAI_tpointseq_stw_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 /* NAI between temporal sequence point with linear interpolation and a
  * geometry/geography */
 
+/* Function inspired from PostGIS function lw_dist2d_distancepoint from measures.c
+ * by returning also the distance between the closest/longest point */
+static LWPOINT *
+lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
+{
+	DISTPTS thedl;
+	double initdistance = FLT_MAX;
+	LWPOINT *result;
+
+	thedl.mode = mode;
+	thedl.distance= initdistance;
+	thedl.tolerance = 0;
+
+	if (! lw_dist2d_comp(lw1,lw2,&thedl))
+	{
+		/*should never get here. all cases ought to be error handled earlier*/
+		elog(ERROR, "Some unspecified error.");
+	}
+	if (thedl.distance == initdistance)
+	{
+		/*didn't find geometries to measure between*/
+		elog(ERROR, "Some unspecified error.");
+	}
+	else
+	{
+		result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
+		*dist = thedl.distance;
+	}
+	return result;
+}
+
 static Datum
-NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
+NAI_tpointseq_geom1(TemporalInst *inst1, TemporalInst *inst2,
+	LWGEOM *lwgeom, TimestampTz *t, bool *tofree, double *dist)
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	/* Constant segment */
+	if (datum_point_eq(value1, value2))
+	{
+		*t = inst1->t;
+		*tofree = false;
+		return value1;
+	}
+
+	/* The trajectory is a line */
+	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
+	LWPOINT *lwpoint = lw_dist2d_point_dist((LWGEOM *)lwline, lwgeom,
+		lwline->srid, DIST_MIN, dist);
+	POINT4D p, p_proj;
+	lwpoint_getPoint4d_p(lwpoint, &p);
+	double fraction = ptarray_locate_point(lwline->points, &p, NULL, &p_proj);
+	lwline_free(lwline); lwpoint_free(lwpoint);
+
+	if (fraction == 0)
+	{
+		*t = inst1->t;
+		*tofree = false;
+		return value1;
+	}
+	if (fraction == 1)
+	{
+		*t = inst2->t;
+		*tofree = false;
+		return value2;
+	}
+
+	*t = inst1->t + (long)((double) (inst2->t - inst1->t) * fraction);
+	*tofree = true;
+	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, p_proj.x, p_proj.y);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+	lwpoint_free(lwres);
+	return result;
+}
+
+static Datum
+NAI_tpointseq_geog1(TemporalInst *inst1, TemporalInst *inst2,
 	Datum geo, TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -2505,37 +2655,24 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	double fraction;
-	ensure_point_base_type(inst1->valuetypid);
-	if (inst1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		/* The trajectory is a line */
-		Datum traj = geompoint_trajectory(value1, value2);
-		Datum point = call_function2(LWGEOM_closestpoint, traj, geo);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj, point));
-		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
-	}
-	else
-	{
-		/* The trajectory is a line */
-		Datum traj = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_locate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
-		Datum traj1 = call_function1(geometry_from_geography, traj);
-		Datum traj2 = call_function2(transform, traj1, bestsrid);
-		Datum geo1 = call_function1(geometry_from_geography, geo);
-		Datum geo2 = call_function2(transform, geo1, bestsrid);
-		Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj2, point));
-		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
-		pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
-		pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
-	}
+	/* The trajectory is a line */
+	Datum traj = geogpoint_trajectory(value1, value2);
+	/* There is no function equivalent to LWGEOM_line_locate_point
+	 * for geographies. We do as the ST_Intersection function, e.g.
+	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+	 * @extschema@._ST_BestSRID($1, $2)),
+	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+	Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
+	Datum traj1 = call_function1(geometry_from_geography, traj);
+	Datum traj2 = call_function2(transform, traj1, bestsrid);
+	Datum geo1 = call_function1(geometry_from_geography, geo);
+	Datum geo2 = call_function2(transform, geo1, bestsrid);
+	Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
+	fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+		traj2, point));
+	pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
+	pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
+	pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
 
 	if (fraction == 0)
 	{
@@ -2573,13 +2710,29 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	TimestampTz tmin = 0; /* keep compiler quiet */
 	bool mintofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	ensure_point_base_type(inst1->valuetypid);
+	bool geometry = inst1->valuetypid == type_oid(T_GEOMETRY);
+	GSERIALIZED *gsgeom;
+	LWGEOM *lwgeom;
+	if (geometry)
+	{
+		gsgeom = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
+		lwgeom = lwgeom_from_gserialized(gsgeom);
+	}
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		TimestampTz t;
 		bool tofree;
-		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
-		double dist = DatumGetFloat8(func(point, geo));
+		Datum point;
+		double dist;
+		if (geometry)
+			point = NAI_tpointseq_geom1(inst1, inst2, lwgeom, &t, &tofree, &dist);
+		else
+		{
+			point = NAI_tpointseq_geog1(inst1, inst2, geo, &t, &tofree);
+			dist = DatumGetFloat8(func(point, geo));
+		}
 		if (dist < mindist)
 		{
 			mindist = dist;
@@ -2594,6 +2747,11 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	TemporalInst *result = temporalinst_make(minpoint, tmin, seq->valuetypid);
 	if (mintofree)
 		pfree(DatumGetPointer(minpoint));
+	if (geometry)
+	{
+		POSTGIS_FREE_IF_COPY_P(gsgeom, DatumGetPointer(geo));
+		lwgeom_free(lwgeom);
+	}
 	return result;
 }
 
@@ -3920,7 +4078,7 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 	{
 		Datum (*func)(Datum, Datum);
 		if (withspeed)
-			func = hasz ? &geom_distance3d : &geom_distance2d;
+			func = hasz ? &pt_distance3d : &pt_distance2d;
 		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
 		if (withspeed)
