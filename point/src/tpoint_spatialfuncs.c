@@ -3107,18 +3107,25 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		func, FLOAT8OID, linear, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
-	/* Make a copy of the sequences with inclusive bounds */
-	TemporalSeq *newseq1 = temporalseq_copy(seq1);
-	newseq1->period.lower_inc = true;
-	newseq1->period.upper_inc = true;
-	TemporalSeq *newseq2 = temporalseq_copy(seq2);
-	newseq2->period.lower_inc = true;
-	newseq2->period.upper_inc = true;
-	TemporalInst *inst1 = temporalseq_at_timestamp(newseq1, t);
-	TemporalInst *inst2 = temporalseq_at_timestamp(newseq2, t);
+	/* Timestamp t may be at an exclusive bound */
+	TemporalInst *inst1, *inst2;
+	if (t == seq1->period.lower)
+	{
+		inst1 = temporalseq_inst_n(seq1, 0);
+		inst2 = temporalseq_inst_n(seq2, 0);
+	}
+	else if (t == seq1->period.upper)
+	{
+		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
+		inst2 = temporalseq_inst_n(seq2, seq1->count - 1);
+	}
+	else
+	{
+		inst1 = temporalseq_at_timestamp(seq1, t);
+		inst2 = temporalseq_at_timestamp(seq2, t);
+	}
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist); pfree(inst1); pfree(inst2);
-	pfree(newseq1); pfree(newseq2);
+	pfree(dist); pfree(mindist);
 	return result;
 }
 

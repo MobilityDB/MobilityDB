@@ -1944,23 +1944,49 @@ temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 static TemporalS *
 temporals_at_minmax(TemporalS *ts, Datum value)
 {
-	/* The minimum/maximum may be at exclusive bounds */
-	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
-	int k = 0;
-	for (int i = 0; i < ts->count; i++)
+	TemporalS *result = temporals_at_value(ts, value);
+	/* If minimum/maximum is at an exclusive bound */
+	if (result == NULL)
 	{
-		TemporalSeq *seq = temporals_seq_n(ts, i);
-		k += temporalseq_at_minmax(&sequences[k], seq, value);
+		bool linear = MOBDB_FLAGS_GET_LINEAR(ts->flags);
+		TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count * 2);
+		int k = 0;
+		for (int i = 0; i < ts->count; i++)
+		{
+			TemporalSeq *seq = temporals_seq_n(ts, i);
+			TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+			TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count - 1);
+			Datum value1 = temporalinst_value(inst1);
+			Datum value2 = temporalinst_value(inst2);
+			if (datum_eq(value, value1, seq->valuetypid) &&
+				datum_eq(value, value2, seq->valuetypid))
+			{
+				sequences[k++] = temporalseq_make(&inst1, 1, true, true,
+					linear, false);
+				sequences[k++] = temporalseq_make(&inst2, 1, true, true,
+					linear, false);
+			}
+			else if (datum_eq(value, value1, seq->valuetypid))
+			{
+				sequences[k++] = temporalseq_make(&inst1, 1, true, true,
+					linear, false);
+			}
+			else if (datum_eq(value, value2, seq->valuetypid))
+			{
+				sequences[k++] = temporalseq_make(&inst2, 1, true, true,
+					linear, false);
+			}
+		}
+		/* The minimum/maximum could be at the upper exclusive bound of one
+		 * sequence and at the lower exclusive bound of the next one
+		 * e.g., .... min@t) (min@t .... */
+		temporalseqarr_sort(sequences, k);
+		int count = temporalseqarr_remove_duplicates(sequences, k);
+		result = temporals_make(sequences, count, true);
+		for (int i = 0; i < k; i++)
+			pfree(sequences[i]);
+		pfree(sequences);
 	}
-	/* The minimum/maximum could be at the upper exclusive bound of one
-	 * sequence and at the lower exclusive bound of the next one
-	 * e.g., .... min@t) (min@t .... */
-	temporalseqarr_sort(sequences, k);
-	int count = temporalseqarr_remove_duplicates(sequences, k);
-	TemporalS *result = temporals_make(sequences, count, true);
-	for (int i = 0; i < k; i++)
-		pfree(sequences[i]);
-	pfree(sequences);
 	return result;
 }
 
