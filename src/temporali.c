@@ -96,7 +96,6 @@ temporali_make(TemporalInst **instants, int count)
 		{
 			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
-			ensure_same_geodetic_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 		}
 	}
 
@@ -353,7 +352,6 @@ temporali_append_array(TemporalI **tis, int count)
 		{
 			ensure_same_srid_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
-			ensure_same_geodetic_tpoint((Temporal *)tis[i - 1], (Temporal *)tis[i]);
 		}
 		inst1 = temporali_inst_n(tis[i - 1], tis[i - 1]->count - 1);
 		inst2 = temporali_inst_n(tis[i], 0);

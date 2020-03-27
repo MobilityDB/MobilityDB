@@ -42,14 +42,6 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 void
-ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags) != MOBDB_FLAGS_GET_GEODETIC(temp2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal points must be both planar or both geodetic")));
-}
-
-void
 ensure_same_geodetic_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
 	if (MOBDB_FLAGS_GET_X(box->flags) &&
@@ -806,16 +798,6 @@ tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio)
 		result = call_function2(LWGEOM_line_interpolate_point,
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line));
-
-		/* ALTERNATIVE VERSION TO TEST
-		LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
-		POINTARRAY* pa = lwline_interpolate_points(lwline, ratio, 0);
-		LWGEOM *lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(
-			lwline->srid, pa));
-		result = PointerGetDatum(geometry_serialize(lwresult));
-		lwline_free(lwline);
-		lwgeom_free(lwresult);
-		*/
 	}
 	else
 	{
@@ -2578,27 +2560,12 @@ lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, d
 {
 	DISTPTS thedl;
 	double initdistance = FLT_MAX;
-	LWPOINT *result;
-
 	thedl.mode = mode;
 	thedl.distance= initdistance;
 	thedl.tolerance = 0;
-
-	if (! lw_dist2d_comp(lw1,lw2,&thedl))
-	{
-		/*should never get here. all cases ought to be error handled earlier*/
-		elog(ERROR, "Some unspecified error.");
-	}
-	if (thedl.distance == initdistance)
-	{
-		/*didn't find geometries to measure between*/
-		elog(ERROR, "Some unspecified error.");
-	}
-	else
-	{
-		result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
-		*dist = thedl.distance;
-	}
+	lw_dist2d_comp(lw1,lw2,&thedl);
+	LWPOINT *result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
+	*dist = thedl.distance;
 	return result;
 }
 

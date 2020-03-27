@@ -606,7 +606,6 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 		{
 			ensure_same_srid_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
-			ensure_same_geodetic_tpoint((Temporal *)instants[i - 1], (Temporal *)instants[i]);
 		}
 	}
 	if (!linear && count > 1 && !upper_inc &&
@@ -918,7 +917,6 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 		{
 			ensure_same_srid_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
 			ensure_same_dimensionality_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
-			ensure_same_geodetic_tpoint((Temporal *)seqs[i - 1], (Temporal *)seqs[i]);
 		}
 		TemporalInst *inst1 = temporalseq_inst_n(seqs[i - 1], seqs[i - 1]->count - 1);
 		TemporalInst *inst2 = temporalseq_inst_n(seqs[i], 0);
