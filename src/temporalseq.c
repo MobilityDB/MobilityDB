@@ -3201,10 +3201,44 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		double dresult = start + (end - start) * ratio;
 		result = Float8GetDatum(dresult);
 	}
-	else if (valuetypid == type_oid(T_DOUBLE2) ||
-		valuetypid == type_oid(T_GEOMETRY))
+	else if (valuetypid == type_oid(T_DOUBLE2))
 	{
-		result = tpointseq_interpolate(value1, value2, valuetypid, ratio);
+		double2 *start = DatumGetDouble2P(value1);
+		double2 *end = DatumGetDouble2P(value2);
+		double2 *dresult = palloc(sizeof(double2));
+		dresult->a = start->a + (end->a - start->a) * ratio;
+		dresult->b = start->b + (end->b - start->b) * ratio;
+		result = Double2PGetDatum(dresult);
+	}
+	else if (valuetypid == type_oid(T_GEOMETRY))
+	{
+		/* We are sure that the trajectory is a line */
+		Datum line = geompoint_trajectory(value1, value2);
+		result = call_function2(LWGEOM_line_interpolate_point,
+			line, Float8GetDatum(ratio));
+		pfree(DatumGetPointer(line));
+		//result = tpointseq_interpolate(value1, value2, valuetypid, ratio);
+	}
+	else if (valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		/* We are sure that the trajectory is a line */
+		Datum line = geogpoint_trajectory(value1, value2);
+		/* There is no function equivalent to LWGEOM_line_interpolate_point
+		 * for geographies. We do as the ST_Intersection function, e.g.
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+		 * @extschema@._ST_BestSRID($1, $2)),
+		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+		Datum bestsrid = call_function2(geography_bestsrid, line, line);
+		Datum line1 = call_function1(geometry_from_geography, line);
+		Datum line2 = call_function2(transform, line1, bestsrid);
+		Datum point = call_function2(LWGEOM_line_interpolate_point,
+			line2, Float8GetDatum(ratio));
+		Datum srid = call_function1(LWGEOM_get_srid, value1);
+		Datum point1 = call_function2(transform, point, srid);
+		result = call_function1(geography_from_geometry, point1);
+		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
+		/* Cannot pfree(DatumGetPointer(point1)); */
 	}
 	else if (valuetypid == type_oid(T_DOUBLE3))
 	{

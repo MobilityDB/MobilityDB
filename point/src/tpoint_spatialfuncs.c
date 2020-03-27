@@ -800,7 +800,7 @@ tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio)
 		result = call_function2(LWGEOM_line_interpolate_point,
 			line, Float8GetDatum(ratio));
 		pfree(DatumGetPointer(line));
-		
+
 		/* ALTERNATIVE VERSION TO TEST
 		LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
 		POINTARRAY* pa = lwline_interpolate_points(lwline, ratio, 0);
