@@ -186,6 +186,14 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 }
 
 void
+ensure_has_not_Z_gs(const GSERIALIZED *gs)
+{
+	if (FLAGS_GET_Z(gs->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Only geometries without Z dimension accepted")));
+}
+
+void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
 	if (! FLAGS_GET_M(gs->flags))
@@ -275,20 +283,6 @@ datum_get_point3dz(Datum geom)
 
 }
 
-/* Get 3DZ point from a datum */
-
-POINT4D
-datum_get_point4d(Datum geom)
-{
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
-	POINT4D point = getPoint4d(lwpoint->point, 0);
-	lwgeom_free(lwgeom);
-	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-	return point;
-}
-
 /* Compare two points from serialized geometries */
 
 bool
@@ -312,6 +306,18 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 		POINT2D point2 = gs_get_point2d(gs2);
 		return point1.x == point2.x && point1.y == point2.y;
 	}
+}
+
+Datum
+datum2_point_eq(Datum geopoint1, Datum geopoint2)
+{
+	return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
+}
+
+Datum
+datum2_point_ne(Datum geopoint1, Datum geopoint2)
+{
+	return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
 }
 
 static Datum
@@ -809,7 +815,7 @@ tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio)
 		result = PointerGetDatum(geometry_serialize(lwresult));
 		lwline_free(lwline);
 		lwgeom_free(lwresult);
-		 */
+		*/
 	}
 	else
 	{

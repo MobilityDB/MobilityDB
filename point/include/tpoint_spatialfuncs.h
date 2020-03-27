@@ -42,6 +42,7 @@ extern void ensure_has_T_stbox(const STBOX *box);
 extern void ensure_has_Z_tpoint(const Temporal *temp);
 extern void ensure_has_not_Z_tpoint(const Temporal *temp);
 extern void ensure_has_Z_gs(const GSERIALIZED *gs);
+extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
 extern void ensure_point_type(const GSERIALIZED *gs);
@@ -53,8 +54,9 @@ extern POINT2D gs_get_point2d(GSERIALIZED *gs);
 extern POINT3DZ gs_get_point3dz(GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
-extern POINT4D datum_get_point4d(Datum value);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
+extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
+extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 extern Datum tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio);

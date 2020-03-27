@@ -16,6 +16,8 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 
+#include "temporal.h"
+
 /*****************************************************************************/
 
 extern Datum datum_and(Datum l, Datum r);
@@ -31,6 +33,7 @@ extern Datum tor_tbool_tbool(PG_FUNCTION_ARGS);
 
 extern Datum tnot_tbool(PG_FUNCTION_ARGS);
 
+extern Temporal *tnot_tbool_internal(Temporal *temp);
 
 /*****************************************************************************/
 

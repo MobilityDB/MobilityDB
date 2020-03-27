@@ -1260,13 +1260,13 @@ synchronize_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
  * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison 
  * changes its value before/at/after the intersection point */
 static bool
-tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+tnumberseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
+	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *t)
 {
 	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
-	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
+	double x2 = linear1 ? datum_double(temporalinst_value(end1), start1->valuetypid) : x1;
 	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
-	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
+	double x4 = linear2 ? datum_double(temporalinst_value(end2), start2->valuetypid) : x3;
 	/* Compute the instant t at which the linear functions of the two segments
 	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
 	   To reduce problems related to floating point arithmetic, t1 and t2
@@ -1393,9 +1393,11 @@ temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, boo
 	ensure_temporal_base_type(start1->valuetypid);
 	if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
 		(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
-		result = tnumberseq_intersect_at_timestamp(start1, end1, start2, end2, inter);
+		result = tnumberseq_intersect_at_timestamp(start1, end1, linear1,
+			start2, end2, linear2, inter);
 	else if (start1->valuetypid == type_oid(T_GEOMETRY))
-		result = tpointseq_intersect_at_timestamp(start1, end1, linear1, start2, end2, linear2, inter);
+		result = tpointseq_intersect_at_timestamp(start1, end1, linear1,
+			start2, end2, linear2, inter);
 	else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		/* For geographies we do as the ST_Intersection function, e.g.
@@ -3210,35 +3212,10 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		dresult->b = start->b + (end->b - start->b) * ratio;
 		result = Double2PGetDatum(dresult);
 	}
-	else if (valuetypid == type_oid(T_GEOMETRY))
+	else if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
 	{
-		/* We are sure that the trajectory is a line */
-		Datum line = geompoint_trajectory(value1, value2);
-		result = call_function2(LWGEOM_line_interpolate_point,
-			line, Float8GetDatum(ratio));
-		pfree(DatumGetPointer(line));
-		//result = tpointseq_interpolate(value1, value2, valuetypid, ratio);
-	}
-	else if (valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		/* We are sure that the trajectory is a line */
-		Datum line = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_interpolate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, line, line);
-		Datum line1 = call_function1(geometry_from_geography, line);
-		Datum line2 = call_function2(transform, line1, bestsrid);
-		Datum point = call_function2(LWGEOM_line_interpolate_point,
-			line2, Float8GetDatum(ratio));
-		Datum srid = call_function1(LWGEOM_get_srid, value1);
-		Datum point1 = call_function2(transform, point, srid);
-		result = call_function1(geography_from_geometry, point1);
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
-		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
-		/* Cannot pfree(DatumGetPointer(point1)); */
+		result = tpointseq_interpolate(value1, value2, valuetypid, ratio);
 	}
 	else if (valuetypid == type_oid(T_DOUBLE3))
 	{

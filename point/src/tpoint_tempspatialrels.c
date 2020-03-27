@@ -35,6 +35,7 @@
 #include "temporaltypes.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+#include "temporal_boolops.h"
 #include "lifting.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
@@ -1453,7 +1454,8 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1475,7 +1477,8 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1501,7 +1504,8 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1529,7 +1533,8 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1561,7 +1566,8 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1589,7 +1595,8 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1611,6 +1618,8 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Temporal disjoint
+ * Since the ST_Disjoint function in PostGIS does not support 3D, we use
+ * ST_3DIntersects and negate the result
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
@@ -1628,8 +1637,16 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_disjoint, BOOLOID, true);
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
+			&geom_intersects2d;
+	else
+		func = &geog_intersects;
+	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+		func, BOOLOID, true);
+	Temporal *result = tnot_tbool_internal(negresult);
+	pfree(negresult);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1650,8 +1667,16 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_disjoint, BOOLOID, false);
+	Datum (*func)(Datum, Datum);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
+			&geom_intersects2d;
+	else
+		func = &geog_intersects;
+	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
+		func, BOOLOID, true);
+	Temporal *result = tnot_tbool_internal(negresult);
+	pfree(negresult);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -1667,7 +1692,7 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_disjoint, BOOLOID);
+		&datum2_point_ne, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1686,6 +1711,7 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 {
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
+	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -1695,7 +1721,7 @@ tequals_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_equals, BOOLOID, true);
+		&datum2_point_eq, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1708,6 +1734,7 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_point_type(gs);
 	ensure_same_srid_tpoint_gs(temp, gs);
 	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	if (gserialized_is_empty(gs))
@@ -1717,7 +1744,7 @@ tequals_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		&geom_equals, BOOLOID, false);
+		&datum2_point_eq, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -1733,7 +1760,7 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_same_srid_tpoint(temp1, temp2);
 	ensure_same_dimensionality_tpoint(temp1, temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_equals, BOOLOID);
+		&datum2_point_eq, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
@@ -1839,7 +1866,8 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1861,7 +1889,8 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -1887,7 +1916,8 @@ twithin_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -1909,7 +1939,8 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2035,7 +2066,8 @@ trelate_geo_tpoint(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2057,7 +2089,8 @@ trelate_tpoint_geo(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2079,7 +2112,8 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp1 = PG_GETARG_TEMPORAL(0);
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
+	ensure_has_not_Z_tpoint(temp1);
+	ensure_has_not_Z_tpoint(temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
 		&geom_relate, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);
@@ -2102,7 +2136,8 @@ trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(gs, 0);
@@ -2125,7 +2160,8 @@ trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
 	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	ensure_has_not_Z_tpoint(temp);
+	ensure_has_not_Z_gs(gs);
 	if (gserialized_is_empty(gs))
 	{
 		PG_FREE_IF_COPY(temp, 0);
@@ -2148,7 +2184,8 @@ trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *temp2 = PG_GETARG_TEMPORAL(1);
 	Datum pattern = PG_GETARG_DATUM(2);
 	ensure_same_srid_tpoint(temp1, temp2);
-	ensure_same_dimensionality_tpoint(temp1, temp2);
+	ensure_has_not_Z_tpoint(temp1);
+	ensure_has_not_Z_tpoint(temp2);
 	Temporal *result = sync_tfunc3_temporal_temporal_cross(temp1, temp2,
 		pattern, &geom_relate_pattern, BOOLOID);
 	PG_FREE_IF_COPY(temp1, 0);

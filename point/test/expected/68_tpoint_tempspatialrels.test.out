@@ -46,54 +46,6 @@ SELECT tcontains(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Po
  
 (1 row)
 
-SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-        tcontains         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                   tcontains                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                     tcontains                                      
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                tcontains                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcontains(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- tcontains 
------------
- 
-(1 row)
-
 SELECT tcontains(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
         tcontains         
 --------------------------
@@ -142,63 +94,19 @@ SELECT tcontains(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
  
 (1 row)
 
-SELECT tcontains(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-        tcontains         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcontains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                   tcontains                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcontains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                                     tcontains                                      
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcontains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                                tcontains                                                                 
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcontains(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- tcontains 
------------
- 
-(1 row)
-
-SELECT tcontains(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- tcontains 
------------
- 
-(1 row)
-
 /* Errors */
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcontains(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcontains(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT tcontains(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tcovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          tcovers          
 --------------------------
@@ -242,54 +150,6 @@ SELECT tcovers(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point
 (1 row)
 
 SELECT tcovers(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-         tcovers          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                      tcovers                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                 tcovers                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  tcovers 
 ---------
  
@@ -343,54 +203,6 @@ SELECT tcovers(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-01,
  
 (1 row)
 
-SELECT tcovers(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-         tcovers          
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-                        tcovers                         
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
-                                                   tcovers                                                    
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
- tcovers 
----------
- 
-(1 row)
-
 SELECT tcovers(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
          tcovers          
 --------------------------
@@ -434,54 +246,6 @@ SELECT tcovers(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 (1 row)
 
 SELECT tcovers(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-         tcovers          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                                      tcovers                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                                 tcovers                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
  tcovers 
 ---------
  
@@ -535,71 +299,31 @@ SELECT tcovers(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
  
 (1 row)
 
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
-         tcovers          
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcovers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)');
-                                    tcovers                                     
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcovers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)');
-                        tcovers                         
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)');
-                                                   tcovers                                                    
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
-SELECT tcovers(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
- tcovers 
----------
- 
-(1 row)
-
 /* Errors */
 SELECT tcovers(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcovers(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcovers(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT tcovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcovers(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT tcovers(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tcovers(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcovers(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcovers(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT tcovers(geography 'Point(1 1)', tgeogpoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcovers(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT tcovers(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tcoveredby(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tcoveredby        
 --------------------------
@@ -643,54 +367,6 @@ SELECT tcoveredby(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Po
 (1 row)
 
 SELECT tcoveredby(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-        tcoveredby        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                     tcoveredby                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                tcoveredby                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  tcoveredby 
 ------------
  
@@ -744,54 +420,6 @@ SELECT tcoveredby(geography 'Point empty', tgeogpoint '{[Point(1.5 1.5)@2000-01-
  
 (1 row)
 
-SELECT tcoveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
-        tcoveredby        
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1 1 1)', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1 1 1)', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
-                       tcoveredby                       
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geography 'Point(1 1 1)', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
-                                                  tcoveredby                                                  
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(geography 'Point Z empty', tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point Z empty', tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point Z empty', tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(geography 'Point Z empty', tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}');
- tcoveredby 
-------------
- 
-(1 row)
-
 SELECT tcoveredby(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
         tcoveredby        
 --------------------------
@@ -835,54 +463,6 @@ SELECT tcoveredby(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poi
 (1 row)
 
 SELECT tcoveredby(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-        tcoveredby        
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                                     tcoveredby                                     
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                                tcoveredby                                                                
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
  tcoveredby 
 ------------
  
@@ -936,71 +516,31 @@ SELECT tcoveredby(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-0
  
 (1 row)
 
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point(1 1 1)');
-        tcoveredby        
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point(1 1 1)');
-                                   tcoveredby                                   
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point(1 1 1)');
-                       tcoveredby                       
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point(1 1 1)');
-                                                  tcoveredby                                                  
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01',  geography 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}',  geography 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]',  geography 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
-SELECT tcoveredby(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}',  geography 'Point Z empty');
- tcoveredby 
-------------
- 
-(1 row)
-
 /* Errors */
 SELECT tcoveredby(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcoveredby(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcoveredby(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT tcoveredby(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcoveredby(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT tcoveredby(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tcoveredby(geography 'SRID=4283;Point(1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcoveredby(tgeogpoint 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT tcoveredby(geography 'Point(1 1 1)', tgeogpoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT tcoveredby(geography 'Point(1 1)', tgeogpoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT tcoveredby(tgeogpoint 'Point(1 1 1)@2000-01-01', geography 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT tcoveredby(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tdisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
         tdisjoint         
 --------------------------
@@ -2738,54 +2278,6 @@ SELECT ttouches(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Poi
  
 (1 row)
 
-SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-         ttouches         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    ttouches                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                        ttouches                        
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                   ttouches                                                   
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- ttouches 
-----------
- 
-(1 row)
-
 SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
          ttouches         
 --------------------------
@@ -2834,63 +2326,19 @@ SELECT ttouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
  
 (1 row)
 
-SELECT ttouches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-         ttouches         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT ttouches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                    ttouches                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT ttouches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                        ttouches                        
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                   ttouches                                                   
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- ttouches 
-----------
- 
-(1 row)
-
-SELECT ttouches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- ttouches 
-----------
- 
-(1 row)
-
 /* Errors */
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT ttouches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT twithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
          twithin          
 --------------------------
@@ -2934,54 +2382,6 @@ SELECT twithin(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point
 (1 row)
 
 SELECT twithin(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-         twithin          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT twithin(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    twithin                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT twithin(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                      twithin                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT twithin(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                 twithin                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT twithin(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
  twithin 
 ---------
  
@@ -3035,63 +2435,19 @@ SELECT twithin(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  
 (1 row)
 
-SELECT twithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-         twithin          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT twithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                    twithin                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT twithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                                      twithin                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT twithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                                 twithin                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT twithin(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- twithin 
----------
- 
-(1 row)
-
-SELECT twithin(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
- twithin 
----------
- 
-(1 row)
-
 /* Errors */
 SELECT twithin(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT twithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT twithin(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT twithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT twithin(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT twithin(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT tdwithin(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 2);
          tdwithin         
 --------------------------
@@ -3990,54 +3346,6 @@ SELECT trelate(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Poin
  
 (1 row)
 
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
-              trelate               
-------------------------------------
- "0FFFFFFF2"@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                                   trelate                                                    
---------------------------------------------------------------------------------------------------------------
- {"0FFFFFFF2"@2000-01-01 00:00:00+00, "FF0FFF0F2"@2000-01-02 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                                     trelate                                                      
-------------------------------------------------------------------------------------------------------------------
- {["0FFFFFFF2"@2000-01-01 00:00:00+00], ("FF0FFF0F2"@2000-01-01 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                                          trelate                                                                                           
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {["0FFFFFFF2"@2000-01-01 00:00:00+00], ("FF0FFF0F2"@2000-01-01 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00], ["FF0FFF0F2"@2000-01-04 00:00:00+00, "FF0FFF0F2"@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
- trelate 
----------
- 
-(1 row)
-
 SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point(1 1)');
               trelate               
 ------------------------------------
@@ -4081,54 +3389,6 @@ SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 (1 row)
 
 SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)');
-              trelate               
-------------------------------------
- "0FFFFFFF2"@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)');
-                                                   trelate                                                    
---------------------------------------------------------------------------------------------------------------
- {"0FFFFFFF2"@2000-01-01 00:00:00+00, "FF0FFF0F2"@2000-01-02 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)');
-                                                     trelate                                                      
-------------------------------------------------------------------------------------------------------------------
- {["0FFFFFFF2"@2000-01-01 00:00:00+00], ("FF0FFF0F2"@2000-01-01 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-                                                                                          trelate                                                                                           
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {["0FFFFFFF2"@2000-01-01 00:00:00+00], ("FF0FFF0F2"@2000-01-01 00:00:00+00, "0FFFFFFF2"@2000-01-03 00:00:00+00], ["FF0FFF0F2"@2000-01-04 00:00:00+00, "FF0FFF0F2"@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty');
  trelate 
 ---------
  
@@ -4230,102 +3490,6 @@ SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  {[t@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], (t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                                                 trelate                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], (t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]');
-                                                                 trelate                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], (t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                 trelate                                                                  
-------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], (t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-                                                                                            trelate                                                                                             
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00], (t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
 /* Errors */
 SELECT trelate(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal point and the geometry must be in the same SRID
@@ -4334,11 +3498,17 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT trelate(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The temporal points must be in the same SRID
 SELECT trelate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT trelate(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+ERROR:  Only geometries without Z dimension accepted
 SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01');
+ERROR:  The temporal point cannot have Z dimension
 SELECT trelate(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
          trelate          
 --------------------------
@@ -4382,54 +3552,6 @@ SELECT trelate(geometry 'Point empty', tgeompoint '[Point(1 1)@2000-01-01, Point
 (1 row)
 
 SELECT trelate(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                                      trelate                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-                                                    trelate                                                     
-----------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00]}
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(geometry 'Point Z empty', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
  trelate 
 ---------
  
@@ -4490,54 +3612,6 @@ SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
 (1 row)
 
 SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point empty', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point(1 1 1)', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point(1 1 1)', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point(1 1 1)', 'T*****FF*');
-                                      trelate                                       
-------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)', 'T*****FF*');
-                                                    trelate                                                     
-----------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}',  geometry 'Point Z empty', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]',  geometry 'Point Z empty', 'T*****FF*');
- trelate 
----------
- 
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point Z empty', 'T*****FF*');
  trelate 
 ---------
  
@@ -4639,102 +3713,6 @@ SELECT trelate(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                        trelate                         
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                        trelate                         
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-         trelate          
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT trelate(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-                                    trelate                                     
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT trelate(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-                        trelate                         
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-                                                   trelate                                                    
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
 SELECT trelate(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', tgeompoint '[Point(1 2)@2000-01-01, Point(2 1)@2000-01-02]', 'T*****FF*');
                                                    trelate                                                    
 --------------------------------------------------------------------------------------------------------------
@@ -4785,11 +3763,17 @@ ERROR:  The temporal point and the geometry must be in the same SRID
 SELECT trelate(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
 ERROR:  The temporal points must be in the same SRID
 SELECT trelate(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  Only geometries without Z dimension accepted
+SELECT trelate(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The temporal point cannot have Z dimension
 SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)', 'T*****FF*');
-ERROR:  The temporal point and the geometry must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)', 'T*****FF*');
+ERROR:  Only geometries without Z dimension accepted
 SELECT trelate(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01', 'T*****FF*');
-ERROR:  The temporal points must be of the same dimensionality
+ERROR:  The temporal point cannot have Z dimension
+SELECT trelate(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 'T*****FF*');
+ERROR:  The temporal point cannot have Z dimension
 SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', 'T*****FF*');
                        trelate                        
 ------------------------------------------------------
@@ -4809,30 +3793,6 @@ SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@20
 (1 row)
 
 SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', 'T*****FF*');
-                                                   trelate                                                    
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                       trelate                        
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 'T*****FF*');
-                        trelate                         
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
-                        trelate                         
---------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT trelate(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 'T*****FF*');
                                                    trelate                                                    
 --------------------------------------------------------------------------------------------------------------
  {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}

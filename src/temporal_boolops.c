@@ -184,12 +184,9 @@ tnot_tbools(TemporalS *ts)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tnot_tbool);
-
-PGDLLEXPORT Datum
-tnot_tbool(PG_FUNCTION_ARGS)
+Temporal *
+tnot_tbool_internal(Temporal *temp)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
@@ -199,7 +196,17 @@ tnot_tbool(PG_FUNCTION_ARGS)
 	else if (temp->duration == TEMPORALSEQ)
 		result = (Temporal *)tnot_tboolseq((TemporalSeq *)temp);
 	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tnot_tbools((TemporalS *)temp);	
+		result = (Temporal *)tnot_tbools((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tnot_tbool);
+
+PGDLLEXPORT Datum
+tnot_tbool(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Temporal *result = tnot_tbool_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
