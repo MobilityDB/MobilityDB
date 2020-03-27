@@ -1944,27 +1944,23 @@ temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
 static TemporalS *
 temporals_at_minmax(TemporalS *ts, Datum value)
 {
-	TemporalS *result = temporals_at_value(ts, value);
-	/* If minimum/maximum is at an exclusive bound */
-	if (result == NULL)
+	/* The minimum/maximum may be at exclusive bounds */
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
 	{
-		TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count * 2);
-		int k = 0;
-		for (int i = 0; i < ts->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts, i);
-			k += temporalseq_at_minmax(&sequences[k], seq, value);
-		}
-		/* The minimum/maximum could be at the upper exclusive bound of one
-		 * sequence and at the lower exclusive bound of the next one
-		 * e.g., .... min@t) (min@t .... */
-		temporalseqarr_sort(sequences, k);
-		int count = temporalseqarr_remove_duplicates(sequences, k);
-		result = temporals_make(sequences, count, true);
-		for (int i = 0; i < k; i++)
-			pfree(sequences[i]);
-		pfree(sequences);	
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		k += temporalseq_at_minmax(&sequences[k], seq, value);
 	}
+	/* The minimum/maximum could be at the upper exclusive bound of one
+	 * sequence and at the lower exclusive bound of the next one
+	 * e.g., .... min@t) (min@t .... */
+	temporalseqarr_sort(sequences, k);
+	int count = temporalseqarr_remove_duplicates(sequences, k);
+	TemporalS *result = temporals_make(sequences, count, true);
+	for (int i = 0; i < k; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
 	return result;
 }
 
@@ -1972,8 +1968,8 @@ TemporalS *
 temporals_at_min(TemporalS *ts)
 {
 	/* General case */
-	Datum xmin = temporals_min_value(ts);
-	return temporals_at_minmax(ts, xmin);
+	Datum min = temporals_min_value(ts);
+	return temporals_at_minmax(ts, min);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -1981,8 +1977,8 @@ temporals_at_min(TemporalS *ts)
 TemporalS *
 temporals_minus_min(TemporalS *ts)
 {
-	Datum xmin = temporals_min_value(ts);
-	return temporals_minus_value(ts, xmin);
+	Datum min = temporals_min_value(ts);
+	return temporals_minus_value(ts, min);
 }
 
 /* Restriction to the maximum value */
@@ -1990,8 +1986,8 @@ temporals_minus_min(TemporalS *ts)
 TemporalS *
 temporals_at_max(TemporalS *ts)
 {
-	Datum xmax = temporals_max_value(ts);
-	return temporals_at_minmax(ts, xmax);
+	Datum max = temporals_max_value(ts);
+	return temporals_at_minmax(ts, max);
 }
 
 /* Restriction to the complement of the maximum value */
@@ -1999,8 +1995,8 @@ temporals_at_max(TemporalS *ts)
 TemporalS *
 temporals_minus_max(TemporalS *ts)
 {
-	Datum xmax = temporals_max_value(ts);
-	return temporals_minus_value(ts, xmax);
+	Datum max = temporals_max_value(ts);
+	return temporals_minus_value(ts, max);
 }
 
 /*
