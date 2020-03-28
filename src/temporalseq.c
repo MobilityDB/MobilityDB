@@ -159,23 +159,16 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 	double duration2 = (double) (t3 - t2);
 	void *tofree = NULL;
 	double ratio;
-	Datum line;
 	if (duration1 < duration2)
 	{
 		ratio = duration1 / duration2;
-		line = geompoint_trajectory(value2, value3);
-		value3 = call_function2(LWGEOM_line_interpolate_point, 
-			line, Float8GetDatum(1 - ratio));
-		pfree(DatumGetPointer(line));
+		value3 = point_interpolate(value2, value3, Float8GetDatum(1 - ratio));
 		tofree = DatumGetPointer(value3);
 	}
 	else if (duration1 > duration2)
 	{
 		ratio = duration2 / duration1;
-		line = geompoint_trajectory(value1, value2);
-		value1 = call_function2(LWGEOM_line_interpolate_point, 
-			line, Float8GetDatum(1 - ratio));
-		pfree(DatumGetPointer(line)); 
+		value1 = point_interpolate(value1, value2, Float8GetDatum(1 - ratio));
 		tofree = DatumGetPointer(value1);
 	}
 	bool result;
@@ -1376,13 +1369,40 @@ tpointseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool 
 		if (xdenum != 0 && ydenum != 0 && fabs(xfraction - yfraction) > EPSILON)
 			return false;
 		fraction = xdenum != 0 ? xfraction : yfraction;
+
+		/* ALTERNATIVE VERSION
+		/ * Denominator for ua and ub are the same, so store this calculation * /
+		double d = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
+
+		/ * n_a and n_b are calculated as seperate values for readability * /
+		double n_a = (p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x);
+		double n_b = (p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x);
+
+		/ * Make sure there is not a division by zero, this also indicates that
+		 * the lines are parallel. * /
+		if (d == 0)
+			return false;
+
+		/ * Calculate the intermediate fractional point that the lines potentially intersect. * /
+		double ua = n_a / d;
+		double ub = n_b / d;
+
+		/ * The fractional point will be between 0 and 1 inclusive if the lines
+		 * intersect.  If the fractional calculation is larger than 1 or smaller
+		 * than 0 the lines would need to be longer to intersect. * /
+		if (ua >= 0.0 && ua <= 1.0 && ub >= 0.0 && ub <= 1.0 && ua == ub)
+		{
+			// inter.x = p1.x + (ua * (p2.x - p1.x));
+			// inter.y = p1.y + (ua * (p2.y - p1.y));
+			fraction = ua;
+		}
+		else
+			return false;
+		*/
 	}
-
 	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
-
 	return true;
 }
-
 bool
 temporalseq_intersect_at_timestamp(TemporalInst *start1, TemporalInst *end1, bool linear1,
 	TemporalInst *start2, TemporalInst *end2, bool linear2, TimestampTz *inter)
@@ -3210,10 +3230,30 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 		dresult->b = start->b + (end->b - start->b) * ratio;
 		result = Double2PGetDatum(dresult);
 	}
-	else if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
+	else if (valuetypid == type_oid(T_GEOMETRY))
 	{
-		result = tpointseq_interpolate(value1, value2, valuetypid, ratio);
+		result = point_interpolate(value1, value2, ratio);
+	}
+	else if (valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		/* We are sure that the trajectory is a line */
+		Datum line = geogpoint_trajectory(value1, value2);
+		/* There is no function equivalent to LWGEOM_line_interpolate_point
+		 * for geographies. We do as the ST_Intersection function, e.g.
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+		 * @extschema@._ST_BestSRID($1, $2)),
+		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+		Datum bestsrid = call_function2(geography_bestsrid, line, line);
+		Datum line1 = call_function1(geometry_from_geography, line);
+		Datum line2 = call_function2(transform, line1, bestsrid);
+		Datum point = call_function2(LWGEOM_line_interpolate_point,
+			line2, Float8GetDatum(ratio));
+		Datum srid = call_function1(LWGEOM_get_srid, value1);
+		Datum point1 = call_function2(transform, point, srid);
+		result = call_function1(geography_from_geometry, point1);
+		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
+		/* Cannot pfree(DatumGetPointer(point1)); */
 	}
 	else if (valuetypid == type_oid(T_DOUBLE3))
 	{

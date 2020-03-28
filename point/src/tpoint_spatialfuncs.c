@@ -272,7 +272,22 @@ datum_get_point3dz(Datum geom)
 	lwgeom_free(lwgeom);
 	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
 	return point;
+}
 
+/* Get 4D point from a datum */
+
+POINT4D
+datum_get_point4d(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+	// POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	// return *point;
+	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
+	POINT4D point = getPoint4d(lwpoint->point, 0);
+	lwgeom_free(lwgeom);
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+	return point;
 }
 
 /* Compare two points from serialized geometries */
@@ -590,11 +605,8 @@ tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst,
 	else
 	{
 		if (replace)
-		{
-			int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring, traj));
 			return call_function3(LWGEOM_setpoint_linestring, traj,
-				Int32GetDatum(numpoints - 1), point);
-		}
+				Int32GetDatum(-1), point);
 		else
 			return call_function2(LWGEOM_addpoint, traj, point);
 	}
@@ -781,48 +793,31 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Functions dispatched from temporalseq.c
  *****************************************************************************/
-/*
- * Value that the temporal point sequence takes at the timestamp.
- * The function supposes that the timestamp t is between inst1->t and inst2->t
- * (both inclusive). The function creates a new value that must be freed.
- */
+
 Datum
-tpointseq_interpolate(Datum value1, Datum value2, Oid valuetypid, double ratio)
+point_interpolate(Datum value1, Datum value2, double ratio)
 {
-	Datum result;
-	ensure_point_base_type(valuetypid);
-	if (valuetypid == type_oid(T_GEOMETRY))
-	{
-		/* We are sure that the trajectory is a line */
-		Datum line = geompoint_trajectory(value1, value2);
-		result = call_function2(LWGEOM_line_interpolate_point,
-			line, Float8GetDatum(ratio));
-		pfree(DatumGetPointer(line));
-	}
-	else
-	{
-		/* We are sure that the trajectory is a line */
-		Datum line = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_interpolate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, line, line);
-		Datum line1 = call_function1(geometry_from_geography, line);
-		Datum line2 = call_function2(transform, line1, bestsrid);
-		Datum point = call_function2(LWGEOM_line_interpolate_point,
-			line2, Float8GetDatum(ratio));
-		Datum srid = call_function1(LWGEOM_get_srid, value1);
-		Datum point1 = call_function2(transform, point, srid);
-		result = call_function1(geography_from_geometry, point1);
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
-		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
-		/* Cannot pfree(DatumGetPointer(point1)); */
-	}
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
+	LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
+	LWPOINT* lwpoint1 = lwgeom_as_lwpoint(lwgeom1);
+	POINT4D point1 = getPoint4d(lwpoint1->point, 0);
+	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
+	LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
+	LWPOINT* lwpoint2 = lwgeom_as_lwpoint(lwgeom2);
+	POINT4D point2 = getPoint4d(lwpoint2->point, 0);
+	POINT4D point;
+	interpolate_point4d(&point1, &point2, &point, ratio);
+	LWPOINT* lwpoint = FLAGS_GET_Z(lwpoint1->flags) ?
+		lwpoint_make3dz(lwpoint1->srid, point.x, point.y, point.z) :
+		lwpoint_make2d(lwpoint1->srid, point.x, point.y);
+	LWGEOM* lwresult = lwpoint_as_lwgeom(lwpoint);
+	Datum result = PointerGetDatum(geometry_serialize(lwresult));
+	lwgeom_free(lwgeom1); lwgeom_free(lwgeom2);
+	lwgeom_free(lwresult);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(value1));
+	POSTGIS_FREE_IF_COPY_P(gs2, DatumGetPointer(value2));
 	return result;
 }
-
 
 /*****************************************************************************
  * Functions for spatial reference systems
