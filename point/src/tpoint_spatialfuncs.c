@@ -280,7 +280,7 @@ POINT4D
 datum_get_point4d(Datum geom)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-	// POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	// POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
 	// return *point;
 	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
 	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);

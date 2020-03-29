@@ -145,7 +145,7 @@ Period *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
 {
 	/* Note: zero-fill is required here, just as in heap tuples */
-	Period 	   *period = (Period *) palloc0(sizeof(Period));
+	Period *period = (Period *) palloc0(sizeof(Period));
 	period_set(period, lower, upper, lower_inc, upper_inc);
 	return period;
 }
