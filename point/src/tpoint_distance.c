@@ -100,7 +100,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 					traj, point));
 				if (fraction != 0 && fraction != 1)
-					value = point_interpolate(value1, value2, fraction);
+					value = seg_interpolate_point(value1, value2, fraction);
 				pfree(DatumGetPointer(traj));
 			}
 			else

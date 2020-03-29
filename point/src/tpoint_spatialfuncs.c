@@ -25,6 +25,7 @@
 #include "temporal_util.h"
 #include "lifting.h"
 #include "tnumber_mathfuncs.h"
+#include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
@@ -225,7 +226,6 @@ ensure_non_empty(const GSERIALIZED *gs)
  * Manipulate a geometry point directly from the GSERIALIZED.
  * These functions consitutute a SERIOUS break of encapsulation but it is the
  * only way to achieve reasonable performance when manipulating mobility data.
- * Currently we do not manipulate points with M dimension.
  * The datum_* functions suppose that the GSERIALIZED has been already
  * detoasted. This is typically the case when the datum is within a Temporal *
  * that has been already detoasted with PG_GETARG_TEMPORAL* 
@@ -264,14 +264,8 @@ POINT3DZ
 datum_get_point3dz(Datum geom)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-	// POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	// return *point;
-	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
-	POINT3DZ point = getPoint3dz(lwpoint->point, 0);
-	lwgeom_free(lwgeom);
-	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-	return point;
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
 }
 
 /* Get 4D point from a datum */
@@ -280,14 +274,8 @@ POINT4D
 datum_get_point4d(Datum geom)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-	// POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
-	// return *point;
-	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
-	POINT4D point = getPoint4d(lwpoint->point, 0);
-	lwgeom_free(lwgeom);
-	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-	return point;
+	POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
+	return *point;
 }
 
 /* Compare two points from serialized geometries */
@@ -383,7 +371,6 @@ geom_to_geog(Datum value)
 {
 	return call_function1(geography_from_geometry, value);
 }
-
 
 /*****************************************************************************
  * Trajectory functions.
@@ -795,27 +782,64 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 Datum
-point_interpolate(Datum value1, Datum value2, double ratio)
+seg_interpolate_point(Datum start, Datum end, double ratio)
 {
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
-	LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
-	LWPOINT *lwpoint1 = lwgeom_as_lwpoint(lwgeom1);
-	POINT4D point1 = getPoint4d(lwpoint1->point, 0);
-	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
-	LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
-	LWPOINT *lwpoint2 = lwgeom_as_lwpoint(lwgeom2);
-	POINT4D point2 = getPoint4d(lwpoint2->point, 0);
-	POINT4D point;
-	interpolate_point4d(&point1, &point2, &point, ratio);
-	LWPOINT *lwpoint = FLAGS_GET_Z(lwpoint1->flags) ?
-		lwpoint_make3dz(lwpoint1->srid, point.x, point.y, point.z) :
-		lwpoint_make2d(lwpoint1->srid, point.x, point.y);
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	interpolate_point4d(&p1, &p2, &p, ratio);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
 	LWGEOM *lwresult = lwpoint_as_lwgeom(lwpoint);
 	Datum result = PointerGetDatum(geometry_serialize(lwresult));
-	lwgeom_free(lwgeom1); lwgeom_free(lwgeom2);
 	lwgeom_free(lwresult);
-	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(value1));
-	POSTGIS_FREE_IF_COPY_P(gs2, DatumGetPointer(value2));
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
+}
+
+double
+seg_locate_point(Datum start, Datum end, Datum point, Datum *projpoint, double *dist)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p = datum_get_point4d(point);
+	POINT4D proj;
+	closest_point_on_segment(&p, &p1, &p2, &proj);
+	if (projpoint != NULL)
+	{
+		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
+			lwpoint_make2d(srid, proj.x, proj.y);
+		LWGEOM *lwresult = lwpoint_as_lwgeom(lwpoint);
+		*projpoint = PointerGetDatum(geometry_serialize(lwresult));
+		lwgeom_free(lwresult);
+	}
+	if (dist != NULL)
+	{
+		*dist = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
+			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
+	}
+
+	double result;
+	if (p4d_same(&p1, &proj))
+		result = 0.0;
+	else if (p4d_same(&p2, &proj))
+		result = 1.0;
+	else
+	{
+		result = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
+				distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&p2) :
+			distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
+				distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&p2);
+	}
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
 	return result;
 }
 

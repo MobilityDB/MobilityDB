@@ -660,7 +660,7 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 	return result;
 }
 
-/* Consruct a TemporalSeq from a base value and a perio */
+/* Consruct a TemporalSeq from a base value and a period */
 
 TemporalSeq *
 temporalseq_from_base_internal(Datum value, Oid valuetypid, Period *p, bool linear)
@@ -1194,7 +1194,7 @@ tlinearseq_intersection_value(TemporalInst *inst1, TemporalInst *inst2,
 			return false;
 		*t = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 		if (inter != NULL)
-			*inter = call_function2(LWGEOM_line_locate_point, line2, value2);
+			*inter = call_function2(LWGEOM_line_interpolate_point, line2, value2);
 		return true;
 	}
 	return false; /* Make compiler quiet */
@@ -3346,7 +3346,7 @@ temporalseq_value_at_timestamp1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 	else if (valuetypid == type_oid(T_GEOMETRY))
 	{
-		result = point_interpolate(value1, value2, ratio);
+		result = seg_interpolate_point(value1, value2, ratio);
 	}
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
 	{

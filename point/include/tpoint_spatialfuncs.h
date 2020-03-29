@@ -59,7 +59,7 @@ extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
-extern Datum point_interpolate(Datum value1, Datum value2, double ratio);
+extern Datum seg_interpolate_point(Datum value1, Datum value2, double ratio);
 
 /* Functions for spatial reference systems */
 
