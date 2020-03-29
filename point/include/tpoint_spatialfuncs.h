@@ -60,6 +60,7 @@ extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM* geom);
 
 extern Datum seg_interpolate_point(Datum value1, Datum value2, double ratio);
+extern double seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist);
 
 /* Functions for spatial reference systems */
 

@@ -94,14 +94,18 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 			/* The trajectory is a line */
 			double fraction;
 			Datum traj, value;
+			double dist;
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
 			{
+				/*
 				traj = geompoint_trajectory(value1, value2);
 				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 					traj, point));
 				if (fraction != 0 && fraction != 1)
 					value = seg_interpolate_point(value1, value2, fraction);
 				pfree(DatumGetPointer(traj));
+				 */
+				fraction = seg_locate_point(value1, value2, point, NULL, &dist);
 			}
 			else
 			{
@@ -136,9 +140,14 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 				TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
 				instants[k++] = temporalinst_make(func(point, value1),
 					inst1->t, FLOAT8OID);
-				instants[k++] = temporalinst_make(func(point, value), time,
-					FLOAT8OID);
-				pfree(DatumGetPointer(value));
+				if (inst1->valuetypid == type_oid(T_GEOMETRY))
+					instants[k++] = temporalinst_make(dist, time, FLOAT8OID);
+				else
+				{
+					instants[k++] = temporalinst_make(func(point, value),
+						time, FLOAT8OID);
+					pfree(DatumGetPointer(value));
+				}
 			}
 		}
 		inst1 = inst2; value1 = value2;
