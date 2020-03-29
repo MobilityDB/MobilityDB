@@ -50,13 +50,30 @@ typedef struct
 
 extern int lw_dist2d_comp(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
 
+/*  Finds the two closest points and distance between two linesegments */
+extern int lw_dist2d_seg_seg(const POINT2D *A, const POINT2D *B, const POINT2D *C, const POINT2D *D, DISTPTS *dl);
+
+/* Definitions copied from measures3d.h */
+
+typedef struct
+{
+	double distance;	/*the distance between p1 and p2*/
+	POINT3DZ p1;
+	POINT3DZ p2;
+	int mode;	/*the direction of looking, if thedir = -1 then we look for 3dmaxdistance and if it is 1 then we look for 3dmindistance*/
+	int twisted; /*To preserve the order of incoming points to match the first and second point in 3dshortest and 3dlongest line*/
+	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
+} DISTPTS3D;
+
+/*  Finds the two closest points and distance between two linesegments */
+extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POINT3DZ *s2p2, DISTPTS3D *dl);
+
 /* Definitions copied from #include liblwgeom_internal.h */
-/*
+
 extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
 extern void closest_point_on_segment(const POINT4D *R, const POINT4D *A, const POINT4D *B, POINT4D *ret);
-*/
 
 /* PostGIS functions called by MobilityDB  */
 

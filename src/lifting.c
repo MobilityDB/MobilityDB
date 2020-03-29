@@ -2546,16 +2546,42 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
+			Datum cross1, cross2;
 			bool hascross;
 			if (! linear1)
+			{
 				hascross = tlinearseq_timestamp_at_value(start2, end2,
 					startvalue1, start1->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = startvalue1;
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+			}
 			else if (! linear2)
+			{
 				hascross = tlinearseq_timestamp_at_value(start1, end1,
 					startvalue2, start2->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = startvalue2;
+				}
+			}
 			else
+			{
+				/*
 				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
 					start2, end2, linear2, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+				 */
+				hascross = temporalseq_intersection(start1, end1, linear1,
+					start2, end2, linear2, &cross1, &cross2, &crosstime);
+			}
 
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
@@ -2584,9 +2610,7 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 				/* Result has step interpolation */
 				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				/* Find the value at the local minimum/maximum */
 				Datum cross = func(cross1, cross2);
 				temporalinst_set(instants[0], cross, crosstime);
 				Datum endresult = func(endvalue1, endvalue2);
@@ -2937,16 +2961,42 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
+			Datum cross1, cross2;
 			bool hascross;
 			if (! linear1)
+			{
 				hascross = tlinearseq_timestamp_at_value(start2, end2,
 					startvalue1, start1->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = startvalue1;
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+			}
 			else if (! linear2)
+			{
 				hascross = tlinearseq_timestamp_at_value(start1, end1,
 					startvalue2, start2->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = startvalue2;
+				}
+			}
 			else
+			{
+				/*
 				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
 					start2, end2, linear2, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+				 */
+				hascross = temporalseq_intersection(start1, end1, linear1,
+					start2, end2, linear2, &cross1, &cross2, &crosstime);
+			}
 
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
@@ -2975,9 +3025,7 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				/* Result has step interpolation */
 				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				/* Find the value at the local minimum/maximum */
 				Datum cross = func(cross1, cross2, param);
 				temporalinst_set(instants[0], cross, crosstime);
 				Datum endresult = func(endvalue1, endvalue2, param);
@@ -3342,16 +3390,42 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
+			Datum cross1, cross2;
 			bool hascross;
 			if (! linear1)
+			{
 				hascross = tlinearseq_timestamp_at_value(start2, end2,
 					startvalue1, start1->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = startvalue1;
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+			}
 			else if (! linear2)
+			{
 				hascross = tlinearseq_timestamp_at_value(start1, end1,
 					startvalue2, start2->valuetypid, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = startvalue2;
+				}
+			}
 			else
+			{
+				/*
 				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
 					start2, end2, linear2, &crosstime);
+				if (hascross)
+				{
+					cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
+					cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
+				}
+				*/
+				hascross = temporalseq_intersection(start1, end1, linear1,
+					start2, end2, linear2, &cross1, &cross2, &crosstime);
+			}
 
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
@@ -3381,11 +3455,7 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				/* Result has step interpolation */
 				result[k++] = temporalseq_make(instants, 2,
 					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1,
-					linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2,
-					linear2, crosstime);
+				/* Find the value at the local minimum/maximum */
 				Datum cross = func(cross1, cross2, start1->valuetypid,
 					start2->valuetypid);
 				temporalinst_set(instants[0], cross, crosstime);

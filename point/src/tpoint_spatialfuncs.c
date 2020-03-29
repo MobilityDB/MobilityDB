@@ -799,18 +799,18 @@ point_interpolate(Datum value1, Datum value2, double ratio)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
 	LWGEOM *lwgeom1 = lwgeom_from_gserialized(gs1);
-	LWPOINT* lwpoint1 = lwgeom_as_lwpoint(lwgeom1);
+	LWPOINT *lwpoint1 = lwgeom_as_lwpoint(lwgeom1);
 	POINT4D point1 = getPoint4d(lwpoint1->point, 0);
 	GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
 	LWGEOM *lwgeom2 = lwgeom_from_gserialized(gs2);
-	LWPOINT* lwpoint2 = lwgeom_as_lwpoint(lwgeom2);
+	LWPOINT *lwpoint2 = lwgeom_as_lwpoint(lwgeom2);
 	POINT4D point2 = getPoint4d(lwpoint2->point, 0);
 	POINT4D point;
 	interpolate_point4d(&point1, &point2, &point, ratio);
-	LWPOINT* lwpoint = FLAGS_GET_Z(lwpoint1->flags) ?
+	LWPOINT *lwpoint = FLAGS_GET_Z(lwpoint1->flags) ?
 		lwpoint_make3dz(lwpoint1->srid, point.x, point.y, point.z) :
 		lwpoint_make2d(lwpoint1->srid, point.x, point.y);
-	LWGEOM* lwresult = lwpoint_as_lwgeom(lwpoint);
+	LWGEOM *lwresult = lwpoint_as_lwgeom(lwpoint);
 	Datum result = PointerGetDatum(geometry_serialize(lwresult));
 	lwgeom_free(lwgeom1); lwgeom_free(lwgeom2);
 	lwgeom_free(lwresult);
@@ -2083,38 +2083,50 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 			type = 	subgeom->type;
 		}
 		POINTARRAY *pa = lwline->points;
-		POINT4D p1, p2, p_proj;
+		POINT4D p1, p2, p1_proj, p2_proj;
 		/* Each intersection is either a point or a linestring with two points */
 		if (type == POINTTYPE)
 		{
 			lwpoint_getPoint4d_p(lwpoint_inter, &p1);
-			double fraction = ptarray_locate_point(pa, &p1, NULL, &p_proj);
+			double fraction = ptarray_locate_point(pa, &p1, NULL, &p1_proj);
 			TimestampTz t = inst1->t + (long) (duration * fraction);
+			LWPOINT *lwres = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+				lwpoint_make3dz(lwline->srid, p1_proj.x, p1_proj.y, p1_proj.z) :
+				lwpoint_make2d(lwline->srid, p1_proj.x, p1_proj.y);
+			Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+			lwpoint_free(lwres);
 			/* If the intersection is not at an exclusive bound */
 			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
 			{
-				/* Restriction at timestamp done to avoid floating point imprecision */
-				instants[0] = temporalseq_at_timestamp1(inst1, inst2, t, linear);
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, linear, false);
+				instants[0] = temporalinst_make(point, t, inst1->valuetypid);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					linear, false);
 				pfree(instants[0]);
 			}
 		}
 		else
 		{
-			LWPOINT *point1 = lwline_get_lwpoint(lwline_inter, 0);
-			LWPOINT *point2 = lwline_get_lwpoint(lwline_inter, 1);
-			lwpoint_getPoint4d_p(point1, &p1);
-			lwpoint_getPoint4d_p(point2, &p2);
-			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &p_proj);
-			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &p_proj);
+			LWPOINT *lwpoint1 = lwline_get_lwpoint(lwline_inter, 0);
+			LWPOINT *lwpoint2 = lwline_get_lwpoint(lwline_inter, 1);
+			lwpoint_getPoint4d_p(lwpoint1, &p1);
+			lwpoint_getPoint4d_p(lwpoint2, &p2);
+			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &p1_proj);
+			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &p2_proj);
+			LWPOINT *lwres1 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+				lwpoint_make3dz(lwline->srid, p1_proj.x, p1_proj.y, p1_proj.z) :
+				lwpoint_make2d(lwline->srid, p1_proj.x, p1_proj.y);
+			Datum point1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres1));
+			LWPOINT *lwres2 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+					lwpoint_make3dz(lwline->srid, p2_proj.x, p2_proj.y, p2_proj.z) :
+					lwpoint_make2d(lwline->srid, p2_proj.x, p2_proj.y);
+			Datum point2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres2));
+			lwpoint_free(lwres1); lwpoint_free(lwres2);
 			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
 			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
-			/* Restriction at timestamp done to avoid floating point imprecision */
-			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
-			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
+			instants[0] = temporalinst_make(point1, lower1, inst1->valuetypid);
+			instants[1] = temporalinst_make(point2, upper1, inst1->valuetypid);
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
 			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
 			result[k++] = temporalseq_make(instants, 2,
@@ -2554,9 +2566,8 @@ static LWPOINT *
 lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
 {
 	DISTPTS thedl;
-	double initdistance = FLT_MAX;
 	thedl.mode = mode;
-	thedl.distance= initdistance;
+	thedl.distance= FLT_MAX;
 	thedl.tolerance = 0;
 	lw_dist2d_comp(lw1,lw2,&thedl);
 	LWPOINT *result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);

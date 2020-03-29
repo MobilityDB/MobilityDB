@@ -59,7 +59,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 {
 	POINT3DZ p1 = datum_get_point3dz(geom1);
 	POINT3DZ p2 = datum_get_point3dz(geom2);
-	return Float8GetDatum(distance3d_pt_pt((POINT3D*)&p1, (POINT3D*)&p2));
+	return Float8GetDatum(distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&p2));
 }
 
 /*****************************************************************************/
@@ -75,6 +75,8 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	Datum value1 = temporalinst_value(inst1);
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+	/* Ensure this outside of the loop */
+	ensure_point_base_type(inst1->valuetypid);
 	for (int i = 1; i < seq->count; i++)
 	{
 		/* Each iteration of the loop adds between one and three points */
@@ -92,15 +94,13 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 			/* The trajectory is a line */
 			double fraction;
 			Datum traj, value;
-			ensure_point_base_type(inst1->valuetypid);
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
 			{
 				traj = geompoint_trajectory(value1, value2);
 				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 					traj, point));
 				if (fraction != 0 && fraction != 1)
-					value = point_interpolate(value1, value2,
-						Float8GetDatum(fraction));
+					value = point_interpolate(value1, value2, fraction);
 				pfree(DatumGetPointer(traj));
 			}
 			else
