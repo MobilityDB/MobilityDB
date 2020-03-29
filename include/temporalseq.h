@@ -124,8 +124,6 @@ extern bool temporalseq_always_le(TemporalSeq *seq, Datum value);
 
 /* Restriction Functions */
 
-extern bool tlinearseq_timestamp_at_value(TemporalInst *inst1, TemporalInst *inst2, 
-	Datum value, Oid valuetypid, TimestampTz *t);
 extern int temporalseq_at_value2(TemporalSeq **result, TemporalSeq *seq, Datum value);
 extern TemporalS *temporalseq_at_value(TemporalSeq *seq, Datum value);
 extern int temporalseq_minus_value2(TemporalSeq **result, TemporalSeq *seq, Datum value);

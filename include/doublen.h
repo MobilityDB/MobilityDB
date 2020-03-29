@@ -24,7 +24,6 @@ extern Datum double2_out(PG_FUNCTION_ARGS);
 extern Datum double2_recv(PG_FUNCTION_ARGS);
 extern Datum double2_send(PG_FUNCTION_ARGS);
 
-extern double2 *double2_construct(double a, double b);
 extern void double2_set(double2 *result, double a, double b);
 extern double2 *double2_add(double2 *d1, double2 *d2);
 extern bool double2_eq(double2 *d1, double2 *d2);
@@ -34,7 +33,6 @@ extern Datum double3_out(PG_FUNCTION_ARGS);
 extern Datum double3_recv(PG_FUNCTION_ARGS);
 extern Datum double3_send(PG_FUNCTION_ARGS);
 
-extern double3 *double3_construct(double a, double b, double c);
 extern void double3_set(double3 *result, double a, double b, double c);
 extern double3 *double3_add(double3 *d1, double3 *d2);
 extern bool double3_eq(double3 *d1, double3 *d2);
@@ -44,7 +42,6 @@ extern Datum double4_out(PG_FUNCTION_ARGS);
 extern Datum double4_recv(PG_FUNCTION_ARGS);
 extern Datum double4_send(PG_FUNCTION_ARGS);
 
-extern double4 *double4_construct(double a, double b, double c, double d);
 extern void double4_set(double4 *result, double a, double b, double c, double d);
 extern double4 *double4_add(double4 *d1, double4 *d2);
 extern bool double4_eq(double4 *d1, double4 *d2);

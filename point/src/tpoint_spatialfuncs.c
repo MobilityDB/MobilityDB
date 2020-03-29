@@ -801,7 +801,7 @@ seg_interpolate_point(Datum start, Datum end, double ratio)
 }
 
 double
-seg_locate_point(Datum start, Datum end, Datum point, Datum *projpoint, double *dist)
+seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
 	int srid = gserialized_get_srid(gs1);
@@ -810,22 +810,24 @@ seg_locate_point(Datum start, Datum end, Datum point, Datum *projpoint, double *
 	POINT4D p = datum_get_point4d(point);
 	POINT4D proj;
 	closest_point_on_segment(&p, &p1, &p2, &proj);
-	if (projpoint != NULL)
+	/* Return the closest point if requested */
+	if (closest != NULL)
 	{
 		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
 			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
 			lwpoint_make2d(srid, proj.x, proj.y);
 		LWGEOM *lwresult = lwpoint_as_lwgeom(lwpoint);
-		*projpoint = PointerGetDatum(geometry_serialize(lwresult));
+		*closest = PointerGetDatum(geometry_serialize(lwresult));
 		lwgeom_free(lwresult);
 	}
+	/* Return the distance between the segment and the point if requested */
 	if (dist != NULL)
 	{
 		*dist = FLAGS_GET_Z(gs1->flags) ?
 			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
 			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
 	}
-
+	/* Compute the result */
 	double result;
 	if (p4d_same(&p1, &proj))
 		result = 0.0;

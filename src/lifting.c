@@ -632,8 +632,6 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 			/* Value projected on the segment to avoid floating point imprecision */
 			Datum crossvalue;
 			TimestampTz crosstime;
-			// bool hascross = tlinearseq_timestamp_at_value(inst1, inst2, value,
-			//	valuetypid, &crosstime);
 			bool hascross = tlinearseq_intersection_value(inst1, inst2, value,
 				valuetypid, &crossvalue, &crosstime);
 
@@ -657,12 +655,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 				/* Result has step interpolation */
 				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
 					false, false);
-				/* Compute the function at the crossing. Due to floating point precision
-				 * we cannot compute the function at the crosstime as follows
-						startresult = temporalseq_value_at_timestamp1(inst1, inst2, true, crosstime);
-				   Since this function is (currently) called only for tfloat then we
-				   assume startresult = value */
-				intresult = func(value, value, valuetypid, valuetypid);
+				/* Compute the function at the crossing */
+				intresult = func(crossvalue, value, valuetypid, valuetypid);
 				temporalinst_set(instants[0], intresult, crosstime);
 				/* Find the middle time between inst1 and the inst2 instant and compute
 				 * the function at that point */
