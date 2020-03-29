@@ -2078,7 +2078,7 @@ tlinearseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2,
 		return upper_inc;
 
 	/* Interpolation for continuous base type */
-	return tpointseq_intersection_value(inst1, inst2, value, valuetypid,
+	return tlinearseq_intersection_value(inst1, inst2, value, valuetypid,
 		NULL, NULL);
 }
 
