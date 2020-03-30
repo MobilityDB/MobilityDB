@@ -1129,9 +1129,8 @@ tpointseq_intersection_value(TemporalInst *inst1, TemporalInst *inst2,
 		LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
 			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
 			lwpoint_make2d(srid, proj.x, proj.y);
-		LWGEOM *lwresult = lwpoint_as_lwgeom(lwpoint);
-		*inter = PointerGetDatum(geometry_serialize(lwresult));
-		lwgeom_free(lwresult);
+		*inter = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+		lwpoint_free(lwpoint);
 	}
 	if (t != NULL)
 	{
@@ -1363,11 +1362,9 @@ tpointseq_intersection(TemporalInst *start1, TemporalInst *end1,
 		lwinter1 = lwpoint_make2d(srid, p5.x, p5.y);
 		lwinter2 = lwpoint_make2d(srid, p6.x, p6.y);
 	}
-	LWGEOM* lwresult1 = lwpoint_as_lwgeom(lwinter1);
-	LWGEOM* lwresult2 = lwpoint_as_lwgeom(lwinter2);
-	*inter1 = PointerGetDatum(geometry_serialize(lwresult1));
-	*inter2 = PointerGetDatum(geometry_serialize(lwresult2));
-	lwgeom_free(lwresult1); lwgeom_free(lwresult2);
+	*inter1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter1));
+	*inter2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter2));
+	lwpoint_free(lwinter1); lwpoint_free(lwinter2);
 	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
 	return true;
 }

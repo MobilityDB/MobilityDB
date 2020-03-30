@@ -424,6 +424,22 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 	return timestamp_cmp_internal(x, y);
 }
 
+/* Function taken from rangetypes_typanalyze.c
+static int
+float8_qsort_cmp(const void *a1, const void *a2)
+{
+	const float8 *f1 = (const float8 *) a1;
+	const float8 *f2 = (const float8 *) a2;
+
+	if (*f1 < *f2)
+		return -1;
+	else if (*f1 == *f2)
+		return 0;
+	else
+		return 1;
+}
+*/
+
 static int
 period_sort_cmp(Period **l, Period **r)
 {
@@ -466,7 +482,12 @@ void
 timestamp_sort(TimestampTz *times, int count)
 {
 	qsort(times, (size_t) count, sizeof(TimestampTz),
-		  (qsort_comparator) &timestamp_sort_cmp);
+		(qsort_comparator) &timestamp_sort_cmp);
+}
+
+void
+float8_sort(TimestampTz *times, int count)
+{
 	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
 }
