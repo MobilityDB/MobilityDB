@@ -85,7 +85,7 @@ tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid restypid)
 	return result;
 }
 
-static TemporalI *
+TemporalI *
 tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);

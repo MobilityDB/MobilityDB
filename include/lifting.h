@@ -19,9 +19,11 @@
 
 /*****************************************************************************/
 
-TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), 
+TemporalInst *tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum),
 	Oid valuetypid);
-TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), 
+TemporalI *tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum),
+	Oid valuetypid);
+TemporalSeq *tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum),
 	Oid valuetypid);
 TemporalS *tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), 
 	Oid valuetypid);

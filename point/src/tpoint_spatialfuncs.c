@@ -373,6 +373,59 @@ geom_to_geog(Datum value)
 }
 
 /*****************************************************************************
+ * Assemble the set of points of a temporal instant point as a single
+ * geometry/geography. Duplicate points are removed.
+ *****************************************************************************/
+
+Datum
+tpointi_values(TemporalI *ti)
+{
+	/* Singleton instant set */
+	if (ti->count == 1)
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+	/* Remove all duplicate points */
+	TemporalInst *inst = temporali_inst_n(ti, 0);
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	LWPOINT *value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+	points[0] = value;
+	int k = 1;
+	for (int i = 1; i < ti->count; i++)
+	{
+		inst = temporali_inst_n(ti, i);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (lwpoint_same(value, points[j]) == LW_TRUE)
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			points[k++] = value;
+	}
+	LWGEOM *lwresult;
+	if (k == 1)
+	{
+		lwresult = (LWGEOM *) points[0];
+	}
+	else
+	{
+		lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+			points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+		for (int i = 0; i < k; i++)
+			lwpoint_free(points[i]);
+	}
+	Datum result = PointerGetDatum(geometry_serialize(lwresult));
+	pfree(points);
+	return result;
+}
+
+/*****************************************************************************
  * Trajectory functions.
  *****************************************************************************/
 
@@ -499,7 +552,7 @@ tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
 			bool found = false;
 			for (int j = 0; j < k; j++)
 			{
-				if (lwpoint_same(lwpoint, points[j]))
+				if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
 				{
 					found = true;
 					break;
@@ -644,7 +697,7 @@ tgeompoints_trajectory(TemporalS *ts)
 		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0));
 
 	LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
-	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	int k = 0, l = 0;
 	for (int i = 0; i < ts->count; i++)
 	{
@@ -657,7 +710,7 @@ tgeompoints_trajectory(TemporalS *ts)
 			bool found = false;
 			for (int j = 0; j < l; j++)
 			{
-				if (lwpoint_same(lwpoint, points[j]))
+				if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
 				{
 					found = true;
 					break;
@@ -676,7 +729,7 @@ tgeompoints_trajectory(TemporalS *ts)
 				bool found = false;
 				for (int j = 0; j < l; j++)
 				{
-					if (lwpoint_same(lwpoint, points[j]))
+					if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
 						{
 							found = true;
 							break;
@@ -688,7 +741,9 @@ tgeompoints_trajectory(TemporalS *ts)
 		}
 		/* gserialized_get_type(gstraj) == LINETYPE */
 		else
-			trajectories[k++] = traj;
+		{
+			geoms[k++] = lwgeom_from_gserialized(gstraj);
+		}
 	}
 	Datum result;
 	if (k == 0)
@@ -704,24 +759,32 @@ tgeompoints_trajectory(TemporalS *ts)
 		/* Only lines */
 		/* k > 1 since otherwise it is a singleton sequence set and this case
 		 * was taken care at the begining of the function */
-		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array);
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+			geoms[0]->srid, NULL, (uint32_t) k, geoms);
+		result = PointerGetDatum(geometry_serialize(coll));
+		/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
 	}
 	else
 	{
 		/* Both points and lines */
 		if (l == 1)
-			trajectories[k++] = PointerGetDatum(geometry_serialize((LWGEOM *)points[0]));
+			geoms[k++] = (LWGEOM *)points[0];
 		else
-			trajectories[k++] = lwpointarr_make_trajectory((LWGEOM **)points, l, false);
-		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array);
+		{
+			geoms[k++] = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+				points[0]->srid, NULL, (uint32_t) l, (LWGEOM **) points);
+			for (int i = 0; i < l; i++)
+				lwpoint_free(points[i]);
+		}
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
+			geoms[0]->srid, NULL, (uint32_t) k, geoms);
+		result = PointerGetDatum(geometry_serialize(coll));
 	}
-	pfree(points); pfree(trajectories);
+	pfree(points); pfree(geoms);
 	return result;
 }
 
@@ -3290,61 +3353,87 @@ tpointi_to_geo(TemporalI *ti)
 	return PointerGetDatum(result);
 }
 
-static Datum
-tpointseq_to_geo(TemporalSeq *seq)
+static LWGEOM *
+tpointseq_to_geo1(TemporalSeq *seq)
 {
-	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+	LWPOINT **points = palloc(sizeof(LWGEOM *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(temporalinst_value(inst));
-		points[i] = (LWGEOM *) point_to_trajpoint(gs, inst->t);
+		points[i] = point_to_trajpoint(gs, inst->t);
 	}
-	GSERIALIZED *result;
+	LWGEOM *result;
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-		result = geometry_serialize(points[0]);
+	{
+		result = (LWGEOM *) points[0];
+		pfree(points);
+	}
 	else
 	{
-		LWGEOM *geom;
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				(uint32_t) seq->count, points);
+			result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
+				(uint32_t) seq->count, (LWGEOM **) points);
 		else
-			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-				NULL, (uint32_t) seq->count, points);
-		result = geometry_serialize(geom);
-		pfree(geom);
+			result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+				points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
+		for (int i = 0; i < seq->count; i++)
+			lwpoint_free(points[i]);
+		pfree(points);
 	}
+	return result;
+}
 
-	for (int i = 0; i < seq->count; i++)
-		pfree(points[i]);
-	pfree(points);
 
+static Datum
+tpointseq_to_geo(TemporalSeq *seq)
+{
+	LWGEOM *lwgeom = tpointseq_to_geo1(seq);
+	GSERIALIZED *result = geometry_serialize(lwgeom);
 	return PointerGetDatum(result);
 }
 
 static Datum
 tpoints_to_geo(TemporalS *ts)
 {
-	Datum *geoms = palloc(sizeof(Datum) * ts->count);
+	/* Instantaneous sequence */
+	if (ts->count == 1)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, 0);
+		return tpointseq_to_geo(seq);
+	}
+	uint8_t colltype = 0;
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		geoms[i] = tpointseq_to_geo(seq);
+		geoms[i] = tpointseq_to_geo1(seq);
+		/* Output type not initialized */
+		if (! colltype)
+			colltype = lwtype_get_collectiontype(geoms[i]->type);
+			/* Input type not compatible with output */
+			/* make output type a collection */
+		else if (colltype != COLLECTIONTYPE &&
+			lwtype_get_collectiontype(geoms[i]->type) != colltype)
+			colltype = COLLECTIONTYPE;
 	}
 	Datum result;
 	if (ts->count == 1)
-		result = geoms[0];
+	{
+		result = PointerGetDatum(geometry_serialize(geoms[0]));
+		/* We cannot lwgeom_free(geoms[0] */
+	}
 	else
 	{
-		ArrayType *array = datumarr_to_array(geoms, ts->count, ts->valuetypid);
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));		
-		for (int i = 0; i < ts->count; i++)
-			pfree(DatumGetPointer(geoms[i]));
-		pfree(array);
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+														 geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+		result = PointerGetDatum(geometry_serialize(coll));
+		/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+		pfree(geoms);
 	}
-	pfree(geoms);
 	return result;
 }
 
@@ -3719,11 +3808,11 @@ tpoints_to_geo_measure(TemporalS *ts, TemporalS *measure)
 		geoms[i] = tpointseq_to_geo_measure1(seq, m);
 		/* Output type not initialized */
 		if (! colltype)
-			colltype = geoms[i]->type;
+			colltype = lwtype_get_collectiontype(geoms[i]->type);
 		/* Input type not compatible with output */
 		/* make output type a collection */
-		else if ( colltype != COLLECTIONTYPE &&
-			lwtype_get_collectiontype(geoms[i]->type) != colltype )
+		else if (colltype != COLLECTIONTYPE &&
+			lwtype_get_collectiontype(geoms[i]->type) != colltype)
 			colltype = COLLECTIONTYPE;
 	}
 	Datum result;

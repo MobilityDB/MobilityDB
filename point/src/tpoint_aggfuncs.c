@@ -367,7 +367,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 /* Centroid final function */
 
 TemporalI *
-tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
+tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 {
 	TemporalInst **newinstants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
@@ -376,6 +376,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 		Datum value = 0;
 		assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 			inst->valuetypid == type_oid(T_DOUBLE3));
+		LWPOINT *lwpoint;
 		if (inst->valuetypid == type_oid(T_DOUBLE4))
 		{
 			double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
@@ -383,18 +384,18 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 			double valuea = value4->a / value4->d;
 			double valueb = value4->b / value4->d;
 			double valuec = value4->c / value4->d;
-			value = call_function3(LWGEOM_makepoint, Float8GetDatum(valuea),
-				Float8GetDatum(valueb), Float8GetDatum(valuec));
+			lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
+
 		}
-		else if (inst->valuetypid == type_oid(T_DOUBLE3))
+		else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 		{
 			double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			assert(value3->c != 0);
 			double valuea = value3->a / value3->c;
 			double valueb = value3->b / value3->c;
-			value = call_function2(LWGEOM_makepoint, Float8GetDatum(valuea),
-				Float8GetDatum(valueb));
+			lwpoint = lwpoint_make2d(srid, valuea, valueb);
 		}
+		value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 		newinstants[i] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
@@ -408,7 +409,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 }
 
 TemporalS *
-tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
+tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 {
 	TemporalSeq **newsequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
@@ -421,23 +422,23 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			Datum value = 0;
 			assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 				inst->valuetypid == type_oid(T_DOUBLE3));
+			LWPOINT *lwpoint;
 			if (inst->valuetypid == type_oid(T_DOUBLE4))
 			{
 				double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value4->a / value4->d;
 				double valueb = value4->b / value4->d;
 				double valuec = value4->c / value4->d;
-				value = call_function3(LWGEOM_makepoint, Float8GetDatum(valuea),
-					Float8GetDatum(valueb), Float8GetDatum(valuec));
+				lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
 			}
-			else if (inst->valuetypid == type_oid(T_DOUBLE3))
+			else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 			{
 				double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value3->a / value3->c;
 				double valueb = value3->b / value3->c;
-				value = call_function2(LWGEOM_makepoint, Float8GetDatum(valuea),
-					Float8GetDatum(valueb));
+				lwpoint = lwpoint_make2d(srid, valuea, valueb);
 			}
+			value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 			instants[j] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
@@ -468,22 +469,20 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	Temporal **values = skiplist_values(state);
+	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
 	Temporal *result = NULL;
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
-			(TemporalInst **)values, state->length);
+			(TemporalInst **)values, state->length, srid);
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
-			(TemporalSeq **)values, state->length);
+			(TemporalSeq **)values, state->length, srid);
 
-	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
-	Temporal *sridresult = tpoint_set_srid_internal(result, srid);
 	pfree(values);
-	pfree(result);
 
-	PG_RETURN_POINTER(sridresult);
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

@@ -96,17 +96,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 			Datum traj, value;
 			double dist;
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
-			{
-				/*
-				traj = geompoint_trajectory(value1, value2);
-				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-					traj, point));
-				if (fraction != 0 && fraction != 1)
-					value = seg_interpolate_point(value1, value2, fraction);
-				pfree(DatumGetPointer(traj));
-				 */
 				fraction = seg_locate_point(value1, value2, point, NULL, &dist);
-			}
 			else
 			{
 				traj = geogpoint_trajectory(value1, value2);
