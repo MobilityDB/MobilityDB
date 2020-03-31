@@ -1126,8 +1126,7 @@ temporals_get_time(TemporalS *ts)
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		periods[i] = &seq->period;
 	}
-	PeriodSet *result = periodset_make_internal(periods,
-		ts->count, false);
+	PeriodSet *result = periodset_make_internal(periods, ts->count, false);
 	pfree(periods);
 	return result;
 }

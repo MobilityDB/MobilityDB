@@ -387,7 +387,7 @@ LOOP
 	FROM Trips T1, Licences1 L1, Trips T2, Cars C
 	WHERE T1.CarId = L1.CarId AND T2.CarId = C.CarID AND T1.CarId <> T2.CarId 
 	AND T2.Trip && expandspatial(T1.trip, 3) 
-	AND getTime(atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE)) IS NOT NULL
+	AND atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE) IS NOT NULL
 	INTO J;
 	
 	PlanningTime := (J->0->>'Planning Time')::float;
