@@ -3926,16 +3926,11 @@ tpoints_to_geo_measure_segmentize(TemporalS *ts, TemporalS *measure)
 			colltype = COLLECTIONTYPE;
 	}
 	Datum result;
-	if (ts->count == 1)
-		result = PointerGetDatum(geometry_serialize(geoms[0]));
-	else
-	{
-		// TODO add the bounding box instead of ask PostGIS to compute it again
-		// GBOX *box = stbox_to_gbox(temporals_bbox_ptr(seq));
-		LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
-			geoms[0]->srid, NULL, (uint32_t) k, geoms);
-		result = PointerGetDatum(geometry_serialize(coll));
-	}
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporals_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) k, geoms);
+	result = PointerGetDatum(geometry_serialize(coll));
 	for (int i = 0; i < k; i++)
 		lwgeom_free(geoms[i]);
 	pfree(geoms);

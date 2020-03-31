@@ -1012,6 +1012,8 @@ SELECT ST_AsText(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, 
 SELECT ST_AsText(geoMeasure(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', '[5@2000-01-01, 7@2000-01-02]'));
 SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01]', '[5@2000-01-01]', true));
 SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
+SELECT ST_AsText(geoMeasure(tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]}', '{[5@2000-01-01],[6@2000-01-02, 7@2000-01-03]}', true));
+
 -- NULL
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'));
 

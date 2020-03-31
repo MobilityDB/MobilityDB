@@ -4982,6 +4982,12 @@ SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
  MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))
 (1 row)
 
+SELECT ST_AsText(geoMeasure(tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]}', '{[5@2000-01-01],[6@2000-01-02, 7@2000-01-03]}', true));
+                             st_astext                             
+-------------------------------------------------------------------
+ GEOMETRYCOLLECTION M (POINT M (1 1 5),LINESTRING M (1 1 6,2 2 6))
+(1 row)
+
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'));
  st_astext 
 -----------
