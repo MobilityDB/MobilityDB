@@ -94,6 +94,7 @@ extern Datum tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalI
 extern Datum tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 
 extern Datum geompoint_trajectory(Datum value1, Datum value2);
+extern LWLINE *geompoint_trajectory_lwline(Datum value1, Datum value2);
 extern Datum geogpoint_trajectory(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TemporalSeq *seq);

@@ -78,94 +78,93 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
 
 /*****************************************************************************/
 
-/* Get the temporal instants at which a temporal sequence intersects a line */
+/* Get the temporal instants at which a segment of a temporal sequence
+ * intersects a line */
 
 static TemporalInst **
-tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
-	bool linear, Datum line, bool lower_inc, bool upper_inc, Datum inter, int *count)
+tpointseq_intersection_instants(LWLINE *lwline, TimestampTz t1, TimestampTz t2,
+	 bool lower_inc, bool upper_inc, Datum inter, int *count)
 {
-	GSERIALIZED *gsline = (GSERIALIZED *) PG_DETOAST_DATUM(line);
-	LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gsline));
 	/* Each intersection is either a point or a linestring with two points */
 	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-	LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
-	int type = lwgeom_inter->type;
+	bool hasz = FLAGS_GET_Z(gsinter->flags);
+	LWGEOM *lwinter = lwgeom_from_gserialized(gsinter);
 	int countinter;
-	LWPOINT *lwpoint_inter;
-	LWLINE *lwline_inter;
-	LWCOLLECTION *coll;
-	if (type == POINTTYPE)
+	LWCOLLECTION *coll = NULL;
+	LWGEOM *lwinter_single;
+	if (lwinter->type == POINTTYPE || lwinter->type == LINETYPE)
 	{
 		countinter = 1;
-		lwpoint_inter = lwgeom_as_lwpoint(lwgeom_inter);
-
-	}
-	else if (type == LINETYPE)
-	{
-		countinter = 1;
-		lwline_inter = lwgeom_as_lwline(lwgeom_inter);
+		lwinter_single = lwinter;
 	}
 	else
 	{
-		coll = lwgeom_as_lwcollection(lwgeom_inter);
+		coll = lwgeom_as_lwcollection(lwinter);
 		countinter = coll->ngeoms;
 	}
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 2 * countinter);
-	double duration = (double)(inst2->t - inst1->t);
+	double duration = (double)(t2 - t1);
 	int k = 0;
 	for (int i = 0; i < countinter; i++)
 	{
-		if (countinter > 1)
-		{
+		if (coll != NULL)
 			/* Find the i-th intersection */
-			LWGEOM *subgeom = coll->geoms[i];
-			if (subgeom->type == POINTTYPE)
-				lwpoint_inter = lwgeom_as_lwpoint(subgeom);
-			else /* type == LINETYPE */
-				lwline_inter = lwgeom_as_lwline(subgeom);
-			type = 	subgeom->type;
-		}
+			lwinter_single = coll->geoms[i];
 		POINTARRAY *pa = lwline->points;
-		POINT4D p1, p2, p_proj;
+		POINT4D p1, p2, proj1, proj2;
 		/* Each intersection is either a point or a linestring with two points */
-		if (type == POINTTYPE)
+		if (lwinter_single->type == POINTTYPE)
 		{
-			lwpoint_getPoint4d_p(lwpoint_inter, &p1);
-			double fraction = ptarray_locate_point(pa, &p1, NULL, &p_proj);
-			TimestampTz t = inst1->t + (long) (duration * fraction);
+			lwpoint_getPoint4d_p((LWPOINT *) lwinter_single, &p1);
+			double fraction = ptarray_locate_point(pa, &p1, NULL, &proj1);
+			TimestampTz intert = t1 + (long) (duration * fraction);
 			/* If the point intersection is not at an exclusive bound */
-			if ((lower_inc || inst1->t != t) &&
-				(upper_inc || inst2->t != t))
+			if ((lower_inc || t1 != intert) &&
+				(upper_inc || t2 != intert))
 			{
-				/* Restriction at timestamp done to avoid floating point imprecision */
-				instants[k++] = temporalseq_at_timestamp1(inst1, inst2, t, linear);
+				LWPOINT *lwres = hasz ?
+					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
+					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
+				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+				instants[k++] = temporalinst_make(point, intert, type_oid(T_GEOMETRY));
+				lwpoint_free(lwres);  pfree(DatumGetPointer(point));
 			}
 		}
-		else
+		else /* lwinter_single->type == POINTTYPE) */
 		{
-			LWPOINT *point1 = lwline_get_lwpoint(lwline_inter, 0);
-			LWPOINT *point2 = lwline_get_lwpoint(lwline_inter, 1);
+			LWPOINT *point1 = lwline_get_lwpoint((LWLINE *) lwinter_single, 0);
+			LWPOINT *point2 = lwline_get_lwpoint((LWLINE *) lwinter_single, 1);
 			lwpoint_getPoint4d_p(point1, &p1);
 			lwpoint_getPoint4d_p(point2, &p2);
-			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &p_proj);
-			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &p_proj);
-			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
-			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
-			TimestampTz lower1 = Min(t1, t2);
-			TimestampTz upper1 = Max(t1, t2);
+			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &proj1);
+			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &proj2);
+			TimestampTz intert1 = t1 + (long) (duration * fraction1);
+			TimestampTz intert2 = t1 + (long) (duration * fraction2);
+			TimestampTz lower = Min(intert1, intert2);
+			TimestampTz upper = Max(intert1, intert2);
 			/* If the point intersection is not at an exclusive bound */
-			if ((lower_inc || inst1->t != lower1) &&
-				(upper_inc || inst2->t != lower1))
+			if ((lower_inc || t1 != lower) &&
+				(upper_inc || t2 != lower))
 			{
-				instants[k++] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
+				LWPOINT *lwres = hasz ?
+					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
+					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
+				Datum start = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+				instants[k++] = temporalinst_make(start, lower, type_oid(T_GEOMETRY));
+				lwpoint_free(lwres); pfree(DatumGetPointer(start));
 			}
 			/* If the point intersection is not at an exclusive bound and
-			 * lower1 != upper1 (this last condition arrives when point1 is
+			 * lower != upper (this last condition arrives when point1 is
 			 * at an epsilon distance from point2 */
-			if ((lower_inc || inst1->t != upper1) &&
-				(upper_inc || inst2->t != upper1) && (lower1 != upper1))
+			if ((lower_inc || t1 != upper) &&
+				(upper_inc || t2 != upper) && (lower != upper))
 			{
-				instants[k++] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
+				LWPOINT *lwres = hasz ?
+					lwpoint_make3dz(lwline->srid, proj2.x, proj2.y, proj2.z) :
+					lwpoint_make2d(lwline->srid, proj2.x, proj2.y);
+				Datum end = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+				instants[k++] = temporalinst_make(end, upper, type_oid(T_GEOMETRY));
+				lwpoint_free(lwres); pfree(DatumGetPointer(end));
 			}
 		}
 	}
@@ -180,7 +179,7 @@ tpointseq_intersection_instants(TemporalInst *inst1, TemporalInst *inst2,
  * Generic functions to compute the temporal spatial relationship
  * between a geometry and a temporal sequence.
  * The potential crossings between the two are considered.
- * The resulting sequence (set) has step interpolan since it is a
+ * The resulting sequence (set) has step interpolation since it is a
  * temporal Boolean or a temporal text (for trelate).
  * These functions are not available for geographies since it calls the
  * intersection function in PostGIS that is only available for geometries.
@@ -210,7 +209,8 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 	}
 
 	/* Look for intersections */
-	Datum line = geompoint_trajectory(value1, value2);
+	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
+	Datum line = PointerGetDatum(geometry_serialize((LWGEOM *) lwline));
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{
@@ -230,8 +230,8 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 
 	/* Look for instants of intersections */
 	int countinst;
-	TemporalInst **interinstants = tpointseq_intersection_instants(inst1, inst2,
-		linear, line, lower_inc, upper_inc, intersections, &countinst);
+	TemporalInst **interinstants = tpointseq_intersection_instants(lwline,
+		inst1->t, inst2->t, lower_inc, upper_inc, intersections, &countinst);
 	pfree(DatumGetPointer(line)); pfree(DatumGetPointer(intersections));
 
 	/* No intersections were found */
@@ -242,8 +242,7 @@ tspatialrel_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2, bool linear
 		 * and compute the func at that point */
 		TimestampTz inttime = inst1->t + ((inst2->t - inst1->t)/2);
 		Datum intvalue = temporalseq_value_at_timestamp1(inst1, inst2, linear, inttime);
-		Datum intvalue1 = invert ? func(geo, intvalue) :
-			func(intvalue, geo);
+		Datum intvalue1 = invert ? func(geo, intvalue) : func(intvalue, geo);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		TemporalInst *instants[2];
 		instants[0] = temporalinst_make(intvalue1, inst1->t, valuetypid);
@@ -352,8 +351,8 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo,
-			lower_inc, upper_inc, func, valuetypid, &countseqs[i], invert);
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, lower_inc, upper_inc,
+			func, valuetypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 		inst1 = inst2;
 		lower_inc = true;
@@ -448,7 +447,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	/* Look for intersections */
-	Datum line = geompoint_trajectory(value1, value2);
+	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
+	Datum line = PointerGetDatum(geometry_serialize((LWGEOM *) lwline));
 	Datum intersections = call_function2(intersection, line, geo);
 	if (call_function1(LWGEOM_isempty, intersections))
 	{
@@ -469,8 +469,8 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 
 	/* Look for instants of intersections */
 	int countinst;
-	TemporalInst **interinstants = tpointseq_intersection_instants(inst1, inst2,
-		linear, line, lower_inc, upper_inc, intersections, &countinst);
+	TemporalInst **interinstants = tpointseq_intersection_instants(lwline,
+		inst1->t, inst2->t, lower_inc, upper_inc, intersections, &countinst);
 	pfree(DatumGetPointer(intersections));
 	pfree(DatumGetPointer(line));
 
