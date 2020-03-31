@@ -378,7 +378,7 @@ geom_to_geog(Datum value)
  *****************************************************************************/
 
 Datum
-tpointi_values(TemporalI *ti)
+tgeompointi_values(TemporalI *ti)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
@@ -422,6 +422,29 @@ tpointi_values(TemporalI *ti)
 	}
 	Datum result = PointerGetDatum(geometry_serialize(lwresult));
 	pfree(points);
+	return result;
+}
+
+Datum
+tgeogpointi_values(TemporalI *ti)
+{
+	TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
+		type_oid(T_GEOMETRY));
+	Datum geomtraj = tgeompointi_values(tigeom);
+	Datum result = call_function1(geography_from_geometry, geomtraj);
+	pfree(DatumGetPointer(geomtraj));
+	return result;
+}
+
+Datum
+tpointi_values(TemporalI *ti)
+{
+	Datum result;
+	ensure_point_base_type(ti->valuetypid);
+	if (ti->valuetypid == type_oid(T_GEOMETRY))
+		result = tgeompointi_values(ti);
+	else
+		result = tgeogpointi_values(ti);
 	return result;
 }
 
