@@ -3441,22 +3441,13 @@ tpoints_to_geo(TemporalS *ts)
 			lwtype_get_collectiontype(geoms[i]->type) != colltype)
 			colltype = COLLECTIONTYPE;
 	}
-	Datum result;
-	if (ts->count == 1)
-	{
-		result = PointerGetDatum(geometry_serialize(geoms[0]));
-		/* We cannot lwgeom_free(geoms[0] */
-	}
-	else
-	{
-		// TODO add the bounding box instead of ask PostGIS to compute it again
-		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
-		LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
-														 geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
-		result = PointerGetDatum(geometry_serialize(coll));
-		/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
-		pfree(geoms);
-	}
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+	Datum result = PointerGetDatum(geometry_serialize(coll));
+	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+	pfree(geoms);
 	return result;
 }
 
@@ -3838,22 +3829,13 @@ tpoints_to_geo_measure(TemporalS *ts, TemporalS *measure)
 			lwtype_get_collectiontype(geoms[i]->type) != colltype)
 			colltype = COLLECTIONTYPE;
 	}
-	Datum result;
-	if (ts->count == 1)
-	{
-		result = PointerGetDatum(geometry_serialize(geoms[0]));
-		/* We cannot lwgeom_free(geoms[0] */
-	}
-	else
-	{
-		// TODO add the bounding box instead of ask PostGIS to compute it again
-		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
-		LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
-			geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
-		result = PointerGetDatum(geometry_serialize(coll));
-		/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
-		pfree(geoms);
-	}
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+	Datum result = PointerGetDatum(geometry_serialize(coll));
+	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+	pfree(geoms);
 	return result;
 }
 
