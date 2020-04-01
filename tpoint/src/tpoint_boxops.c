@@ -280,8 +280,8 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
  * Boxes functions
  *****************************************************************************/
 
-int
-tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
+static int
+tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	/* Instantaneous sequence */
@@ -307,7 +307,7 @@ tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
 }
 
 ArrayType *
-tpointseq_stboxes(TemporalSeq *seq)
+tpointseq_stboxes(const TemporalSeq *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	int count = seq->count - 1;
@@ -321,7 +321,7 @@ tpointseq_stboxes(TemporalSeq *seq)
 }
 
 ArrayType *
-tpoints_stboxes(TemporalS *ts)
+tpoints_stboxes(const TemporalS *ts)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	STBOX *boxes = palloc(sizeof(STBOX) * ts->totalcount);

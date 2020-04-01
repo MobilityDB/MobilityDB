@@ -25,8 +25,8 @@ extern Period *periodset_per_n(const PeriodSet *ps, int index);
 extern Period *periodset_bbox(const PeriodSet *ps);
 extern PeriodSet *periodset_make_internal(Period **periods,
 	int count, bool normalize);
-extern PeriodSet *periodset_copy(PeriodSet *ps);
-extern bool periodset_find_timestamp(PeriodSet *ps, TimestampTz t, int *pos);
+extern PeriodSet *periodset_copy(const PeriodSet *ps);
+extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t, int *pos);
 
 /* Input/output functions */
 
@@ -35,7 +35,7 @@ extern Datum periodset_out(PG_FUNCTION_ARGS);
 extern Datum periodset_send(PG_FUNCTION_ARGS);
 extern Datum periodset_recv(PG_FUNCTION_ARGS);
 
-extern char *periodset_to_string(PeriodSet *ps);
+extern char *periodset_to_string(const PeriodSet *ps);
 
 /* Constructor function */
 
@@ -48,7 +48,9 @@ extern Datum timestampset_to_periodset(PG_FUNCTION_ARGS);
 extern Datum period_to_periodset(PG_FUNCTION_ARGS);
 extern Datum periodset_to_period(PG_FUNCTION_ARGS);
 
-extern PeriodSet *timestampset_to_periodset_internal(TimestampSet *ts);
+extern PeriodSet *timestamp_to_periodset_internal(TimestampTz t);
+extern PeriodSet *period_to_periodset_internal(const Period *p);
+extern PeriodSet *timestampset_to_periodset_internal(const TimestampSet *ts);
 
 /* Accessor functions */
 
@@ -66,11 +68,11 @@ extern Datum periodset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum periodset_timestamps(PG_FUNCTION_ARGS);
 extern Datum periodset_shift(PG_FUNCTION_ARGS);
 
-extern void periodset_to_period_internal(Period *p, PeriodSet *ps);
-extern Period **periodset_periods_internal(PeriodSet *ps);
-extern TimestampTz periodset_start_timestamp_internal(PeriodSet *ps);
-extern TimestampTz periodset_end_timestamp_internal(PeriodSet *ps);
-extern PeriodSet *periodset_shift_internal(PeriodSet *ps, Interval *interval);
+extern void periodset_to_period_internal(Period *p, const PeriodSet *ps);
+extern Period **periodset_periods_internal(const PeriodSet *ps);
+extern TimestampTz periodset_start_timestamp_internal(const PeriodSet *ps);
+extern TimestampTz periodset_end_timestamp_internal(const PeriodSet *ps);
+extern PeriodSet *periodset_shift_internal(const PeriodSet *ps, const Interval *interval);
 
 /* Functions for defining B-tree index */
 
@@ -82,9 +84,9 @@ extern Datum periodset_le(PG_FUNCTION_ARGS);
 extern Datum periodset_ge(PG_FUNCTION_ARGS);
 extern Datum periodset_gt(PG_FUNCTION_ARGS);
 
-extern int periodset_cmp_internal(PeriodSet *ps1, PeriodSet *ps2);
-extern bool periodset_eq_internal(PeriodSet *ps1, PeriodSet *ps2);
-extern bool periodset_ne_internal(PeriodSet *ps1, PeriodSet *ps2);
+extern int periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_eq_internal(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_ne_internal(const PeriodSet *ps1, const PeriodSet *ps2);
 
 #endif
 

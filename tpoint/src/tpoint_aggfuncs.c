@@ -69,7 +69,7 @@ geoaggstate_check_t(SkipList *state, Temporal *t)
  * performing centroid aggregation 
  */
 static TemporalInst *
-tpointinst_transform_tcentroid(TemporalInst *inst)
+tpointinst_transform_tcentroid(const TemporalInst *inst)
 {
 	TemporalInst *result;
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
@@ -92,7 +92,7 @@ tpointinst_transform_tcentroid(TemporalInst *inst)
 }
 
 static TemporalInst **
-tpointi_transform_tcentroid(TemporalI *ti)
+tpointi_transform_tcentroid(const TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -104,7 +104,7 @@ tpointi_transform_tcentroid(TemporalI *ti)
 }
 
 static TemporalSeq *
-tpointseq_transform_tcentroid(TemporalSeq *seq)
+tpointseq_transform_tcentroid(const TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -124,7 +124,7 @@ tpointseq_transform_tcentroid(TemporalSeq *seq)
 }
 
 static TemporalSeq **
-tpoints_transform_tcentroid(TemporalS *ts)
+tpoints_transform_tcentroid(const TemporalS *ts)
 {
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -138,7 +138,7 @@ tpoints_transform_tcentroid(TemporalS *ts)
 /* Dispatch function  */
 
 static Temporal **
-tpoint_transform_tcentroid(Temporal *temp, int *count)
+tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
 	Temporal **result;
 	if (temp->duration == TEMPORALINST) 

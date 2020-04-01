@@ -15,20 +15,6 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
-
-/*****************************************************************************/
-
-/* Internal functions used for the indexes */
-
-extern bool left_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool overleft_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool right_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool overright_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool before_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool overbefore_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool after_tbox_tbox_internal(TBOX *box1, TBOX *box2);
-extern bool overafter_tbox_tbox_internal(TBOX *box1, TBOX *box2);
 
 /*****************************************************************************/
 

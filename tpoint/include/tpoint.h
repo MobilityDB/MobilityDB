@@ -89,8 +89,25 @@ extern void temporalgeom_init();
 /* Input/output functions */
 
 extern Datum tpoint_in(PG_FUNCTION_ARGS);
+extern Datum tgeompoint_typmod_in(PG_FUNCTION_ARGS);
+extern Datum tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
+extern Datum tpoint_typmod_out(PG_FUNCTION_ARGS);
+extern Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS);
+
+/* Constructor functions */
+
+extern Datum tpointinst_constructor(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
+
+extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
+
+/* Ever/always comparison operators */
+
+extern Datum tpoint_ever_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
+extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
+extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
 
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
 extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
@@ -101,11 +118,14 @@ extern Datum tpoint_ever_ne(PG_FUNCTION_ARGS);
 extern Datum tpoint_always_eq(PG_FUNCTION_ARGS);
 extern Datum tpoint_always_ne(PG_FUNCTION_ARGS);
 
-extern Datum tpoint_values_internal(Temporal *temp);
+/* Temporal comparisons */
 
-extern Datum tgeompointi_values(TemporalI *ti);
-extern Datum tgeogpointi_values(TemporalI *ti);
-extern Datum tpointi_values(TemporalI *ti);
+extern Datum teq_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum teq_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum teq_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum tne_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum tne_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum tne_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /* Restriction functions */
 

@@ -63,6 +63,7 @@ extern void stbox_shift(STBOX *box, const Interval *interval);
 extern Datum stbox_to_period(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
+
 extern GBOX *stbox_to_gbox(STBOX *box);
 
 extern Datum stbox_xmin(PG_FUNCTION_ARGS);

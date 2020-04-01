@@ -111,7 +111,7 @@ temporal_duration_from_string(const char *str, int16 *duration)
 	return false;
 }
 
-Temporal*
+static Temporal *
 temporal_valid_typmod(Temporal *temp, int32_t typmod)
 {
 	/* No typmod (-1) */
@@ -132,7 +132,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 
 /* Copy a Temporal */
 Temporal *
-temporal_copy(Temporal *temp)
+temporal_copy(const Temporal *temp)
 {
 	Temporal *result = (Temporal *)palloc0(VARSIZE(temp));
 	memcpy(result, temp, VARSIZE(temp));
@@ -146,7 +146,7 @@ temporal_copy(Temporal *temp)
  */
 
 bool
-intersection_temporal_temporal(Temporal *temp1, Temporal *temp2,
+intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal **inter1, Temporal **inter2)
 {
 	bool result = false;
@@ -228,7 +228,7 @@ intersection_temporal_temporal(Temporal *temp1, Temporal *temp2,
  */
 
 bool
-synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2,
+synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal **sync1, Temporal **sync2,  bool crossings)
 {
 	bool result = false;
@@ -324,7 +324,7 @@ linear_interpolation(Oid type)
 /* Obtain the typinfo for the temporal type from the catalog */
 
 void
-temporal_typinfo(Oid temptypid, Oid* valuetypid) 
+temporal_typinfo(Oid temptypid, Oid *valuetypid)
 {
 	Oid catalog = RelnameGetRelid("pg_temporal");
 	Relation rel = heap_open(catalog, AccessShareLock);
@@ -550,7 +550,7 @@ ensure_point_base_type(Oid valuetypid)
 /*****************************************************************************/
 
 void
-ensure_same_duration(Temporal *temp1, Temporal *temp2)
+ensure_same_duration(const Temporal *temp1, const Temporal *temp2)
 {
 	if (temp1->duration != temp2->duration)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -558,7 +558,7 @@ ensure_same_duration(Temporal *temp1, Temporal *temp2)
 }
 
 void
-ensure_same_base_type(Temporal *temp1, Temporal *temp2)
+ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
 {
 	if (temp1->valuetypid != temp2->valuetypid)
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -566,7 +566,7 @@ ensure_same_base_type(Temporal *temp1, Temporal *temp2)
 }
 
 void
-ensure_same_interpolation(Temporal *temp1, Temporal *temp2)
+ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
 	if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -648,7 +648,7 @@ temporal_in(PG_FUNCTION_ARGS)
 /* Output function */
 
 char *
-temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum))
+temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 {
 	char *result;
 	ensure_valid_duration(temp->duration);
@@ -1162,7 +1162,7 @@ tfloat_to_tint(PG_FUNCTION_ARGS)
 /* Bounding period on which the temporal value is defined */
 
 void
-temporal_period(Period *p, Temporal *temp)
+temporal_period(Period *p, const Temporal *temp)
 {
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -1409,7 +1409,7 @@ temporal_get_values(PG_FUNCTION_ARGS)
 /* Ranges of a temporal float with either step/linear interpolation */
 
 Datum
-tfloat_ranges(Temporal *temp)
+tfloat_ranges(const Temporal *temp)
 {
 	ArrayType *result;
 	ensure_valid_duration(temp->duration);
@@ -1457,7 +1457,7 @@ temporalinst_get_value(PG_FUNCTION_ARGS)
 /* Returns the time of the temporal type */
 
 PeriodSet *
-temporal_get_time_internal(Temporal *temp)
+temporal_get_time_internal(const Temporal *temp)
 {
 	PeriodSet *result;
 	ensure_valid_duration(temp->duration);
@@ -1545,7 +1545,7 @@ tnumber_to_tbox(PG_FUNCTION_ARGS)
 /* Value range of a temporal integer */
 
 RangeType *
-tnumber_value_range_internal(Temporal *temp)
+tnumber_value_range_internal(const Temporal *temp)
 {
 	RangeType *result = NULL;
 	ensure_valid_duration(temp->duration);
@@ -1640,7 +1640,7 @@ temporal_end_value(PG_FUNCTION_ARGS)
 /* Minimum value */
 
 Datum
-temporal_min_value_internal(Temporal *temp)
+temporal_min_value_internal(const Temporal *temp)
 {
 	Datum result;
 	ensure_valid_duration(temp->duration);
@@ -1974,7 +1974,7 @@ temporal_instants(PG_FUNCTION_ARGS)
 }
 
 TimestampTz
-temporal_start_timestamp_internal(Temporal *temp)
+temporal_start_timestamp_internal(const Temporal *temp)
 {
 	TimestampTz result;
 	ensure_valid_duration(temp->duration);
@@ -2140,7 +2140,7 @@ temporal_shift(PG_FUNCTION_ARGS)
 /* Is the temporal value ever equal to the value? */
 
 bool
-temporal_ever_eq_internal(Temporal *temp, Datum value)
+temporal_ever_eq_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
@@ -2171,7 +2171,7 @@ temporal_ever_eq(PG_FUNCTION_ARGS)
 /* Is the temporal value always equal to the value? */
 
 bool
-temporal_always_eq_internal(Temporal *temp, Datum value)
+temporal_always_eq_internal(const Temporal *temp, Datum value)
 {
 	bool result;
 	ensure_valid_duration(temp->duration);
@@ -2732,7 +2732,7 @@ tnumber_minus_ranges(PG_FUNCTION_ARGS)
 /* Restriction to the minimum value */
 
 Temporal *
-temporal_at_min_internal(Temporal *temp)
+temporal_at_min_internal(const Temporal *temp)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -2833,7 +2833,7 @@ temporal_minus_max(PG_FUNCTION_ARGS)
 /* Restriction to a timestamp */
 
 TemporalInst *
-temporal_at_timestamp_internal(Temporal *temp, TimestampTz t)
+temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t)
 {
 	TemporalInst *result;
 	ensure_valid_duration(temp->duration);
@@ -3034,7 +3034,7 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 /* Restriction to a periodset */
 
 Temporal *
-temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps)
+temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -3258,7 +3258,7 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 
 /* B-tree comparator */
 
-int
+static int
 temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
 	assert(t1->valuetypid == t2->valuetypid);
@@ -3329,8 +3329,8 @@ temporal_cmp(PG_FUNCTION_ARGS)
  * Equality operator
  * The internal B-tree comparator is not used to increase efficiency 
  */
-bool
-temporal_eq_internal(Temporal *t1, Temporal *t2)
+static bool
+temporal_eq_internal(const Temporal *t1, const Temporal *t2)
 {
 	assert(t1->valuetypid == t2->valuetypid);
 	ensure_valid_duration(t1->duration);
@@ -3352,7 +3352,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 	/* Different duration */
 	if (t1->duration > t2->duration)
 	{
-		Temporal *temp = t1;
+		Temporal *temp = (Temporal *) t1;
 		t1 = t2;
 		t2 = temp;
 	}
@@ -3365,7 +3365,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalInst *inst1 = temporali_inst_n(ti, 0);
 		return temporalinst_eq(inst, inst1);	
 	}
-	else if (t1->duration == TEMPORALINST && t2->duration == TEMPORALSEQ)
+	if (t1->duration == TEMPORALINST && t2->duration == TEMPORALSEQ)
 	{
 		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalSeq *seq = (TemporalSeq *)t2; 
@@ -3374,7 +3374,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 		return temporalinst_eq(inst, inst1);	
 	}
-	else if (t1->duration == TEMPORALINST && t2->duration == TEMPORALS)
+	if (t1->duration == TEMPORALINST && t2->duration == TEMPORALS)
 	{
 		TemporalInst *inst = (TemporalInst *)t1;
 		TemporalS *ts = (TemporalS *)t2; 
@@ -3386,7 +3386,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 		return temporalinst_eq(inst, inst1);	
 	}
-	else if (t1->duration == TEMPORALI && t2->duration == TEMPORALSEQ)
+	if (t1->duration == TEMPORALI && t2->duration == TEMPORALSEQ)
 	{
 		TemporalI *ti = (TemporalI *)t1; 
 		TemporalSeq *seq = (TemporalSeq *)t2; 
@@ -3396,7 +3396,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		TemporalInst *inst2 = temporalseq_inst_n(seq, 0);
 		return temporalinst_eq(inst1, inst2);	
 	}
-	else if (t1->duration == TEMPORALI && t2->duration == TEMPORALS)
+	if (t1->duration == TEMPORALI && t2->duration == TEMPORALS)
 	{
 		TemporalI *ti = (TemporalI *)t1; 
 		TemporalS *ts = (TemporalS *)t2; 
@@ -3412,7 +3412,7 @@ temporal_eq_internal(Temporal *t1, Temporal *t2)
 		}
 		return true;
 	}
-	else if (t1->duration == TEMPORALSEQ && t2->duration == TEMPORALS)
+	if (t1->duration == TEMPORALSEQ && t2->duration == TEMPORALS)
 	{
 		TemporalSeq *seq = (TemporalSeq *)t1; 
 		TemporalS *ts = (TemporalS *)t2; 

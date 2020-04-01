@@ -68,7 +68,7 @@ void temporalgeom_init()
  * Check the consistency of the metadata we want to enforce in the typmod:
  * srid, type and dimensionality. If things are inconsistent, shut down the query.
  */
-Temporal*
+static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
 	int32 tpoint_srid = tpoint_srid_internal(temp);
@@ -392,7 +392,9 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
  * type, dims and srid.
  */
 PG_FUNCTION_INFO_V1(tpoint_enforce_typmod);
-PGDLLEXPORT Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS)
+
+PGDLLEXPORT Datum
+tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 typmod = PG_GETARG_INT32(1);
@@ -551,7 +553,7 @@ tpoint_always_ne(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal eq
+ * Temporal comparisons
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(teq_geo_tpoint);
@@ -608,9 +610,7 @@ teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************
- * Temporal ne
- *****************************************************************************/
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tne_geo_tpoint);
 
@@ -679,7 +679,7 @@ tpoint_values_internal(Temporal *temp)
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
-		result = tpointi_values((TemporalI *)temp);
+		result = tpointi_trajectory((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
 	else /* temp->duration == TEMPORALS */

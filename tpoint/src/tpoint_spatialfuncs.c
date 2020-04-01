@@ -373,12 +373,16 @@ geom_to_geog(Datum value)
 }
 
 /*****************************************************************************
- * Assemble the set of points of a temporal instant point as a single
- * geometry/geography. Duplicate points are removed.
+ * Trajectory functions.
  *****************************************************************************/
 
-Datum
-tgeompointi_values(TemporalI *ti)
+/*
+ * Assemble the set of points of a temporal instant point as a single
+ * geometry/geography. Duplicate points are removed.
+ */
+
+static Datum
+tgeompointi_trajectory(const TemporalI *ti)
 {
 	/* Singleton instant set */
 	if (ti->count == 1)
@@ -426,31 +430,29 @@ tgeompointi_values(TemporalI *ti)
 }
 
 Datum
-tgeogpointi_values(TemporalI *ti)
+tgeogpointi_trajectory(const TemporalI *ti)
 {
 	TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
 		type_oid(T_GEOMETRY));
-	Datum geomtraj = tgeompointi_values(tigeom);
+	Datum geomtraj = tgeompointi_trajectory(tigeom);
 	Datum result = call_function1(geography_from_geometry, geomtraj);
 	pfree(DatumGetPointer(geomtraj));
 	return result;
 }
 
 Datum
-tpointi_values(TemporalI *ti)
+tpointi_trajectory(const TemporalI *ti)
 {
 	Datum result;
 	ensure_point_base_type(ti->valuetypid);
 	if (ti->valuetypid == type_oid(T_GEOMETRY))
-		result = tgeompointi_values(ti);
+		result = tgeompointi_trajectory(ti);
 	else
-		result = tgeogpointi_values(ti);
+		result = tgeogpointi_trajectory(ti);
 	return result;
 }
 
-/*****************************************************************************
- * Trajectory functions.
- *****************************************************************************/
+/*****************************************************************************/
 
 /* Compute the trajectory from the points of two consecutive instants with
  * linear interpolation. The functions are called during normalization for
@@ -844,7 +846,7 @@ tpoint_trajectory_internal(const Temporal *temp)
 	if (temp->duration == TEMPORALINST)
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI)
-		result = tpointi_values((TemporalI *)temp);
+		result = tpointi_trajectory((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
 	else /* temp->duration == TEMPORALS */
@@ -1090,7 +1092,7 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 /* Transform a temporal geometry point into another spatial reference system */
 
 TemporalInst *
-tpointinst_transform(TemporalInst *inst, Datum srid)
+tpointinst_transform(const TemporalInst *inst, Datum srid)
 {
 	Datum geo = datum_transform(temporalinst_value(inst), srid);
 	TemporalInst *result = temporalinst_make(geo, inst->t, inst->valuetypid);
@@ -1099,7 +1101,7 @@ tpointinst_transform(TemporalInst *inst, Datum srid)
 }
 
 static TemporalI *
-tpointi_transform(TemporalI *ti, Datum srid)
+tpointi_transform(const TemporalI *ti, Datum srid)
 {
 	/* Singleton sequence */
 	if (ti->count == 1)
@@ -1143,7 +1145,7 @@ tpointi_transform(TemporalI *ti, Datum srid)
 }
 
 static TemporalSeq *
-tpointseq_transform(TemporalSeq *seq, Datum srid)
+tpointseq_transform(const TemporalSeq *seq, Datum srid)
 {
 	/* Singleton sequence */
 	if (seq->count == 1)
@@ -1190,13 +1192,13 @@ tpointseq_transform(TemporalSeq *seq, Datum srid)
 }
 
 static TemporalS *
-tpoints_transform(TemporalS *ts, Datum srid)
+tpoints_transform(const TemporalS *ts, Datum srid)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
 	{
 		TemporalSeq *seq = tpointseq_transform(temporals_seq_n(ts, 0), srid);
-		TemporalS *result = temporals_make(&seq, 1, false);
+		TemporalS *result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;
 	}
@@ -1297,19 +1299,19 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 /* Geography to Geometry */
 
 TemporalInst *
-tgeogpointinst_to_tgeompointinst(TemporalInst *inst)
+tgeogpointinst_to_tgeompointinst(const TemporalInst *inst)
 {
 	return tfunc1_temporalinst(inst, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalSeq *
-tgeogpointseq_to_tgeompointseq(TemporalSeq *seq)
+tgeogpointseq_to_tgeompointseq(const TemporalSeq *seq)
 {
 	return tfunc1_temporalseq(seq, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalS *
-tgeogpoints_to_tgeompoints(TemporalS *ts)
+tgeogpoints_to_tgeompoints(const TemporalS *ts)
 {
 	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY));
 }
@@ -4405,7 +4407,7 @@ tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_
 	if (ts->count == 1)
 	{
 		seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
-		result = temporals_make(&seq, 1, false);
+		result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;
 	}

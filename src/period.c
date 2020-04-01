@@ -56,7 +56,7 @@ period_deparse(bool lower_inc, bool upper_inc, const char *lbound_str,
  * period_deserialize: deconstruct a period value
  */
 void
-period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
+period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
 {
 	if (lower)
 	{
@@ -95,7 +95,7 @@ period_deserialize(Period *p, PeriodBound *lower, PeriodBound *upper)
  * but one is an upper bound and the other a lower bound.
  */
 int
-period_cmp_bounds(PeriodBound *b1, PeriodBound *b2)
+period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
 {
 	int32		result;
 
@@ -180,7 +180,7 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
 /* Copy a period */
 
 Period *
-period_copy(Period *p)
+period_copy(const Period *p)
 {
 	Period *result = (Period *) palloc(sizeof(Period));
 	memcpy((char *) result, (char *) p, sizeof(Period));
@@ -258,7 +258,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
  * the intervening values into the result period.
  */
 Period *
-period_super_union(Period *p1, Period *p2)
+period_super_union(const Period *p1, const Period *p2)
 {
 	int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
 	int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
@@ -321,7 +321,7 @@ unquote(char *str)
 }
 
 char *
-period_to_string(Period *p) 
+period_to_string(const Period *p)
 {
 	char *lower = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
 	char *upper = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
@@ -345,7 +345,7 @@ period_out(PG_FUNCTION_ARGS)
 /* Send function */
 
 void
-period_send_internal(Period *p, StringInfo buf)
+period_send_internal(const Period *p, StringInfo buf)
 {
 	bytea *lower = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->lower));
 	bytea *upper = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(p->upper));
@@ -543,7 +543,7 @@ period_upper_inc(PG_FUNCTION_ARGS)
 /* Shift the period by an interval */
 
 Period *
-period_shift_internal(Period *p, Interval *interval)
+period_shift_internal(const Period *p, const Interval *interval)
 {
 	TimestampTz t1 = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
@@ -572,7 +572,7 @@ period_shift(PG_FUNCTION_ARGS)
 /* Timespan */
 
 Interval *
-period_timespan_internal(Period *p)
+period_timespan_internal(const Period *p)
 {
 	return DatumGetIntervalP(call_function2(timestamp_mi, 
 		TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
@@ -595,7 +595,7 @@ period_timespan(PG_FUNCTION_ARGS)
 
 /* equality  */
 bool
-period_eq_internal(Period *p1, Period *p2)
+period_eq_internal(const Period *p1, const Period *p2)
 {
 	if (p1->lower != p2->lower || p1->upper != p2->upper ||
 		p1->lower_inc != p2->lower_inc || p1->upper_inc != p2->upper_inc)
@@ -615,7 +615,7 @@ period_eq(PG_FUNCTION_ARGS)
 
 /* inequality */
 bool
-period_ne_internal(Period *p1, Period *p2)
+period_ne_internal(const Period *p1, const Period *p2)
 {
 	return (!period_eq_internal(p1, p2));
 }
@@ -632,7 +632,7 @@ period_ne(PG_FUNCTION_ARGS)
 
 /* btree comparator */
 int
-period_cmp_internal(Period *p1, Period *p2)
+period_cmp_internal(const Period *p1, const Period *p2)
 {
 	int cmp = timestamp_cmp_internal(p1->lower, p2->lower);
 	if (cmp != 0)
@@ -659,7 +659,7 @@ period_cmp(PG_FUNCTION_ARGS)
 
 /* inequality operators using the period_cmp function */
 bool
-period_lt_internal(Period *p1, Period *p2)
+period_lt_internal(const Period *p1, const Period *p2)
 {
 	int	cmp = period_cmp_internal(p1, p2);
 	return (cmp < 0);
@@ -676,7 +676,7 @@ period_lt(PG_FUNCTION_ARGS)
 }
 
 bool
-period_le_internal(Period *p1, Period *p2)
+period_le_internal(const Period *p1, const Period *p2)
 {
 	int cmp = period_cmp_internal(p1, p2);
 	return (cmp <= 0);
@@ -693,7 +693,7 @@ period_le(PG_FUNCTION_ARGS)
 }
 
 bool
-period_ge_internal(Period *p1, Period *p2)
+period_ge_internal(const Period *p1, const Period *p2)
 {
 	int cmp = period_cmp_internal(p1, p2);
 	return (cmp >= 0);
@@ -710,7 +710,7 @@ period_ge(PG_FUNCTION_ARGS)
 }
 
 bool
-period_gt_internal(Period *p1, Period *p2)
+period_gt_internal(const Period *p1, const Period *p2)
 {
 	int cmp = period_cmp_internal(p1, p2);
 	return (cmp > 0);

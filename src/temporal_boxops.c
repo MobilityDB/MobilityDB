@@ -61,7 +61,7 @@ temporal_bbox_size(Oid valuetypid)
 /* Equality of bounding boxes */
 
 bool
-temporal_bbox_eq(void *box1, void *box2, Oid valuetypid)
+temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
@@ -80,7 +80,7 @@ temporal_bbox_eq(void *box1, void *box2, Oid valuetypid)
 /* Comparison of bounding boxes */
 
 int
-temporal_bbox_cmp(void *box1, void *box2, Oid valuetypid)
+temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
 {
 	/* Only external types have bounding box */
 	ensure_temporal_base_type(valuetypid);
@@ -115,7 +115,7 @@ temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid)
 /* Shift the bounding box with an interval */
 
 void
-temporal_bbox_shift(void *box, Interval *interval, Oid valuetypid)
+temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid)
 {
 	ensure_temporal_base_type(valuetypid);
 	if (valuetypid == BOOLOID || valuetypid == TEXTOID)
@@ -424,7 +424,7 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box */
 
 void
-timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts)
+timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts)
 {
 	Period *p = timestampset_bbox(ts);
 	box->tmin = p->lower;
@@ -448,7 +448,7 @@ timestampset_to_tbox(PG_FUNCTION_ARGS)
 /* Transform a period to a box */
 
 void
-period_to_tbox_internal(TBOX *box, Period *p)
+period_to_tbox_internal(TBOX *box, const Period *p)
 {
 	box->tmin = p->lower;
 	box->tmax = p->upper;
@@ -470,7 +470,7 @@ period_to_tbox(PG_FUNCTION_ARGS)
 /* Transform a period set to a box */
 
 void
-periodset_to_tbox_internal(TBOX *box, PeriodSet *ps)
+periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps)
 {
 	Period *p = periodset_bbox(ps);
 	box->tmin = p->lower;
