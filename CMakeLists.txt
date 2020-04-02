@@ -129,7 +129,7 @@ endif ()
 include("test/scripts/test.cmake")
 
 if (WITH_POSTGIS)
-		include("tpoint/tpoint.cmake")
+		include("point/point.cmake")
 endif ()
 
 add_custom_command(
