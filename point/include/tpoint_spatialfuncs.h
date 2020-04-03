@@ -135,6 +135,8 @@ extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
+extern Datum shortestline_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
+
 /* Functions converting a temporal point to/from a PostGIS trajectory */
 
 extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);

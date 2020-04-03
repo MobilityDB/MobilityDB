@@ -16,6 +16,8 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 
+#include "temporal.h"
+
 /*****************************************************************************/
 
 extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);
@@ -56,6 +58,12 @@ extern Datum trelate_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Datum trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS);
+
+extern Temporal *tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
+	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert);
+extern Temporal *tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
+	Datum (*func)(Datum, Datum, Datum), bool invert);
+
 
 /*****************************************************************************/
 

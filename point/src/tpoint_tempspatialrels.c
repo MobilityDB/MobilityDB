@@ -433,15 +433,19 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
+	TemporalInst *instants[2];
 	/* Constant segment or step interpolation */
 	if (datum_point_eq(value1, value2) || ! linear)
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
 		Datum value = invert ? func(geo, value1, param) :
 			func(value1, geo, param);
-		TemporalInst *inst = temporalinst_make(value, inst1->t, valuetypid);
-		result[0] = temporalseq_make(&inst, 1, true, true, false, false);
-		pfree(inst);
+		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
+		instants[1] = temporalinst_make(value, inst2->t, valuetypid);
+		result[0] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+			false, false);
+		pfree(instants[0]); pfree(instants[1]);
+		DATUM_FREE(value, valuetypid);
 		*count = 1;
 		return result;
 	}
@@ -453,7 +457,6 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	if (call_function1(LWGEOM_isempty, intersections))
 	{
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		TemporalInst *instants[2];
 		Datum value = invert ? func(geo, value1, param) :
 			func(value1, geo, param);
 		instants[0] = temporalinst_make(value, inst1->t, valuetypid);
@@ -486,7 +489,6 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 		Datum intvalue1 = invert ? func(geo, intvalue, param) :
 			func(intvalue, geo, param);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		TemporalInst *instants[2];
 		instants[0] = temporalinst_make(intvalue1, inst1->t, valuetypid);
 		instants[1] = temporalinst_make(intvalue1, inst2->t, valuetypid);
 		result[0] = temporalseq_make(instants, 2, lower_inc, upper_inc,
@@ -506,7 +508,6 @@ tspatialrel3_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	if (before) countseq++;
 	if (after) countseq++;
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countseq);
-	TemporalInst *instants[2];
 	int k = 0;
 	if (before)
 	{
@@ -1362,7 +1363,7 @@ tdwithin_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2, Datum d,
 
 /* Functions for spatial relationships that accept geometry/geography */
 
-static Temporal *
+Temporal *
 tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	Datum (*func)(Datum, Datum), Oid valuetypid, bool invert)
 {
@@ -1409,7 +1410,7 @@ tspatialrel_tpoint_geo(Temporal *temp, Datum geo,
 	return result;
 }
 
-static Temporal *
+Temporal *
 tspatialrel3_tpoint_geo(Temporal *temp, Datum geo, Datum param,
 	Datum (*func)(Datum, Datum, Datum), bool invert)
 {

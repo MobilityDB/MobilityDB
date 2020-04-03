@@ -32,6 +32,7 @@ extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern bool tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
 	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
 
+extern Temporal *distance_tpoint_geo_internal(Temporal *temp, Datum geo);
 extern Temporal *distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
 
 /*****************************************************************************/

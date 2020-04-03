@@ -131,7 +131,8 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 				instants[k++] = temporalinst_make(func(point, value1),
 					inst1->t, FLOAT8OID);
 				if (inst1->valuetypid == type_oid(T_GEOMETRY))
-					instants[k++] = temporalinst_make(dist, time, FLOAT8OID);
+					instants[k++] = temporalinst_make(Float8GetDatum(dist),
+						time, FLOAT8OID);
 				else
 				{
 					instants[k++] = temporalinst_make(func(point, value),
@@ -142,8 +143,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 		}
 		inst1 = inst2; value1 = value2;
 	}
-	instants[k++] = temporalinst_make(func(point, value1),
-		inst1->t, FLOAT8OID); 
+	instants[k++] = temporalinst_make(func(point, value1), inst1->t, FLOAT8OID);
 	TemporalSeq *result = temporalseq_make(instants, k, 
 		seq->period.lower_inc, seq->period.upper_inc, linear, true);
 	
@@ -251,6 +251,33 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
  * Temporal distance
  *****************************************************************************/
 
+Temporal *
+distance_tpoint_geo_internal(Temporal *temp, Datum geo)
+{
+	Datum (*func)(Datum, Datum);
+	ensure_point_base_type(temp->valuetypid);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
+			&pt_distance2d;
+	else
+		func = &geog_distance;	Temporal *result;
+
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
+			geo, func, FLOAT8OID, true);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
+			geo, func, FLOAT8OID, true);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
+			geo, func);
+	else
+		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
+			geo, func);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(distance_geo_tpoint);
 
 PGDLLEXPORT Datum
@@ -267,35 +294,11 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
-			&pt_distance2d;
-	else
-		func = &geog_distance;
-
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
-			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
-			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else
-		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
+	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
 }
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(distance_tpoint_geo);
 
@@ -313,30 +316,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &pt_distance3d :
-			&pt_distance2d;
-	else
-		func = &geog_distance;
-
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)tfunc2_temporalinst_base((TemporalInst *)temp,
-			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
-			PointerGetDatum(gs), func, FLOAT8OID, true);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)distance_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else
-		result = (Temporal *)distance_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
-
+	Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);

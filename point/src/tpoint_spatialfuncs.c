@@ -3262,6 +3262,37 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 
 /*****************************************************************************/
 
+/* The internal function supposes that the temporal points are synchronized */
+
+Datum
+shortestline_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
+{
+	Datum (*func)(Datum, Datum);
+	ensure_point_base_type(temp1->valuetypid);
+	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+			&geom_distance3d : &geom_distance2d;
+	else
+		func = &geog_distance;
+
+	Datum result;
+	ensure_valid_duration(temp1->duration);
+	if (temp1->duration == TEMPORALINST)
+		result = shortestline_tpointinst_tpointinst((TemporalInst *)temp1,
+			(TemporalInst *)temp2);
+	else if (temp1->duration == TEMPORALI)
+		result = shortestline_tpointi_tpointi((TemporalI *)temp1,
+			(TemporalI *)temp2, func);
+	else if (temp1->duration == TEMPORALSEQ)
+		result = shortestline_tpointseq_tpointseq((TemporalSeq *)temp1,
+			(TemporalSeq *)temp2, func);
+	else /* temp1->duration == TEMPORALS */
+		result = shortestline_tpoints_tpoints((TemporalS *)temp1,
+			(TemporalS *)temp2, func);
+
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(shortestline_tpoint_tpoint);
 
 PGDLLEXPORT Datum
@@ -3279,30 +3310,8 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-			&geom_distance3d : &geom_distance2d;
-	else
-		func = &geog_distance;
 
-	Datum result;
-	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TEMPORALINST)
-		result = shortestline_tpointinst_tpointinst((TemporalInst *)sync1,
-			(TemporalInst *)sync2);
-	else if (sync1->duration == TEMPORALI)
-		result = shortestline_tpointi_tpointi((TemporalI *)sync1,
-			(TemporalI *)sync2, func);
-	else if (sync1->duration == TEMPORALSEQ)
-		result = shortestline_tpointseq_tpointseq((TemporalSeq *)sync1,
-			(TemporalSeq *)sync2, func);
-	else /* sync1->duration == TEMPORALS */
-		result = shortestline_tpoints_tpoints((TemporalS *)sync1,
-			(TemporalS *)sync2, func);
-	
+	Datum result = shortestline_tpoint_tpoint_internal(sync1, sync2);
 	pfree(sync1); pfree(sync2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
