@@ -2103,7 +2103,7 @@ trelate_tpoint_tpoint(PG_FUNCTION_ARGS)
 	ensure_has_not_Z_tpoint(temp1);
 	ensure_has_not_Z_tpoint(temp2);
 	Temporal *result = sync_tfunc2_temporal_temporal_cross(temp1, temp2,
-		&geom_relate, BOOLOID);
+		&geom_relate, TEXTOID);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	if (result == NULL)
