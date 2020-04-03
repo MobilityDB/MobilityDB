@@ -7,7 +7,7 @@ add_test(
 set_tests_properties(load_geom_tables PROPERTIES FIXTURES_SETUP DB)
 set_tests_properties(load_geom_tables PROPERTIES DEPENDS create_extension)
 
-file(GLOB geom_testfiles "tpoint/test/queries/*.sql")
+file(GLOB geom_testfiles "point/test/queries/*.sql")
 foreach(file ${geom_testfiles})
 	get_filename_component(TESTNAME ${file} NAME_WE)
 	add_test(
