@@ -828,7 +828,7 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 	return result;
 }
 
-static Temporal *
+Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
 	Datum (*func)(Datum, Datum, Datum);

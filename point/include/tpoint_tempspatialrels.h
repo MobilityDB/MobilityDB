@@ -51,6 +51,8 @@ extern Datum tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 
+extern Temporal *tdwithin_tpoint_geo_internal(const Temporal *temp,
+	GSERIALIZED *gs, Datum dist);
 extern Temporal *tdwithin_tpoint_tpoint_internal(const Temporal *temp1,
 	const Temporal *temp2, Datum dist);
 
