@@ -14,11 +14,11 @@ DROP TABLE if exists test_geoboundboxops;
 NOTICE:  table "test_geoboundboxops" does not exist, skipping
 DROP TABLE
 CREATE TABLE test_geoboundboxops(
-																	op char(3),
-																	leftarg text,
-																	rightarg text,
-																	noidx bigint,
-																	gistidx bigint
+	op char(3),
+	leftarg text,
+	rightarg text,
+	noidx bigint,
+	gistidx bigint
 	, spgistidx bigint
 );
 CREATE TABLE
