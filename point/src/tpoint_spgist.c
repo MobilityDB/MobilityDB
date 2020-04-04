@@ -208,15 +208,18 @@ nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 	else
 		next_cube_stbox->right.ymax = centroid->ymax;
 
-	if (octant & 0x08)
-		next_cube_stbox->left.zmin = centroid->zmin;
-	else
-		next_cube_stbox->left.zmax = centroid->zmin;
+	if (MOBDB_FLAGS_GET_Z(centroid->flags))
+	{
+		if (octant & 0x08)
+			next_cube_stbox->left.zmin = centroid->zmin;
+		else
+			next_cube_stbox->left.zmax = centroid->zmin;
 
-	if (octant & 0x04)
-		next_cube_stbox->right.zmin = centroid->zmax;
-	else
-		next_cube_stbox->right.zmax = centroid->zmax;
+		if (octant & 0x04)
+			next_cube_stbox->right.zmin = centroid->zmax;
+		else
+			next_cube_stbox->right.zmax = centroid->zmax;
+	}
 
 	if (octant & 0x02)
 		next_cube_stbox->left.tmin = centroid->tmin;
