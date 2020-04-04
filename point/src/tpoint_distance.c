@@ -67,7 +67,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 /* Distance between temporal sequence point and a geometry/geography point */
 
 static TemporalSeq *
-distance_tpointseq_geo(TemporalSeq *seq, Datum point, 
+distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 	Datum (*func)(Datum, Datum))
 {
 	int k = 0;
@@ -157,7 +157,7 @@ distance_tpointseq_geo(TemporalSeq *seq, Datum point,
 /* Distance between temporal sequence point and a geometry/geography point */
 
 static TemporalS *
-distance_tpoints_geo(TemporalS *ts, Datum point, 
+distance_tpoints_geo(const TemporalS *ts, Datum point,
 	Datum (*func)(Datum, Datum))
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -181,8 +181,8 @@ distance_tpoints_geo(TemporalS *ts, Datum point,
  * The function assumes that the two segments are not both constants.
  */
 bool
-tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	double denum, fraction;
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
@@ -252,7 +252,7 @@ tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1,
  *****************************************************************************/
 
 Temporal *
-distance_tpoint_geo_internal(Temporal *temp, Datum geo)
+distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
 	Datum (*func)(Datum, Datum);
 	ensure_point_base_type(temp->valuetypid);
@@ -325,7 +325,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 Temporal *
-distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2)
+distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
 	Datum (*func)(Datum, Datum);
 	if (temp1->valuetypid == type_oid(T_GEOMETRY))

@@ -136,7 +136,8 @@ index_leaf_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
  *****************************************************************************/
 
 static bool
-gist_internal_consistent_stbox(STBOX *key, STBOX *query, StrategyNumber strategy)
+gist_internal_consistent_stbox(const STBOX *key, const STBOX *query,
+	StrategyNumber strategy)
 {
 	bool retval;
 	

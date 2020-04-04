@@ -132,7 +132,7 @@ tor_tbool_tbool(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static TemporalInst *
-tnot_tboolinst(TemporalInst *inst)
+tnot_tboolinst(const TemporalInst *inst)
 {
 	TemporalInst *result = temporalinst_copy(inst);
 	Datum *value_ptr = temporalinst_value_ptr(result);
@@ -141,7 +141,7 @@ tnot_tboolinst(TemporalInst *inst)
 }
 
 static TemporalI *
-tnot_tbooli(TemporalI *ti)
+tnot_tbooli(const TemporalI *ti)
 {
 	TemporalI *result = temporali_copy(ti);
 	for (int i = 0; i < ti->count; i++)
@@ -155,7 +155,7 @@ tnot_tbooli(TemporalI *ti)
 }
 
 static TemporalSeq *
-tnot_tboolseq(TemporalSeq *seq)
+tnot_tboolseq(const TemporalSeq *seq)
 {
 	TemporalSeq *result = temporalseq_copy(seq);
 	for (int i = 0; i < seq->count; i++)
@@ -168,7 +168,7 @@ tnot_tboolseq(TemporalSeq *seq)
 }
 
 static TemporalS *
-tnot_tbools(TemporalS *ts)
+tnot_tbools(const TemporalS *ts)
 {
 	TemporalS *result = temporals_copy(ts);
 	for (int i = 0; i < ts->count; i++)
@@ -185,7 +185,7 @@ tnot_tbools(TemporalS *ts)
 }
 
 Temporal *
-tnot_tbool_internal(Temporal *temp)
+tnot_tbool_internal(const Temporal *temp)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);

@@ -29,11 +29,12 @@ extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern bool tpointseq_min_dist_at_timestamp(TemporalInst *start1, TemporalInst *end1, 
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t);
+extern bool tpointseq_min_dist_at_timestamp(const TemporalInst *start1,
+	const TemporalInst *end1, const TemporalInst *start2, const TemporalInst *end2,
+	TimestampTz *t);
 
-extern Temporal *distance_tpoint_geo_internal(Temporal *temp, Datum geo);
-extern Temporal *distance_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
+extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
+extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
 

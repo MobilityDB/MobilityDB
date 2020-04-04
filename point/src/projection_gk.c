@@ -219,7 +219,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 }
 
 static TemporalInst *
-tgeompointinst_transform_gk(TemporalInst *inst)
+tgeompointinst_transform_gk(const TemporalInst *inst)
 {
 	Datum geom = gk(temporalinst_value(inst));
 	TemporalInst *result = temporalinst_make(geom, inst->t,
@@ -229,7 +229,7 @@ tgeompointinst_transform_gk(TemporalInst *inst)
 }
 
 static TemporalI *
-tgeompointi_transform_gk_internal(TemporalI *ti)
+tgeompointi_transform_gk_internal(const TemporalI *ti)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -247,7 +247,7 @@ tgeompointi_transform_gk_internal(TemporalI *ti)
 }
 
 static TemporalSeq *
-tgeompointseq_transform_gk_internal(TemporalSeq *seq)
+tgeompointseq_transform_gk_internal(const TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -267,7 +267,7 @@ tgeompointseq_transform_gk_internal(TemporalSeq *seq)
 }
 
 static TemporalS *
-tgeompoints_transform_gk_internal(TemporalS *ts)
+tgeompoints_transform_gk_internal(const TemporalS *ts)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)

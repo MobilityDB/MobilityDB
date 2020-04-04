@@ -23,7 +23,7 @@
  *****************************************************************************/
 
 Temporal *
-tcomp_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
+tcomp_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
 	Temporal *result;

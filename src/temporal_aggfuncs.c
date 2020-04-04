@@ -120,7 +120,7 @@ pos_timestamp_timestamp(TimestampTz t1, TimestampTz t)
 }
 
 static RelativeTimePos
-pos_period_timestamp(Period *p, TimestampTz t)
+pos_period_timestamp(const Period *p, TimestampTz t)
 {
 	int32 cmp = timestamp_cmp_internal(p->lower, t);
 	if (cmp > 0)
@@ -137,7 +137,7 @@ pos_period_timestamp(Period *p, TimestampTz t)
 
 /* Comparison function used for skiplists */
 static RelativeTimePos 
-skiplist_elmpos(SkipList *list, int cur, TimestampTz t)
+skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 {
 	if (cur == 0)
 		return AFTER; /* Head is -inf */
@@ -154,7 +154,7 @@ skiplist_elmpos(SkipList *list, int cur, TimestampTz t)
 
 /* Outputs the skiplist in graphviz dot format for visualisation and debugging purposes */
 static void 
-skiplist_print(SkipList *list)
+skiplist_print(const SkipList *list)
 {
 	int len = 0;
 	char buf[16384];
@@ -619,13 +619,13 @@ temporal_tagg_deserialize(PG_FUNCTION_ARGS)
  */
  
 static TemporalInst *
-temporalinst_transform_tcount(TemporalInst *inst)
+temporalinst_transform_tcount(const TemporalInst *inst)
 {
 	return temporalinst_make(Int32GetDatum(1), inst->t, INT4OID);
 }
 
 static TemporalInst **
-temporali_transform_tcount(TemporalI *ti)
+temporali_transform_tcount(const TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -637,7 +637,7 @@ temporali_transform_tcount(TemporalI *ti)
 }
 
 static TemporalSeq *
-temporalseq_transform_tcount(TemporalSeq *seq)
+temporalseq_transform_tcount(const TemporalSeq *seq)
 {
 	TemporalSeq *result;
 	if (seq->count == 1)
@@ -662,7 +662,7 @@ temporalseq_transform_tcount(TemporalSeq *seq)
 }
 
 static TemporalSeq **
-temporals_transform_tcount(TemporalS *ts)
+temporals_transform_tcount(const TemporalS *ts)
 {
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -676,7 +676,7 @@ temporals_transform_tcount(TemporalS *ts)
 /* Dispatch function */
 
 static Temporal **
-temporal_transform_tcount(Temporal *temp, int *count)
+temporal_transform_tcount(const Temporal *temp, int *count)
 {
 	Temporal **result;
 	if (temp->duration == TEMPORALINST) 
@@ -713,7 +713,7 @@ temporal_transform_tcount(Temporal *temp, int *count)
  */
 
 static TemporalInst *
-tnumberinst_transform_tavg(TemporalInst *inst)
+tnumberinst_transform_tavg(const TemporalInst *inst)
 {
 	double value = datum_double(temporalinst_value(inst), inst->valuetypid);
 	double2 dvalue;
@@ -724,7 +724,7 @@ tnumberinst_transform_tavg(TemporalInst *inst)
 }
 
 static TemporalInst **
-tnumberi_transform_tavg(TemporalI *ti)
+tnumberi_transform_tavg(const TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -736,7 +736,7 @@ tnumberi_transform_tavg(TemporalI *ti)
 }
 
 static TemporalSeq *
-tnumberseq_transform_tavg(TemporalSeq *seq)
+tnumberseq_transform_tavg(const TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -755,7 +755,7 @@ tnumberseq_transform_tavg(TemporalSeq *seq)
 }
 
 static TemporalSeq **
-tnumbers_transform_tavg(TemporalS *ts)
+tnumbers_transform_tavg(const TemporalS *ts)
 {
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -769,7 +769,7 @@ tnumbers_transform_tavg(TemporalS *ts)
 /* Dispatch function  */
 
 static Temporal **
-tnumber_transform_tavg(Temporal *temp, int *count)
+tnumber_transform_tavg(const Temporal *temp, int *count)
 {
 	Temporal **result;
 	if (temp->duration == TEMPORALINST) 
@@ -857,7 +857,7 @@ temporalinst_tagg(TemporalInst **instants1, int count1, TemporalInst **instants2
  */
 
 static int
-temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2, 
+temporalseq_tagg1(TemporalSeq **result,	const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), bool crossings)
 {
 	Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
@@ -867,13 +867,13 @@ temporalseq_tagg1(TemporalSeq **result,	TemporalSeq *seq1, TemporalSeq *seq2,
 		/* The two sequences do not intersect: copy the sequences in the right order */
 		if (period_cmp_internal(&seq1->period, &seq2->period) < 0)
 		{
-			sequences[0] = seq1;
-			sequences[1] = seq2;
+			sequences[0] = (TemporalSeq *) seq1;
+			sequences[1] = (TemporalSeq *) seq2;
 		}
 		else
 		{
-			sequences[0] = seq2;
-			sequences[1] = seq1;
+			sequences[0] = (TemporalSeq *) seq2;
+			sequences[1] = (TemporalSeq *) seq1;
 		}
 		/* Normalization */
 		int l;
@@ -1073,7 +1073,7 @@ temporalseq_tagg(TemporalSeq **sequences1, int count1, TemporalSeq **sequences2,
 
 static SkipList *
 temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
-	TemporalInst *inst, Datum (*func)(Datum, Datum))
+	const TemporalInst *inst, Datum (*func)(Datum, Datum))
 {
 	SkipList *result;
 	if (! state)
@@ -1091,7 +1091,7 @@ temporalinst_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 
 static SkipList *
 temporali_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	TemporalI *ti, Datum (*func)(Datum, Datum))
+	const TemporalI *ti, Datum (*func)(Datum, Datum))
 {
 	TemporalInst **instants = temporali_instants(ti);
 	SkipList *result;
@@ -1133,7 +1133,7 @@ temporalseq_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 
 static SkipList *
 temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
+	const TemporalS *ts, Datum (*func)(Datum, Datum), bool crossings)
 {
 	TemporalSeq **sequences = temporals_sequences(ts);
 	SkipList *result;
@@ -1157,7 +1157,7 @@ temporals_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
 
 static SkipList *
 temporal_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state, 
-	Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
+	const Temporal *temp, Datum (*func)(Datum, Datum), bool crossings)
 {
 	ensure_valid_duration(temp->duration);
 	SkipList *result;

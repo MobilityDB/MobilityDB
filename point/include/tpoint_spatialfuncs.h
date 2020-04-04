@@ -119,7 +119,7 @@ extern Datum tgeompoints_twcentroid(TemporalS *ts);
 extern Datum tpoint_at_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 
-extern TemporalSeq **tpointseq_at_geometry2(TemporalSeq *seq, Datum geo, int *count);
+extern TemporalSeq **tpointseq_at_geometry2(const TemporalSeq *seq, Datum geo, int *count);
 
 /* Nearest approach functions */
 
@@ -135,7 +135,7 @@ extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum shortestline_tpoint_tpoint_internal(Temporal *temp1, Temporal *temp2);
+extern Datum shortestline_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2);
 
 /* Functions converting a temporal point to/from a PostGIS trajectory */
 

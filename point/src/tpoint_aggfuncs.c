@@ -35,7 +35,7 @@ struct GeoAggregateState
 };
 
 static void
-geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
+geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 {
 	if(! state)
 		return;
@@ -49,7 +49,7 @@ geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 }
 
 static void 
-geoaggstate_check_as(SkipList *state1, SkipList *state2)
+geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 {
 	struct GeoAggregateState *extra2 = state2->extra;
 	if (extra2)
@@ -57,7 +57,7 @@ geoaggstate_check_as(SkipList *state1, SkipList *state2)
 }
 
 static void
-geoaggstate_check_t(SkipList *state, Temporal *t)
+geoaggstate_check_t(const SkipList *state, const Temporal *t)
 {
 	geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
 }

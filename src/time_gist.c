@@ -102,8 +102,7 @@ typedef struct
  * and the other half on the other page.
  */
 static void
-gist_period_fallafter_split(GistEntryVector *entryvec,
-						  GIST_SPLITVEC *v)
+gist_period_fallafter_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	Period  *left_period = NULL;
 	Period  *right_period = NULL;
@@ -272,8 +271,7 @@ common_entry_cmp(const void *i1, const void *i2)
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 static void
-gist_period_double_sorting_split(GistEntryVector *entryvec,
-								GIST_SPLITVEC *v)
+gist_period_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
 	ConsiderSplitContext context;
 	OffsetNumber i,

@@ -71,7 +71,7 @@ ewkt_out(Oid type, Datum value)
 /* Output a temporal point in WKT format */
 
 static text *
-tpoint_as_text_internal(Temporal *temp)
+tpoint_as_text_internal(const Temporal *temp)
 {
 	char *str;
 	ensure_valid_duration(temp->duration);
@@ -102,7 +102,7 @@ tpoint_as_text(PG_FUNCTION_ARGS)
 /* Output a temporal point in WKT format */
 
 static text *
-tpoint_as_ewkt_internal(Temporal *temp)
+tpoint_as_ewkt_internal(const Temporal *temp)
 {
 	int srid = tpoint_srid_internal(temp);
 	char str1[20];
@@ -279,7 +279,7 @@ coordinates_mfjson_size(int npoints, bool hasz, int precision)
 }
 
 static size_t
-coordinates_mfjson_buf(char *output, TemporalInst *inst, int precision)
+coordinates_mfjson_buf(char *output, const TemporalInst *inst, int precision)
 {
 	char *ptr;
 	char x[OUT_DOUBLE_BUFFER_SIZE];
@@ -320,7 +320,7 @@ datetimes_mfjson_size(int npoints)
 }
 
 static size_t
-datetimes_mfjson_buf(char *output, TemporalInst *inst)
+datetimes_mfjson_buf(char *output, const TemporalInst *inst)
 {
 	char *ptr = output;
 	char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
@@ -375,7 +375,7 @@ bbox_mfjson_size(int hasz, int precision)
 }
 
 static size_t
-bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
+bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "\"stBoundedBy\":{");
@@ -397,9 +397,11 @@ bbox_mfjson_buf(char *output, STBOX *bbox, int hasz, int precision)
 /*****************************************************************************/
 
 static size_t
-tpointinst_as_mfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson_size(const TemporalInst *inst, int precision,
+	const STBOX *bbox, char *srs)
 {
-	size_t size = coordinates_mfjson_size(1, MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	size_t size = coordinates_mfjson_size(1,
+		MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	size += datetimes_mfjson_size(1);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
@@ -409,12 +411,14 @@ tpointinst_as_mfjson_size(const TemporalInst *inst, int precision, STBOX *bbox, 
 }
 
 static size_t
-tpointinst_as_mfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *srs, char *output)
+tpointinst_as_mfjson_buf(const TemporalInst *inst, int precision,
+	const STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
 	if (srs) ptr += srs_mfjson_buf(ptr, srs);
-	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags), precision);
+	if (bbox) ptr += bbox_mfjson_buf(ptr, bbox,
+		MOBDB_FLAGS_GET_Z(inst->flags), precision);
 	ptr += sprintf(ptr, "\"coordinates\":");
 	ptr += coordinates_mfjson_buf(ptr, inst, precision);
 	ptr += sprintf(ptr, ",\"datetimes\":");
@@ -424,7 +428,8 @@ tpointinst_as_mfjson_buf(TemporalInst *inst, int precision, STBOX *bbox, char *s
 }
 
 static char *
-tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
+tpointinst_as_mfjson(const TemporalInst *inst, int precision,
+	const STBOX *bbox, char *srs)
 {
 	size_t size = tpointinst_as_mfjson_size(inst, precision, bbox, srs);
 	char *output = palloc(size);
@@ -435,9 +440,11 @@ tpointinst_as_mfjson(TemporalInst *inst, int precision, STBOX *bbox, char *srs)
 /*****************************************************************************/
 
 static size_t
-tpointi_as_mfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson_size(const TemporalI *ti, int precision, const STBOX *bbox,
+	char *srs)
 {
-	size_t size = coordinates_mfjson_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+	size_t size = coordinates_mfjson_size(ti->count,
+		MOBDB_FLAGS_GET_Z(ti->flags), precision);
 	size += datetimes_mfjson_size(ti->count);
 	size += sizeof("{'type':'MovingPoint',");
 	size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
@@ -447,7 +454,8 @@ tpointi_as_mfjson_size(const TemporalI *ti, int precision, STBOX *bbox, char *sr
 }
 
 static size_t
-tpointi_as_mfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char *output)
+tpointi_as_mfjson_buf(const TemporalI *ti, int precision, const STBOX *bbox,
+	char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
@@ -470,7 +478,7 @@ tpointi_as_mfjson_buf(TemporalI *ti, int precision, STBOX *bbox, char *srs, char
 }
 
 static char *
-tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
+tpointi_as_mfjson(const TemporalI *ti, int precision, const STBOX *bbox, char *srs)
 {
 	size_t size = tpointi_as_mfjson_size(ti, precision, bbox, srs);
 	char *output = palloc(size);
@@ -481,9 +489,11 @@ tpointi_as_mfjson(TemporalI *ti, int precision, STBOX *bbox, char *srs)
 /*****************************************************************************/
 
 static size_t
-tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision,
+	const STBOX *bbox, char *srs)
 {
-	size_t size = coordinates_mfjson_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags), precision);
+	size_t size = coordinates_mfjson_size(seq->count,
+		MOBDB_FLAGS_GET_Z(seq->flags), precision);
 	size += datetimes_mfjson_size(seq->count);
 	size += sizeof("{'type':'MovingPoint',");
 	/* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
@@ -494,7 +504,8 @@ tpointseq_as_mfjson_size(const TemporalSeq *seq, int precision, STBOX *bbox, cha
 }
 
 static size_t
-tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs, char *output)
+tpointseq_as_mfjson_buf(const TemporalSeq *seq, int precision,
+	const STBOX *bbox, char *srs, char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
@@ -519,7 +530,8 @@ tpointseq_as_mfjson_buf(TemporalSeq *seq, int precision, STBOX *bbox, char *srs,
 }
 
 static char *
-tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
+tpointseq_as_mfjson(const TemporalSeq *seq, int precision, const STBOX *bbox,
+	char *srs)
 {
 	size_t size = tpointseq_as_mfjson_size(seq, precision, bbox, srs);
 	char *output = palloc(size);
@@ -530,7 +542,8 @@ tpointseq_as_mfjson(TemporalSeq *seq, int precision, STBOX *bbox, char *srs)
 /*****************************************************************************/
 
 static size_t
-tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson_size(const TemporalS *ts, int precision, const STBOX *bbox,
+	char *srs)
 {
 	size_t size = sizeof("{'type':'MovingPoint','sequences':[],");
 	size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
@@ -544,7 +557,8 @@ tpoints_as_mfjson_size(TemporalS *ts, int precision, STBOX *bbox, char *srs)
 }
 
 static size_t
-tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char *output)
+tpoints_as_mfjson_buf(const TemporalS *ts, int precision, const STBOX *bbox, char *srs,
+	char *output)
 {
 	char *ptr = output;
 	ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
@@ -576,7 +590,8 @@ tpoints_as_mfjson_buf(TemporalS *ts, int precision, STBOX *bbox, char *srs, char
 }
 
 static char *
-tpoints_as_mfjson(TemporalS *ts, int precision, STBOX *bbox, char *srs)
+tpoints_as_mfjson(const TemporalS *ts, int precision, const STBOX *bbox,
+	char *srs)
 {
 	size_t size = tpoints_as_mfjson_size(ts, precision, bbox, srs);
 	char *output = palloc(size);
@@ -814,7 +829,7 @@ double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
  * TimestampTz aka int64
  */
 static uint8_t*
-timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
+timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 {
 	char *tptr = (char*)(&t);
 	int i = 0;
@@ -859,7 +874,7 @@ timestamp_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 }
 
 static bool
-tpoint_wkb_needs_srid(Temporal *temp, uint8_t variant)
+tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
 	/* We can only add an SRID if the geometry has one, and the
 	   WKB form is extended */
@@ -884,7 +899,7 @@ tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
 }
 
 static size_t
-tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
+tpointinst_to_wkb_size(const TemporalInst *inst, uint8_t variant)
 {
 	/* Endian flag + temporal flag */
 	size_t size = WKB_BYTE_SIZE * 2;
@@ -898,7 +913,7 @@ tpointinst_to_wkb_size(TemporalInst *inst, uint8_t variant)
 }
 
 static size_t
-tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
+tpointi_to_wkb_size(const TemporalI *ti, uint8_t variant)
 {
 	/* Endian flag + duration flag */
 	size_t size = WKB_BYTE_SIZE * 2;
@@ -914,7 +929,7 @@ tpointi_to_wkb_size(TemporalI *ti, uint8_t variant)
 }
 
 static size_t
-tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
+tpointseq_to_wkb_size(const TemporalSeq *seq, uint8_t variant)
 {
 	/* Endian flag + duration flag */
 	size_t size = WKB_BYTE_SIZE * 2;
@@ -930,7 +945,7 @@ tpointseq_to_wkb_size(TemporalSeq *seq, uint8_t variant)
 }
 
 static size_t
-tpoints_to_wkb_size(TemporalS *ts, uint8_t variant)
+tpoints_to_wkb_size(const TemporalS *ts, uint8_t variant)
 {
 	/* Endian flag + duration flag */
 	size_t size = WKB_BYTE_SIZE * 2;
@@ -964,7 +979,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 }
 
 static uint8_t *
-tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
+tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
 	uint8_t wkb_flags = 0;
 	if (variant & WKB_EXTENDED)
@@ -990,7 +1005,7 @@ tpoint_wkb_type(Temporal *temp, uint8_t *buf, uint8_t variant)
 }
 
 static uint8_t *
-tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
+tpointinst_to_wkb_buf(const TemporalInst *inst, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);
@@ -1018,7 +1033,7 @@ tpointinst_to_wkb_buf(TemporalInst *inst, uint8_t *buf, uint8_t variant)
 }
 
 static uint8_t *
-tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
+tpointi_to_wkb_buf(const TemporalI *ti, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);
@@ -1053,7 +1068,7 @@ tpointi_to_wkb_buf(TemporalI *ti, uint8_t *buf, uint8_t variant)
 }
 
 static uint8_t *
-tpointseq_wkb_bounds(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+tpointseq_wkb_bounds(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 {
 	uint8_t wkb_flags = 0;
 	if (seq->period.lower_inc)
@@ -1074,7 +1089,7 @@ tpointseq_wkb_bounds(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 }
 
 static uint8_t *
-tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
+tpointseq_to_wkb_buf(const TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);
@@ -1111,7 +1126,7 @@ tpointseq_to_wkb_buf(TemporalSeq *seq, uint8_t *buf, uint8_t variant)
 }
 
 static uint8_t *
-tpoints_to_wkb_buf(TemporalS *ts, uint8_t *buf, uint8_t variant)
+tpoints_to_wkb_buf(const TemporalS *ts, uint8_t *buf, uint8_t variant)
 {
 	/* Set the endian flag */
 	buf = endian_to_wkb_buf(buf, variant);

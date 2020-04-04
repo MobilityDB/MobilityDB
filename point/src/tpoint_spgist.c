@@ -116,7 +116,7 @@ compareDoubles(const void *a, const void *b)
  * corner of the box. This makes 256 octants in total.
  */
 static uint8
-getOctant8D(STBOX *centroid, STBOX *inBox)
+getOctant8D(const STBOX *centroid, const STBOX *inBox)
 {
 	uint8 octant = 0;
 
@@ -156,7 +156,7 @@ getOctant8D(STBOX *centroid, STBOX *inBox)
 static CubeSTbox *
 initCubeSTbox(void)
 {
-	CubeSTbox *cube_stbox = (CubeSTbox *) palloc(sizeof(CubeSTbox));
+	CubeSTbox *cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 	double infinity = get_float8_infinity();
 
 	cube_stbox->left.xmin = cube_stbox->right.xmin = -infinity;
@@ -182,9 +182,9 @@ initCubeSTbox(void)
  * using centroid and octant.
  */
 static CubeSTbox *
-nextCubeSTbox(CubeSTbox *cube_stbox, STBOX *centroid, uint8 octant)
+nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 {
-	CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc(sizeof(CubeSTbox));
+	CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 
 	memcpy(next_cube_stbox, cube_stbox, sizeof(CubeSTbox));
 
@@ -233,7 +233,7 @@ nextCubeSTbox(CubeSTbox *cube_stbox, STBOX *centroid, uint8 octant)
 
 /* Can any cube from cube_stbox overlap with query? */
 static bool
-overlap8D(CubeSTbox *cube_stbox, STBOX *query)
+overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	bool result = true;
 	/* Result value is computed only for the dimensions of the query */
@@ -253,7 +253,7 @@ overlap8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox contain query? */
 static bool
-contain8D(CubeSTbox *cube_stbox, STBOX *query)
+contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	bool result = true;
 	/* Result value is computed only for the dimensions of the query */
@@ -273,56 +273,56 @@ contain8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox be left of query? */
 static bool
-left8D(CubeSTbox *cube_stbox, STBOX *query)
+left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.xmax < query->xmin);
 }
 
 /* Can any cube from cube_stbox does not extend the right of query? */
 static bool
-overLeft8D(CubeSTbox *cube_stbox, STBOX *query)
+overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.xmax <= query->xmax);
 }
 
 /* Can any cube from cube_stbox be right of query? */
 static bool
-right8D(CubeSTbox *cube_stbox, STBOX *query)
+right8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin > query->xmax);
 }
 
 /* Can any cube from cube_stbox does not extend the left of query? */
 static bool
-overRight8D(CubeSTbox *cube_stbox, STBOX *query)
+overRight8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin >= query->xmin);
 }
 
 /* Can any cube from cube_stbox be below of query? */
 static bool
-below8D(CubeSTbox *cube_stbox, STBOX *query)
+below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.ymax < query->ymin);
 }
 
 /* Can any cube from cube_stbox does not extend above query? */
 static bool
-overBelow8D(CubeSTbox *cube_stbox, STBOX *query)
+overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.ymax <= query->ymax);
 }
 
 /* Can any cube from cube_stbox be above of query? */
 static bool
-above8D(CubeSTbox *cube_stbox, STBOX *query)
+above8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin > query->ymax);
 }
 
 /* Can any cube from cube_stbox does not extend below of query? */
 static bool
-overAbove8D(CubeSTbox *cube_stbox, STBOX *query)
+overAbove8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin >= query->ymin);
 }
@@ -336,49 +336,49 @@ front8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox does not extend the back of query? */
 static bool
-overFront8D(CubeSTbox *cube_stbox, STBOX *query)
+overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.zmax <= query->zmax);
 }
 
 /* Can any cube from cube_stbox be back to query? */
 static bool
-back8D(CubeSTbox *cube_stbox, STBOX *query)
+back8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin > query->zmax);
 }
 
 /* Can any cube from cube_stbox does not extend the front of query? */
 static bool
-overBack8D(CubeSTbox *cube_stbox, STBOX *query)
+overBack8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin >= query->zmin);
 }
 
 /* Can any cube from cube_stbox be before of query? */
 static bool
-before8D(CubeSTbox *cube_stbox, STBOX *query)
+before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.tmax < query->tmin);
 }
 
 /* Can any cube from cube_stbox does not extend the after of query? */
 static bool
-overBefore8D(CubeSTbox *cube_stbox, STBOX *query)
+overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.tmax <= query->tmax);
 }
 
 /* Can any cube from cube_stbox be after of query? */
 static bool
-after8D(CubeSTbox *cube_stbox, STBOX *query)
+after8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.tmin > query->tmax);
 }
 
 /* Can any cube from cube_stbox does not extend the before of query? */
 static bool
-overAfter8D(CubeSTbox *cube_stbox, STBOX *query)
+overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.tmin >= query->tmin);
 }

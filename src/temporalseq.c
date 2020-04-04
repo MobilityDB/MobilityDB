@@ -2050,7 +2050,7 @@ temporalseq_shift(const TemporalSeq *seq, const Interval *interval)
 /* Is the temporal value ever equal to the value? */
 
 static bool
-tlinearseq_ever_eq1(TemporalInst *inst1, TemporalInst *inst2,
+tlinearseq_ever_eq1(const TemporalInst *inst1, const TemporalInst *inst2,
 	bool lower_inc, bool upper_inc, Datum value)
 {
 	Datum value1 = temporalinst_value(inst1);

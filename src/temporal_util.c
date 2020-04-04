@@ -441,20 +441,20 @@ float8_qsort_cmp(const void *a1, const void *a2)
 */
 
 static int
-period_sort_cmp(Period **l, Period **r)
+period_sort_cmp(const Period **l, const Period **r)
 {
 	return period_cmp_internal(*l, *r);
 }
 
 static int
-range_sort_cmp(RangeType **l, RangeType **r)
+range_sort_cmp(const RangeType **l, const RangeType **r)
 {
 	return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
 		RangeTypePGetDatum(*r)));
 }
 
 static int
-temporalinstarr_sort_cmp(TemporalInst **l, TemporalInst **r)
+temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
 }

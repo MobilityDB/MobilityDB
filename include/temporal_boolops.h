@@ -33,7 +33,7 @@ extern Datum tor_tbool_tbool(PG_FUNCTION_ARGS);
 
 extern Datum tnot_tbool(PG_FUNCTION_ARGS);
 
-extern Temporal *tnot_tbool_internal(Temporal *temp);
+extern Temporal *tnot_tbool_internal(const Temporal *temp);
 
 /*****************************************************************************/
 
