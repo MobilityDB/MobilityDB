@@ -120,11 +120,14 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
 {
 	uint8 octant = 0;
 
-	if (inBox->xmin > centroid->xmin)
-		octant |= 0x80;
+	if (MOBDB_FLAGS_GET_Z(centroid->flags))
+	{
+		if (inBox->zmin > centroid->zmin)
+			octant |= 0x80;
 
-	if (inBox->xmax > centroid->xmax)
-		octant |= 0x40;
+		if (inBox->zmax > centroid->zmax)
+			octant |= 0x40;
+	}
 
 	if (inBox->ymin > centroid->ymin)
 		octant |= 0x20;
@@ -132,10 +135,10 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
 	if (inBox->ymax > centroid->ymax)
 		octant |= 0x10;
 	
-	if (inBox->zmin > centroid->zmin)
+	if (inBox->xmin > centroid->xmin)
 		octant |= 0x08;
-	
-	if (inBox->zmax > centroid->zmax)
+
+	if (inBox->xmax > centroid->xmax)
 		octant |= 0x04;
 
 	if (inBox->tmin > centroid->tmin)
@@ -191,15 +194,18 @@ nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 
 	memcpy(next_cube_stbox, cube_stbox, sizeof(CubeSTbox));
 
-	if (octant & 0x80)
-		next_cube_stbox->left.xmin = centroid->xmin;
-	else
-		next_cube_stbox->left.xmax = centroid->xmin;
+	if (MOBDB_FLAGS_GET_Z(centroid->flags))
+	{
+		if (octant & 0x80)
+			next_cube_stbox->left.zmin = centroid->zmin;
+		else
+			next_cube_stbox->left.zmax = centroid->zmin;
 
-	if (octant & 0x40)
-		next_cube_stbox->right.xmin = centroid->xmax;
-	else
-		next_cube_stbox->right.xmax = centroid->xmax;
+		if (octant & 0x40)
+			next_cube_stbox->right.zmin = centroid->zmax;
+		else
+			next_cube_stbox->right.zmax = centroid->zmax;
+	}
 
 	if (octant & 0x20)
 		next_cube_stbox->left.ymin = centroid->ymin;
@@ -211,18 +217,15 @@ nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 	else
 		next_cube_stbox->right.ymax = centroid->ymax;
 
-	if (MOBDB_FLAGS_GET_Z(centroid->flags))
-	{
-		if (octant & 0x08)
-			next_cube_stbox->left.zmin = centroid->zmin;
-		else
-			next_cube_stbox->left.zmax = centroid->zmin;
+	if (octant & 0x08)
+		next_cube_stbox->left.xmin = centroid->xmin;
+	else
+		next_cube_stbox->left.xmax = centroid->xmin;
 
-		if (octant & 0x04)
-			next_cube_stbox->right.zmin = centroid->zmax;
-		else
-			next_cube_stbox->right.zmax = centroid->zmax;
-	}
+	if (octant & 0x04)
+		next_cube_stbox->right.xmin = centroid->xmax;
+	else
+		next_cube_stbox->right.xmax = centroid->xmax;
 
 	if (octant & 0x02)
 		next_cube_stbox->left.tmin = centroid->tmin;
@@ -516,7 +519,7 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 	out->hasPrefix = true;
 	out->prefixDatum = STboxPGetDatum(centroid);
 
-	out->nNodes = 256;
+	out->nNodes = hasz ? 256 : 128;
 	out->nodeLabels = NULL;		/* We don't need node labels. */
 
 	out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
