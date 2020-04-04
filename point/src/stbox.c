@@ -55,6 +55,7 @@ stbox_copy(const STBOX *box)
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
+	ensure_same_srid_stbox(box1, box2);
 	box1->xmin = Min(box1->xmin, box2->xmin);
 	box1->xmax = Max(box1->xmax, box2->xmax);
 	box1->ymin = Min(box1->ymin, box2->ymin);
@@ -76,7 +77,6 @@ stbox_shift(STBOX *box, const Interval *interval)
 	box->tmax = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
 		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
-	return;
 }
 
 /*****************************************************************************
@@ -1386,6 +1386,12 @@ stbox_intersection(PG_FUNCTION_ARGS)
 int 
 stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 {
+	/* Compare the SRID */
+	if (box1->srid < box2->srid)
+		return -1;
+	if (box1->srid > box2->srid)
+		return 1;
+
 	/* Compare the box minima */
 	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
 	{
@@ -1512,7 +1518,7 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 		box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
 		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
 		box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
-		box1->flags != box2->flags )
+		box1->flags != box2->flags || box1->srid != box2->srid)
 		return false;
 	/* The two boxes are equal */
 	return true;
