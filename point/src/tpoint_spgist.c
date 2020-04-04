@@ -154,7 +154,7 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
  * initialize the struct to cover the whole 8D space.
  */
 static CubeSTbox *
-initCubeSTbox(void)
+initCubeSTbox(STBOX *centroid)
 {
 	CubeSTbox *cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 	double infinity = get_float8_infinity();
@@ -170,6 +170,9 @@ initCubeSTbox(void)
 
 	cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
 	cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
+
+	cube_stbox->left.srid = cube_stbox->right.srid = centroid->srid;
+	cube_stbox->left.flags = cube_stbox->right.flags = centroid->flags;
 
 	return cube_stbox;
 }
@@ -445,28 +448,40 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	STBOX *centroid;
+	STBOX *box = DatumGetSTboxP(in->datums[0]);
+	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+	STBOX *	centroid = palloc0(sizeof(STBOX));
+	centroid->srid = box->srid;
+	centroid->flags = box->flags;
 	int	median, i;
 	double *lowXs = palloc(sizeof(double) * in->nTuples);
 	double *highXs = palloc(sizeof(double) * in->nTuples);
 	double *lowYs = palloc(sizeof(double) * in->nTuples);
 	double *highYs = palloc(sizeof(double) * in->nTuples);
-	double *lowZs = palloc(sizeof(double) * in->nTuples);
-	double *highZs = palloc(sizeof(double) * in->nTuples);
+	double *lowZs;
+	double *highZs;
+	if (hasz)
+	{
+		lowZs = palloc(sizeof(double) * in->nTuples);
+		highZs = palloc(sizeof(double) * in->nTuples);
+	}
 	double *lowTs = palloc(sizeof(double) * in->nTuples);
 	double *highTs = palloc(sizeof(double) * in->nTuples);
 	
 	/* Calculate median of all 8D coordinates */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		STBOX *box = DatumGetSTboxP(in->datums[i]);
+		box = DatumGetSTboxP(in->datums[i]);
 
 		lowXs[i] = box->xmin;
 		highXs[i] = box->xmax;
 		lowYs[i] = box->ymin;
 		highYs[i] = box->ymax;
-		lowZs[i] = box->zmin;
-		highZs[i] = box->zmax;
+		if (hasz)
+		{
+			lowZs[i] = box->zmin;
+			highZs[i] = box->zmax;
+		}
 		lowTs[i] = (double) box->tmin;
 		highTs[i] = (double) box->tmax;
 	}
@@ -475,21 +490,25 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	if (hasz)
+	{
+		qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+		qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	}
 	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
-	centroid = palloc0(sizeof(STBOX));
-
 	centroid->xmin = lowXs[median];
 	centroid->xmax = highXs[median];
 	centroid->ymin = lowYs[median];
 	centroid->ymax = highYs[median];
-	centroid->zmin = lowZs[median];
-	centroid->zmax = highZs[median];
+	if (hasz)
+	{
+		centroid->zmin = lowZs[median];
+		centroid->zmax = highZs[median];
+	}
 	centroid->tmin = (TimestampTz) lowTs[median];
 	centroid->tmax = (TimestampTz) highTs[median];
 
@@ -509,7 +528,7 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		STBOX *box = DatumGetSTboxP(in->datums[i]);
+		box = DatumGetSTboxP(in->datums[i]);
 		uint8 octant = getOctant8D(centroid, box);
 		out->leafTupleDatums[i] = STboxPGetDatum(box);
 		out->mapTuplesToNodes[i] = octant;
@@ -517,7 +536,10 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 
 	pfree(lowXs); pfree(highXs);
 	pfree(lowYs); pfree(highYs);
-	pfree(lowZs); pfree(highZs);
+	if (hasz)
+	{
+		pfree(lowZs); pfree(highZs);
+	}
 	pfree(lowTs); pfree(highTs);
 	
 	PG_RETURN_VOID();
@@ -558,7 +580,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 	if (in->traversalValue)
 		cube_stbox = in->traversalValue;
 	else
-		cube_stbox = initCubeSTbox();
+		cube_stbox = initCubeSTbox(centroid);
 
 	/*
 	 * Transform the queries into bounding boxes initializing the dimensions
