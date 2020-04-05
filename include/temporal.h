@@ -30,6 +30,7 @@
 #endif
 
 #define EPSILON					1.0E-06
+#define DIST_EPSILON			1.0E-05
 
 #define MOBDB_LIB_VERSION_STR "MobilityDB 1.0beta1"
 #define MOBDB_PGSQL_VERSION 115

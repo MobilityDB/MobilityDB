@@ -1168,7 +1168,7 @@ tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *ins
 		/* We are sure that the trajectory is a line */
 		Datum line = geogpoint_trajectory(value1, value2);
 		bool hasinter = DatumGetFloat8(call_function4(geography_distance, line,
-			value, Float8GetDatum(0.0), BoolGetDatum(false))) < 0.00001;
+			value, Float8GetDatum(0.0), BoolGetDatum(false))) < DIST_EPSILON;
 		if (!hasinter)
 		{
 			pfree(DatumGetPointer(line));
