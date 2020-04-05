@@ -4326,7 +4326,7 @@ SELECT tcoveredby(geometry 'Point(1 1)',
 					</listitem>
 
 					<listitem>
-						<para>Temporal disjoint</para>
+						<para>Temporal disjoint &Z_support; &geography_support;</para>
 						<para><varname>tdisjoint({geo, tgeompoint}, {geo, tgeompoint}): tbool</varname></para>
 						<programlisting>
 SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
@@ -4339,8 +4339,8 @@ SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 					</listitem>
 
 					<listitem>
-						<para>Temporal equals</para>
-						<para><varname>tequals({geo, tgeompoint}, {geo, tgeompoint}): tbool</varname></para>
+						<para>Temporal equals &Z_support; &geography_support;</para>
+						<para><varname>tequals({point, tgeompoint}, {point, tgeompoint}): tbool</varname></para>
 						<programlisting>
 SELECT tequals(geometry 'Point(1 1)',
 	tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');

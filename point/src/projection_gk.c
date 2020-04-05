@@ -186,27 +186,26 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 		if (gserialized_is_empty(gs))
 		{
 			line = lwline_construct_empty(0, false, false);
-			result = geometry_serialize(lwline_as_lwgeom(line));
+			result = geometry_serialize((LWGEOM *) line);
 		}
 		else
 		{
 			LWPOINT *lwpoint = NULL;
-			LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-			line = lwgeom_as_lwline(lwgeom);
+			line = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
 			uint32_t numPoints = line->points->npoints;
 			LWPOINT **points = palloc(sizeof(LWPOINT *) * numPoints);
 			for (uint32_t i = 0; i < numPoints; i++)
 			{
-				lwpoint = lwline_get_lwpoint((LWLINE*)lwgeom, i);
-				Datum point2d_datum = PointerGetDatum(gserialized_from_lwgeom(lwpoint_as_lwgeom(lwpoint), 0));
+				lwpoint = lwline_get_lwpoint(line, i);
+				Datum point2d_datum = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 				Datum geom = gk(point2d_datum);
 				POINT2D point2D	= datum_get_point2d(geom);
 				points[i] = lwpoint_make2d(4326, point2D.x, point2D.y);
 			}
 
 			line = lwline_from_ptarray(4326, numPoints, points);
-			result = geometry_serialize(lwline_as_lwgeom(line));
-			lwline_free(line);lwpoint_free(lwpoint);lwgeom_free(lwgeom);
+			result = geometry_serialize((LWGEOM *) line);
+			lwline_free(line); lwpoint_free(lwpoint);
 			for( uint32_t i = 0; i < numPoints; i++)
 				lwpoint_free(points[i]);
 			pfree(points);
@@ -220,7 +219,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
 }
 
 static TemporalInst *
-tgeompointinst_transform_gk(TemporalInst *inst)
+tgeompointinst_transform_gk(const TemporalInst *inst)
 {
 	Datum geom = gk(temporalinst_value(inst));
 	TemporalInst *result = temporalinst_make(geom, inst->t,
@@ -230,7 +229,7 @@ tgeompointinst_transform_gk(TemporalInst *inst)
 }
 
 static TemporalI *
-tgeompointi_transform_gk_internal(TemporalI *ti)
+tgeompointi_transform_gk_internal(const TemporalI *ti)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -248,7 +247,7 @@ tgeompointi_transform_gk_internal(TemporalI *ti)
 }
 
 static TemporalSeq *
-tgeompointseq_transform_gk_internal(TemporalSeq *seq)
+tgeompointseq_transform_gk_internal(const TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -268,7 +267,7 @@ tgeompointseq_transform_gk_internal(TemporalSeq *seq)
 }
 
 static TemporalS *
-tgeompoints_transform_gk_internal(TemporalS *ts)
+tgeompoints_transform_gk_internal(const TemporalS *ts)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)

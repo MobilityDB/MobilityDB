@@ -43,6 +43,7 @@
 #ifndef MOBDB_PGSQL_VERSION_STR
 #error Unconfigured source code -- please run cmake
 #endif
+
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
@@ -268,11 +269,11 @@ typedef int (*qsort_comparator) (const void *a, const void *b);
 
 /* Internal functions */
 
-extern Temporal *temporal_copy(Temporal *temp);
-extern Temporal *pg_getarg_temporal(Temporal *temp);
-extern bool intersection_temporal_temporal(Temporal *temp1, Temporal *temp2, 
+extern Temporal *temporal_copy(const Temporal *temp);
+extern Temporal *pg_getarg_temporal(const Temporal *temp);
+extern bool intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal **inter1, Temporal **inter2);
-extern bool synchronize_temporal_temporal(Temporal *temp1, Temporal *temp2, 
+extern bool synchronize_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Temporal **sync1, Temporal **sync2, bool interpoint);
 extern bool linear_interpolation(Oid type);
 
@@ -308,9 +309,9 @@ extern void ensure_linear_interpolation_all(Oid valuetypid);
 extern void ensure_numeric_base_type(Oid type);
 extern void ensure_point_base_type(Oid type);
 
-extern void ensure_same_duration(Temporal *temp1, Temporal *temp2);
-extern void ensure_same_base_type(Temporal *temp1, Temporal *temp2);
-extern void ensure_same_interpolation(Temporal *temp1, Temporal *temp2);
+extern void ensure_same_duration(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_base_type(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TemporalInst *inst1, const TemporalInst *inst2);
 
 /* Input/output functions */
@@ -376,13 +377,13 @@ extern Datum temporal_always_le(PG_FUNCTION_ARGS);
 extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
 extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
-extern PeriodSet *temporal_get_time_internal(Temporal *temp);
-extern Datum tfloat_ranges(Temporal *temp);
-extern Datum temporal_min_value_internal(Temporal *temp);
-extern TimestampTz temporal_start_timestamp_internal(Temporal *temp);
-extern RangeType *tnumber_value_range_internal(Temporal *temp);
-extern bool temporal_ever_eq_internal(Temporal *temp, Datum value);
-extern bool temporal_always_eq_internal(Temporal *temp, Datum value);
+extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
+extern Datum tfloat_ranges(const Temporal *temp);
+extern Datum temporal_min_value_internal(const Temporal *temp);
+extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
+extern RangeType *tnumber_value_range_internal(const Temporal *temp);
+extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
+extern bool temporal_always_eq_internal(const Temporal *temp, Datum value);
 
 /* Restriction functions */
 
@@ -411,11 +412,11 @@ extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
  
-extern Temporal *temporal_at_min_internal(Temporal *temp);
-extern TemporalInst *temporal_at_timestamp_internal(Temporal *temp, TimestampTz t);
-extern Temporal *temporal_at_periodset_internal(Temporal *temp, PeriodSet *ps);
-extern void temporal_period(Period *p, Temporal *temp);
-extern char *temporal_to_string(Temporal *temp, char *(*value_out)(Oid, Datum));
+extern Temporal *temporal_at_min_internal(const Temporal *temp);
+extern TemporalInst *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
+extern Temporal *temporal_at_periodset_internal(const Temporal *temp, const PeriodSet *ps);
+extern void temporal_period(Period *p, const Temporal *temp);
+extern char *temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum));
 extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(void *box, const Temporal *temp);
 

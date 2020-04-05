@@ -16,18 +16,66 @@
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
+#include <liblwgeom.h>
+
+/* Definitions copied from gserialized_gist.h */
+
 /*
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
  * for more details.
  */
+
+
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
 	do { \
 		if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
 			pfree(ptrsrc); \
 	} while (0)
 
-#include <liblwgeom.h>
+/* Definitions copied from measures.h */
+
+#define DIST_MAX		-1
+#define DIST_MIN		1
+
+typedef struct
+{
+	double distance;	/*the distance between p1 and p2*/
+	POINT2D p1;
+	POINT2D p2;
+	int mode;	/*the direction of looking, if thedir = -1 then we look for maxdistance and if it is 1 then we look for mindistance*/
+	int twisted; /*To preserve the order of incoming points to match the first and second point in shortest and longest line*/
+	double tolerance; /*the tolerance for dwithin and dfullywithin*/
+} DISTPTS;
+
+extern int lw_dist2d_comp(const LWGEOM *lw1, const LWGEOM *lw2, DISTPTS *dl);
+
+/*  Finds the two closest points and distance between two linesegments */
+extern int lw_dist2d_seg_seg(const POINT2D *A, const POINT2D *B, const POINT2D *C, const POINT2D *D, DISTPTS *dl);
+
+/* Definitions copied from measures3d.h */
+
+typedef struct
+{
+	double distance;	/*the distance between p1 and p2*/
+	POINT3DZ p1;
+	POINT3DZ p2;
+	int mode;	/*the direction of looking, if thedir = -1 then we look for 3dmaxdistance and if it is 1 then we look for 3dmindistance*/
+	int twisted; /*To preserve the order of incoming points to match the first and second point in 3dshortest and 3dlongest line*/
+	double tolerance; /*the tolerance for 3ddwithin and 3ddfullywithin*/
+} DISTPTS3D;
+
+/*  Finds the two closest points and distance between two linesegments */
+extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POINT3DZ *s2p2, DISTPTS3D *dl);
+
+/* Definitions copied from #include liblwgeom_internal.h */
+
+extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
+extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
+extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
+extern void closest_point_on_segment(const POINT4D *R, const POINT4D *A, const POINT4D *B, POINT4D *ret);
+
+/* PostGIS functions called by MobilityDB  */
 
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);

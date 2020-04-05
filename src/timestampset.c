@@ -79,7 +79,7 @@ timestampset_bbox(const TimestampSet *ts)
 /* Construct a TimestampSet from an array of TimestampTz */
 
 TimestampSet *
-timestampset_make_internal(TimestampTz *times, int count)
+timestampset_make_internal(const TimestampTz *times, int count)
 {
 	Period bbox;
 	/* Test the validity of the timestamps */
@@ -115,7 +115,7 @@ timestampset_make_internal(TimestampTz *times, int count)
 }
 
 TimestampSet *
-timestampset_copy(TimestampSet *ts)
+timestampset_copy(const TimestampSet *ts)
 {
 	TimestampSet *result = palloc(VARSIZE(ts));
 	memcpy(result, ts, VARSIZE(ts));
@@ -137,7 +137,7 @@ timestampset_copy(TimestampSet *ts)
  */
 
 bool 
-timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *pos) 
+timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *pos)
 {
 	int first = 0;
 	int last = ts->count - 1;
@@ -182,7 +182,7 @@ timestampset_in(PG_FUNCTION_ARGS)
 /* Convert to string */
  
 char *
-timestampset_to_string(TimestampSet *ts)
+timestampset_to_string(const TimestampSet *ts)
 {
 	char **strings = palloc(sizeof(char *) * ts->count);
 	size_t outlen = 0;
@@ -315,7 +315,7 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
 /* Bounding period on which the temporal value is defined */
 
 void
-timestampset_to_period_internal(Period *p, TimestampSet *ts)
+timestampset_to_period_internal(Period *p, const TimestampSet *ts)
 {
 	TimestampTz start = timestampset_time_n(ts, 0);
 	TimestampTz end = timestampset_time_n(ts, ts->count - 1);
@@ -407,7 +407,7 @@ timestampset_timestamp_n(PG_FUNCTION_ARGS)
 /* Timestamps */
 
 TimestampTz *
-timestampset_timestamps_internal(TimestampSet *ts)
+timestampset_timestamps_internal(const TimestampSet *ts)
 {
 	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
 	for (int i = 0; i < ts->count; i++) 
@@ -431,7 +431,7 @@ timestampset_timestamps(PG_FUNCTION_ARGS)
 /* Shift the period set by an interval */
 
 TimestampSet *
-timestampset_shift_internal(TimestampSet *ts, Interval *interval)
+timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
 {
 	TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -465,7 +465,7 @@ timestampset_shift(PG_FUNCTION_ARGS)
 /* B-tree comparator */
 
 int
-timestampset_cmp_internal(TimestampSet *ts1, TimestampSet *ts2)
+timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
 	int count = Min(ts1->count, ts2->count);
 	int result = 0;
@@ -508,7 +508,7 @@ timestampset_cmp(PG_FUNCTION_ARGS)
  * The internal B-tree comparator is not used to increase efficiency 
  */
 bool
-timestampset_eq_internal(TimestampSet *ts1, TimestampSet *ts2)
+timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
 	if (ts1->count != ts2->count)
 		return false;
@@ -542,7 +542,7 @@ timestampset_eq(PG_FUNCTION_ARGS)
  * The internal B-tree comparator is not used to increase efficiency 
  */
 bool
-timestampset_ne_internal(TimestampSet *ts1, TimestampSet *ts2)
+timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
 {
 	return !timestampset_eq_internal(ts1, ts2);
 }

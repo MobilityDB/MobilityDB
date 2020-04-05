@@ -55,6 +55,7 @@ stbox_copy(const STBOX *box)
 void
 stbox_expand(STBOX *box1, const STBOX *box2)
 {
+	ensure_same_srid_stbox(box1, box2);
 	box1->xmin = Min(box1->xmin, box2->xmin);
 	box1->xmax = Max(box1->xmax, box2->xmax);
 	box1->ymin = Min(box1->ymin, box2->ymin);
@@ -76,7 +77,6 @@ stbox_shift(STBOX *box, const Interval *interval)
 	box->tmax = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
 		TimestampTzGetDatum(box->tmax), PointerGetDatum(interval)));
-	return;
 }
 
 /*****************************************************************************
@@ -458,6 +458,23 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Casting
  *****************************************************************************/
+
+GBOX *
+stbox_to_gbox(STBOX *box)
+{
+	assert(MOBDB_FLAGS_GET_X(box->flags));
+	/* Initialize existing dimensions */
+	GBOX *result = palloc0(sizeof(GBOX));
+	result->xmin = box->xmin;
+	result->xmax = box->xmax;
+	result->ymin = box->ymin;
+	result->ymax = box->ymax;
+	result->zmin = box->zmin;
+	result->zmax = box->zmax;
+	FLAGS_SET_Z(box->flags, MOBDB_FLAGS_GET_Z(box->flags));
+	FLAGS_SET_M(result->flags, 0);
+	return result;
+}
 
 /* Cast an STBOX as a period */
 
@@ -910,7 +927,7 @@ adjacent_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly left of? */
 
 bool
-left_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -932,7 +949,7 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to right of? */
 
 bool
-overleft_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -954,7 +971,7 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly right of? */
 
 bool
-right_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -976,7 +993,7 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to left of? */
 
 bool
-overright_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -998,7 +1015,7 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly below of? */
 
 bool
-below_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1020,7 +1037,7 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend above of? */
 
 bool
-overbelow_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1042,7 +1059,7 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly above of? */
 
 bool
-above_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1064,7 +1081,7 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend below of? */
 
 bool
-overabove_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1086,7 +1103,7 @@ overabove_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly front of? */
 
 bool
-front_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1108,7 +1125,7 @@ front_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to the back of? */
 
 bool
-overfront_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1130,7 +1147,7 @@ overfront_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly back of? */
 
 bool
-back_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1152,7 +1169,7 @@ back_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to the front of? */
 
 bool
-overback_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_same_geodetic_stbox(box1, box2);
 	ensure_same_srid_stbox(box1, box2);
@@ -1174,7 +1191,7 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly before of? */
 
 bool
-before_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_has_T_stbox(box1);
 	ensure_has_T_stbox(box2);
@@ -1194,7 +1211,7 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to the after of? */
 
 bool
-overbefore_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_has_T_stbox(box1);
 	ensure_has_T_stbox(box2);
@@ -1214,7 +1231,7 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 /* strictly after of? */
 
 bool
-after_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_has_T_stbox(box1);
 	ensure_has_T_stbox(box2);
@@ -1234,7 +1251,7 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 /* does not extend to the before of? */
 
 bool
-overafter_stbox_stbox_internal(STBOX *box1, STBOX *box2)
+overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
 	ensure_has_T_stbox(box1);
 	ensure_has_T_stbox(box2);
@@ -1369,6 +1386,12 @@ stbox_intersection(PG_FUNCTION_ARGS)
 int 
 stbox_cmp_internal(const STBOX *box1, const STBOX *box2)
 {
+	/* Compare the SRID */
+	if (box1->srid < box2->srid)
+		return -1;
+	if (box1->srid > box2->srid)
+		return 1;
+
 	/* Compare the box minima */
 	if (MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags))
 	{
@@ -1495,7 +1518,7 @@ stbox_eq_internal(const STBOX *box1, const STBOX *box2)
 		box1->zmin != box2->zmin || box1->tmin != box2->tmin ||
 		box1->xmax != box2->xmax || box1->ymax != box2->ymax ||
 		box1->zmax != box2->zmax || box1->tmax != box2->tmax ||
-		box1->flags != box2->flags )
+		box1->flags != box2->flags || box1->srid != box2->srid)
 		return false;
 	/* The two boxes are equal */
 	return true;

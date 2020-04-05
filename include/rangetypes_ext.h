@@ -19,9 +19,9 @@
 
 /*****************************************************************************/
 
-extern const char *range_to_string(RangeType *range);
-extern Datum lower_datum(RangeType *range);
-extern Datum upper_datum(RangeType *range);
+extern const char *range_to_string(const RangeType *range);
+extern Datum lower_datum(const RangeType *range);
+extern Datum upper_datum(const RangeType *range);
 extern bool lower_inc(RangeType *range);
 extern bool upper_inc(RangeType *range);
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid);

@@ -509,14 +509,30 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 	return timestamp_cmp_internal(x, y);
 }
 
+/* Function taken from rangetypes_typanalyze.c
 static int
-period_sort_cmp(Period **l, Period **r)
+float8_qsort_cmp(const void *a1, const void *a2)
+{
+	const float8 *f1 = (const float8 *) a1;
+	const float8 *f2 = (const float8 *) a2;
+
+	if (*f1 < *f2)
+		return -1;
+	else if (*f1 == *f2)
+		return 0;
+	else
+		return 1;
+}
+*/
+
+static int
+period_sort_cmp(const Period **l, const Period **r)
 {
 	return period_cmp_internal(*l, *r);
 }
 
 static int
-range_sort_cmp(RangeType **l, RangeType **r)
+range_sort_cmp(const RangeType **l, const RangeType **r)
 {
 #if MOBDB_PGSQL_VERSION < 110000
 	return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
@@ -528,7 +544,7 @@ range_sort_cmp(RangeType **l, RangeType **r)
 }
 
 static int
-temporalinstarr_sort_cmp(TemporalInst **l, TemporalInst **r)
+temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
 }
@@ -556,7 +572,12 @@ void
 timestamp_sort(TimestampTz *times, int count)
 {
 	qsort(times, (size_t) count, sizeof(TimestampTz),
-		  (qsort_comparator) &timestamp_sort_cmp);
+		(qsort_comparator) &timestamp_sort_cmp);
+}
+
+void
+float8_sort(TimestampTz *times, int count)
+{
 	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
 }

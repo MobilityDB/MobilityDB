@@ -1369,6 +1369,12 @@ SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-
  {[POINT(2 2)@2000-01-01 12:00:00+00]}
 (1 row)
 
+SELECT asText(atGeometry(tgeompoint '[Point(0 1)@2000-01-01,Point(5 1)@2000-01-05]', geometry 'Linestring(0 0,2 2,3 1,4 1,5 0)'));
+                                                    astext                                                     
+---------------------------------------------------------------------------------------------------------------
+ {[POINT(1 1)@2000-01-01 19:12:00+00], [POINT(3 1)@2000-01-03 09:36:00+00, POINT(4 1)@2000-01-04 04:48:00+00]}
+(1 row)
+
 SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2000-01-01]', geometry 'Linestring(2 2,3 3)'));
  astext 
 --------
@@ -4601,6 +4607,12 @@ SELECT ST_AsText(shortestLine(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@20
  LINESTRING(1 1,1 2.5)
 (1 row)
 
+SELECT ST_AsText(shortestLine(tgeompoint '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02)', '[Point(4 1)@2000-01-01, Point(2 1)@2000-01-02)'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,2 1)
+(1 row)
+
 SELECT shortestline(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}', tgeompoint '[Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)');
  shortestline 
 --------------
@@ -4880,10 +4892,22 @@ SELECT ST_AsText(geoMeasure(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.
  LINESTRING M (1.5 1.5 5.5,2.5 2.5 7.5,1.5 1.5 5.5)
 (1 row)
 
+SELECT ST_AsText(geoMeasure(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', '[5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03]', true));
+                                st_astext                                
+-------------------------------------------------------------------------
+ MULTILINESTRING M ((1.5 1.5 5.5,2.5 2.5 5.5),(2.5 2.5 7.5,1.5 1.5 7.5))
+(1 row)
+
 SELECT ST_AsText(geoMeasure(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '{[5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03],[5.5@2000-01-04, 5.5@2000-01-05]}'));
                                             st_astext                                            
 -------------------------------------------------------------------------------------------------
  GEOMETRYCOLLECTION M (LINESTRING M (1.5 1.5 5.5,2.5 2.5 7.5,1.5 1.5 5.5),POINT M (3.5 3.5 5.5))
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', '{[5.5@2000-01-01, 7.5@2000-01-02, 5.5@2000-01-03],[5.5@2000-01-04, 5.5@2000-01-05]}', true));
+                                             st_astext                                             
+---------------------------------------------------------------------------------------------------
+ MULTILINESTRING M ((1.5 1.5 5.5,2.5 2.5 5.5),(2.5 2.5 7.5,1.5 1.5 7.5),(3.5 3.5 5.5,3.5 3.5 5.5))
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1 1)@2000-01-01', '5@2000-01-01'));
@@ -4956,6 +4980,18 @@ SELECT ST_AsText(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-
                     st_astext                    
 -------------------------------------------------
  MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeompoint '{[Point(1 1)@2000-01-01]}', '{[5@2000-01-01]}', true));
+    st_astext    
+-----------------
+ POINT M (1 1 5)
+(1 row)
+
+SELECT ST_AsText(geoMeasure(tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03]}', '{[5@2000-01-01],[6@2000-01-02, 7@2000-01-03]}', true));
+                             st_astext                             
+-------------------------------------------------------------------
+ GEOMETRYCOLLECTION M (POINT M (1 1 5),LINESTRING M (1 1 6,2 2 6))
 (1 row)
 
 SELECT ST_AsText(geoMeasure(tgeompoint 'Point(1 1)@2000-01-01', '5@2000-01-02'));

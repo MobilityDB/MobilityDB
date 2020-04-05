@@ -128,7 +128,7 @@ tbox_in(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-char *
+static char *
 tbox_to_string(const TBOX *box)
 {
 	static size_t size = MAXTBOXLEN + 1;
@@ -376,8 +376,6 @@ tbox_expand_value(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(tbox_expand_value_internal(box, d));
 }
 
-/*****************************************************************************/
-
 /*
  * Expand the box on the time dimension
  */
@@ -402,6 +400,8 @@ tbox_expand_temporal(PG_FUNCTION_ARGS)
 	Datum interval = PG_GETARG_DATUM(1);
 	PG_RETURN_POINTER(tbox_expand_temporal_internal(box, interval));
 }
+
+/*****************************************************************************/
 
 /* Set precision of the value */
 
@@ -558,7 +558,7 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box strictly to the left of the second box?
  */
 bool
-left_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+left_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_X_tbox(box1);
 	ensure_has_X_tbox(box2);
@@ -579,7 +579,7 @@ left_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box to the left of or over the second box?
  */
 bool
-overleft_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+overleft_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_X_tbox(box1);
 	ensure_has_X_tbox(box2);
@@ -600,7 +600,7 @@ overleft_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box strictly to the right of the second box?
  */
 bool
-right_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+right_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_X_tbox(box1);
 	ensure_has_X_tbox(box2);
@@ -621,7 +621,7 @@ right_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box to the right of or over the second box?
  */
 bool
-overright_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+overright_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_X_tbox(box1);
 	ensure_has_X_tbox(box2);
@@ -642,7 +642,7 @@ overright_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box strictly before the second box?
  */
 bool
-before_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+before_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_T_tbox(box1);
 	ensure_has_T_tbox(box2);
@@ -663,7 +663,7 @@ before_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box before or over the second box?
  */
 bool
-overbefore_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+overbefore_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_T_tbox(box1);
 	ensure_has_T_tbox(box2);
@@ -684,7 +684,7 @@ overbefore_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box strictly after the second box?
  */
 bool
-after_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+after_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_T_tbox(box1);
 	ensure_has_T_tbox(box2);
@@ -705,7 +705,7 @@ after_tbox_tbox(PG_FUNCTION_ARGS)
  * Is the first box after or over the second box?
  */
 bool
-overafter_tbox_tbox_internal(TBOX *box1, TBOX *box2)
+overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
 	ensure_has_T_tbox(box1);
 	ensure_has_T_tbox(box2);

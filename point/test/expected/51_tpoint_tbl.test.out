@@ -1249,7 +1249,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geompoint
 WHERE atValue(temp, g) IS NOT NULL;
  count 
 -------
-     2
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geogpoint 
@@ -1306,7 +1306,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint,
 WHERE atValues(temp, valuearr) IS NOT NULL;
  count 
 -------
-     2
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint, 

@@ -124,8 +124,8 @@ datum_degrees(Datum value)
  *****************************************************************************/
 
 static bool
-tnumberseq_mult_maxmin_at_timestamp(TemporalInst *start1, TemporalInst *end1,
-	TemporalInst *start2, TemporalInst *end2, TimestampTz *t)
+tnumberseq_mult_maxmin_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
 	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
 	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);

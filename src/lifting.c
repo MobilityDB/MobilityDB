@@ -77,7 +77,7 @@
  *****************************************************************************/
 
 TemporalInst *
-tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid restypid)
+tfunc1_temporalinst(const TemporalInst *inst, Datum (*func)(Datum), Oid restypid)
 {
 	Datum resvalue = func(temporalinst_value(inst));
 	TemporalInst *result = temporalinst_make(resvalue, inst->t, restypid);
@@ -85,8 +85,8 @@ tfunc1_temporalinst(TemporalInst *inst, Datum (*func)(Datum), Oid restypid)
 	return result;
 }
 
-static TemporalI *
-tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid restypid)
+TemporalI *
+tfunc1_temporali(const TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -102,7 +102,7 @@ tfunc1_temporali(TemporalI *ti, Datum (*func)(Datum), Oid restypid)
 }
 
 TemporalSeq *
-tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
+tfunc1_temporalseq(const TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -112,9 +112,8 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 	}
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
 		linear_interpolation(restypid);
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
-		linear, true);
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc, linear, true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -122,7 +121,7 @@ tfunc1_temporalseq(TemporalSeq *seq, Datum (*func)(Datum), Oid restypid)
 }
 
 TemporalS *
-tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid restypid)
+tfunc1_temporals(const TemporalS *ts, Datum (*func)(Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -142,7 +141,7 @@ tfunc1_temporals(TemporalS *ts, Datum (*func)(Datum), Oid restypid)
 /* Dispatch function */
 
 Temporal *
-tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid restypid)
+tfunc1_temporal(const Temporal *temp, Datum (*func)(Datum), Oid restypid)
 {
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -164,7 +163,7 @@ tfunc1_temporal(Temporal *temp, Datum (*func)(Datum), Oid restypid)
 /*****************************************************************************/
 
 TemporalInst *
-tfunc2_temporalinst(TemporalInst *inst, Datum param,
+tfunc2_temporalinst(const TemporalInst *inst, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Datum resvalue = func(temporalinst_value(inst), param);
@@ -174,7 +173,7 @@ tfunc2_temporalinst(TemporalInst *inst, Datum param,
 }
 
 TemporalI *
-tfunc2_temporali(TemporalI *ti, Datum param,
+tfunc2_temporali(const TemporalI *ti, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
@@ -191,7 +190,7 @@ tfunc2_temporali(TemporalI *ti, Datum param,
 }
 
 TemporalSeq *
-tfunc2_temporalseq(TemporalSeq *seq, Datum param,
+tfunc2_temporalseq(const TemporalSeq *seq, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -202,9 +201,8 @@ tfunc2_temporalseq(TemporalSeq *seq, Datum param,
 	}
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
 		linear_interpolation(restypid);
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
-		linear, true);
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc, linear, true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -212,7 +210,7 @@ tfunc2_temporalseq(TemporalSeq *seq, Datum param,
 }
 
 TemporalS *
-tfunc2_temporals(TemporalS *ts, Datum param,
+tfunc2_temporals(const TemporalS *ts, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -233,7 +231,7 @@ tfunc2_temporals(TemporalS *ts, Datum param,
 /* Dispatch function */
 
 Temporal *
-tfunc2_temporal(Temporal *temp, Datum param,
+tfunc2_temporal(const Temporal *temp, Datum param,
     Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Temporal *result;
@@ -261,7 +259,7 @@ tfunc2_temporal(Temporal *temp, Datum param,
  *****************************************************************************/
 
 TemporalInst *
-tfunc2_temporalinst_base(TemporalInst *inst, Datum value,
+tfunc2_temporalinst_base(const TemporalInst *inst, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
@@ -272,7 +270,7 @@ tfunc2_temporalinst_base(TemporalInst *inst, Datum value,
 }
 
 TemporalI *
-tfunc2_temporali_base(TemporalI *ti, Datum value,
+tfunc2_temporali_base(const TemporalI *ti, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
@@ -290,7 +288,7 @@ tfunc2_temporali_base(TemporalI *ti, Datum value,
 }
 
 TemporalSeq *
-tfunc2_temporalseq_base(TemporalSeq *seq, Datum value,
+tfunc2_temporalseq_base(const TemporalSeq *seq, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -300,8 +298,8 @@ tfunc2_temporalseq_base(TemporalSeq *seq, Datum value,
 		instants[i] = tfunc2_temporalinst_base(inst, value, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -310,7 +308,7 @@ tfunc2_temporalseq_base(TemporalSeq *seq, Datum value,
 }
 
 TemporalS *
-tfunc2_temporals_base(TemporalS *ts, Datum value,
+tfunc2_temporals_base(const TemporalS *ts, Datum value,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -332,7 +330,7 @@ tfunc2_temporals_base(TemporalS *ts, Datum value,
 /* Dispatch function */
 
 Temporal *
-tfunc2_temporal_base(Temporal *temp, Datum d,
+tfunc2_temporal_base(const Temporal *temp, Datum d,
 	Datum (*func)(Datum, Datum), Oid restypid, bool invert)
 {
 	Temporal *result;
@@ -357,7 +355,7 @@ tfunc2_temporal_base(Temporal *temp, Datum d,
  *****************************************************************************/
 
 TemporalInst *
-tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param,
+tfunc3_temporalinst_base(const TemporalInst *inst, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
@@ -368,7 +366,7 @@ tfunc3_temporalinst_base(TemporalInst *inst, Datum value, Datum param,
 }
 
 TemporalI *
-tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param,
+tfunc3_temporali_base(const TemporalI *ti, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
@@ -390,7 +388,7 @@ tfunc3_temporali_base(TemporalI *ti, Datum value, Datum param,
  * may be needed in the future.
  *
 TemporalSeq *
-tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
+tfunc3_temporalseq_base(const TemporalSeq *seq, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -400,8 +398,8 @@ tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 		instants[i] = tfunc3_temporalinst_base(inst, value, param, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -410,7 +408,7 @@ tfunc3_temporalseq_base(TemporalSeq *seq, Datum value, Datum param,
 }
 
 TemporalS *
-tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
+tfunc3_temporals_base(const TemporalS *ts, Datum value, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -433,7 +431,7 @@ tfunc3_temporals_base(TemporalS *ts, Datum value, Datum param,
  *****************************************************************************/
 
 TemporalInst *
-tfunc4_temporalinst_base(TemporalInst *inst, Datum value, Oid valuetypid,
+tfunc4_temporalinst_base(const TemporalInst *inst, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	Datum value1 = temporalinst_value(inst);
@@ -444,7 +442,7 @@ tfunc4_temporalinst_base(TemporalInst *inst, Datum value, Oid valuetypid,
 }
 
 TemporalI *
-tfunc4_temporali_base(TemporalI *ti, Datum value, Oid valuetypid,
+tfunc4_temporali_base(const TemporalI *ti, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
@@ -462,7 +460,7 @@ tfunc4_temporali_base(TemporalI *ti, Datum value, Oid valuetypid,
 }
 
 TemporalSeq *
-tfunc4_temporalseq_base(TemporalSeq *seq, Datum value, Oid valuetypid,
+tfunc4_temporalseq_base(const TemporalSeq *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
@@ -472,8 +470,8 @@ tfunc4_temporalseq_base(TemporalSeq *seq, Datum value, Oid valuetypid,
 		instants[i] = tfunc4_temporalinst_base(inst, value, valuetypid, func,
 			restypid, invert);
 	}
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	for (int i = 0; i < seq->count; i++)
 		pfree(instants[i]);
@@ -482,7 +480,7 @@ tfunc4_temporalseq_base(TemporalSeq *seq, Datum value, Oid valuetypid,
 }
 
 TemporalS *
-tfunc4_temporals_base(TemporalS *ts, Datum value, Oid valuetypid,
+tfunc4_temporals_base(const TemporalS *ts, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
@@ -504,7 +502,7 @@ tfunc4_temporals_base(TemporalS *ts, Datum value, Oid valuetypid,
 /* Dispatch function */
 
 Temporal *
-tfunc4_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
+tfunc4_temporal_base(const Temporal *temp, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool inverted)
 {
 	Temporal *result;
@@ -539,7 +537,7 @@ tfunc4_temporal_base(Temporal *temp, Datum value, Oid valuetypid,
  *****************************************************************************/
 
 static int
-tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
+tfunc4_temporalseq_base_cross1(TemporalSeq **result, const TemporalSeq *seq,
 	Datum value, Oid valuetypid, Datum (*func)(Datum, Datum, Oid, Oid),
 	Oid restypid, bool invert)
 {
@@ -552,8 +550,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 			func(temporalinst_value(inst), value, inst->valuetypid, valuetypid);
 		TemporalInst *inst1 = temporalinst_make(value1, inst->t, restypid);
 		/* Result has step interpolation */
-		result[0] = temporalseq_make(&inst1, 1,
-			true, true, false, false);
+		result[0] = temporalseq_make(&inst1, 1, true, true,
+			false, false);
 		return 1;
 	}
 
@@ -587,8 +585,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 			/*  The first instant value created above is the ones needed here */
 			temporalinst_set(instants[1], startresult, inst2->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				lower_inc, upper_inc, false, false);
+			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+				false, false);
 		}
 			/* If either the inst1 or the inst2 value is equal to the value compute
 			 * the function at the inst1, at the middle, and at the inst2 instants */
@@ -600,8 +598,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 			{
 				temporalinst_set(instants[0], startresult, inst1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 			/* Find the middle time between inst1 and the inst2 instant and compute
 			 * the function at that point */
@@ -614,8 +612,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 			temporalinst_set(instants[0], intresult, inst1->t);
 			temporalinst_set(instants[1], intresult, inst2->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				false, false, false, false);
+			result[k++] = temporalseq_make(instants, 2, false, false,
+				false, false);
 			/* Compute the function at the inst2 instant */
 			if (upper_inc)
 			{
@@ -624,16 +622,18 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 					func(value2, value, inst1->valuetypid, valuetypid);
 				temporalinst_set(instants[0], endresult, inst2->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 		}
 		else
 		{
 			/* Determine whether there is a crossing */
+			/* Value projected on the segment to avoid floating point imprecision */
+			Datum crossvalue;
 			TimestampTz crosstime;
-			bool hascross = tlinearseq_timestamp_at_value(inst1, inst2, value,
-				valuetypid, &crosstime);
+			bool hascross = tlinearseq_intersection_value(inst1, inst2, value,
+				valuetypid, &crossvalue, &crosstime);
 
 			/* If there is no crossing compute the function at the inst1 and
 			 * inst2 instants */
@@ -643,8 +643,8 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 				temporalinst_set(instants[0], startresult, inst1->t);
 				temporalinst_set(instants[1], startresult, inst2->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, upper_inc, false, false);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+					false, false);
 			}
 			else
 			{
@@ -653,14 +653,10 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 				temporalinst_set(instants[0], startresult, inst1->t);
 				temporalinst_set(instants[1], startresult, crosstime);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
-				/* Compute the function at the crossing. Due to floating point precision
-				 * we cannot compute the function at the crosstime as follows
-						startresult = temporalseq_value_at_timestamp1(inst1, inst2, true, crosstime);
-				   Since this function is (currently) called only for tfloat then we
-				   assume startresult = value */
-				intresult = func(value, value, valuetypid, valuetypid);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
+				/* Compute the function at the crossing */
+				intresult = func(crossvalue, value, valuetypid, valuetypid);
 				temporalinst_set(instants[0], intresult, crosstime);
 				/* Find the middle time between inst1 and the inst2 instant and compute
 				 * the function at that point */
@@ -674,19 +670,19 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 				{
 					temporalinst_set(instants[1], endresult, inst2->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						true, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, true, upper_inc,
+						false, false);
 				}
 				else
 				{
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
 					temporalinst_set(instants[0], endresult, crosstime);
 					temporalinst_set(instants[1], endresult, inst2->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
 				}
 			}
 		}
@@ -699,7 +695,7 @@ tfunc4_temporalseq_base_cross1(TemporalSeq **result, TemporalSeq *seq,
 }
 
 TemporalS *
-tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value, Oid valuetypid,
+tfunc4_temporalseq_base_cross(const TemporalSeq *seq, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * seq->count * 3);
@@ -716,7 +712,7 @@ tfunc4_temporalseq_base_cross(TemporalSeq *seq, Datum value, Oid valuetypid,
 }
 
 TemporalS *
-tfunc4_temporals_base_cross(TemporalS *ts, Datum value, Oid valuetypid,
+tfunc4_temporals_base_cross(const TemporalS *ts, Datum value, Oid valuetypid,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool invert)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->totalcount * 3);
@@ -743,7 +739,7 @@ tfunc4_temporals_base_cross(TemporalS *ts, Datum value, Oid valuetypid,
  *****************************************************************************/
 
 TemporalInst *
-sync_tfunc2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
+sync_tfunc2_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	/* Test whether the two temporal values overlap on time */
@@ -757,7 +753,7 @@ sync_tfunc2_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 TemporalInst *
-sync_tfunc2_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
+sync_tfunc2_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -771,14 +767,14 @@ sync_tfunc2_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc2_temporalinst_temporali(TemporalInst *inst, TemporalI *ti,
+sync_tfunc2_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporali_temporalinst(ti, inst, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc2_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
+sync_tfunc2_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -792,14 +788,14 @@ sync_tfunc2_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc2_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq,
+sync_tfunc2_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporalseq_temporalinst(seq, inst, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
+sync_tfunc2_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -813,7 +809,7 @@ sync_tfunc2_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
+sync_tfunc2_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporals_temporalinst(ts, inst, func, restypid);
@@ -822,7 +818,7 @@ sync_tfunc2_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalI *
-sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
+sync_tfunc2_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -869,7 +865,7 @@ sync_tfunc2_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 }
 
 TemporalI *
-sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc2_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -910,14 +906,14 @@ sync_tfunc2_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc2_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
+sync_tfunc2_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporalseq_temporali(seq, ti, func, restypid);
 }
 
 TemporalI *
-sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti,
+sync_tfunc2_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -965,7 +961,7 @@ sync_tfunc2_temporals_temporali(TemporalS *ts, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc2_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc2_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporals_temporali(ts, ti, func, restypid);
@@ -974,9 +970,10 @@ sync_tfunc2_temporali_temporals(TemporalI *ti, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalSeq *
-sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc2_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period,
@@ -993,8 +990,8 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		Datum resvalue = func(value1, value2);
 		TemporalInst *inst = temporalinst_make(resvalue, inter->lower, restypid);
 		/* Result has step interpolation */
-		TemporalSeq *result = temporalseq_make(&inst, 1,
-			true, true, linear, false);
+		TemporalSeq *result = temporalseq_make(&inst, 1, true, true,
+			linear, false);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
@@ -1087,8 +1084,8 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
 
-   TemporalSeq *result = temporalseq_make(instants, k,
-		inter->lower_inc, inter->upper_inc, linear, true);
+   TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
+		inter->upper_inc, linear, true);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -1103,9 +1100,10 @@ sync_tfunc2_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 /*****************************************************************************/
 
 TemporalS *
-sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc2_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
@@ -1144,17 +1142,19 @@ sync_tfunc2_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc2_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc2_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	return sync_tfunc2_temporals_temporalseq(ts, seq, func, restypid, linear, interpoint);
 }
 
 TemporalS *
-sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc2_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
@@ -1210,9 +1210,10 @@ sync_tfunc2_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 /* Dispatch function */
 
 Temporal *
-sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc2_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
@@ -1294,7 +1295,7 @@ sync_tfunc2_temporal_temporal(Temporal *temp1, Temporal *temp2,
  *****************************************************************************/
 
 TemporalInst *
-sync_tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
+sync_tfunc3_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the two temporal values overlap on time */
@@ -1308,7 +1309,7 @@ sync_tfunc3_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 TemporalInst *
-sync_tfunc3_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
+sync_tfunc3_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -1322,14 +1323,14 @@ sync_tfunc3_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc3_temporalinst_temporali(TemporalInst *inst, TemporalI *ti,
+sync_tfunc3_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporali_temporalinst(ti, inst, param, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc3_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
+sync_tfunc3_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -1343,14 +1344,14 @@ sync_tfunc3_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc3_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq,
+sync_tfunc3_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporalseq_temporalinst(seq, inst, param, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc3_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
+sync_tfunc3_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	Datum value1;
@@ -1364,7 +1365,7 @@ sync_tfunc3_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
+sync_tfunc3_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporals_temporalinst(ts, inst, param, func, restypid);
@@ -1373,7 +1374,7 @@ sync_tfunc3_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalI *
-sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
+sync_tfunc3_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1420,7 +1421,7 @@ sync_tfunc3_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 }
 
 TemporalI *
-sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc3_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1461,14 +1462,14 @@ sync_tfunc3_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc3_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
+sync_tfunc3_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporalseq_temporali(seq, ti, param, func, restypid);
 }
 
 TemporalI *
-sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
+sync_tfunc3_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1516,7 +1517,7 @@ sync_tfunc3_temporals_temporali(TemporalS *ts, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc3_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporals_temporali(ts, ti, param, func, restypid);
@@ -1525,9 +1526,10 @@ sync_tfunc3_temporali_temporals(TemporalI *ti, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalSeq *
-sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc3_temporalseq_temporalseq(const TemporalSeq *seq1,const  TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period,
@@ -1544,8 +1546,8 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		Datum resvalue = func(value1, value2, param);
 		TemporalInst *inst = temporalinst_make(resvalue, inter->lower, restypid);
 		/* Result has step interpolation */
-		TemporalSeq *result = temporalseq_make(&inst, 1,
-			true, true, linear, false);
+		TemporalSeq *result = temporalseq_make(&inst, 1, true, true,
+			linear, false);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(resvalue, restypid); pfree(inst); pfree(inter);
 		return result;
@@ -1637,8 +1639,8 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		value = temporalinst_value(instants[k - 2]);
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
-	TemporalSeq *result = temporalseq_make(instants, k,
-		inter->lower_inc, inter->upper_inc, linear, true);
+	TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
+		inter->upper_inc, linear, true);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -1653,9 +1655,10 @@ sync_tfunc3_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 /*****************************************************************************/
 
 TemporalS *
-sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc3_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
@@ -1694,17 +1697,19 @@ sync_tfunc3_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc3_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc3_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	return sync_tfunc3_temporals_temporalseq(ts, seq, param, func, restypid, linear, interpoint);
 }
 
 TemporalS *
-sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc3_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
@@ -1760,9 +1765,10 @@ sync_tfunc3_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 /* This function is not currently used. It is left as comment in case
  * it will be needed in the future
 Temporal *
-sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc3_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
@@ -1845,7 +1851,7 @@ sync_tfunc3_temporal_temporal(Temporal *temp1, Temporal *temp2,
  *****************************************************************************/
 
 TemporalInst *
-sync_tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
+sync_tfunc4_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the two temporal values overlap on time */
@@ -1859,7 +1865,7 @@ sync_tfunc4_temporalinst_temporalinst(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 TemporalInst *
-sync_tfunc4_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
+sync_tfunc4_temporali_temporalinst(const TemporalI *ti, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	Datum value1;
@@ -1874,14 +1880,14 @@ sync_tfunc4_temporali_temporalinst(TemporalI *ti, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc4_temporalinst_temporali(TemporalInst *inst, TemporalI *ti,
+sync_tfunc4_temporalinst_temporali(const TemporalInst *inst, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporali_temporalinst(ti, inst, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc4_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
+sync_tfunc4_temporalseq_temporalinst(const TemporalSeq *seq, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	Datum value1;
@@ -1896,14 +1902,14 @@ sync_tfunc4_temporalseq_temporalinst(TemporalSeq *seq, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc4_temporalinst_temporalseq(TemporalInst *inst, TemporalSeq *seq,
+sync_tfunc4_temporalinst_temporalseq(const TemporalInst *inst, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporalseq_temporalinst(seq, inst, func, restypid);
 }
 
 TemporalInst *
-sync_tfunc4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
+sync_tfunc4_temporals_temporalinst(const TemporalS *ts, const TemporalInst *inst,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	Datum value1;
@@ -1918,7 +1924,7 @@ sync_tfunc4_temporals_temporalinst(TemporalS *ts, TemporalInst *inst,
 }
 
 TemporalInst *
-sync_tfunc4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
+sync_tfunc4_temporalinst_temporals(const TemporalInst *inst, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporals_temporalinst(ts, inst, func, restypid);
@@ -1927,7 +1933,7 @@ sync_tfunc4_temporalinst_temporals(TemporalInst *inst, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalI *
-sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
+sync_tfunc4_temporali_temporali(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -1974,7 +1980,7 @@ sync_tfunc4_temporali_temporali(TemporalI *ti1, TemporalI *ti2,
 }
 
 TemporalI *
-sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
+sync_tfunc4_temporalseq_temporali(const TemporalSeq *seq, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2016,14 +2022,14 @@ sync_tfunc4_temporalseq_temporali(TemporalSeq *seq, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc4_temporali_temporalseq(TemporalI *ti, TemporalSeq *seq,
+sync_tfunc4_temporali_temporalseq(const TemporalI *ti, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporalseq_temporali(seq, ti, func, restypid);
 }
 
 TemporalI *
-sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti,
+sync_tfunc4_temporals_temporali(const TemporalS *ts, const TemporalI *ti,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2072,7 +2078,7 @@ sync_tfunc4_temporals_temporali(TemporalS *ts, TemporalI *ti,
 }
 
 TemporalI *
-sync_tfunc4_temporali_temporals(TemporalI *ti, TemporalS *ts,
+sync_tfunc4_temporali_temporals(const TemporalI *ti, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporals_temporali(ts, ti, func, restypid);
@@ -2081,9 +2087,10 @@ sync_tfunc4_temporali_temporals(TemporalI *ti, TemporalS *ts,
 /*****************************************************************************/
 
 TemporalSeq *
-sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc4_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period,
@@ -2100,8 +2107,8 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		Datum value = func(value1, value2,
 			seq1->valuetypid, seq2->valuetypid);
 		TemporalInst *inst = temporalinst_make(value, inter->lower, restypid);
-		TemporalSeq *result = temporalseq_make(&inst, 1,
-			true, true, linear, false);
+		TemporalSeq *result = temporalseq_make(&inst, 1, true, true,
+			linear, false);
 		DATUM_FREE(value1, seq1->valuetypid); DATUM_FREE(value2, seq2->valuetypid);
 		DATUM_FREE(value, restypid); pfree(inst); pfree(inter);
 		return result;
@@ -2195,8 +2202,8 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		instants[k - 1] = temporalinst_make(value, instants[k - 1]->t, restypid);
 	}
 
-   TemporalSeq *result = temporalseq_make(instants, k,
-		inter->lower_inc, inter->upper_inc, linear, true);
+   TemporalSeq *result = temporalseq_make(instants, k, inter->lower_inc,
+		inter->upper_inc, linear, true);
 
 	for (i = 0; i < k; i++)
 		pfree(instants[i]);
@@ -2211,9 +2218,10 @@ sync_tfunc4_temporalseq_temporalseq(TemporalSeq *seq1, TemporalSeq *seq2,
 /*****************************************************************************/
 
 TemporalS *
-sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc4_temporals_temporalseq(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p;
@@ -2252,17 +2260,19 @@ sync_tfunc4_temporals_temporalseq(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc4_temporalseq_temporals(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc4_temporalseq_temporals(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	return sync_tfunc4_temporals_temporalseq(ts, seq, func, restypid, linear, interpoint);
 }
 
 TemporalS *
-sync_tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc4_temporals_temporals(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period p1, p2;
@@ -2317,9 +2327,10 @@ sync_tfunc4_temporals_temporals(TemporalS *ts1, TemporalS *ts2,
 /* Dispatch function */
 
 Temporal *
-sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
+sync_tfunc4_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid, bool linear,
-	bool (*interpoint)(TemporalInst *, TemporalInst *, TemporalInst *, TemporalInst *, TimestampTz *))
+	bool (*interpoint)(const TemporalInst *, const TemporalInst *, const TemporalInst *,
+		const TemporalInst *, TimestampTz *))
 {
 	Temporal *result = NULL;
 	ensure_valid_duration(temp1->duration);
@@ -2399,19 +2410,13 @@ sync_tfunc4_temporal_temporal(Temporal *temp1, Temporal *temp2,
  * Functions that synchronize two temporal values and apply a function in
  * a single pass while adding intermediate point for crossings.
  * Version for 2 arguments.
- * N.B. The current version of the function supposes that the valuetypid
- * is passed by value and thus it is not necessary to create and pfree
- * each pair of instants used for constructing a segment of the result.
- * Similarly it is not necessary to pfree the values resulting from
- * the function func.
-
  *****************************************************************************/
 
 /* This function is called when at least one segment has linear interpolation */
 
 static int
-sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *seq1,
-	TemporalSeq *seq2, Datum (*func)(Datum, Datum), Oid restypid)
+sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, const TemporalSeq *seq1,
+	const TemporalSeq *seq2, Datum (*func)(Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
 	Period *inter = intersection_period_period_internal(&seq1->period,
@@ -2428,8 +2433,7 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 		Datum value = func(value1, value2);
 		TemporalInst *inst = temporalinst_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
-		result[0] = temporalseq_make(&inst, 1, true, true,
-			false, false);
+		result[0] = temporalseq_make(&inst, 1, true, true, false, false);
 		DATUM_FREE(value1, seq1->valuetypid);
 		DATUM_FREE(value2, seq2->valuetypid);
 		pfree(inst); pfree(inter);
@@ -2459,13 +2463,8 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	Datum startvalue1 = temporalinst_value(start1);
 	Datum startvalue2 = temporalinst_value(start2);
-	/* We create two temporal instants with arbitrary values that are set in
-	 * the for loop to avoid creating and freeing the instants each time a
-	 * segment of the result is computed */
 	TemporalInst *instants[2];
 	Datum startresult = func(startvalue1, startvalue2);
-	instants[0] = temporalinst_make(startresult, start1->t, restypid);
-	instants[1] = temporalinst_copy(instants[0]);
 	while (i < seq1->count && j < seq2->count)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
@@ -2498,11 +2497,12 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 		if (datum_eq(startvalue1, endvalue1, start1->valuetypid) &&
 			datum_eq(startvalue2, endvalue2, start2->valuetypid))
 		{
-			temporalinst_set(instants[0], startresult, start1->t);
-			temporalinst_set(instants[1], startresult, end1->t);
+			instants[0] = temporalinst_make(startresult, start1->t, restypid);
+			instants[1] = temporalinst_make(startresult, end1->t, restypid);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				lower_inc, upper_inc, false, false);
+			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+				false, false);
+			pfree(instants[0]); pfree(instants[1]);
 		}
 		/* If either the start values are equal or the end values are equal and
 		 * both have linear interpolation compute the function at the start
@@ -2514,10 +2514,11 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 			/* Compute the function at the start instant */
 			if (lower_inc)
 			{
-				temporalinst_set(instants[0], startresult, start1->t);
+				instants[0] = temporalinst_make(startresult, start1->t, restypid);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
+				pfree(instants[0]);
 			}
 			/* Find the middle time between start and the end instant and compute
 			 * the function at that point */
@@ -2525,104 +2526,105 @@ sync_tfunc2_temporalseq_temporalseq_cross1(TemporalSeq **result, TemporalSeq *se
 			Datum value1 = temporalseq_value_at_timestamp1(start1, end1, linear1, inttime);
 			Datum value2 = temporalseq_value_at_timestamp1(start2, end2, linear2, inttime);
 			Datum intresult = func(value1, value2);
-			temporalinst_set(instants[0], intresult, start1->t);
-			temporalinst_set(instants[1], intresult, end1->t);
+			instants[0] = temporalinst_make(intresult, start1->t, restypid);
+			instants[1] = temporalinst_make(intresult, end1->t, restypid);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				false, false, false, false);
-			DATUM_FREE(value1, start1->valuetypid);
-			DATUM_FREE(value2, start2->valuetypid);
+			result[k++] = temporalseq_make(instants, 2, false, false,
+				false, false);
+			DATUM_FREE(value1, start1->valuetypid); DATUM_FREE(value2, start2->valuetypid);
+			DATUM_FREE(intresult, restypid);
+			pfree(instants[0]); pfree(instants[1]);
 			/* Compute the function at the end instant */
 			if (upper_inc)
 			{
 				Datum endresult = func(endvalue1, endvalue2);
-				temporalinst_set(instants[0], endresult, end1->t);
+				instants[0] = temporalinst_make(endresult, end1->t, restypid);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
+				DATUM_FREE(endresult, restypid);
+				pfree(instants[0]);
 			}
 		}
 		else
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
-			bool hascross;
-			if (! linear1)
-				hascross = tlinearseq_timestamp_at_value(start2, end2,
-					startvalue1, start1->valuetypid, &crosstime);
-			else if (! linear2)
-				hascross = tlinearseq_timestamp_at_value(start1, end1,
-					startvalue2, start2->valuetypid, &crosstime);
-			else
-				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
-					start2, end2, linear2, &crosstime);
-
+			Datum crossvalue1, crossvalue2;
+			bool hascross = temporalseq_intersection(start1, end1, linear1,
+				start2, end2, linear2, &crossvalue1, &crossvalue2, &crosstime);
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
 			 * result may be different */
 			if (!hascross)
 			{
-				temporalinst_set(instants[0], startresult, start1->t);
-				temporalinst_set(instants[1], startresult, end1->t);
+				instants[0] = temporalinst_make(startresult, start1->t, restypid);
+				instants[1] = temporalinst_make(startresult, end1->t, restypid);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
+				pfree(instants[0]); pfree(instants[1]);
 				if (upper_inc)
 				{
 					Datum endresult = func(endvalue1, endvalue2);
-					temporalinst_set(instants[0], endresult, end1->t);
+					instants[0] = temporalinst_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
+					DATUM_FREE(endresult, restypid);
+					pfree(instants[0]);
 				}
 			}
 			else
 			{
 				/* There is a crossing at the middle */
-				temporalinst_set(instants[0], startresult, start1->t);
-				temporalinst_set(instants[1], startresult, crosstime);
+				instants[0] = temporalinst_make(startresult, start1->t, restypid);
+				instants[1] = temporalinst_make(startresult, crosstime, restypid);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
-				Datum cross = func(cross1, cross2);
-				temporalinst_set(instants[0], cross, crosstime);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
+				pfree(instants[0]); pfree(instants[1]);
+				/* Find the value at the local minimum/maximum */
+				Datum cross = func(crossvalue1, crossvalue2);
+				instants[0] = temporalinst_make(cross, crosstime, restypid);
 				Datum endresult = func(endvalue1, endvalue2);
 				if (datum_eq(cross, endresult, restypid))
 				{
-					temporalinst_set(instants[1], endresult, end1->t);
+					instants[1] = temporalinst_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
+					pfree(instants[0]); pfree(instants[1]);
 				}
 				else
 				{
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
-					temporalinst_set(instants[0], endresult, crosstime);
-					temporalinst_set(instants[1], endresult, end1->t);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
+					pfree(instants[0]); pfree(instants[1]);
+					instants[0] = temporalinst_make(endresult, crosstime, restypid);
+					instants[1] = temporalinst_make(endresult, end1->t, restypid);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
+					pfree(instants[0]); pfree(instants[1]);
 				}
-				DATUM_FREE(cross1, start1->valuetypid);
-				DATUM_FREE(cross2, start2->valuetypid);
+				DATUM_FREE(crossvalue1, start1->valuetypid);
+				DATUM_FREE(crossvalue2, start2->valuetypid);
+				DATUM_FREE(cross, restypid); DATUM_FREE(endresult, restypid);
 			}
 		}
+		DATUM_FREE(startresult, restypid);
 		start1 = end1; start2 = end2;
 		startvalue1 = endvalue1; startvalue2 = endvalue2;
 		lower_inc = true;
 	}
-	pfree(instants[0]); pfree(instants[1]);
 	pfree(inter);
 	return k;
 }
 
 TemporalS *
-sync_tfunc2_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc2_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -2644,7 +2646,7 @@ sync_tfunc2_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
  *****************************************************************************/
 
 TemporalS *
-sync_tfunc2_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc2_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -2672,14 +2674,14 @@ sync_tfunc2_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc2_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc2_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	return sync_tfunc2_temporals_temporalseq_cross(ts, seq, func, restypid);
 }
 
 TemporalS *
-sync_tfunc2_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc2_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -2719,7 +2721,7 @@ sync_tfunc2_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 /* Dispatch function */
 
 Temporal *
-sync_tfunc2_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
+sync_tfunc2_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum), Oid restypid)
 {
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
@@ -2801,7 +2803,7 @@ sync_tfunc2_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
 /* This function is called when at least one segment has linear interpolation */
 static int
 sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
-	TemporalSeq *seq1, TemporalSeq *seq2, Datum param,
+	const TemporalSeq *seq1, const TemporalSeq *seq2, Datum param,
 	Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -2819,8 +2821,7 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		Datum value = func(value1, value2, param);
 		TemporalInst *inst = temporalinst_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
-		result[0] = temporalseq_make(&inst, 1, true, true,
-			false, false);
+		result[0] = temporalseq_make(&inst, 1, true, true, false, false);
 		DATUM_FREE(value1, seq1->valuetypid);
 		DATUM_FREE(value2, seq2->valuetypid);
 		pfree(inst); pfree(inter);
@@ -2892,8 +2893,8 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			temporalinst_set(instants[0], startresult, start1->t);
 			temporalinst_set(instants[1], startresult, end1->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				lower_inc, upper_inc, false, false);
+			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+				false, false);
 		}
 			/* If either the start values are equal or the end values are equal and
 			 * both have linear interpolation compute the function at the start
@@ -2907,8 +2908,8 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			{
 				temporalinst_set(instants[0], startresult, start1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 			/* Find the middle time between start and the end instant and compute
 			 * the function at that point */
@@ -2919,8 +2920,8 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			temporalinst_set(instants[0], intresult, start1->t);
 			temporalinst_set(instants[1], intresult, end1->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				false, false, false, false);
+			result[k++] = temporalseq_make(instants, 2, false, false,
+				false, false);
 			DATUM_FREE(value1, start1->valuetypid);
 			DATUM_FREE(value2, start2->valuetypid);
 			/* Compute the function at the end instant */
@@ -2929,25 +2930,17 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				Datum endresult = func(endvalue1, endvalue2, param);
 				temporalinst_set(instants[0], endresult, end1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 		}
 		else
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
-			bool hascross;
-			if (! linear1)
-				hascross = tlinearseq_timestamp_at_value(start2, end2,
-					startvalue1, start1->valuetypid, &crosstime);
-			else if (! linear2)
-				hascross = tlinearseq_timestamp_at_value(start1, end1,
-					startvalue2, start2->valuetypid, &crosstime);
-			else
-				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
-					start2, end2, linear2, &crosstime);
-
+			Datum crossvalue1, crossvalue2;
+			bool hascross = temporalseq_intersection(start1, end1, linear1,
+				start2, end2, linear2, &crossvalue1, &crossvalue2, &crosstime);
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
 			 * result may be different */
@@ -2956,15 +2949,15 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				temporalinst_set(instants[0], startresult, start1->t);
 				temporalinst_set(instants[1], startresult, end1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
 				if (upper_inc)
 				{
 					Datum endresult = func(endvalue1, endvalue2, param);
 					temporalinst_set(instants[0], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
 				}
 			}
 			else
@@ -2973,34 +2966,32 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				temporalinst_set(instants[0], startresult, start1->t);
 				temporalinst_set(instants[1], startresult, crosstime);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1, linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2, linear2, crosstime);
-				Datum cross = func(cross1, cross2, param);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
+				/* Find the value at the local minimum/maximum */
+				Datum cross = func(crossvalue1, crossvalue2, param);
 				temporalinst_set(instants[0], cross, crosstime);
 				Datum endresult = func(endvalue1, endvalue2, param);
 				if (datum_eq(cross, endresult, restypid))
 				{
 					temporalinst_set(instants[1], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
 				}
 				else
 				{
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
 					temporalinst_set(instants[0], endresult, crosstime);
 					temporalinst_set(instants[1], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
 				}
-				DATUM_FREE(cross1, start1->valuetypid);
-				DATUM_FREE(cross2, start2->valuetypid);
+				DATUM_FREE(crossvalue1, start1->valuetypid);
+				DATUM_FREE(crossvalue2, start2->valuetypid);
 			}
 		}
 		start1 = end1; start2 = end2;
@@ -3013,7 +3004,7 @@ sync_tfunc3_temporalseq_temporalseq_cross1(TemporalSeq **result,
 }
 
 TemporalS *
-sync_tfunc3_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc3_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -3036,7 +3027,7 @@ sync_tfunc3_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
  *****************************************************************************/
 
 TemporalS *
-sync_tfunc3_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc3_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -3064,7 +3055,7 @@ sync_tfunc3_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc3_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc3_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	return sync_tfunc3_temporals_temporalseq_cross(ts, seq, param,
@@ -3072,7 +3063,7 @@ sync_tfunc3_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
 }
 
 TemporalS *
-sync_tfunc3_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc3_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -3120,7 +3111,7 @@ sync_tfunc3_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 /* Dispatch function */
 
 Temporal *
-sync_tfunc3_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
+sync_tfunc3_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum param, Datum (*func)(Datum, Datum, Datum), Oid restypid)
 {
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
@@ -3202,7 +3193,7 @@ sync_tfunc3_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
 /* This function is called when at least one segment has linear interpolation */
 static int
 sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
-	TemporalSeq *seq1, TemporalSeq *seq2,
+	const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -3220,8 +3211,7 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 		Datum value = func(value1, value2, seq1->valuetypid, seq2->valuetypid);
 		TemporalInst *inst = temporalinst_make(value, inter->lower, restypid);
 		/* Result has step interpolation */
-		result[0] = temporalseq_make(&inst, 1, true, true,
-			false, false);
+		result[0] = temporalseq_make(&inst, 1, true, true, false, false);
 		DATUM_FREE(value1, seq1->valuetypid);
 		DATUM_FREE(value2, seq2->valuetypid);
 		pfree(inst); pfree(inter);
@@ -3295,12 +3285,12 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			temporalinst_set(instants[0], startresult, start1->t);
 			temporalinst_set(instants[1], startresult, end1->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				lower_inc, upper_inc, false, false);
+			result[k++] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+				false, false);
 		}
-			/* If either the start values are equal or the end values are equal and
-			 * both have linear interpolation compute the function at the start
-			 * instant, at an intermediate point, and at the end instant */
+		/* If either the start values are equal or the end values are equal and
+		 * both have linear interpolation compute the function at the start
+		 * instant, at an intermediate point, and at the end instant */
 		else if (datum_eq2(startvalue1, startvalue2, start1->valuetypid, start2->valuetypid) ||
 				 (linear1 && linear2 &&
 				  datum_eq2(endvalue1, endvalue2, start1->valuetypid, start2->valuetypid)))
@@ -3310,8 +3300,8 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			{
 				temporalinst_set(instants[0], startresult, start1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 			/* Find the middle time between start and the end instant and compute
 			 * the function at that point */
@@ -3323,8 +3313,8 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 			temporalinst_set(instants[0], intresult, start1->t);
 			temporalinst_set(instants[1], intresult, end1->t);
 			/* Result has step interpolation */
-			result[k++] = temporalseq_make(instants, 2,
-				false, false, false, false);
+			result[k++] = temporalseq_make(instants, 2, false, false,
+				false, false);
 			DATUM_FREE(value1, start1->valuetypid);
 			DATUM_FREE(value2, start2->valuetypid);
 			/* Compute the function at the end instant */
@@ -3334,25 +3324,17 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 					end2->valuetypid);
 				temporalinst_set(instants[0], endresult, end1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, false, false);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					false, false);
 			}
 		}
 		else
 		{
 			/* Determine whether there is a crossing */
 			TimestampTz crosstime;
-			bool hascross;
-			if (! linear1)
-				hascross = tlinearseq_timestamp_at_value(start2, end2,
-					startvalue1, start1->valuetypid, &crosstime);
-			else if (! linear2)
-				hascross = tlinearseq_timestamp_at_value(start1, end1,
-					startvalue2, start2->valuetypid, &crosstime);
-			else
-				hascross = temporalseq_intersect_at_timestamp(start1, end1, linear1,
-					start2, end2, linear2, &crosstime);
-
+			Datum crossvalue1, crossvalue2;
+			bool hascross = temporalseq_intersection(start1, end1, linear1,
+				start2, end2, linear2, &crossvalue1, &crossvalue2, &crosstime);
 			/* If there is no crossing compute the function at the start and end
 			 * instants taking into account that the start and end values of the
 			 * result may be different */
@@ -3361,16 +3343,16 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				temporalinst_set(instants[0], startresult, start1->t);
 				temporalinst_set(instants[1], startresult, end1->t);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
 				if (upper_inc)
 				{
 					Datum endresult = func(endvalue1, endvalue2, end1->valuetypid,
 						end2->valuetypid);
 					temporalinst_set(instants[0], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
 				}
 			}
 			else
@@ -3379,14 +3361,10 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				temporalinst_set(instants[0], startresult, start1->t);
 				temporalinst_set(instants[1], startresult, crosstime);
 				/* Result has step interpolation */
-				result[k++] = temporalseq_make(instants, 2,
-					lower_inc, false, false, false);
-				/* Find the values at the local minimum/maximum */
-				Datum cross1 = temporalseq_value_at_timestamp1(start1, end1,
-					linear1, crosstime);
-				Datum cross2 = temporalseq_value_at_timestamp1(start2, end2,
-					linear2, crosstime);
-				Datum cross = func(cross1, cross2, start1->valuetypid,
+				result[k++] = temporalseq_make(instants, 2, lower_inc, false,
+					false, false);
+				/* Find the value at the local minimum/maximum */
+				Datum cross = func(crossvalue1, crossvalue2, start1->valuetypid,
 					start2->valuetypid);
 				temporalinst_set(instants[0], cross, crosstime);
 				Datum endresult = func(endvalue1, endvalue2,
@@ -3395,22 +3373,22 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 				{
 					temporalinst_set(instants[1], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						true, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, true, upper_inc,
+						false, false);
 				}
 				else
 				{
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 1,
-						true, true, false, false);
+					result[k++] = temporalseq_make(instants, 1, true, true,
+						false, false);
 					temporalinst_set(instants[0], endresult, crosstime);
 					temporalinst_set(instants[1], endresult, end1->t);
 					/* Result has step interpolation */
-					result[k++] = temporalseq_make(instants, 2,
-						false, upper_inc, false, false);
+					result[k++] = temporalseq_make(instants, 2, false, upper_inc,
+						false, false);
 				}
-				DATUM_FREE(cross1, start1->valuetypid);
-				DATUM_FREE(cross2, start2->valuetypid);
+				DATUM_FREE(crossvalue1, start1->valuetypid);
+				DATUM_FREE(crossvalue2, start2->valuetypid);
 			}
 		}
 		start1 = end1; start2 = end2;
@@ -3423,7 +3401,7 @@ sync_tfunc4_temporalseq_temporalseq_cross1(TemporalSeq **result,
 }
 
 TemporalS *
-sync_tfunc4_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
+sync_tfunc4_temporalseq_temporalseq_cross(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -3446,7 +3424,7 @@ sync_tfunc4_temporalseq_temporalseq_cross(TemporalSeq *seq1, TemporalSeq *seq2,
  *****************************************************************************/
 
 TemporalS *
-sync_tfunc4_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
+sync_tfunc4_temporals_temporalseq_cross(const TemporalS *ts, const TemporalSeq *seq,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) *
@@ -3474,14 +3452,14 @@ sync_tfunc4_temporals_temporalseq_cross(TemporalS *ts, TemporalSeq *seq,
 }
 
 TemporalS *
-sync_tfunc4_temporalseq_temporals_cross(TemporalSeq *seq, TemporalS *ts,
+sync_tfunc4_temporalseq_temporals_cross(const TemporalSeq *seq, const TemporalS *ts,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	return sync_tfunc4_temporals_temporalseq_cross(ts, seq, func, restypid);
 }
 
 TemporalS *
-sync_tfunc4_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
+sync_tfunc4_temporals_temporals_cross(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	/* Test whether the bounding period of the two temporal values overlap */
@@ -3529,7 +3507,7 @@ sync_tfunc4_temporals_temporals_cross(TemporalS *ts1, TemporalS *ts2,
 /* Dispatch function */
 
 Temporal *
-sync_tfunc4_temporal_temporal_cross(Temporal *temp1, Temporal *temp2,
+sync_tfunc4_temporal_temporal_cross(const Temporal *temp1, const Temporal *temp2,
 	Datum (*func)(Datum, Datum, Oid, Oid), Oid restypid)
 {
 	bool linear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) || 

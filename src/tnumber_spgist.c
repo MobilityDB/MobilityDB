@@ -122,7 +122,7 @@ compareDoubles(const void *a, const void *b)
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
-getQuadrant4D(TBOX *centroid, TBOX *inBox)
+getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 {
 	uint8 quadrant = 0;
 
@@ -170,7 +170,7 @@ initRectBox(void)
  * using centroid and quadrant.
  */
 static RectBox *
-nextRectBox(RectBox *rect_box, TBOX *centroid, uint8 quadrant)
+nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
 {
 	RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
 
@@ -201,7 +201,7 @@ nextRectBox(RectBox *rect_box, TBOX *centroid, uint8 quadrant)
 
 /* Can any rectangle from rect_box overlap with this argument? */
 static bool
-overlap4D(RectBox *rect_box, TBOX *query)
+overlap4D(const RectBox *rect_box, const TBOX *query)
 {
 	bool result = true;
 	/* If the dimension is not missing */
@@ -217,7 +217,7 @@ overlap4D(RectBox *rect_box, TBOX *query)
 
 /* Can any rectangle from rect_box contain this argument? */
 static bool
-contain4D(RectBox *rect_box, TBOX *query)
+contain4D(const RectBox *rect_box, const TBOX *query)
 {
 	bool result = true;
 	/* If the dimension is not missing */
@@ -233,56 +233,56 @@ contain4D(RectBox *rect_box, TBOX *query)
 
 /* Can any rectangle from rect_box be left of this argument? */
 static bool
-left4D(RectBox *rect_box, TBOX *query)
+left4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.xmax < query->xmin);
 }
 
 /* Can any rectangle from rect_box does not extend the right of this argument? */
 static bool
-overLeft4D(RectBox *rect_box, TBOX *query)
+overLeft4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.xmax <= query->xmax);
 }
 
 /* Can any rectangle from rect_box be right of this argument? */
 static bool
-right4D(RectBox *rect_box, TBOX *query)
+right4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.xmin > query->xmax);
 }
 
 /* Can any rectangle from rect_box does not extend the left of this argument? */
 static bool
-overRight4D(RectBox *rect_box, TBOX *query)
+overRight4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.xmin >= query->xmin);
 }
 
 /* Can any rectangle from rect_box be before this argument? */
 static bool
-before4D(RectBox *rect_box, TBOX *query)
+before4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.tmax < query->tmin);
 }
 
 /* Can any rectangle from rect_box does not extend after this argument? */
 static bool
-overBefore4D(RectBox *rect_box, TBOX *query)
+overBefore4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->right.tmax <= query->tmax);
 }
 
 /* Can any rectangle from rect_box be after this argument? */
 static bool
-after4D(RectBox *rect_box, TBOX *query)
+after4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.tmin > query->tmax);
 }
 
 /* Can any rectangle from rect_box does not extend before this argument? */
 static bool
-overAfter4D(RectBox *rect_box, TBOX *query)
+overAfter4D(const RectBox *rect_box, const TBOX *query)
 {
 	return (rect_box->left.tmin >= query->tmin);
 }

@@ -35,7 +35,7 @@ struct GeoAggregateState
 };
 
 static void
-geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
+geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 {
 	if(! state)
 		return;
@@ -49,7 +49,7 @@ geoaggstate_check(SkipList *state, int32_t srid, bool hasz)
 }
 
 static void 
-geoaggstate_check_as(SkipList *state1, SkipList *state2)
+geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 {
 	struct GeoAggregateState *extra2 = state2->extra;
 	if (extra2)
@@ -57,7 +57,7 @@ geoaggstate_check_as(SkipList *state1, SkipList *state2)
 }
 
 static void
-geoaggstate_check_t(SkipList *state, Temporal *t)
+geoaggstate_check_t(const SkipList *state, const Temporal *t)
 {
 	geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
 }
@@ -69,7 +69,7 @@ geoaggstate_check_t(SkipList *state, Temporal *t)
  * performing centroid aggregation 
  */
 static TemporalInst *
-tpointinst_transform_tcentroid(TemporalInst *inst)
+tpointinst_transform_tcentroid(const TemporalInst *inst)
 {
 	TemporalInst *result;
 	if (MOBDB_FLAGS_GET_Z(inst->flags))
@@ -92,7 +92,7 @@ tpointinst_transform_tcentroid(TemporalInst *inst)
 }
 
 static TemporalInst **
-tpointi_transform_tcentroid(TemporalI *ti)
+tpointi_transform_tcentroid(const TemporalI *ti)
 {
 	TemporalInst **result = palloc(sizeof(TemporalInst *) * ti->count);
 	for (int i = 0; i < ti->count; i++)
@@ -104,7 +104,7 @@ tpointi_transform_tcentroid(TemporalI *ti)
 }
 
 static TemporalSeq *
-tpointseq_transform_tcentroid(TemporalSeq *seq)
+tpointseq_transform_tcentroid(const TemporalSeq *seq)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
@@ -124,7 +124,7 @@ tpointseq_transform_tcentroid(TemporalSeq *seq)
 }
 
 static TemporalSeq **
-tpoints_transform_tcentroid(TemporalS *ts)
+tpoints_transform_tcentroid(const TemporalS *ts)
 {
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
@@ -138,7 +138,7 @@ tpoints_transform_tcentroid(TemporalS *ts)
 /* Dispatch function  */
 
 static Temporal **
-tpoint_transform_tcentroid(Temporal *temp, int *count)
+tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
 	Temporal **result;
 	if (temp->duration == TEMPORALINST) 
@@ -178,30 +178,27 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
 	STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
-	// How to ensure this and display an error message if not ?
 
-	STBOX *result;
 	/* Can't do anything with null inputs */
 	if (!box && !temp)
 		PG_RETURN_NULL();
 	/* Null box and non-null temporal, return the bbox of the temporal */
-	if (!box)
+	STBOX *result = palloc0(sizeof(STBOX));
+	if (!box && temp)
 	{
-		result = palloc0(sizeof(STBOX));
 		temporal_bbox(result, temp);
 		PG_RETURN_POINTER(result);
 	}
 	/* Non-null box and null temporal, return the box */
-	STBOX box1;
-	memset(&box1, 0, sizeof(STBOX));
-	if (!temp)
+	if (box && !temp)
 	{
-		result = palloc0(sizeof(STBOX));
 		memcpy(result, box, sizeof(STBOX));
 		PG_RETURN_POINTER(result);
 	}
 
 	/* Both box and temporal are not null */
+	STBOX box1;
+	memset(&box1, 0, sizeof(STBOX));
 	ensure_same_srid_tpoint_stbox(temp, box);
 	ensure_same_dimensionality_tpoint_stbox(temp, box);
 	ensure_same_geodetic_tpoint_stbox(temp, box);
@@ -235,11 +232,6 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 {
 	STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
 	STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-	// How to ensure this and display an error message if not ?
-	// ensure_same_srid_stbox(box1, box2);
-	// ensure_same_geodetic_stbox(box1, box2);
-	STBOX *result;
-
 	if (!box2 && !box1)
 		PG_RETURN_NULL();
 	if (box1 && !box2)
@@ -247,18 +239,10 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 	if (box2 && !box1)
 		PG_RETURN_POINTER(box2);
 
-	if (!MOBDB_FLAGS_GET_X(box1->flags) || !MOBDB_FLAGS_GET_T(box1->flags) ||
-		!MOBDB_FLAGS_GET_X(box2->flags) || !MOBDB_FLAGS_GET_T(box2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("Arguments must have both X and T dimensions")));
-	if (MOBDB_FLAGS_GET_Z(box1->flags) != MOBDB_FLAGS_GET_Z(box2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("One argument has Z dimension but the other does not")));
-	if (MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				errmsg("One argument has geodetic coordinates but the other does not")));
-
-	result = palloc0(sizeof(STBOX));
+	ensure_same_srid_stbox(box1, box2);
+	ensure_same_dimensionality_stbox(box1, box2);
+	ensure_same_geodetic_stbox(box1, box2);
+	STBOX *result = palloc0(sizeof(STBOX));
 	result->xmax = Max(box1->xmax, box2->xmax);
 	result->ymax = Max(box1->ymax, box2->ymax);
 	result->tmax = Max(box1->tmax, box2->tmax);
@@ -270,6 +254,7 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 		result->zmax = Max(box1->zmax, box2->zmax);
 		result->zmin = Min(box1->zmin, box2->zmin);
 	}
+	result->srid = box1->srid;
 	MOBDB_FLAGS_SET_X(result->flags, true);
 	MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box1->flags));
 	MOBDB_FLAGS_SET_T(result->flags, true);
@@ -367,7 +352,7 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 /* Centroid final function */
 
 TemporalI *
-tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
+tpointinst_tcentroid_finalfn(TemporalInst **instants, int count, int srid)
 {
 	TemporalInst **newinstants = palloc(sizeof(TemporalInst *) * count);
 	for (int i = 0; i < count; i++)
@@ -376,6 +361,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 		Datum value = 0;
 		assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 			inst->valuetypid == type_oid(T_DOUBLE3));
+		LWPOINT *lwpoint;
 		if (inst->valuetypid == type_oid(T_DOUBLE4))
 		{
 			double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
@@ -383,18 +369,18 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 			double valuea = value4->a / value4->d;
 			double valueb = value4->b / value4->d;
 			double valuec = value4->c / value4->d;
-			value = call_function3(LWGEOM_makepoint, Float8GetDatum(valuea),
-				Float8GetDatum(valueb), Float8GetDatum(valuec));
+			lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
+
 		}
-		else if (inst->valuetypid == type_oid(T_DOUBLE3))
+		else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 		{
 			double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 			assert(value3->c != 0);
 			double valuea = value3->a / value3->c;
 			double valueb = value3->b / value3->c;
-			value = call_function2(LWGEOM_makepoint, Float8GetDatum(valuea),
-				Float8GetDatum(valueb));
+			lwpoint = lwpoint_make2d(srid, valuea, valueb);
 		}
+		value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 		newinstants[i] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 		pfree(DatumGetPointer(value));
 	}
@@ -408,7 +394,7 @@ tpointinst_tcentroid_finalfn(TemporalInst **instants, int count)
 }
 
 TemporalS *
-tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
+tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count, int srid)
 {
 	TemporalSeq **newsequences = palloc(sizeof(TemporalSeq *) * count);
 	for (int i = 0; i < count; i++)
@@ -421,23 +407,23 @@ tpointseq_tcentroid_finalfn(TemporalSeq **sequences, int count)
 			Datum value = 0;
 			assert(inst->valuetypid == type_oid(T_DOUBLE4) || 
 				inst->valuetypid == type_oid(T_DOUBLE3));
+			LWPOINT *lwpoint;
 			if (inst->valuetypid == type_oid(T_DOUBLE4))
 			{
 				double4 *value4 = (double4 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value4->a / value4->d;
 				double valueb = value4->b / value4->d;
 				double valuec = value4->c / value4->d;
-				value = call_function3(LWGEOM_makepoint, Float8GetDatum(valuea),
-					Float8GetDatum(valueb), Float8GetDatum(valuec));
+				lwpoint = lwpoint_make3dz(srid, valuea, valueb, valuec);
 			}
-			else if (inst->valuetypid == type_oid(T_DOUBLE3))
+			else /* inst->valuetypid == type_oid(T_DOUBLE3) */
 			{
 				double3 *value3 = (double3 *)DatumGetPointer(temporalinst_value_ptr(inst));
 				double valuea = value3->a / value3->c;
 				double valueb = value3->b / value3->c;
-				value = call_function2(LWGEOM_makepoint, Float8GetDatum(valuea),
-					Float8GetDatum(valueb));
+				lwpoint = lwpoint_make2d(srid, valuea, valueb);
 			}
+			value = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 			instants[j] = temporalinst_make(value, inst->t, type_oid(T_GEOMETRY));
 			pfree(DatumGetPointer(value));
 		}
@@ -468,22 +454,20 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	Temporal **values = skiplist_values(state);
+	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
 	Temporal *result = NULL;
 	assert(values[0]->duration == TEMPORALINST ||
 		values[0]->duration == TEMPORALSEQ);
 	if (values[0]->duration == TEMPORALINST)
 		result = (Temporal *)tpointinst_tcentroid_finalfn(
-			(TemporalInst **)values, state->length);
+			(TemporalInst **)values, state->length, srid);
 	else if (values[0]->duration == TEMPORALSEQ)
 		result = (Temporal *)tpointseq_tcentroid_finalfn(
-			(TemporalSeq **)values, state->length);
+			(TemporalSeq **)values, state->length, srid);
 
-	int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
-	Temporal *sridresult = tpoint_set_srid_internal(result, srid);
 	pfree(values);
-	pfree(result);
 
-	PG_RETURN_POINTER(sridresult);
+	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

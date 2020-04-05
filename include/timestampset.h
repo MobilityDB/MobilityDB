@@ -23,9 +23,9 @@
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 extern Period *timestampset_bbox(const TimestampSet *ts);
-extern TimestampSet *timestampset_make_internal(TimestampTz *times, int count);
-extern TimestampSet *timestampset_copy(TimestampSet *ts);
-extern bool timestampset_find_timestamp(TimestampSet *ts, TimestampTz t, int *pos);
+extern TimestampSet *timestampset_make_internal(const TimestampTz *times, int count);
+extern TimestampSet *timestampset_copy(const TimestampSet *ts);
+extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *pos);
 
 /* Input/output functions */
 
@@ -34,7 +34,7 @@ extern Datum timestampset_out(PG_FUNCTION_ARGS);
 extern Datum timestampset_send(PG_FUNCTION_ARGS);
 extern Datum timestampset_recv(PG_FUNCTION_ARGS);
 
-extern char *timestampset_to_string(TimestampSet *ts);
+extern char *timestampset_to_string(const TimestampSet *ts);
 
 /* Constructor function */
 
@@ -55,9 +55,9 @@ extern Datum timestampset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum timestampset_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_shift(PG_FUNCTION_ARGS);
 
-extern void timestampset_to_period_internal(Period *p, TimestampSet *ts);
-extern TimestampTz *timestampset_timestamps_internal(TimestampSet *ts);
-extern TimestampSet *timestampset_shift_internal(TimestampSet *ts, Interval *interval);
+extern void timestampset_to_period_internal(Period *p, const TimestampSet *ts);
+extern TimestampTz *timestampset_timestamps_internal(const TimestampSet *ts);
+extern TimestampSet *timestampset_shift_internal(const TimestampSet *ts, const Interval *interval);
 
 /* Functions for defining B-tree index */
 
@@ -69,9 +69,9 @@ extern Datum timestampset_le(PG_FUNCTION_ARGS);
 extern Datum timestampset_ge(PG_FUNCTION_ARGS);
 extern Datum timestampset_gt(PG_FUNCTION_ARGS);
 
-extern int timestampset_cmp_internal(TimestampSet *ts1, TimestampSet *ts2);
-extern bool timestampset_eq_internal(TimestampSet *ts1, TimestampSet *ts2);
-extern bool timestampset_ne_internal(TimestampSet *ts1, TimestampSet *ts2);
+extern int timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2);
 
 #endif
 

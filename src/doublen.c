@@ -87,18 +87,6 @@ double2_send(PG_FUNCTION_ARGS)
  * Functions
  *****************************************************************************/
 
-/* Constructor */
-
-double2 *
-double2_construct(double a, double b)
-{
-	double2 *result;
-	result = (double2 *) palloc(sizeof(double2));
-	result->a = a;
-	result->b = b;
-	return result;
-}
-
 /* Set a double2 value from argument values */
 
 void 
@@ -182,18 +170,6 @@ double3_send(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Functions
  *****************************************************************************/
-
-/* Constructor */
-
-double3 *
-double3_construct(double a, double b, double c)
-{
-	double3 *result = (double3 *) palloc(sizeof(double3));
-	result->a = a;
-	result->b = b;
-	result->c = c;
-	return result;
-}
 
 /* Set a double3 value from argument values */
 
@@ -280,19 +256,6 @@ double4_send(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * Functions
  *****************************************************************************/
-
-/* Constructor */
-
-double4 *
-double4_construct(double a, double b, double c, double d)
-{
-	double4 *result = (double4 *) palloc(sizeof(double4));
-	result->a = a;
-	result->b = b;
-	result->c = c;
-	result->d = d;
-	return result;
-}
 
 /* Set a double4 value from argument values */
 

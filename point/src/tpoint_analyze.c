@@ -635,7 +635,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 		is_copy = VARATT_IS_EXTENDED(temp);
 
 		/* Get trajectory from temporal point */
-		geom = (GSERIALIZED *) DatumGetPointer(tpoint_values_internal(temp));
+		geom = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
 
 		/* Read the bounds from the gserialized. */
 		if ( LW_FAILURE == gserialized_get_gbox_p(geom, &gbox) )

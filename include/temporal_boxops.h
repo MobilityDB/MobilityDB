@@ -23,10 +23,10 @@
 /* Functions on generic bounding boxes of temporal types */
 
 extern size_t temporal_bbox_size(Oid valuetypid);
-extern bool temporal_bbox_eq(void *box1, void *box2, Oid valuetypid);
-extern int temporal_bbox_cmp(void *box1, void *box2, Oid valuetypid);
+extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid);
+extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid);
 extern void temporal_bbox_expand(void *box1, const void *box2, Oid valuetypid);
-extern void temporal_bbox_shift(void *box, Interval *interval, Oid valuetypid);
+extern void temporal_bbox_shift(void *box, const Interval *interval, Oid valuetypid);
 
 /* Compute the bounding box at the creation of temporal values */
 
@@ -63,9 +63,9 @@ extern void float_to_tbox_internal(TBOX *box, double d);
 extern void intrange_to_tbox_internal(TBOX *box, RangeType *range);
 extern void floatrange_to_tbox_internal(TBOX *box, RangeType *range);
 extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
-extern void timestampset_to_tbox_internal(TBOX *box, TimestampSet *ts);
-extern void period_to_tbox_internal(TBOX *box, Period *p);
-extern void periodset_to_tbox_internal(TBOX *box, PeriodSet *ps);
+extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
+extern void period_to_tbox_internal(TBOX *box, const Period *p);
+extern void periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps);
 
 /* Bounding box operators for temporal types */
 

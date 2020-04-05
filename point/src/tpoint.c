@@ -68,7 +68,7 @@ void temporalgeom_init()
  * Check the consistency of the metadata we want to enforce in the typmod:
  * srid, type and dimensionality. If things are inconsistent, shut down the query.
  */
-Temporal*
+static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
 	int32 tpoint_srid = tpoint_srid_internal(temp);
@@ -392,7 +392,9 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
  * type, dims and srid.
  */
 PG_FUNCTION_INFO_V1(tpoint_enforce_typmod);
-PGDLLEXPORT Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS)
+
+PGDLLEXPORT Datum
+tpoint_enforce_typmod(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	int32 typmod = PG_GETARG_INT32(1);
@@ -551,7 +553,7 @@ tpoint_always_ne(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal eq
+ * Temporal comparisons
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(teq_geo_tpoint);
@@ -608,9 +610,7 @@ teq_tpoint_tpoint(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************
- * Temporal ne
- *****************************************************************************/
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tne_geo_tpoint);
 
@@ -667,97 +667,9 @@ tne_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Assemble the set of points of a temporal instant point as a single 
- * geometry/geography. Duplicate points are removed.
+ * Assemble the Trajectory/values of a temporal point as a single
+ * geometry/geography.
  *****************************************************************************/
-
-Datum
-tgeompointi_values(TemporalI *ti)
-{
-	if (ti->count == 1)
-		return temporalinst_value_copy(temporali_inst_n(ti, 0));
-
-	Datum *values = palloc(sizeof(Datum *) * ti->count);
-	int k = 0;
-	for (int i = 0; i < ti->count; i++)
-	{
-		Datum value = temporalinst_value(temporali_inst_n(ti, i));
-		bool found = false;
-		for (int j = 0; j < k; j++)
-		{
-			if (datum_point_eq(value, values[j]))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			values[k++] = value;
-	}
-	if (k == 1)
-	{
-		pfree(values);
-		return temporalinst_value_copy(temporali_inst_n(ti, 0));
-	}
-
-	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
-	Datum result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-	pfree(values); pfree(array);
-	return result;
-}
-
-Datum
-tgeogpointi_values(TemporalI *ti)
-{
-	if (ti->count == 1)
-		return temporalinst_value_copy(temporali_inst_n(ti, 0));
-
-	Datum *values = palloc(sizeof(Datum *) * ti->count);
-	int k = 0;
-	for (int i = 0; i < ti->count; i++)
-	{
-		Datum value = temporalinst_value(temporali_inst_n(ti, i));
-		Datum geomvalue = call_function1(geometry_from_geography, value);
-		bool found = false;
-		for (int j = 0; j < k; j++)
-		{
-			if (datum_point_eq(geomvalue, values[j]))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			values[k++] = geomvalue;
-		else
-			pfree(DatumGetPointer(geomvalue));	
-	}
-	if (k == 1)
-	{
-		pfree(DatumGetPointer(values[0])); pfree(values);
-		return temporalinst_value_copy(temporali_inst_n(ti, 0));
-	}
-
-	ArrayType *array = datumarr_to_array(values, k, type_oid(T_GEOMETRY));
-	Datum geomresult = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-	Datum result = call_function1(geography_from_geometry, geomresult);
-	for (int i = 0; i < k; i++)
-		pfree(DatumGetPointer(values[i]));
-	pfree(values); pfree(array); pfree(DatumGetPointer(geomresult));
-	return result;
-}
-
-Datum
-tpointi_values(TemporalI *ti)
-{
-	Datum result;
-	ensure_point_base_type(ti->valuetypid);
-	if (ti->valuetypid == type_oid(T_GEOMETRY))
-		result = tgeompointi_values(ti);
-	else
-		result = tgeogpointi_values(ti);
-	return result;
-}
 
 Datum
 tpoint_values_internal(Temporal *temp)
@@ -767,7 +679,7 @@ tpoint_values_internal(Temporal *temp)
 	if (temp->duration == TEMPORALINST) 
 		result = temporalinst_value_copy((TemporalInst *)temp);
 	else if (temp->duration == TEMPORALI) 
-		result = tpointi_values((TemporalI *)temp);
+		result = tpointi_trajectory((TemporalI *)temp);
 	else if (temp->duration == TEMPORALSEQ)
 		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
 	else /* temp->duration == TEMPORALS */

@@ -28,7 +28,8 @@
 /* Extend the temporal value by a time interval */
 
 static int
-temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval)
+temporalinst_extend(TemporalSeq **result, const TemporalInst *inst,
+	const Interval *interval)
 {
 	/* Should be additional attribute */
 	bool linear = linear_interpolation(inst->valuetypid);
@@ -37,17 +38,18 @@ temporalinst_extend(TemporalSeq **result, TemporalInst *inst, Interval *interval
 		DirectFunctionCall2(timestamptz_pl_interval,
 		TimestampTzGetDatum(inst->t),
 		PointerGetDatum(interval)));
-	instants[0] = inst;
-	instants[1] = temporalinst_make(temporalinst_value(inst), 
-		upper, inst->valuetypid);
-	result[0] = temporalseq_make(instants, 2,
-		true, true, linear, false);
+	instants[0] = (TemporalInst *) inst;
+	instants[1] = temporalinst_make(temporalinst_value(inst), upper,
+		inst->valuetypid);
+	result[0] = temporalseq_make(instants, 2, true, true,
+		linear, false);
 	pfree(instants[1]);
 	return 1;
 }
 
 static int
-temporali_extend(TemporalSeq **result, TemporalI *ti, Interval *interval)
+temporali_extend(TemporalSeq **result, const TemporalI *ti,
+	const Interval *interval)
 {
 	for (int i = 0; i < ti->count; i++)
 	{
@@ -58,7 +60,8 @@ temporali_extend(TemporalSeq **result, TemporalI *ti, Interval *interval)
 }
 
 static int
-tstepseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
+tstepseq_extend(TemporalSeq **result, const TemporalSeq *seq,
+	const Interval *interval)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -87,7 +90,8 @@ tstepseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval)
 }
 
 static int
-tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bool min)
+tlinearseq_extend(TemporalSeq **result, const TemporalSeq *seq,
+	const Interval *interval, bool min)
 {
 	if (seq->count == 1)
 		return temporalinst_extend(result, temporalseq_inst_n(seq, 0), interval);
@@ -156,7 +160,8 @@ tlinearseq_extend(TemporalSeq **result, TemporalSeq *seq, Interval *interval, bo
 }
 
 static int
-tsteps_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
+tsteps_extend(TemporalSeq **result, const TemporalS *ts,
+	const Interval *interval)
 {
 	if (ts->count == 1)
 		return tstepseq_extend(result, temporals_seq_n(ts, 0), interval);
@@ -171,7 +176,8 @@ tsteps_extend(TemporalSeq **result, TemporalS *ts, Interval *interval)
 }
 
 static int
-tlinears_extend(TemporalSeq **result, TemporalS *ts, Interval *interval, bool min)
+tlinears_extend(TemporalSeq **result, const TemporalS *ts,
+	const Interval *interval, bool min)
 {
 	if (ts->count == 1)
 		return tstepseq_extend(result, temporals_seq_n(ts, 0), interval);
@@ -346,15 +352,16 @@ tnumberinst_transform_wavg(TemporalSeq **result, TemporalInst *inst, Interval *i
 		value = DatumGetInt32(temporalinst_value(inst)); 
 	else if (inst->valuetypid == FLOAT8OID)
 		value = DatumGetFloat8(temporalinst_value(inst)); 
-	double2 *dvalue = double2_construct(value, 1);
+	double2 dvalue;
+	double2_set(&dvalue, value, 1);
 	TimestampTz upper = DatumGetTimestampTz(
 		DirectFunctionCall2(timestamptz_pl_interval,
 		TimestampTzGetDatum(inst->t),
 		PointerGetDatum(interval)));
 	TemporalInst *instants[2];
-	instants[0] = temporalinst_make(PointerGetDatum(dvalue), 
+	instants[0] = temporalinst_make(PointerGetDatum(&dvalue),
 		inst->t, type_oid(T_DOUBLE2));
-	instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
+	instants[1] = temporalinst_make(PointerGetDatum(&dvalue),
 		upper, type_oid(T_DOUBLE2));
 	result[0] = temporalseq_make(instants, 2,
 		true, true, linear, false);
@@ -386,14 +393,15 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		double value = DatumGetInt32(temporalinst_value(inst)); 
-		double2 *dvalue = double2_construct(value, 1);
+		double2 dvalue;
+		double2_set(&dvalue, value, 1);
 		TimestampTz upper = DatumGetTimestampTz(
 			DirectFunctionCall2(timestamptz_pl_interval,
 			TimestampTzGetDatum(inst->t),
 			PointerGetDatum(interval)));
-		instants[0] = temporalinst_make(PointerGetDatum(dvalue), 
+		instants[0] = temporalinst_make(PointerGetDatum(&dvalue),
 			inst->t, type_oid(T_DOUBLE2));
-		instants[1] = temporalinst_make(PointerGetDatum(dvalue), 
+		instants[1] = temporalinst_make(PointerGetDatum(&dvalue),
 			upper, type_oid(T_DOUBLE2));
 		result[0] = temporalseq_make(instants, 2,
 			true, true, linear, false);
@@ -408,13 +416,14 @@ tintseq_transform_wavg(TemporalSeq **result, TemporalSeq *seq, Interval *interva
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 		double value = DatumGetInt32(temporalinst_value(inst1)); 
-		double2 *dvalue = double2_construct(value, 1);
+		double2 dvalue;
+		double2_set(&dvalue, value, 1);
 		TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
 			timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
 			PointerGetDatum(interval)));
-		instants[0] = temporalinst_make(PointerGetDatum(dvalue), inst1->t,
+		instants[0] = temporalinst_make(PointerGetDatum(&dvalue), inst1->t,
 			type_oid(T_DOUBLE2));
-		instants[1] = temporalinst_make(PointerGetDatum(dvalue), upper,
+		instants[1] = temporalinst_make(PointerGetDatum(&dvalue), upper,
 			type_oid(T_DOUBLE2));
 		result[i] = temporalseq_make(instants, 2,
 			lower_inc, upper_inc, linear, false);

@@ -381,13 +381,29 @@ LOOP
 	Query = 'Q10';
 	StartTime := clock_timestamp();	
 	-- Query 10
+	/* Slower version of the query where the atValue expression in the WHERE
+	clause and the SELECT clauses are executed twice
 	EXPLAIN (ANALYZE, FORMAT JSON)
-	SELECT L1.Licence AS Licence1, T2.CarId AS Car2Id, 
+	SELECT L1.Licence AS Licence1, T2.CarId AS Car2Id,
 		getTime(atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE)) AS Periods
 	FROM Trips T1, Licences1 L1, Trips T2, Cars C
-	WHERE T1.CarId = L1.CarId AND T2.CarId = C.CarID AND T1.CarId <> T2.CarId 
-	AND T2.Trip && expandspatial(T1.trip, 3) 
-	AND getTime(atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE)) IS NOT NULL
+	WHERE T1.CarId = L1.CarId AND T2.CarId = C.CarID AND T1.CarId <> T2.CarId
+	AND T2.Trip && expandspatial(T1.trip, 3)
+	AND atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE) IS NOT NULL
+	INTO J;
+	*/
+
+	EXPLAIN (ANALYZE, FORMAT JSON)
+	WITH Temp AS (
+		SELECT L1.Licence AS Licence1, T2.CarId AS Car2Id,
+		atValue(tdwithin(T1.Trip, T2.Trip, 3.0), TRUE) AS atValue
+		FROM Trips T1, Licences1 L1, Trips T2, Cars C
+		WHERE T1.CarId = L1.CarId AND T2.CarId = C.CarID AND T1.CarId <> T2.CarId
+		AND T2.Trip && expandspatial(T1.trip, 3)
+	)
+	SELECT Licence1, Car2Id, getTime(atValue) AS Periods
+	FROM Temp
+	WHERE atValue IS NOT NULL
 	INTO J;
 	
 	PlanningTime := (J->0->>'Planning Time')::float;

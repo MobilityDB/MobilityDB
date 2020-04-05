@@ -204,7 +204,7 @@ spgist_period_picksplit(PG_FUNCTION_ARGS)
  * is a lower bound.
  */
 bool
-period_bounds_adjacent(PeriodBound *boundA, PeriodBound *boundB)
+period_bounds_adjacent(const PeriodBound *boundA, const PeriodBound *boundB)
 {
 	Assert(!boundA.lower && boundB.lower);
 	return timestamp_cmp_internal(boundA->t, boundB->t) == 0 &&
@@ -224,7 +224,7 @@ period_bounds_adjacent(PeriodBound *boundA, PeriodBound *boundB)
  * For the "left" case, returns -1, and for the "right" case, returns 1.
  */
 static int
-adjacent_cmp_bounds(PeriodBound *arg, PeriodBound *centroid)
+adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
 {
 	int			cmp;
 

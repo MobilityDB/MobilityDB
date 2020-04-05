@@ -280,8 +280,8 @@ tpointseqarr_to_stbox(STBOX *box, TemporalSeq **sequences, int count)
  * Boxes functions
  *****************************************************************************/
 
-int
-tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
+static int
+tpointseq_stboxes1(STBOX *result, const TemporalSeq *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	/* Instantaneous sequence */
@@ -293,12 +293,13 @@ tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
 	}
 
 	/* Temporal sequence has at least 2 instants */
-	STBOX box;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		tpointinst_make_stbox(&result[i], inst1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
+		STBOX box;
+		memset(&box, 0, sizeof(STBOX));
 		tpointinst_make_stbox(&box, inst2);
 		stbox_expand(&result[i], &box);
 		inst1 = inst2;
@@ -307,13 +308,13 @@ tpointseq_stboxes1(STBOX *result, TemporalSeq *seq)
 }
 
 ArrayType *
-tpointseq_stboxes(TemporalSeq *seq)
+tpointseq_stboxes(const TemporalSeq *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	int count = seq->count - 1;
 	if (count == 0)
 		count = 1;
-	STBOX *boxes = palloc(sizeof(STBOX) * count);
+	STBOX *boxes = palloc0(sizeof(STBOX) * count);
 	tpointseq_stboxes1(boxes, seq);
 	ArrayType *result = stboxarr_to_array(boxes, count);
 	pfree(boxes);
@@ -321,10 +322,10 @@ tpointseq_stboxes(TemporalSeq *seq)
 }
 
 ArrayType *
-tpoints_stboxes(TemporalS *ts)
+tpoints_stboxes(const TemporalS *ts)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
-	STBOX *boxes = palloc(sizeof(STBOX) * ts->totalcount);
+	STBOX *boxes = palloc0(sizeof(STBOX) * ts->totalcount);
 	int k = 0;
 	for (int i = 0; i < ts->count; i++)
 	{

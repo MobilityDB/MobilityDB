@@ -25,6 +25,7 @@
 #include "temporal_util.h"
 #include "lifting.h"
 #include "tnumber_mathfuncs.h"
+#include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
@@ -39,14 +40,6 @@ ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2)
 	if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
 		MOBDB_FLAGS_GET_GEODETIC(box1->flags) != MOBDB_FLAGS_GET_GEODETIC(box2->flags))
 		elog(ERROR, "The boxes must be both planar or both geodetic");
-}
-
-void
-ensure_same_geodetic_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-	if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags) != MOBDB_FLAGS_GET_GEODETIC(temp2->flags))
-		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("The temporal points must be both planar or both geodetic")));
 }
 
 void
@@ -186,6 +179,14 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 }
 
 void
+ensure_has_not_Z_gs(const GSERIALIZED *gs)
+{
+	if (FLAGS_GET_Z(gs->flags))
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			errmsg("Only geometries without Z dimension accepted")));
+}
+
+void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
 	if (! FLAGS_GET_M(gs->flags))
@@ -225,9 +226,8 @@ ensure_non_empty(const GSERIALIZED *gs)
  * Manipulate a geometry point directly from the GSERIALIZED.
  * These functions consitutute a SERIOUS break of encapsulation but it is the
  * only way to achieve reasonable performance when manipulating mobility data.
- * Currently we do not manipulate points with M dimension.
  * The datum_* functions suppose that the GSERIALIZED has been already
- * detoasted. This is typically the case when the datum is within a Temporal *
+ * detoasted. This is typically the case when the datum is within a Temporal*
  * that has been already detoasted with PG_GETARG_TEMPORAL* 
  */
 
@@ -264,15 +264,18 @@ POINT3DZ
 datum_get_point3dz(Datum geom)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-	// POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
-	// return *point;
-	LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-	LWPOINT* lwpoint = lwgeom_as_lwpoint(lwgeom);
-	POINT3DZ point = getPoint3dz(lwpoint->point, 0);
-	lwgeom_free(lwgeom);
-	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
-	return point;
+	POINT3DZ *point = (POINT3DZ *)((uint8_t*)gs->data + 8);
+	return *point;
+}
 
+/* Get 4D point from a datum */
+
+POINT4D
+datum_get_point4d(Datum geom)
+{
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+	POINT4D *point = (POINT4D *)((uint8_t*)gs->data + 8);
+	return *point;
 }
 
 /* Compare two points from serialized geometries */
@@ -300,6 +303,18 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 	}
 }
 
+Datum
+datum2_point_eq(Datum geopoint1, Datum geopoint2)
+{
+	return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
+}
+
+Datum
+datum2_point_ne(Datum geopoint1, Datum geopoint2)
+{
+	return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
+}
+
 static Datum
 datum_set_precision(Datum value, Datum size)
 {
@@ -321,7 +336,7 @@ datum_set_precision(Datum value, Datum size)
 		double y = DatumGetFloat8(datum_round(Float8GetDatum(point.y), size));
 		lwpoint = lwpoint_make2d(srid, x, y);
 	}
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
 	pfree(lwpoint);
 	return result;
 }
@@ -355,6 +370,566 @@ static Datum
 geom_to_geog(Datum value)
 {
 	return call_function1(geography_from_geometry, value);
+}
+
+/*****************************************************************************
+ * Trajectory functions.
+ *****************************************************************************/
+
+/*
+ * Assemble the set of points of a temporal instant point as a single
+ * geometry/geography. Duplicate points are removed.
+ */
+
+static Datum
+tgeompointi_trajectory(const TemporalI *ti)
+{
+	/* Singleton instant set */
+	if (ti->count == 1)
+		return temporalinst_value_copy(temporali_inst_n(ti, 0));
+
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+	/* Remove all duplicate points */
+	TemporalInst *inst = temporali_inst_n(ti, 0);
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	LWPOINT *value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+	points[0] = value;
+	int k = 1;
+	for (int i = 1; i < ti->count; i++)
+	{
+		inst = temporali_inst_n(ti, i);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+		bool found = false;
+		for (int j = 0; j < k; j++)
+		{
+			if (lwpoint_same(value, points[j]) == LW_TRUE)
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+			points[k++] = value;
+	}
+	LWGEOM *lwresult;
+	if (k == 1)
+	{
+		lwresult = (LWGEOM *) points[0];
+	}
+	else
+	{
+		lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+			points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+		for (int i = 0; i < k; i++)
+			lwpoint_free(points[i]);
+	}
+	Datum result = PointerGetDatum(geometry_serialize(lwresult));
+	pfree(points);
+	return result;
+}
+
+Datum
+tgeogpointi_trajectory(const TemporalI *ti)
+{
+	TemporalI *tigeom = tfunc1_temporali(ti, &geog_to_geom,
+		type_oid(T_GEOMETRY));
+	Datum geomtraj = tgeompointi_trajectory(tigeom);
+	Datum result = call_function1(geography_from_geometry, geomtraj);
+	pfree(DatumGetPointer(geomtraj));
+	return result;
+}
+
+Datum
+tpointi_trajectory(const TemporalI *ti)
+{
+	Datum result;
+	ensure_point_base_type(ti->valuetypid);
+	if (ti->valuetypid == type_oid(T_GEOMETRY))
+		result = tgeompointi_trajectory(ti);
+	else
+		result = tgeogpointi_trajectory(ti);
+	return result;
+}
+
+/*****************************************************************************/
+
+/* Compute the trajectory from the points of two consecutive instants with
+ * linear interpolation. The functions are called during normalization for
+ * determining whether three consecutive points are collinear, for computing
+ * the temporal distance, the temporal spatial relationships, etc. */
+
+Datum
+geompoint_trajectory(Datum value1, Datum value2)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
+	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
+	LWGEOM *geoms[2];
+	geoms[0] = lwgeom_from_gserialized(gs1);
+	geoms[1] = lwgeom_from_gserialized(gs2);
+	LWGEOM *traj = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
+	GSERIALIZED *result = geometry_serialize(traj);
+	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]); lwgeom_free(traj);
+	return PointerGetDatum(result);
+}
+
+Datum
+geogpoint_trajectory(Datum value1, Datum value2)
+{
+	Datum geom1 = call_function1(geometry_from_geography, value1);
+	Datum geom2 = call_function1(geometry_from_geography, value2);
+	Datum geom = geompoint_trajectory(geom1, geom2);
+	Datum result = call_function1(geography_from_geometry, geom);
+	pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
+	pfree(DatumGetPointer(geom));
+	return result;
+}
+
+LWLINE *
+geompoint_trajectory_lwline(Datum value1, Datum value2)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
+	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
+	LWGEOM *geoms[2];
+	geoms[0] = lwgeom_from_gserialized(gs1);
+	geoms[1] = lwgeom_from_gserialized(gs2);
+	LWLINE *result = lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
+	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]);
+	return result;
+}
+
+/*****************************************************************************/
+
+/* Compute a trajectory from a set of points. The result is either a line or a
+ * multipoint depending on whether the interpolation is step or linear */
+
+static Datum
+lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
+{
+	LWGEOM *lwgeom = linear ?
+		(LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid,
+			(uint32_t) count, lwpoints) :
+		(LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
+			NULL, (uint32_t) count, lwpoints);
+	Datum result = PointerGetDatum(geometry_serialize(lwgeom));
+	pfree(lwgeom);
+	return result;
+}
+
+static Datum
+pointarr_make_trajectory(const Datum *points, int count, bool linear)
+{
+	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
+	for (int i = 0; i < count; i++)
+	{
+		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(points[i]);
+		lwpoints[i] = lwgeom_from_gserialized(gs);
+	}
+	Datum result = lwpointarr_make_trajectory(lwpoints, count, linear);
+	for (int i = 0; i < count; i++)
+		lwgeom_free(lwpoints[i]);
+	pfree(lwpoints);
+	return result;
+}
+
+/* Compute the trajectory of an array of instants.
+ * This function is called by the constructor of a temporal sequence and
+ * returns a single Datum which is a geometry */
+Datum
+tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
+{
+	Oid valuetypid = instants[0]->valuetypid;
+	ensure_point_base_type(valuetypid);
+	bool geometry = (valuetypid == type_oid(T_GEOMETRY));
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
+	LWPOINT *lwpoint;
+	Datum value;
+	GSERIALIZED *gsvalue;
+	int k;
+	if (linear)
+	{
+		/* Remove two consecutive points if they are equal */
+		value = geometry ? temporalinst_value(instants[0]) :
+			call_function1(geometry_from_geography, temporalinst_value(instants[0]));
+		gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+		points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+		k = 1;
+		for (int i = 1; i < count; i++)
+		{
+			value = geometry ? temporalinst_value(instants[i]) :
+				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
+			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+			if (! lwpoint_same(lwpoint, points[k - 1]))
+				points[k++] = lwpoint;
+		}
+	}
+	else
+	{
+		 /* Remove all duplicate points */
+		k = 0;
+		for (int i = 0; i < count; i++)
+		{
+			value = geometry ? temporalinst_value(instants[i]) :
+				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
+			gsvalue = (GSERIALIZED *) DatumGetPointer(value);
+			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+			bool found = false;
+			for (int j = 0; j < k; j++)
+			{
+				if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				points[k++] = lwpoint;
+		}
+	}
+	Datum geomresult = (k == 1) ?
+		PointerGetDatum(geometry_serialize((LWGEOM *)points[0])) :
+		lwpointarr_make_trajectory((LWGEOM **)points, k, linear);
+	Datum result = (geometry) ? geomresult :
+		call_function1(geography_from_geometry, geomresult);
+	for (int i = 0; i < k; i++)
+		lwpoint_free(points[i]);
+	pfree(points);
+	if (! geometry)
+		pfree(DatumGetPointer(geomresult));
+	return result;
+}
+
+/* Get the precomputed trajectory of a tpointseq */
+
+Datum
+tpointseq_trajectory(const TemporalSeq *seq)
+{
+	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+		seq->offsets[seq->count + 1];						/* offset */
+	return PointerGetDatum(traj);
+}
+
+/* Add or replace a point to the trajectory of a sequence */
+
+Datum
+tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst,
+	bool replace)
+{
+	Datum traj = tpointseq_trajectory(seq);
+	Datum point = temporalinst_value(inst);
+	GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
+	if (gserialized_get_type(gstraj) == POINTTYPE)
+	{
+		if (datum_point_eq(traj, point))
+			return PointerGetDatum(gserialized_copy(gstraj));
+		else
+		{
+			if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+				return geompoint_trajectory(traj, point);
+			else
+			{
+				Datum points[2];
+				points[0] = traj;
+				points[1] = point;
+				return pointarr_make_trajectory(points, 2, false);
+			}
+		}
+	}
+	else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
+	{
+		int count = replace ? seq->count : seq->count + 1;
+		Datum *points = palloc(sizeof(Datum) * count);
+		 /* Remove all duplicate points */
+		int k = 0;
+		bool foundpoint = false;
+		for (int i = 0; i < count - 1; i++)
+		{
+			Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
+			bool found = false;
+			for (int j = 0; j < k; j++)
+			{
+				if (datum_point_eq(value, points[j]))
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				points[k++] = value;
+			if (!foundpoint && datum_point_eq(value, point))
+				foundpoint = true;
+		}
+		if (!foundpoint)
+			points[k++] = point;
+		Datum result = pointarr_make_trajectory(points, k, false);
+		pfree(points);
+		return result;
+	}
+	/* The trajectory is a Linestring */
+	else
+	{
+		if (replace)
+			return call_function3(LWGEOM_setpoint_linestring, traj,
+				Int32GetDatum(-1), point);
+		else
+			return call_function2(LWGEOM_addpoint, traj, point);
+	}
+}
+
+/* Join two trajectories */
+
+Datum
+tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first)
+{
+	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+	int count1 = last ? seq1->count - 1 : seq1->count;
+	int start2 = first ? 1 : 0;
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) *
+		(count1 + seq2->count - start2));
+	int k = 0;
+	for (int i = 0; i < count1; i++)
+		instants[k++] = temporalseq_inst_n(seq1, i);
+	for (int i = start2; i < seq2->count; i++)
+		instants[k++] = temporalseq_inst_n(seq2, i);
+	Datum traj = tpointseq_make_trajectory(instants, k, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+	pfree(instants);
+
+	return traj;
+}
+
+/* Copy the precomputed trajectory of a tpointseq */
+
+Datum
+tpointseq_trajectory_copy(const TemporalSeq *seq)
+{
+	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[seq->count + 1];					/* offset */
+	return PointerGetDatum(gserialized_copy(traj));
+}
+
+/*****************************************************************************/
+
+/* Compute the trajectory of a tpoints from the precomputed trajectories
+   of its composing segments. The resulting trajectory must be freed by the
+   calling function. The function removes duplicates points */
+
+static Datum
+tgeompoints_trajectory(const TemporalS *ts)
+{
+	/* Singleton sequence set */
+	if (ts->count == 1)
+		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0));
+
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
+	int k = 0, l = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
+		GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
+		LWPOINT *lwpoint;
+		if (gserialized_get_type(gstraj) == POINTTYPE)
+		{
+			lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gstraj));
+			bool found = false;
+			for (int j = 0; j < l; j++)
+			{
+				if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				points[l++] = lwpoint;
+		}
+		else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
+		{
+			LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gstraj));
+			int count = lwmpoint->ngeoms;
+			for (int m = 0; m < count; m++)
+			{
+				lwpoint = lwmpoint->geoms[m];
+				bool found = false;
+				for (int j = 0; j < l; j++)
+				{
+					if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
+						{
+							found = true;
+							break;
+						}
+				}
+				if (!found)
+					points[l++] = lwpoint;
+			}
+		}
+		/* gserialized_get_type(gstraj) == LINETYPE */
+		else
+		{
+			geoms[k++] = lwgeom_from_gserialized(gstraj);
+		}
+	}
+	Datum result;
+	if (k == 0)
+	{
+		/* Only points */
+		if (l == 1)
+			result = PointerGetDatum(geometry_serialize((LWGEOM *)points[0]));
+		else
+			result = lwpointarr_make_trajectory((LWGEOM **)points, l, false);
+	}
+	else if (l == 0)
+	{
+		/* Only lines */
+		/* k > 1 since otherwise it is a singleton sequence set and this case
+		 * was taken care at the begining of the function */
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+			geoms[0]->srid, NULL, (uint32_t) k, geoms);
+		result = PointerGetDatum(geometry_serialize(coll));
+		/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+	}
+	else
+	{
+		/* Both points and lines */
+		if (l == 1)
+			geoms[k++] = (LWGEOM *)points[0];
+		else
+		{
+			geoms[k++] = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+				points[0]->srid, NULL, (uint32_t) l, (LWGEOM **) points);
+			for (int i = 0; i < l; i++)
+				lwpoint_free(points[i]);
+		}
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
+			geoms[0]->srid, NULL, (uint32_t) k, geoms);
+		result = PointerGetDatum(geometry_serialize(coll));
+	}
+	pfree(points); pfree(geoms);
+	return result;
+}
+
+static Datum
+tgeogpoints_trajectory(const TemporalS *ts)
+{
+	TemporalS *tsgeom = tfunc1_temporals(ts, &geog_to_geom,
+		type_oid(T_GEOMETRY));
+	Datum geomtraj = tgeompoints_trajectory(tsgeom);
+	Datum result = call_function1(geography_from_geometry, geomtraj);
+	pfree(DatumGetPointer(geomtraj));
+	return result;
+}
+
+Datum
+tpoints_trajectory(TemporalS *ts)
+{
+	Datum result;
+	ensure_point_base_type(ts->valuetypid);
+	if (ts->valuetypid == type_oid(T_GEOMETRY))
+		result = tgeompoints_trajectory(ts);
+	else
+		result = tgeogpoints_trajectory(ts);
+	return result;
+}
+
+/*****************************************************************************/
+
+Datum
+tpoint_trajectory_internal(const Temporal *temp)
+{
+	Datum result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_value_copy((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI)
+		result = tpointi_trajectory((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ)
+		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
+	else /* temp->duration == TEMPORALS */
+		result = tpoints_trajectory((TemporalS *)temp);
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_trajectory);
+
+PGDLLEXPORT Datum
+tpoint_trajectory(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	Datum result = tpoint_trajectory_internal(temp);
+	PG_FREE_IF_COPY(temp, 0);
+	PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Functions specializing the PostGIS functions ST_LineInterpolatePoint ands
+ * ST_LineLocatePoint.
+ *****************************************************************************/
+
+Datum
+seg_interpolate_point(Datum start, Datum end, double ratio)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	interpolate_point4d(&p1, &p2, &p, ratio);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
+}
+
+double
+seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p = datum_get_point4d(point);
+	POINT4D proj;
+	closest_point_on_segment(&p, &p1, &p2, &proj);
+	/* Return the closest point if requested */
+	if (closest != NULL)
+	{
+		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
+			lwpoint_make2d(srid, proj.x, proj.y);
+		*closest = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+		lwpoint_free(lwpoint);
+	}
+	/* Return the distance between the segment and the point if requested */
+	if (dist != NULL)
+	{
+		*dist = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
+			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
+	}
+	/* Compute the result */
+	double result;
+	if (p4d_same(&p1, &proj))
+		result = 0.0;
+	else if (p4d_same(&p2, &proj))
+		result = 1.0;
+	else
+	{
+		result = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
+				distance3d_pt_pt((POINT3D *)&p1, (POINT3D *)&p2) :
+			distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
+				distance2d_pt_pt((POINT2D *)&p1, (POINT2D *)&p2);
+	}
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
 }
 
 /*****************************************************************************
@@ -517,10 +1092,163 @@ tpoint_set_srid(PG_FUNCTION_ARGS)
 /* Transform a temporal geometry point into another spatial reference system */
 
 TemporalInst *
-tgeompointinst_transform(TemporalInst *inst, Datum srid)
+tpointinst_transform(const TemporalInst *inst, Datum srid)
 {
-	return tfunc2_temporalinst(inst, srid, &datum_transform,
-		type_oid(T_GEOMETRY));
+	Datum geo = datum_transform(temporalinst_value(inst), srid);
+	TemporalInst *result = temporalinst_make(geo, inst->t, inst->valuetypid);
+	pfree(DatumGetPointer(geo));
+	return result;
+}
+
+static TemporalI *
+tpointi_transform(const TemporalI *ti, Datum srid)
+{
+	/* Singleton sequence */
+	if (ti->count == 1)
+	{
+		TemporalInst *inst = tpointinst_transform(temporali_inst_n(ti, 0), srid);
+		TemporalI *result = temporali_make(&inst, 1);
+		pfree(inst);
+		return result;
+	}
+
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		Datum value = temporalinst_value(temporali_inst_n(ti, i));
+		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
+		points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+	}
+	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, ti->count, false);
+	Datum transf = call_function2(transform, multipoint, srid);
+	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
+	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
+	for (int i = 0; i < ti->count; i++)
+	{
+		Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) (lwmpoint->geoms[i])));
+		TemporalInst *inst = temporali_inst_n(ti, i);
+		instants[i] = temporalinst_make(point, inst->t, inst->valuetypid);
+		pfree(DatumGetPointer(point));
+	}
+	TemporalI *result = temporali_make(instants, ti->count);
+	for (int i = 0; i < ti->count; i++)
+		lwpoint_free(points[i]);
+	pfree(points);
+	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+	lwmpoint_free(lwmpoint);
+	for (int i = 0; i < ti->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+static TemporalSeq *
+tpointseq_transform(const TemporalSeq *seq, Datum srid)
+{
+	/* Singleton sequence */
+	if (seq->count == 1)
+	{
+		TemporalInst *inst = tpointinst_transform(temporalseq_inst_n(seq, 0), srid);
+		TemporalSeq *result = temporalseq_make(&inst, 1, true, true,
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		pfree(inst);
+		return result;
+	}
+
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
+		GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
+		points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+	}
+	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, seq->count, false);
+	Datum transf = call_function2(transform, multipoint, srid);
+	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
+	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+	TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+	for (int i = 0; i < seq->count; i++)
+	{
+		Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) (lwmpoint->geoms[i])));
+		TemporalInst *inst = temporalseq_inst_n(seq, i);
+		instants[i] = temporalinst_make(point, inst->t, inst->valuetypid);
+		pfree(DatumGetPointer(point));
+	}
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+	for (int i = 0; i < seq->count; i++)
+		lwpoint_free(points[i]);
+	pfree(points);
+	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+	lwmpoint_free(lwmpoint);
+	for (int i = 0; i < seq->count; i++)
+		pfree(instants[i]);
+	pfree(instants);
+	return result;
+}
+
+static TemporalS *
+tpoints_transform(const TemporalS *ts, Datum srid)
+{
+	/* Singleton sequence set */
+	if (ts->count == 1)
+	{
+		TemporalSeq *seq = tpointseq_transform(temporals_seq_n(ts, 0), srid);
+		TemporalS *result = temporalseq_to_temporals(seq);
+		pfree(seq);
+		return result;
+	}
+	int k = 0;
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		for (int j = 0; j < seq->count; j++)
+		{
+			Datum value = temporalinst_value(temporalseq_inst_n(seq, j));
+			GSERIALIZED *gsvalue = (GSERIALIZED *)DatumGetPointer(value);
+			points[k++] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gsvalue));
+		}
+	}
+	Datum multipoint = lwpointarr_make_trajectory((LWGEOM **)points, ts->totalcount, false);
+	Datum transf = call_function2(transform, multipoint, srid);
+	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
+	LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
+	k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		TemporalInst **instants = palloc(sizeof(TemporalInst *) * seq->count);
+		for (int j = 0; j < seq->count; j++)
+		{
+			Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) (lwmpoint->geoms[k])));
+			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			instants[j] = temporalinst_make(point, inst->t, inst->valuetypid);
+			pfree(DatumGetPointer(point));
+		}
+		sequences[i] = temporalseq_make(instants, seq->count,
+			seq->period.lower_inc, seq->period.upper_inc,
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		for (int j = 0; j < seq->count; j++)
+			pfree(instants[j]);
+		pfree(instants);
+	}
+	TemporalS *result = temporals_make(sequences, ts->count, false);
+	for (int i = 0; i < ts->count; i++)
+		pfree(sequences[i]);
+	pfree(sequences);
+	for (int i = 0; i < ts->totalcount; i++)
+		lwpoint_free(points[i]);
+	pfree(points);
+	pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
+	POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+	lwmpoint_free(lwmpoint);
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_transform);
@@ -530,8 +1258,18 @@ tpoint_transform(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Datum srid = PG_GETARG_DATUM(1);
-	Temporal *result = tfunc2_temporal(temp, srid, &datum_transform,
-		type_oid(T_GEOMETRY));
+
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	ensure_point_base_type(temp->valuetypid);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *) tpointinst_transform((TemporalInst *)temp, srid);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *) tpointi_transform((TemporalI *)temp, srid);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *) tpointseq_transform((TemporalSeq *)temp, srid);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *) tpoints_transform((TemporalS *)temp, srid);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_POINTER(result);
 }
@@ -561,19 +1299,19 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 /* Geography to Geometry */
 
 TemporalInst *
-tgeogpointinst_to_tgeompointinst(TemporalInst *inst)
+tgeogpointinst_to_tgeompointinst(const TemporalInst *inst)
 {
 	return tfunc1_temporalinst(inst, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalSeq *
-tgeogpointseq_to_tgeompointseq(TemporalSeq *seq)
+tgeogpointseq_to_tgeompointseq(const TemporalSeq *seq)
 {
 	return tfunc1_temporalseq(seq, &geog_to_geom, type_oid(T_GEOMETRY));
 }
 
 TemporalS *
-tgeogpoints_to_tgeompoints(TemporalS *ts)
+tgeogpoints_to_tgeompoints(const TemporalS *ts)
 {
 	return tfunc1_temporals(ts, &geog_to_geom, type_oid(T_GEOMETRY));
 }
@@ -608,407 +1346,13 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Trajectory functions.
- *****************************************************************************/
-
-/* Compute the trajectory from the points of two consecutive instants with
- * linear interpolation. The functions are called during normalization for
- * determining whether three consecutive points are collinear, for computing
- * the temporal distance, the temporal spatial relationships, etc. */
-
-Datum
-geompoint_trajectory(Datum value1, Datum value2)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *)DatumGetPointer(value1);
-	GSERIALIZED *gs2 = (GSERIALIZED *)DatumGetPointer(value2);
-	LWGEOM *geoms[2];
-	geoms[0] = lwgeom_from_gserialized(gs1);
-	geoms[1] = lwgeom_from_gserialized(gs2);
-	LWGEOM *traj = (LWGEOM *)lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-	GSERIALIZED *result = geometry_serialize(traj);
-	lwgeom_free(geoms[0]); lwgeom_free(geoms[1]); lwgeom_free(traj);
-	return PointerGetDatum(result);
-}
-
-Datum
-geogpoint_trajectory(Datum value1, Datum value2)
-{
-	Datum geom1 = call_function1(geometry_from_geography, value1);
-	Datum geom2 = call_function1(geometry_from_geography, value2);
-	Datum geom = geompoint_trajectory(geom1, geom2);
-	Datum result = call_function1(geography_from_geometry, geom);
-	pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
-	pfree(DatumGetPointer(geom));
-	return result;
-}
-
-/*****************************************************************************/
-
-/* Compute a trajectory from a set of points. The result is either a line or a
- * multipoint depending on whether the interpolation is step or linear */
-static Datum
-pointarr_make_trajectory(Datum *points, int count, bool linear)
-{
-	LWGEOM **lwpoints = palloc(sizeof(LWGEOM *) * count);
-	for (int i = 0; i < count; i++)
-	{
-		GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(points[i]);
-		lwpoints[i] = lwgeom_from_gserialized(gs);
-	}
-	LWGEOM *geom;
-	if (linear)
-		geom = (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count, lwpoints);
-	else
-		geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
-			NULL, (uint32_t) count, lwpoints);
-	Datum result = PointerGetDatum(geometry_serialize(geom));
-	for (int i = 0; i < count; i++)
-		lwgeom_free(lwpoints[i]);
-	pfree(lwpoints); pfree(geom);
-	return result;
-}
-
-/* Compute the trajectory of an array of instants.
- * This function is called by the constructor of a temporal sequence and
- * returns a single Datum which is a geometry */
-Datum
-tpointseq_make_trajectory(TemporalInst **instants, int count, bool linear)
-{
-	Oid valuetypid = instants[0]->valuetypid;
-	ensure_point_base_type(valuetypid);
-	bool geometry = (valuetypid == type_oid(T_GEOMETRY));
-	Datum *points = palloc(sizeof(Datum) * count);
-	int k;
-	if (linear)
-	{
-		/* Remove two consecutive points if they are equal */
-		Datum value1 = geometry ? temporalinst_value(instants[0]) :
-			call_function1(geometry_from_geography, temporalinst_value(instants[0]));
-		points[0] = value1;
-		k = 1;
-		for (int i = 1; i < count; i++)
-		{
-			Datum value2 = geometry ? temporalinst_value(instants[i]) :
-				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
-			if (!datum_point_eq(value1, value2))
-				points[k++] = value2;
-			value1 = value2;
-		}
-	}
-	else
-	{
-		 /* Remove all duplicate points */
-		k = 0;
-		for (int i = 0; i < count; i++)
-		{
-			Datum value = geometry ? temporalinst_value(instants[i]) :
-				call_function1(geometry_from_geography, temporalinst_value(instants[i]));
-			bool found = false;
-			for (int j = 0; j < k; j++)
-			{
-				if (datum_point_eq(value, points[j]))
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				points[k++] = value;
-		}
-	}
-	Datum result;
-	if (geometry)
-	{
-		if (k == 1)
-			result = PointerGetDatum(gserialized_copy(
-				(GSERIALIZED *) DatumGetPointer(points[0])));
-		else
-			result = pointarr_make_trajectory(points, k, linear);
-	}
-	else
-	{
-		Datum geomresult;
-		if (k == 1)
-			geomresult = points[0];
-		else
-			geomresult = pointarr_make_trajectory(points, k, linear);
-		result = call_function1(geography_from_geometry, geomresult);
-	}
-	if (! geometry)
-		for (int i = 0; i < k; i++)
-			pfree(DatumGetPointer(points[i]));
-	pfree(points);
-	return result;	
-}
-
-/* Get the precomputed trajectory of a tpointseq */
-
-Datum
-tpointseq_trajectory(const TemporalSeq *seq)
-{
-	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
-			seq->offsets[seq->count + 1];					/* offset */
-	return PointerGetDatum(traj);
-}
-
-/* Add or replace a point to the trajectory of a sequence */
-
-Datum
-tpointseq_trajectory_append(const TemporalSeq *seq, const TemporalInst *inst, bool replace)
-{
-	Datum traj = tpointseq_trajectory(seq);
-	Datum point = temporalinst_value(inst);
-	GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
-	if (gserialized_get_type(gstraj) == POINTTYPE)
-	{
-		if (datum_point_eq(traj, point))
-			return PointerGetDatum(gserialized_copy(gstraj));
-		else
-		{
-			if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-				return geompoint_trajectory(traj, point);
-			else
-			{
-				Datum points[2];
-				points[0] = traj;
-				points[1] = point;
-				return pointarr_make_trajectory(points, 2, false);
-			}
-		}
-	}
-	else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
-	{
-		int count = replace ? seq->count : seq->count + 1;
-		Datum *points = palloc(sizeof(Datum) * count);
-		 /* Remove all duplicate points */
-		int k = 0;
-		bool found;
-		for (int i = 0; i < count - 1; i++)
-		{
-			Datum value = temporalinst_value(temporalseq_inst_n(seq, i));
-			found = false;
-			for (int j = 0; j < k; j++)
-			{
-				if (datum_point_eq(value, points[j]))
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				points[k++] = value;
-		}
-		found = false;
-		for (int i = 0; i < k; i++)
-		{
-			if (datum_point_eq(point, points[i]))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-			points[k++] = point;
-		return pointarr_make_trajectory(points, k, false);
-	}
-	/* The trajectory is a Linestring */
-	else
-	{
-		if (replace)
-		{
-			int numpoints = DatumGetInt32(call_function1(LWGEOM_numpoints_linestring, traj));
-			return call_function3(LWGEOM_setpoint_linestring, traj,
-				Int32GetDatum(numpoints - 1), point);
-		}
-		else
-			return call_function2(LWGEOM_addpoint, traj, point);
-	}
-}
-
-/* Join two trajectories */
-
-Datum 
-tpointseq_trajectory_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first)
-{
-	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
-	int count1 = last ? seq1->count - 1 : seq1->count;
-	int start2 = first ? 1 : 0;
-	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 
-		(count1 + seq2->count - start2));
-	int k = 0;
-	for (int i = 0; i < count1; i++)
-		instants[k++] = temporalseq_inst_n(seq1, i);
-	for (int i = start2; i < seq2->count; i++)
-		instants[k++] = temporalseq_inst_n(seq2, i);
-	Datum traj = tpointseq_make_trajectory(instants, k, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
-	pfree(instants);
-
-	return traj;
-}
-
-/* Copy the precomputed trajectory of a tpointseq */
-
-Datum
-tpointseq_trajectory_copy(const TemporalSeq *seq)
-{
-	void *traj = (char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
-			seq->offsets[seq->count + 1];					/* offset */
-	return PointerGetDatum(gserialized_copy(traj));
-}
-
-/*****************************************************************************/
-
-/* Compute the trajectory of a tpoints from the precomputed trajectories
-   of its composing segments. The resulting trajectory must be freed by the
-   calling function. The function removes duplicates points */
-
-static Datum
-tgeompoints_trajectory(TemporalS *ts)
-{
-	/* Singleton sequence set */
-	if (ts->count == 1)
-		return tpointseq_trajectory_copy(temporals_seq_n(ts, 0));
-	
-	Datum *points = palloc(sizeof(Datum) * ts->totalcount);
-	Datum *trajectories = palloc(sizeof(Datum) * ts->count);
-	int k = 0, l = 0;
-	for (int i = 0; i < ts->count; i++)
-	{
-		Datum traj = tpointseq_trajectory(temporals_seq_n(ts, i));
-		GSERIALIZED *gstraj = (GSERIALIZED *)DatumGetPointer(traj);
-		if (gserialized_get_type(gstraj) == POINTTYPE)
-		{
-			bool found = false;
-			for (int j = 0; j < l; j++)
-			{
-				if (datum_point_eq(traj, points[j]))
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				points[l++] = traj;
-		}
-		else if (gserialized_get_type(gstraj) == MULTIPOINTTYPE)
-		{
-			int count = DatumGetInt32(call_function1(LWGEOM_numgeometries_collection, traj));
-			for (int m = 1; m <= count; m++)
-			{
-				Datum point = call_function2(LWGEOM_geometryn_collection, traj, Int32GetDatum(m));
-				bool found = false;
-				for (int j = 0; j < l; j++)
-				{
-					if (datum_point_eq(point, points[j]))
-					{
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					points[l++] = point;
-			}
-		}
-		/* gserialized_get_type(gstraj) == LINETYPE */
-		else
-			trajectories[k++] = traj;
-	}
-	Datum result;
-	if (k == 0)
-	{
-		/* Only points */
-		if (l == 1)
-			result = PointerGetDatum(gserialized_copy(
-					(GSERIALIZED *)(DatumGetPointer(points[0]))));
-		else
-			result = pointarr_make_trajectory(points, l, false);
-	}
-	else if (l == 0)
-	{
-		/* Only lines */
-		/* k > 1 since otherwise it is a singleton sequence set and this case
-		 * was taken care at the begining of the function */
-		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array);
-	}
-	else
-	{
-		/* Both points and lines */
-		if (l == 1)
-			trajectories[k++] = points[0];
-		else
-			trajectories[k++] = pointarr_make_trajectory(points, l, false);
-		ArrayType *array = datumarr_to_array(trajectories, k, type_oid(T_GEOMETRY));
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array);
-	}
-	pfree(points); pfree(trajectories);
-	return result;
-}
-
-static Datum
-tgeogpoints_trajectory(TemporalS *ts)
-{
-	TemporalS *tsgeom = tfunc1_temporals(ts, &geog_to_geom,
-		type_oid(T_GEOMETRY));
-	Datum geomtraj = tgeompoints_trajectory(tsgeom);
-	Datum result = call_function1(geography_from_geometry, geomtraj);
-	pfree(DatumGetPointer(geomtraj));
-	return result;
-}
-
-Datum
-tpoints_trajectory(TemporalS *ts)
-{
-	Datum result;
-	ensure_point_base_type(ts->valuetypid);
-	if (ts->valuetypid == type_oid(T_GEOMETRY))
-		result = tgeompoints_trajectory(ts);
-	else
-		result = tgeogpoints_trajectory(ts);
-	return result;
-}
-
-/*****************************************************************************/
-
-Datum
-tpoint_trajectory_internal(const Temporal *temp)
-{
-	Datum result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = temporalinst_value_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = tpointi_values((TemporalI *)temp);
-	else if (temp->duration == TEMPORALSEQ)
-		result = tpointseq_trajectory_copy((TemporalSeq *)temp);
-	else /* temp->duration == TEMPORALS */
-		result = tpoints_trajectory((TemporalS *)temp);
-	return result;
-}
-
-PG_FUNCTION_INFO_V1(tpoint_trajectory);
-
-PGDLLEXPORT Datum
-tpoint_trajectory(PG_FUNCTION_ARGS)
-{
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	Datum result = tpoint_trajectory_internal(temp);
-	PG_FREE_IF_COPY(temp, 0);
-	PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
  * Length functions
  *****************************************************************************/
 
 /* Length traversed by the temporal point */
 
 static double
-tpointseq_length(TemporalSeq *seq)
+tpointseq_length(const TemporalSeq *seq)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
 	Datum traj = tpointseq_trajectory(seq);
@@ -1029,7 +1373,7 @@ tpointseq_length(TemporalSeq *seq)
 }
 
 static double
-tpoints_length(TemporalS *ts)
+tpoints_length(const TemporalS *ts)
 {
 	assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
 	double result = 0;
@@ -1062,13 +1406,13 @@ tpoint_length(PG_FUNCTION_ARGS)
 /* Cumulative length traversed by the temporal point */
 
 static TemporalInst *
-tpointinst_cumulative_length(TemporalInst *inst)
+tpointinst_cumulative_length(const TemporalInst *inst)
 {
 	return temporalinst_make(Float8GetDatum(0.0), inst->t, FLOAT8OID);
 }
 
 static TemporalI *
-tpointi_cumulative_length(TemporalI *ti)
+tpointi_cumulative_length(const TemporalI *ti)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	Datum length = Float8GetDatum(0.0);
@@ -1085,7 +1429,7 @@ tpointi_cumulative_length(TemporalI *ti)
 }
 
 static TemporalSeq *
-tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
+tpointseq_cumulative_length(const TemporalSeq *seq, double prevlength)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -1093,8 +1437,8 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 		TemporalInst *inst = temporalseq_inst_n(seq, 0);
 		TemporalInst *inst1 = temporalinst_make(Float8GetDatum(0), inst->t,
 			FLOAT8OID);
-		TemporalSeq *result = temporalseq_make(&inst1, 1,
-			true, true, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		TemporalSeq *result = temporalseq_make(&inst1, 1, true, true,
+			MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		pfree(inst1);
 		return result;
 	}
@@ -1116,8 +1460,8 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
-				&geom_distance2d;
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &pt_distance3d :
+				&pt_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1138,8 +1482,8 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 			value1 = value2;
 		}
 	}
-	TemporalSeq *result = temporalseq_make(instants,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *result = temporalseq_make(instants, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 		
 	for (int i = 1; i < seq->count; i++)
@@ -1150,7 +1494,7 @@ tpointseq_cumulative_length(TemporalSeq *seq, double prevlength)
 }
 
 static TemporalS *
-tpoints_cumulative_length(TemporalS *ts)
+tpoints_cumulative_length(const TemporalS *ts)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	double length = 0;
@@ -1195,7 +1539,8 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static double
-tpointinst_speed(TemporalInst *inst1, TemporalInst *inst2, Datum (*func)(Datum, Datum))
+tpointinst_speed(const TemporalInst *inst1, const TemporalInst *inst2,
+	Datum (*func)(Datum, Datum))
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -1204,7 +1549,7 @@ tpointinst_speed(TemporalInst *inst1, TemporalInst *inst2, Datum (*func)(Datum, 
 }
 
 static TemporalSeq *
-tpointseq_speed(TemporalSeq *seq)
+tpointseq_speed(const TemporalSeq *seq)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -1227,8 +1572,8 @@ tpointseq_speed(TemporalSeq *seq)
 		Datum (*func)(Datum, Datum);
 		ensure_point_base_type(seq->valuetypid);
 		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &geom_distance3d :
-				&geom_distance2d;
+			func = MOBDB_FLAGS_GET_Z(seq->flags) ? &pt_distance3d :
+				&pt_distance2d;
 		else
 			func = &geog_distance;
 
@@ -1261,7 +1606,7 @@ tpointseq_speed(TemporalSeq *seq)
 }
 
 static TemporalS *
-tpoints_speed(TemporalS *ts)
+tpoints_speed(const TemporalS *ts)
 {
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count);
 	int k = 0;
@@ -1324,25 +1669,14 @@ tgeompointi_twcentroid(TemporalI *ti)
 	for (int i = 0; i < ti->count; i++)
 	{
 		TemporalInst *inst = temporali_inst_n(ti, i);
-		POINT2D point2d;
-		POINT3DZ point;
+		POINT4D point = datum_get_point4d(temporalinst_value(inst));
+		instantsx[i] = temporalinst_make(Float8GetDatum(point.x), inst->t,
+			FLOAT8OID);
+		instantsy[i] = temporalinst_make(Float8GetDatum(point.y), inst->t,
+			FLOAT8OID);
 		if (hasz)
-			point = datum_get_point3dz(temporalinst_value(inst));
-		else
-		{
-			point2d = datum_get_point2d(temporalinst_value(inst));
-			point.x = point2d.x;
-			point.y = point2d.y;
-		}
-		
-		instantsx[i] = temporalinst_make(Float8GetDatum(point.x),
-			inst->t, FLOAT8OID);		
-		instantsy[i] = temporalinst_make(Float8GetDatum(point.y),
-			inst->t, FLOAT8OID);
-		if (hasz)
-			instantsz[i] = temporalinst_make(Float8GetDatum(point.z),
-				inst->t, FLOAT8OID);
-
+			instantsz[i] = temporalinst_make(Float8GetDatum(point.z), inst->t,
+				FLOAT8OID);
 	}
 	TemporalI *tix = temporali_make(instantsx, ti->count);
 	TemporalI *tiy = temporali_make(instantsy, ti->count);
@@ -1393,35 +1727,25 @@ tgeompointseq_twcentroid(TemporalSeq *seq)
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
-		POINT2D point2d;
-		POINT3DZ point;
+		POINT4D point = datum_get_point4d(temporalinst_value(inst));
+		instantsx[i] = temporalinst_make(Float8GetDatum(point.x), inst->t,
+			FLOAT8OID);
+		instantsy[i] = temporalinst_make(Float8GetDatum(point.y), inst->t,
+			FLOAT8OID);
 		if (hasz)
-			point = datum_get_point3dz(temporalinst_value(inst));
-		else
-		{
-			point2d = datum_get_point2d(temporalinst_value(inst));
-			point.x = point2d.x;
-			point.y = point2d.y;
-		}
-		instantsx[i] = temporalinst_make(Float8GetDatum(point.x),
-			inst->t, FLOAT8OID);		
-		instantsy[i] = temporalinst_make(Float8GetDatum(point.y),
-			inst->t, FLOAT8OID);
-		if (hasz)
-			instantsz[i] = temporalinst_make(Float8GetDatum(point.z),
-				inst->t, FLOAT8OID);
+			instantsz[i] = temporalinst_make(Float8GetDatum(point.z), inst->t,
+				FLOAT8OID);
 	}
-	TemporalSeq *seqx = temporalseq_make(instantsx,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *seqx = temporalseq_make(instantsx, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
-	TemporalSeq *seqy = temporalseq_make(instantsy,
-		seq->count, seq->period.lower_inc, seq->period.upper_inc,
+	TemporalSeq *seqy = temporalseq_make(instantsy, seq->count,
+		seq->period.lower_inc, seq->period.upper_inc,
 		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	TemporalSeq *seqz;
 	if (hasz)
-		seqz = temporalseq_make(instantsz,
-			seq->count, seq->period.lower_inc, seq->period.upper_inc,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		seqz = temporalseq_make(instantsz, seq->count, seq->period.lower_inc,
+			seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	double twavgx = tnumberseq_twavg(seqx);
 	double twavgy = tnumberseq_twavg(seqy);
 	double twavgz;
@@ -1474,16 +1798,7 @@ tgeompoints_twcentroid(TemporalS *ts)
 		for (int j = 0; j < seq->count; j++)
 		{
 			TemporalInst *inst = temporalseq_inst_n(seq, j);
-			POINT2D point2d;
-			POINT3DZ point;
-			if (hasz)
-				point = datum_get_point3dz(temporalinst_value(inst));
-			else
-			{
-				point2d = datum_get_point2d(temporalinst_value(inst));
-				point.x = point2d.x;
-				point.y = point2d.y;
-			}
+			POINT4D point = datum_get_point4d(temporalinst_value(inst));
 			instantsx[j] = temporalinst_make(Float8GetDatum(point.x),
 				inst->t, FLOAT8OID);		
 			instantsy[j] = temporalinst_make(Float8GetDatum(point.y),
@@ -1492,15 +1807,15 @@ tgeompoints_twcentroid(TemporalS *ts)
 				instantsz[j] = temporalinst_make(Float8GetDatum(point.z),
 					inst->t, FLOAT8OID);
 		}
-		sequencesx[i] = temporalseq_make(instantsx,
-			seq->count, seq->period.lower_inc, seq->period.upper_inc,
+		sequencesx[i] = temporalseq_make(instantsx, seq->count,
+			seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		sequencesy[i] = temporalseq_make(instantsy,
 			seq->count, seq->period.lower_inc, seq->period.upper_inc,
 			MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		if (hasz)
-			sequencesz[i] = temporalseq_make(instantsz,
-				seq->count, seq->period.lower_inc, seq->period.upper_inc,
+			sequencesz[i] = temporalseq_make(instantsz, seq->count,
+				seq->period.lower_inc, seq->period.upper_inc,
 				MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 
 		for (int j = 0; j < seq->count; j++)
@@ -1549,7 +1864,6 @@ tgeompoints_twcentroid(TemporalS *ts)
 	return result;
 }
 
-
 Datum
 tgeompoint_twcentroid_internal(Temporal *temp)
 {
@@ -1584,7 +1898,11 @@ tgeompoint_twcentroid(PG_FUNCTION_ARGS)
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
 {
-	return call_function2(LWGEOM_azimuth, geom1, geom2);
+	POINT2D p1 = datum_get_point2d(geom1);
+	POINT2D p2 = datum_get_point2d(geom2);
+	double result;
+	azimuth_pt_pt(&p1, &p2, &result);
+	return Float8GetDatum(result);
 }
 
 static Datum
@@ -1594,7 +1912,7 @@ geog_azimuth(Datum geom1, Datum geom2)
 }
 
 static int
-tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
+tpointseq_azimuth1(TemporalSeq **result, const TemporalSeq *seq)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -1632,8 +1950,8 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 				instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 				upper_inc = true;
 				/* Resulting sequence has step interpolation */
-				result[l++] = temporalseq_make(instants, k,
-					lower_inc, upper_inc, false, true);
+				result[l++] = temporalseq_make(instants, k, lower_inc,
+					upper_inc, false, true);
 				for (int j = 0; j < k; j++)
 					pfree(instants[j]);
 				k = 0;
@@ -1647,8 +1965,8 @@ tpointseq_azimuth1(TemporalSeq **result, TemporalSeq *seq)
 	{
 		instants[k++] = temporalinst_make(azimuth, inst1->t, FLOAT8OID);
 		/* Resulting sequence has step interpolation */
-		result[l++] = temporalseq_make(instants, k,
-			lower_inc, upper_inc, false, true);
+		result[l++] = temporalseq_make(instants, k, lower_inc, upper_inc,
+			false, true);
 	}
 
 	pfree(instants);
@@ -1732,7 +2050,7 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 /* Restrict a temporal point to a geometry */
 
 static TemporalInst *
-tpointinst_at_geometry(TemporalInst *inst, Datum geom)
+tpointinst_at_geometry(const TemporalInst *inst, Datum geom)
 {
 	if (!DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
 		return NULL;
@@ -1740,7 +2058,7 @@ tpointinst_at_geometry(TemporalInst *inst, Datum geom)
 }
 
 static TemporalI *
-tpointi_at_geometry(TemporalI *ti, Datum geom)
+tpointi_at_geometry(const TemporalI *ti, Datum geom)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	int k = 0;
@@ -1764,8 +2082,8 @@ tpointi_at_geometry(TemporalI *ti, Datum geom)
  * points and the geometry are in 2D
  */
 static TemporalSeq **
-tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
-	bool lower_inc, bool upper_inc, Datum geom, int *count)
+tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
+	bool linear, bool lower_inc, bool upper_inc, Datum geom, int *count)
 {
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
@@ -1781,12 +2099,12 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 		}
 
 		TemporalInst *instants[2];
-		instants[0] = inst1;
-		instants[1] = equal ? inst2 :
+		instants[0] = (TemporalInst *) inst1;
+		instants[1] = equal ? (TemporalInst *) inst2 :
 			temporalinst_make(value1, inst2->t, inst1->valuetypid);
 		TemporalSeq **result = palloc(sizeof(TemporalSeq *));
-		result[0] = temporalseq_make(instants, 2,
-			lower_inc, upper_inc, linear, false);
+		result[0] = temporalseq_make(instants, 2, lower_inc, upper_inc,
+			linear, false);
 		*count = 1;
 		if (! equal)
 			pfree(instants[1]);
@@ -1795,73 +2113,117 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 
 	/* Look for intersections */
 	Datum line = geompoint_trajectory(value1, value2);
-	Datum intersections = call_function2(intersection, line, geom);
-	if (DatumGetBool(call_function1(LWGEOM_isempty, intersections)))
+	Datum inter = call_function2(intersection, line, geom);
+	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+	if (gserialized_is_empty(gsinter))
 	{
 		pfree(DatumGetPointer(line));
-		pfree(DatumGetPointer(intersections));
+		pfree(DatumGetPointer(inter));
+		POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
 		*count = 0;
 		return NULL;
 	}
 
-	int countinter = DatumGetInt32(call_function1(
-		LWGEOM_numgeometries_collection, intersections));
+	LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
+	GSERIALIZED *gsline = (GSERIALIZED *) DatumGetPointer(line);
+	LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gsline));
+	int type = lwgeom_inter->type;
+	int countinter;
+	LWPOINT *lwpoint_inter;
+	LWLINE *lwline_inter;
+	LWCOLLECTION *coll;
+	if (type == POINTTYPE)
+	{
+		countinter = 1;
+		lwpoint_inter = lwgeom_as_lwpoint(lwgeom_inter);
+
+	}
+	else if (type == LINETYPE)
+	{
+		countinter = 1;
+		lwline_inter = lwgeom_as_lwline(lwgeom_inter);
+	}
+	else
+	{
+		coll = lwgeom_as_lwcollection(lwgeom_inter);
+		countinter = coll->ngeoms;
+	}
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
 	double duration = (double)(inst2->t - inst1->t);
 	int k = 0;
-	for (int i = 1; i <= countinter; i++)
+	for (int i = 0; i < countinter; i++)
 	{
-		/* Find the i-th intersection */
-		Datum inter = call_function2(LWGEOM_geometryn_collection,
-			intersections, Int32GetDatum(i));
-		GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-
-		/* Each intersection is either a point or a linestring with two points */
-		if (gserialized_get_type(gsinter) == POINTTYPE)
+		if (countinter > 1)
 		{
-			double fraction = DatumGetFloat8(call_function2(
-				LWGEOM_line_locate_point, line, inter));
+			/* Find the i-th intersection */
+			LWGEOM *subgeom = coll->geoms[i];
+			if (subgeom->type == POINTTYPE)
+				lwpoint_inter = lwgeom_as_lwpoint(subgeom);
+			else /* type == LINETYPE */
+				lwline_inter = lwgeom_as_lwline(subgeom);
+			type = 	subgeom->type;
+		}
+		POINTARRAY *pa = lwline->points;
+		POINT4D p1, p2, proj1, proj2;
+		/* Each intersection is either a point or a linestring with two points */
+		if (type == POINTTYPE)
+		{
+			lwpoint_getPoint4d_p(lwpoint_inter, &p1);
+			double fraction = ptarray_locate_point(pa, &p1, NULL, &proj1);
 			TimestampTz t = inst1->t + (long) (duration * fraction);
 			/* If the intersection is not at an exclusive bound */
 			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
 			{
-				/* Restriction at timestamp done to avoid floating point imprecision */
-				instants[0] = temporalseq_at_timestamp1(inst1, inst2, t, linear);
-				result[k++] = temporalseq_make(instants, 1,
-					true, true, linear, false);
+				LWPOINT *lwres = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
+					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
+				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+				instants[0] = temporalinst_make(point, t, inst1->valuetypid);
+				result[k++] = temporalseq_make(instants, 1, true, true,
+					linear, false);
+				lwpoint_free(lwres); pfree(DatumGetPointer(point));
 				pfree(instants[0]);
 			}
 		}
 		else
 		{
-			Datum point1 = call_function2(LWGEOM_pointn_linestring,
-				inter, Int32GetDatum(1));
-			Datum point2 = call_function2(LWGEOM_pointn_linestring,
-				inter, Int32GetDatum(2));
-			double fraction1 = DatumGetFloat8(call_function2(
-				LWGEOM_line_locate_point, line, point1));
-			double fraction2 = DatumGetFloat8(call_function2(
-				LWGEOM_line_locate_point, line, point2));
+			LWPOINT *lwpoint1 = lwline_get_lwpoint(lwline_inter, 0);
+			LWPOINT *lwpoint2 = lwline_get_lwpoint(lwline_inter, 1);
+			lwpoint_getPoint4d_p(lwpoint1, &p1);
+			lwpoint_getPoint4d_p(lwpoint2, &p2);
+			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &proj1);
+			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &proj2);
+			LWPOINT *lwres1 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+				lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
+				lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
+			Datum point1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres1));
+			LWPOINT *lwres2 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+					lwpoint_make3dz(lwline->srid, proj2.x, proj2.y, proj2.z) :
+					lwpoint_make2d(lwline->srid, proj2.x, proj2.y);
+			Datum point2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres2));
 			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
 			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
-			/* Restriction at timestamp done to avoid floating point imprecision */
-			instants[0] = temporalseq_at_timestamp1(inst1, inst2, lower1, linear);
-			instants[1] = temporalseq_at_timestamp1(inst1, inst2, upper1, linear);
+			instants[0] = temporalinst_make(point1, lower1, inst1->valuetypid);
+			instants[1] = temporalinst_make(point2, upper1, inst1->valuetypid);
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
 			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
-			result[k++] = temporalseq_make(instants, 2,
-					lower_inc1, upper_inc1, linear, false);
-			pfree(instants[0]); pfree(instants[1]);
+			result[k++] = temporalseq_make(instants, 2, lower_inc1, upper_inc1,
+				linear, false);
+			lwpoint_free(lwres1); lwpoint_free(lwres2);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
+			pfree(instants[0]); pfree(instants[1]);
 		}
-		POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
 	}
 
 	pfree(DatumGetPointer(line));
-	pfree(DatumGetPointer(intersections));
+	pfree(DatumGetPointer(inter));
+	POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+	POSTGIS_FREE_IF_COPY_P(gsline, DatumGetPointer(gsline));
+	lwline_free(lwline);
+	lwgeom_free(lwgeom_inter);
 
 	if (k == 0)
 	{
@@ -1876,7 +2238,7 @@ tpointseq_at_geometry1(TemporalInst *inst1, TemporalInst *inst2, bool linear,
 }
 
 TemporalSeq **
-tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
+tpointseq_at_geometry2(const TemporalSeq *seq, Datum geom, int *count)
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -1931,7 +2293,7 @@ tpointseq_at_geometry2(TemporalSeq *seq, Datum geom, int *count)
 }
 
 static TemporalS *
-tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
+tpointseq_at_geometry(const TemporalSeq *seq, Datum geom)
 {
 	int count;
 	TemporalSeq **sequences = tpointseq_at_geometry2(seq, geom, &count);
@@ -1948,7 +2310,7 @@ tpointseq_at_geometry(TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_at_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
+tpoints_at_geometry(const TemporalS *ts, GSERIALIZED *gs, const STBOX *box2)
 {
 	/* palloc0 used due to the bounding box test in the for loop below */
 	TemporalSeq ***sequences = palloc0(sizeof(TemporalSeq *) * ts->count);
@@ -2047,7 +2409,7 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 /* Restrict a temporal point to the complement of a geometry */
 
 static TemporalInst *
-tpointinst_minus_geometry(TemporalInst *inst, Datum geom)
+tpointinst_minus_geometry(const TemporalInst *inst, Datum geom)
 {
 	if (DatumGetBool(call_function2(intersects, temporalinst_value(inst), geom)))
 		return NULL;
@@ -2055,7 +2417,7 @@ tpointinst_minus_geometry(TemporalInst *inst, Datum geom)
 }
 
 static TemporalI *
-tpointi_minus_geometry(TemporalI *ti, Datum geom)
+tpointi_minus_geometry(const TemporalI *ti, Datum geom)
 {
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * ti->count);
 	int k = 0;
@@ -2084,7 +2446,7 @@ tpointi_minus_geometry(TemporalI *ti, Datum geom)
  * and then compute the complement of the value obtained.
  */
 static TemporalSeq **
-tpointseq_minus_geometry1(TemporalSeq *seq, Datum geom, int *count)
+tpointseq_minus_geometry1(const TemporalSeq *seq, Datum geom, int *count)
 {
 	int countinter;
 	TemporalSeq **sequences = tpointseq_at_geometry2(seq, geom, &countinter);
@@ -2113,7 +2475,7 @@ tpointseq_minus_geometry1(TemporalSeq *seq, Datum geom, int *count)
 }
 
 static TemporalS *
-tpointseq_minus_geometry(TemporalSeq *seq, Datum geom)
+tpointseq_minus_geometry(const TemporalSeq *seq, Datum geom)
 {
 	int count;
 	TemporalSeq **sequences = tpointseq_minus_geometry1(seq, geom, &count);
@@ -2130,7 +2492,7 @@ tpointseq_minus_geometry(TemporalSeq *seq, Datum geom)
 }
 
 static TemporalS *
-tpoints_minus_geometry(TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
+tpoints_minus_geometry(const TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 {
 	/* Singleton sequence set */
 	if (ts->count == 1)
@@ -2238,7 +2600,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static TemporalInst *
-NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpointi_geo(const TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
 {
 	double mindist = DBL_MAX;
 	int number = 0; /* keep compiler quiet */
@@ -2262,7 +2624,8 @@ NAI_tpointi_geo(TemporalI *ti, Datum geo, Datum (*func)(Datum, Datum))
  * geometry/geography */
 
 static TemporalInst *
-NAI_tpointseq_stw_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpointseq_stw_geo(const TemporalSeq *seq, Datum geo,
+	Datum (*func)(Datum, Datum))
 {
 	double mindist = DBL_MAX;
 	int number = 0; /* keep compiler quiet */
@@ -2282,8 +2645,67 @@ NAI_tpointseq_stw_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 /* NAI between temporal sequence point with linear interpolation and a
  * geometry/geography */
 
+/* Function inspired from PostGIS function lw_dist2d_distancepoint from measures.c
+ * by returning also the distance between the closest/longest point */
+static LWPOINT *
+lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int srid, int mode, double *dist)
+{
+	DISTPTS thedl;
+	thedl.mode = mode;
+	thedl.distance= FLT_MAX;
+	thedl.tolerance = 0;
+	lw_dist2d_comp(lw1,lw2,&thedl);
+	LWPOINT *result = lwpoint_make2d(srid, thedl.p1.x, thedl.p1.y);
+	*dist = thedl.distance;
+	return result;
+}
+
 static Datum
-NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
+NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
+	LWGEOM *lwgeom, TimestampTz *t, bool *tofree, double *dist)
+{
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	/* Constant segment */
+	if (datum_point_eq(value1, value2))
+	{
+		*t = inst1->t;
+		*tofree = false;
+		return value1;
+	}
+
+	/* The trajectory is a line */
+	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
+	LWPOINT *lwpoint = lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom,
+		lwline->srid, DIST_MIN, dist);
+	POINT4D p, p_proj;
+	lwpoint_getPoint4d_p(lwpoint, &p);
+	double fraction = ptarray_locate_point(lwline->points, &p, NULL, &p_proj);
+	lwline_free(lwline); lwpoint_free(lwpoint);
+
+	if (fraction == 0)
+	{
+		*t = inst1->t;
+		*tofree = false;
+		return value1;
+	}
+	if (fraction == 1)
+	{
+		*t = inst2->t;
+		*tofree = false;
+		return value2;
+	}
+
+	*t = inst1->t + (long)((double) (inst2->t - inst1->t) * fraction);
+	*tofree = true;
+	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, p_proj.x, p_proj.y);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
+	lwpoint_free(lwres);
+	return result;
+}
+
+static Datum
+NAI_tpointseq_geog1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum geo, TimestampTz *t, bool *tofree)
 {
 	Datum value1 = temporalinst_value(inst1);
@@ -2297,37 +2719,24 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 	}
 
 	double fraction;
-	ensure_point_base_type(inst1->valuetypid);
-	if (inst1->valuetypid == type_oid(T_GEOMETRY))
-	{
-		/* The trajectory is a line */
-		Datum traj = geompoint_trajectory(value1, value2);
-		Datum point = call_function2(LWGEOM_closestpoint, traj, geo);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj, point));
-		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
-	}
-	else
-	{
-		/* The trajectory is a line */
-		Datum traj = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_locate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
-		Datum traj1 = call_function1(geometry_from_geography, traj);
-		Datum traj2 = call_function2(transform, traj1, bestsrid);
-		Datum geo1 = call_function1(geometry_from_geography, geo);
-		Datum geo2 = call_function2(transform, geo1, bestsrid);
-		Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
-		fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
-			traj2, point));
-		pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
-		pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
-		pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
-	}
+	/* The trajectory is a line */
+	Datum traj = geogpoint_trajectory(value1, value2);
+	/* There is no function equivalent to LWGEOM_line_locate_point
+	 * for geographies. We do as the ST_Intersection function, e.g.
+	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+	 * @extschema@._ST_BestSRID($1, $2)),
+	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+	Datum bestsrid = call_function2(geography_bestsrid, traj, geo);
+	Datum traj1 = call_function1(geometry_from_geography, traj);
+	Datum traj2 = call_function2(transform, traj1, bestsrid);
+	Datum geo1 = call_function1(geometry_from_geography, geo);
+	Datum geo2 = call_function2(transform, geo1, bestsrid);
+	Datum point = call_function2(LWGEOM_closestpoint, traj2, geo2);
+	fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+		traj2, point));
+	pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(traj1));
+	pfree(DatumGetPointer(traj2)); pfree(DatumGetPointer(geo1));
+	pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(point));
 
 	if (fraction == 0)
 	{
@@ -2349,7 +2758,7 @@ NAI_tpointseq_geo1(TemporalInst *inst1, TemporalInst *inst2,
 }
 
 static TemporalInst *
-NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpointseq_geo(const TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 {
 	/* Instantaneous sequence */
 	if (seq->count == 1)
@@ -2365,13 +2774,29 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	TimestampTz tmin = 0; /* keep compiler quiet */
 	bool mintofree =  false; /* keep compiler quiet */
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	ensure_point_base_type(inst1->valuetypid);
+	bool geometry = inst1->valuetypid == type_oid(T_GEOMETRY);
+	GSERIALIZED *gsgeom;
+	LWGEOM *lwgeom;
+	if (geometry)
+	{
+		gsgeom = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
+		lwgeom = lwgeom_from_gserialized(gsgeom);
+	}
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		TimestampTz t;
 		bool tofree;
-		Datum point = NAI_tpointseq_geo1(inst1, inst2, geo, &t, &tofree);
-		double dist = DatumGetFloat8(func(point, geo));
+		Datum point;
+		double dist;
+		if (geometry)
+			point = NAI_tpointseq_geom1(inst1, inst2, lwgeom, &t, &tofree, &dist);
+		else
+		{
+			point = NAI_tpointseq_geog1(inst1, inst2, geo, &t, &tofree);
+			dist = DatumGetFloat8(func(point, geo));
+		}
 		if (dist < mindist)
 		{
 			mindist = dist;
@@ -2386,13 +2811,18 @@ NAI_tpointseq_geo(TemporalSeq *seq, Datum geo, Datum (*func)(Datum, Datum))
 	TemporalInst *result = temporalinst_make(minpoint, tmin, seq->valuetypid);
 	if (mintofree)
 		pfree(DatumGetPointer(minpoint));
+	if (geometry)
+	{
+		POSTGIS_FREE_IF_COPY_P(gsgeom, DatumGetPointer(geo));
+		lwgeom_free(lwgeom);
+	}
 	return result;
 }
 
 /*****************************************************************************/
 
 static TemporalInst *
-NAI_tpoints_geo(TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
+NAI_tpoints_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 {
 	TemporalInst *result = NULL;
 	double mindist = DBL_MAX;
@@ -2693,7 +3123,8 @@ shortestline_tpoint_geo(PG_FUNCTION_ARGS)
 /* These functions suppose that the temporal values overlap in time */
 
 static Datum
-shortestline_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
+shortestline_tpointinst_tpointinst(const TemporalInst *inst1,
+	const TemporalInst *inst2)
 {
 	LWGEOM *lwgeoms[2];
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst1));
@@ -2708,7 +3139,7 @@ shortestline_tpointinst_tpointinst(TemporalInst *inst1, TemporalInst *inst2)
 }
 
 static Datum
-shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
+shortestline_tpointi_tpointi(const TemporalI *ti1, const TemporalI *ti2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
@@ -2725,7 +3156,7 @@ shortestline_tpointi_tpointi(TemporalI *ti1, TemporalI *ti2,
 }
 
 static Datum
-shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
+shortestline_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
@@ -2735,23 +3166,30 @@ shortestline_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2,
 		func, FLOAT8OID, linear, NULL);
 	TemporalS *mindist = temporalseq_at_min(dist);
 	TimestampTz t = temporals_start_timestamp(mindist);
-	/* Make a copy of the sequences with inclusive bounds */
-	TemporalSeq *newseq1 = temporalseq_copy(seq1);
-	newseq1->period.lower_inc = true;
-	newseq1->period.upper_inc = true;
-	TemporalSeq *newseq2 = temporalseq_copy(seq2);
-	newseq2->period.lower_inc = true;
-	newseq2->period.upper_inc = true;
-	TemporalInst *inst1 = temporalseq_at_timestamp(newseq1, t);
-	TemporalInst *inst2 = temporalseq_at_timestamp(newseq2, t);
+	/* Timestamp t may be at an exclusive bound */
+	TemporalInst *inst1, *inst2;
+	if (t == seq1->period.lower)
+	{
+		inst1 = temporalseq_inst_n(seq1, 0);
+		inst2 = temporalseq_inst_n(seq2, 0);
+	}
+	else if (t == seq1->period.upper)
+	{
+		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
+		inst2 = temporalseq_inst_n(seq2, seq1->count - 1);
+	}
+	else
+	{
+		inst1 = temporalseq_at_timestamp(seq1, t);
+		inst2 = temporalseq_at_timestamp(seq2, t);
+	}
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist); pfree(inst1); pfree(inst2);
-	pfree(newseq1); pfree(newseq2);
+	pfree(dist); pfree(mindist);
 	return result;
 }
 
 static Datum
-shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
+shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	Datum (*func)(Datum, Datum))
 {
 	/* Compute the distance */
@@ -2829,6 +3267,37 @@ shortestline_tpoints_tpoints(TemporalS *ts1, TemporalS *ts2,
 
 /*****************************************************************************/
 
+/* The internal function supposes that the temporal points are synchronized */
+
+Datum
+shortestline_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
+{
+	Datum (*func)(Datum, Datum);
+	ensure_point_base_type(temp1->valuetypid);
+	if (temp1->valuetypid == type_oid(T_GEOMETRY))
+		func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
+			&geom_distance3d : &geom_distance2d;
+	else
+		func = &geog_distance;
+
+	Datum result;
+	ensure_valid_duration(temp1->duration);
+	if (temp1->duration == TEMPORALINST)
+		result = shortestline_tpointinst_tpointinst((TemporalInst *)temp1,
+			(TemporalInst *)temp2);
+	else if (temp1->duration == TEMPORALI)
+		result = shortestline_tpointi_tpointi((TemporalI *)temp1,
+			(TemporalI *)temp2, func);
+	else if (temp1->duration == TEMPORALSEQ)
+		result = shortestline_tpointseq_tpointseq((TemporalSeq *)temp1,
+			(TemporalSeq *)temp2, func);
+	else /* temp1->duration == TEMPORALS */
+		result = shortestline_tpoints_tpoints((TemporalS *)temp1,
+			(TemporalS *)temp2, func);
+
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(shortestline_tpoint_tpoint);
 
 PGDLLEXPORT Datum
@@ -2846,30 +3315,8 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp2, 1);
 		PG_RETURN_NULL();
 	}
-	
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp1->valuetypid);
-	if (temp1->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-			&geom_distance3d : &geom_distance2d;
-	else
-		func = &geog_distance;
 
-	Datum result;
-	ensure_valid_duration(sync1->duration);
-	if (sync1->duration == TEMPORALINST)
-		result = shortestline_tpointinst_tpointinst((TemporalInst *)sync1,
-			(TemporalInst *)sync2);
-	else if (sync1->duration == TEMPORALI)
-		result = shortestline_tpointi_tpointi((TemporalI *)sync1,
-			(TemporalI *)sync2, func);
-	else if (sync1->duration == TEMPORALSEQ)
-		result = shortestline_tpointseq_tpointseq((TemporalSeq *)sync1,
-			(TemporalSeq *)sync2, func);
-	else /* sync1->duration == TEMPORALS */
-		result = shortestline_tpoints_tpoints((TemporalS *)sync1,
-			(TemporalS *)sync2, func);
-	
+	Datum result = shortestline_tpoint_tpoint_internal(sync1, sync2);
 	pfree(sync1); pfree(sync2);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -2906,7 +3353,7 @@ point_to_trajpoint(GSERIALIZED *gs, TimestampTz t)
 }
 
 static Datum
-tpointinst_to_geo(TemporalInst *inst)
+tpointinst_to_geo(const TemporalInst *inst)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
 	LWPOINT *point = point_to_trajpoint(gs, inst->t);
@@ -2916,7 +3363,7 @@ tpointinst_to_geo(TemporalInst *inst)
 }
 
 static Datum
-tpointi_to_geo(TemporalI *ti)
+tpointi_to_geo(const TemporalI *ti)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
@@ -2945,60 +3392,77 @@ tpointi_to_geo(TemporalI *ti)
 	return PointerGetDatum(result);
 }
 
-static Datum
-tpointseq_to_geo(TemporalSeq *seq)
+static LWGEOM *
+tpointseq_to_geo1(const TemporalSeq *seq)
 {
-	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+	LWPOINT **points = palloc(sizeof(LWGEOM *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 	{
 		TemporalInst *inst = temporalseq_inst_n(seq, i);
 		GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(temporalinst_value(inst));
-		points[i] = (LWGEOM *) point_to_trajpoint(gs, inst->t);
+		points[i] = point_to_trajpoint(gs, inst->t);
 	}
-	GSERIALIZED *result;
+	LWGEOM *result;
 	/* Instantaneous sequence */
 	if (seq->count == 1)
-		result = geometry_serialize(points[0]);
+	{
+		result = (LWGEOM *) points[0];
+		pfree(points);
+	}
 	else
 	{
-		LWGEOM *geom;
 		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				(uint32_t) seq->count, points);
+			result = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
+				(uint32_t) seq->count, (LWGEOM **) points);
 		else
-			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-				NULL, (uint32_t) seq->count, points);
-		result = geometry_serialize(geom);
-		pfree(geom);
+			result = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+				points[0]->srid, NULL, (uint32_t) seq->count, (LWGEOM **) points);
+		for (int i = 0; i < seq->count; i++)
+			lwpoint_free(points[i]);
+		pfree(points);
 	}
+	return result;
+}
 
-	for (int i = 0; i < seq->count; i++)
-		pfree(points[i]);
-	pfree(points);
 
+static Datum
+tpointseq_to_geo(const TemporalSeq *seq)
+{
+	LWGEOM *lwgeom = tpointseq_to_geo1(seq);
+	GSERIALIZED *result = geometry_serialize(lwgeom);
 	return PointerGetDatum(result);
 }
 
 static Datum
-tpoints_to_geo(TemporalS *ts)
+tpoints_to_geo(const TemporalS *ts)
 {
-	Datum *geoms = palloc(sizeof(Datum) * ts->count);
+	/* Instantaneous sequence */
+	if (ts->count == 1)
+	{
+		TemporalSeq *seq = temporals_seq_n(ts, 0);
+		return tpointseq_to_geo(seq);
+	}
+	uint8_t colltype = 0;
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
-		geoms[i] = tpointseq_to_geo(seq);
+		geoms[i] = tpointseq_to_geo1(seq);
+		/* Output type not initialized */
+		if (! colltype)
+			colltype = lwtype_get_collectiontype(geoms[i]->type);
+			/* Input type not compatible with output */
+			/* make output type a collection */
+		else if (colltype != COLLECTIONTYPE &&
+			lwtype_get_collectiontype(geoms[i]->type) != colltype)
+			colltype = COLLECTIONTYPE;
 	}
-	Datum result;
-	if (ts->count == 1)
-		result = geoms[0];
-	else
-	{
-		ArrayType *array = datumarr_to_array(geoms, ts->count, ts->valuetypid);
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));		
-		for (int i = 0; i < ts->count; i++)
-			pfree(DatumGetPointer(geoms[i]));
-		pfree(array);
-	}
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+	Datum result = PointerGetDatum(geometry_serialize(coll));
+	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
 	pfree(geoms);
 	return result;
 }
@@ -3154,8 +3618,8 @@ geo_to_tpointseq(GSERIALIZED *gs)
 		lwpoint_free(lwpoint);
 	}
 	/* The resulting sequence assumes linear interpolation */
-	TemporalSeq *result = temporalseq_make(instants, npoints,
-		true, true, true, true);
+	TemporalSeq *result = temporalseq_make(instants, npoints, true, true,
+		true, true);
 	for (int i = 0; i < npoints; i++)
 		pfree(instants[i]);
 	pfree(instants);
@@ -3191,8 +3655,8 @@ geo_to_tpoints(GSERIALIZED *gs)
 		{
 			TemporalInst *inst = geo_to_tpointinst(gs1);
 			/* The resulting sequence assumes linear interpolation */
-			sequences[i] = temporalseq_make(&inst, 1,
-				true, true, true, false);
+			sequences[i] = temporalseq_make(&inst, 1, true, true,
+				true, false);
 			pfree(inst);
 		}
 		else /* lwgeom1->type == LINETYPE */
@@ -3241,9 +3705,8 @@ geo_to_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 static LWPOINT *
-point_measure_to_geo_measure(GSERIALIZED *gs, double measure)
+point_measure_to_geo_measure(GSERIALIZED *gs, int32 srid, double measure)
 {
-	int32 srid = gserialized_get_srid(gs);
 	LWPOINT *result;
 	if (FLAGS_GET_Z(gs->flags))
 	{
@@ -3260,17 +3723,19 @@ point_measure_to_geo_measure(GSERIALIZED *gs, double measure)
 }
 
 static Datum
-tpointinst_to_geo_measure(TemporalInst *inst, TemporalInst *measure)
+tpointinst_to_geo_measure(const TemporalInst *inst, const TemporalInst *measure)
 {
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-	LWPOINT *point = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(measure)));
+	int32 srid = gserialized_get_srid(gs);
+	LWPOINT *point = point_measure_to_geo_measure(gs, srid,
+		DatumGetFloat8(temporalinst_value(measure)));
 	GSERIALIZED *result = geometry_serialize((LWGEOM *)point);
 	pfree(point);
 	return PointerGetDatum(result);
 }
 
 static Datum
-tpointi_to_geo_measure(TemporalI *ti, TemporalI *measure)
+tpointi_to_geo_measure(const TemporalI *ti, const TemporalI *measure)
 {
 	TemporalInst *inst = temporali_inst_n(ti, 0);
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
@@ -3281,14 +3746,15 @@ tpointi_to_geo_measure(TemporalI *ti, TemporalI *measure)
 		inst = temporali_inst_n(ti, i);
 		TemporalInst *m = temporali_inst_n(measure, i);
 		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-		points[i] = (LWGEOM *)point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
+		points[i] = (LWGEOM *) point_measure_to_geo_measure(gs, srid,
+			DatumGetFloat8(temporalinst_value(m)));
 	}
 	GSERIALIZED *result;
 	if (ti->count == 1)
 		result = geometry_serialize(points[0]);
 	else
 	{
-		LWGEOM *mpoint = (LWGEOM *)lwcollection_construct(MULTIPOINTTYPE, srid,
+		LWGEOM *mpoint = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, srid,
 			NULL, (uint32_t) ti->count, points);
 		result = geometry_serialize(mpoint);
 		pfree(mpoint);
@@ -3300,118 +3766,189 @@ tpointi_to_geo_measure(TemporalI *ti, TemporalI *measure)
 	return PointerGetDatum(result);
 }
 
-static Datum
-tpointseq_to_geo_measure(TemporalSeq *seq, TemporalSeq *measure)
+static LWGEOM *
+tpointseq_to_geo_measure1(const TemporalSeq *seq, const TemporalSeq *measure)
 {
-	LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+	LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
 	/* Remove two consecutive points if they are equal */
 	TemporalInst *inst = temporalseq_inst_n(seq, 0);
 	TemporalInst *m = temporalseq_inst_n(measure, 0);
 	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-	LWPOINT *value1 = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
-	points[0] = (LWGEOM *) value1;
+	int32 srid = gserialized_get_srid(gs);
+	LWPOINT *value1 = point_measure_to_geo_measure(gs, srid,
+		DatumGetFloat8(temporalinst_value(m)));
+	points[0] = value1;
 	int k = 1;
 	for (int i = 1; i < seq->count; i++)
 	{
 		inst = temporalseq_inst_n(seq, i);
 		m = temporalseq_inst_n(measure, i);
 		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-		LWPOINT *value2 = point_measure_to_geo_measure(gs, DatumGetFloat8(temporalinst_value(m)));
+		LWPOINT *value2 = point_measure_to_geo_measure(gs, srid,
+			DatumGetFloat8(temporalinst_value(m)));
 		if (lwpoint_same(value1, value2) != LW_TRUE)
-			points[k++] = (LWGEOM *) value2;
+			points[k++] = value2;
 		value1 = value2;
 	}
-	GSERIALIZED *result;
-	/* Instantaneous sequence */
+	LWGEOM *result;
 	if (k == 1)
-		result = geometry_serialize(points[0]);
+	{
+		result = (LWGEOM *) points[0];
+		pfree(points);
+	}
 	else
 	{
-		LWGEOM *geom;
-		if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-			geom = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-				(uint32_t) k, points);
-		else
-			geom = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
-				NULL, (uint32_t) k, points);
-		result = geometry_serialize(geom);
-		pfree(geom);
+		result = MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
+			(LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) k,
+				(LWGEOM **) points) :
+			(LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+				points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
+		for (int i = 0; i < k; i++)
+			lwpoint_free(points[i]);
+		pfree(points);
 	}
-
-	for (int i = 0; i < k; i++)
-		pfree(points[i]);
-	pfree(points);
-
-	return PointerGetDatum(result);
-}
-
-static Datum
-tpointseq_to_geo_measure_segmentize(TemporalSeq *seq, TemporalSeq *measure)
-{
-	Datum *segments = palloc(sizeof(Datum) * (seq->count - 1));
-	LWGEOM *points[2];
-	TemporalInst *inst = temporalseq_inst_n(seq, 0);
-	double m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, 0)));
-	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-	points[0] = (LWGEOM *) point_measure_to_geo_measure(gs, m);
-	for (int i = 0; i < seq->count - 1; i++)
-	{
-		inst = temporalseq_inst_n(seq, i + 1);
-		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
-		points[1] = (LWGEOM *) point_measure_to_geo_measure(gs, m);
-		LWGEOM *seg = (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid,
-			2, points);
-		segments[i] = PointerGetDatum(geometry_serialize(seg));
-		// pfree(DatumGetPointer(points[0]));
-		// pfree(DatumGetPointer(points[1]));
-		m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, i + 1)));
-		points[0] =  (LWGEOM *) point_measure_to_geo_measure(gs, m);
-		// pfree(seg);
-	}
-	// pfree(DatumGetPointer(points[0]));
-	Datum result;
-	/* Instantaneous sequence */
-	if (seq->count == 1)
-		result = PointerGetDatum(geometry_serialize(points[0]));
-	else
-	{
-		ArrayType *array = datumarr_to_array(segments, seq->count - 1,
-			seq->valuetypid);
-		/* ST_linemerge is not used to avoid splitting lines at intersections */
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		pfree(array);
-	}
-
-	for (int i = 0; i < seq->count - 1; i++)
-		pfree(DatumGetPointer(segments[i]));
-	pfree(segments);
-
 	return result;
 }
 
 static Datum
-tpoints_to_geo_measure(TemporalS *ts, TemporalS *measure, bool segmentize)
+tpointseq_to_geo_measure(const TemporalSeq *seq, const TemporalSeq *measure)
 {
-	Datum *geoms = palloc(sizeof(Datum) * ts->count);
+	LWGEOM *lwgeom = tpointseq_to_geo_measure1(seq, measure);
+	GSERIALIZED *result = geometry_serialize(lwgeom);
+	return PointerGetDatum(result);
+}
+
+static Datum
+tpoints_to_geo_measure(const TemporalS *ts, const TemporalS *measure)
+{
+	/* Instantaneous sequence */
+	if (ts->count == 1)
+	{
+		TemporalSeq *seq1 = temporals_seq_n(ts, 0);
+		TemporalSeq *seq2 = temporals_seq_n(measure, 0);
+		return tpointseq_to_geo_measure(seq1, seq2);
+	}
+
+	uint8_t colltype = 0;
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
 	for (int i = 0; i < ts->count; i++)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		TemporalSeq *m = temporals_seq_n(measure, i);
-		geoms[i] = segmentize ?
-			tpointseq_to_geo_measure_segmentize(seq, m) :
-			tpointseq_to_geo_measure(seq, m);
+		geoms[i] = tpointseq_to_geo_measure1(seq, m);
+		/* Output type not initialized */
+		if (! colltype)
+			colltype = (uint8_t) lwtype_get_collectiontype(geoms[i]->type);
+		/* Input type not compatible with output */
+		/* make output type a collection */
+		else if (colltype != COLLECTIONTYPE &&
+			lwtype_get_collectiontype(geoms[i]->type) != colltype)
+			colltype = COLLECTIONTYPE;
 	}
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+	Datum result = PointerGetDatum(geometry_serialize(coll));
+	/* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+	pfree(geoms);
+	return result;
+}
+
+/*****************************************************************************/
+
+static int
+tpointseq_to_geo_measure_segmentize1(LWGEOM **result, const TemporalSeq *seq,
+	const TemporalSeq *measure)
+{
+	TemporalInst *inst = temporalseq_inst_n(seq, 0);
+	double m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, 0)));
+	LWPOINT *points[2];
+	GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+	int32 srid = gserialized_get_srid(gs);
+
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+	{
+		result[0] = (LWGEOM *) point_measure_to_geo_measure(gs, srid, m);
+		return 1;
+	}
+
+	/* General case */
+	for (int i = 0; i < seq->count - 1; i++)
+	{
+		points[0] = point_measure_to_geo_measure(gs, srid, m);
+		inst = temporalseq_inst_n(seq, i + 1);
+		gs = (GSERIALIZED *) DatumGetPointer(temporalinst_value_ptr(inst));
+		points[1] = point_measure_to_geo_measure(gs, srid, m);
+		result[i] = (LWGEOM *) lwline_from_lwgeom_array(srid, 2, (LWGEOM **) points);
+		lwpoint_free(points[0]); lwpoint_free(points[1]);
+		m = DatumGetFloat8(temporalinst_value(temporalseq_inst_n(measure, i + 1)));
+	}
+	return seq->count - 1;
+}
+
+static Datum
+tpointseq_to_geo_measure_segmentize(const TemporalSeq *seq, const TemporalSeq *measure)
+{
+	int count = (seq->count == 1) ? 1 : seq->count - 1;
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * count);
+	tpointseq_to_geo_measure_segmentize1(geoms, seq, measure);
 	Datum result;
-	if (ts->count == 1)
-		result = geoms[0];
+	/* Instantaneous sequence */
+	if (seq->count == 1)
+		result = PointerGetDatum(geometry_serialize(geoms[0]));
 	else
 	{
-		ArrayType *array = datumarr_to_array(geoms, ts->count, ts->valuetypid);
-		result = call_function1(LWGEOM_collect_garray, PointerGetDatum(array));
-		for (int i = 0; i < ts->count; i++)
-			pfree(DatumGetPointer(geoms[i]));
-		pfree(array);
+		// TODO add the bounding box instead of ask PostGIS to compute it again
+		// GBOX *box = stbox_to_gbox(temporalseq_bbox_ptr(seq));
+		LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
+			geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
+		result = PointerGetDatum(geometry_serialize(segcoll));
 	}
+	for (int i = 0; i < count; i++)
+		lwgeom_free(geoms[i]);
+	pfree(geoms);
+	return result;
+}
+
+static Datum
+tpoints_to_geo_measure_segmentize(const TemporalS *ts, const TemporalS *measure)
+{
+	/* Instantaneous sequence */
+	if (ts->count == 1)
+	{
+		TemporalSeq *seq1 = temporals_seq_n(ts, 0);
+		TemporalSeq *seq2 = temporals_seq_n(measure, 0);
+		return tpointseq_to_geo_measure_segmentize(seq1, seq2);
+	}
+
+	uint8_t colltype = 0;
+	LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->totalcount);
+	int k = 0;
+	for (int i = 0; i < ts->count; i++)
+	{
+
+		TemporalSeq *seq = temporals_seq_n(ts, i);
+		TemporalSeq *m = temporals_seq_n(measure, i);
+		k += tpointseq_to_geo_measure_segmentize1(&geoms[k], seq, m);
+		/* Output type not initialized */
+		if (! colltype)
+			colltype = (uint8_t) lwtype_get_collectiontype(geoms[k - 1]->type);
+			/* Input type not compatible with output */
+			/* make output type a collection */
+		else if (colltype != COLLECTIONTYPE &&
+				 lwtype_get_collectiontype(geoms[k - 1]->type) != colltype)
+			colltype = COLLECTIONTYPE;
+	}
+	Datum result;
+	// TODO add the bounding box instead of ask PostGIS to compute it again
+	// GBOX *box = stbox_to_gbox(temporals_bbox_ptr(seq));
+	LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
+		geoms[0]->srid, NULL, (uint32_t) k, geoms);
+	result = PointerGetDatum(geometry_serialize(coll));
+	for (int i = 0; i < k; i++)
+		lwgeom_free(geoms[i]);
 	pfree(geoms);
 	return result;
 }
@@ -3428,6 +3965,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 	bool segmentize = PG_GETARG_BOOL(2);
 	ensure_point_base_type(tpoint->valuetypid);
 	ensure_numeric_base_type(measure->valuetypid);
+
 	Temporal *sync1, *sync2;
 	/* Return false if the temporal values do not intersect in time
 	   The last parameter crossing must be set to false  */
@@ -3453,8 +3991,11 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 			(Temporal *) tpointseq_to_geo_measure(
 				(TemporalSeq *) sync1, (TemporalSeq *) sync2);
 	else /* sync1->duration == TEMPORALS */
-		result = (Temporal *) tpoints_to_geo_measure(
-				(TemporalS *) sync1, (TemporalS *) sync2, segmentize);
+		result = segmentize ?
+			(Temporal *) tpoints_to_geo_measure_segmentize(
+					(TemporalS *) sync1, (TemporalS *) sync2) :
+			(Temporal *) tpoints_to_geo_measure(
+				(TemporalS *) sync1, (TemporalS *) sync2);
 
 	pfree(sync1); pfree(sync2);
 	PG_FREE_IF_COPY(tpoint, 0);
@@ -3712,7 +4253,7 @@ tpointseq_dp_findsplit(const TemporalSeq *seq, int p1, int p2, bool withspeed,
 	{
 		Datum (*func)(Datum, Datum);
 		if (withspeed)
-			func = hasz ? &geom_distance3d : &geom_distance2d;
+			func = hasz ? &pt_distance3d : &pt_distance2d;
 		TemporalInst *inst1 = temporalseq_inst_n(seq, p1);
 		TemporalInst *inst2 = temporalseq_inst_n(seq, p2);
 		if (withspeed)
@@ -3858,7 +4399,8 @@ tpointseq_simplify(const TemporalSeq *seq, double eps_dist, double eps_speed, ui
 	for (i = 0; i < outn; i++)
 		instants[i] = temporalseq_inst_n(seq, outlist[i]);
 	TemporalSeq *result = temporalseq_make(instants, outn,
-		seq->period.lower_inc, seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
+		seq->period.lower_inc, seq->period.upper_inc,
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 	pfree(instants);
 
 	/* Only free if arrays are on heap */
@@ -3879,7 +4421,7 @@ tpoints_simplify(const TemporalS *ts, double eps_dist, double eps_speed, uint32_
 	if (ts->count == 1)
 	{
 		seq = tpointseq_simplify(temporals_seq_n(ts, 0), eps_dist, eps_speed, minpts);
-		result = temporals_make(&seq, 1, false);
+		result = temporalseq_to_temporals(seq);
 		pfree(seq);
 		return result;
 	}

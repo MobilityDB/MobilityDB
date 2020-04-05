@@ -122,7 +122,7 @@ compareDoubles(const void *a, const void *b)
  * corner of the box. This makes 256 octants in total.
  */
 static uint8
-getOctant8D(STBOX *centroid, STBOX *inBox)
+getOctant8D(const STBOX *centroid, const STBOX *inBox)
 {
 	uint8 octant = 0;
 
@@ -160,9 +160,9 @@ getOctant8D(STBOX *centroid, STBOX *inBox)
  * initialize the struct to cover the whole 8D space.
  */
 static CubeSTbox *
-initCubeSTbox(void)
+initCubeSTbox(STBOX *centroid)
 {
-	CubeSTbox *cube_stbox = (CubeSTbox *) palloc(sizeof(CubeSTbox));
+	CubeSTbox *cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 	double infinity = get_float8_infinity();
 
 	cube_stbox->left.xmin = cube_stbox->right.xmin = -infinity;
@@ -177,6 +177,9 @@ initCubeSTbox(void)
 	cube_stbox->left.tmin = cube_stbox->right.tmin = DT_NOBEGIN;
 	cube_stbox->left.tmax = cube_stbox->right.tmax = DT_NOEND;
 
+	cube_stbox->left.srid = cube_stbox->right.srid = centroid->srid;
+	cube_stbox->left.flags = cube_stbox->right.flags = centroid->flags;
+
 	return cube_stbox;
 }
 
@@ -188,9 +191,9 @@ initCubeSTbox(void)
  * using centroid and octant.
  */
 static CubeSTbox *
-nextCubeSTbox(CubeSTbox *cube_stbox, STBOX *centroid, uint8 octant)
+nextCubeSTbox(const CubeSTbox *cube_stbox, const STBOX *centroid, uint8 octant)
 {
-	CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc(sizeof(CubeSTbox));
+	CubeSTbox *next_cube_stbox = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
 
 	memcpy(next_cube_stbox, cube_stbox, sizeof(CubeSTbox));
 
@@ -214,15 +217,18 @@ nextCubeSTbox(CubeSTbox *cube_stbox, STBOX *centroid, uint8 octant)
 	else
 		next_cube_stbox->right.ymax = centroid->ymax;
 
-	if (octant & 0x08)
-		next_cube_stbox->left.zmin = centroid->zmin;
-	else
-		next_cube_stbox->left.zmax = centroid->zmin;
+	if (MOBDB_FLAGS_GET_Z(centroid->flags))
+	{
+		if (octant & 0x08)
+			next_cube_stbox->left.zmin = centroid->zmin;
+		else
+			next_cube_stbox->left.zmax = centroid->zmin;
 
-	if (octant & 0x04)
-		next_cube_stbox->right.zmin = centroid->zmax;
-	else
-		next_cube_stbox->right.zmax = centroid->zmax;
+		if (octant & 0x04)
+			next_cube_stbox->right.zmin = centroid->zmax;
+		else
+			next_cube_stbox->right.zmax = centroid->zmax;
+	}
 
 	if (octant & 0x02)
 		next_cube_stbox->left.tmin = centroid->tmin;
@@ -239,7 +245,7 @@ nextCubeSTbox(CubeSTbox *cube_stbox, STBOX *centroid, uint8 octant)
 
 /* Can any cube from cube_stbox overlap with query? */
 static bool
-overlap8D(CubeSTbox *cube_stbox, STBOX *query)
+overlap8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	bool result = true;
 	/* Result value is computed only for the dimensions of the query */
@@ -259,7 +265,7 @@ overlap8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox contain query? */
 static bool
-contain8D(CubeSTbox *cube_stbox, STBOX *query)
+contain8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	bool result = true;
 	/* Result value is computed only for the dimensions of the query */
@@ -279,56 +285,56 @@ contain8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox be left of query? */
 static bool
-left8D(CubeSTbox *cube_stbox, STBOX *query)
+left8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.xmax < query->xmin);
 }
 
 /* Can any cube from cube_stbox does not extend the right of query? */
 static bool
-overLeft8D(CubeSTbox *cube_stbox, STBOX *query)
+overLeft8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.xmax <= query->xmax);
 }
 
 /* Can any cube from cube_stbox be right of query? */
 static bool
-right8D(CubeSTbox *cube_stbox, STBOX *query)
+right8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin > query->xmax);
 }
 
 /* Can any cube from cube_stbox does not extend the left of query? */
 static bool
-overRight8D(CubeSTbox *cube_stbox, STBOX *query)
+overRight8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.xmin >= query->xmin);
 }
 
 /* Can any cube from cube_stbox be below of query? */
 static bool
-below8D(CubeSTbox *cube_stbox, STBOX *query)
+below8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.ymax < query->ymin);
 }
 
 /* Can any cube from cube_stbox does not extend above query? */
 static bool
-overBelow8D(CubeSTbox *cube_stbox, STBOX *query)
+overBelow8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.ymax <= query->ymax);
 }
 
 /* Can any cube from cube_stbox be above of query? */
 static bool
-above8D(CubeSTbox *cube_stbox, STBOX *query)
+above8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin > query->ymax);
 }
 
 /* Can any cube from cube_stbox does not extend below of query? */
 static bool
-overAbove8D(CubeSTbox *cube_stbox, STBOX *query)
+overAbove8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.ymin >= query->ymin);
 }
@@ -342,49 +348,49 @@ front8D(CubeSTbox *cube_stbox, STBOX *query)
 
 /* Can any cube from cube_stbox does not extend the back of query? */
 static bool
-overFront8D(CubeSTbox *cube_stbox, STBOX *query)
+overFront8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.zmax <= query->zmax);
 }
 
 /* Can any cube from cube_stbox be back to query? */
 static bool
-back8D(CubeSTbox *cube_stbox, STBOX *query)
+back8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin > query->zmax);
 }
 
 /* Can any cube from cube_stbox does not extend the front of query? */
 static bool
-overBack8D(CubeSTbox *cube_stbox, STBOX *query)
+overBack8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.zmin >= query->zmin);
 }
 
 /* Can any cube from cube_stbox be before of query? */
 static bool
-before8D(CubeSTbox *cube_stbox, STBOX *query)
+before8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.tmax < query->tmin);
 }
 
 /* Can any cube from cube_stbox does not extend the after of query? */
 static bool
-overBefore8D(CubeSTbox *cube_stbox, STBOX *query)
+overBefore8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->right.tmax <= query->tmax);
 }
 
 /* Can any cube from cube_stbox be after of query? */
 static bool
-after8D(CubeSTbox *cube_stbox, STBOX *query)
+after8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.tmin > query->tmax);
 }
 
 /* Can any cube from cube_stbox does not extend the before of query? */
 static bool
-overAfter8D(CubeSTbox *cube_stbox, STBOX *query)
+overAfter8D(const CubeSTbox *cube_stbox, const STBOX *query)
 {
 	return (cube_stbox->left.tmin >= query->tmin);
 }
@@ -448,28 +454,40 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 {
 	spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
 	spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-	STBOX *centroid;
+	STBOX *box = DatumGetSTboxP(in->datums[0]);
+	bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+	STBOX *	centroid = palloc0(sizeof(STBOX));
+	centroid->srid = box->srid;
+	centroid->flags = box->flags;
 	int	median, i;
 	double *lowXs = palloc(sizeof(double) * in->nTuples);
 	double *highXs = palloc(sizeof(double) * in->nTuples);
 	double *lowYs = palloc(sizeof(double) * in->nTuples);
 	double *highYs = palloc(sizeof(double) * in->nTuples);
-	double *lowZs = palloc(sizeof(double) * in->nTuples);
-	double *highZs = palloc(sizeof(double) * in->nTuples);
+	double *lowZs;
+	double *highZs;
+	if (hasz)
+	{
+		lowZs = palloc(sizeof(double) * in->nTuples);
+		highZs = palloc(sizeof(double) * in->nTuples);
+	}
 	double *lowTs = palloc(sizeof(double) * in->nTuples);
 	double *highTs = palloc(sizeof(double) * in->nTuples);
 	
 	/* Calculate median of all 8D coordinates */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		STBOX *box = DatumGetSTboxP(in->datums[i]);
+		box = DatumGetSTboxP(in->datums[i]);
 
 		lowXs[i] = box->xmin;
 		highXs[i] = box->xmax;
 		lowYs[i] = box->ymin;
 		highYs[i] = box->ymax;
-		lowZs[i] = box->zmin;
-		highZs[i] = box->zmax;
+		if (hasz)
+		{
+			lowZs[i] = box->zmin;
+			highZs[i] = box->zmax;
+		}
 		lowTs[i] = (double) box->tmin;
 		highTs[i] = (double) box->tmax;
 	}
@@ -478,21 +496,25 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 	qsort(highXs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(highYs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
-	qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	if (hasz)
+	{
+		qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+		qsort(highZs, (size_t) in->nTuples, sizeof(double), compareDoubles);
+	}
 	qsort(lowTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 	qsort(highTs, (size_t) in->nTuples, sizeof(double), compareDoubles);
 
 	median = in->nTuples / 2;
 
-	centroid = palloc0(sizeof(STBOX));
-
 	centroid->xmin = lowXs[median];
 	centroid->xmax = highXs[median];
 	centroid->ymin = lowYs[median];
 	centroid->ymax = highYs[median];
-	centroid->zmin = lowZs[median];
-	centroid->zmax = highZs[median];
+	if (hasz)
+	{
+		centroid->zmin = lowZs[median];
+		centroid->zmax = highZs[median];
+	}
 	centroid->tmin = (TimestampTz) lowTs[median];
 	centroid->tmax = (TimestampTz) highTs[median];
 
@@ -512,7 +534,7 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 	 */
 	for (i = 0; i < in->nTuples; i++)
 	{
-		STBOX *box = DatumGetSTboxP(in->datums[i]);
+		box = DatumGetSTboxP(in->datums[i]);
 		uint8 octant = getOctant8D(centroid, box);
 		out->leafTupleDatums[i] = STboxPGetDatum(box);
 		out->mapTuplesToNodes[i] = octant;
@@ -520,7 +542,10 @@ spgist_stbox_picksplit(PG_FUNCTION_ARGS)
 
 	pfree(lowXs); pfree(highXs);
 	pfree(lowYs); pfree(highYs);
-	pfree(lowZs); pfree(highZs);
+	if (hasz)
+	{
+		pfree(lowZs); pfree(highZs);
+	}
 	pfree(lowTs); pfree(highTs);
 	
 	PG_RETURN_VOID();
@@ -561,7 +586,7 @@ spgist_stbox_inner_consistent(PG_FUNCTION_ARGS)
 	if (in->traversalValue)
 		cube_stbox = in->traversalValue;
 	else
-		cube_stbox = initCubeSTbox();
+		cube_stbox = initCubeSTbox(centroid);
 
 	/*
 	 * Transform the queries into bounding boxes initializing the dimensions

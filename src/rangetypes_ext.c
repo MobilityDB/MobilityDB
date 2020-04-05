@@ -26,7 +26,7 @@
 /* Convert the range into a string, used in debugging */ 
 
 const char *
-range_to_string(RangeType *range) 
+range_to_string(const RangeType *range)
 {
 	return call_output(range->rangetypid, PointerGetDatum(range));
 }
@@ -34,7 +34,7 @@ range_to_string(RangeType *range)
 /* Get the lower bound of the range */ 
 
 Datum
-lower_datum(RangeType *range)
+lower_datum(const RangeType *range)
 {
 	return call_function1(range_lower, PointerGetDatum(range));
 }
@@ -42,7 +42,7 @@ lower_datum(RangeType *range)
 /* Get the upper bound of the range */ 
 
 Datum
-upper_datum(RangeType *range)
+upper_datum(const RangeType *range)
 {
 	Datum upper = call_function1(range_upper, PointerGetDatum(range));
 	/* intranges are in canonical form so their upper bound is exclusive */
