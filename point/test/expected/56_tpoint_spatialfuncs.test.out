@@ -4196,7 +4196,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Po
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint 'Point(2 2)@2000-01-01'));
       st_astext      
 ---------------------
- LINESTRING(1 1,1 1)
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', tgeompoint 'Point(2 2)@2000-01-01'));
@@ -4214,7 +4214,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@20
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
       st_astext      
 ---------------------
- LINESTRING(2 2,2 2)
+ LINESTRING(1 1,2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}'));
@@ -4292,7 +4292,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(2 2 2)@2000-01-01'));
          st_astext          
 ----------------------------
- LINESTRING Z (1 1 1,1 1 1)
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', tgeompoint 'Point(2 2 2)@2000-01-01'));
@@ -4310,7 +4310,7 @@ SELECT ST_AsTexT(ShortestLine(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2
 SELECT ST_AsTexT(ShortestLine(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
          st_astext          
 ----------------------------
- LINESTRING Z (2 2 2,2 2 2)
+ LINESTRING Z (1 1 1,2 2 2)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint '{Point(2 2 2)@2000-01-01, Point(1 1 1)@2000-01-02, Point(2 2 2)@2000-01-03}'));
@@ -4388,7 +4388,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5)@2000-01-01'));
           st_astext          
 -----------------------------
- LINESTRING(1.5 1.5,1.5 1.5)
+ LINESTRING(1.5 1.5,2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5)@2000-01-01'));
@@ -4406,7 +4406,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'));
           st_astext          
 -----------------------------
- LINESTRING(2.5 2.5,2.5 2.5)
+ LINESTRING(1.5 1.5,2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5)@2000-01-01, Point(1.5 1.5)@2000-01-02, Point(2.5 2.5)@2000-01-03}'));
@@ -4484,7 +4484,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogp
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'));
                st_astext                
 ----------------------------------------
- LINESTRING Z (1.5 1.5 1.5,1.5 1.5 1.5)
+ LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint 'Point(2.5 2.5 2.5)@2000-01-01'));
@@ -4502,7 +4502,7 @@ SELECT ST_AsTexT(ShortestLine(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point
 SELECT ST_AsTexT(ShortestLine(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'));
                st_astext                
 ----------------------------------------
- LINESTRING Z (2.5 2.5 2.5,2.5 2.5 2.5)
+ LINESTRING Z (1.5 1.5 1.5,2.5 2.5 2.5)
 (1 row)
 
 SELECT ST_AsTexT(ShortestLine(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03}'));

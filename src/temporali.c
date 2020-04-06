@@ -486,7 +486,7 @@ intersection_temporali_temporalinst(const TemporalI *ti, const TemporalInst *ins
 		return false;
 	
 	*inter1 = inst1;
-	*inter2 = temporalinst_copy(inst1);
+	*inter2 = temporalinst_copy(inst);
 	return true;
 }
 
