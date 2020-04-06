@@ -121,6 +121,9 @@ extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 
 extern TemporalSeq **tpointseq_at_geometry2(const TemporalSeq *seq, Datum geo, int *count);
 
+extern Temporal *tpoint_at_geometry_internal(Temporal *temp, GSERIALIZED *gs);
+extern Temporal *tpoint_minus_geometry_internal(Temporal *temp, GSERIALIZED *gs);
+
 /* Nearest approach functions */
 
 extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);

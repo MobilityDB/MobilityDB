@@ -2353,21 +2353,11 @@ tpoints_at_geometry(const TemporalS *ts, GSERIALIZED *gs, const STBOX *box2)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_at_geometry);
-
-PGDLLEXPORT Datum
-tpoint_at_geometry(PG_FUNCTION_ARGS)
+/* This function assumes that the arguments are of the same dimensionality,
+ * have the same SRID, and that the geometry is not empty */
+Temporal *
+tpoint_at_geometry_internal(Temporal *temp, GSERIALIZED *gs)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
-	if (gserialized_is_empty(gs))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
@@ -2376,11 +2366,7 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 	/* Non-empty geometries have a bounding box */
 	assert(geo_to_stbox_internal(&box2, gs));
 	if (!overlaps_stbox_stbox_internal(&box1, &box2))
-	{
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_NULL();
-	}
+		return NULL;
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -2396,6 +2382,25 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tpoints_at_geometry((TemporalS *)temp, gs, &box2);
 
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_at_geometry);
+
+PGDLLEXPORT Datum
+tpoint_at_geometry(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	if (gserialized_is_empty(gs))
+	{
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_NULL();
+	}
+	Temporal *result = tpoint_at_geometry_internal(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
@@ -2543,34 +2548,20 @@ tpoints_minus_geometry(const TemporalS *ts, GSERIALIZED *gs, STBOX *box2)
 	return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
-
-PGDLLEXPORT Datum
-tpoint_minus_geometry(PG_FUNCTION_ARGS)
+/* This function assumes that the arguments are of the same dimensionality,
+ * have the same SRID, and that the geometry is not empty */
+Temporal *
+tpoint_minus_geometry_internal(Temporal *temp, GSERIALIZED *gs)
 {
-	Temporal *temp = PG_GETARG_TEMPORAL(0);
-	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-	ensure_same_srid_tpoint_gs(temp, gs);
-	ensure_same_dimensionality_tpoint_gs(temp, gs);
 	/* Bounding box test */
 	STBOX box1, box2;
 	memset(&box1, 0, sizeof(STBOX));
 	memset(&box2, 0, sizeof(STBOX));
-	if (!geo_to_stbox_internal(&box2, gs))
-	{
-		Temporal *copy = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(copy);
-	}
 	temporal_bbox(&box1, temp);
+	/* Non-empty geometries have a bounding box */
+	assert(geo_to_stbox_internal(&box2, gs));
 	if (!overlaps_stbox_stbox_internal(&box1, &box2))
-	{
-		Temporal *copy = temporal_copy(temp);
-		PG_FREE_IF_COPY(temp, 0);
-		PG_FREE_IF_COPY(gs, 1);
-		PG_RETURN_POINTER(copy);
-	}
+		return temporal_copy(temp);
 
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
@@ -2586,6 +2577,27 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)tpoints_minus_geometry((TemporalS *)temp, gs, &box2);
 
+	return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
+
+PGDLLEXPORT Datum
+tpoint_minus_geometry(PG_FUNCTION_ARGS)
+{
+	Temporal *temp = PG_GETARG_TEMPORAL(0);
+	GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+	ensure_same_srid_tpoint_gs(temp, gs);
+	ensure_same_dimensionality_tpoint_gs(temp, gs);
+	if (gserialized_is_empty(gs))
+	{
+		Temporal *copy = temporal_copy(temp);
+		PG_FREE_IF_COPY(temp, 0);
+		PG_FREE_IF_COPY(gs, 1);
+		PG_RETURN_POINTER(copy);
+	}
+
+	Temporal *result = tpoint_minus_geometry_internal(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	if (result == NULL)
