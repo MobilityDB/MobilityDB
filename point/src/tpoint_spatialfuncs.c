@@ -2855,6 +2855,8 @@ NAI_tpoints_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 	return result;
 }
 
+/*****************************************************************************/
+
 TemporalInst *
 NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
@@ -2880,9 +2882,6 @@ NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 
 	return result;
 }
-
-
-/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
 
