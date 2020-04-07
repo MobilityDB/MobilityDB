@@ -2855,6 +2855,33 @@ NAI_tpoints_geo(const TemporalS *ts, Datum geo, Datum (*func)(Datum, Datum))
 	return result;
 }
 
+TemporalInst *
+NAI_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+{
+	Datum (*func)(Datum, Datum);
+	ensure_point_base_type(temp->valuetypid);
+	if (temp->valuetypid == type_oid(T_GEOMETRY))
+		func = &geom_distance2d;
+	else
+		func = &geog_distance;
+	TemporalInst *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = temporalinst_copy((TemporalInst *)temp);
+	else if (temp->duration == TEMPORALI)
+		result = NAI_tpointi_geo((TemporalI *)temp,
+			PointerGetDatum(gs), func);
+	else if (temp->duration == TEMPORALSEQ)
+		result = NAI_tpointseq_geo((TemporalSeq *)temp,
+			PointerGetDatum(gs), func);
+	else /* temp->duration == TEMPORALS */
+		result = NAI_tpoints_geo((TemporalS *)temp,
+			PointerGetDatum(gs), func);
+
+	return result;
+}
+
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
@@ -2879,26 +2906,7 @@ NAI_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_distance2d;
-	else
-		func = &geog_distance;
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
-	
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -2926,25 +2934,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_distance2d;
-	else
-		func = &geog_distance;
-	Temporal *result;
-	if (temp->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_copy((TemporalInst *)temp);
-	else if (temp->duration == TEMPORALI)
-		result = (Temporal *)NAI_tpointi_geo((TemporalI *)temp,
-			PointerGetDatum(gs), func);
-	else if (temp->duration == TEMPORALSEQ)
-		result = (Temporal *)NAI_tpointseq_geo((TemporalSeq *)temp,
-			PointerGetDatum(gs), func);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)NAI_tpoints_geo((TemporalS *)temp,
-			PointerGetDatum(gs), func);
-	
+	TemporalInst *result = NAI_tpoint_geo_internal(temp, gs);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
