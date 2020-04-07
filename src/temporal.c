@@ -3060,20 +3060,7 @@ temporal_at_periodset(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_at_periodset(
-			(TemporalInst *)temp, ps);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_periodset(
-			(TemporalI *)temp, ps);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_at_periodset(
-			(TemporalSeq *)temp, ps);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_at_periodset(
-			(TemporalS *)temp, ps);
+	Temporal *result = temporal_at_periodset_internal(temp, ps);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ps, 1);
 	if (result == NULL)
