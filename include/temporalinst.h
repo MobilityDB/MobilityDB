@@ -39,9 +39,10 @@ extern TemporalInst *temporalinst_read(StringInfo buf, Oid valuetypid);
 extern bool intersection_temporalinst_temporalinst(const TemporalInst *inst1, const TemporalInst *inst2,
 	TemporalInst **inter1, TemporalInst **inter2);
 
-/* Append function */
+/* Append and merge functions */
 
 extern TemporalI *temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2);
+extern TemporalInst *temporalinst_merge(const TemporalInst *inst1, const TemporalInst *inst2);
 
 /* Cast functions */
 

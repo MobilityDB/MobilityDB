@@ -439,7 +439,11 @@ temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bo
 /*
  * Normalize an array of temporal sequences values. 
  * It is supposed that each individual sequence is already normalized.
- * The sequences may be non-contiguous but must ordered and non-overlapping.
+ * The sequences may be non-contiguous but must ordered and either
+ * (1) are non-overlapping, or (2) share the same last/first instant
+ * in the case we are merging temporal sequences. The test whether
+ * the value is the same at the common instant should be ensured by
+ * the calling function.
  * The function creates new sequences and does not free the original sequences.
  */
 TemporalSeq **
@@ -688,7 +692,6 @@ temporalseq_from_base(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
-
 /* Append a TemporalInst to a TemporalSeq */
 
 TemporalSeq *
@@ -837,15 +840,23 @@ temporalseq_append(const TemporalSeq *seq1, const TemporalSeq *seq2)
 		if (! datum_eq(temporalinst_value(inst1), temporalinst_value(inst2), inst1->valuetypid))
 			ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
 				errmsg("The temporal values have different value at their overlapping instant")));
-		else
-			/* Result is a TemporalSeq */
-			return (Temporal *) temporalseq_join(seq1, seq2, true, false);
+		/* Result is a TemporalSeq */
+		TemporalSeq *seq1copy = temporalseq_copy(seq1);
+		period_set(&seq1copy->period, seq1->period.lower, seq1->period.upper,
+			seq1->period.lower_inc,	false);
+		const TemporalSeq *sequences[] = {seq1copy, seq2};
+		/* Result is a TemporalS */
+		int newcount;
+		TemporalSeq **resultarr = temporalseqarr_normalize((TemporalSeq **) sequences, 2, &newcount);
+		assert(newcount == 1);
+		pfree(seq1copy);
+		return (Temporal *)(resultarr[0]);
 	}
 	else
 	{
 		const TemporalSeq *sequences[] = {seq1, seq2};
 		/* Result is a TemporalS */
-		return (Temporal *) temporals_make((TemporalSeq **)sequences, 2, false);
+		return (Temporal *) temporals_make((TemporalSeq **)sequences, 2, true);
 	}
 }
 
@@ -917,6 +928,63 @@ temporalseq_append_array(TemporalSeq **seqs, int count)
 	pfree(sequences);
 	pfree(countinst);
 	return result;
+}
+
+/* Merge two temporal values */
+
+Temporal *
+temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2)
+{
+	/* Test the validity of both temporal values */
+	assert(seq1->valuetypid == seq2->valuetypid);
+	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+	bool isgeo = (seq1->valuetypid == type_oid(T_GEOMETRY) ||
+		seq1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		assert(MOBDB_FLAGS_GET_GEODETIC(seq1->flags) == MOBDB_FLAGS_GET_GEODETIC(seq2->flags));
+		ensure_same_srid_tpoint((Temporal *)seq1, (Temporal *)seq2);
+		ensure_same_dimensionality_tpoint((Temporal *)seq1, (Temporal *)seq2);
+	}
+	TemporalInst *inst1 = temporalseq_inst_n(seq1, 0);
+	TemporalInst *inst2 = temporalseq_inst_n(seq2, 0);
+	int lower_cmp = temporalinst_cmp(inst1, inst2);
+	if (lower_cmp == 0 && seq1->period.lower_inc != seq2->period.lower_inc)
+		elog(ERROR, "The temporal sequences have different lower bound flag");
+	inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
+	inst2 = temporalseq_inst_n(seq2, seq2->count - 1);
+	int upper_cmp = temporalinst_cmp(inst1, inst2);
+	if (upper_cmp == 0 && seq1->period.upper_inc != seq2->period.upper_inc)
+		elog(ERROR, "The temporal sequences have different upper bound flag");
+
+	/* Stepwise interpolation */
+	if (! MOBDB_FLAGS_GET_LINEAR(seq1->flags))
+	{
+		int count = seq1->count + seq2->count;
+		TemporalInst **instants = palloc0(sizeof(TemporalInst *) * count);
+		int k = 0;
+		for (int i = 0; i < seq1->count; i++)
+			instants[k++] = temporalseq_inst_n(seq1, i);
+		for (int i = 0; i < seq2->count; i++)
+			instants[k++] = temporalseq_inst_n(seq2, i);
+		temporalinstarr_sort(instants, count);
+		int newcount = temporalinstarr_remove_duplicates(instants, count);
+		bool lower_inc = lower_cmp == 0 ? seq1->period.lower_inc :
+			( lower_cmp == -1 ? seq1->period.lower_inc : seq2->period.lower_inc);
+		bool upper_inc = upper_cmp == 0 ? seq1->period.lower_inc :
+			( upper_cmp == -1 ? seq1->period.lower_inc : seq2->period.lower_inc);
+		TemporalSeq *result = temporalseq_make(instants, newcount, lower_inc,
+			upper_inc, false, true);
+		pfree(instants);
+		return (Temporal *) result;
+	}
+	/* Linear interpolation */
+	int cmp = temporalseq_cmp(seq1, seq2);
+	if (cmp == 0)
+		return (Temporal *) temporalseq_copy(seq1);
+	if (cmp == -1)
+		return temporalseq_append(seq1, seq2);
+	return temporalseq_append(seq2, seq1);
 }
 
 /* Copy a temporal sequence */
@@ -1786,8 +1854,8 @@ temporalseq_values1(const TemporalSeq *seq, int *count)
 	Datum *result = palloc(sizeof(Datum *) * seq->count);
 	for (int i = 0; i < seq->count; i++)
 		result[i] = temporalinst_value(temporalseq_inst_n(seq, i));
-	datum_sort(result, seq->count, seq->valuetypid);
-	*count = datum_remove_duplicates(result, seq->count, seq->valuetypid);
+	datumarr_sort(result, seq->count, seq->valuetypid);
+	*count = datumarr_remove_duplicates(result, seq->count, seq->valuetypid);
 	return result;
 }
 

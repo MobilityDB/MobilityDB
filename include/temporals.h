@@ -67,11 +67,12 @@ extern TemporalS *temporals_from_base_internal(Datum value, Oid valuetypid, cons
 
 extern Datum temporals_from_base(PG_FUNCTION_ARGS);
 
-/* Append functions */
+/* Append and merge functions */
 
 extern TemporalS *temporals_append_instant(const TemporalS *ts, const TemporalInst *inst);
 extern TemporalS *temporals_append(const TemporalS *ts1, const TemporalS *ts2);
 extern TemporalS *temporals_append_array(TemporalS **ts, int count);
+extern Temporal *temporals_merge(const TemporalS *ts1, const TemporalS *ts2);
 
 /* Cast functions */
 

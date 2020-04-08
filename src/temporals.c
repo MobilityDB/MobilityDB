@@ -458,6 +458,48 @@ temporals_append_array(TemporalS **ts, int count)
 	return result;
 }
 
+/* Merge two temporal values */
+
+Temporal *
+temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
+{
+	/* Test the validity of both temporal values */
+	assert(ts1->valuetypid == ts2->valuetypid);
+	assert(MOBDB_FLAGS_GET_LINEAR(ts1->flags) == MOBDB_FLAGS_GET_LINEAR(ts2->flags));
+	bool isgeo = (ts1->valuetypid == type_oid(T_GEOMETRY) ||
+		ts1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		assert(MOBDB_FLAGS_GET_GEODETIC(ts1->flags) == MOBDB_FLAGS_GET_GEODETIC(ts2->flags));
+		ensure_same_srid_tpoint((Temporal *)ts1, (Temporal *)ts2);
+		ensure_same_dimensionality_tpoint((Temporal *)ts1, (Temporal *)ts2);
+	}
+
+	/* Singleton sequence sets */
+	if (ts1->count == 1 && ts2->count ==1)
+		return (Temporal *) temporalseq_merge(temporals_seq_n(ts1, 0), temporals_seq_n(ts2, 0));
+
+	/* General case */
+	int count = ts1->count + ts2->count;
+	TemporalSeq **sequences = palloc0(sizeof(TemporalSeq *) * count);
+	int k = 0;
+	for (int i = 0; i < ts1->count; i++)
+		sequences[k++] = temporals_seq_n(ts1, i);
+	for (int i = 0; i < ts2->count; i++)
+		sequences[k++] = temporals_seq_n(ts2, i);
+	temporalseqarr_sort(sequences, count);
+	int count1 = temporalseqarr_remove_duplicates(sequences, count);
+	int count2;
+	TemporalSeq **normseqs = temporalseqarr_normalize(sequences, count1, &count2);
+	TemporalS *result = temporals_make(normseqs, count2,
+		MOBDB_FLAGS_GET_LINEAR(ts1->flags));
+	for (int i = 0; i < count2; i++)
+		pfree(normseqs[i]);
+	pfree(normseqs);
+	pfree(sequences);
+	return (Temporal *) result;
+}
+
 /* Copy a TemporalS */
 TemporalS *
 temporals_copy(const TemporalS *ts)
@@ -1021,8 +1063,8 @@ temporals_values1(const TemporalS *ts, int *count)
 		for (int j = 0; j < seq->count; j++)
 			result[k++] = temporalinst_value(temporalseq_inst_n(seq, j));
 	}
-	datum_sort(result, k, ts->valuetypid);
-	*count = datum_remove_duplicates(result, k, ts->valuetypid);
+	datumarr_sort(result, k, ts->valuetypid);
+	*count = datumarr_remove_duplicates(result, k, ts->valuetypid);
 	return result;
 }
 
@@ -1263,19 +1305,6 @@ temporals_instant_n(const TemporalS *ts, int n)
 	return next;
 }
 
-/* Distinct instants */
-
-static int
-temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
-{
-	assert(count != 0);
-	int newcount = 0;
-	for (int i = 1; i < count; i++) 
-		if (! temporalinst_eq(instants[newcount], instants[i]))
-			instants[++ newcount] = instants[i];
-	return newcount + 1;
-}
-
 ArrayType *
 temporals_instants_array(const TemporalS *ts)
 {
@@ -1403,8 +1432,8 @@ temporals_timestamps1(const TemporalS *ts, int *count)
 			result[k++] = times[i][j];
 		pfree(times[i]);
 	}
-	timestamp_sort(result, totaltimes);
-	totaltimes = timestamp_remove_duplicates(result, totaltimes);
+	timestamparr_sort(result, totaltimes);
+	totaltimes = timestamparr_remove_duplicates(result, totaltimes);
 	
 	pfree(times); pfree(counttimes);
 	
@@ -1928,17 +1957,6 @@ tnumbers_minus_ranges(const TemporalS *ts, RangeType **ranges, int count)
 }
 
 /* Restriction to the minimum value */
-
-static int
-temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
-{
-	assert(count != 0);
-	int newcount = 0;
-	for (int i = 1; i < count; i++) 
-		if (! temporalseq_eq(sequences[newcount], sequences[i]))
-			sequences[++ newcount] = sequences[i];
-	return newcount + 1;
-}
 
 static TemporalS *
 temporals_at_minmax(const TemporalS *ts, Datum value)

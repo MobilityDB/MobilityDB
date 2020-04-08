@@ -1097,6 +1097,60 @@ temporal_append_array(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Merge function */
+
+PG_FUNCTION_INFO_V1(temporal_merge);
+
+PGDLLEXPORT Datum
+temporal_merge(PG_FUNCTION_ARGS)
+{
+	Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
+	Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+
+	Temporal *result;
+	/* Can't do anything with null inputs */
+	if (!temp1 && !temp2)
+		PG_RETURN_NULL();
+	/* One argument is null, return a copy of the other temporal */
+	if (!temp1)
+	{
+		result = temporal_copy(temp2);
+		PG_FREE_IF_COPY(temp2, 1);
+		PG_RETURN_POINTER(result);
+	}
+	/* Non-null period and null temporal, return the period */
+	if (!temp2)
+	{
+		result = temporal_copy(temp1);
+		PG_FREE_IF_COPY(temp1, 0);
+		PG_RETURN_POINTER(result);
+	}
+
+	/* Both arguments are temporal */
+	ensure_same_base_type(temp1, temp2);
+	ensure_same_duration(temp1, temp2);
+	ensure_same_interpolation(temp1, temp2);
+
+	ensure_valid_duration(temp1->duration);
+	if (temp1->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_merge(
+			(TemporalInst *)temp1, (TemporalInst *)temp2);
+	else if (temp1->duration == TEMPORALI)
+		result = (Temporal *)temporali_merge(
+			(TemporalI *)temp1, (TemporalI *)temp2);
+	else if (temp1->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_merge((TemporalSeq *)temp1,
+			(TemporalSeq *)temp2);
+	else /* temp1->duration == TEMPORALS */
+		result = temporals_merge((TemporalS *)temp1,
+			(TemporalS *)temp2);
+
+	PG_FREE_IF_COPY(temp1, 0);
+	PG_FREE_IF_COPY(temp2, 1);
+	PG_RETURN_POINTER(result);
+}
+
+
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
@@ -2500,8 +2554,8 @@ temporal_at_values(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();	
 	}
 
-	datum_sort(values, count, valuetypid);
-	int count1 = datum_remove_duplicates(values, count, valuetypid);
+	datumarr_sort(values, count, valuetypid);
+	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -2543,8 +2597,8 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 	}
 
 	Oid valuetypid = temp->valuetypid;
-	datum_sort(values, count, valuetypid);
-	int count1 = datum_remove_duplicates(values, count, valuetypid);
+	datumarr_sort(values, count, valuetypid);
+	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 

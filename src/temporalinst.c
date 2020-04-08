@@ -140,7 +140,7 @@ temporalinst_make(Datum value, TimestampTz t, Oid valuetypid)
 	return result;
 }
 
- /* Append an instant to another instant resulting in a TemporalI */
+/* Append an instant to another instant resulting in a TemporalI */
 
 TemporalI *
 temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2)
@@ -148,6 +148,16 @@ temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2
 	ensure_increasing_timestamps(inst1, inst2);
 	const TemporalInst *instants[] = {inst1, inst2};
 	return temporali_make((TemporalInst **)instants, 2);
+}
+
+/* Merge two temporal instants that must be equal into a single one */
+
+TemporalInst *
+temporalinst_merge(const TemporalInst *inst1, const TemporalInst *inst2)
+{
+	if (! temporalinst_eq(inst1, inst2))
+		elog(ERROR, "The temporal instants are not equal");
+	return temporalinst_copy(inst1);
 }
 
 /* Copy a temporal value */

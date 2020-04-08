@@ -71,12 +71,13 @@ extern TemporalSeq *temporalseq_from_base_internal(Datum value, Oid valuetypid, 
 
 extern Datum temporalseq_from_base(PG_FUNCTION_ARGS);
 
-/* Append function */
+/* Append and merge functions */
 
 extern TemporalSeq *temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first);
 extern TemporalSeq *temporalseq_append_instant(const TemporalSeq *seq, const TemporalInst *inst);
 extern Temporal *temporalseq_append(const TemporalSeq *seq1, const TemporalSeq *seq2);
 extern Temporal *temporalseq_append_array(TemporalSeq **sequences, int count);
+extern Temporal *temporalseq_merge(const TemporalSeq *seq1, const TemporalSeq *seq2);
 
 /* Cast functions */
 

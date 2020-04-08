@@ -492,6 +492,25 @@ CREATE FUNCTION append(ttext[])
 AS 'MODULE_PATHNAME', 'temporal_append_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************/
+-- The merge function should accept NULL values
+
+CREATE FUNCTION merge(tbool, tbool)
+	RETURNS tbool
+AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(tint, tint)
+	RETURNS tint
+AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(tfloat, tfloat)
+	RETURNS tfloat
+AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION merge(ttext, ttext)
+	RETURNS ttext
+AS 'MODULE_PATHNAME', 'temporal_merge'
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor functions

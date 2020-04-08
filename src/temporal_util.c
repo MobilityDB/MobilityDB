@@ -20,7 +20,7 @@
 #include <utils/varlena.h>
 
 #include "period.h"
-#include "temporal.h"
+#include "temporaltypes.h"
 #include "oidcache.h"
 #include "doublen.h"
 
@@ -472,14 +472,14 @@ temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 /* Sort functions */
 
 void
-datum_sort(Datum *values, int count, Oid type)
+datumarr_sort(Datum *values, int count, Oid type)
 {
 	qsort_arg(values, (size_t) count, sizeof(Datum),
 		  (qsort_arg_comparator) &datum_sort_cmp, &type);
 }
 
 void
-timestamp_sort(TimestampTz *times, int count)
+timestamparr_sort(TimestampTz *times, int count)
 {
 	qsort(times, (size_t) count, sizeof(TimestampTz),
 		(qsort_comparator) &timestamp_sort_cmp);
@@ -528,7 +528,7 @@ temporalseqarr_sort(TemporalSeq **sequences, int count)
 /* Remove duplicates from an array of datums */
 
 int
-datum_remove_duplicates(Datum *values, int count, Oid type)
+datumarr_remove_duplicates(Datum *values, int count, Oid type)
 {
 	assert (count > 0);
 	int newcount = 0;
@@ -541,13 +541,39 @@ datum_remove_duplicates(Datum *values, int count, Oid type)
 /* Remove duplicates from an array of timestamps */
 
 int
-timestamp_remove_duplicates(TimestampTz *values, int count)
+timestamparr_remove_duplicates(TimestampTz *values, int count)
 {
 	assert (count > 0);
 	int newcount = 0;
 	for (int i = 1; i < count; i++)
 		if (values[newcount] != values[i])
 			values[++ newcount] = values[i];
+	return newcount + 1;
+}
+
+/* Distinct instants */
+
+int
+temporalinstarr_remove_duplicates(TemporalInst **instants, int count)
+{
+	assert(count != 0);
+	int newcount = 0;
+	for (int i = 1; i < count; i++)
+		if (! temporalinst_eq(instants[newcount], instants[i]))
+			instants[++ newcount] = instants[i];
+	return newcount + 1;
+}
+
+/* Distinct sequences */
+
+int
+temporalseqarr_remove_duplicates(TemporalSeq **sequences, int count)
+{
+	assert(count != 0);
+	int newcount = 0;
+	for (int i = 1; i < count; i++)
+		if (! temporalseq_eq(sequences[newcount], sequences[i]))
+			sequences[++ newcount] = sequences[i];
 	return newcount + 1;
 }
 

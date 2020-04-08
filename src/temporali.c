@@ -249,11 +249,11 @@ temporali_append(const TemporalI *ti1, const TemporalI *ti2)
 	/* Test the validity of both temporal values */
 	assert(ti1->valuetypid == ti2->valuetypid);
 	assert(MOBDB_FLAGS_GET_LINEAR(ti1->flags) == MOBDB_FLAGS_GET_LINEAR(ti2->flags));
-	assert(MOBDB_FLAGS_GET_GEODETIC(ti1->flags) == MOBDB_FLAGS_GET_GEODETIC(ti2->flags));
 	bool isgeo = (ti1->valuetypid == type_oid(T_GEOMETRY) ||
 		ti1->valuetypid == type_oid(T_GEOGRAPHY));
 	if (isgeo)
 	{
+		assert(MOBDB_FLAGS_GET_GEODETIC(ti1->flags) == MOBDB_FLAGS_GET_GEODETIC(ti2->flags));
 		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
 		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
 	}
@@ -416,6 +416,36 @@ temporali_append_array(TemporalI **tis, int count)
 		memcpy((char *)bbox, &box, bboxsize);
 	}
 	result->offsets[k] = pos;
+	return result;
+}
+
+/* Merge two temporal values */
+
+TemporalI *
+temporali_merge(const TemporalI *ti1, const TemporalI *ti2)
+{
+	/* Test the validity of both temporal values */
+	assert(ti1->valuetypid == ti2->valuetypid);
+	assert(MOBDB_FLAGS_GET_LINEAR(ti1->flags) == MOBDB_FLAGS_GET_LINEAR(ti2->flags));
+	bool isgeo = (ti1->valuetypid == type_oid(T_GEOMETRY) ||
+		ti1->valuetypid == type_oid(T_GEOGRAPHY));
+	if (isgeo)
+	{
+		assert(MOBDB_FLAGS_GET_GEODETIC(ti1->flags) == MOBDB_FLAGS_GET_GEODETIC(ti2->flags));
+		ensure_same_srid_tpoint((Temporal *)ti1, (Temporal *)ti2);
+		ensure_same_dimensionality_tpoint((Temporal *)ti1, (Temporal *)ti2);
+	}
+	int count = ti1->count + ti2->count;
+	TemporalInst **instants = palloc0(sizeof(TemporalInst *) * count);
+	int k = 0;
+	for (int i = 0; i < ti1->count; i++)
+		instants[k++] = temporali_inst_n(ti1, i);
+	for (int i = 0; i < ti2->count; i++)
+		instants[k++] = temporali_inst_n(ti2, i);
+	temporalinstarr_sort(instants, count);
+	int newcount = temporalinstarr_remove_duplicates(instants, count);
+	TemporalI *result = temporali_make(instants, newcount);
+	pfree(instants);
 	return result;
 }
 
@@ -701,8 +731,8 @@ temporali_values1(const TemporalI *ti, int *count)
 	Datum *result = palloc(sizeof(Datum *) * ti->count);
 	for (int i = 0; i < ti->count; i++) 
 		result[i] = temporalinst_value(temporali_inst_n(ti, i));
-	datum_sort(result, ti->count, ti->valuetypid);
-	*count = datum_remove_duplicates(result, ti->count, ti->valuetypid);
+	datumarr_sort(result, ti->count, ti->valuetypid);
+	*count = datumarr_remove_duplicates(result, ti->count, ti->valuetypid);
 	return result;
 }
 

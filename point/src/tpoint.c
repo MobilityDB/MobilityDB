@@ -846,8 +846,8 @@ tpoint_at_values(PG_FUNCTION_ARGS)
 	}
 	
 	Oid valuetypid = temp->valuetypid;
-	datum_sort(values, count, valuetypid);
-	int count1 = datum_remove_duplicates(values, count, valuetypid);
+	datumarr_sort(values, count, valuetypid);
+	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
@@ -900,8 +900,8 @@ tpoint_minus_values(PG_FUNCTION_ARGS)
 	}
 	
 	Oid valuetypid = temp->valuetypid;
-	datum_sort(values, count, valuetypid);
-	int count1 = datum_remove_duplicates(values, count, valuetypid);
+	datumarr_sort(values, count, valuetypid);
+	int count1 = datumarr_remove_duplicates(values, count, valuetypid);
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST) 
