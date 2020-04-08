@@ -1971,6 +1971,39 @@ SELECT merge(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]
  {[1@2000-01-01 00:00:00+00, 5@2000-01-05 00:00:00+00]}
 (1 row)
 
+SELECT merge(NULL::tfloat, NULL::tfloat);
+ merge 
+-------
+ 
+(1 row)
+
+SELECT merge(tfloat '1@2000-01-01', NULL);
+          merge           
+--------------------------
+ 1@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT merge(NULL, tfloat '1@2000-01-01');
+          merge           
+--------------------------
+ 1@2000-01-01 00:00:00+00
+(1 row)
+
+/* Errors */
+SELECT merge(tfloat '1@2000-01-01', tfloat '2@2000-01-01');
+ERROR:  The temporal instants are not equal
+SELECT merge(tfloat '{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}', tfloat '{3@2000-01-02, 3@2000-01-03, 4@2000-01-04}');
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-02 00:00:00+00
+SELECT merge(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]', tfloat 'Interp=Stepwise;[3@2000-01-02, 3@2000-01-03, 4@2000-01-04]');
+ERROR:  Timestamps for temporal value must be increasing: 2000-01-02 00:00:00+00, 2000-01-02 00:00:00+00
+SELECT merge(tfloat '[1@2000-01-01, 2@2000-01-02]', tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02]');
+ERROR:  The temporal values must be of the same interpolation
+SELECT merge(tfloat '(1@2000-01-01, 2@2000-01-02]', tfloat '[1@2000-01-01, 2@2000-01-02]');
+ERROR:  The temporal sequences have different lower bound flag
+SELECT merge(tfloat '[1@2000-01-01, 2@2000-01-02)', tfloat '[1@2000-01-01, 2@2000-01-02]');
+ERROR:  The temporal sequences have different upper bound flag
+SELECT merge(tfloat '[1@2000-01-01, 3@2000-01-03]', tfloat '[2@2000-01-02, 4@2000-01-04]');
+ERROR:  The temporal values cannot overlap on time
 SELECT duration(tbool 't@2000-01-01');
  duration 
 ----------
