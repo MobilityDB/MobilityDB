@@ -168,8 +168,8 @@ extern TemporalS *temporalseq_minus_period(const TemporalSeq *seq, const Period 
 extern int temporalseq_at_periodset1(TemporalSeq **result, const TemporalSeq *seq, const PeriodSet *ps);
 extern TemporalSeq **temporalseq_at_periodset2(const TemporalSeq *seq, const PeriodSet *ps, int *count);
 extern TemporalS *temporalseq_at_periodset(const TemporalSeq *seq, const PeriodSet *ps);
-extern int temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq, const PeriodSet *ps,
-	int from, int count);
+extern int temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq,
+	const PeriodSet *ps, int from);
 extern TemporalS *temporalseq_minus_periodset(const TemporalSeq *seq, const PeriodSet *ps);
 extern bool temporalseq_intersects_timestamp(const TemporalSeq *seq, TimestampTz t);
 extern bool temporalseq_intersects_timestampset(const TemporalSeq *seq, const TimestampSet *t);

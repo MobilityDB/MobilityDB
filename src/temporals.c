@@ -2375,35 +2375,32 @@ temporals_minus_periodset(const TemporalS *ts, const PeriodSet *ps)
 	{
 		TemporalSeq *seq = temporals_seq_n(ts, i);
 		p2 = periodset_per_n(ps, j);
-		/* The sequence and the period do not overlap, copy the sequence */
+		/* The sequence and the period do not overlap */
 		if (!overlaps_period_period_internal(&seq->period, p2))
 		{
-			sequences[k++] = temporalseq_copy(seq);
-			i++;
+			if (before_period_period_internal(p2, &seq->period))
+			{
+				/* advance the component period  */
+				j++;
+
+			}
+			else
+			{
+				/* copy the sequence */
+				sequences[k++] = temporalseq_copy(seq);
+				i++;
+			}
 		}
 		else
 		{
-			/* Find all periods in ps that overlap with seq
-							  i
-				|------------------------|  
-					 |-----|  |-----|	  |---|
-						j					l
-			*/
-			int l;
-			for (l = j; l < ps->count; l++)
-			{
-				Period *p3 = periodset_per_n(ps, l);
-				if (!overlaps_period_period_internal(&seq->period, p3))
-					break;
-			}
-			int count = l - j;
 			/* Compute the difference of the overlapping periods */
-			k += temporalseq_minus_periodset1(&sequences[k], seq,
-				ps, j, count);
+			k += temporalseq_minus_periodset1(&sequences[k], seq, ps, j);
 			i++;
-			j = l;
 		}
 	}
+	/* Copy the sequences after the period set */
+	while (i < ts->count)
+		sequences[k++] = temporalseq_copy(temporals_seq_n(ts, i++));
 	if (k == 0)
 	{
 		pfree(sequences);

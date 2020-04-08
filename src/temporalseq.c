@@ -102,7 +102,7 @@ float_collinear(double x1, double x2, double x3,
 	if (duration1 < duration2)
 	{
 		ratio = duration1 / duration2;
-		x3 = x2 + (x3 - x2) * (1 - ratio);
+		x3 = x2 + (x3 - x2) * ratio;
 	}
 	else if (duration1 > duration2)
 	{
@@ -132,8 +132,8 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
 	if (duration1 > duration2)
 	{
 		ratio = 1 - duration2 / duration1;
-		x1new.a = x1->a + (x2->a - x1->a) * ratio;
-		x1new.b = x1->b + (x2->b - x1->b) * ratio;
+		x1new.a = x1->a + (x2->a - x1->a) * (1 - ratio);
+		x1new.b = x1->b + (x2->b - x1->b) * (1 - ratio);
 		x1 = &x1new;
 	}
 	double d1a = x2->a - x1->a;
@@ -150,14 +150,20 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 {
 	double duration1 = (double) (t2 - t1);
 	double duration2 = (double) (t3 - t2);
-	double ratio = 1 - Min(duration1, duration2) / Max(duration1, duration2);
+	double ratio;
 	POINT4D point1 = datum_get_point4d(value1);
 	POINT4D point2 = datum_get_point4d(value2);
 	POINT4D point3 = datum_get_point4d(value3);
 	if (duration1 < duration2)
+	{
+		ratio = duration1 / duration2;
 		interpolate_point4d(&point2, &point3, &point3, ratio);
+	}
 	else if (duration1 > duration2)
-		interpolate_point4d(&point1, &point2, &point1, ratio);
+	{
+		ratio = duration2 / duration1;
+		interpolate_point4d(&point1, &point2, &point1, 1 - ratio);
+	}
 	bool result;
 	if (hasz)
 	{
@@ -200,9 +206,9 @@ double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
 	if (duration1 > duration2)
 	{
 		ratio = 1 - duration2 / duration1;
-		x1new.a = x1->a + (x2->a - x1->a) * ratio;
-		x1new.b = x1->b + (x2->b - x1->b) * ratio;
-		x1new.c = x1->c + (x2->c - x1->c) * ratio;
+		x1new.a = x1->a + (x2->a - x1->a) * (1 - ratio);
+		x1new.b = x1->b + (x2->b - x1->b) * (1 - ratio);
+		x1new.c = x1->c + (x2->c - x1->c) * (1 - ratio);
 		x1 = &x1new;
 	}
 	double d1a = x2->a - x1->a;
@@ -236,10 +242,10 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
 	if (duration1 > duration2)
 	{
 		ratio = 1 - duration2 / duration1;
-		x1new.a = x1->a + (x2->a - x1->a) * ratio;
-		x1new.b = x1->b + (x2->b - x1->b) * ratio;
-		x1new.d = x1->c + (x2->c - x1->c) * ratio;
-		x1new.d = x1->d + (x2->c - x1->d) * ratio;
+		x1new.a = x1->a + (x2->a - x1->a) * (1 - ratio);
+		x1new.b = x1->b + (x2->b - x1->b) * (1 - ratio);
+		x1new.d = x1->c + (x2->c - x1->c) * (1 - ratio);
+		x1new.d = x1->d + (x2->c - x1->d) * (1 - ratio);
 		x1 = &x1new;
 	}
 	double d1a = x2->a - x1->a;
@@ -343,7 +349,8 @@ temporalinstarr_normalize(TemporalInst **instants, bool linear, int count,
  * values of the last two Boolean arguments. */
 
 TemporalSeq *
-temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bool first)
+temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2,
+	bool removelast, bool removefirst)
 {
 	/* Ensure that the two sequences has the same interpolation */
 	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
@@ -352,8 +359,8 @@ temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bo
 	size_t bboxsize = temporal_bbox_size(valuetypid);
 	size_t memsize = double_pad(bboxsize);
 
-	int count1 = last ? seq1->count - 1 : seq1->count;
-	int start2 = first ? 1 : 0;
+	int count1 = removelast ? seq1->count - 1 : seq1->count;
+	int start2 = removefirst ? 1 : 0;
 	for (int i = 0; i < count1; i++)
 		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
 	for (int i = start2; i < seq2->count; i++)
@@ -367,7 +374,7 @@ temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2, bool last, bo
 	{
 		/* A trajectory is a geometry/geography, either a point or a
 		 * linestring, which may be self-intersecting */
-		traj = tpointseq_trajectory_join(seq1, seq2, last, first);
+		traj = tpointseq_trajectory_join(seq1, seq2, removelast, removefirst);
 		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
 	}
 
@@ -3594,7 +3601,6 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 	bool lower_inc = seq->period.lower_inc;
 	while (l < seq->count && m < ts->count)
 	{
-		bool upper_inc = (l == seq->count - 1) ? seq->period.upper_inc : false;
 		inst = temporalseq_inst_n(seq, l);
 		TimestampTz t = timestampset_time_n(ts, m);
 		if (inst->t < t)
@@ -3611,6 +3617,7 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 					instants[n] = inst;
 					result[k++] = temporalseq_make(instants, n + 1,
 						lower_inc, false, linear, false);
+					instants[0] = inst;
 				}
 				else
 				{
@@ -3618,11 +3625,12 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 						inst->valuetypid);
 					result[k++] = temporalseq_make(instants, n + 1,
 						lower_inc, false, linear, false);
-					pfree(instants[n]);
+					instants[0] = instants[n];
 				}
-				n = 0;
+				n = 1;
 			}
 			lower_inc = false;
+			l++; /* advance instants */
 			m++; /* advance timestamps */
 		}
 		else
@@ -3635,9 +3643,9 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 					temporalinst_make(temporalinst_value(instants[n - 1]), t,
 						inst->valuetypid);
 				result[k++] = temporalseq_make(instants, n + 1,
-					lower_inc, upper_inc, linear, false);
-				pfree(instants[n]);
-				n = 0;
+					lower_inc, false, linear, false);
+				instants[0] = instants[n];
+				n = 1;
 				lower_inc = false;
 
 			}
@@ -3645,7 +3653,7 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 		}
 	}
 	/* Compute the sequence after the timestamp set */
-	if (l < seq->count - 1)
+	if (l < seq->count)
 	{
 		for (int i = l; i < seq->count; i++)
 			instants[n++] = temporalseq_inst_n(seq, i);
@@ -3856,8 +3864,8 @@ temporalseq_at_periodset(const TemporalSeq *seq, const PeriodSet *ps)
  */
 
 int
-temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq, const PeriodSet *ps,
-	int from, int count)
+temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq,
+	const PeriodSet *ps, int from)
 {
 	/* The sequence can be split at most into (count + 1) sequences
 		|----------------------|
@@ -3865,7 +3873,7 @@ temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq, const
 	*/
 	TemporalSeq *curr = temporalseq_copy(seq);
 	int k = 0;
-	for (int i = from; i < count; i++)
+	for (int i = from; i < ps->count; i++)
 	{
 		Period *p1 = periodset_per_n(ps, i);
 		/* If the remaining periods are to the left of the current period */
@@ -3891,7 +3899,7 @@ temporalseq_minus_periodset1(TemporalSeq **result, const TemporalSeq *seq, const
 			curr = minus[1];
 		}
 		/* There are no more periods left */
-		if (i == count - 1)
+		if (i == ps->count - 1)
 			result[k++] = curr;
 	}
 	return k;
@@ -3916,8 +3924,7 @@ temporalseq_minus_periodset(const TemporalSeq *seq, const PeriodSet *ps)
 
 	/* General case */
 	TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * (ps->count + 1));
-	int count = temporalseq_minus_periodset1(sequences, seq, ps,
-		0, ps->count);
+	int count = temporalseq_minus_periodset1(sequences, seq, ps, 0);
 	if (count == 0)
 	{
 		pfree(sequences);

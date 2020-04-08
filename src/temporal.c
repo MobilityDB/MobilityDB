@@ -1099,6 +1099,59 @@ temporal_append_array(PG_FUNCTION_ARGS)
 
 /* Merge function */
 
+static void
+temporal_convert_same_duration(const Temporal *t1, const Temporal *t2, Temporal **t1new, Temporal **t2new)
+{
+	assert(t1->valuetypid == t2->valuetypid);
+	ensure_valid_duration(t1->duration);
+	ensure_valid_duration(t2->duration);
+
+	/* If both are of the same duration do nothing */
+	if (t1->duration == t2->duration)
+	{
+		*t1new = (Temporal *) t1;
+		*t2new = (Temporal *) t2;
+		return;
+	}
+
+	/* Different duration */
+	bool swap = false;
+	if (t1->duration > t2->duration)
+	{
+		Temporal *temp = (Temporal *) t1;
+		t1 = t2;
+		t2 = temp;
+		swap = true;
+	}
+	Temporal *new;
+	if (t1->duration == TEMPORALINST && t2->duration == TEMPORALI)
+		new = (Temporal *) temporalinst_to_temporali((TemporalInst *) t1);
+	else if (t1->duration == TEMPORALINST && t2->duration == TEMPORALSEQ)
+		new = (Temporal *) temporalinst_to_temporalseq((TemporalInst *) t1,
+			MOBDB_FLAGS_GET_LINEAR(t2->flags));
+	else if (t1->duration == TEMPORALINST && t2->duration == TEMPORALS)
+		new = (Temporal *) temporalinst_to_temporals((TemporalInst *) t1,
+			MOBDB_FLAGS_GET_LINEAR(t2->flags));
+	else if (t1->duration == TEMPORALI && t2->duration == TEMPORALSEQ)
+		new = (Temporal *) temporali_to_temporalseq((TemporalI *) t1,
+			MOBDB_FLAGS_GET_LINEAR(t2->flags));
+	else if (t1->duration == TEMPORALI && t2->duration == TEMPORALS)
+		new = (Temporal *) temporali_to_temporals((TemporalI *) t1,
+			MOBDB_FLAGS_GET_LINEAR(t2->flags));
+	else if (t1->duration == TEMPORALSEQ && t2->duration == TEMPORALS)
+		new = (Temporal *) temporalseq_to_temporals((TemporalSeq *) t1);
+	if (swap)
+	{
+		*t1new = (Temporal *) t1;
+		*t2new = new;
+	}
+	else
+	{
+		*t1new = new;
+		*t2new = (Temporal *) t2;
+	}
+}
+
 PG_FUNCTION_INFO_V1(temporal_merge);
 
 PGDLLEXPORT Datum
@@ -1128,23 +1181,29 @@ temporal_merge(PG_FUNCTION_ARGS)
 
 	/* Both arguments are temporal */
 	ensure_same_base_type(temp1, temp2);
-	ensure_same_duration(temp1, temp2);
 	ensure_same_interpolation(temp1, temp2);
 
-	ensure_valid_duration(temp1->duration);
-	if (temp1->duration == TEMPORALINST)
-		result = (Temporal *)temporalinst_merge(
-			(TemporalInst *)temp1, (TemporalInst *)temp2);
-	else if (temp1->duration == TEMPORALI)
-		result = (Temporal *)temporali_merge(
-			(TemporalI *)temp1, (TemporalI *)temp2);
-	else if (temp1->duration == TEMPORALSEQ)
-		result = (Temporal *)temporalseq_merge((TemporalSeq *)temp1,
-			(TemporalSeq *)temp2);
-	else /* temp1->duration == TEMPORALS */
-		result = temporals_merge((TemporalS *)temp1,
-			(TemporalS *)temp2);
+	/* Convert to the same duration if possible */
+	Temporal *temp1new, *temp2new;
+	temporal_convert_same_duration(temp1, temp2, &temp1new, &temp2new);
 
+	ensure_valid_duration(temp1new->duration);
+	if (temp1new->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_merge(
+			(TemporalInst *)temp1new, (TemporalInst *)temp2new);
+	else if (temp1new->duration == TEMPORALI)
+		result = (Temporal *)temporali_merge(
+			(TemporalI *)temp1new, (TemporalI *)temp2new);
+	else if (temp1new->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_merge((TemporalSeq *)temp1new,
+			(TemporalSeq *)temp2new);
+	else /* temp1new->duration == TEMPORALS */
+		result = temporals_merge((TemporalS *)temp1new,
+			(TemporalS *)temp2new);
+	if (temp1 != temp1new)
+		pfree(temp1new);
+	if (temp2 != temp2new)
+		pfree(temp2new);
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
 	PG_RETURN_POINTER(result);
