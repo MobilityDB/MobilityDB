@@ -336,9 +336,10 @@ datum_set_precision(Datum value, Datum size)
 		double y = DatumGetFloat8(datum_round(Float8GetDatum(point.y), size));
 		lwpoint = lwpoint_make2d(srid, x, y);
 	}
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	GSERIALIZED *result = geometry_serialize((LWGEOM *) lwpoint);
+	result->flags = gs->flags;
 	pfree(lwpoint);
-	return result;
+	return PointerGetDatum(result);
 }
 
 /* Serialize a geometry */

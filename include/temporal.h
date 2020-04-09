@@ -29,7 +29,7 @@
 #error Postgres needs to be configured with USE_FLOAT8_BYVAL
 #endif
 
-#define EPSILON					1.0E-06
+#define EPSILON					1.0E-05
 #define DIST_EPSILON			1.0E-05
 
 #define MOBDB_LIB_VERSION_STR "MobilityDB 1.0beta1"

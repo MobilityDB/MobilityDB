@@ -476,8 +476,8 @@ temporals_merge(const TemporalS *ts1, const TemporalS *ts2)
 	}
 
 	/* Singleton sequence sets */
-	if (ts1->count == 1 && ts2->count ==1)
-		return (Temporal *) temporalseq_merge(temporals_seq_n(ts1, 0), temporals_seq_n(ts2, 0));
+	// if (ts1->count == 1 && ts2->count ==1)
+		// return (Temporal *) temporalseq_merge(temporals_seq_n(ts1, 0), temporals_seq_n(ts2, 0));
 
 	/* General case */
 	int count = ts1->count + ts2->count;

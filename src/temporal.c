@@ -24,6 +24,7 @@
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 
+#include "period.h"
 #include "timeops.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
@@ -3363,13 +3364,21 @@ temporal_cmp_internal(const Temporal *t1, const Temporal *t2)
 {
 	assert(t1->valuetypid == t2->valuetypid);
 
+	/* Compare bounding period */
+	Period p1, p2;
+	temporal_period(&p1, t1);
+	temporal_period(&p2, t2);
+	int result = period_cmp_internal(&p1, &p2);
+	if (result)
+		return result;
+
 	/* Compare bounding box */
 	union bboxunion box1, box2;
 	memset(&box1, 0, sizeof(bboxunion));
 	memset(&box2, 0, sizeof(bboxunion));
 	temporal_bbox(&box1, t1);
 	temporal_bbox(&box2, t2);
-	int result = temporal_bbox_cmp(&box1, &box2, t1->valuetypid);
+	result = temporal_bbox_cmp(&box1, &box2, t1->valuetypid);
 	if (result)
 		return result;
 

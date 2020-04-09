@@ -145,7 +145,7 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
 }
 
 static bool
-point_collinear(Datum value1, Datum value2, Datum value3,
+geompoint_collinear(Datum value1, Datum value2, Datum value3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
 {
 	double duration1 = (double) (t2 - t1);
@@ -185,6 +185,35 @@ point_collinear(Datum value1, Datum value2, Datum value3,
 		result = fabs(dx1 - dx2) <= EPSILON && fabs(dy1 - dy2) <= EPSILON;
 	}
 	return result;
+}
+
+static bool
+geogpoint_collinear(Datum value1, Datum value2, Datum value3,
+	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
+{
+	/* We are sure that the trajectory is a line */
+	Datum line = geogpoint_trajectory(value1, value3);
+	double dist = DatumGetFloat8(call_function4(geography_distance, line,
+			value2, Float8GetDatum(0.0), BoolGetDatum(false)));
+	return dist <= DIST_EPSILON;
+	/* There is no function equivalent to LWGEOM_line_interpolate_point
+	 * for geographies. We do as the ST_Intersection function, e.g.
+	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+	 * @extschema@._ST_BestSRID($1, $2)),
+	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+	/*
+	Datum bestsrid = call_function2(geography_bestsrid, value1, value3);
+	Datum line1 = call_function1(geometry_from_geography, line);
+	Datum line2 = call_function2(transform, line1, bestsrid);
+	Datum point = call_function2(LWGEOM_line_interpolate_point,
+		line2, Float8GetDatum(ratio));
+	Datum srid = call_function1(LWGEOM_get_srid, value1);
+	Datum point1 = call_function2(transform, point, srid);
+	result = call_function1(geography_from_geometry, point1);
+	pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+	pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
+	 */
+	/* Cannot pfree(DatumGetPointer(point1)); */
 }
 
 static bool
@@ -275,7 +304,13 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
 		bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-		return point_collinear(value1, value2, value3, t1, t2, t3, hasz);
+		return geompoint_collinear(value1, value2, value3, t1, t2, t3, hasz);
+	}
+	if (valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
+		bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+		return geogpoint_collinear(value1, value2, value3, t1, t2, t3, hasz);
 	}
 	if (valuetypid == type_oid(T_DOUBLE3))
 		return double3_collinear(DatumGetDouble3P(value1), DatumGetDouble3P(value2), 
@@ -2666,9 +2701,8 @@ temporalseq_minus_value2(TemporalSeq **result, const TemporalSeq *seq, Datum val
 				{
 					instants[j] = temporalinst_make(temporalinst_value(instants[j - 1]),
 						inst->t, valuetypid);
-					bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
 					result[k++] = temporalseq_make(instants, j + 1, lower_inc,
-						upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+						false, MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
 					pfree(instants[j]);
 					j = 0;
 				}
@@ -3593,73 +3627,81 @@ temporalseq_minus_timestampset1(TemporalSeq **result, const TemporalSeq *seq,
 	/* General case */
 	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	TemporalInst **instants = palloc0(sizeof(TemporalInst *) * seq->count);
-	TemporalInst *inst;
-	int k = 0,	/* current number of new sequences */
-		l = 0,	/* current instant of the argument sequence */
-		m = 0,	/* current timestamp of the argument timestamp set */
-		n = 0;	/* number of instants in the currently constructed sequence */
+	TemporalInst *inst, *tofree = NULL;
+	instants[0] = temporalseq_inst_n(seq, 0);
+	int i = 1,	/* current instant of the argument sequence */
+		j = 0,	/* current timestamp of the argument timestamp set */
+		k = 0,	/* current number of new sequences */
+		l = 1;	/* number of instants in the currently constructed sequence */
 	bool lower_inc = seq->period.lower_inc;
-	while (l < seq->count && m < ts->count)
+	while (i < seq->count && j < ts->count)
 	{
-		inst = temporalseq_inst_n(seq, l);
-		TimestampTz t = timestampset_time_n(ts, m);
+		inst = temporalseq_inst_n(seq, i);
+		TimestampTz t = timestampset_time_n(ts, j);
 		if (inst->t < t)
 		{
-			instants[n++] = inst;
-			l++; /* advance instants */
+			instants[l++] = inst;
+			i++; /* advance instants */
 		}
 		else if (inst->t == t)
 		{
-			if (n > 0)
+			if (linear)
 			{
-				if (linear)
-				{
-					instants[n] = inst;
-					result[k++] = temporalseq_make(instants, n + 1,
-						lower_inc, false, linear, false);
-					instants[0] = inst;
-				}
-				else
-				{
-					instants[n] = temporalinst_make(temporalinst_value(instants[n - 1]), t,
-						inst->valuetypid);
-					result[k++] = temporalseq_make(instants, n + 1,
-						lower_inc, false, linear, false);
-					instants[0] = instants[n];
-				}
-				n = 1;
+				instants[l] = inst;
+				result[k++] = temporalseq_make(instants, l + 1,
+					lower_inc, false, linear, false);
+				instants[0] = inst;
 			}
+			else
+			{
+				instants[l] = temporalinst_make(
+					temporalinst_value(instants[l - 1]), t, inst->valuetypid);
+				result[k++] = temporalseq_make(instants, l + 1,
+					lower_inc, false, linear, false);
+				pfree(instants[l]);
+				if (tofree)
+				{
+					pfree(tofree);
+					tofree = NULL;
+				}
+				instants[0] = inst;
+			}
+			l = 1;
 			lower_inc = false;
-			l++; /* advance instants */
-			m++; /* advance timestamps */
+			i++; /* advance instants */
+			j++; /* advance timestamps */
 		}
 		else
 		{
 			/* inst->t > t */
-			if (n > 0)
+			if (instants[l - 1]->t < t)
 			{
-				instants[n] = linear ?
-					temporalseq_at_timestamp1(instants[n - 1], inst, t, true) :
-					temporalinst_make(temporalinst_value(instants[n - 1]), t,
+				/* The instant to remove is not the first one of the sequence */
+				instants[l] = linear ?
+					temporalseq_at_timestamp1(instants[l - 1], inst, t, true) :
+					temporalinst_make(temporalinst_value(instants[l - 1]), t,
 						inst->valuetypid);
-				result[k++] = temporalseq_make(instants, n + 1,
+				result[k++] = temporalseq_make(instants, l + 1,
 					lower_inc, false, linear, false);
-				instants[0] = instants[n];
-				n = 1;
-				lower_inc = false;
-
+				if (tofree)
+					pfree(tofree);
+				instants[0] = tofree = instants[l];
+				l = 1;
 			}
-			m++; /* advance timestamps */
+			lower_inc = false;
+			j++; /* advance timestamps */
 		}
 	}
 	/* Compute the sequence after the timestamp set */
-	if (l < seq->count)
+	if (i < seq->count)
 	{
-		for (int i = l; i < seq->count; i++)
-			instants[n++] = temporalseq_inst_n(seq, i);
-		result[k++] = temporalseq_make(instants, n,
+		for (j = i; j < seq->count; j++)
+			instants[l++] = temporalseq_inst_n(seq, j);
+		result[k++] = temporalseq_make(instants, l,
 			false, seq->period.upper_inc, linear, false);
 	}
+	if (tofree)
+		pfree(tofree);
 	return k;
 }
 

@@ -462,9 +462,9 @@ temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 static int
 temporalseqarr_sort_cmp(TemporalSeq **l, TemporalSeq **r)
 {
-	TimestampTz lt = (*l)->period.lower;
-	TimestampTz rt = (*r)->period.lower;
-	return timestamp_cmp_internal(lt, rt);
+	Period lp = (*l)->period;
+	Period rp = (*r)->period;
+	return period_cmp_internal(&lp, &rp);
 }
 
 /*****************************************************************************/
