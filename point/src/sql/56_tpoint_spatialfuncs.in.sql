@@ -131,6 +131,16 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
 	AS 'MODULE_PATHNAME', 'tpoint_minus_geometry'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION atStbox(tgeompoint, stbox)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_at_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusStbox(tgeompoint, stbox)
+	RETURNS tgeompoint
+	AS 'MODULE_PATHNAME', 'tpoint_minus_stbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION NearestApproachInstant(geometry, tgeompoint)

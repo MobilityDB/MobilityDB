@@ -460,7 +460,7 @@ geodstbox_constructor(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 GBOX *
-stbox_to_gbox(STBOX *box)
+stbox_to_gbox(const STBOX *box)
 {
 	assert(MOBDB_FLAGS_GET_X(box->flags));
 	/* Initialize existing dimensions */
@@ -471,8 +471,9 @@ stbox_to_gbox(STBOX *box)
 	result->ymax = box->ymax;
 	result->zmin = box->zmin;
 	result->zmax = box->zmax;
-	FLAGS_SET_Z(box->flags, MOBDB_FLAGS_GET_Z(box->flags));
+	FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(box->flags));
 	FLAGS_SET_M(result->flags, 0);
+	FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(box->flags));
 	return result;
 }
 

@@ -87,7 +87,7 @@ tpointseq_intersection_instants(LWLINE *lwline, TimestampTz t1, TimestampTz t2,
 {
 	/* Each intersection is either a point or a linestring with two points */
 	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-	bool hasz = FLAGS_GET_Z(gsinter->flags);
+	bool hasz = (bool) FLAGS_GET_Z(gsinter->flags);
 	LWGEOM *lwinter = lwgeom_from_gserialized(gsinter);
 	int countinter;
 	LWCOLLECTION *coll = NULL;
@@ -103,7 +103,7 @@ tpointseq_intersection_instants(LWLINE *lwline, TimestampTz t1, TimestampTz t2,
 		countinter = coll->ngeoms;
 	}
 	TemporalInst **instants = palloc(sizeof(TemporalInst *) * 2 * countinter);
-	double duration = (double)(t2 - t1);
+	long double duration = (long double)(t2 - t1);
 	int k = 0;
 	for (int i = 0; i < countinter; i++)
 	{
@@ -112,21 +112,23 @@ tpointseq_intersection_instants(LWLINE *lwline, TimestampTz t1, TimestampTz t2,
 			lwinter_single = coll->geoms[i];
 		POINTARRAY *pa = lwline->points;
 		POINT4D p1, p2, proj1, proj2;
+		long double fraction1, fraction2;
+		TimestampTz intert1, intert2;
 		/* Each intersection is either a point or a linestring with two points */
 		if (lwinter_single->type == POINTTYPE)
 		{
 			lwpoint_getPoint4d_p((LWPOINT *) lwinter_single, &p1);
-			double fraction = ptarray_locate_point(pa, &p1, NULL, &proj1);
-			TimestampTz intert = t1 + (long) (duration * fraction);
+			fraction1 = (long double) ptarray_locate_point_ez(pa, &p1, NULL, &proj1);
+			intert1 = t1 + (long) (duration * fraction1);
 			/* If the point intersection is not at an exclusive bound */
-			if ((lower_inc || t1 != intert) &&
-				(upper_inc || t2 != intert))
+			if ((lower_inc || t1 != intert1) &&
+				(upper_inc || t2 != intert1))
 			{
 				LWPOINT *lwres = hasz ?
 					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
 					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
 				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
-				instants[k++] = temporalinst_make(point, intert, type_oid(T_GEOMETRY));
+				instants[k++] = temporalinst_make(point, intert1, type_oid(T_GEOMETRY));
 				lwpoint_free(lwres);  pfree(DatumGetPointer(point));
 			}
 		}
@@ -136,10 +138,10 @@ tpointseq_intersection_instants(LWLINE *lwline, TimestampTz t1, TimestampTz t2,
 			LWPOINT *point2 = lwline_get_lwpoint((LWLINE *) lwinter_single, 1);
 			lwpoint_getPoint4d_p(point1, &p1);
 			lwpoint_getPoint4d_p(point2, &p2);
-			double fraction1 = ptarray_locate_point(pa, &p1, NULL, &proj1);
-			double fraction2 = ptarray_locate_point(pa, &p2, NULL, &proj2);
-			TimestampTz intert1 = t1 + (long) (duration * fraction1);
-			TimestampTz intert2 = t1 + (long) (duration * fraction2);
+			fraction1 = (long double) ptarray_locate_point_ez(pa, &p1, NULL, &proj1);
+			fraction2 = (long double) ptarray_locate_point_ez(pa, &p2, NULL, &proj2);
+			intert1 = t1 + (long) (duration * fraction1);
+			intert2 = t1 + (long) (duration * fraction2);
 			TimestampTz lower = Min(intert1, intert2);
 			TimestampTz upper = Max(intert1, intert2);
 			/* If the point intersection is not at an exclusive bound */
@@ -345,14 +347,14 @@ tspatialrel_tpointseq_geo2(TemporalSeq *seq, Datum geo,
 	int *countseqs = palloc0(sizeof(int) * seq->count);
 	int totalseqs = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, lower_inc, upper_inc,
-			func, restypid, &countseqs[i], invert);
+		sequences[i] = tspatialrel_tpointseq_geo1(inst1, inst2, linear, geo,
+			lower_inc, upper_inc, func, restypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 		inst1 = inst2;
 		lower_inc = true;
@@ -590,14 +592,14 @@ tspatialrel3_tpointseq_geo2(TemporalSeq *seq, Datum geo, Datum param,
 	int *countseqs = palloc0(sizeof(int) * seq->count);
 	int totalseqs = 0;
 	TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
+	bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
 	bool lower_inc = seq->period.lower_inc;
 	for (int i = 0; i < seq->count - 1; i++)
 	{
 		TemporalInst *inst2 = temporalseq_inst_n(seq, i + 1);
 		bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2,
-			MOBDB_FLAGS_GET_LINEAR(seq->flags), geo, param,
-			lower_inc, upper_inc, func, restypid, &countseqs[i], invert);
+		sequences[i] = tspatialrel3_tpointseq_geo1(inst1, inst2, linear, geo,
+			param, lower_inc, upper_inc, func, restypid, &countseqs[i], invert);
 		totalseqs += countseqs[i];
 		inst1 = inst2;
 		lower_inc = true;

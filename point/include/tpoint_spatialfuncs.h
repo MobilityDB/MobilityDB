@@ -22,6 +22,12 @@
 
 /*****************************************************************************/
 
+/* Functions derived from PostGIS to increase floating-point precision */
+
+extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
+extern double ptarray_locate_point_ez(const POINTARRAY *pa, const POINT4D *p4d,
+	double *mindistout, POINT4D *proj4d);
+
 /* Parameter tests */
 
 extern void ensure_same_geodetic_stbox(const STBOX *box1, const STBOX *box2);
@@ -117,12 +123,15 @@ extern Datum tgeompoints_twcentroid(TemporalS *ts);
 /* Restriction functions */
 
 extern Datum tpoint_at_geometry(PG_FUNCTION_ARGS);
+extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
+
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
+extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
 extern TemporalSeq **tpointseq_at_geometry2(const TemporalSeq *seq, Datum geo, int *count);
 
-extern Temporal *tpoint_at_geometry_internal(Temporal *temp, GSERIALIZED *gs);
-extern Temporal *tpoint_minus_geometry_internal(Temporal *temp, GSERIALIZED *gs);
+extern Temporal *tpoint_at_geometry_internal(Temporal *temp, Datum geo);
+extern Temporal *tpoint_minus_geometry_internal(Temporal *temp, Datum geo);
 
 /* Nearest approach functions */
 

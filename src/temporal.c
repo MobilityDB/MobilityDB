@@ -3089,6 +3089,26 @@ temporal_minus_timestampset(PG_FUNCTION_ARGS)
 
 /* Restriction to a period */
 
+Temporal *
+temporal_at_period_internal(const Temporal *temp, const Period *p)
+{
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_at_period(
+			(TemporalInst *)temp, p);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)temporali_at_period(
+			(TemporalI *)temp, p);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_at_period(
+			(TemporalSeq *)temp, p);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)temporals_at_period(
+			(TemporalS *)temp, p);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_at_period);
 
 PGDLLEXPORT Datum
@@ -3096,20 +3116,7 @@ temporal_at_period(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_at_period(
-			(TemporalInst *)temp, p);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_at_period(
-			(TemporalI *)temp, p);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_at_period(
-			(TemporalSeq *)temp, p);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_at_period(
-			(TemporalS *)temp, p);
+	Temporal *result = temporal_at_period_internal(temp, p);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();	
@@ -3118,6 +3125,26 @@ temporal_at_period(PG_FUNCTION_ARGS)
 
 /* Restriction to the complement of a period */
 
+Temporal *
+temporal_minus_period_internal(const Temporal *temp, const Period *p)
+{
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_minus_period(
+			(TemporalInst *)temp, p);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)temporali_minus_period(
+			(TemporalI *)temp, p);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_minus_period(
+			(TemporalSeq *)temp, p);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)temporals_minus_period(
+			(TemporalS *)temp, p);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_minus_period);
 
 PGDLLEXPORT Datum
@@ -3125,20 +3152,7 @@ temporal_minus_period(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Period *p = PG_GETARG_PERIOD(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_minus_period(
-			(TemporalInst *)temp, p);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_minus_period(
-			(TemporalI *)temp, p);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_minus_period(
-			(TemporalSeq *)temp, p);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_minus_period(
-			(TemporalS *)temp, p);
+	Temporal *result = temporal_minus_period_internal(temp, p);
 	PG_FREE_IF_COPY(temp, 0);
 	if (result == NULL)
 		PG_RETURN_NULL();
@@ -3184,6 +3198,26 @@ temporal_at_periodset(PG_FUNCTION_ARGS)
 
 /* Restriction to the complement of a periodset */
 
+Temporal *
+temporal_minus_periodset_internal(const Temporal *temp, const PeriodSet *ps)
+{
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)temporalinst_minus_periodset(
+			(TemporalInst *)temp, ps);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)temporali_minus_periodset(
+			(TemporalI *)temp, ps);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)temporalseq_minus_periodset(
+			(TemporalSeq *)temp, ps);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)temporals_minus_periodset(
+			(TemporalS *)temp, ps);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_minus_periodset);
 
 PGDLLEXPORT Datum
@@ -3191,20 +3225,7 @@ temporal_minus_periodset(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	PeriodSet *ps = PG_GETARG_PERIODSET(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)temporalinst_minus_periodset(
-			(TemporalInst *)temp, ps);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)temporali_minus_periodset(
-			(TemporalI *)temp, ps);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)temporalseq_minus_periodset(
-			(TemporalSeq *)temp, ps);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)temporals_minus_periodset(
-			(TemporalS *)temp, ps);
+	Temporal *result = temporal_minus_periodset_internal(temp, ps);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(ps, 1);
 	if (result == NULL)

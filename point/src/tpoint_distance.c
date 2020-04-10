@@ -92,11 +92,12 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 		else
 		{
 			/* The trajectory is a line */
-			double fraction;
+			long double fraction;
+			long double duration = (long double) (inst2->t - inst1->t);
 			Datum traj, value;
 			double dist;
 			if (inst1->valuetypid == type_oid(T_GEOMETRY))
-				fraction = seg_locate_point(value1, value2, point, NULL, &dist);
+				fraction = (long double) seg_locate_point(value1, value2, point, NULL, &dist);
 			else
 			{
 				traj = geogpoint_trajectory(value1, value2);
@@ -110,24 +111,24 @@ distance_tpointseq_geo(const TemporalSeq *seq, Datum point,
 				Datum traj2 = call_function2(transform, traj1, bestsrid);
 				Datum point1 = call_function1(geometry_from_geography, point);
 				Datum point2 = call_function2(transform, point, bestsrid);
-				fraction = DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
+				fraction = (long double) DatumGetFloat8(call_function2(LWGEOM_line_locate_point,
 					traj2, point2));
-				if (fraction != 0 && fraction != 1)
+				if (fraction != 0.0 && fraction != 1.0)
 					value = call_function2(LWGEOM_line_interpolate_point, traj,
-						Float8GetDatum(fraction));
+						Float8GetDatum((double) fraction));
 				pfree(DatumGetPointer(traj));
 				pfree(DatumGetPointer(traj1)); pfree(DatumGetPointer(traj2));
 				pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
 			}
 
-			if (fraction == 0 || fraction == 1)
+			if (fraction == 0.0 || fraction == 1.0)
 			{
 				instants[k++] = temporalinst_make(func(point, value1),
 					inst1->t, FLOAT8OID);
 			}
 			else
 			{
-				TimestampTz time = inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
+				TimestampTz time = inst1->t + (long) (duration * fraction);
 				instants[k++] = temporalinst_make(func(point, value1),
 					inst1->t, FLOAT8OID);
 				if (inst1->valuetypid == type_oid(T_GEOMETRY))
@@ -184,7 +185,10 @@ bool
 tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2, TimestampTz *t)
 {
-	double denum, fraction;
+	long double denum, fraction;
+	long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6;
+	long double duration = (long double) (end1->t - start1->t);
+
 	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
 	{
 		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
@@ -194,19 +198,19 @@ tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *
 		/* The following basically computes d/dx (Euclidean distance) = 0.
 		   To reduce problems related to floating point arithmetic, t1 and t2
 		   are shifted, respectively, to 0 and 1 before computing d/dx */
-		double dx1 = p2.x - p1.x;
-		double dy1 = p2.y - p1.y;
-		double dz1 = p2.z - p1.z;
-		double dx2 = p4.x - p3.x;
-		double dy2 = p4.y - p3.y;
-		double dz2 = p4.z - p3.z;
+		dx1 = p2.x - p1.x;
+		dy1 = p2.y - p1.y;
+		dz1 = p2.z - p1.z;
+		dx2 = p4.x - p3.x;
+		dy2 = p4.y - p3.y;
+		dz2 = p4.z - p3.z;
 		
-		double f1 = p3.x * (dx1 - dx2);
-		double f2 = p1.x * (dx2 - dx1);
-		double f3 = p3.y * (dy1 - dy2);
-		double f4 = p1.y * (dy2 - dy1);
-		double f5 = p3.z * (dz1 - dz2);
-		double f6 = p1.z * (dz2 - dz1);
+		f1 = p3.x * (dx1 - dx2);
+		f2 = p1.x * (dx2 - dx1);
+		f3 = p3.y * (dy1 - dy2);
+		f4 = p1.y * (dy2 - dy1);
+		f5 = p3.z * (dz1 - dz2);
+		f6 = p1.z * (dz2 - dz1);
 
 		denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dz1*(dz1-2*dz2) + 
 			dx2*dx2 + dy2*dy2 + dz2*dz2;
@@ -224,15 +228,15 @@ tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *
 		/* The following basically computes d/dx (Euclidean distance) = 0.
 		   To reduce problems related to floating point arithmetic, t1 and t2
 		   are shifted, respectively, to 0 and 1 before computing d/dx */
-		double dx1 = p2.x - p1.x;
-		double dy1 = p2.y - p1.y;
-		double dx2 = p4.x - p3.x;
-		double dy2 = p4.y - p3.y;
+		dx1 = p2.x - p1.x;
+		dy1 = p2.y - p1.y;
+		dx2 = p4.x - p3.x;
+		dy2 = p4.y - p3.y;
 		
-		double f1 = p3.x * (dx1 - dx2);
-		double f2 = p1.x * (dx2 - dx1);
-		double f3 = p3.y * (dy1 - dy2);
-		double f4 = p1.y * (dy2 - dy1);
+		f1 = p3.x * (dx1 - dx2);
+		f2 = p1.x * (dx2 - dx1);
+		f3 = p3.y * (dy1 - dy2);
+		f4 = p1.y * (dy2 - dy1);
 
 		denum = dx1*(dx1-2*dx2) + dy1*(dy1-2*dy2) + dy2*dy2 + dx2*dx2;
 		/* If the segments are parallel */
@@ -243,7 +247,7 @@ tpointseq_min_dist_at_timestamp(const TemporalInst *start1, const TemporalInst *
 	}
 	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
 		return false;
-	*t = start1->t + (long) ((double)(end1->t - start1->t) * fraction);
+	*t = start1->t + (long) (duration * fraction);
 	return true;
 }
 

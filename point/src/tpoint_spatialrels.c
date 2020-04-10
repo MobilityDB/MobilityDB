@@ -212,13 +212,14 @@ dwithin_tpointseq_tpointseq(TemporalSeq *seq1, TemporalSeq *seq2, Datum d,
 {
 	TemporalInst *start1 = temporalseq_inst_n(seq1, 0);
 	TemporalInst *start2 = temporalseq_inst_n(seq2, 0);
+	bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
+	bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	for (int i = 1; i < seq1->count; i++)
 	{
 		TemporalInst *end1 = temporalseq_inst_n(seq1, i);
 		TemporalInst *end2 = temporalseq_inst_n(seq2, i);
 		if (dwithin_tpointseq_tpointseq1(start1, end1, 
-			MOBDB_FLAGS_GET_LINEAR(seq1->flags), start2, end2,
-			MOBDB_FLAGS_GET_LINEAR(seq2->flags), d, func))
+			linear1, start2, end2, linear2, d, func))
 			return true;
 		start1 = end1;
 		start2 = end2;

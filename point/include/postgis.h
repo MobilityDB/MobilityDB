@@ -111,6 +111,9 @@ extern Datum intersection(PG_FUNCTION_ARGS);
 extern Datum distance(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum distance3d(PG_FUNCTION_ARGS); /* For 3D */
 
+extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);
+extern Datum BOX3D_to_LWGEOM(PG_FUNCTION_ARGS);
+
 extern Datum LWGEOM_addpoint(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_azimuth(PG_FUNCTION_ARGS);
 extern Datum LWGEOM_closestpoint(PG_FUNCTION_ARGS); /* For 2D */
