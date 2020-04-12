@@ -257,14 +257,15 @@ CREATE FUNCTION append(tgeogpoint[])
 AS 'MODULE_PATHNAME', 'temporal_append_array'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Function is not strict
 CREATE FUNCTION merge(tgeompoint, tgeompoint)
 	RETURNS tgeompoint
 	AS 'MODULE_PATHNAME', 'temporal_merge'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION merge(tgeogpoint, tgeogpoint)
 	RETURNS tgeogpoint
 	AS 'MODULE_PATHNAME', 'temporal_merge'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+	LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
  * Functions

@@ -37,60 +37,388 @@
 #include "tpoint_distance.h"
 
 /*****************************************************************************
- * General functions
+ * Compute the intersection, if any, of a segment of a temporal sequence and
+ * a value. The functions are used to add intermediate points when lifting
+ * operators. They suppose that the instants are synchronized, i.e.,
+ * start1->t = start2->t and end1->t = end2->t
+ * The functions only return true when there is an intersection at the
+ * middle, i.e., they return false if they intersect at a bound.
+ * It returns true if there is an intersection in which case it
+ * also returns in the output parameters inter and t the value of the segment
+ * at the intersection timestampt t. The two values inter and value are equal
+ * up to the floating point approximation error. The value inter is computed
+ * only if the passed argument is not NULL.
+ * There is no need to add functions for DoubleN, which are used for computing
+ * avg and centroid aggregates, since these computations are based on sum and
+ * thus they do not need to add intermediate points.
  *****************************************************************************/
 
-/*
- * The memory structure of a TemporalSeq with, e.g., 2 instants and
- * a precomputed trajectory is as follows
- *
- *	-------------------------------------------------------------------
- *	( TemporalSeq )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
- *	-------------------------------------------------------------------
- *	------------------------------------------------------------------------
- *	( TemporalInst_0 )_X | ( TemporalInst_1 )_X | ( bbox )_X | ( Traj )_X  |
- *	------------------------------------------------------------------------
- *
- * where the X are unused bytes added for double padding, offset_0 to offset_1
- * are offsets for the corresponding instants, offset_2 is the offset for the 
- * bounding box and offset_3 is the offset for the precomputed trajectory. 
- * Precomputed trajectories are only kept for temporal points of sequence 
- * duration.
- */
-
-/* N-th TemporalInst of a TemporalSeq */
-
-TemporalInst *
-temporalseq_inst_n(const TemporalSeq *seq, int index)
+static bool
+tnumberseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
+	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
 {
-	return (TemporalInst *)(
-		(char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
-			seq->offsets[index]);					/* offset */
+	assert(inst1->valuetypid == FLOAT8OID);
+	double dvalue1 = DatumGetFloat8(temporalinst_value(inst1));
+	double dvalue2 = DatumGetFloat8(temporalinst_value(inst2));
+	double dvalue = datum_double(value, valuetypid);
+	double min = Min(dvalue1, dvalue2);
+	double max = Max(dvalue1, dvalue2);
+	/* if value is to the left or to the right of the range */
+	if (dvalue < min || dvalue > max)
+		return false;
+
+	double range = (max - min);
+	double partial = (dvalue - min);
+	double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
+	double duration = (inst2->t - inst1->t);
+	if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
+		return false;
+
+	TimestampTz t1 = inst1->t + (long) (duration * fraction);
+	if (inter != NULL)
+		*inter = temporalseq_value_at_timestamp1(inst1, inst2, true, t1);
+	if (t != NULL)
+		*t = t1;
+	return true;
 }
 
-/* Pointer to the bounding box of a TemporalSeq */
-
-void * 
-temporalseq_bbox_ptr(const TemporalSeq *seq)
+static bool
+tpointseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
+	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
 {
-	return (char *)(&seq->offsets[seq->count + 2]) +  	/* start of data */
-		seq->offsets[seq->count];						/* offset */
+	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
+	if (gserialized_is_empty(gs))
+	{
+		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+		return false;
+	}
+
+	/* We are sure that the trajectory is a line */
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	int srid = gserialized_get_srid((GSERIALIZED *) DatumGetPointer(value1));
+	POINT4D proj;
+	POINT4D p1 = datum_get_point4d(value1);
+	POINT4D p2 = datum_get_point4d(value2);
+	POINT4D p = datum_get_point4d(value);
+	closest_point_on_segment(&p, &p1, &p2, &proj);
+	double distance = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+		distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
+		distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
+	if (distance >= EPSILON)
+		return false;
+	if (inter != NULL)
+	{
+		LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
+			lwpoint_make2d(srid, proj.x, proj.y);
+		*inter = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
+		lwpoint_free(lwpoint);
+	}
+	if (t != NULL)
+	{
+		long double duration = (long double) (inst2->t - inst1->t);
+		long double fraction = MOBDB_FLAGS_GET_Z(inst1->flags) ?
+			sqrt(distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
+				distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&p2)) :
+			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
+				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
+		*t = inst1->t + (long) (duration * fraction);
+	}
+	return true;
 }
 
-/* Copy the bounding box of a TemporalSeq in the first argument */
-
-void 
-temporalseq_bbox(void *box, const TemporalSeq *seq)
+bool
+tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
+	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
 {
-	void *box1 = temporalseq_bbox_ptr(seq);
-	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
-	memcpy(box, box1, bboxsize);
+	Datum value1 = temporalinst_value(inst1);
+	Datum value2 = temporalinst_value(inst2);
+	if (datum_eq(value, value1, inst1->valuetypid) ||
+		datum_eq(value, value2, inst1->valuetypid))
+		return false;
+	ensure_linear_interpolation(inst1->valuetypid);
+	if (inst1->valuetypid == FLOAT8OID)
+		return tnumberseq_intersection_value(inst1, inst2, value,
+			valuetypid, inter, t);
+	else if (inst1->valuetypid == type_oid(T_GEOMETRY))
+		return tpointseq_intersection_value(inst1, inst2, value,
+			valuetypid, inter, t);
+	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
+		if (gserialized_is_empty(gs))
+		{
+			POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+			return false;
+		}
+
+		/* We are sure that the trajectory is a line */
+		Datum line = geogpoint_trajectory(value1, value2);
+		bool hasinter = DatumGetFloat8(call_function4(geography_distance, line,
+			value, Float8GetDatum(0.0), BoolGetDatum(false))) < DIST_EPSILON;
+		if (!hasinter)
+		{
+			pfree(DatumGetPointer(line));
+			return false;
+		}
+
+		/* There is no function equivalent to LWGEOM_line_locate_point
+		 * for geographies. We do as the ST_Intersection function, e.g.
+		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+		 * @extschema@._ST_BestSRID($1, $2)),
+		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+
+		Datum bestsrid = call_function2(geography_bestsrid, line, line);
+		Datum line1 = call_function1(geometry_from_geography, line);
+		Datum line2 = call_function2(transform, line1, bestsrid);
+		value1 = call_function1(geometry_from_geography, value);
+		value2 = call_function2(transform, value1, bestsrid);
+		long double duration = (long double) (inst2->t - inst1->t);
+		long double fraction = (long double) DatumGetFloat8(call_function2(
+			LWGEOM_line_locate_point, line2, value2));
+		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
+		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1));
+		pfree(DatumGetPointer(value2));
+		if (fabsl(fraction) < EPSILON || fabsl(fraction - 1.0) < EPSILON)
+			return false;
+		if (t != NULL)
+			*t = inst1->t + (long) (duration * fraction);
+		if (inter != NULL)
+			*inter = call_function2(LWGEOM_line_interpolate_point, line2, value2);
+		return true;
+	}
+	return false; /* Make compiler quiet */
 }
 
-/* 
+/*****************************************************************************
+ * Compute the intersection, if any, of two segments of synchronized temporal
+ * sequences. It returns true if there is an intersection in which chase it
+ * also returns in the output parameters inter1, inter2, and t the value of
+ * the corresponding segment at the intersection timestampt t. The two values
+ * inter1 and inter2 are equal up to the floating point approximation error.
+ * For the temporal point case we cannot use the PostGIS function
+ * lw_dist3d_seg_seg since it does not take time into consideration and
+ * would return, e.g., that the two following segments
+ * [Point(1 1)@t1, Point(2 2)@t2] and [Point(2 2)@t1, Point(1 1)@t2]
+ * intersect at Point(1 1).
+ * This function is used in particular for temporal comparisons such as
+ * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison
+ * changes its value before/at/after the intersection point.
+ *****************************************************************************/
+
+static bool
+tnumberseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2,
+	Datum *inter1, Datum *inter2, TimestampTz *t)
+{
+	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
+	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
+	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
+	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
+	/* Compute the instant t at which the linear functions of the two segments
+	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
+	   To reduce problems related to floating point arithmetic, t1 and t2
+	   are shifted, respectively, to 0 and 1 before the computation */
+	long double denum = x2 - x1 - x4 + x3;
+	if (denum == 0)
+		/* Parallel segments */
+		return false;
+
+	long double duration = (long double) (end1->t - start1->t);
+	long double fraction = ((long double) (x3 - x1)) / denum;
+	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+		/* Intersection occurs out of the period */
+		return false;
+
+	*t = start1->t + (long) (duration * fraction);
+	double x5 = x1 + (double) ((long double) (x2 - x1) * fraction);
+	double x6 = x3 + (double) ((long double) (x4 - x3) * fraction);
+	*inter1 = start1->valuetypid == INT4OID ? Int32GetDatum((int32) x5) :
+		Float8GetDatum(x5);
+	*inter2 = start2->valuetypid == INT4OID ? Int32GetDatum((int32) x6) :
+		Float8GetDatum(x6);
+	return true;
+}
+
+bool
+tpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+	const TemporalInst *start2, const TemporalInst *end2,
+	Datum *inter1, Datum *inter2, TimestampTz *t)
+{
+	int srid = gserialized_get_srid((GSERIALIZED *) DatumGetPointer(temporalinst_value(start1)));
+	long double fraction, xfraction = 0, yfraction = 0, zfraction = 0,
+		xdenum, ydenum, zdenum;
+	LWPOINT *lwinter1, *lwinter2;
+	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+	{
+		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
+		POINT3DZ p2 = datum_get_point3dz(temporalinst_value(end1));
+		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
+		POINT3DZ p4 = datum_get_point3dz(temporalinst_value(end2));
+		xdenum = p2.x - p1.x - p4.x + p3.x;
+		ydenum = p2.y - p1.y - p4.y + p3.y;
+		zdenum = p2.z - p1.z - p4.z + p3.z;
+		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
+			/* Parallel segments */
+			return false;
+
+		if (xdenum != 0)
+		{
+			xfraction = (p3.x - p1.x) / xdenum;
+			/* If intersection occurs out of the period */
+			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (ydenum != 0)
+		{
+			yfraction = (p3.y - p1.y) / ydenum;
+			/* If intersection occurs out of the period */
+			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (zdenum != 0)
+		{
+			/* If intersection occurs out of the period or intersect at different timestamps */
+			zfraction = (p3.z - p1.z) / zdenum;
+			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		/* If intersect at different timestamps on each dimension */
+		if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+			fabsl(xfraction - yfraction) > EPSILON && fabsl(xfraction - zfraction) > EPSILON) ||
+			(xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+			fabsl(yfraction - zfraction) > EPSILON) ||
+			(xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+			fabsl(xfraction - zfraction) > EPSILON) ||
+			(xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+			fabsl(xfraction - yfraction) > EPSILON))
+			return false;
+		if (xdenum != 0)
+			fraction = xfraction;
+		else if (ydenum != 0)
+			fraction = yfraction;
+		else
+			fraction = zfraction;
+		/* Compute the intersection value in the two segments */
+		POINT3DZ p5, p6;
+		p5.x = p1.x + (double) ((long double) (p2.x - p1.x) * fraction);
+		p5.y = p1.y + (double) ((long double) (p2.y - p1.y) * fraction);
+		p5.z = p1.z + (double) ((long double) (p2.z - p1.z) * fraction);
+		p6.x = p3.x + (double) ((long double) (p4.x - p3.x) * fraction);
+		p6.y = p3.y + (double) ((long double) (p4.y - p3.y) * fraction);
+		p6.z = p3.z + (double) ((long double) (p4.z - p3.z) * fraction);
+		lwinter1 = lwpoint_make3dz(srid, p5.x, p5.y, p5.z);
+		lwinter2 = lwpoint_make3dz(srid, p6.x, p6.y, p6.z);
+	}
+	else /* 2D */
+	{
+		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
+		POINT2D p2 = datum_get_point2d(temporalinst_value(end1));
+		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
+		POINT2D p4 = datum_get_point2d(temporalinst_value(end2));
+		xdenum = p2.x - p1.x - p4.x + p3.x;
+		ydenum = p2.y - p1.y - p4.y + p3.y;
+		if (xdenum == 0 && ydenum == 0)
+			/* Parallel segments */
+			return false;
+
+		if (xdenum != 0)
+		{
+			xfraction = (p3.x - p1.x) / xdenum;
+			/* If intersection occurs out of the period */
+			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		if (ydenum != 0)
+		{
+			yfraction = (p3.y - p1.y) / ydenum;
+			/* If intersection occurs out of the period */
+			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+				return false;
+		}
+		/* If intersect at different timestamps on each dimension */
+		if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > EPSILON)
+			return false;
+		fraction = xdenum != 0 ? xfraction : yfraction;
+		/* Compute the intersection value in the two segments */
+		POINT2D p5, p6;
+		p5.x = p1.x + (double) ((long double) (p2.x - p1.x) * fraction);
+		p5.y = p1.y + (double) ((long double) (p2.y - p1.y) * fraction);
+		p6.x = p3.x + (double) ((long double) (p4.x - p3.x) * fraction);
+		p6.y = p3.y + (double) ((long double) (p4.y - p3.y) * fraction);
+		lwinter1 = lwpoint_make2d(srid, p5.x, p5.y);
+		lwinter2 = lwpoint_make2d(srid, p6.x, p6.y);
+	}
+	*inter1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter1));
+	*inter2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter2));
+	lwpoint_free(lwinter1); lwpoint_free(lwinter2);
+	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
+	return true;
+}
+
+bool
+temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, bool linear1,
+	const TemporalInst *start2, const TemporalInst *end2, bool linear2,
+	Datum *inter1, Datum *inter2, TimestampTz *t)
+{
+	bool result = false; /* Make compiler quiet */
+	if (! linear1)
+	{
+		*inter1 = temporalinst_value(start1);
+		result = tlinearseq_intersection_value(start2, end2,
+			*inter1, start1->valuetypid, inter2, t);
+	}
+	else if (! linear2)
+	{
+		*inter2 = temporalinst_value(start2);
+		result = tlinearseq_intersection_value(start1, end1,
+			*inter2, start2->valuetypid, inter1, t);
+	}
+	else
+	{
+		/* Both segments have linear interpolation */
+		ensure_temporal_base_type(start1->valuetypid);
+		if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
+			(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
+			result = tnumberseq_intersection(start1, end1, start2, end2,
+				inter1, inter2, t);
+		else if (start1->valuetypid == type_oid(T_GEOMETRY))
+			result = tpointseq_intersection(start1, end1, start2, end2,
+				inter1, inter2, t);
+		else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
+		{
+			/* For geographies we do as the ST_Intersection function, e.g.
+			 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
+			 * @extschema@._ST_BestSRID($1, $2)),
+			 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
+			Datum line1 = geogpoint_trajectory(temporalinst_value(start1),
+				temporalinst_value(end1));
+			Datum line2 = geogpoint_trajectory(temporalinst_value(start2),
+				temporalinst_value(end2));
+			Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
+			TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
+			TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
+			TemporalInst *start2geom1 = tgeogpointinst_to_tgeompointinst(start2);
+			TemporalInst *end2geom1 = tgeogpointinst_to_tgeompointinst(end2);
+			TemporalInst *start1geom2 = tpointinst_transform(start1, bestsrid);
+			TemporalInst *end1geom2 = tpointinst_transform(start1, bestsrid);
+			TemporalInst *start2geom2 = tpointinst_transform(start2, bestsrid);
+			TemporalInst *end2geom2 = tpointinst_transform(start2, bestsrid);
+			result = tpointseq_intersection(start1geom2, end1geom2,
+				start2geom2, end2geom2, inter1, inter2, t);
+			pfree(DatumGetPointer(line1)); pfree(DatumGetPointer(line2));
+			pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
+			pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
+		}
+	}
+	return result;
+}
+
+/*****************************************************************************
  * Are the three temporal instant values collinear?
- * These functions supposes that the segments are not constant.
- */
+ * These function supposes that the segments are not constant.
+ *****************************************************************************/
 
 static bool
 float_collinear(double x1, double x2, double x3,
@@ -194,7 +522,7 @@ geogpoint_collinear(Datum value1, Datum value2, Datum value3,
 	/* We are sure that the trajectory is a line */
 	Datum line = geogpoint_trajectory(value1, value3);
 	double dist = DatumGetFloat8(call_function4(geography_distance, line,
-			value2, Float8GetDatum(0.0), BoolGetDatum(false)));
+		value2, Float8GetDatum(0.0), BoolGetDatum(false)));
 	return dist <= DIST_EPSILON;
 	/* There is no function equivalent to LWGEOM_line_interpolate_point
 	 * for geographies. We do as the ST_Intersection function, e.g.
@@ -321,6 +649,10 @@ datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	return false;
 }
 
+/*****************************************************************************
+ * Normalization functions
+ *****************************************************************************/
+
 /*
  * Normalize an array of instants.
  * The function assumes that there are at least 2 instants.
@@ -372,109 +704,6 @@ temporalinstarr_normalize(TemporalInst **instants, bool linear, int count,
 	}
 	result[k++] = inst2;
 	*newcount = k;
-	return result;
-}
-
-/*****************************************************************************/
-
-/* Join two temporal sequences
- * This function is called when normalizing an array of sequences. It supposes
- * that the two sequences are adjacent. The resulting sequence will remove the
- * last and/or the first instant of the first/second sequence depending on the
- * values of the last two Boolean arguments. */
-
-TemporalSeq *
-temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2,
-	bool removelast, bool removefirst)
-{
-	/* Ensure that the two sequences has the same interpolation */
-	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
-	Oid valuetypid = seq1->valuetypid;
-
-	size_t bboxsize = temporal_bbox_size(valuetypid);
-	size_t memsize = double_pad(bboxsize);
-
-	int count1 = removelast ? seq1->count - 1 : seq1->count;
-	int start2 = removefirst ? 1 : 0;
-	for (int i = 0; i < count1; i++)
-		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
-	for (int i = start2; i < seq2->count; i++)
-		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
-
-	int count = count1 + (seq2->count - start2);
-
-	bool trajectory = type_has_precomputed_trajectory(valuetypid);
-	Datum traj = 0; /* keep compiler quiet */
-	if (trajectory)
-	{
-		/* A trajectory is a geometry/geography, either a point or a
-		 * linestring, which may be self-intersecting */
-		traj = tpointseq_trajectory_join(seq1, seq2, removelast, removefirst);
-		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
-	}
-
-	/* Add the size of the struct and the offset array
-	 * Notice that the first offset is already declared in the struct */
-	size_t pdata = double_pad(sizeof(TemporalSeq)) + (count + 1) * sizeof(size_t);
-	/* Create the TemporalSeq */
-	TemporalSeq *result = palloc0(pdata + memsize);
-	SET_VARSIZE(result, pdata + memsize);
-	result->count = count;
-	result->valuetypid = valuetypid;
-	result->duration = TEMPORALSEQ;
-	period_set(&result->period, seq1->period.lower, seq2->period.upper,
-		seq1->period.lower_inc, seq2->period.upper_inc);
-	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
-	MOBDB_FLAGS_SET_X(result->flags, true);
-	MOBDB_FLAGS_SET_T(result->flags, true);
-	if (valuetypid == type_oid(T_GEOMETRY) ||
-		valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
-		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
-	}
-
-	/* Initialization of the variable-length part */
-	int k = 0;
-	size_t pos = 0;
-	for (int i = 0; i < count1; i++)
-	{
-		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq1, i),
-			VARSIZE(temporalseq_inst_n(seq1, i)));
-		result->offsets[k++] = pos;
-		pos += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
-	}
-	for (int i = start2; i < seq2->count; i++)
-	{
-		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq2, i),
-			VARSIZE(temporalseq_inst_n(seq2, i)));
-		result->offsets[k++] = pos;
-		pos += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
-	}
-	/*
-	 * Precompute the bounding box
-	 */
-	if (bboxsize != 0)
-	{
-		void *bbox = ((char *) result) + pdata + pos;
-		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
-			memcpy(bbox, &result->period, bboxsize);
-		else
-		{
-			memcpy(bbox, temporalseq_bbox_ptr(seq1), bboxsize);
-			temporal_bbox_expand(bbox, temporalseq_bbox_ptr(seq2), valuetypid);
-		}
-		result->offsets[k] = pos;
-		pos += double_pad(bboxsize);
-	}
-	if (trajectory)
-	{
-		result->offsets[k + 1] = pos;
-		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
-			VARSIZE(DatumGetPointer(traj)));
-		pfree(DatumGetPointer(traj));
-	}
-
 	return result;
 }
 
@@ -586,6 +815,53 @@ temporalseqarr_normalize(TemporalSeq **sequences, int count, int *newcount)
 }
 
 /*****************************************************************************/
+
+/*
+ * The memory structure of a TemporalSeq with, e.g., 2 instants and
+ * a precomputed trajectory is as follows
+ *
+ *	-------------------------------------------------------------------
+ *	( TemporalSeq )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
+ *	-------------------------------------------------------------------
+ *	------------------------------------------------------------------------
+ *	( TemporalInst_0 )_X | ( TemporalInst_1 )_X | ( bbox )_X | ( Traj )_X  |
+ *	------------------------------------------------------------------------
+ *
+ * where the X are unused bytes added for double padding, offset_0 to offset_1
+ * are offsets for the corresponding instants, offset_2 is the offset for the
+ * bounding box and offset_3 is the offset for the precomputed trajectory.
+ * Precomputed trajectories are only kept for temporal points of sequence
+ * duration.
+ */
+
+/* N-th TemporalInst of a TemporalSeq */
+
+TemporalInst *
+temporalseq_inst_n(const TemporalSeq *seq, int index)
+{
+	return (TemporalInst *)(
+		(char *)(&seq->offsets[seq->count + 2]) + 	/* start of data */
+			seq->offsets[index]);					/* offset */
+}
+
+/* Pointer to the bounding box of a TemporalSeq */
+
+void *
+temporalseq_bbox_ptr(const TemporalSeq *seq)
+{
+	return (char *)(&seq->offsets[seq->count + 2]) +  	/* start of data */
+		seq->offsets[seq->count];						/* offset */
+}
+
+/* Copy the bounding box of a TemporalSeq in the first argument */
+
+void
+temporalseq_bbox(void *box, const TemporalSeq *seq)
+{
+	void *box1 = temporalseq_bbox_ptr(seq);
+	size_t bboxsize = temporal_bbox_size(seq->valuetypid);
+	memcpy(box, box1, bboxsize);
+}
 
 /* Construct a TemporalSeq from an array of TemporalInst and the bounds.
  * Depending on the value of the normalize argument, the resulting sequence
@@ -702,6 +978,107 @@ temporalseq_make(TemporalInst **instants, int count, bool lower_inc,
 
 	if (normalize && count > 2)
 		pfree(newinstants);
+
+	return result;
+}
+
+/* Join two temporal sequences
+ * This function is called when normalizing an array of sequences. It supposes
+ * that the two sequences are adjacent. The resulting sequence will remove the
+ * last and/or the first instant of the first/second sequence depending on the
+ * values of the last two Boolean arguments. */
+
+TemporalSeq *
+temporalseq_join(const TemporalSeq *seq1, const TemporalSeq *seq2,
+	bool removelast, bool removefirst)
+{
+	/* Ensure that the two sequences has the same interpolation */
+	assert(MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags));
+	Oid valuetypid = seq1->valuetypid;
+
+	size_t bboxsize = temporal_bbox_size(valuetypid);
+	size_t memsize = double_pad(bboxsize);
+
+	int count1 = removelast ? seq1->count - 1 : seq1->count;
+	int start2 = removefirst ? 1 : 0;
+	for (int i = 0; i < count1; i++)
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
+	for (int i = start2; i < seq2->count; i++)
+		memsize += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
+
+	int count = count1 + (seq2->count - start2);
+
+	bool trajectory = type_has_precomputed_trajectory(valuetypid);
+	Datum traj = 0; /* keep compiler quiet */
+	if (trajectory)
+	{
+		/* A trajectory is a geometry/geography, either a point or a
+		 * linestring, which may be self-intersecting */
+		traj = tpointseq_trajectory_join(seq1, seq2, removelast, removefirst);
+		memsize += double_pad(VARSIZE(DatumGetPointer(traj)));
+	}
+
+	/* Add the size of the struct and the offset array
+	 * Notice that the first offset is already declared in the struct */
+	size_t pdata = double_pad(sizeof(TemporalSeq)) + (count + 1) * sizeof(size_t);
+	/* Create the TemporalSeq */
+	TemporalSeq *result = palloc0(pdata + memsize);
+	SET_VARSIZE(result, pdata + memsize);
+	result->count = count;
+	result->valuetypid = valuetypid;
+	result->duration = TEMPORALSEQ;
+	period_set(&result->period, seq1->period.lower, seq2->period.upper,
+		seq1->period.lower_inc, seq2->period.upper_inc);
+	MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_LINEAR(seq1->flags));
+	MOBDB_FLAGS_SET_X(result->flags, true);
+	MOBDB_FLAGS_SET_T(result->flags, true);
+	if (valuetypid == type_oid(T_GEOMETRY) ||
+		valuetypid == type_oid(T_GEOGRAPHY))
+	{
+		MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(seq1->flags));
+		MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(seq1->flags));
+	}
+
+	/* Initialization of the variable-length part */
+	int k = 0;
+	size_t pos = 0;
+	for (int i = 0; i < count1; i++)
+	{
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq1, i),
+			VARSIZE(temporalseq_inst_n(seq1, i)));
+		result->offsets[k++] = pos;
+		pos += double_pad(VARSIZE(temporalseq_inst_n(seq1, i)));
+	}
+	for (int i = start2; i < seq2->count; i++)
+	{
+		memcpy(((char *)result) + pdata + pos, temporalseq_inst_n(seq2, i),
+			VARSIZE(temporalseq_inst_n(seq2, i)));
+		result->offsets[k++] = pos;
+		pos += double_pad(VARSIZE(temporalseq_inst_n(seq2, i)));
+	}
+	/*
+	 * Precompute the bounding box
+	 */
+	if (bboxsize != 0)
+	{
+		void *bbox = ((char *) result) + pdata + pos;
+		if (valuetypid == BOOLOID || valuetypid == TEXTOID)
+			memcpy(bbox, &result->period, bboxsize);
+		else
+		{
+			memcpy(bbox, temporalseq_bbox_ptr(seq1), bboxsize);
+			temporal_bbox_expand(bbox, temporalseq_bbox_ptr(seq2), valuetypid);
+		}
+		result->offsets[k] = pos;
+		pos += double_pad(bboxsize);
+	}
+	if (trajectory)
+	{
+		result->offsets[k + 1] = pos;
+		memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
+			VARSIZE(DatumGetPointer(traj)));
+		pfree(DatumGetPointer(traj));
+	}
 
 	return result;
 }
@@ -1163,390 +1540,6 @@ intersection_temporalseq_temporalseq(const TemporalSeq *seq1, const TemporalSeq 
 	*inter2 = temporalseq_at_period(seq2, inter);
 	pfree(inter);
 	return true;
-}
-
-/*****************************************************************************
- * Compute the intersection, if any, of a segment of a temporal sequence and
- * a value. The functions are used to add intermediate points when lifting
- * operators. They suppose that the instants are synchronized, i.e.,
- * start1->t = start2->t and end1->t = end2->t
- * The functions only return true when there is an intersection at the
- * middle, i.e., they return false if they intersect at a bound.
- * It returns true if there is an intersection in which case it
- * also returns in the output parameters inter and t the value of the segment
- * at the intersection timestampt t. The two values inter and value are equal
- * up to the floating point approximation error. The value inter is computed
- * only if the passed argument is not NULL.
- * There is no need to add functions for DoubleN, which are used for computing
- * avg and centroid aggregates, since these computations are based on sum and
- * thus they do not need to add intermediate points.
- *****************************************************************************/
-
-static bool
-tnumberseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
-	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
-{
-	double dvalue1 = DatumGetFloat8(temporalinst_value(inst1));
-	double dvalue2 = DatumGetFloat8(temporalinst_value(inst2));
-	double dvalue = datum_double(value, valuetypid);
-	double min = Min(dvalue1, dvalue2);
-	double max = Max(dvalue1, dvalue2);
-	/* if value is to the left or to the right of the range */
-	if (dvalue < min || dvalue > max)
-		return false;
-
-	long double range = (long double) (max - min);
-	long double partial = (long double) (dvalue - min);
-	long double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
-	long double duration = (long double) (inst2->t - inst1->t);
-	if (fabsl(fraction) < EPSILON || fabsl(fraction - 1.0) < EPSILON)
-		return false;
-	if (inter != NULL)
-		*inter = Float8GetDatum(dvalue1 + (double) ((long double) (dvalue2 - dvalue1) * fraction));
-	if (t != NULL)
-		*t = inst1->t + (long) (duration * fraction);
-
-	double range1 = max - min;
-	double partial1 = dvalue - min;
-	double fraction1 = dvalue1 < dvalue2 ? partial1 / range1 : 1 - partial1 / range1;
-	double duration1 = inst2->t - inst1->t;
-	double inter1 = dvalue1 + (double) ((dvalue2 - dvalue1) * fraction);
-	TimestampTz t1  = inst1->t + (long) (duration1 * fraction1);
-
-	return true;
-}
-
-static bool
-tpointseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
-	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
-{
-	GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
-	if (gserialized_is_empty(gs))
-	{
-		POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-		return false;
-	}
-
-	/* We are sure that the trajectory is a line */
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2 = temporalinst_value(inst2);
-	int srid = gserialized_get_srid((GSERIALIZED *) DatumGetPointer(value1));
-	POINT4D proj;
-	POINT4D p1 = datum_get_point4d(value1);
-	POINT4D p2 = datum_get_point4d(value2);
-	POINT4D p = datum_get_point4d(value);
-	closest_point_on_segment(&p, &p1, &p2, &proj);
-	double distance = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-		distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
-		distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
-	if (distance >= EPSILON)
-		return false;
-	if (inter != NULL)
-	{
-		LWPOINT *lwpoint = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
-			lwpoint_make2d(srid, proj.x, proj.y);
-		*inter = PointerGetDatum(geometry_serialize((LWGEOM *)lwpoint));
-		lwpoint_free(lwpoint);
-	}
-	if (t != NULL)
-	{
-		long double duration = (long double) (inst2->t - inst1->t);
-		long double fraction = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-			sqrt(distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
-				distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&p2)) :
-			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
-				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
-		*t = inst1->t + (long) (duration * fraction);
-	}
-	return true;
-}
-
-bool
-tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
-	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
-{
-	Datum value1 = temporalinst_value(inst1);
-	Datum value2 = temporalinst_value(inst2);
-	if (datum_eq(value, value1, inst1->valuetypid) ||
-		datum_eq(value, value2, inst1->valuetypid))
-		return false;
-	ensure_linear_interpolation(inst1->valuetypid);
-	if (inst1->valuetypid == FLOAT8OID)
-		return tnumberseq_intersection_value(inst1, inst2, value,
-			valuetypid, inter, t);
-	else if (inst1->valuetypid == type_oid(T_GEOMETRY))
-		return tpointseq_intersection_value(inst1, inst2, value,
-			valuetypid, inter, t);
-	else if (inst1->valuetypid == type_oid(T_GEOGRAPHY))
-	{
-		GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
-		if (gserialized_is_empty(gs))
-		{
-			POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
-			return false;
-		}
-
-		/* We are sure that the trajectory is a line */
-		Datum line = geogpoint_trajectory(value1, value2);
-		bool hasinter = DatumGetFloat8(call_function4(geography_distance, line,
-			value, Float8GetDatum(0.0), BoolGetDatum(false))) < DIST_EPSILON;
-		if (!hasinter)
-		{
-			pfree(DatumGetPointer(line));
-			return false;
-		}
-
-		/* There is no function equivalent to LWGEOM_line_locate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-
-		Datum bestsrid = call_function2(geography_bestsrid, line, line);
-		Datum line1 = call_function1(geometry_from_geography, line);
-		Datum line2 = call_function2(transform, line1, bestsrid);
-		value1 = call_function1(geometry_from_geography, value);
-		value2 = call_function2(transform, value1, bestsrid);
-		long double duration = (long double) (inst2->t - inst1->t);
-		long double fraction = (long double) DatumGetFloat8(call_function2(
-			LWGEOM_line_locate_point, line2, value2));
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
-		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(value1));
-		pfree(DatumGetPointer(value2));
-		if (fabsl(fraction) < EPSILON || fabsl(fraction - 1.0) < EPSILON)
-			return false;
-		if (t != NULL)
-			*t = inst1->t + (long) (duration * fraction);
-		if (inter != NULL)
-			*inter = call_function2(LWGEOM_line_interpolate_point, line2, value2);
-		return true;
-	}
-	return false; /* Make compiler quiet */
-}
-
-/*****************************************************************************
- * Compute the intersection, if any, of two segments of synchronized temporal
- * sequences. It returns true if there is an intersection in which chase it
- * also returns in the output parameters inter1, inter2, and t the value of
- * the corresponding segment at the intersection timestampt t. The two values
- * inter1 and inter2 are equal up to the floating point approximation error.
- * For the temporal point case we cannot use the PostGIS function
- * lw_dist3d_seg_seg since it does not take time into consideration and
- * would return, e.g., that the two following segments
- * [Point(1 1)@t1, Point(2 2)@t2] and [Point(2 2)@t1, Point(1 1)@t2]
- * intersect at Point(1 1).
- * This function is used in particular for temporal comparisons such as
- * tfloat <comp> tfloat where <comp> is <, <=, ... since the comparison
- * changes its value before/at/after the intersection point.
- *****************************************************************************/
-
-static bool
-tnumberseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2,
-	Datum *inter1, Datum *inter2, TimestampTz *t)
-{
-	double x1 = datum_double(temporalinst_value(start1), start1->valuetypid);
-	double x2 = datum_double(temporalinst_value(end1), start1->valuetypid);
-	double x3 = datum_double(temporalinst_value(start2), start2->valuetypid);
-	double x4 = datum_double(temporalinst_value(end2), start2->valuetypid);
-	/* Compute the instant t at which the linear functions of the two segments
-	   are equal: at + b = ct + d that is t = (d - b) / (a - c).
-	   To reduce problems related to floating point arithmetic, t1 and t2
-	   are shifted, respectively, to 0 and 1 before the computation */
-	long double denum = x2 - x1 - x4 + x3;
-	if (denum == 0)
-		/* Parallel segments */
-		return false;
-
-	long double duration = (long double) (end1->t - start1->t);
-	long double fraction = ((long double) (x3 - x1)) / denum;
-	if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
-		/* Intersection occurs out of the period */
-		return false;
-
-	*t = start1->t + (long) (duration * fraction);
-	double x5 = x1 + (double) ((long double) (x2 - x1) * fraction);
-	double x6 = x3 + (double) ((long double) (x4 - x3) * fraction);
-	*inter1 = start1->valuetypid == INT4OID ? Int32GetDatum((int32) x5) :
-		Float8GetDatum(x5);
-	*inter2 = start2->valuetypid == INT4OID ? Int32GetDatum((int32) x6) :
-		Float8GetDatum(x6);
-	return true;
-}
-
-bool
-tpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
-	const TemporalInst *start2, const TemporalInst *end2,
-	Datum *inter1, Datum *inter2, TimestampTz *t)
-{
-	int srid = gserialized_get_srid((GSERIALIZED *) DatumGetPointer(temporalinst_value(start1)));
-	long double fraction, xfraction = 0, yfraction = 0, zfraction = 0,
-		xdenum, ydenum, zdenum;
-	LWPOINT *lwinter1, *lwinter2;
-	if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
-	{
-		POINT3DZ p1 = datum_get_point3dz(temporalinst_value(start1));
-		POINT3DZ p2 = datum_get_point3dz(temporalinst_value(end1));
-		POINT3DZ p3 = datum_get_point3dz(temporalinst_value(start2));
-		POINT3DZ p4 = datum_get_point3dz(temporalinst_value(end2));
-		xdenum = p2.x - p1.x - p4.x + p3.x;
-		ydenum = p2.y - p1.y - p4.y + p3.y;
-		zdenum = p2.z - p1.z - p4.z + p3.z;
-		if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-			/* Parallel segments */
-			return false;
-
-		if (xdenum != 0)
-		{
-			xfraction = (p3.x - p1.x) / xdenum;
-			/* If intersection occurs out of the period */
-			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		if (ydenum != 0)
-		{
-			yfraction = (p3.y - p1.y) / ydenum;
-			/* If intersection occurs out of the period */
-			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		if (zdenum != 0)
-		{
-			/* If intersection occurs out of the period or intersect at different timestamps */
-			zfraction = (p3.z - p1.z) / zdenum;
-			if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		/* If intersect at different timestamps on each dimension */
-		if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-			fabsl(xfraction - yfraction) > EPSILON && fabsl(xfraction - zfraction) > EPSILON) ||
-			(xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-			fabsl(yfraction - zfraction) > EPSILON) ||
-			(xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-			fabsl(xfraction - zfraction) > EPSILON) ||
-			(xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-			fabsl(xfraction - yfraction) > EPSILON))
-			return false;
-		if (xdenum != 0)
-			fraction = xfraction;
-		else if (ydenum != 0)
-			fraction = yfraction;
-		else
-			fraction = zfraction;
-		/* Compute the intersection value in the two segments */
-		POINT3DZ p5, p6;
-		p5.x = p1.x + (double) ((long double) (p2.x - p1.x) * fraction);
-		p5.y = p1.y + (double) ((long double) (p2.y - p1.y) * fraction);
-		p5.z = p1.z + (double) ((long double) (p2.z - p1.z) * fraction);
-		p6.x = p3.x + (double) ((long double) (p4.x - p3.x) * fraction);
-		p6.y = p3.y + (double) ((long double) (p4.y - p3.y) * fraction);
-		p6.z = p3.z + (double) ((long double) (p4.z - p3.z) * fraction);
-		lwinter1 = lwpoint_make3dz(srid, p5.x, p5.y, p5.z);
-		lwinter2 = lwpoint_make3dz(srid, p6.x, p6.y, p6.z);
-	}
-	else /* 2D */
-	{
-		POINT2D p1 = datum_get_point2d(temporalinst_value(start1));
-		POINT2D p2 = datum_get_point2d(temporalinst_value(end1));
-		POINT2D p3 = datum_get_point2d(temporalinst_value(start2));
-		POINT2D p4 = datum_get_point2d(temporalinst_value(end2));
-		xdenum = p2.x - p1.x - p4.x + p3.x;
-		ydenum = p2.y - p1.y - p4.y + p3.y;
-		if (xdenum == 0 && ydenum == 0)
-			/* Parallel segments */
-			return false;
-
-		if (xdenum != 0)
-		{
-			xfraction = (p3.x - p1.x) / xdenum;
-			/* If intersection occurs out of the period */
-			if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		if (ydenum != 0)
-		{
-			yfraction = (p3.y - p1.y) / ydenum;
-			/* If intersection occurs out of the period */
-			if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-				return false;
-		}
-		/* If intersect at different timestamps on each dimension */
-		if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > EPSILON)
-			return false;
-		fraction = xdenum != 0 ? xfraction : yfraction;
-		/* Compute the intersection value in the two segments */
-		POINT2D p5, p6;
-		p5.x = p1.x + (double) ((long double) (p2.x - p1.x) * fraction);
-		p5.y = p1.y + (double) ((long double) (p2.y - p1.y) * fraction);
-		p6.x = p3.x + (double) ((long double) (p4.x - p3.x) * fraction);
-		p6.y = p3.y + (double) ((long double) (p4.y - p3.y) * fraction);
-		lwinter1 = lwpoint_make2d(srid, p5.x, p5.y);
-		lwinter2 = lwpoint_make2d(srid, p6.x, p6.y);
-	}
-	*inter1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter1));
-	*inter2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwinter2));
-	lwpoint_free(lwinter1); lwpoint_free(lwinter2);
-	*t = start1->t + (long) ((double) (end1->t - start1->t) * fraction);
-	return true;
-}
-
-bool
-temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, bool linear1,
-	const TemporalInst *start2, const TemporalInst *end2, bool linear2,
-	Datum *inter1, Datum *inter2, TimestampTz *t)
-{
-	bool result = false; /* Make compiler quiet */
-	if (! linear1)
-	{
-		*inter1 = temporalinst_value(start1);
-		result = tlinearseq_intersection_value(start2, end2,
-			*inter1, start1->valuetypid, inter2, t);
-	}
-	else if (! linear2)
-	{
-		*inter2 = temporalinst_value(start2);
-		result = tlinearseq_intersection_value(start1, end1,
-			*inter2, start2->valuetypid, inter1, t);
-	}
-	else
-	{
-		/* Both segments have linear interpolation */
-		ensure_temporal_base_type(start1->valuetypid);
-		if ((start1->valuetypid == INT4OID || start1->valuetypid == FLOAT8OID) &&
-			(start2->valuetypid == INT4OID || start2->valuetypid == FLOAT8OID))
-			result = tnumberseq_intersection(start1, end1, start2, end2,
-				inter1, inter2, t);
-		else if (start1->valuetypid == type_oid(T_GEOMETRY))
-			result = tpointseq_intersection(start1, end1, start2, end2,
-				inter1, inter2, t);
-		else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
-		{
-			/* For geographies we do as the ST_Intersection function, e.g.
-			 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-			 * @extschema@._ST_BestSRID($1, $2)),
-			 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-			Datum line1 = geogpoint_trajectory(temporalinst_value(start1),
-				temporalinst_value(end1));
-			Datum line2 = geogpoint_trajectory(temporalinst_value(start2),
-				temporalinst_value(end2));
-			Datum bestsrid = call_function2(geography_bestsrid, line1, line2);
-			TemporalInst *start1geom1 = tgeogpointinst_to_tgeompointinst(start1);
-			TemporalInst *end1geom1 = tgeogpointinst_to_tgeompointinst(end1);
-			TemporalInst *start2geom1 = tgeogpointinst_to_tgeompointinst(start2);
-			TemporalInst *end2geom1 = tgeogpointinst_to_tgeompointinst(end2);
-			TemporalInst *start1geom2 = tpointinst_transform(start1, bestsrid);
-			TemporalInst *end1geom2 = tpointinst_transform(start1, bestsrid);
-			TemporalInst *start2geom2 = tpointinst_transform(start2, bestsrid);
-			TemporalInst *end2geom2 = tpointinst_transform(start2, bestsrid);
-			result = tpointseq_intersection(start1geom2, end1geom2,
-				start2geom2, end2geom2, inter1, inter2, t);
-			pfree(DatumGetPointer(line1)); pfree(DatumGetPointer(line2));
-			pfree(start1geom1); pfree(end1geom1); pfree(start2geom1); pfree(end2geom1);
-			pfree(start1geom2); pfree(end1geom2); pfree(start2geom2); pfree(end2geom2);
-		}
-	}
-	return result;
 }
 
 /*****************************************************************************
@@ -2898,15 +2891,16 @@ static TemporalSeq *
 tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 	bool lower_incl, bool upper_incl, bool linear, RangeType *range)
 {
-	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
+	TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid,
+		TYPECACHE_RANGE_INFO);
 	Datum value1 = temporalinst_value(inst1);
 	Datum value2 = temporalinst_value(inst2);
 	Oid valuetypid = inst1->valuetypid;
 	TemporalInst *instants[2];
 	/* Discrete base type or constant segment */
-	if (!linear || datum_eq(value1, value2, valuetypid))
+	if (! linear || datum_eq(value1, value2, valuetypid))
 	{
-		if (!range_contains_elem_internal(typcache, range, value1)) 
+		if (! range_contains_elem_internal(typcache, range, value1))
 			return NULL;
 
 		instants[0] = (TemporalInst *) inst1;
@@ -2921,10 +2915,11 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 
 	/* Ensure data type with linear interpolation */
 	assert(valuetypid == FLOAT8OID);
-	RangeType *valuerange = (DatumGetFloat8(value1) < DatumGetFloat8(value2)) ?
+	bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
+	RangeType *valuerange = increasing ?
 		range_make(value1, value2, lower_incl, upper_incl, FLOAT8OID) :
-		range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);	
-	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect, 
+		range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);
+	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
 		RangeTypePGetDatum(valuerange), RangeTypePGetDatum(range)));
 	if (RangeIsEmpty(intersect))
 	{
@@ -2933,34 +2928,128 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return NULL;
 	}
 
+	/* We are sure that neither lower or upper are infinite */
+	Datum lower = lower_datum(intersect);
+	Datum upper = upper_datum(intersect);
+	bool lower_inc2 = lower_inc(intersect);
+	bool upper_inc2 = upper_inc(intersect);
+	double dlower = DatumGetFloat8(lower);
+	double dupper = DatumGetFloat8(upper);
+	double dvalue1 = DatumGetFloat8(value1);
+	double dvalue2 = DatumGetFloat8(value2);
+	double min = Min(dvalue1, dvalue2);
+	double max = Max(dvalue1, dvalue2);
+	Datum inter1, inter2;
+	TimestampTz t1, t2;
+	bool foundlower = false, foundupper = false;
+	if (min < dlower && dlower < max)
+	{
+		foundlower = tnumberseq_intersection_value(inst1, inst2, lower,
+			FLOAT8OID, &inter1, &t1);
+	}
+	if (dlower != dupper && min < dupper && dupper < max)
+	{
+		foundupper = tnumberseq_intersection_value(inst1, inst2, upper,
+			FLOAT8OID, &inter2, &t2);
+	}
+
+	TemporalSeq *result;
+	if (dlower == dupper)
+	{
+		instants[0] = temporalinst_make(inter1, t1, valuetypid);
+		result = temporalseq_make(instants, 1, true, true, linear, false);
+		pfree(instants[0]);
+		return result;
+	}
+	if (! foundlower && !foundupper)
+	{
+		instants[0] = (TemporalInst *) inst1;
+		instants[1] = (TemporalInst *) inst2;
+		return temporalseq_make(instants, 2, lower_incl, upper_incl, linear, false);
+	}
+	if (foundlower && foundupper)
+	{
+		if (increasing)
+		{
+			instants[0] = temporalinst_make(inter1, t1, valuetypid);
+			instants[1] = temporalinst_make(inter2, t2, valuetypid);
+			result = temporalseq_make(instants, 2, lower_inc2, upper_inc2, linear, false);
+		}
+		else
+		{
+			instants[0] = temporalinst_make(inter2, t2, valuetypid);
+			instants[1] = temporalinst_make(inter1, t1, valuetypid);
+			result = temporalseq_make(instants, 2, upper_inc2, lower_inc2, linear, false);
+		}
+		pfree(instants[0]); pfree(instants[1]);
+		return result;
+	}
+	if (foundlower)
+	{
+		if (increasing)
+		{
+			instants[0] = temporalinst_make(inter1, t1, valuetypid);
+			instants[1] = (TemporalInst *) inst2;
+			result = temporalseq_make(instants, 2, lower_inc2, upper_incl, linear, false);
+			pfree(instants[0]);
+		}
+		else
+		{
+			instants[0] = (TemporalInst *) inst1;
+			instants[1] = temporalinst_make(inter1, t1, valuetypid);
+			result = temporalseq_make(instants, 2, lower_incl, upper_inc2, linear, false);
+			pfree(instants[1]);
+		}
+		return result;
+	}
+	else /* foundupper */
+	{
+		if (increasing)
+		{
+			instants[0] = (TemporalInst *) inst1;
+			instants[1] = temporalinst_make(inter2, t2, valuetypid);
+			result = temporalseq_make(instants, 2, lower_incl, upper_inc2, linear, false);
+			pfree(instants[1]);
+		}
+		else
+		{
+			instants[0] = temporalinst_make(inter2, t2, valuetypid);
+			instants[1] = (TemporalInst *) inst2;
+			result = temporalseq_make(instants, 2, lower_inc2, upper_incl, linear, false);
+			pfree(instants[0]);
+		}
+		return result;
+	}
+
+	/*
 	TemporalSeq *result;
 	Datum lowervalue = lower_datum(intersect);
 	Datum uppervalue = upper_datum(intersect);
-	/* Intersection range is a single value */
+	/ * Intersection range is a single value * /
 	if (datum_eq(lowervalue, uppervalue, valuetypid))
 	{
-		/* Test with inclusive bounds */
+		/ * Test with inclusive bounds * /
 		TemporalSeq *newseq = temporalseq_at_value1(inst1, inst2, 
 			linear, true, true, lowervalue);
-		/* We are sure that newseq is an instant sequence */
+		/ * We are sure that newseq is an instant sequence * /
 		TemporalInst *inst = temporalseq_inst_n(newseq, 0);
 		result = temporalseq_make(&inst, 1, true, true, linear, false);
 		pfree(newseq); 
 	}
 	else
 	{
-		/* Test with inclusive bounds */
+		/ * Test with inclusive bounds * /
 		TemporalSeq *newseq1 = temporalseq_at_value1(inst1, inst2, 
 			linear, true, true, lowervalue);
 		TemporalSeq *newseq2 = temporalseq_at_value1(inst1, inst2, 
 			linear, true, true, uppervalue);
 		TimestampTz time1 = newseq1->period.lower;
 		TimestampTz time2 = newseq2->period.upper;
-		/* We are sure that both newseq1 and newseq2 are instant sequences */
+		/ * We are sure that both newseq1 and newseq2 are instant sequences * /
 		bool lower_incl1, upper_incl1;
 		if (time1 < time2)
 		{
-			/* Segment increasing in value */
+			/ * Segment increasing in value * /
 			instants[0] = temporalseq_inst_n(newseq1, 0);
 			instants[1] = temporalseq_inst_n(newseq2, 0);
 			lower_incl1 = (time1 == inst1->t) ?
@@ -2970,7 +3059,7 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 		}
 		else
 		{
-			/* Segment decreasing in value */
+			/ * Segment decreasing in value * /
 			instants[0] = temporalseq_inst_n(newseq2, 0);
 			instants[1] = temporalseq_inst_n(newseq1, 0);
 			lower_incl1 = (time2 == inst1->t) ?
@@ -2983,8 +3072,8 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 		pfree(newseq1); pfree(newseq2); 
 	}
 	pfree(valuerange); pfree(intersect); 
-
 	return result;
+	*/
 }
 
 /*

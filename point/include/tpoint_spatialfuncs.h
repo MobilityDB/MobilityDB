@@ -25,8 +25,8 @@
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern double distance3d_sqr_pt_pt(const POINT3D *p1, const POINT3D *p2);
-extern double ptarray_locate_point_ez(const POINTARRAY *pa, const POINT4D *p4d,
-	double *mindistout, POINT4D *proj4d);
+extern double closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A,
+	const POINT4D *B);
 
 /* Parameter tests */
 

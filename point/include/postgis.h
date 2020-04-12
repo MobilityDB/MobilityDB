@@ -99,6 +99,26 @@ extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POI
 
 /* Definitions copied from #include liblwgeom_internal.h */
 
+/**
+* Floating point comparators.
+*/
+#define FP_TOLERANCE 1e-12
+#define FP_IS_ZERO(A) (fabs(A) <= FP_TOLERANCE)
+#define FP_MAX(A, B) (((A) > (B)) ? (A) : (B))
+#define FP_MIN(A, B) (((A) < (B)) ? (A) : (B))
+#define FP_ABS(a)   ((a) <	(0) ? -(a) : (a))
+#define FP_EQUALS(A, B) (fabs((A)-(B)) <= FP_TOLERANCE)
+#define FP_NEQUALS(A, B) (fabs((A)-(B)) > FP_TOLERANCE)
+#define FP_LT(A, B) (((A) + FP_TOLERANCE) < (B))
+#define FP_LTEQ(A, B) (((A) - FP_TOLERANCE) <= (B))
+#define FP_GT(A, B) (((A) - FP_TOLERANCE) > (B))
+#define FP_GTEQ(A, B) (((A) + FP_TOLERANCE) >= (B))
+#define FP_CONTAINS_TOP(A, X, B) (FP_LT(A, X) && FP_LTEQ(X, B))
+#define FP_CONTAINS_BOTTOM(A, X, B) (FP_LTEQ(A, X) && FP_LT(X, B))
+#define FP_CONTAINS_INCL(A, X, B) (FP_LTEQ(A, X) && FP_LTEQ(X, B))
+#define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
+#define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
+
 extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);

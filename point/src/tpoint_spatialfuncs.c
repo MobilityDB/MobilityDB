@@ -1,4 +1,4 @@
-/*****************************************************************************
+/***********************************************************************
  *
  * tpoint_spatialfuncs.c
  *	  Spatial functions for temporal points.
@@ -215,6 +215,72 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Functions specializing the PostGIS functions ST_LineInterpolatePoint and
+ * ST_LineLocatePoint.
+ *****************************************************************************/
+
+Datum
+seg_interpolate_point(Datum start, Datum end, double ratio)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	interpolate_point4d(&p1, &p2, &p, ratio);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
+	return result;
+}
+
+double
+seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p = datum_get_point4d(point);
+	POINT4D proj;
+	closest_point_on_segment(&p, &p1, &p2, &proj);
+	/* Return the closest point if requested */
+	if (closest != NULL)
+	{
+		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
+			lwpoint_make2d(srid, proj.x, proj.y);
+		*closest = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+		lwpoint_free(lwpoint);
+	}
+	/* Return the distance between the segment and the point if requested */
+	if (dist != NULL)
+	{
+		*dist = FLAGS_GET_Z(gs1->flags) ?
+			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
+			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
+	}
+	/* Compute the result */
+	double result;
+	if (p4d_same(&p1, &proj))
+		result = 0.0;
+	else if (p4d_same(&p2, &proj))
+		result = 1.0;
+	else
+	{
+		result = FLAGS_GET_Z(gs1->flags) ?
+			sqrt(distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
+				distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&p2)) :
+			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
+				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
+	}
+	return result;
+}
+
+/*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
  *****************************************************************************/
 
@@ -235,20 +301,57 @@ ptarray_sqr_length_2d(const POINTARRAY *pts)
 	const POINT2D *frm;
 	const POINT2D *to;
 
-	if ( pts->npoints < 2 ) return 0.0;
+	if (pts->npoints < 2)
+		return 0.0;
 
 	frm = getPoint2d_cp(pts, 0);
 
-	for ( i=1; i < pts->npoints; i++ )
+	for (i=1; i < pts->npoints; i++)
 	{
 		to = getPoint2d_cp(pts, i);
 
-		dist += ((frm->x - to->x)*(frm->x - to->x))  +
-		        ((frm->y - to->y)*(frm->y - to->y));
+		dist += ((frm->x - to->x) * (frm->x - to->x)) +
+		        ((frm->y - to->y) * (frm->y - to->y));
 
 		frm = to;
 	}
 	return dist;
+}
+
+/*
+ *  Returns the ratio of the closest point on the segment wrt to the given point.
+ * Function derived from PostGIS function closest_point_on_segment
+ */
+double
+closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT4D *B)
+{
+	double r;
+
+	if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y))
+		return 0.0;
+
+	/*
+	 * We use comp.graphics.algorithms Frequently Asked Questions method
+	 *
+	 * (1)           AC dot AB
+	 *           r = ----------
+	 *                ||AB||^2
+	 *	r has the following meaning:
+	 *	r=0 P = A
+	 *	r=1 P = B
+	 *	r<0 P is on the backward extension of AB
+	 *	r>1 P is on the forward extension of AB
+	 *	0<r<1 P is interior to AB
+	 *
+	 */
+	r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) ) /
+		( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
+
+	if (r < 0)
+		return 0.0;
+	if (r > 1)
+		return 1.0;
+	return r;
 }
 
 /*
@@ -1177,73 +1280,6 @@ tpoint_trajectory(PG_FUNCTION_ARGS)
 	Datum result = tpoint_trajectory_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_RETURN_DATUM(result);
-}
-
-/*****************************************************************************
- * Functions specializing the PostGIS functions ST_LineInterpolatePoint and
- * ST_LineLocatePoint.
- *****************************************************************************/
-
-Datum
-seg_interpolate_point(Datum start, Datum end, double ratio)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
-	int srid = gserialized_get_srid(gs1);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p;
-	interpolate_point4d(&p1, &p2, &p, ratio);
-	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
-		lwpoint_make3dz(srid, p.x, p.y, p.z) :
-		lwpoint_make2d(srid, p.x, p.y);
-	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-	lwpoint_free(lwpoint);
-	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
-	return result;
-}
-
-double
-seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
-{
-	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
-	int srid = gserialized_get_srid(gs1);
-	POINT4D p1 = datum_get_point4d(start);
-	POINT4D p2 = datum_get_point4d(end);
-	POINT4D p = datum_get_point4d(point);
-	POINT4D proj;
-	closest_point_on_segment(&p, &p1, &p2, &proj);
-	/* Return the closest point if requested */
-	if (closest != NULL)
-	{
-		LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
-			lwpoint_make3dz(srid, proj.x, proj.y, proj.z) :
-			lwpoint_make2d(srid, proj.x, proj.y);
-		*closest = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
-		lwpoint_free(lwpoint);
-	}
-	/* Return the distance between the segment and the point if requested */
-	if (dist != NULL)
-	{
-		*dist = FLAGS_GET_Z(gs1->flags) ?
-			distance3d_pt_pt((POINT3D *)&p, (POINT3D *)&proj) :
-			distance2d_pt_pt((POINT2D *)&p, (POINT2D *)&proj);
-	}
-	/* Compute the result */
-	double result;
-	if (p4d_same(&p1, &proj))
-		result = 0.0;
-	else if (p4d_same(&p2, &proj))
-		result = 1.0;
-	else
-	{
-		result = FLAGS_GET_Z(gs1->flags) ?
-			sqrt(distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&proj) /
-				distance3d_sqr_pt_pt((POINT3D *)&p1, (POINT3D *)&p2)) :
-			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
-				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
-	}
-	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
-	return result;
 }
 
 /*****************************************************************************
@@ -2424,7 +2460,7 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return result;
 	}
 
-	/* Look for intersections */
+	/* Look for intersections in linear segment */
 	Datum line = geompoint_trajectory(value1, value2);
 	Datum inter = call_function2(intersection, line, geom);
 	GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
@@ -2437,9 +2473,9 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 		return NULL;
 	}
 
+	POINT4D start = datum_get_point4d(value1);
+	POINT4D end = datum_get_point4d(value2);
 	LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
-	GSERIALIZED *gsline = (GSERIALIZED *) DatumGetPointer(line);
-	LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gsline));
 	int type = lwgeom_inter->type;
 	int countinter;
 	LWPOINT *lwpoint_inter;
@@ -2463,7 +2499,7 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 	}
 	TemporalInst *instants[2];
 	TemporalSeq **result = palloc(sizeof(TemporalSeq *) * countinter);
-	long double duration = (long double) (inst2->t - inst1->t);
+	double duration = (inst2->t - inst1->t);
 	int k = 0;
 	for (int i = 0; i < countinter; i++)
 	{
@@ -2477,26 +2513,24 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 				lwline_inter = lwgeom_as_lwline(subgeom);
 			type = 	subgeom->type;
 		}
-		POINTARRAY *pa = lwline->points;
-		POINT4D p1, p2, proj1, proj2;
-		long double fraction1, fraction2;
+		POINT4D p1, p2;
+		double fraction1, fraction2;
+		TimestampTz t1, t2;
+		Datum point1, point2;
 		/* Each intersection is either a point or a linestring with two points */
 		if (type == POINTTYPE)
 		{
 			lwpoint_getPoint4d_p(lwpoint_inter, &p1);
-			fraction1 = (long double) ptarray_locate_point_ez(pa, &p1, NULL, &proj1);
-			TimestampTz t = inst1->t + (long) (duration * fraction1);
+			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
+			t1 = inst1->t + (long) (duration * fraction1);
 			/* If the intersection is not at an exclusive bound */
-			if ((lower_inc || t > inst1->t) && (upper_inc || t < inst2->t))
+			if ((lower_inc || t1 > inst1->t) && (upper_inc || t1 < inst2->t))
 			{
-				LWPOINT *lwres = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-					lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
-					lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
-				Datum point = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
-				instants[0] = temporalinst_make(point, t, inst1->valuetypid);
+				point1 = temporalseq_value_at_timestamp1(inst1, inst2, true, t1);
+				instants[0] = temporalinst_make(point1, t1, inst1->valuetypid);
 				result[k++] = temporalseq_make(instants, 1, true, true,
 					linear, false);
-				lwpoint_free(lwres); pfree(DatumGetPointer(point));
+				pfree(DatumGetPointer(point1));
 				pfree(instants[0]);
 			}
 		}
@@ -2506,27 +2540,20 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 			LWPOINT *lwpoint2 = lwline_get_lwpoint(lwline_inter, 1);
 			lwpoint_getPoint4d_p(lwpoint1, &p1);
 			lwpoint_getPoint4d_p(lwpoint2, &p2);
-			fraction1 = (long double) ptarray_locate_point_ez(pa, &p1, NULL, &proj1);
-			fraction2 = (long double) ptarray_locate_point_ez(pa, &p2, NULL, &proj2);
-			LWPOINT *lwres1 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-				lwpoint_make3dz(lwline->srid, proj1.x, proj1.y, proj1.z) :
-				lwpoint_make2d(lwline->srid, proj1.x, proj1.y);
-			Datum point1 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres1));
-			LWPOINT *lwres2 = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-					lwpoint_make3dz(lwline->srid, proj2.x, proj2.y, proj2.z) :
-					lwpoint_make2d(lwline->srid, proj2.x, proj2.y);
-			Datum point2 = PointerGetDatum(geometry_serialize((LWGEOM *) lwres2));
-			TimestampTz t1 = inst1->t + (long) (duration * fraction1);
-			TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+			fraction1 = closest_point_on_segment_ratio(&p1, &start, &end);
+			fraction2 = closest_point_on_segment_ratio(&p2, &start, &end);
+			t1 = inst1->t + (long) (duration * fraction1);
+			t2 = inst1->t + (long) (duration * fraction2);
 			TimestampTz lower1 = Min(t1, t2);
 			TimestampTz upper1 = Max(t1, t2);
+			point1 = temporalseq_value_at_timestamp1(inst1, inst2, true, lower1);
+			point2 = temporalseq_value_at_timestamp1(inst1, inst2, true, upper1);
 			instants[0] = temporalinst_make(point1, lower1, inst1->valuetypid);
 			instants[1] = temporalinst_make(point2, upper1, inst1->valuetypid);
 			bool lower_inc1 = (lower1 == inst1->t) ? lower_inc : true;
 			bool upper_inc1 = (upper1 == inst2->t) ? upper_inc : true;
 			result[k++] = temporalseq_make(instants, 2, lower_inc1, upper_inc1,
 				linear, false);
-			lwpoint_free(lwres1); lwpoint_free(lwres2);
 			pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
 			pfree(instants[0]); pfree(instants[1]);
 		}
@@ -2535,8 +2562,8 @@ tpointseq_at_geometry1(const TemporalInst *inst1, const TemporalInst *inst2,
 	pfree(DatumGetPointer(line));
 	pfree(DatumGetPointer(inter));
 	POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
-	POSTGIS_FREE_IF_COPY_P(gsline, DatumGetPointer(gsline));
-	lwline_free(lwline);
+//	POSTGIS_FREE_IF_COPY_P(gsline, DatumGetPointer(gsline));
+//	lwline_free(lwline);
 	lwgeom_free(lwgeom_inter);
 
 	if (k == 0)
@@ -3094,9 +3121,12 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 	LWLINE *lwline = geompoint_trajectory_lwline(value1, value2);
 	LWPOINT *lwpoint = lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom,
 		lwline->srid, DIST_MIN, dist);
-	POINT4D p, p_proj;
+	POINT4D p, proj;
 	lwpoint_getPoint4d_p(lwpoint, &p);
-	long double fraction = (long double) ptarray_locate_point_ez(lwline->points, &p, NULL, &p_proj);
+	POINT4D start = datum_get_point4d(value1);
+	POINT4D end = datum_get_point4d(value2);
+	double fraction = closest_point_on_segment_ratio(&p, &start, &end);
+//	long double fraction = (long double) ptarray_locate_point_ez(lwline->points, &p, NULL, &proj);
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
 	if (fraction == 0)
@@ -3115,7 +3145,7 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 	long double duration = (long double) (inst2->t - inst1->t);
 	*t = inst1->t + (long)(duration * fraction);
 	*tofree = true;
-	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, p_proj.x, p_proj.y);
+	LWPOINT *lwres = lwpoint_make2d(lwpoint->srid, proj.x, proj.y);
 	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwres));
 	lwpoint_free(lwres);
 	return result;
