@@ -18,6 +18,35 @@
 
 #include <liblwgeom.h>
 
+/*****************************************************************************/
+// Definitions needed for developing geography_line_interpolate_point
+
+/**
+* Conversion functions
+*/
+#define deg2rad(d) (M_PI * (d) / 180.0)
+#define rad2deg(r) (180.0 * (r) / M_PI)
+
+/**
+* Point in spherical coordinates on the world. Units of radians.
+*/
+typedef struct
+{
+	double lon;
+	double lat;
+} GEOGRAPHIC_POINT;
+
+extern int spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s);
+extern double ptarray_length_spheroid(const POINTARRAY *pa, const SPHEROID *s);
+extern int lwline_is_empty(const LWLINE *line);
+extern void geographic_point_init(double lon, double lat, GEOGRAPHIC_POINT *g);
+extern double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT *e);
+extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
+extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
+void normalize(POINT3D *p);
+
+/*****************************************************************************/
+
 /* Definitions copied from gserialized_gist.h */
 
 /*

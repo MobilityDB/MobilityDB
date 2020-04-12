@@ -107,6 +107,28 @@ CREATE FUNCTION tbox(floatrange, period)
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Restriction at/minus tbox
+ *****************************************************************************/
+
+CREATE FUNCTION atTbox(tint, tbox)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'tnumber_at_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION atTbox(tfloat, tbox)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'tnumber_at_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusTbox(tint, tbox)
+	RETURNS tint
+	AS 'MODULE_PATHNAME', 'tnumber_minus_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minusTbox(tfloat, tbox)
+	RETURNS tfloat
+	AS 'MODULE_PATHNAME', 'tnumber_minus_tbox'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Selectively functions for operators
  *****************************************************************************/
 

@@ -3801,7 +3801,8 @@ temporalseq_at_period(const TemporalSeq *seq, const Period *p)
 	/* The last two values of sequences with step interpolation and
 	   exclusive upper bound must be equal */
 	if (linear || inter->upper_inc)
-		instants[k++] = temporalseq_at_timestamp1(inst1, inst2, inter->upper, true);
+		instants[k++] = temporalseq_at_timestamp1(inst1, inst2, inter->upper,
+			linear);
 	else
 	{	
 		Datum value = temporalinst_value(instants[k - 1]);

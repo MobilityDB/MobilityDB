@@ -2682,6 +2682,26 @@ temporal_minus_values(PG_FUNCTION_ARGS)
 
 /* Restriction to a range */
 
+Temporal *
+tnumber_at_range_internal(const Temporal *temp, RangeType *range)
+{
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tnumberinst_at_range(
+			(TemporalInst *)temp, range);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tnumberi_at_range(
+			(TemporalI *)temp, range);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tnumberseq_at_range(
+			(TemporalSeq *)temp, range);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tnumbers_at_range(
+			(TemporalS *)temp, range);
+	return result;
+}
+
 PG_FUNCTION_INFO_V1(tnumber_at_range);
 
 PGDLLEXPORT Datum
@@ -2689,20 +2709,7 @@ tnumber_at_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)tnumberinst_at_range(
-			(TemporalInst *)temp, range);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)tnumberi_at_range(
-			(TemporalI *)temp, range);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)tnumberseq_at_range(
-			(TemporalSeq *)temp, range);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tnumbers_at_range(
-			(TemporalS *)temp, range);
+	Temporal *result = tnumber_at_range_internal(temp, range);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
 	if (result == NULL)
@@ -2712,6 +2719,28 @@ tnumber_at_range(PG_FUNCTION_ARGS)
 
 /* Restriction to minus range */
 
+Temporal *
+tnumber_minus_range_internal(const Temporal *temp, RangeType *range)
+{
+	Temporal *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (Temporal *)tnumberinst_minus_range(
+			(TemporalInst *)temp, range);
+	else if (temp->duration == TEMPORALI)
+		result = (Temporal *)tnumberi_minus_range(
+			(TemporalI *)temp, range);
+	else if (temp->duration == TEMPORALSEQ)
+		result = (Temporal *)tnumberseq_minus_range(
+			(TemporalSeq *)temp, range);
+	else /* temp->duration == TEMPORALS */
+		result = (Temporal *)tnumbers_minus_range(
+			(TemporalS *)temp, range);
+	return result;
+}
+
+
+
 PG_FUNCTION_INFO_V1(tnumber_minus_range);
 
 PGDLLEXPORT Datum
@@ -2719,20 +2748,7 @@ tnumber_minus_range(PG_FUNCTION_ARGS)
 {
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	RangeType *range = PG_GETARG_RANGE_P(1);
-	Temporal *result;
-	ensure_valid_duration(temp->duration);
-	if (temp->duration == TEMPORALINST) 
-		result = (Temporal *)tnumberinst_minus_range(
-			(TemporalInst *)temp, range);
-	else if (temp->duration == TEMPORALI) 
-		result = (Temporal *)tnumberi_minus_range(
-			(TemporalI *)temp, range);
-	else if (temp->duration == TEMPORALSEQ) 
-		result = (Temporal *)tnumberseq_minus_range(
-			(TemporalSeq *)temp, range);
-	else /* temp->duration == TEMPORALS */
-		result = (Temporal *)tnumbers_minus_range(
-			(TemporalS *)temp, range);
+	Temporal *result = tnumber_minus_range_internal(temp, range);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(range, 1);
 	if (result == NULL)

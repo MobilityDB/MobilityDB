@@ -402,7 +402,9 @@ extern Datum temporal_intersects_timestamp(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
 extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
- 
+
+extern Temporal *tnumber_at_range_internal(const Temporal *temp, RangeType *range);
+extern Temporal *tnumber_minus_range_internal(const Temporal *temp, RangeType *range);
 extern Temporal *temporal_at_min_internal(const Temporal *temp);
 extern TemporalInst *temporal_at_timestamp_internal(const Temporal *temp, TimestampTz t);
 extern Temporal *temporal_at_period_internal(const Temporal *temp, const Period *ps);

@@ -32,6 +32,188 @@
 #include "tpoint_distance.h"
 #include "tpoint_spatialrels.h"
 
+/***********************************************************************
+ * Interpolate a point along a geographic line.
+ ***********************************************************************/
+
+/**
+ * Find interpolation point p
+ * between geography points p1 and p2
+ * so that the len(p1,p) == len(p1,p2) * f
+ * and p falls on p1,p2 segment.
+ */
+void
+geography_interpolate_point4d(
+	const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
+	const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
+	double f, /* fraction */
+	POINT4D *p) /* write out results here */
+{
+	/* Calculate interpolated point */
+	POINT3D mid;
+	mid.x = p1->x + ((p2->x - p1->x) * f);
+	mid.y = p1->y + ((p2->y - p1->y) * f);
+	mid.z = p1->z + ((p2->z - p1->z) * f);
+	normalize(&mid);
+
+	/* Calculate z/m values */
+	GEOGRAPHIC_POINT g;
+	cart2geog(&mid, &g);
+	p->x = rad2deg(g.lon);
+	p->y = rad2deg(g.lat);
+	p->z = v1->z + ((v2->z - v1->z) * f);
+	p->m = v1->m + ((v2->m - v1->m) * f);
+}
+
+POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fraction,
+	const SPHEROID *s, char repeat)
+{
+	POINT4D pt;
+	uint32_t i;
+	uint32_t points_to_interpolate;
+	uint32_t points_found = 0;
+	double length;
+	double length_fraction_increment = length_fraction;
+	double length_fraction_consumed = 0;
+	char has_z = (char) lwgeom_has_z(lwline_as_lwgeom(line));
+	char has_m = (char) lwgeom_has_m(lwline_as_lwgeom(line));
+	const POINTARRAY* ipa = line->points;
+	POINTARRAY* opa;
+	POINT4D p1, p2;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+
+	/* Empty.InterpolatePoint == Point Empty */
+	if ( lwline_is_empty(line) )
+	{
+		return ptarray_construct_empty(has_z, has_m, 0);
+	}
+
+	/* If distance is one of the two extremes, return the point on that
+	 * end rather than doing any computations
+	 */
+	if ( length_fraction == 0.0 || length_fraction == 1.0 )
+	{
+		if ( length_fraction == 0.0 )
+			getPoint4d_p(ipa, 0, &pt);
+		else
+			getPoint4d_p(ipa, ipa->npoints-1, &pt);
+
+		opa = ptarray_construct(has_z, has_m, 1);
+		ptarray_set_point4d(opa, 0, &pt);
+
+		return opa;
+	}
+
+	/* Interpolate points along the line */
+	length = ptarray_length_spheroid(ipa, s);
+	points_to_interpolate = repeat ? (uint32_t) floor(1 / length_fraction) : 1;
+	opa = ptarray_construct(has_z, has_m, points_to_interpolate);
+
+	getPoint4d_p(ipa, 0, &p1);
+	geographic_point_init(p1.x, p1.y, &g1);
+	for ( i = 0; i < ipa->npoints - 1 && points_found < points_to_interpolate; i++ )
+	{
+		getPoint4d_p(ipa, i+1, &p2);
+		geographic_point_init(p2.x, p2.y, &g2);
+		double segment_length_frac = sphere_distance(&g1, &g2) / length;
+
+		/* If our target distance is before the total length we've seen
+		 * so far. create a new point some distance down the current
+		 * segment.
+		 */
+		while ( length_fraction < length_fraction_consumed + segment_length_frac && points_found < points_to_interpolate )
+		{
+			geog2cart(&g1, &q1);
+			geog2cart(&g2, &q2);
+			double segment_fraction = (length_fraction - length_fraction_consumed) / segment_length_frac;
+			geography_interpolate_point4d(&q1, &q2, &p1, &p2, segment_fraction, &pt);
+			ptarray_set_point4d(opa, points_found++, &pt);
+			length_fraction += length_fraction_increment;
+		}
+
+		length_fraction_consumed += segment_length_frac;
+
+		p1 = p2;
+		g1 = g2;
+	}
+
+	/* Return the last point on the line. This shouldn't happen, but
+	 * could if there's some floating point rounding errors. */
+	if (points_found < points_to_interpolate) {
+		getPoint4d_p(ipa, ipa->npoints - 1, &pt);
+		ptarray_set_point4d(opa, points_found, &pt);
+	}
+
+    return opa;
+}
+
+void spheroid_init(SPHEROID *s, double a, double b)
+{
+	s->a = a;
+	s->b = b;
+	s->f = (a - b) / a;
+	s->e_sq = (a*a - b*b)/(a*a);
+	s->radius = (2.0 * a + b ) / 3.0;
+}
+
+PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
+Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
+{
+	GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+	GSERIALIZED *result;
+	double distance_fraction = PG_GETARG_FLOAT8(1);
+	bool use_spheroid = PG_GETARG_BOOL(2);
+	int repeat = PG_NARGS() > 3 && PG_GETARG_BOOL(3);
+	int srid = gserialized_get_srid(gser);
+	LWLINE* lwline;
+	LWGEOM* lwresult;
+	POINTARRAY* opa;
+	SPHEROID s;
+
+	if ( distance_fraction < 0 || distance_fraction > 1 )
+	{
+		elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	if ( gserialized_get_type(gser) != LINETYPE )
+	{
+		elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
+		PG_FREE_IF_COPY(gser, 0);
+		PG_RETURN_NULL();
+	}
+
+	/* Initialize spheroid */
+	/* We cannot use the following statement since PROJ4 API is not
+	 * available directly to MobilityDB. */
+	// spheroid_init_from_srid(fcinfo, srid, &s);
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+
+	/* User requests spherical calculation, turn our spheroid into a sphere */
+	if ( ! use_spheroid )
+		s.a = s.b = s.radius;
+
+	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+	opa = geography_interpolate_points(lwline, distance_fraction, &s, repeat);
+
+	lwgeom_free(lwline_as_lwgeom(lwline));
+	PG_FREE_IF_COPY(gser, 0);
+
+	if (opa->npoints <= 1)
+	{
+		lwresult = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
+	} else {
+		lwresult = lwmpoint_as_lwgeom(lwmpoint_construct(srid, opa));
+	}
+
+	result = geometry_serialize(lwresult);
+	lwgeom_free(lwresult);
+
+	PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision
  *****************************************************************************/
