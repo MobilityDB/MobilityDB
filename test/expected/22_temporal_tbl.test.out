@@ -1674,7 +1674,7 @@ SELECT COUNT(*) FROM tbl_tint, tbl_intrange
 WHERE atRange(temp, i) IS NOT NULL;
  count 
 -------
-  2231
+  2346
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat, tbl_floatrange 

@@ -97,7 +97,11 @@ typedef struct
 /*  Finds the two closest points and distance between two linesegments */
 extern int lw_dist3d_seg_seg(POINT3DZ *s1p1, POINT3DZ *s1p2, POINT3DZ *s2p1, POINT3DZ *s2p2, DISTPTS3D *dl);
 
-/* Definitions copied from #include liblwgeom_internal.h */
+/* Definitions copied from lwgeodetic.h */
+
+double spheroid_distance(const GEOGRAPHIC_POINT *a, const GEOGRAPHIC_POINT *b, const SPHEROID *spheroid);
+
+/* Definitions copied from liblwgeom_internal.h */
 
 /**
 * Floating point comparators.

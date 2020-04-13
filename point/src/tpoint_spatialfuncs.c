@@ -116,7 +116,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line, double length_fract
 	{
 		getPoint4d_p(ipa, i+1, &p2);
 		geographic_point_init(p2.x, p2.y, &g2);
-		double segment_length_frac = sphere_distance(&g1, &g2) / length;
+		double segment_length_frac = spheroid_distance(&g1, &g2, s) / length;
 
 		/* If our target distance is before the total length we've seen
 		 * so far. create a new point some distance down the current
@@ -220,7 +220,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 Datum
-seg_interpolate_point(Datum start, Datum end, double ratio)
+geomseg_interpolate_point(Datum start, Datum end, double ratio)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
 	int srid = gserialized_get_srid(gs1);
@@ -238,7 +238,7 @@ seg_interpolate_point(Datum start, Datum end, double ratio)
 }
 
 double
-seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
+geomseg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist)
 {
 	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
 	int srid = gserialized_get_srid(gs1);
@@ -277,6 +277,33 @@ seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *di
 			sqrt(distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&proj) /
 				distance2d_sqr_pt_pt((POINT2D *)&p1, (POINT2D *)&p2));
 	}
+	return result;
+}
+
+/*****************************************************************************/
+
+Datum
+geogseg_interpolate_point(Datum start, Datum end, double ratio)
+{
+	GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(start);
+	int srid = gserialized_get_srid(gs1);
+	POINT4D p1 = datum_get_point4d(start);
+	POINT4D p2 = datum_get_point4d(end);
+	POINT4D p;
+	POINT3D q1, q2;
+	GEOGRAPHIC_POINT g1, g2;
+	geographic_point_init(p1.x, p1.y, &g1);
+	geographic_point_init(p2.x, p2.y, &g2);
+	geog2cart(&g1, &q1);
+	geog2cart(&g2, &q2);
+	geography_interpolate_point4d(&q1, &q2, &p1, &p2, ratio, &p);
+	LWPOINT *lwpoint = FLAGS_GET_Z(gs1->flags) ?
+		lwpoint_make3dz(srid, p.x, p.y, p.z) :
+		lwpoint_make2d(srid, p.x, p.y);
+	FLAGS_SET_GEODETIC(lwpoint->flags, true);
+	Datum result = PointerGetDatum(geometry_serialize((LWGEOM *) lwpoint));
+	lwpoint_free(lwpoint);
+	POSTGIS_FREE_IF_COPY_P(gs1, DatumGetPointer(start));
 	return result;
 }
 
@@ -352,98 +379,6 @@ closest_point_on_segment_ratio(const POINT4D *p, const POINT4D *A, const POINT4D
 	if (r > 1)
 		return 1.0;
 	return r;
-}
-
-/*
- * Given a point, returns the location of closest point on pointarray
- * and, optionally, it's actual distance from the point array.
- */
-double
-ptarray_locate_point_ez(const POINTARRAY *pa, const POINT4D *p4d, double *mindistout, POINT4D *proj4d)
-{
-	double mindist=DBL_MAX;
-	double tlen, plen;
-	uint32_t t, seg=0;
-	POINT4D	start4d, end4d, projtmp;
-	POINT2D proj, p;
-	const POINT2D *start = NULL, *end = NULL;
-
-	/* Initialize our 2D copy of the input parameter */
-	p.x = p4d->x;
-	p.y = p4d->y;
-
-	if ( ! proj4d ) proj4d = &projtmp;
-
-	/* Check for special cases (length 0 and 1) */
-	if ( pa->npoints <= 1 )
-	{
-		if ( pa->npoints == 1 )
-		{
-			getPoint4d_p(pa, 0, proj4d);
-			if ( mindistout )
-				*mindistout = distance2d_pt_pt(&p, getPoint2d_cp(pa, 0));
-		}
-		return 0.0;
-	}
-
-	start = getPoint2d_cp(pa, 0);
-	/* Loop through pointarray looking for nearest segment */
-	for (t=1; t<pa->npoints; t++)
-	{
-		double dist;
-		end = getPoint2d_cp(pa, t);
-		dist = distance2d_pt_seg(&p, start, end);
-
-		if ( dist < mindist )
-		{
-			mindist = dist;
-			seg=t-1;
-			if ( mindist == 0 )
-			{
-				break;
-			}
-		}
-
-		start = end;
-	}
-
-	if ( mindistout ) *mindistout = mindist;
-
-	/*
-	 * We need to project the
-	 * point on the closest segment.
-	 */
-	getPoint4d_p(pa, seg, &start4d);
-	getPoint4d_p(pa, seg+1, &end4d);
-	closest_point_on_segment(p4d, &start4d, &end4d, proj4d);
-
-	/* Copy 4D values into 2D holder */
-	proj.x = proj4d->x;
-	proj.y = proj4d->y;
-
-	/* For robustness, force 1 when closest point == endpoint */
-	if ( (seg >= (pa->npoints-2)) && p2d_same(&proj, end) )
-	{
-		return 1.0;
-	}
-
-	tlen = ptarray_sqr_length_2d(pa);
-
-	/* Location of any point on a zero-length line is 0 */
-	/* See http://trac.osgeo.org/postgis/ticket/1772#comment:2 */
-	if ( tlen == 0 ) return 0;
-
-	plen=0;
-	start = getPoint2d_cp(pa, 0);
-	for (t=0; t<seg; t++, start=end)
-	{
-		end = getPoint2d_cp(pa, t+1);
-		plen += distance2d_sqr_pt_pt(start, end);
-	}
-
-	plen+=distance2d_sqr_pt_pt(&proj, start);
-
-	return sqrt(plen/tlen);
 }
 
 /*****************************************************************************
@@ -3126,7 +3061,6 @@ NAI_tpointseq_geom1(const TemporalInst *inst1, const TemporalInst *inst2,
 	POINT4D start = datum_get_point4d(value1);
 	POINT4D end = datum_get_point4d(value2);
 	double fraction = closest_point_on_segment_ratio(&p, &start, &end);
-//	long double fraction = (long double) ptarray_locate_point_ez(lwline->points, &p, NULL, &proj);
 	lwline_free(lwline); lwpoint_free(lwpoint);
 
 	if (fraction == 0)

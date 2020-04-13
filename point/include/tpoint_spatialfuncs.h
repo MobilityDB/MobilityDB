@@ -65,8 +65,14 @@ extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED* geometry_serialize(LWGEOM *geom);
 
-extern Datum seg_interpolate_point(Datum value1, Datum value2, double ratio);
-extern double seg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist);
+extern Datum geomseg_interpolate_point(Datum value1, Datum value2, double ratio);
+extern double geomseg_locate_point(Datum start, Datum end, Datum point, Datum *closest, double *dist);
+
+extern Datum geogseg_interpolate_point(Datum value1, Datum value2, double ratio);
+
+extern void spheroid_init(SPHEROID *s, double a, double b);
+extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
+	const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
 
 /* Functions for spatial reference systems */
 

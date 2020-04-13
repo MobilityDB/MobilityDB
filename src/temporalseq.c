@@ -519,29 +519,25 @@ static bool
 geogpoint_collinear(Datum value1, Datum value2, Datum value3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
 {
-	/* We are sure that the trajectory is a line */
-	Datum line = geogpoint_trajectory(value1, value3);
-	double dist = DatumGetFloat8(call_function4(geography_distance, line,
-		value2, Float8GetDatum(0.0), BoolGetDatum(false)));
-	return dist <= DIST_EPSILON;
-	/* There is no function equivalent to LWGEOM_line_interpolate_point
-	 * for geographies. We do as the ST_Intersection function, e.g.
-	 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-	 * @extschema@._ST_BestSRID($1, $2)),
-	 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-	/*
-	Datum bestsrid = call_function2(geography_bestsrid, value1, value3);
-	Datum line1 = call_function1(geometry_from_geography, line);
-	Datum line2 = call_function2(transform, line1, bestsrid);
-	Datum point = call_function2(LWGEOM_line_interpolate_point,
-		line2, Float8GetDatum(ratio));
-	Datum srid = call_function1(LWGEOM_get_srid, value1);
-	Datum point1 = call_function2(transform, point, srid);
-	result = call_function1(geography_from_geometry, point1);
-	pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
-	pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
-	 */
-	/* Cannot pfree(DatumGetPointer(point1)); */
+	double duration1 = (double) (t2 - t1);
+	double duration2 = (double) (t3 - t1);
+	double ratio = duration1 / duration2;
+	SPHEROID s;
+	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
+	POINT4D point1 = datum_get_point4d(value1);
+	POINT4D point2 = datum_get_point4d(value2);
+	POINT4D point3 = datum_get_point4d(value3);
+	POINT4D point;
+	POINT3D q1, q3;
+	GEOGRAPHIC_POINT g1, g2, g3, g;
+	geographic_point_init(point1.x, point1.y, &g1);
+	geographic_point_init(point2.x, point2.y, &g2);
+	geographic_point_init(point3.x, point3.y, &g3);
+	geog2cart(&g1, &q1);
+	geog2cart(&g3, &q3);
+	geography_interpolate_point4d(&q1, &q3, &point1, &point3, ratio, &point);
+	geographic_point_init(point.x, point.y, &g);
+	return spheroid_distance(&g2, &g, &s) <= EPSILON;
 }
 
 static bool
@@ -2921,9 +2917,9 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 		range_make(value2, value1, upper_incl, lower_incl, FLOAT8OID);
 	RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
 		RangeTypePGetDatum(valuerange), RangeTypePGetDatum(range)));
+	pfree(valuerange);
 	if (RangeIsEmpty(intersect))
 	{
-		pfree(valuerange);
 		pfree(intersect);
 		return NULL;
 	}
@@ -2933,34 +2929,37 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum upper = upper_datum(intersect);
 	bool lower_inc2 = lower_inc(intersect);
 	bool upper_inc2 = upper_inc(intersect);
+	pfree(intersect);
 	double dlower = DatumGetFloat8(lower);
 	double dupper = DatumGetFloat8(upper);
 	double dvalue1 = DatumGetFloat8(value1);
 	double dvalue2 = DatumGetFloat8(value2);
+	TemporalSeq *result;
+	TimestampTz t1, t2;
+	bool foundlower = false, foundupper = false;
+	if (dlower == dupper)
+	{
+		t1 = dlower == dvalue1 ? inst1->t : inst2->t;
+		instants[0] = temporalinst_make(lower, t1, valuetypid);
+		result = temporalseq_make(instants, 1, true, true, linear, false);
+		pfree(instants[0]);
+		return result;
+	}
+
 	double min = Min(dvalue1, dvalue2);
 	double max = Max(dvalue1, dvalue2);
 	Datum inter1, inter2;
-	TimestampTz t1, t2;
-	bool foundlower = false, foundupper = false;
-	if (min < dlower && dlower < max)
+	if (min <= dlower && dlower <= max)
 	{
 		foundlower = tnumberseq_intersection_value(inst1, inst2, lower,
 			FLOAT8OID, &inter1, &t1);
 	}
-	if (dlower != dupper && min < dupper && dupper < max)
+	if (dlower != dupper && min <= dupper && dupper <= max)
 	{
 		foundupper = tnumberseq_intersection_value(inst1, inst2, upper,
 			FLOAT8OID, &inter2, &t2);
 	}
 
-	TemporalSeq *result;
-	if (dlower == dupper)
-	{
-		instants[0] = temporalinst_make(inter1, t1, valuetypid);
-		result = temporalseq_make(instants, 1, true, true, linear, false);
-		pfree(instants[0]);
-		return result;
-	}
 	if (! foundlower && !foundupper)
 	{
 		instants[0] = (TemporalInst *) inst1;
@@ -3020,60 +3019,6 @@ tnumberseq_at_range1(const TemporalInst *inst1, const TemporalInst *inst2,
 		}
 		return result;
 	}
-
-	/*
-	TemporalSeq *result;
-	Datum lowervalue = lower_datum(intersect);
-	Datum uppervalue = upper_datum(intersect);
-	/ * Intersection range is a single value * /
-	if (datum_eq(lowervalue, uppervalue, valuetypid))
-	{
-		/ * Test with inclusive bounds * /
-		TemporalSeq *newseq = temporalseq_at_value1(inst1, inst2, 
-			linear, true, true, lowervalue);
-		/ * We are sure that newseq is an instant sequence * /
-		TemporalInst *inst = temporalseq_inst_n(newseq, 0);
-		result = temporalseq_make(&inst, 1, true, true, linear, false);
-		pfree(newseq); 
-	}
-	else
-	{
-		/ * Test with inclusive bounds * /
-		TemporalSeq *newseq1 = temporalseq_at_value1(inst1, inst2, 
-			linear, true, true, lowervalue);
-		TemporalSeq *newseq2 = temporalseq_at_value1(inst1, inst2, 
-			linear, true, true, uppervalue);
-		TimestampTz time1 = newseq1->period.lower;
-		TimestampTz time2 = newseq2->period.upper;
-		/ * We are sure that both newseq1 and newseq2 are instant sequences * /
-		bool lower_incl1, upper_incl1;
-		if (time1 < time2)
-		{
-			/ * Segment increasing in value * /
-			instants[0] = temporalseq_inst_n(newseq1, 0);
-			instants[1] = temporalseq_inst_n(newseq2, 0);
-			lower_incl1 = (time1 == inst1->t) ?
-				lower_incl && lower_inc(intersect) : lower_inc(intersect);
-			upper_incl1 = (time2 == inst2->t) ?
-				upper_incl && upper_inc(intersect) : upper_inc(intersect);
-		}
-		else
-		{
-			/ * Segment decreasing in value * /
-			instants[0] = temporalseq_inst_n(newseq2, 0);
-			instants[1] = temporalseq_inst_n(newseq1, 0);
-			lower_incl1 = (time2 == inst1->t) ?
-				lower_incl && upper_inc(intersect) : upper_inc(intersect);
-			upper_incl1 = (time1 == inst1->t) ?
-				upper_incl && lower_inc(intersect) : lower_inc(intersect);
-		}
-		result = temporalseq_make(instants, 2, lower_incl1, upper_incl1,
-			linear, false);
-		pfree(newseq1); pfree(newseq2); 
-	}
-	pfree(valuerange); pfree(intersect); 
-	return result;
-	*/
 }
 
 /*
@@ -3252,7 +3197,17 @@ tnumberseq_at_ranges1(TemporalSeq **result, const TemporalSeq *seq,
 		inst1 = inst2;
 		lower_inc = true;
 	}
-	if (k == 0) 
+	/* Stepwise sequence with inclusive upper bound must add a sequence for that bound */
+	if (! linear && seq->period.upper_inc)
+	{
+		TypeCacheEntry *typcache = lookup_type_cache(
+			normranges[count - 1]->rangetypid, TYPECACHE_RANGE_INFO);
+		inst1 = temporalseq_inst_n(seq, seq->count - 1);
+		Datum value = temporalinst_value(inst1);
+		if (range_contains_elem_internal(typcache, normranges[count - 1], value))
+			result[k++] = temporalseq_make(&inst1, 1, true, true, false, false);
+	}
+	if (k == 0)
 		return 0;
 	
 	temporalseqarr_sort(result, k);
@@ -3463,28 +3418,11 @@ temporalseq_value_at_timestamp1(const TemporalInst *inst1, const TemporalInst *i
 	}
 	else if (valuetypid == type_oid(T_GEOMETRY))
 	{
-		result = seg_interpolate_point(value1, value2, ratio);
+		result = geomseg_interpolate_point(value1, value2, ratio);
 	}
 	else if (valuetypid == type_oid(T_GEOGRAPHY))
 	{
-		/* We are sure that the trajectory is a line */
-		Datum line = geogpoint_trajectory(value1, value2);
-		/* There is no function equivalent to LWGEOM_line_interpolate_point
-		 * for geographies. We do as the ST_Intersection function, e.g.
-		 * 'SELECT geography(ST_Transform(ST_Intersection(ST_Transform(geometry($1),
-		 * @extschema@._ST_BestSRID($1, $2)),
-		 * ST_Transform(geometry($2), @extschema@._ST_BestSRID($1, $2))), 4326))' */
-		Datum bestsrid = call_function2(geography_bestsrid, line, line);
-		Datum line1 = call_function1(geometry_from_geography, line);
-		Datum line2 = call_function2(transform, line1, bestsrid);
-		Datum point = call_function2(LWGEOM_line_interpolate_point,
-			line2, Float8GetDatum(ratio));
-		Datum srid = call_function1(LWGEOM_get_srid, value1);
-		Datum point1 = call_function2(transform, point, srid);
-		result = call_function1(geography_from_geometry, point1);
-		pfree(DatumGetPointer(line)); pfree(DatumGetPointer(line1));
-		pfree(DatumGetPointer(line2)); pfree(DatumGetPointer(point));
-		/* Cannot pfree(DatumGetPointer(point1)); */
+		result = geogseg_interpolate_point(value1, value2, ratio);
 	}
 	else if (valuetypid == type_oid(T_DOUBLE3))
 	{

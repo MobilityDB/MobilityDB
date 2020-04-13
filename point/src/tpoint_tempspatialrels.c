@@ -14,9 +14,9 @@
  *    arguments)
  * The following relationships are supported for a temporal geography point
  * and a geography:
- *		tcovers, tcoveredby, tintersects, tdwithin
+ *		tequals,
  * The following relationships are supported for two temporal geography points:
- *		tintersects, tdwithin
+ *		tdisjoint, tintersects, tdwithin
  *
  * Portions Copyright (c) 2020, Esteban Zimanyi, Arthur Lesuisse,
  *		Universite Libre de Bruxelles
@@ -176,7 +176,7 @@ tpointseq_intersection_instants(const TemporalInst *inst1, const TemporalInst *i
  * The potential crossings between the two are considered.
  * The resulting sequence (set) has step interpolation since it is a
  * temporal Boolean or a temporal text (for trelate).
- * These functions are not available for geographies since it calls the
+ * These functions are not available for geographies since they call the
  * intersection function in PostGIS that is only available for geometries.
  *****************************************************************************/
 
@@ -670,8 +670,10 @@ tspatialrel3_tpoints_geo(TemporalS *ts, Datum geo, Datum param,
  * Functions to compute the tdwithin relationship between a temporal sequence
  * and a geometry. These functions are not available for geographies nor for
  * 3D since they are based on the tpointseq_at_geometry1 function.
- * The functions use the  st_dwithin function from PostGIS only for
+ * The functions use the st_dwithin function from PostGIS only for
  * instantaneous sequences.
+ * This function is not available for geographies since it is based on the
+ * function atGeometry.
  *****************************************************************************/
 
 static TemporalSeq **
@@ -828,13 +830,8 @@ tdwithin_tpoints_geo(TemporalS *ts, Datum geo, Datum dist)
 Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
-	Datum (*func)(Datum, Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_dwithin3d :
-			&geom_dwithin2d;
-	else
-		func = &geog_dwithin;
+	Datum (*func)(Datum, Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_dwithin3d : &geom_dwithin2d;
 	Temporal *result;
 	ensure_valid_duration(temp->duration);
 	if (temp->duration == TEMPORALINST)
@@ -844,39 +841,11 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 		result = (Temporal *)tfunc3_temporali_base((TemporalI *)temp,
 			PointerGetDatum(gs), dist, func, BOOLOID, false);
 	else if (temp->duration == TEMPORALSEQ)
-	{
-		TemporalSeq *seq = (TemporalSeq *)temp;
-		/* Validity of temporal point has been already verified */
-		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			result = (Temporal *)tdwithin_tpointseq_geo(seq,
+		result = (Temporal *)tdwithin_tpointseq_geo((TemporalSeq *)temp,
 				PointerGetDatum(gs), dist);
-		else
-		{
-			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
-			Datum geom = call_function1(geometry_from_geography,
-				PointerGetDatum(gs));
-			result = (Temporal *)tdwithin_tpointseq_geo(seq1,
-				geom, dist);
-			pfree(seq1); pfree(DatumGetPointer(geom));
-		}
-	}
 	else /* temp->duration == TEMPORALS */
-	{
-		TemporalS *ts = (TemporalS *)temp;
-		/* Validity of temporal point has been already verified */
-		if (ts->valuetypid == type_oid(T_GEOMETRY))
-			result = (Temporal *)tdwithin_tpoints_geo(ts,
+		result = (Temporal *)tdwithin_tpoints_geo((TemporalS *)temp,
 				PointerGetDatum(gs), dist);
-		else
-		{
-			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
-			Datum geom = call_function1(geometry_from_geography,
-				PointerGetDatum(gs));
-			result = (Temporal *)tdwithin_tpoints_geo(ts1,
-				PointerGetDatum(gs), dist);
-			pfree(ts1); pfree(DatumGetPointer(geom));
-		}
-	}
 	return result;
 }
 
@@ -1356,7 +1325,7 @@ tdwithin_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2, Datum dist,
  * Generic dispatch functions
  *****************************************************************************/
 
-/* Functions for spatial relationships that accept geometry/geography */
+/* Functions for spatial relationships that accept geometry */
 
 Temporal *
 tspatialrel_tpoint_geo(const Temporal *temp, Datum geo,
@@ -1371,37 +1340,11 @@ tspatialrel_tpoint_geo(const Temporal *temp, Datum geo,
 		result = (Temporal *)tfunc2_temporali_base((TemporalI *)temp,
 			geo, func, valuetypid, invert);
 	else if (temp->duration == TEMPORALSEQ)
-	{
-		TemporalSeq *seq = (TemporalSeq *)temp;
-		/* Validity of temporal point has been already verified */
-		if (seq->valuetypid == type_oid(T_GEOMETRY))
-			result = (Temporal *)tspatialrel_tpointseq_geo(seq,
-				geo, func, valuetypid, invert);
-		else
-		{
-			TemporalSeq *seq1 = tgeogpointseq_to_tgeompointseq(seq);
-			Datum geom = call_function1(geometry_from_geography, geo);
-			result = (Temporal *)tspatialrel_tpointseq_geo(seq1,
-				geom, func, valuetypid, invert);
-			pfree(seq1); pfree(DatumGetPointer(geom));
-		}
-	}
+		result = (Temporal *)tspatialrel_tpointseq_geo((TemporalSeq *)temp,
+			geo, func, valuetypid, invert);
 	else /* temp->duration == TEMPORALS */
-	{
-		TemporalS *ts = (TemporalS *)temp;
-		/* Validity of temporal point has been already verified */
-		if (ts->valuetypid == type_oid(T_GEOMETRY))
-			result = (Temporal *)tspatialrel_tpoints_geo(ts,
-				geo, func, valuetypid, invert);
-		else
-		{
-			TemporalS *ts1 = tgeogpoints_to_tgeompoints(ts);
-			Datum geom = call_function1(geometry_from_geography, geo);
-			result = (Temporal *)tspatialrel_tpoints_geo(ts1,
-				geom, func, valuetypid, invert);
-			pfree(ts1); pfree(DatumGetPointer(geom));
-		}
-	}
+		result = (Temporal *)tspatialrel_tpoints_geo( (TemporalS *)temp,
+			geo, func, valuetypid, invert);
 	return result;
 }
 
@@ -1477,7 +1420,7 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal covers (for both geometry and geography)
+ * Temporal covers
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tcovers_geo_tpoint);
@@ -1496,14 +1439,8 @@ tcovers_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum) = 0;
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_covers;
-	else
-		func = &geog_covers;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		func, BOOLOID, true);
+		&geom_covers, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1525,21 +1462,15 @@ tcovers_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_covers;
-	else
-		func = &geog_covers;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		func, BOOLOID, false);
+		&geom_covers, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Temporal coveredby (for both geometry and geography)
+ * Temporal coveredby
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tcoveredby_geo_tpoint);
@@ -1558,14 +1489,8 @@ tcoveredby_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_coveredby;
-	else
-		func = &geog_coveredby;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		func, BOOLOID, true);
+		&geom_coveredby, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
 	PG_FREE_IF_COPY(temp, 1);
 	PG_RETURN_POINTER(result);
@@ -1587,14 +1512,8 @@ tcoveredby_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	ensure_point_base_type(temp->valuetypid);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = &geom_coveredby;
-	else
-		func = &geog_coveredby;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
-		func, BOOLOID, false);
+		&geom_coveredby, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
 	PG_FREE_IF_COPY(gs, 1);
 	PG_RETURN_POINTER(result);
@@ -1621,12 +1540,8 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(temp, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
-			&geom_intersects2d;
-	else
-		func = &geog_intersects;
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_intersects3d : &geom_intersects2d;
 	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	Temporal *result = tnot_tbool_internal(negresult);
@@ -1651,12 +1566,8 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
-			&geom_intersects2d;
-	else
-		func = &geog_intersects;
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_intersects3d : &geom_intersects2d;
 	Temporal *negresult = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	Temporal *result = tnot_tbool_internal(negresult);
@@ -1753,7 +1664,8 @@ tequals_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal intersects (for both geometry and geography)
+ * Temporal intersects
+ * Available for temporal geography points
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tintersects_geo_tpoint);
@@ -1772,12 +1684,8 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	Datum (*func)(Datum, Datum);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
-			&geom_intersects2d;
-	else
-		func = &geog_intersects;
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_intersects3d : &geom_intersects2d;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, true);
 	PG_FREE_IF_COPY(gs, 0);
@@ -1800,12 +1708,8 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 		PG_FREE_IF_COPY(gs, 1);
 		PG_RETURN_NULL();
 	}
-	Datum (*func)(Datum, Datum);
-	if (temp->valuetypid == type_oid(T_GEOMETRY))
-		func = MOBDB_FLAGS_GET_Z(temp->flags) ? &geom_intersects3d :
-			&geom_intersects2d;
-	else
-		func = &geog_intersects;
+	Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) ?
+		&geom_intersects3d : &geom_intersects2d;
 	Temporal *result = tspatialrel_tpoint_geo(temp, PointerGetDatum(gs),
 		func, BOOLOID, false);
 	PG_FREE_IF_COPY(temp, 0);
@@ -1939,7 +1843,8 @@ twithin_tpoint_geo(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal dwithin (for both geometry and geography)
+ * Temporal dwithin
+ * Available for temporal geography points
  *****************************************************************************/
 
 

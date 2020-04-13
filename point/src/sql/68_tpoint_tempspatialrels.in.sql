@@ -51,15 +51,6 @@ CREATE FUNCTION tcovers(tgeompoint, geometry)
 	AS 'MODULE_PATHNAME', 'tcovers_tpoint_geo'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tcovers(geography, tgeogpoint)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tcovers_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcovers(tgeogpoint, geography)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tcovers_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /*****************************************************************************
  * tcoveredby
  *****************************************************************************/
@@ -69,15 +60,6 @@ CREATE FUNCTION tcoveredby(geometry, tgeompoint)
 	AS 'MODULE_PATHNAME', 'tcoveredby_geo_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tcoveredby(tgeompoint, geometry)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tcoveredby_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tcoveredby(geography, tgeogpoint)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tcoveredby_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcoveredby(tgeogpoint, geography)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME', 'tcoveredby_tpoint_geo'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -99,14 +81,6 @@ CREATE FUNCTION tdisjoint(tgeompoint, tgeompoint)
 	AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tdisjoint(geography, tgeogpoint)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tdisjoint_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdisjoint(tgeogpoint, geography)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdisjoint(tgeogpoint, tgeogpoint)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_tpoint'
@@ -159,14 +133,6 @@ CREATE FUNCTION tintersects(tgeompoint, tgeompoint)
 	AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tintersects(geography, tgeogpoint)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tintersects_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tintersects(tgeogpoint, geography)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tintersects_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintersects(tgeogpoint, tgeogpoint)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
@@ -215,14 +181,6 @@ CREATE FUNCTION tdwithin(tgeompoint, tgeompoint, dist float8)
 	AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
 	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tdwithin(geography, tgeogpoint, dist float8)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tdwithin_geo_tpoint'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdwithin(tgeogpoint, geography, dist float8)
-	RETURNS tbool
-	AS 'MODULE_PATHNAME', 'tdwithin_tpoint_geo'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;	
 CREATE FUNCTION tdwithin(tgeogpoint, tgeogpoint, dist float8)
 	RETURNS tbool
 	AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'

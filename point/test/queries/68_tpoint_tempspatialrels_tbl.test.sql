@@ -1,4 +1,4 @@
-﻿-- CREATE FUNCTION testSpatialRelsM() RETURNS void AS $$
+-- CREATE FUNCTION testSpatialRelsM() RETURNS void AS $$
 -- BEGIN
 -------------------------------------------------------------------------------
 -- tcontains
@@ -18,11 +18,6 @@ SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 	WHERE tcovers(temp, g) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
-	WHERE tcovers(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogpoint
-	WHERE tcovers(temp, g) IS NOT NULL;
-
 -------------------------------------------------------------------------------
 -- tcoveredby
 -------------------------------------------------------------------------------
@@ -30,11 +25,6 @@ SELECT count(*) FROM tbl_tgeogpoint, tbl_geogpoint
 SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
 	WHERE tcoveredby(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
-	WHERE tcoveredby(temp, g) IS NOT NULL;
-
-SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
-	WHERE tcoveredby(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogpoint
 	WHERE tcoveredby(temp, g) IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -48,6 +38,9 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
 
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+	WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
+	
 -------------------------------------------------------------------------------
 -- tequals
 -------------------------------------------------------------------------------
@@ -70,10 +63,6 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
-	WHERE tintersects(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogpoint
-	WHERE tintersects(temp, g) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
 
@@ -106,10 +95,6 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 	WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geogpoint, tbl_tgeogpoint
-	WHERE tdwithin(g, temp, 10) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geogpoint
-	WHERE tdwithin(temp, g, 10) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 	WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
