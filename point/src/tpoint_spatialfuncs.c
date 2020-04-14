@@ -3310,6 +3310,47 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+/* Find a timestamp which is sure to be an exclusive bound */
+
+static TemporalInst *
+temporalseq_find_timestamp_excl(const TemporalSeq *seq, TimestampTz t)
+{
+	TemporalInst *result;
+	if (t == seq->period.lower)
+		result = temporalseq_inst_n(seq, 0);
+	else
+		result = temporalseq_inst_n(seq, seq->count - 1);
+	return temporalinst_copy(result);
+}
+
+static TemporalInst *
+temporals_find_timestamp_excl(const TemporalS *ts, TimestampTz t)
+{
+	TemporalInst *result;
+	int pos;
+	temporals_find_timestamp(ts, t, &pos);
+	TemporalSeq *seq1, *seq2;
+	if (pos == 0)
+	{
+		seq1 = temporals_seq_n(ts, 0);
+		result = temporalseq_inst_n(seq1, 0);
+	}
+	else if (pos == ts->count)
+	{
+		seq1 = temporals_seq_n(ts, ts->count - 1);
+		result = temporalseq_inst_n(seq1, seq1->count - 1);
+	}
+	else
+	{
+		seq1 = temporals_seq_n(ts, pos - 1);
+		seq2 = temporals_seq_n(ts, pos);
+		if (temporalseq_end_timestamp(seq1) == t)
+			result = temporalseq_inst_n(seq1, seq1->count - 1);
+		else
+			result = temporalseq_inst_n(seq2, 0);
+	}
+	return temporalinst_copy(result);
+}
 
 PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
 
@@ -3327,6 +3368,15 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 		TemporalInst *min = temporal_min_instant(dist);
 		result = temporal_at_timestamp_internal(temp1, min->t);
 		pfree(dist);
+		if (result == NULL)
+		{
+			if (temp1->duration == TEMPORALSEQ)
+				result = temporalseq_find_timestamp_excl((TemporalSeq *)temp1,
+					min->t);
+			else /* temp->duration == TEMPORALS */
+				result = temporals_find_timestamp_excl((TemporalS *)temp1,
+					min->t);
+		}
 	}
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -3572,24 +3622,25 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	
 	/* If t is at an exclusive bound */
 	bool freeinst1 = (inst1 != NULL);
+	TemporalSeq *seq1, *seq2;
 	if (inst1 == NULL)
 	{
 		int pos;
 		temporals_find_timestamp(ts1, min->t, &pos);
 		if (pos == 0)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts1, 0);
-			inst1 = temporalseq_inst_n(seq, 0);
+			seq1 = temporals_seq_n(ts1, 0);
+			inst1 = temporalseq_inst_n(seq1, 0);
 		}
 		else if (pos == ts1->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts1, ts1->count - 1);
-			inst1 = temporalseq_inst_n(seq, seq->count - 1);
+			seq1 = temporals_seq_n(ts1, ts1->count - 1);
+			inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
-			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
+			seq1 = temporals_seq_n(ts1, pos - 1);
+			seq2 = temporals_seq_n(ts1, pos);
 			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
@@ -3605,18 +3656,18 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 		temporals_find_timestamp(ts2, min->t, &pos);
 		if (pos == 0)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts2, 0);
-			inst2 = temporalseq_inst_n(seq, 0);
+			seq2 = temporals_seq_n(ts2, 0);
+			inst2 = temporalseq_inst_n(seq2, 0);
 		}
 		else if (pos == ts2->count)
 		{
-			TemporalSeq *seq = temporals_seq_n(ts2, ts2->count - 1);
-			inst2 = temporalseq_inst_n(seq, seq->count - 1);
+			seq2 = temporals_seq_n(ts2, ts2->count - 1);
+			inst2 = temporalseq_inst_n(seq2, seq2->count - 1);
 		}
 		else
 		{
-			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
-			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
+			seq1 = temporals_seq_n(ts2, pos - 1);
+			seq2 = temporals_seq_n(ts2, pos);
 			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
