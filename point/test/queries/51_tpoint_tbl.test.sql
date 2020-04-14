@@ -287,134 +287,52 @@ SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint, tbl_interval;
 SELECT COUNT(shift(temp, i)) FROM tbl_tgeompoint3D, tbl_interval;
 SELECT COUNT(shift(temp, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geompoint
-WHERE atValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geogpoint 
-WHERE atValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geompoint3D
-WHERE atValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geogpoint3D
-WHERE atValue(temp, g) IS NOT NULL;
+------------------------------------------------------------------------------
+-- Restriction functions
+------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geompoint
-WHERE minusValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geogpoint
-WHERE minusValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geompoint3D
-WHERE minusValue(temp, g) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geogpoint3D
-WHERE minusValue(temp, g) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geompoint WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geogpoint WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geompoint3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geogpoint3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint WHERE g IS NOT NULL LIMIT 10) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, 
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D WHERE g IS NOT NULL LIMIT 10) tmp 
-WHERE atValues(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, ( SELECT array_agg(g) AS arr FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tgeogpoint, ( SELECT array_agg(g) AS arr FROM tbl_geogpoint WHERE g IS NOT NULL LIMIT 10) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, ( SELECT array_agg(g) AS arr FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, ( SELECT array_agg(g) AS arr FROM tbl_geogpoint3D WHERE g IS NOT NULL LIMIT 10) tmp
+WHERE temp != merge(atValues(temp, arr), minusValues(temp, arr));
 
-SELECT COUNT(*) FROM
-( SELECT * FROM tbl_tgeompoint limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM
-( SELECT * FROM tbl_tgeogpoint limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM
-( SELECT * FROM tbl_tgeompoint3D limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
-SELECT COUNT(*) FROM
-( SELECT * FROM tbl_tgeogpoint3D limit 10) tbl,
-( SELECT array_agg(g) AS valuearr FROM tbl_geogpoint3D WHERE g IS NOT NULL LIMIT 10) tmp
-WHERE minusValues(temp, valuearr) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE valueAtTimestamp(temp, t) IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE atTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz WHERE temp != merge(atTimestamp(temp, t), minusTimestamp(temp, t));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE minusTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset WHERE temp != merge(atTimestampset(temp, ts), minusTimestampset(temp, ts));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestamptz
-WHERE valueAtTimestamp(temp, t) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period WHERE temp != merge(atPeriod(temp, p), minusPeriod(temp, p));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset
-WHERE atTimestampSet(temp, ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset WHERE temp != merge(atPeriodset(temp, ps), minusPeriodset(temp, ps));
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_timestampset
-WHERE minusTimestampSet(temp, ts) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period
-WHERE atPeriod(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_period
-WHERE minusPeriod(temp, p) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset
-WHERE atPeriodSet(temp, ps) IS NOT NULL;
-
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_periodset
-WHERE minusPeriodSet(temp, ps) IS NOT NULL;
+------------------------------------------------------------------------------
+-- Intersects functions
+------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_timestamptz
 WHERE intersectsTimestamp(temp, t) IS NOT NULL;

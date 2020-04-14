@@ -1103,6 +1103,33 @@ tfloats_ranges(const TemporalS *ts)
 	return result;
 }
 
+/* Minimum instant without taking into account whether the instant is at an
+ * exclusive bound or not. Needed for computing e.g. shortest line.
+ * It returns an pointer to the instant NOT a new instant */
+
+TemporalInst *
+temporals_min_instant(const TemporalS *ts)
+{
+	TemporalSeq *seq = temporals_seq_n(ts, 0);
+	TemporalInst *result = temporalseq_inst_n(seq, 0);
+	Datum min = temporalinst_value(result);
+	for (int i = 0; i < ts->count; i++)
+	{
+		seq = temporals_seq_n(ts, i);
+		for (int j = 0; j < seq->count; j++)
+		{
+			TemporalInst *inst = temporalseq_inst_n(seq, j);
+			Datum value = temporalinst_value(inst);
+			if (datum_lt(value, min, seq->valuetypid))
+			{
+				min = value;
+				result = inst;
+			}
+		}
+	}
+	return result;
+}
+
 /* Minimum value */
 
 Datum
@@ -1954,61 +1981,12 @@ tnumbers_minus_ranges(const TemporalS *ts, RangeType **ranges, int count)
 
 /* Restriction to the minimum value */
 
-static TemporalS *
-temporals_at_minmax(const TemporalS *ts, Datum value)
-{
-	TemporalS *result = temporals_at_value(ts, value);
-	/* If minimum/maximum is at an exclusive bound */
-	if (result == NULL)
-	{
-		bool linear = MOBDB_FLAGS_GET_LINEAR(ts->flags);
-		TemporalSeq **sequences = palloc(sizeof(TemporalSeq *) * ts->count * 2);
-		int k = 0;
-		for (int i = 0; i < ts->count; i++)
-		{
-			TemporalSeq *seq = temporals_seq_n(ts, i);
-			TemporalInst *inst1 = temporalseq_inst_n(seq, 0);
-			TemporalInst *inst2 = temporalseq_inst_n(seq, seq->count - 1);
-			Datum value1 = temporalinst_value(inst1);
-			Datum value2 = temporalinst_value(inst2);
-			if (datum_eq(value, value1, seq->valuetypid) &&
-				datum_eq(value, value2, seq->valuetypid))
-			{
-				sequences[k++] = temporalseq_make(&inst1, 1, true, true,
-					linear, false);
-				sequences[k++] = temporalseq_make(&inst2, 1, true, true,
-					linear, false);
-			}
-			else if (datum_eq(value, value1, seq->valuetypid))
-			{
-				sequences[k++] = temporalseq_make(&inst1, 1, true, true,
-					linear, false);
-			}
-			else if (datum_eq(value, value2, seq->valuetypid))
-			{
-				sequences[k++] = temporalseq_make(&inst2, 1, true, true,
-					linear, false);
-			}
-		}
-		/* The minimum/maximum could be at the upper exclusive bound of one
-		 * sequence and at the lower exclusive bound of the next one
-		 * e.g., .... min@t) (min@t .... */
-		temporalseqarr_sort(sequences, k);
-		int count = temporalseqarr_remove_duplicates(sequences, k);
-		result = temporals_make(sequences, count, true);
-		for (int i = 0; i < k; i++)
-			pfree(sequences[i]);
-		pfree(sequences);
-	}
-	return result;
-}
-
 TemporalS *
 temporals_at_min(const TemporalS *ts)
 {
 	/* General case */
 	Datum min = temporals_min_value(ts);
-	return temporals_at_minmax(ts, min);
+	return temporals_at_value(ts, min);
 }
 
 /* Restriction to the complement of the minimum value */
@@ -2026,7 +2004,7 @@ TemporalS *
 temporals_at_max(const TemporalS *ts)
 {
 	Datum max = temporals_max_value(ts);
-	return temporals_at_minmax(ts, max);
+	return temporals_at_value(ts, max);
 }
 
 /* Restriction to the complement of the maximum value */

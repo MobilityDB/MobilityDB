@@ -1751,6 +1751,26 @@ temporal_end_value(PG_FUNCTION_ARGS)
 	PG_RETURN_DATUM(result);
 }
 
+/* Minimum instant without taking into account whether the instant is at an
+ * exclusive bound or not. Needed for computing e.g. shortest line.
+ * It returns an pointer to the instant NOT a new instant */
+
+TemporalInst *
+temporal_min_instant(const Temporal *temp)
+{
+	TemporalInst *result;
+	ensure_valid_duration(temp->duration);
+	if (temp->duration == TEMPORALINST)
+		result = (TemporalInst *)temp;
+	else if (temp->duration == TEMPORALI)
+		result = temporali_min_instant((TemporalI *)temp);
+	else if (temp->duration == TEMPORALSEQ)
+		result = temporalseq_min_instant((TemporalSeq *)temp);
+	else /* temp->duration == TEMPORALS */
+		result = temporals_min_instant((TemporalS *)temp);
+	return result;
+}
+
 /* Minimum value */
 
 Datum
@@ -2885,7 +2905,8 @@ temporal_at_min(PG_FUNCTION_ARGS)
 	Temporal *temp = PG_GETARG_TEMPORAL(0);
 	Temporal *result = temporal_at_min_internal(temp);
 	PG_FREE_IF_COPY(temp, 0);
-	/* Never returns null event if min is at an exclusive bound */
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 
@@ -2932,7 +2953,8 @@ temporal_at_max(PG_FUNCTION_ARGS)
 	else /* temp->duration == TEMPORALS */
 		result = (Temporal *)temporals_at_max((TemporalS *)temp);
 	PG_FREE_IF_COPY(temp, 0);
-	/* Never returns null event if max is at an exclusive bound */
+	if (result == NULL)
+		PG_RETURN_NULL();
 	PG_RETURN_POINTER(result);
 }
 

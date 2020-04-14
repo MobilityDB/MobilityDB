@@ -370,6 +370,7 @@ extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern Datum tfloat_ranges(const Temporal *temp);
+extern TemporalInst *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
 extern TimestampTz temporal_start_timestamp_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);

@@ -93,6 +93,7 @@ extern ArrayType *temporals_values(const TemporalS *ts);
 extern ArrayType *tfloats_ranges(const TemporalS *ts);
 extern void *temporals_bbox_ptr(const TemporalS *ts);
 extern void temporals_bbox(void *box, const TemporalS *ts);
+extern TemporalInst *temporals_min_instant(const TemporalS *ts);
 extern Datum temporals_min_value(const TemporalS *ts);
 extern Datum temporals_max_value(const TemporalS *ts);
 extern PeriodSet *temporals_get_time(const TemporalS *ts);

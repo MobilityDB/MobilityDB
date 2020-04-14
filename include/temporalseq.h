@@ -51,7 +51,7 @@ extern bool synchronize_temporalseq_temporalseq(const TemporalSeq *seq1, const T
 extern bool tlinearseq_intersection_value(const TemporalInst *inst1, const TemporalInst *inst2,
 	Datum value, Oid valuetypid, Datum *inter, TimestampTz *t);
 
-extern bool tpointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
+extern bool tgeompointseq_intersection(const TemporalInst *start1, const TemporalInst *end1,
 	const TemporalInst *start2, const TemporalInst *end2,
 	Datum *inter1, Datum *inter2, TimestampTz *t);
 
@@ -102,6 +102,7 @@ extern void *temporalseq_bbox_ptr(const TemporalSeq *seq);
 extern void temporalseq_bbox(void *box, const TemporalSeq *seq);
 extern RangeType *tfloatseq_range(const TemporalSeq *seq);
 extern ArrayType *tfloatseq_ranges(const TemporalSeq *seq);
+extern TemporalInst *temporalseq_min_instant(const TemporalSeq *seq);
 extern Datum temporalseq_min_value(const TemporalSeq *seq);
 extern Datum temporalseq_max_value(const TemporalSeq *seq);
 extern void temporalseq_period(Period *p, const TemporalSeq *seq);

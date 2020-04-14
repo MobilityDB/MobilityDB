@@ -99,6 +99,7 @@ extern TemporalI *tnumberi_at_range(const TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_minus_range(const TemporalI *ti, RangeType *range);
 extern TemporalI *tnumberi_at_ranges(const TemporalI *ti, RangeType **normranges, int count);
 extern TemporalI *tnumberi_minus_ranges(const TemporalI *ti, RangeType **normranges, int count);
+extern TemporalInst *temporali_min_instant(const TemporalI *ti);
 extern TemporalI *temporali_at_min(const TemporalI *ti);
 extern TemporalI *temporali_minus_min(const TemporalI *ti);
 extern TemporalI *temporali_at_max(const TemporalI *ti);

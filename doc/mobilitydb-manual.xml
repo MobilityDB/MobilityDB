@@ -2975,33 +2975,33 @@ SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
 				</listitem>
 
 				<listitem>
-					<para>Restrict to minimum value</para>
+					<para>Restrict to minimum value. The function returns null if the minimum value only happens at exclusive bounds.</para>
 					<para><varname>atMin(torder): torder</varname></para>
 					<programlisting>
 SELECT atMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{1@2012-01-01, 1@2012-01-05}"
-SELECT atMin(tfloat '(1@2012-01-01, 3@2012-01-03]');
--- "{[1@2012-01-01]}"
-SELECT atMin(tfloat '{(1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 3@2012-01-05)}');
+SELECT atMin(tint '(1@2012-01-01, 3@2012-01-03]');
 -- "{(1@2012-01-01, 1@2012-01-03)}"
+SELECT atMin(tfloat '(1@2012-01-01, 3@2012-01-03]');
+-- NULL
+SELECT atMin(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-05]}');
+-- "{(AA@2012-01-01, AA@2012-01-03), [AA@2012-01-05]}"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem>
-					<para>Restrict to maximum value</para>
+					<para>Restrict to maximum value. The function returns null if the maximum value only happens at exclusive bounds.</para>
 					<para><varname>atMax(torder): torder</varname></para>
 					<programlisting>
 SELECT atMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{3@2012-01-05}"
 SELECT atMax(tfloat '(1@2012-01-01, 3@2012-01-03)');
--- "{[3@2012-01-03]}"
-SELECT atMax(tfloat '{[2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-05)}');
--- "{[2@2012-01-01], [2@2012-01-03, 2@2012-01-05]}"
-SELECT atMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}');
--- "{[3@2012-01-03]}"
+-- NULL
+SELECT atMax(tfloat '{(2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-05)}');
+-- "{[2@2012-01-03, 2@2012-01-05]}"
+SELECT atMax(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-05]}');
+-- "{("BB"@2012-01-03, "BB"@2012-01-05)}"
 					</programlisting>
-					<para>The function does not take into account whether the bounds are inclusive or not.</para>
 				</listitem>
 
 				<listitem>
@@ -3059,6 +3059,26 @@ SELECT atPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-
 SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 	periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
 -- "{[1@2012-01-01, 1@2012-01-03),[1@2012-01-04, 1@2012-01-05)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Restrict to tbox</para>
+					<para><varname>atTbox(tnumber, tbox): tnumber</varname></para>
+					<programlisting>
+SELECT atTbox(tfloat '[0@2012-01-01, 3@2012-01-04)',
+	tbox 'TBOX((0, 2012-01-02), (2, 2012-01-04))');
+-- "{[1@2012-01-02, 2@2012-01-03]}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Restrict to stbox</para>
+					<para><varname>atStbox(tgeompoint, stbox): tgeompoint</varname></para>
+					<programlisting>
+SELECT asText(atStbox(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
+	stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
+-- "{[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]}"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -3196,6 +3216,27 @@ SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
 	periodset '{[2012-01-02, 2012-01-03), [2012-01-04, 2012-01-05)}');
 -- "{[1@2012-01-01, 1@2012-01-02), [1@2012-01-03, 1@2012-01-04), 
 	[1@2012-01-05, 1@2012-01-15)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Difference with tbox</para>
+					<para><varname>minusTbox(tnumber, tbox): tnumber</varname></para>
+					<programlisting>
+SELECT minusTbox(tfloat '[0@2012-01-01, 3@2012-01-04)',
+	tbox 'TBOX((0, 2012-01-02), (2, 2012-01-04))');
+-- "{[0@2012-01-01, 1@2012-01-02), (2@2012-01-03, 3@2012-01-04)}"
+					</programlisting>
+				</listitem>
+
+				<listitem>
+					<para>Difference with stbox</para>
+					<para><varname>minusStbox(tgeompoint, stbox): tgeompoint</varname></para>
+					<programlisting>
+SELECT asText(minusStbox(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
+	stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
+-- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02),
+	(POINT(2 2)@2012-01-03, POINT(3 3)@2012-01-04)}"
 					</programlisting>
 				</listitem>
 			</itemizedlist>

@@ -1431,6 +1431,28 @@ tnumberi_minus_ranges(const TemporalI *ti, RangeType **normranges, int count)
 	return result;
 }
 
+
+/* Minimum instant without taking into account whether the instant is at an
+ * exclusive bound or not. Needed for computing e.g. shortest line.
+ * It returns an pointer to the instant NOT a new instant */
+
+TemporalInst *
+temporali_min_instant(const TemporalI *ti)
+{
+	Datum min = temporalinst_value(temporali_inst_n(ti, 0));
+	int k = 0;
+	for (int i = 1; i < ti->count; i++)
+	{
+		Datum value = temporalinst_value(temporali_inst_n(ti, i));
+		if (datum_lt(value, min, ti->valuetypid))
+		{
+			min = value;
+			k = i;
+		}
+	}
+	return temporali_inst_n(ti, k);
+}
+
 /* Restriction to the minimum value */
 
 TemporalI *

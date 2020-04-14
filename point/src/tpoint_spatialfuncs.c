@@ -3310,6 +3310,7 @@ NAI_tpoint_geo(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(result);
 }
 
+
 PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
 
 PGDLLEXPORT Datum
@@ -3323,10 +3324,9 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 	Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
 	if (dist != NULL)
 	{
-		Temporal *mindist = temporal_at_min_internal(dist);
-		TimestampTz t = temporal_start_timestamp_internal(mindist);
-		result = temporal_at_timestamp_internal(temp1, t);
-		pfree(dist); pfree(mindist);		
+		TemporalInst *min = temporal_min_instant(dist);
+		result = temporal_at_timestamp_internal(temp1, min->t);
+		pfree(dist);
 	}
 	PG_FREE_IF_COPY(temp1, 0);
 	PG_FREE_IF_COPY(temp2, 1);
@@ -3534,27 +3534,26 @@ shortestline_tpointseq_tpointseq(const TemporalSeq *seq1, const TemporalSeq *seq
 		MOBDB_FLAGS_GET_LINEAR(seq2->flags);
 	TemporalSeq *dist = sync_tfunc2_temporalseq_temporalseq(seq1, seq2,
 		func, FLOAT8OID, linear, NULL);
-	TemporalS *mindist = temporalseq_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
+	TemporalInst *min = temporalseq_min_instant(dist);
 	/* Timestamp t may be at an exclusive bound */
 	TemporalInst *inst1, *inst2;
-	if (t == seq1->period.lower)
+	if (min->t == seq1->period.lower)
 	{
 		inst1 = temporalseq_inst_n(seq1, 0);
 		inst2 = temporalseq_inst_n(seq2, 0);
 	}
-	else if (t == seq1->period.upper)
+	else if (min->t == seq1->period.upper)
 	{
 		inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 		inst2 = temporalseq_inst_n(seq2, seq1->count - 1);
 	}
 	else
 	{
-		inst1 = temporalseq_at_timestamp(seq1, t);
-		inst2 = temporalseq_at_timestamp(seq2, t);
+		inst1 = temporalseq_at_timestamp(seq1, min->t);
+		inst2 = temporalseq_at_timestamp(seq2, min->t);
 	}
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist);
+	pfree(dist);
 	return result;
 }
 
@@ -3567,17 +3566,16 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 		MOBDB_FLAGS_GET_LINEAR(ts2->flags);
 	TemporalS *dist = sync_tfunc2_temporals_temporals(ts1, ts2, func,
 		FLOAT8OID, linear, NULL);
-	TemporalS *mindist = temporals_at_min(dist);
-	TimestampTz t = temporals_start_timestamp(mindist);
-	TemporalInst *inst1 = temporals_at_timestamp(ts1, t);
-	TemporalInst *inst2 = temporals_at_timestamp(ts2, t);
+	TemporalInst *min = temporals_min_instant(dist);
+	TemporalInst *inst1 = temporals_at_timestamp(ts1, min->t);
+	TemporalInst *inst2 = temporals_at_timestamp(ts2, min->t);
 	
 	/* If t is at an exclusive bound */
 	bool freeinst1 = (inst1 != NULL);
 	if (inst1 == NULL)
 	{
 		int pos;
-		temporals_find_timestamp(ts1, t, &pos);
+		temporals_find_timestamp(ts1, min->t, &pos);
 		if (pos == 0)
 		{
 			TemporalSeq *seq = temporals_seq_n(ts1, 0);
@@ -3592,7 +3590,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts1, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts1, pos);
-			if (temporalseq_end_timestamp(seq1) == t)
+			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst1 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst1 = temporalseq_inst_n(seq2, 0);
@@ -3604,7 +3602,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	if (inst2 == NULL)
 	{
 		int pos;
-		temporals_find_timestamp(ts2, t, &pos);
+		temporals_find_timestamp(ts2, min->t, &pos);
 		if (pos == 0)
 		{
 			TemporalSeq *seq = temporals_seq_n(ts2, 0);
@@ -3619,7 +3617,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 		{
 			TemporalSeq *seq1 = temporals_seq_n(ts2, pos - 1);
 			TemporalSeq *seq2 = temporals_seq_n(ts2, pos);
-			if (temporalseq_end_timestamp(seq1) == t)
+			if (temporalseq_end_timestamp(seq1) == min->t)
 				inst2 = temporalseq_inst_n(seq1, seq1->count - 1);
 			else
 				inst2 = temporalseq_inst_n(seq2, 0);
@@ -3627,7 +3625,7 @@ shortestline_tpoints_tpoints(const TemporalS *ts1, const TemporalS *ts2,
 	}
 	
 	Datum result = shortestline_tpointinst_tpointinst(inst1, inst2);
-	pfree(dist); pfree(mindist);
+	pfree(dist);
 	if (freeinst1)
 		pfree(inst1);
 	if (freeinst2)
