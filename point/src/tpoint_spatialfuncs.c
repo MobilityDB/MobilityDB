@@ -1769,7 +1769,7 @@ tpointseq_cumulative_length(const TemporalSeq *seq, double prevlength)
 	}
 	TemporalSeq *result = temporalseq_make(instants, seq->count,
 		seq->period.lower_inc, seq->period.upper_inc,
-		MOBDB_FLAGS_GET_LINEAR(seq->flags), false);
+		MOBDB_FLAGS_GET_LINEAR(seq->flags), true);
 		
 	for (int i = 1; i < seq->count; i++)
 		pfree(instants[i]);

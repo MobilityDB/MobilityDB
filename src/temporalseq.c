@@ -421,7 +421,7 @@ temporalseq_intersection(const TemporalInst *start1, const TemporalInst *end1, b
  *****************************************************************************/
 
 static bool
-float_collinear(double x1, double x2, double x3,
+float_collinear_old(double x1, double x2, double x3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
 	double duration1 = (double) (t2 - t1);
@@ -443,7 +443,7 @@ float_collinear(double x1, double x2, double x3,
 }
 
 static bool
-double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
+double2_collinear_old(const double2 *x1, const double2 *x2, const double2 *x3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
 	double duration1 = (double) (t2 - t1);
@@ -473,7 +473,7 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
 }
 
 static bool
-geompoint_collinear(Datum value1, Datum value2, Datum value3,
+geompoint_collinear_old(Datum value1, Datum value2, Datum value3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
 {
 	double duration1 = (double) (t2 - t1);
@@ -515,102 +515,88 @@ geompoint_collinear(Datum value1, Datum value2, Datum value3,
 	return result;
 }
 
+/*****************************************************************************/
+
+static bool
+float_collinear(double x1, double x2, double x3, double ratio)
+{
+	double x = x1 + (x3 - x1) * ratio;
+	return (fabs(x2 - x) <= EPSILON);
+}
+
+static bool
+double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
+	double ratio)
+{
+	double2 x;
+	x.a = x1->a + (x3->a - x1->a) * ratio;
+	x.b = x1->b + (x3->b - x1->b) * ratio;
+	bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON);
+	return result;
+}
+
+static bool
+geompoint_collinear(Datum value1, Datum value2, Datum value3,
+	double ratio, bool hasz)
+{
+	POINT4D p1 = datum_get_point4d(value1);
+	POINT4D p2 = datum_get_point4d(value2);
+	POINT4D p3 = datum_get_point4d(value3);
+	POINT4D p;
+	interpolate_point4d(&p1, &p3, &p, ratio);
+	bool result = hasz ?
+		fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON &&
+			fabs(p2.z - p.z) <= EPSILON :
+		fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON;
+	return result;
+}
+
 static bool
 geogpoint_collinear(Datum value1, Datum value2, Datum value3,
-	TimestampTz t1, TimestampTz t2, TimestampTz t3, bool hasz)
+	double ratio, bool hasz)
 {
-	double duration1 = (double) (t2 - t1);
-	double duration2 = (double) (t3 - t1);
-	double ratio = duration1 / duration2;
 	SPHEROID s;
 	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-	POINT4D point1 = datum_get_point4d(value1);
-	POINT4D point2 = datum_get_point4d(value2);
-	POINT4D point3 = datum_get_point4d(value3);
-	POINT4D point;
+	POINT4D p1 = datum_get_point4d(value1);
+	POINT4D p2 = datum_get_point4d(value2);
+	POINT4D p3 = datum_get_point4d(value3);
+	POINT4D p;
 	POINT3D q1, q3;
 	GEOGRAPHIC_POINT g1, g2, g3, g;
-	geographic_point_init(point1.x, point1.y, &g1);
-	geographic_point_init(point2.x, point2.y, &g2);
-	geographic_point_init(point3.x, point3.y, &g3);
+	geographic_point_init(p1.x, p1.y, &g1);
+	geographic_point_init(p2.x, p2.y, &g2);
+	geographic_point_init(p3.x, p3.y, &g3);
 	geog2cart(&g1, &q1);
 	geog2cart(&g3, &q3);
-	geography_interpolate_point4d(&q1, &q3, &point1, &point3, ratio, &point);
-	geographic_point_init(point.x, point.y, &g);
+	geography_interpolate_point4d(&q1, &q3, &p1, &p3, ratio, &p);
+	geographic_point_init(p.x, p.y, &g);
 	return spheroid_distance(&g2, &g, &s) <= EPSILON;
 }
 
 static bool
 double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
-	TimestampTz t1, TimestampTz t2, TimestampTz t3)
+	double ratio)
 {
-	double duration1 = (double) (t2 - t1);
-	double duration2 = (double) (t3 - t2);
-	double3 x1new, x3new;
-	double ratio;
-	if (duration1 < duration2)
-	{
-		ratio = 1 - duration1 / duration2;
-		x3new.a = x2->a + (x3->a - x2->a) * ratio;
-		x3new.a = x2->b + (x3->b - x2->b) * ratio,
-		x3new.a = x2->c + (x3->c - x2->c) * ratio;
-		x3 = &x3new;
-	}
-	if (duration1 > duration2)
-	{
-		ratio = 1 - duration2 / duration1;
-		x1new.a = x1->a + (x2->a - x1->a) * (1 - ratio);
-		x1new.b = x1->b + (x2->b - x1->b) * (1 - ratio);
-		x1new.c = x1->c + (x2->c - x1->c) * (1 - ratio);
-		x1 = &x1new;
-	}
-	double d1a = x2->a - x1->a;
-	double d1b = x2->b - x1->b;
-	double d1c = x2->c - x1->c;
-	double d2a = x3->a - x2->a;
-	double d2b = x3->b - x2->b;
-	double d2c = x3->c - x2->c;
-	bool result = (fabs(d1a - d2a) <= EPSILON && fabs(d1b - d2b) <= EPSILON &&
-		fabs(d1c - d2c) <= EPSILON);
+	double3 x;
+	x.a = x1->a + (x3->a - x1->a) * ratio;
+	x.b = x1->b + (x3->b - x1->b) * ratio,
+	x.c = x1->c + (x3->c - x1->c) * ratio;
+	bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON &&
+		fabs(x2->c - x.c) <= EPSILON);
 	return result;
 }
 
 static bool
 double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
-	TimestampTz t1, TimestampTz t2, TimestampTz t3)
+	double ratio)
 {
-	double duration1 = (double) (t2 - t1);
-	double duration2 = (double) (t3 - t2);
-	double4 x1new, x3new;
-	double ratio;
-	if (duration1 < duration2)
-	{
-		ratio = 1 - duration1 / duration2;
-		x3new.a = x2->a + (x3->a - x2->a) * ratio;
-		x3new.a = x2->b + (x3->b - x2->b) * ratio;
-		x3new.a = x2->c + (x3->c - x2->c) * ratio;
-		x3new.a = x2->d + (x3->d - x2->d) * ratio;
-		x3 = &x3new;
-	}
-	if (duration1 > duration2)
-	{
-		ratio = 1 - duration2 / duration1;
-		x1new.a = x1->a + (x2->a - x1->a) * (1 - ratio);
-		x1new.b = x1->b + (x2->b - x1->b) * (1 - ratio);
-		x1new.d = x1->c + (x2->c - x1->c) * (1 - ratio);
-		x1new.d = x1->d + (x2->c - x1->d) * (1 - ratio);
-		x1 = &x1new;
-	}
-	double d1a = x2->a - x1->a;
-	double d1b = x2->b - x1->b;
-	double d1c = x2->c - x1->c;
-	double d1d = x2->d - x1->d;
-	double d2a = x3->a - x2->a;
-	double d2b = x3->b - x2->b;
-	double d2c = x3->c - x2->c;
-	double d2d = x3->d - x2->d;
-	bool result = (fabs(d1a - d2a) <= EPSILON && fabs(d1b - d2b) <= EPSILON &&
-		fabs(d1c - d2c) <= EPSILON && fabs(d1d - d2d) <= EPSILON);
+	double4 x;
+	x.a = x1->a + (x3->a - x1->a) * ratio;
+	x.b = x1->b + (x3->b - x1->b) * ratio;
+	x.c = x1->c + (x3->c - x1->c) * ratio;
+	x.d = x1->d + (x3->d - x1->d) * ratio;
+	bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON &&
+		fabs(x2->c - x.c) <= EPSILON && fabs(x2->d - x.d) <= EPSILON);
 	return result;
 }
 
@@ -618,30 +604,33 @@ static bool
 datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
 	TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
+	double duration1 = (double) (t2 - t1);
+	double duration2 = (double) (t3 - t1);
+	double ratio = duration1 / duration2;
 	if (valuetypid == FLOAT8OID)
 		return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2), 
-			DatumGetFloat8(value3), t1, t2, t3);
+			DatumGetFloat8(value3), ratio);
 	if (valuetypid == type_oid(T_DOUBLE2))
 		return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2), 
-			DatumGetDouble2P(value3), t1, t2, t3);
+			DatumGetDouble2P(value3), ratio);
 	if (valuetypid == type_oid(T_GEOMETRY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
 		bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-		return geompoint_collinear(value1, value2, value3, t1, t2, t3, hasz);
+		return geompoint_collinear(value1, value2, value3, ratio, hasz);
 	}
 	if (valuetypid == type_oid(T_GEOGRAPHY))
 	{
 		GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
 		bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-		return geogpoint_collinear(value1, value2, value3, t1, t2, t3, hasz);
+		return geogpoint_collinear(value1, value2, value3, ratio, hasz);
 	}
 	if (valuetypid == type_oid(T_DOUBLE3))
 		return double3_collinear(DatumGetDouble3P(value1), DatumGetDouble3P(value2), 
-			DatumGetDouble3P(value3), t1, t2, t3);
+			DatumGetDouble3P(value3), ratio);
 	if (valuetypid == type_oid(T_DOUBLE4))
 		return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2), 
-			DatumGetDouble4P(value3), t1, t2, t3);
+			DatumGetDouble4P(value3), ratio);
 	return false;
 }
 
