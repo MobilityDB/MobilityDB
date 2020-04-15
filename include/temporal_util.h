@@ -65,6 +65,7 @@ extern void datumarr_sort(Datum *values, int count, Oid valuetypid);
 extern void timestamparr_sort(TimestampTz *values, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
+extern void temporalarr_sort(Temporal **temporals, int count);
 extern void temporalinstarr_sort(TemporalInst **instants, int count);
 extern void temporalseqarr_sort(TemporalSeq **sequences, int count);
 

@@ -42,7 +42,8 @@ extern bool intersection_temporalinst_temporalinst(const TemporalInst *inst1, co
 /* Append and merge functions */
 
 extern TemporalI *temporalinst_append_instant(const TemporalInst *inst1, const TemporalInst *inst2);
-extern TemporalInst *temporalinst_merge(const TemporalInst *inst1, const TemporalInst *inst2);
+extern Temporal *temporalinst_merge(const TemporalInst *inst1, const TemporalInst *inst2);
+extern TemporalI *temporalinst_merge_array(TemporalInst **instants, int count);
 
 /* Cast functions */
 

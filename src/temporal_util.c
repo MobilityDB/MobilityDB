@@ -454,6 +454,15 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
 }
 
 static int
+temporalarr_sort_cmp(const Temporal **l, const Temporal **r)
+{
+	Period lp, rp;
+	temporal_period(&lp, *l);
+	temporal_period(&rp, *r);
+	return period_cmp_internal(&lp, &rp);
+}
+
+static int
 temporalinstarr_sort_cmp(const TemporalInst **l, const TemporalInst **r)
 {
 	return timestamp_cmp_internal((*l)->t, (*r)->t);
@@ -504,6 +513,14 @@ rangearr_sort(RangeType **ranges, int count)
 {
 	qsort(ranges, (size_t) count, sizeof(RangeType *),
 		  (qsort_comparator) &range_sort_cmp);
+}
+
+
+void
+temporalarr_sort(Temporal **temporals, int count)
+{
+	qsort(temporals, (size_t) count, sizeof(Temporal *),
+		  (qsort_comparator) &temporalarr_sort_cmp);
 }
 
 void

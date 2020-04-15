@@ -458,42 +458,6 @@ CREATE FUNCTION appendInstant(ttext, ttext)
 
 /******************************************************************************/
 
-CREATE FUNCTION append(tbool, tbool)
-	RETURNS tbool
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tint, tint)
-	RETURNS tint
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tfloat, tfloat)
-	RETURNS tfloat
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(ttext, ttext)
-	RETURNS ttext
-AS 'MODULE_PATHNAME', 'temporal_append'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION append(tbool[])
-	RETURNS tbool
-AS 'MODULE_PATHNAME', 'temporal_append_array'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tint[])
-	RETURNS tint
-AS 'MODULE_PATHNAME', 'temporal_append_array'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(tfloat[])
-	RETURNS tfloat
-AS 'MODULE_PATHNAME', 'temporal_append_array'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION append(ttext[])
-	RETURNS ttext
-AS 'MODULE_PATHNAME', 'temporal_append_array'
-	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************/
-
 -- Function is not strict
 CREATE FUNCTION merge(tbool, tbool)
 	RETURNS tbool
@@ -511,6 +475,24 @@ CREATE FUNCTION merge(ttext, ttext)
 	RETURNS ttext
 AS 'MODULE_PATHNAME', 'temporal_merge'
 	LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+
+CREATE FUNCTION merge(tbool[])
+	RETURNS tbool
+AS 'MODULE_PATHNAME', 'temporal_merge_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION merge(tint[])
+	RETURNS tint
+AS 'MODULE_PATHNAME', 'temporal_merge_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION merge(tfloat[])
+	RETURNS tfloat
+AS 'MODULE_PATHNAME', 'temporal_merge_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION merge(ttext[])
+	RETURNS ttext
+AS 'MODULE_PATHNAME', 'temporal_merge_array'
+	LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Accessor functions
