@@ -1,7 +1,19 @@
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0, false, true));
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, false, true));
      st_astext     
 -------------------
  POINT(4.35 50.85)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false, true));
+         st_astext          
+----------------------------
+ POINT(37.617222 55.755833)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, false, false));
+                st_astext                
+-----------------------------------------
+ POINT(7.2220985969596 51.7202434531659)
 (1 row)
 
 SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, false, true));
@@ -14,6 +26,12 @@ SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.6
                                                                                                                                                                     st_astext                                                                                                                                                                    
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  MULTIPOINT(7.2220985969596 51.7202434531659,10.2325875123559 52.5254342648845,13.3739250151343 53.2566887167436,16.6347759217365 53.9056793854838,19.9998576749004 54.4649673133545,23.4500503284172 54.9283329391853,26.9628165216683 55.2910773280783,30.512938399544 55.5502632631239,34.0735284866234 55.7048686660918,37.617222 55.755833)
+(1 row)
+
+SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring empty', 0.1, false, true));
+  st_astext  
+-------------
+ POINT EMPTY
 (1 row)
 
 /* Errors */
