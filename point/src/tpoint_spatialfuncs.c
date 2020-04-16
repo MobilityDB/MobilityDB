@@ -186,15 +186,15 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 	}
 
-	/* Initialize spheroid */
-	/* We cannot use the following statement since PROJ4 API is not
-	 * available directly to MobilityDB. */
-	// spheroid_init_from_srid(fcinfo, srid, &s);
-	spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-
 	/* User requests spherical calculation, turn our spheroid into a sphere */
 	if ( ! use_spheroid )
 		s.a = s.b = s.radius;
+	else
+		/* Initialize spheroid */
+		/* We cannot use the following statement since PROJ4 API is not
+		 * available directly to MobilityDB. */
+		// spheroid_init_from_srid(fcinfo, srid, &s);
+		spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
 	lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
 	opa = geography_interpolate_points(lwline, distance_fraction, &s, repeat);
